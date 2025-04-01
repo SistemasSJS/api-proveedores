@@ -1,0 +1,6 @@
+[
+  {
+    "type": "sqlite",
+    "path": "c:\\repositorio\\api-proveedores\\database\\database.sqlite"
+  }
+]

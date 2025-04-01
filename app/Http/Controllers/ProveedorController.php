@@ -4,34 +4,64 @@ namespace App\Http\Controllers;
 
 use App\Models\Proveedor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class ProveedorController extends Controller
 {
-    public function index()
+    public function __construct()
     {
-        return Proveedor::all();
+        $this->middleware(['auth:sanctum']); // Asegura que el usuario esté autenticado con Sanctum
     }
 
-    public function store(Request $request)
+    // Mostrar el perfil del proveedor autenticado
+    public function show($id)
     {
-        $proveedor = Proveedor::create($request->all());
-        return response()->json($proveedor, 201);
-    }
+        $proveedor = Proveedor::findOrFail($id);
 
-    public function show(Proveedor $proveedor)
-    {
-        return $proveedor;
-    }
+        // Verifica que el proveedor pertenece al usuario autenticado
+        if ($proveedor->user_id !== Auth::id()) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
 
-    public function update(Request $request, Proveedor $proveedor)
-    {
-        $proveedor->update($request->all());
         return response()->json($proveedor);
     }
 
-    public function destroy(Proveedor $proveedor)
+    // Actualizar el perfil del proveedor
+    public function update(Request $request, $id)
     {
-        $proveedor->delete();
-        return response()->json(null, 204);
+        $proveedor = Proveedor::findOrFail($id);
+
+        // Verifica que el proveedor pertenece al usuario autenticado
+        if ($proveedor->user_id !== Auth::id()) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+
+        // Validar los datos antes de actualizar
+        $request->validate([
+            'razon_social' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('proveedores')->ignore($proveedor->id),
+            ],
+            'nombre_comercial' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('proveedores')->ignore($proveedor->id),
+            ],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('proveedores')->ignore($proveedor->id),
+            ],
+        ]);
+
+        // Actualizar proveedor
+        $proveedor->update($request->all());
+
+        return response()->json(['message' => 'Proveedor actualizado correctamente', 'proveedor' => $proveedor]);
     }
 }

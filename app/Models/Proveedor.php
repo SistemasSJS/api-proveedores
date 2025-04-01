@@ -8,11 +8,18 @@ use Illuminate\Database\Eloquent\Model;
 class Proveedor extends Model
 {
     use HasFactory;
+    protected $table = "proveedores";
 
-    protected $fillable = ['nombre', 'precio', 'proveedor_id'];
+    protected $fillable = [
+        'user_id',
+        'razon_social',
+        'nombre_comercial',
+        'email',
+    ];
 
-    public function proveedor()
+    // Relación con el modelo User
+    public function user()
     {
-        return $this->belongsTo(Proveedor::class);
+        return $this->belongsTo(User::class);
     }
 }

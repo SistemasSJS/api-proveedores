@@ -1,8 +1,21 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProveedorController;
-use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\SucursalController;
 
-Route::apiResource('proveedores', ProveedorController::class);
-Route::apiResource('productos', ProductoController::class);
+// Rutas públicas
+Route::post('register', [AuthController::class, 'register']); // Registro del proveedor
+Route::post('login', [AuthController::class, 'login']);       // Login del proveedor
+
+// Rutas protegidas
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('me', [AuthController::class, 'me']);  // Obtener datos del proveedor autenticado
+
+    // Rutas de Proveedores
+    Route::apiResource('proveedores', ProveedorController::class);
+
+    // Rutas de Sucursales
+    Route::apiResource('sucursales', SucursalController::class);
+});
