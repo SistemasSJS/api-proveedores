@@ -1,0 +1,1187 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API de Proveedores",
+        "description": "Documentación de la API de autenticación y gestión de proveedores.",
+        "contact": {
+            "name": "Soporte",
+            "email": "soporte@tuempresa.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Servidor local: SQLite"
+        }
+    ],
+    "paths": {
+        "/api/register": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Registrar un proveedor",
+                "operationId": "8a56853624e025573120a09a4c75d468",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "razon_social",
+                                    "nombre_comercial",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "razon_social": {
+                                        "type": "string",
+                                        "example": "Proveedor S.A. de C.V."
+                                    },
+                                    "nombre_comercial": {
+                                        "type": "string",
+                                        "example": "Proveedor Comercial"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "proveedor@empresa.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "contraseñaSegura123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Proveedor registrado correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Proveedor registrado correctamente"
+                                        },
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Proveedor Comercial"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "example": "proveedor@empresa.com"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "proveedor": {
+                                            "properties": {
+                                                "razon_social": {
+                                                    "type": "string",
+                                                    "example": "Proveedor S.A. de C.V."
+                                                },
+                                                "nombre_comercial": {
+                                                    "type": "string",
+                                                    "example": "Proveedor Comercial"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "example": "proveedor@empresa.com"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "eyJ0eXAiOiJKV1QiLCJhbGciOi..."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error en el registro"
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "razon_social": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "La razón social es obligatoria."
+                                                    }
+                                                },
+                                                "nombre_comercial": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "El nombre comercial es obligatorio."
+                                                    }
+                                                },
+                                                "email": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "El correo electrónico es obligatorio."
+                                                    }
+                                                },
+                                                "password": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "La contraseña es obligatoria."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error en el registro"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "El mensaje de error generado en la transacción"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Autenticación de usuario",
+                "operationId": "a3b306d14572d1f4bd6c064b3233e7b8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "secret123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login exitoso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "eyJ0eXAiOiJKV1QiLCJhbGciOi..."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Credenciales inválidas"
+                    }
+                }
+            }
+        },
+        "/api/me": {
+            "get": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Obtener información del usuario autenticado",
+                "operationId": "9d9bc556f927575aa492a88c28fe5908",
+                "responses": {
+                    "200": {
+                        "description": "Usuario autenticado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Juan Pérez"
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "format": "email",
+                                            "example": "juan@example.com"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Cerrar sesión y revocar tokens",
+                "operationId": "fe8f3429cd6979b3b4517e186505f9f9",
+                "responses": {
+                    "200": {
+                        "description": "Sesión cerrada correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Sesión cerrada correctamente"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado o sesión no válida",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No autorizado o sesión no válida"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/productos": {
+            "get": {
+                "tags": [
+                    "Productos"
+                ],
+                "summary": "Listar todos los productos",
+                "operationId": "496dc08306524d77f18d124d1d6838aa",
+                "responses": {
+                    "200": {
+                        "description": "Lista de productos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Producto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Productos"
+                ],
+                "summary": "Crear un producto",
+                "operationId": "48b59f126c849beb4d4de4ff83b7945f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "proveedor_id"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Producto A"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "contacto@producto.com"
+                                    },
+                                    "telefono": {
+                                        "type": "string",
+                                        "example": "555-123-4567"
+                                    },
+                                    "direccion": {
+                                        "type": "string",
+                                        "example": "Calle Falsa 123"
+                                    },
+                                    "proveedor_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Producto creado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Producto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/productos/{id}": {
+            "get": {
+                "tags": [
+                    "Productos"
+                ],
+                "summary": "Obtener un producto",
+                "operationId": "672fde814ef8716ee902835cc96ae595",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Datos del producto",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Producto"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Producto no encontrado"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Productos"
+                ],
+                "summary": "Actualizar un producto",
+                "operationId": "20b20d8e59992eb88abad7dcef3db6d7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Producto A"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "contacto@producto.com"
+                                    },
+                                    "telefono": {
+                                        "type": "string",
+                                        "example": "555-123-4567"
+                                    },
+                                    "direccion": {
+                                        "type": "string",
+                                        "example": "Calle Falsa 123"
+                                    },
+                                    "proveedor_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Producto actualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Producto"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Producto no encontrado"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Productos"
+                ],
+                "summary": "Eliminar un producto",
+                "operationId": "4c0c7680428675134afd4d793f934f67",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Producto eliminado"
+                    },
+                    "404": {
+                        "description": "Producto no encontrado"
+                    }
+                }
+            }
+        },
+        "/api/proveedores/{id}": {
+            "get": {
+                "tags": [
+                    "Proveedores"
+                ],
+                "summary": "Mostrar perfil del proveedor autenticado",
+                "description": "Devuelve los datos de un proveedor específico solo si pertenece al usuario autenticado.",
+                "operationId": "getProveedorById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del proveedor",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Proveedor encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Proveedor"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "Proveedor no encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Proveedores"
+                ],
+                "summary": "Actualizar perfil del proveedor",
+                "description": "Actualiza los datos del proveedor si pertenece al usuario autenticado.",
+                "operationId": "updateProveedor",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del proveedor",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "razon_social",
+                                    "nombre_comercial",
+                                    "email"
+                                ],
+                                "properties": {
+                                    "razon_social": {
+                                        "type": "string",
+                                        "example": "Proveedor S.A."
+                                    },
+                                    "nombre_comercial": {
+                                        "type": "string",
+                                        "example": "ProveedorTech"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "contacto@proveedor.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Proveedor actualizado correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Proveedor actualizado correctamente"
+                                        },
+                                        "proveedor": {
+                                            "$ref": "#/components/schemas/Proveedor"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Proveedores"
+                ],
+                "summary": "Eliminar proveedor",
+                "description": "Elimina un proveedor si pertenece al usuario autenticado.",
+                "operationId": "eliminarProveedor",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del proveedor",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Proveedor eliminado correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Proveedor eliminado correctamente"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "Proveedor no encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/proveedores": {
+            "get": {
+                "tags": [
+                    "Proveedores"
+                ],
+                "summary": "Listar proveedores del usuario autenticado",
+                "description": "Devuelve una lista de todos los proveedores asociados al usuario autenticado.",
+                "operationId": "listarProveedores",
+                "responses": {
+                    "200": {
+                        "description": "Lista de proveedores",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Proveedor"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Proveedores"
+                ],
+                "summary": "Crear un nuevo proveedor",
+                "description": "Registra un proveedor asociado al usuario autenticado.",
+                "operationId": "crearProveedor",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "razon_social",
+                                    "nombre_comercial",
+                                    "email"
+                                ],
+                                "properties": {
+                                    "razon_social": {
+                                        "type": "string",
+                                        "example": "Proveedor S.A."
+                                    },
+                                    "nombre_comercial": {
+                                        "type": "string",
+                                        "example": "ProveedorTech"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "proveedor@email.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Proveedor creado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Proveedor"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Datos inválidos"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/proveedores/{proveedorId}/sucursales": {
+            "get": {
+                "tags": [
+                    "Sucursales"
+                ],
+                "summary": "Listar sucursales de un proveedor",
+                "operationId": "9ba43cf5c2a1c288f1382b8e1e1bf014",
+                "parameters": [
+                    {
+                        "name": "proveedorId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de sucursales",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Sucursal"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Proveedor no encontrado"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Sucursales"
+                ],
+                "summary": "Crear una sucursal para un proveedor",
+                "operationId": "3ad6f36dc682b8979be36125037c18ca",
+                "parameters": [
+                    {
+                        "name": "proveedorId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "direccion"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Sucursal Centro"
+                                    },
+                                    "direccion": {
+                                        "type": "string",
+                                        "example": "Av. Principal 123"
+                                    },
+                                    "telefono": {
+                                        "type": "string",
+                                        "example": "667-123-4567"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Sucursal creada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Sucursal"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Proveedor no encontrado"
+                    }
+                }
+            }
+        },
+        "/api/proveedores/{proveedorId}/sucursales/{id}": {
+            "get": {
+                "tags": [
+                    "Sucursales"
+                ],
+                "summary": "Obtener detalles de una sucursal",
+                "operationId": "42fdbaa17ae46e7d21c11b64e03a236b",
+                "parameters": [
+                    {
+                        "name": "proveedorId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Datos de la sucursal",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Sucursal"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Sucursal o proveedor no encontrado"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Sucursales"
+                ],
+                "summary": "Actualizar una sucursal",
+                "operationId": "95f502666b2764d3ce72bf4ca09e8e54",
+                "parameters": [
+                    {
+                        "name": "proveedorId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Sucursal Centro"
+                                    },
+                                    "direccion": {
+                                        "type": "string",
+                                        "example": "Av. Principal 123"
+                                    },
+                                    "telefono": {
+                                        "type": "string",
+                                        "example": "667-123-4567"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Sucursal actualizada"
+                    },
+                    "404": {
+                        "description": "Sucursal o proveedor no encontrado"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Sucursales"
+                ],
+                "summary": "Eliminar una sucursal",
+                "operationId": "c7d7531af7049d5caf9b54f22872fd35",
+                "parameters": [
+                    {
+                        "name": "proveedorId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sucursal eliminada correctamente"
+                    },
+                    "404": {
+                        "description": "Sucursal o proveedor no encontrado"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Producto": {
+                "title": "Producto",
+                "description": "Modelo de producto que pertenece a un proveedor y puede estar en muchas sucursales",
+                "required": [
+                    "nombre",
+                    "proveedor_id"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "nombre": {
+                        "type": "string",
+                        "example": "Producto A"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "contacto@producto.com"
+                    },
+                    "telefono": {
+                        "type": "string",
+                        "example": "555-123-4567"
+                    },
+                    "direccion": {
+                        "type": "string",
+                        "example": "Calle Falsa 123, Ciudad"
+                    },
+                    "proveedor_id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T00:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T00:00:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "Proveedor": {
+                "title": "Proveedor",
+                "description": "Modelo del proveedor",
+                "required": [
+                    "razon_social",
+                    "nombre_comercial",
+                    "email"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "razon_social": {
+                        "type": "string",
+                        "example": "Proveedor S.A."
+                    },
+                    "nombre_comercial": {
+                        "type": "string",
+                        "example": "ProveedorTech"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "proveedor@email.com"
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T00:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T00:00:00Z"
+                    },
+                    "productos": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Producto"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "Sucursal": {
+                "title": "Sucursal",
+                "description": "Modelo de sucursal de un proveedor",
+                "required": [
+                    "proveedor_id",
+                    "nombre",
+                    "direccion"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "proveedor_id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "nombre": {
+                        "type": "string",
+                        "example": "Sucursal Norte"
+                    },
+                    "direccion": {
+                        "type": "string",
+                        "example": "Av. Reforma 123, CDMX"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T00:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T00:00:00Z"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Productos",
+            "description": "CRUD de productos"
+        },
+        {
+            "name": "Sucursales",
+            "description": "Gestión de sucursales por proveedor"
+        },
+        {
+            "name": "Autenticación",
+            "description": "Autenticación"
+        },
+        {
+            "name": "Proveedores",
+            "description": "Proveedores"
+        }
+    ]
+}
