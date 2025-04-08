@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\SucursalController;
+use App\Http\Controllers\ProductoController;
+
 
 // Rutas públicas
 Route::post('register', [AuthController::class, 'register']); // Registro del proveedor
@@ -18,4 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Rutas de Sucursales
     Route::apiResource('sucursales', SucursalController::class);
+
+    // Rutas de Productos
+    Route::apiResource('productos', ProductoController::class);
 });
