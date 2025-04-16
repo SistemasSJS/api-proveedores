@@ -11,8 +11,9 @@ use App\Http\Controllers\ProductoController;
 Route::post('register', [AuthController::class, 'register']); // Registro del proveedor
 Route::post('login', [AuthController::class, 'login']);       // Login del proveedor
 
+
 // Rutas protegidas
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::get('me', [AuthController::class, 'me']);  // Obtener datos del proveedor autenticado
 
     // Rutas de Proveedores

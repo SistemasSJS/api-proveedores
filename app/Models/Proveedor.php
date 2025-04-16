@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  *     @OA\Property(property="productos", type="array", @OA\Items(ref="#/components/schemas/Producto"))
  * )
  */
-class Proveedor extends Model
+class Proveedor extends BaseModel
 {
     use HasFactory;
     protected $table = "proveedores";
@@ -42,5 +42,23 @@ class Proveedor extends Model
     {
         return $this->hasMany(Producto::class);
     }
+
+    /**
+     * Campos por los cuales se puede filtar
+     */
+     
+    public static function filterByRazon_social($query, $value)
+    {
+        return $query->where('razon_social', 'like', "%$value%");
+    }
+    public static function filterByNombre_comercial($query, $value)
+    {
+        return $query->where('nombre_comercial', 'like', "%$value%");
+    }
+    public static function filterByEmail($query, $value)
+    {
+        return $query->where('email', 'like', "%$value%");
+    }
+
 }
 

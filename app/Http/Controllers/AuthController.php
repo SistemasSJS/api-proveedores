@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRoleEnumerate;
 use App\Models\User;
 use App\Models\Proveedor;
 use Illuminate\Http\Request;
@@ -102,6 +103,7 @@ class AuthController extends Controller
                 'name' => $request->nombre_comercial,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
+                'role' => UserRoleEnumerate::PROVEEDOR->value,
             ]);
 
             // Crear el proveedor asociado al usuario
@@ -201,36 +203,36 @@ class AuthController extends Controller
      */
     public function me(Request $request)
     {
-        return response()->json(['user' => $request->user()], 200);
+        return response()->json(['user' => $request->user()->role], 200);
     }
 
-/**
- * @OA\Post(
- *     path="/api/logout",
- *     summary="Cerrar sesión y revocar tokens",
- *     tags={"Autenticación"},
- *     security={{"sanctum":{}}},
- *     @OA\Response(
- *         response=200,
- *         description="Sesión cerrada correctamente",
- *         @OA\JsonContent(
- *             @OA\Property(property="message", type="string", example="Sesión cerrada correctamente")
- *         )
- *     ),
- *     @OA\Response(
- *         response=401,
- *         description="No autenticado o sesión no válida",
- *         @OA\JsonContent(
- *             @OA\Property(property="message", type="string", example="No autorizado o sesión no válida")
- *         )
- *     )
- * )
- */
-public function logout(Request $request)
-{
-    // Revocar todos los tokens del usuario autenticado
-    $request->user()->tokens()->delete();
+    /**
+     * @OA\Post(
+     *     path="/api/logout",
+     *     summary="Cerrar sesión y revocar tokens",
+     *     tags={"Autenticación"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Sesión cerrada correctamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Sesión cerrada correctamente")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="No autenticado o sesión no válida",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="No autorizado o sesión no válida")
+     *         )
+     *     )
+     * )
+     */
+    public function logout(Request $request)
+    {
+        // Revocar todos los tokens del usuario autenticado
+        $request->user()->tokens()->delete();
 
-    return response()->json(['message' => 'Sesión cerrada correctamente'], 200);
-}
+        return response()->json(['message' => 'Sesión cerrada correctamente'], 200);
+    }
 }
