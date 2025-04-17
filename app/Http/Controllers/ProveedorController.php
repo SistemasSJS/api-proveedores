@@ -3,17 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Proveedor;
+use App\Exceptions\Api\Auth\UnauthorizedException;
+use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
+/**
+ * @OA\Tag(name="Proveedores", description="CRUD de proveedores")
+ */
 class ProveedorController extends Controller
 {
-    // public function __construct()
-    // {
-    //     $this->middleware(['auth:sanctum']);
-    // }
-
     /**
      * @OA\Get(
      *     path="/api/proveedores/{id}",
@@ -46,10 +46,14 @@ class ProveedorController extends Controller
      */
     public function show($id)
     {
-        $proveedor = Proveedor::findOrFail($id);
+        $proveedor = Proveedor::find($id);
+
+        if (!$proveedor) {
+            throw new ResourceNotFoundException("Proveedor no encontrado.");
+        }
 
         if ($proveedor->user_id !== Auth::id()) {
-            return response()->json(['error' => 'No autorizado'], 403);
+            throw new UnauthorizedException("No autorizado");
         }
 
         return response()->json($proveedor);
@@ -99,10 +103,14 @@ class ProveedorController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $proveedor = Proveedor::findOrFail($id);
+        $proveedor = Proveedor::find($id);
+
+        if (!$proveedor) {
+            throw new ResourceNotFoundException("Proveedor no encontrado.");
+        }
 
         if ($proveedor->user_id !== Auth::id()) {
-            return response()->json(['error' => 'No autorizado'], 403);
+            throw new UnauthorizedException("No autorizado");
         }
 
         $request->validate([
@@ -128,9 +136,11 @@ class ProveedorController extends Controller
 
         $proveedor->update($request->all());
 
-        return response()->json(['message' => 'Proveedor actualizado correctamente', 'proveedor' => $proveedor]);
+        return response()->json([
+            'message' => 'Proveedor actualizado correctamente',
+            'proveedor' => $proveedor
+        ]);
     }
-
 
     /**
      * @OA\Get(
@@ -233,10 +243,14 @@ class ProveedorController extends Controller
      */
     public function destroy($id)
     {
-        $proveedor = Proveedor::findOrFail($id);
+        $proveedor = Proveedor::find($id);
+
+        if (!$proveedor) {
+            throw new ResourceNotFoundException("Proveedor no encontrado.");
+        }
 
         if ($proveedor->user_id !== Auth::id()) {
-            return response()->json(['error' => 'No autorizado'], 403);
+            throw new UnauthorizedException("No autorizado");
         }
 
         $proveedor->delete();

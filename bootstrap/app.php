@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Middleware\AdminMiddleware;
+use App\Exceptions\Api\Handler;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;

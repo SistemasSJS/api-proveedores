@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRoleEnumerate;
+use App\Exceptions\Api\Auth\RegistrationException;
+use App\Exceptions\Api\Auth\UnauthorizedException;
 use App\Models\User;
 use App\Models\Proveedor;
 use Illuminate\Http\Request;
@@ -48,14 +50,19 @@ class AuthController extends Controller
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Error de validación",
+     *         description="Error de validación en el registro",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Error en el registro"),
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="error_type", type="string", example="registration_error"),
+     *             @OA\Property(property="message", type="string", example="Error al registrar el proveedor. Campos no validados."),
+     *             @OA\Property(property="code", type="integer", example=422),
      *             @OA\Property(property="errors", type="object",
-     *                 @OA\Property(property="razon_social", type="array", @OA\Items(type="string", example="La razón social es obligatoria.")),
-     *                 @OA\Property(property="nombre_comercial", type="array", @OA\Items(type="string", example="El nombre comercial es obligatorio.")),
-     *                 @OA\Property(property="email", type="array", @OA\Items(type="string", example="El correo electrónico es obligatorio.")),
-     *                 @OA\Property(property="password", type="array", @OA\Items(type="string", example="La contraseña es obligatoria."))
+     *                 @OA\Property(property="email", type="array",
+     *                     @OA\Items(type="string", example="El correo electrónico debe ser válido.")
+     *                 ),
+     *                 @OA\Property(property="password", type="array",
+     *                     @OA\Items(type="string", example="La contraseña debe tener al menos 8 caracteres.")
+     *                 )
      *             )
      *         )
      *     ),
@@ -86,12 +93,9 @@ class AuthController extends Controller
             'password.required' => 'La contraseña es obligatoria.',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
         ]);
-
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Error en el registro',
-                'errors' => $validator->errors()
-            ], 422, [], JSON_UNESCAPED_UNICODE);
+            // Lanzamos la excepción de validación personalizada
+            throw new RegistrationException("Error al registrar el proveedor. Campos no validados.", $validator->errors());
         }
 
         try {
@@ -118,7 +122,7 @@ class AuthController extends Controller
             DB::commit();
 
             // Crear token de autenticación con Sanctum
-            $token = $user->createToken('ProveedorToken')->plainTextToken;
+            $token = $user->createToken('sanctum')->plainTextToken;
 
             return response()->json([
                 'message' => 'Proveedor registrado correctamente',
@@ -135,7 +139,6 @@ class AuthController extends Controller
             ], 500);
         }
     }
-
 
     /**
      * @OA\Post(
@@ -154,34 +157,59 @@ class AuthController extends Controller
      *         response=200,
      *         description="Login exitoso",
      *         @OA\JsonContent(
-     *             @OA\Property(property="token", type="string", example="eyJ0eXAiOiJKV1QiLCJhbGciOi...")
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Login exitoso."),
+     *             @OA\Property(property="token", type="string", example="eyJ0eXAiOiJKV1QiLCJhbGciOi..."),
+     *             @OA\Property(property="user", type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string", example="Juan Pérez"),
+     *                 @OA\Property(property="email", type="string", format="email", example="juan@example.com")
+     *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=401,
-     *         description="Credenciales inválidas"
+     *         description="Credenciales inválidas",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Credenciales incorrectas."),
+     *             @OA\Property(property="code", type="integer", example=401)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Error en el inicio de sesión."),
+     *             @OA\Property(property="error", type="string", example="Mensaje de excepción"),
+     *             @OA\Property(property="code", type="integer", example=500)
+     *         )
      *     )
      * )
      */
+
     public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
 
-        if (!Auth::attempt($credentials)) {
-            return response()->json(['error' => 'Credenciales incorrectas'], 401);
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            throw new UnauthorizedException("Credenciales incorrectas.");
         }
 
-        // Obtener usuario autenticado
-        $user = Auth::user();
-
-        // Generar token con Sanctum
-        $token = $user->createToken('ProveedorToken')->plainTextToken;
+        $token = $user->createToken('API Token')->plainTextToken;
 
         return response()->json([
-            'message' => 'Login exitoso',
+            'success' => true,
+            'message' => 'Login exitoso.',
             'token' => $token,
             'user' => $user
-        ], 200);
+        ]);
     }
 
     /**
@@ -194,16 +222,24 @@ class AuthController extends Controller
      *         response=200,
      *         description="Usuario autenticado",
      *         @OA\JsonContent(
-     *             @OA\Property(property="id", type="integer", example=1),
-     *             @OA\Property(property="name", type="string", example="Juan Pérez"),
-     *             @OA\Property(property="email", type="string", format="email", example="juan@example.com")
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Usuario autenticado."),
+     *             @OA\Property(property="user", type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string", example="Juan Pérez"),
+     *                 @OA\Property(property="email", type="string", format="email", example="juan@example.com")
+     *             )
      *         )
      *     )
      * )
      */
     public function me(Request $request)
     {
-        return response()->json(['user' => $request->user()->role], 200);
+        return response()->json([
+            'success' => true,
+            'message' => 'Usuario autenticado.',
+            'user' => $request->user()
+        ], 200);
     }
 
     /**
@@ -216,6 +252,7 @@ class AuthController extends Controller
      *         response=200,
      *         description="Sesión cerrada correctamente",
      *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Sesión cerrada correctamente")
      *         )
      *     ),
@@ -223,6 +260,7 @@ class AuthController extends Controller
      *         response=401,
      *         description="No autenticado o sesión no válida",
      *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
      *             @OA\Property(property="message", type="string", example="No autorizado o sesión no válida")
      *         )
      *     )
@@ -230,9 +268,17 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
+        // Verificar si el usuario está autenticado
+        if (!$request->user()) {
+            throw new UnauthorizedException("No autorizado o sesión no válida");
+        }
+
         // Revocar todos los tokens del usuario autenticado
         $request->user()->tokens()->delete();
 
-        return response()->json(['message' => 'Sesión cerrada correctamente'], 200);
+        return response()->json([
+            'success' => true,
+            'message' => 'Sesión cerrada correctamente'
+        ], 200);
     }
 }

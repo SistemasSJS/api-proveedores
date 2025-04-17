@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\UserRoleEnumerate;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProveedorController;
@@ -13,15 +14,18 @@ Route::post('login', [AuthController::class, 'login']);       // Login del prove
 
 
 // Rutas protegidas
-Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
+
     Route::get('me', [AuthController::class, 'me']);  // Obtener datos del proveedor autenticado
 
-    // Rutas de Proveedores
-    Route::apiResource('proveedores', ProveedorController::class);
+    Route::middleware(['role:' . UserRoleEnumerate::ADMIM->value])->group(function () {
+        // Rutas de Proveedores
+        Route::apiResource('proveedores', ProveedorController::class);
 
-    // Rutas de Sucursales
-    Route::apiResource('sucursales', SucursalController::class);
+        // Rutas de Sucursales
+        Route::apiResource('sucursales', SucursalController::class);
 
-    // Rutas de Productos
-    Route::apiResource('productos', ProductoController::class);
+        // Rutas de Productos
+        Route::apiResource('productos', ProductoController::class);
+    });
 });

@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Producto;
+use App\Exceptions\Api\Crud\ResourceNotFoundException;
+use App\Exceptions\Api\Crud\InvalidInputException;
+use App\Exceptions\Api\Crud\DeleteRestrictedException;
+use App\Exceptions\Api\Crud\ConflictException;
 use Illuminate\Http\Request;
 
 /**
@@ -15,7 +19,7 @@ class ProductoController extends Controller
      *     path="/api/productos",
      *     summary="Listar todos los productos",
      *     tags={"Productos"},
-     *     @OA\Response(response=200, description="Lista de productos", @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Producto")))
+     *     @OA\Response(response=200, description="Lista de productos", @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Producto"))),
      * )
      */
     public function index()
@@ -49,6 +53,12 @@ class ProductoController extends Controller
             'proveedor_id' => 'required|exists:proveedores,id',
         ]);
 
+        // Verificar si el producto ya existe para evitar conflictos
+        $existingProducto = Producto::where('nombre', $request->nombre)->first();
+        if ($existingProducto) {
+            throw new ConflictException("El producto con este nombre ya existe.");
+        }
+
         $producto = Producto::create($request->all());
 
         return response()->json($producto->load(['proveedor', 'sucursales']), 201);
@@ -66,7 +76,11 @@ class ProductoController extends Controller
      */
     public function show($id)
     {
-        $producto = Producto::with(['proveedor', 'sucursales'])->findOrFail($id);
+        // Intentar encontrar el producto, si no se encuentra lanzar ResourceNotFoundException
+        $producto = Producto::with(['proveedor', 'sucursales'])->find($id);
+        if (!$producto) {
+            throw new ResourceNotFoundException("Producto no encontrado.");
+        }
         return response()->json($producto);
     }
 
@@ -91,7 +105,13 @@ class ProductoController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $producto = Producto::findOrFail($id);
+        // Verificar que el producto exista
+        $producto = Producto::find($id);
+        if (!$producto) {
+            throw new ResourceNotFoundException("Producto no encontrado.");
+        }
+
+        // Actualizar el producto
         $producto->update($request->all());
 
         return response()->json($producto->load(['proveedor', 'sucursales']));
@@ -109,7 +129,18 @@ class ProductoController extends Controller
      */
     public function destroy($id)
     {
-        $producto = Producto::findOrFail($id);
+        // Verificar que el producto exista
+        $producto = Producto::find($id);
+        if (!$producto) {
+            throw new ResourceNotFoundException("Producto no encontrado.");
+        }
+
+        // Verificar restricciones de eliminación
+        if ($producto->isRestricted()) { // Este es un ejemplo de una posible restricción
+            throw new DeleteRestrictedException("Este recurso no puede eliminarse por restricciones.");
+        }
+
+        // Eliminar el producto
         $producto->delete();
 
         return response()->json(null, 204);

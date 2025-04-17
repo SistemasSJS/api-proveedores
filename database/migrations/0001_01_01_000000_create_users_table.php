@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -18,7 +19,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('role', array_column(UserRoleEnumerate::cases(), 'name'))->default(UserRoleEnumerate::COMMON_USER->value)->index();
+            $table->enum('role', array_column(UserRoleEnumerate::cases(), 'value'))->default(UserRoleEnumerate::COMMON_USER->value)->index();
             $table->rememberToken();
             $table->timestamps();
         });

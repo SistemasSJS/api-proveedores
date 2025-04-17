@@ -117,43 +117,41 @@
                         }
                     },
                     "422": {
-                        "description": "Error de validación",
+                        "description": "Error de validación en el registro",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error_type": {
+                                            "type": "string",
+                                            "example": "registration_error"
+                                        },
                                         "message": {
                                             "type": "string",
-                                            "example": "Error en el registro"
+                                            "example": "Error al registrar el proveedor. Campos no validados."
+                                        },
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 422
                                         },
                                         "errors": {
                                             "properties": {
-                                                "razon_social": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string",
-                                                        "example": "La razón social es obligatoria."
-                                                    }
-                                                },
-                                                "nombre_comercial": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string",
-                                                        "example": "El nombre comercial es obligatorio."
-                                                    }
-                                                },
                                                 "email": {
                                                     "type": "array",
                                                     "items": {
                                                         "type": "string",
-                                                        "example": "El correo electrónico es obligatorio."
+                                                        "example": "El correo electrónico debe ser válido."
                                                     }
                                                 },
                                                 "password": {
                                                     "type": "array",
                                                     "items": {
                                                         "type": "string",
-                                                        "example": "La contraseña es obligatoria."
+                                                        "example": "La contraseña debe tener al menos 8 caracteres."
                                                     }
                                                 }
                                             },
@@ -228,9 +226,35 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Login exitoso."
+                                        },
                                         "token": {
                                             "type": "string",
                                             "example": "eyJ0eXAiOiJKV1QiLCJhbGciOi..."
+                                        },
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Juan Pérez"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "example": "juan@example.com"
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -239,7 +263,56 @@
                         }
                     },
                     "401": {
-                        "description": "Credenciales inválidas"
+                        "description": "Credenciales inválidas",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Credenciales incorrectas."
+                                        },
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 401
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error en el inicio de sesión."
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Mensaje de excepción"
+                                        },
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 500
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -258,18 +331,31 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": 1
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
                                         },
-                                        "name": {
+                                        "message": {
                                             "type": "string",
-                                            "example": "Juan Pérez"
+                                            "example": "Usuario autenticado."
                                         },
-                                        "email": {
-                                            "type": "string",
-                                            "format": "email",
-                                            "example": "juan@example.com"
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Juan Pérez"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "example": "juan@example.com"
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -299,6 +385,10 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
                                         "message": {
                                             "type": "string",
                                             "example": "Sesión cerrada correctamente"
@@ -315,6 +405,10 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
                                         "message": {
                                             "type": "string",
                                             "example": "No autorizado o sesión no válida"
@@ -1172,16 +1266,16 @@
             "description": "CRUD de productos"
         },
         {
+            "name": "Proveedores",
+            "description": "CRUD de proveedores"
+        },
+        {
             "name": "Sucursales",
             "description": "Gestión de sucursales por proveedor"
         },
         {
             "name": "Autenticación",
             "description": "Autenticación"
-        },
-        {
-            "name": "Proveedores",
-            "description": "Proveedores"
         }
     ]
 }

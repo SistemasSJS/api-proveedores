@@ -108,8 +108,8 @@ return [
              * @link https://zircote.github.io/swagger-php/reference/processors.html
              */
             'default_processors_configuration' => [
-            /** Example */
-            /**
+                /** Example */
+                /**
              * 'operationId.hash' => true,
              * 'pathFilter' => [
              * 'tags' => [
@@ -156,7 +156,16 @@ return [
              * @note This option overwrites `paths.excludes`
              * @see \OpenApi\scan
              */
-            'exclude' => [],
+            'exclude' => [
+                app_path('Exceptions/Api/Handler.php'),
+                app_path('Exceptions/Api/BaseApiException.php'),
+                app_path('Exceptions/Api/Shared/FormValidationException.php'),
+                app_path('Exceptions/Api/Traits/TracksRequestData.php'),
+                app_path('Exceptions/.gitkeep'),
+                app_path('Http/Middleware/AdminMiddleware.php'),
+                app_path('Http/Middleware/RoleMiddleware.php'),
+                app_path('Providers/AppServiceProvider.php'),
+            ],
 
             /*
              * Allows to generate specs either for OpenAPI 3.0.0 or OpenAPI 3.1.0.
@@ -214,8 +223,7 @@ return [
                     'name' => 'Authorization', // The name of the header or query parameter to be used.
                     'in' => 'header', // The location of the API key. Valid values are "query" or "header".
                 ],
-                */
-            ],
+                */],
             'security' => [
                 /*
                  * Examples of Securities
@@ -228,8 +236,7 @@ return [
                     ],
 
                     'passport' => []
-                    */
-                ],
+                    */],
             ],
         ],
 
