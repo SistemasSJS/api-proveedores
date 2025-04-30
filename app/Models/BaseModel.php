@@ -1,19 +1,28 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 
+abstract class BaseModel extends Model
+{
+    public $timestamps = true;
 
-abstract class BaseModel extends Model {
-   public $timestamps = true;
+    protected $hidden = [
+        "created_at",
+        "updated_at"
+    ];
 
-   
-    public static function filter($query, $filters)
+    public function scopeFilter($query, array $filters)
     {
-        foreach ($filters as $filter => $value) {
-            if (method_exists(self::class, $filter)) {
-                self::$filter($query, $value);
+        foreach ($filters as $key => $value) {
+            $method = 'filter' . ucfirst($key);
+
+            if (method_exists($this, $method)) {
+                $this->{$method}($query, $value);
             }
         }
+
+        return $query;
     }
-} 
+}

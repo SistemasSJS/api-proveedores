@@ -5,26 +5,34 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('proveedores', function (Blueprint $table) {
             $table->id();
-            $table->string('razon_social')->unique();
-            $table->string('nombre_comercial')->unique();
-            $table->string('email')->unique();
+            $table->string('logo')->nullable();
+            $table->string('nombre_comercial');
+            $table->string('razon_social');
+            $table->string('rfc')->unique();
+            $table->string('tipo_persona')->nullable();
+            $table->string('email')->nullable();
             $table->string('telefono')->nullable();
-            $table->string('direccion')->nullable();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Relación con Users
+            $table->string('sitio_web')->nullable();
+            $table->string('direccion_fiscal')->nullable();
+            $table->string('estado')->nullable();
+            $table->string('municipio')->nullable();
+            $table->string('codigo_postal')->nullable();
+            $table->string('contacto_nombre')->nullable();
+            $table->string('contacto_telefono')->nullable();
+            $table->string('contacto_email')->nullable();
+            $table->string('estatus')->default('pendiente');
+            $table->timestamp('fecha_registro')->nullable();
+            $table->foreignId('validado_por')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Relación con Users
+            $table->text('notas')->nullable();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('proveedores');

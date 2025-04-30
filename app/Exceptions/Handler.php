@@ -5,12 +5,15 @@ namespace App\Exceptions;
 use Throwable;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use App\Exceptions\Api\BaseApiException;
+use App\Traits\ApiResponse;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Handler extends ExceptionHandler
 {
+    use ApiResponse;
+
     protected $dontReport = [];
 
     protected $dontFlash = [
@@ -25,45 +28,32 @@ class Handler extends ExceptionHandler
         });
 
         $this->renderable(function (AuthenticationException $e, $request) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No autenticado.',
-                'code' => 401
-            ], 401);
+            return $this->error('No autenticado.', null, 401);
         });
 
         $this->renderable(function (ValidationException $e, $request) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Datos inválidos.',
-                'errors' => $e->errors(),
-                'code' => 422
-            ], 422);
+            return $this->error('Datos inválidos.', $e->errors(), 422);
         });
 
         $this->renderable(function (NotFoundHttpException $e, $request) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Ruta no encontrada.',
-                'code' => 404
-            ], 404);
+            return $this->error('Ruta no encontrada.', null, 404);
         });
 
         $this->renderable(function (Throwable $e, $request) {
             if (config('app.debug')) {
                 return response()->json([
-                    'success' => false,
+                    'status' => 'error',
+                    'code' => $e->getCode() ?: 500,
                     'message' => $e->getMessage(),
-                    'trace' => $e->getTrace(),
-                    'code' => $e->getCode() ?: 500
+                    'data' => null,
+                    'errors' => [
+                        'exception' => get_class($e),
+                        'trace' => $e->getTrace()
+                    ],
                 ], 500);
             }
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Error interno del servidor.',
-                'code' => 500
-            ], 500);
+            return $this->error('Error interno del servidor.', null, 500);
         });
     }
 }

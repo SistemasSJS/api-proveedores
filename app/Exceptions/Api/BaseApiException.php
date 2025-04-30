@@ -7,10 +7,11 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Exceptions\Api\Traits\TracksRequestData;
+use App\Traits\ApiResponse;
 
 abstract class BaseApiException extends Exception
 {
-    use TracksRequestData;
+    use TracksRequestData, ApiResponse;
 
     protected int $statusCode = 500;
     protected string $errorType = 'error';
@@ -34,11 +35,15 @@ abstract class BaseApiException extends Exception
 
     public function render(Request $request): JsonResponse
     {
-        return response()->json(array_merge([
-            'success' => false,
-            'error_type' => $this->errorType,
-            'message' => $this->getMessage(),
-            'code' => $this->statusCode,
-        ], $this->additionalData), $this->statusCode);
+        return $this->error(
+            message: $this->getMessage(),
+            errors: array_merge([
+                'success' => false,
+                'error_type' => $this->errorType,
+                'message' => $this->getMessage(),
+                'code' => $this->statusCode,
+            ], $this->additionalData),
+            code: 201
+        );
     }
 }

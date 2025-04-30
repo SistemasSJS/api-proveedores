@@ -8,6 +8,7 @@ use App\Exceptions\Api\Crud\InvalidInputException;
 use App\Exceptions\Api\Crud\DeleteRestrictedException;
 use App\Exceptions\Api\Crud\ConflictException;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 /**
  * @OA\Tag(name="Productos", description="CRUD de productos")
@@ -17,67 +18,111 @@ class ProductoController extends Controller
     /**
      * @OA\Get(
      *     path="/api/productos",
-     *     summary="Listar todos los productos",
-     *     tags={"Productos"},
-     *     @OA\Response(response=200, description="Lista de productos", @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Producto"))),
+     *     summary="Listar productos",
+     *     operationId="getProductos",
+     *     tags={"Producto"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Lista de productos",
+     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Producto"))
+     *     )
      * )
      */
     public function index()
     {
-        return Producto::with(['proveedor', 'sucursales'])->get();
+        return Producto::with(["unidad_medida", "grupo", "imagenes", "proveedor"])->get();
     }
 
     /**
      * @OA\Post(
      *     path="/api/productos",
-     *     summary="Crear un producto",
-     *     tags={"Productos"},
+     *     summary="Crear un nuevo producto",
+     *     operationId="storeProducto",
+     *     tags={"Producto"},
+     *     security={{"sanctum":{}}},
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(
-     *             required={"nombre", "proveedor_id"},
-     *             @OA\Property(property="nombre", type="string", example="Producto A"),
-     *             @OA\Property(property="email", type="string", example="contacto@producto.com"),
-     *             @OA\Property(property="telefono", type="string", example="555-123-4567"),
-     *             @OA\Property(property="direccion", type="string", example="Calle Falsa 123"),
-     *             @OA\Property(property="proveedor_id", type="integer", example=1)
-     *         )
+     *         @OA\JsonContent(ref="#/components/schemas/Producto")
      *     ),
-     *     @OA\Response(response=201, description="Producto creado", @OA\JsonContent(ref="#/components/schemas/Producto"))
+     *     @OA\Response(
+     *         response=201,
+     *         description="Producto creado exitosamente",
+     *         @OA\JsonContent(ref="#/components/schemas/Producto")
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Entrada inválida",
+     *         @OA\JsonContent(ref="#/components/schemas/InvalidInputException")
+     *     ),
+     *     @OA\Response(
+     *         response=409,
+     *         description="Conflicto con el estado actual del recurso",
+     *         @OA\JsonContent(ref="#/components/schemas/ConflictException")
+     *     )
      * )
      */
     public function store(Request $request)
     {
         $request->validate([
-            'nombre' => 'required|string|max:255',
             'proveedor_id' => 'required|exists:proveedores,id',
+            'nombre' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('productos')->where(function ($query) use ($request) {
+                    return $query->where('proveedor_id', $request->proveedor_id);
+                }),
+            ],
+            'descripcion' => 'nullable|string',
+            'codigo_interno' => [
+                'required',
+                'string',
+                Rule::unique('productos')->where(function ($query) use ($request) {
+                    return $query->where('proveedor_id', $request->proveedor_id);
+                }),
+            ],
+            'precio_unitario' => 'required|numeric|min:0',
+            'disponible' => 'required|boolean',
+            'unidad_medida_id' => 'required|exists:unidad_medidas,id',
+            'grupo_id' => 'required|exists:grupos,id',
         ]);
-
-        // Verificar si el producto ya existe para evitar conflictos
-        $existingProducto = Producto::where('nombre', $request->nombre)->first();
-        if ($existingProducto) {
-            throw new ConflictException("El producto con este nombre ya existe.");
-        }
 
         $producto = Producto::create($request->all());
 
-        return response()->json($producto->load(['proveedor', 'sucursales']), 201);
+        return response()->json($producto->load(["unidad_medida", "grupo", "imagenes", "proveedor"]), 201);
     }
 
     /**
      * @OA\Get(
      *     path="/api/productos/{id}",
-     *     summary="Obtener un producto",
-     *     tags={"Productos"},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=200, description="Datos del producto", @OA\JsonContent(ref="#/components/schemas/Producto")),
-     *     @OA\Response(response=404, description="Producto no encontrado")
+     *     summary="Obtener un producto específico",
+     *     operationId="getProducto",
+     *     tags={"Producto"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID del producto",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Producto encontrado",
+     *         @OA\JsonContent(ref="#/components/schemas/Producto")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Producto no encontrado",
+     *         @OA\JsonContent(ref="#/components/schemas/ResourceNotFoundException")
+     *     )
      * )
      */
     public function show($id)
     {
         // Intentar encontrar el producto, si no se encuentra lanzar ResourceNotFoundException
-        $producto = Producto::with(['proveedor', 'sucursales'])->find($id);
+        $producto = Producto::with(["unidad_medida", "grupo", "imagenes", "proveedor"])->find($id);
         if (!$producto) {
             throw new ResourceNotFoundException("Producto no encontrado.");
         }
@@ -88,19 +133,40 @@ class ProductoController extends Controller
      * @OA\Put(
      *     path="/api/productos/{id}",
      *     summary="Actualizar un producto",
-     *     tags={"Productos"},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\RequestBody(
-     *         @OA\JsonContent(
-     *             @OA\Property(property="nombre", type="string", example="Producto A"),
-     *             @OA\Property(property="email", type="string", example="contacto@producto.com"),
-     *             @OA\Property(property="telefono", type="string", example="555-123-4567"),
-     *             @OA\Property(property="direccion", type="string", example="Calle Falsa 123"),
-     *             @OA\Property(property="proveedor_id", type="integer", example=1)
-     *         )
+     *     operationId="updateProducto",
+     *     tags={"Producto"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID del producto",
+     *         @OA\Schema(type="integer")
      *     ),
-     *     @OA\Response(response=200, description="Producto actualizado", @OA\JsonContent(ref="#/components/schemas/Producto")),
-     *     @OA\Response(response=404, description="Producto no encontrado")
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/Producto")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Producto actualizado exitosamente",
+     *         @OA\JsonContent(ref="#/components/schemas/Producto")
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Entrada inválida",
+     *         @OA\JsonContent(ref="#/components/schemas/InvalidInputException")
+     *     ),
+     *     @OA\Response(
+     *         response=409,
+     *         description="Conflicto con el estado actual del recurso",
+     *         @OA\JsonContent(ref="#/components/schemas/ConflictException")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Producto no encontrado",
+     *         @OA\JsonContent(ref="#/components/schemas/ResourceNotFoundException")
+     *     )
      * )
      */
     public function update(Request $request, $id)
@@ -114,20 +180,39 @@ class ProductoController extends Controller
         // Actualizar el producto
         $producto->update($request->all());
 
-        return response()->json($producto->load(['proveedor', 'sucursales']));
+        return response()->json($producto->load(["unidad_medida", "grupo", "imagenes", "proveedor"]), 200);
     }
 
     /**
      * @OA\Delete(
      *     path="/api/productos/{id}",
      *     summary="Eliminar un producto",
-     *     tags={"Productos"},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=204, description="Producto eliminado"),
-     *     @OA\Response(response=404, description="Producto no encontrado")
+     *     operationId="deleteProducto",
+     *     tags={"Producto"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID del producto",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Producto eliminado exitosamente"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="No se puede eliminar este producto por restricciones",
+     *         @OA\JsonContent(ref="#/components/schemas/DeleteRestrictedException")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Producto no encontrado",
+     *         @OA\JsonContent(ref="#/components/schemas/ResourceNotFoundException")
+     *     )
      * )
-     */
-    public function destroy($id)
+     */    public function destroy($id)
     {
         // Verificar que el producto exista
         $producto = Producto::find($id);

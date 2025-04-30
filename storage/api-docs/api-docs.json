@@ -31,8 +31,11 @@
                                 "required": [
                                     "razon_social",
                                     "nombre_comercial",
+                                    "rfc",
                                     "email",
-                                    "password"
+                                    "password",
+                                    "telefono",
+                                    "direccion"
                                 ],
                                 "properties": {
                                     "razon_social": {
@@ -43,6 +46,10 @@
                                         "type": "string",
                                         "example": "Proveedor Comercial"
                                     },
+                                    "rfc": {
+                                        "type": "string",
+                                        "example": "QUMA470929F37"
+                                    },
                                     "email": {
                                         "type": "string",
                                         "format": "email",
@@ -52,6 +59,14 @@
                                         "type": "string",
                                         "format": "password",
                                         "example": "contraseñaSegura123"
+                                    },
+                                    "telefono": {
+                                        "type": "string",
+                                        "example": "1234567890"
+                                    },
+                                    "direccion": {
+                                        "type": "string",
+                                        "example": "Av. Ejemplo 123, Ciudad, Estado"
                                     }
                                 },
                                 "type": "object"
@@ -102,6 +117,14 @@
                                                     "type": "string",
                                                     "format": "email",
                                                     "example": "proveedor@empresa.com"
+                                                },
+                                                "telefono": {
+                                                    "type": "string",
+                                                    "example": "1234567890"
+                                                },
+                                                "direccion": {
+                                                    "type": "string",
+                                                    "example": "Av. Ejemplo 123, Ciudad, Estado"
                                                 }
                                             },
                                             "type": "object"
@@ -427,13 +450,380 @@
                 ]
             }
         },
+        "/api/grupos": {
+            "get": {
+                "tags": [
+                    "Grupo"
+                ],
+                "summary": "Listar todos los grupos con filtros opcionales y paginación",
+                "operationId": "listarGrupos",
+                "parameters": [
+                    {
+                        "name": "nombre",
+                        "in": "query",
+                        "description": "Filtrar por nombre",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "estatus",
+                        "in": "query",
+                        "description": "Filtrar por estatus",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número de página",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado paginado de grupos"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Grupo"
+                ],
+                "summary": "Crear un grupo",
+                "operationId": "crearGrupo",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string"
+                                    },
+                                    "descripcion": {
+                                        "type": "string"
+                                    },
+                                    "estatus": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Grupo creado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/grupos/{id}": {
+            "get": {
+                "tags": [
+                    "Grupo"
+                ],
+                "summary": "Obtener un grupo por ID",
+                "operationId": "mostrarGrupo",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Grupo encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Grupo"
+                ],
+                "summary": "Actualizar grupo",
+                "operationId": "actualizarGrupo",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string"
+                                    },
+                                    "descripcion": {
+                                        "type": "string"
+                                    },
+                                    "estatus": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Grupo actualizado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Grupo"
+                ],
+                "summary": "Eliminar grupo",
+                "operationId": "eliminarGrupo",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Grupo eliminado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/imagenes": {
+            "get": {
+                "tags": [
+                    "Imagen"
+                ],
+                "summary": "Listar todas las imágenes con filtros opcionales y paginación",
+                "operationId": "listarImagenes",
+                "parameters": [
+                    {
+                        "name": "producto_id",
+                        "in": "query",
+                        "description": "Filtrar por producto_id",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número de página",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado paginado de imágenes"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Imagen"
+                ],
+                "summary": "Crear una imagen",
+                "operationId": "crearImagen",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "url",
+                                    "producto_id"
+                                ],
+                                "properties": {
+                                    "url": {
+                                        "type": "string",
+                                        "format": "url"
+                                    },
+                                    "producto_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Imagen creada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/imagenes/{id}": {
+            "get": {
+                "tags": [
+                    "Imagen"
+                ],
+                "summary": "Obtener una imagen por ID",
+                "operationId": "mostrarImagen",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Imagen encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Imagen"
+                ],
+                "summary": "Actualizar imagen",
+                "operationId": "actualizarImagen",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "url": {
+                                        "type": "string",
+                                        "format": "url"
+                                    },
+                                    "producto_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Imagen actualizada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Imagen"
+                ],
+                "summary": "Eliminar imagen",
+                "operationId": "eliminarImagen",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Imagen eliminada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/productos": {
             "get": {
                 "tags": [
-                    "Productos"
+                    "Producto"
                 ],
-                "summary": "Listar todos los productos",
-                "operationId": "496dc08306524d77f18d124d1d6838aa",
+                "summary": "Listar productos",
+                "operationId": "getProductos",
                 "responses": {
                     "200": {
                         "description": "Lista de productos",
@@ -448,53 +838,32 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             },
             "post": {
                 "tags": [
-                    "Productos"
+                    "Producto"
                 ],
-                "summary": "Crear un producto",
-                "operationId": "48b59f126c849beb4d4de4ff83b7945f",
+                "summary": "Crear un nuevo producto",
+                "operationId": "storeProducto",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "nombre",
-                                    "proveedor_id"
-                                ],
-                                "properties": {
-                                    "nombre": {
-                                        "type": "string",
-                                        "example": "Producto A"
-                                    },
-                                    "email": {
-                                        "type": "string",
-                                        "example": "contacto@producto.com"
-                                    },
-                                    "telefono": {
-                                        "type": "string",
-                                        "example": "555-123-4567"
-                                    },
-                                    "direccion": {
-                                        "type": "string",
-                                        "example": "Calle Falsa 123"
-                                    },
-                                    "proveedor_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    }
-                                },
-                                "type": "object"
+                                "$ref": "#/components/schemas/Producto"
                             }
                         }
                     }
                 },
                 "responses": {
                     "201": {
-                        "description": "Producto creado",
+                        "description": "Producto creado exitosamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -502,21 +871,47 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "description": "Entrada inválida",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InvalidInputException"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflicto con el estado actual del recurso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ConflictException"
+                                }
+                            }
+                        }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         },
         "/api/productos/{id}": {
             "get": {
                 "tags": [
-                    "Productos"
+                    "Producto"
                 ],
-                "summary": "Obtener un producto",
-                "operationId": "672fde814ef8716ee902835cc96ae595",
+                "summary": "Obtener un producto específico",
+                "operationId": "getProducto",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID del producto",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -525,7 +920,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Datos del producto",
+                        "description": "Producto encontrado",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -535,134 +930,14 @@
                         }
                     },
                     "404": {
-                        "description": "Producto no encontrado"
-                    }
-                }
-            },
-            "put": {
-                "tags": [
-                    "Productos"
-                ],
-                "summary": "Actualizar un producto",
-                "operationId": "20b20d8e59992eb88abad7dcef3db6d7",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "nombre": {
-                                        "type": "string",
-                                        "example": "Producto A"
-                                    },
-                                    "email": {
-                                        "type": "string",
-                                        "example": "contacto@producto.com"
-                                    },
-                                    "telefono": {
-                                        "type": "string",
-                                        "example": "555-123-4567"
-                                    },
-                                    "direccion": {
-                                        "type": "string",
-                                        "example": "Calle Falsa 123"
-                                    },
-                                    "proveedor_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Producto actualizado",
+                        "description": "Producto no encontrado",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Producto"
+                                    "$ref": "#/components/schemas/ResourceNotFoundException"
                                 }
                             }
                         }
-                    },
-                    "404": {
-                        "description": "Producto no encontrado"
-                    }
-                }
-            },
-            "delete": {
-                "tags": [
-                    "Productos"
-                ],
-                "summary": "Eliminar un producto",
-                "operationId": "4c0c7680428675134afd4d793f934f67",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "Producto eliminado"
-                    },
-                    "404": {
-                        "description": "Producto no encontrado"
-                    }
-                }
-            }
-        },
-        "/api/proveedores/{id}": {
-            "get": {
-                "tags": [
-                    "Proveedores"
-                ],
-                "summary": "Mostrar perfil del proveedor autenticado",
-                "description": "Devuelve los datos de un proveedor específico solo si pertenece al usuario autenticado.",
-                "operationId": "getProveedorById",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID del proveedor",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Proveedor encontrado",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Proveedor"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "No autorizado"
-                    },
-                    "404": {
-                        "description": "Proveedor no encontrado"
                     }
                 },
                 "security": [
@@ -673,16 +948,15 @@
             },
             "put": {
                 "tags": [
-                    "Proveedores"
+                    "Producto"
                 ],
-                "summary": "Actualizar perfil del proveedor",
-                "description": "Actualiza los datos del proveedor si pertenece al usuario autenticado.",
-                "operationId": "updateProveedor",
+                "summary": "Actualizar un producto",
+                "operationId": "updateProducto",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "ID del proveedor",
+                        "description": "ID del producto",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -694,56 +968,51 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "razon_social",
-                                    "nombre_comercial",
-                                    "email"
-                                ],
-                                "properties": {
-                                    "razon_social": {
-                                        "type": "string",
-                                        "example": "Proveedor S.A."
-                                    },
-                                    "nombre_comercial": {
-                                        "type": "string",
-                                        "example": "ProveedorTech"
-                                    },
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "contacto@proveedor.com"
-                                    }
-                                },
-                                "type": "object"
+                                "$ref": "#/components/schemas/Producto"
                             }
                         }
                     }
                 },
                 "responses": {
                     "200": {
-                        "description": "Proveedor actualizado correctamente",
+                        "description": "Producto actualizado exitosamente",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Proveedor actualizado correctamente"
-                                        },
-                                        "proveedor": {
-                                            "$ref": "#/components/schemas/Proveedor"
-                                        }
-                                    },
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/Producto"
                                 }
                             }
                         }
                     },
-                    "403": {
-                        "description": "No autorizado"
-                    },
                     "422": {
-                        "description": "Error de validación"
+                        "description": "Entrada inválida",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InvalidInputException"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflicto con el estado actual del recurso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ConflictException"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Producto no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResourceNotFoundException"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -754,16 +1023,15 @@
             },
             "delete": {
                 "tags": [
-                    "Proveedores"
+                    "Producto"
                 ],
-                "summary": "Eliminar proveedor",
-                "description": "Elimina un proveedor si pertenece al usuario autenticado.",
-                "operationId": "eliminarProveedor",
+                "summary": "Eliminar un producto",
+                "operationId": "deleteProducto",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "ID del proveedor",
+                        "description": "ID del producto",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -772,26 +1040,27 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Proveedor eliminado correctamente",
+                        "description": "Producto eliminado exitosamente"
+                    },
+                    "403": {
+                        "description": "No se puede eliminar este producto por restricciones",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Proveedor eliminado correctamente"
-                                        }
-                                    },
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/DeleteRestrictedException"
                                 }
                             }
                         }
                     },
-                    "403": {
-                        "description": "No autorizado"
-                    },
                     "404": {
-                        "description": "Proveedor no encontrado"
+                        "description": "Producto no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResourceNotFoundException"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -804,24 +1073,39 @@
         "/api/proveedores": {
             "get": {
                 "tags": [
-                    "Proveedores"
+                    "Proveedor"
                 ],
-                "summary": "Listar proveedores del usuario autenticado",
-                "description": "Devuelve una lista de todos los proveedores asociados al usuario autenticado.",
+                "summary": "Listar todos los proveedores con filtros opcionales y paginación",
                 "operationId": "listarProveedores",
+                "parameters": [
+                    {
+                        "name": "razon_social",
+                        "in": "query",
+                        "description": "Filtrar por razon social",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "nombre_comercial",
+                        "in": "query",
+                        "description": "Filtrar por nombre comercial",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "description": "Filtrar por email",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Lista de proveedores",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Proveedor"
-                                    }
-                                }
-                            }
-                        }
+                        "description": "Listado paginado de proveedores"
                     }
                 },
                 "security": [
@@ -832,10 +1116,9 @@
             },
             "post": {
                 "tags": [
-                    "Proveedores"
+                    "Proveedor"
                 ],
-                "summary": "Crear un nuevo proveedor",
-                "description": "Registra un proveedor asociado al usuario autenticado.",
+                "summary": "Crear un proveedor",
                 "operationId": "crearProveedor",
                 "requestBody": {
                     "required": true,
@@ -843,23 +1126,22 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "razon_social",
-                                    "nombre_comercial",
-                                    "email"
+                                    "nombre",
+                                    "rfc"
                                 ],
                                 "properties": {
-                                    "razon_social": {
-                                        "type": "string",
-                                        "example": "Proveedor S.A."
+                                    "nombre": {
+                                        "type": "string"
                                     },
-                                    "nombre_comercial": {
-                                        "type": "string",
-                                        "example": "ProveedorTech"
+                                    "rfc": {
+                                        "type": "string"
                                     },
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "proveedor@email.com"
+                                    "telefono": {
+                                        "type": "string"
+                                    },
+                                    "logo": {
+                                        "description": "Logo del proveedor (jpg, png)",
+                                        "type": "file"
                                     }
                                 },
                                 "type": "object"
@@ -869,17 +1151,196 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Proveedor creado exitosamente",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Proveedor"
-                                }
+                        "description": "Proveedor creado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/proveedores/{id}": {
+            "get": {
+                "tags": [
+                    "Proveedor"
+                ],
+                "summary": "Obtener un proveedor por ID",
+                "operationId": "mostrarProveedor",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Proveedor encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Proveedor"
+                ],
+                "summary": "Actualizar proveedor",
+                "operationId": "actualizarProveedor",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string"
+                                    },
+                                    "rfc": {
+                                        "type": "string"
+                                    },
+                                    "telefono": {
+                                        "type": "string"
+                                    },
+                                    "logo": {
+                                        "description": "Logo del proveedor (jpg, png)",
+                                        "type": "file"
+                                    }
+                                },
+                                "type": "object"
                             }
                         }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Proveedor actualizado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Proveedor"
+                ],
+                "summary": "Eliminar proveedor",
+                "operationId": "eliminarProveedor",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Proveedor eliminado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/proveedores/{id}/productos": {
+            "get": {
+                "tags": [
+                    "Proveedor"
+                ],
+                "summary": "Listar productos de un proveedor con filtros",
+                "operationId": "productosPorProveedor",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
                     },
-                    "422": {
-                        "description": "Datos inválidos"
+                    {
+                        "name": "nombre",
+                        "in": "query",
+                        "description": "Filtrar por nombre de producto",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "categoria",
+                        "in": "query",
+                        "description": "Filtrar por categoría",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado de productos del proveedor"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/proveedores/{id}/sucursales": {
+            "get": {
+                "tags": [
+                    "Proveedor"
+                ],
+                "summary": "Listar sucursales de un proveedor con filtros",
+                "operationId": "sucursalesPorProveedor",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "nombre",
+                        "in": "query",
+                        "description": "Filtrar por nombre de sucursal",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado de sucursales del proveedor"
                     }
                 },
                 "security": [
@@ -1116,13 +1577,651 @@
                     }
                 }
             }
+        },
+        "/api/unidades-medida": {
+            "get": {
+                "tags": [
+                    "UnidadMedida"
+                ],
+                "summary": "Listar todas las unidades de medida con filtros opcionales y paginación",
+                "operationId": "listarUnidadesMedida",
+                "parameters": [
+                    {
+                        "name": "nombre",
+                        "in": "query",
+                        "description": "Filtrar por nombre",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número de página",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado paginado de unidades de medida"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "UnidadMedida"
+                ],
+                "summary": "Crear una unidad de medida",
+                "operationId": "crearUnidadMedida",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Unidad de medida creada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/unidades-medida/{id}": {
+            "get": {
+                "tags": [
+                    "UnidadMedida"
+                ],
+                "summary": "Obtener una unidad de medida por ID",
+                "operationId": "mostrarUnidadMedida",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Unidad de medida encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "UnidadMedida"
+                ],
+                "summary": "Actualizar unidad de medida",
+                "operationId": "actualizarUnidadMedida",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Unidad de medida actualizada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "UnidadMedida"
+                ],
+                "summary": "Eliminar unidad de medida",
+                "operationId": "eliminarUnidadMedida",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Unidad de medida eliminada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/users": {
+            "get": {
+                "tags": [
+                    "Usuario"
+                ],
+                "summary": "Listar todos los usuarios con filtros opcionales y paginación",
+                "operationId": "listarUsuarios",
+                "parameters": [
+                    {
+                        "name": "nombre",
+                        "in": "query",
+                        "description": "Filtrar por nombre",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "description": "Filtrar por email",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "fecha_inicio",
+                        "in": "query",
+                        "description": "Filtrar por fecha de inicio",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "fecha_fin",
+                        "in": "query",
+                        "description": "Filtrar por fecha de fin",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número de página",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado paginado de usuarios"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Usuario"
+                ],
+                "summary": "Crear un usuario",
+                "operationId": "crearUsuario",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuario creado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/users/{id}": {
+            "get": {
+                "tags": [
+                    "Usuario"
+                ],
+                "summary": "Obtener un usuario por ID",
+                "operationId": "mostrarUsuario",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuario encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Usuario"
+                ],
+                "summary": "Actualizar usuario",
+                "operationId": "actualizarUsuario",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Usuario actualizado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Usuario"
+                ],
+                "summary": "Eliminar usuario",
+                "operationId": "eliminarUsuario",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Usuario eliminado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
         }
     },
     "components": {
         "schemas": {
+            "AccountDisabledException": {
+                "title": "Cuenta deshabilitada (403)",
+                "description": "Se lanza cuando una cuenta está deshabilitada.",
+                "required": [
+                    "message",
+                    "errorType"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "La cuenta está deshabilitada."
+                    },
+                    "errorType": {
+                        "type": "string",
+                        "example": "account_disabled"
+                    }
+                },
+                "type": "object"
+            },
+            "InvalidCredentialsException": {
+                "title": "Credenciales inválidas (401)",
+                "description": "Se lanza cuando las credenciales del usuario no son válidas.",
+                "required": [
+                    "message",
+                    "errorType"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Credenciales inválidas."
+                    },
+                    "errorType": {
+                        "type": "string",
+                        "example": "invalid_credentials"
+                    }
+                },
+                "type": "object"
+            },
+            "RegistrationException": {
+                "title": "Error en el registro (422)",
+                "description": "Se lanza cuando hay un error en el proceso de registro.",
+                "required": [
+                    "message",
+                    "errorType",
+                    "errors"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Error en el registro"
+                    },
+                    "errorType": {
+                        "type": "string",
+                        "example": "registration_error"
+                    },
+                    "errors": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "El campo correo es obligatorio",
+                            "El campo contraseña debe tener al menos 8 caracteres"
+                        ]
+                    }
+                },
+                "type": "object"
+            },
+            "UnauthorizedException": {
+                "title": "Acceso no autorizado (401)",
+                "description": "Se lanza cuando el acceso está prohibido por no tener los permisos necesarios.",
+                "required": [
+                    "message",
+                    "errorType"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Acceso no autorizado."
+                    },
+                    "errorType": {
+                        "type": "string",
+                        "example": "unauthorized"
+                    }
+                },
+                "type": "object"
+            },
+            "ConflictException": {
+                "title": "Error de Conflicto (409)",
+                "description": "Se lanza cuando hay un conflicto con el estado actual del recurso.",
+                "required": [
+                    "message",
+                    "errorType"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Conflicto con el estado actual del recurso."
+                    },
+                    "errorType": {
+                        "type": "string",
+                        "example": "conflict"
+                    }
+                },
+                "type": "object"
+            },
+            "DeleteRestrictedException": {
+                "title": "Error por restricción de eliminación (403)",
+                "description": "Se lanza cuando no se puede eliminar un recurso debido a restricciones.",
+                "required": [
+                    "message",
+                    "errorType"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Este recurso no puede eliminarse por restricciones."
+                    },
+                    "errorType": {
+                        "type": "string",
+                        "example": "delete_restricted"
+                    }
+                },
+                "type": "object"
+            },
+            "InvalidInputException": {
+                "title": "Entrada inválida (422)",
+                "description": "Se lanza cuando la entrada del usuario no cumple con los requisitos.",
+                "required": [
+                    "message",
+                    "errorType"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Entrada inválida."
+                    },
+                    "errorType": {
+                        "type": "string",
+                        "example": "invalid_input"
+                    }
+                },
+                "type": "object"
+            },
+            "ResourceNotFoundException": {
+                "title": "Recurso no encontrado (404)",
+                "description": "Se lanza cuando el recurso solicitado no existe en el sistema.",
+                "required": [
+                    "message",
+                    "errorType"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Recurso no encontrado."
+                    },
+                    "errorType": {
+                        "type": "string",
+                        "example": "resource_not_found"
+                    }
+                },
+                "type": "object"
+            },
+            "FormValidationException": {
+                "title": "Error de validación de formulario (422)",
+                "description": "Se lanza cuando los datos enviados en el formulario no son válidos.",
+                "required": [
+                    "message",
+                    "errorType",
+                    "errors"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Datos de formulario inválidos."
+                    },
+                    "errorType": {
+                        "type": "string",
+                        "example": "validation_error"
+                    },
+                    "errors": {
+                        "description": "Errores específicos en el formulario",
+                        "type": "object",
+                        "additionalProperties": [
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "property": null
+                            }
+                        ]
+                    }
+                },
+                "type": "object"
+            },
+            "Grupo": {
+                "required": [
+                    "nombre"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "nombre": {
+                        "type": "string",
+                        "example": "Cementos"
+                    },
+                    "descripcion": {
+                        "type": "string",
+                        "example": "Productos relacionados con cementos y derivados"
+                    },
+                    "estatus": {
+                        "type": "string",
+                        "example": "activo"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Imagen": {
+                "required": [
+                    "url",
+                    "producto_id"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "producto_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "url": {
+                        "type": "string",
+                        "format": "url",
+                        "example": "https://miapp.com/storage/productos/1.jpg"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
             "Producto": {
-                "title": "Producto",
-                "description": "Modelo de producto que pertenece a un proveedor y puede estar en muchas sucursales",
                 "required": [
                     "nombre",
                     "proveedor_id"
@@ -1134,119 +2233,216 @@
                     },
                     "nombre": {
                         "type": "string",
-                        "example": "Producto A"
+                        "example": "Cemento gris 50kg"
                     },
-                    "email": {
+                    "descripcion": {
                         "type": "string",
-                        "example": "contacto@producto.com"
+                        "example": "Saco de cemento gris para construcción"
                     },
-                    "telefono": {
+                    "codigo_interno": {
                         "type": "string",
-                        "example": "555-123-4567"
+                        "example": "CMG-50"
                     },
-                    "direccion": {
-                        "type": "string",
-                        "example": "Calle Falsa 123, Ciudad"
+                    "precio_unitario": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 180.5
+                    },
+                    "disponible": {
+                        "type": "boolean",
+                        "example": true
                     },
                     "proveedor_id": {
                         "type": "integer",
                         "example": 2
                     },
+                    "unidad_medida_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "grupo_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
                     "created_at": {
                         "type": "string",
-                        "format": "date-time",
-                        "example": "2024-01-01T00:00:00Z"
+                        "format": "date-time"
                     },
                     "updated_at": {
                         "type": "string",
-                        "format": "date-time",
-                        "example": "2024-01-01T00:00:00Z"
+                        "format": "date-time"
                     }
                 },
                 "type": "object"
             },
             "Proveedor": {
                 "title": "Proveedor",
-                "description": "Modelo del proveedor",
+                "description": "Modelo de proveedor en el sistema.",
                 "required": [
+                    "nombre",
                     "razon_social",
-                    "nombre_comercial",
-                    "email"
+                    "rfc"
                 ],
                 "properties": {
+                    "logo": {
+                        "description": "Ruta al logo del proveedor",
+                        "type": "string",
+                        "example": "logos/materiales-del-pacifico.png"
+                    },
                     "id": {
+                        "description": "ID del proveedor",
                         "type": "integer",
                         "example": 1
                     },
-                    "razon_social": {
-                        "type": "string",
-                        "example": "Proveedor S.A."
-                    },
                     "nombre_comercial": {
+                        "description": "Nombre del proveedor",
                         "type": "string",
-                        "example": "ProveedorTech"
+                        "example": "Materiales del Pacífico S.A. de C.V."
                     },
-                    "email": {
+                    "rfc": {
+                        "description": "RFC del proveedor",
                         "type": "string",
-                        "example": "proveedor@email.com"
+                        "example": "MAPC800101ABC"
                     },
-                    "user_id": {
+                    "razon_social": {
+                        "description": "Razón social del proveedor",
+                        "type": "string",
+                        "example": "Materiales del Pacífico"
+                    },
+                    "telefono": {
+                        "description": "Teléfono del proveedor",
+                        "type": "string",
+                        "example": "6679876543"
+                    },
+                    "correo": {
+                        "description": "Correo electrónico del proveedor",
+                        "type": "string",
+                        "example": "ventas@materialespacifico.mx"
+                    },
+                    "estado": {
+                        "description": "Estado donde se encuentra el proveedor",
+                        "type": "string",
+                        "example": "Sinaloa"
+                    },
+                    "municipio": {
+                        "description": "Municipio donde se encuentra el proveedor",
+                        "type": "string",
+                        "example": "Culiacán"
+                    },
+                    "codigo_postal": {
+                        "description": "Código postal del proveedor",
+                        "type": "string",
+                        "example": "80000"
+                    },
+                    "sitio_web": {
+                        "description": "Sitio web del proveedor",
+                        "type": "string",
+                        "example": "http://materialespacifico.mx"
+                    },
+                    "fecha_registro": {
+                        "description": "Fecha de registro del proveedor",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-04-17T12:00:00Z"
+                    },
+                    "estatus": {
+                        "description": "Estatus del proveedor (activo o inactivo)",
+                        "type": "string",
+                        "example": "activo"
+                    },
+                    "validado_por": {
+                        "description": "ID del usuario que validó el proveedor",
                         "type": "integer",
-                        "example": 3
+                        "example": 1
+                    },
+                    "notas": {
+                        "description": "Notas adicionales sobre el proveedor",
+                        "type": "string",
+                        "example": "Proveedor verificado"
                     },
                     "created_at": {
+                        "description": "Fecha de creación del registro",
                         "type": "string",
-                        "format": "date-time",
-                        "example": "2024-01-01T00:00:00Z"
+                        "format": "date-time"
                     },
                     "updated_at": {
+                        "description": "Fecha de la última actualización del registro",
                         "type": "string",
-                        "format": "date-time",
-                        "example": "2024-01-01T00:00:00Z"
-                    },
-                    "productos": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Producto"
-                        }
+                        "format": "date-time"
                     }
                 },
                 "type": "object"
             },
             "Sucursal": {
-                "title": "Sucursal",
-                "description": "Modelo de sucursal de un proveedor",
                 "required": [
-                    "proveedor_id",
                     "nombre",
-                    "direccion"
+                    "direccion",
+                    "proveedor_id"
                 ],
                 "properties": {
                     "id": {
                         "type": "integer",
                         "example": 1
                     },
-                    "proveedor_id": {
-                        "type": "integer",
-                        "example": 2
-                    },
                     "nombre": {
                         "type": "string",
-                        "example": "Sucursal Norte"
+                        "example": "Sucursal Culiacán"
                     },
                     "direccion": {
                         "type": "string",
-                        "example": "Av. Reforma 123, CDMX"
+                        "example": "Av. Álvaro Obregón 1234"
+                    },
+                    "telefono": {
+                        "type": "string",
+                        "example": "6671234567"
+                    },
+                    "correo": {
+                        "type": "string",
+                        "example": "contacto@sucursal.com"
+                    },
+                    "proveedor_id": {
+                        "type": "integer",
+                        "example": 1
                     },
                     "created_at": {
                         "type": "string",
-                        "format": "date-time",
-                        "example": "2024-01-01T00:00:00Z"
+                        "format": "date-time"
                     },
                     "updated_at": {
                         "type": "string",
-                        "format": "date-time",
-                        "example": "2024-01-01T00:00:00Z"
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "UnidadMedida": {
+                "required": [
+                    "nombre"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "nombre": {
+                        "type": "string",
+                        "example": "Kilogramo"
+                    },
+                    "descripcion": {
+                        "type": "string",
+                        "example": "Unidad de peso equivalente a mil gramos"
+                    },
+                    "estatus": {
+                        "type": "string",
+                        "example": "activo"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
                     }
                 },
                 "type": "object"
@@ -1262,20 +2458,36 @@
     },
     "tags": [
         {
-            "name": "Productos",
-            "description": "CRUD de productos"
-        },
-        {
-            "name": "Proveedores",
-            "description": "CRUD de proveedores"
-        },
-        {
             "name": "Sucursales",
             "description": "Gestión de sucursales por proveedor"
         },
         {
             "name": "Autenticación",
             "description": "Autenticación"
+        },
+        {
+            "name": "Grupo",
+            "description": "Grupo"
+        },
+        {
+            "name": "Imagen",
+            "description": "Imagen"
+        },
+        {
+            "name": "Producto",
+            "description": "Producto"
+        },
+        {
+            "name": "Proveedor",
+            "description": "Proveedor"
+        },
+        {
+            "name": "UnidadMedida",
+            "description": "UnidadMedida"
+        },
+        {
+            "name": "Usuario",
+            "description": "Usuario"
         }
     ]
 }
