@@ -2159,6 +2159,40 @@
                 },
                 "type": "object"
             },
+            "Categoria": {
+                "required": [
+                    "nombre",
+                    "nivel"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "nombre": {
+                        "type": "string",
+                        "example": "Herramientas Eléctricas"
+                    },
+                    "nivel": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "padre_id": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
             "Grupo": {
                 "required": [
                     "nombre"
@@ -2221,6 +2255,59 @@
                 },
                 "type": "object"
             },
+            "Linea": {
+                "required": [
+                    "nombre",
+                    "marca_id"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "nombre": {
+                        "type": "string",
+                        "example": "Industrial"
+                    },
+                    "marca_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Marca": {
+                "required": [
+                    "nombre"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "nombre": {
+                        "type": "string",
+                        "example": "Truper"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
             "Producto": {
                 "required": [
                     "nombre",
@@ -2235,42 +2322,80 @@
                         "type": "string",
                         "example": "Cemento gris 50kg"
                     },
+                    "modelo_codigo": {
+                        "type": "string",
+                        "example": "MX-458G-9"
+                    },
                     "descripcion": {
                         "type": "string",
                         "example": "Saco de cemento gris para construcción"
                     },
-                    "codigo_interno": {
+                    "sku": {
                         "type": "string",
                         "example": "CMG-50"
                     },
-                    "precio_unitario": {
-                        "type": "number",
-                        "format": "float",
-                        "example": 180.5
+                    "categoria_id": {
+                        "type": "integer",
+                        "example": 2,
+                        "nullable": true
                     },
-                    "disponible": {
-                        "type": "boolean",
-                        "example": true
+                    "marca_id": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "linea_id": {
+                        "type": "integer",
+                        "example": 5,
+                        "nullable": true
                     },
                     "proveedor_id": {
                         "type": "integer",
-                        "example": 2
+                        "example": 3
                     },
                     "unidad_medida_id": {
                         "type": "integer",
-                        "example": 1
+                        "example": 1,
+                        "nullable": true
                     },
                     "grupo_id": {
                         "type": "integer",
-                        "example": 1
+                        "example": 4,
+                        "nullable": true
                     },
                     "created_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "example": "2024-01-15T10:00:00Z"
                     },
                     "updated_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "example": "2024-01-20T14:30:00Z"
+                    },
+                    "categoria": {
+                        "$ref": "#/components/schemas/Categoria"
+                    },
+                    "marca": {
+                        "$ref": "#/components/schemas/Marca"
+                    },
+                    "linea": {
+                        "$ref": "#/components/schemas/Linea"
+                    },
+                    "proveedor": {
+                        "$ref": "#/components/schemas/Proveedor"
+                    },
+                    "unidad_medida": {
+                        "$ref": "#/components/schemas/UnidadMedida"
+                    },
+                    "grupo": {
+                        "$ref": "#/components/schemas/Grupo"
+                    },
+                    "imagenes": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Imagen"
+                        }
                     }
                 },
                 "type": "object"

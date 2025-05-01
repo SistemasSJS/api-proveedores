@@ -61,7 +61,7 @@ class GrupoController extends Controller
             'estatus' => $request->estatus,
         ]);
 
-        return response()->json($grupo, 201);
+        return $this->success($grupo, 201);
     }
 
     /**
@@ -78,7 +78,7 @@ class GrupoController extends Controller
     public function show($id)
     {
         $grupo = Grupo::findOrFail($id);
-        return response()->json($grupo);
+        return $this->success($grupo);
     }
 
     /**
@@ -111,7 +111,7 @@ class GrupoController extends Controller
 
         $grupo->update($request->only(['nombre', 'descripcion', 'estatus']));
 
-        return response()->json($grupo);
+        return $this->success($grupo);
     }
 
     /**
@@ -130,6 +130,6 @@ class GrupoController extends Controller
         $grupo = Grupo::findOrFail($id);
         $grupo->delete();
 
-        return response()->json(null, 204);
+        return $this->success(null, 204);
     }
 }

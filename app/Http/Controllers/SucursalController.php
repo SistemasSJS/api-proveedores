@@ -27,7 +27,7 @@ class SucursalController extends Controller
     public function index($proveedorId)
     {
         $proveedor = Proveedor::findOrFail($proveedorId);
-        return response()->json($proveedor->sucursales);
+        return $this->success($proveedor->sucursales);
     }
 
     /**
@@ -61,7 +61,7 @@ class SucursalController extends Controller
 
         $sucursal = $proveedor->sucursales()->create($request->all());
 
-        return response()->json($sucursal, 201);
+        return $this->success($sucursal, 201);
     }
 
     /**
@@ -79,7 +79,7 @@ class SucursalController extends Controller
     {
         $proveedor = Proveedor::findOrFail($proveedorId);
         $sucursal = $proveedor->sucursales()->findOrFail($id);
-        return response()->json($sucursal);
+        return $this->success($sucursal);
     }
 
     /**
@@ -107,7 +107,7 @@ class SucursalController extends Controller
 
         $sucursal->update($request->all());
 
-        return response()->json(['message' => 'Sucursal actualizada correctamente']);
+        return $this->success(['message' => 'Sucursal actualizada correctamente']);
     }
 
     /**
@@ -128,6 +128,6 @@ class SucursalController extends Controller
 
         $sucursal->delete();
 
-        return response()->json(['message' => 'Sucursal eliminada correctamente']);
+        return $this->success(['message' => 'Sucursal eliminada correctamente']);
     }
 }

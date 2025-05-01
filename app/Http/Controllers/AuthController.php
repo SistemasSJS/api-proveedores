@@ -153,7 +153,7 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return response()->json([
+            return $this->success([
                 'message' => 'Error en el registro',
                 'error' => $e->getMessage(),
             ], 500);

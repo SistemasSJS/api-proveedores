@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Grupo extends BaseModel
 {
+    use HasFactory;
     protected $fillable = ['nombre', 'descripcion', 'estatus'];
 
     // Filtros disponibles para este modelo

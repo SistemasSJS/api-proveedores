@@ -22,6 +22,10 @@ class ProductoController extends Controller
      *     operationId="getProductos",
      *     tags={"Producto"},
      *     security={{"sanctum":{}}},
+     *     @OA\Parameter(name="nombre", in="query", description="Filtrar por nombre", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="modelo_codigo", in="query", description="Filtrar por modelo_codigo", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="descripcion", in="query", description="Filtrar por descripcion", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="sku", in="query", description="Filtrar por sku", @OA\Schema(type="string")),
      *     @OA\Response(
      *         response=200,
      *         description="Lista de productos",
@@ -29,9 +33,12 @@ class ProductoController extends Controller
      *     )
      * )
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Producto::with(["unidad_medida", "grupo", "imagenes", "proveedor"])->get();
+        $fields = Producto::getFilters();
+        $filters = $request->only($fields);
+        $productos = Producto::with(Producto::eagerLodable())->filter($filters)->paginate(10);
+        return $this->paginated($productos);
     }
 
     /**
@@ -90,7 +97,7 @@ class ProductoController extends Controller
 
         $producto = Producto::create($request->all());
 
-        return response()->json($producto->load(["unidad_medida", "grupo", "imagenes", "proveedor"]), 201);
+        return $this->success($producto->load(["unidad_medida", "grupo", "imagenes", "proveedor"]), 201);
     }
 
     /**
@@ -126,7 +133,7 @@ class ProductoController extends Controller
         if (!$producto) {
             throw new ResourceNotFoundException("Producto no encontrado.");
         }
-        return response()->json($producto);
+        return $this->success($producto);
     }
 
     /**
@@ -180,7 +187,7 @@ class ProductoController extends Controller
         // Actualizar el producto
         $producto->update($request->all());
 
-        return response()->json($producto->load(["unidad_medida", "grupo", "imagenes", "proveedor"]), 200);
+        return $this->success($producto->load(["unidad_medida", "grupo", "imagenes", "proveedor"]), 200);
     }
 
     /**
@@ -228,6 +235,6 @@ class ProductoController extends Controller
         // Eliminar el producto
         $producto->delete();
 
-        return response()->json(null, 204);
+        return $this->success(null, 204);
     }
 }

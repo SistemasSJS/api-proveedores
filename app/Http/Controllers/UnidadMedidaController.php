@@ -24,7 +24,7 @@ class UnidadMedidaController extends Controller
         $filters = $request->only(['nombre']);
         $unidadesMedida = UnidadMedida::filter($filters)->paginate(10);
 
-        return response()->json($unidadesMedida);
+        return $this->success($unidadesMedida);
     }
 
     /**
@@ -54,7 +54,7 @@ class UnidadMedidaController extends Controller
             'nombre' => $request->nombre,
         ]);
 
-        return response()->json($unidadMedida, 201);
+        return $this->success($unidadMedida, 201);
     }
 
     /**
@@ -71,7 +71,7 @@ class UnidadMedidaController extends Controller
     public function show($id)
     {
         $unidadMedida = UnidadMedida::findOrFail($id);
-        return response()->json($unidadMedida);
+        return $this->success($unidadMedida);
     }
 
     /**
@@ -100,7 +100,7 @@ class UnidadMedidaController extends Controller
 
         $unidadMedida->update($request->only(['nombre']));
 
-        return response()->json($unidadMedida);
+        return $this->success($unidadMedida);
     }
 
     /**
@@ -119,6 +119,6 @@ class UnidadMedidaController extends Controller
         $unidadMedida = UnidadMedida::findOrFail($id);
         $unidadMedida->delete();
 
-        return response()->json(null, 204);
+        return $this->success(null, 204);
     }
 }

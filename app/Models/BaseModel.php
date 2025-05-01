@@ -12,6 +12,7 @@ abstract class BaseModel extends Model
         "created_at",
         "updated_at"
     ];
+    protected static $filters = [];
 
     public function scopeFilter($query, array $filters)
     {
@@ -24,5 +25,10 @@ abstract class BaseModel extends Model
         }
 
         return $query;
+    }
+
+    public static function getFilters(): array
+    {
+        return array_values(static::$filters);
     }
 }

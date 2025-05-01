@@ -131,6 +131,6 @@ class ImagenController extends Controller
         $imagen = Imagen::findOrFail($id);
         $imagen->delete();
 
-        return response()->json(null, 204);
+        return $this->success(null, 204);
     }
 }

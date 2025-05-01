@@ -65,7 +65,7 @@ class ProveedorController extends Controller
 
         $proveedor = Proveedor::create($data);
 
-        return response()->json($proveedor, 201);
+        return $this->success($proveedor, 201);
     }
 
     /**
@@ -83,7 +83,7 @@ class ProveedorController extends Controller
     {
         $proveedor = Proveedor::with(['sucursales', 'productos'])->findOrFail($id);
 
-        return response()->json($proveedor);
+        return $this->success($proveedor);
     }
 
     /**
@@ -129,7 +129,7 @@ class ProveedorController extends Controller
 
         $proveedor->update($data);
 
-        return response()->json($proveedor);
+        return $this->success($proveedor);
     }
 
     /**
@@ -148,7 +148,7 @@ class ProveedorController extends Controller
         $proveedor = Proveedor::findOrFail($id);
         $proveedor->delete();
 
-        return response()->json(null, 204);
+        return $this->success(null, 204);
     }
 
     /**
@@ -175,7 +175,7 @@ class ProveedorController extends Controller
             $query->where('categoria', $request->categoria);
         }
 
-        return response()->json($query->paginate(10));
+        return $this->success($query->paginate(10));
     }
 
     /**
@@ -201,6 +201,6 @@ class ProveedorController extends Controller
             $query->where('categoria', $request->categoria);
         }
 
-        return response()->json($query->paginate(10));
+        return $this->success($query->paginate(10));
     }
 }

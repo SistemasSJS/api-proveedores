@@ -2,7 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Categoria;
 use App\Models\Grupo;
+use App\Models\Linea;
+use App\Models\Marca;
 use App\Models\Producto;
 use App\Models\Proveedor;
 use App\Models\UnidadMedida;
@@ -23,6 +26,9 @@ class DatabaseSeeder extends Seeder
         Proveedor::factory()->count(10)->create();
         UnidadMedida::factory()->count(5)->create();
         Grupo::factory()->count(5)->create();
+        Categoria::factory()->count(5)->create();
+        Marca::factory()->count(5)->create();
+        Linea::factory()->count(5)->create();
         Producto::factory()->count(1000)->create();
     }
 }

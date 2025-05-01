@@ -32,7 +32,7 @@ class UserController extends Controller
         // Aplicar los filtros usando el scopeFilter
         $users = User::filter($filters)->paginate(10);
 
-        return response()->json($users);
+        return $this->success($users);
     }
 
     /**
@@ -68,7 +68,7 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        return response()->json($user, 201);
+        return $this->success($user, 201);
     }
 
     /**
@@ -85,7 +85,7 @@ class UserController extends Controller
     public function show($id)
     {
         $user = User::findOrFail($id);
-        return response()->json($user);
+        return $this->success($user);
     }
 
     /**
@@ -124,7 +124,7 @@ class UserController extends Controller
 
         $user->update($data);
 
-        return response()->json($user);
+        return $this->success($user);
     }
 
     /**
@@ -143,6 +143,6 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         $user->delete();
 
-        return response()->json(null, 204);
+        return $this->success(null, 204);
     }
 }
