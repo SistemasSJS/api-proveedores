@@ -824,6 +824,40 @@
                 ],
                 "summary": "Listar productos",
                 "operationId": "getProductos",
+                "parameters": [
+                    {
+                        "name": "nombre",
+                        "in": "query",
+                        "description": "Filtrar por nombre",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "modelo_codigo",
+                        "in": "query",
+                        "description": "Filtrar por modelo_codigo",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "descripcion",
+                        "in": "query",
+                        "description": "Filtrar por descripcion",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sku",
+                        "in": "query",
+                        "description": "Filtrar por sku",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Lista de productos",
@@ -1073,23 +1107,79 @@
         "/api/proveedores": {
             "get": {
                 "tags": [
-                    "Proveedor"
+                    "Proveedores"
                 ],
-                "summary": "Listar todos los proveedores con filtros opcionales y paginación",
-                "operationId": "listarProveedores",
+                "summary": "Listar proveedores",
+                "operationId": "getProveedores",
                 "parameters": [
                     {
-                        "name": "razon_social",
+                        "name": "nombre_comercial",
                         "in": "query",
-                        "description": "Filtrar por razon social",
+                        "description": "Filtrar por nombre comercial del proveedor.",
                         "schema": {
                             "type": "string"
                         }
                     },
                     {
-                        "name": "nombre_comercial",
+                        "name": "razon_social",
                         "in": "query",
-                        "description": "Filtrar por nombre comercial",
+                        "description": "Filtrar por razón social",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "rfc",
+                        "in": "query",
+                        "description": "Filtrar por el RFC.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "direccion_fiscal",
+                        "in": "query",
+                        "description": "Filtrar por direccion fiscal registrada.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "estado",
+                        "in": "query",
+                        "description": "Filtrar por estado.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "municipio",
+                        "in": "query",
+                        "description": "Filtrar por municipio.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "fecha_registro",
+                        "in": "query",
+                        "description": "Filtrar por fecha del registro del proveedor.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "estatus",
+                        "in": "query",
+                        "description": "Filtrar por el estatus del proveedor.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "notas",
+                        "in": "query",
+                        "description": "Filtrar por notas agregadas al proveedor.",
                         "schema": {
                             "type": "string"
                         }
@@ -1097,7 +1187,7 @@
                     {
                         "name": "email",
                         "in": "query",
-                        "description": "Filtrar por email",
+                        "description": "Filtrar por email.",
                         "schema": {
                             "type": "string"
                         }
@@ -1105,7 +1195,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Listado paginado de proveedores"
+                        "description": "Lista de proveedores",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Proveedor"
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1116,42 +1216,40 @@
             },
             "post": {
                 "tags": [
-                    "Proveedor"
+                    "Proveedores"
                 ],
-                "summary": "Crear un proveedor",
-                "operationId": "crearProveedor",
+                "summary": "Crear proveedor",
+                "operationId": "storeProveedor",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "nombre",
-                                    "rfc"
-                                ],
-                                "properties": {
-                                    "nombre": {
-                                        "type": "string"
-                                    },
-                                    "rfc": {
-                                        "type": "string"
-                                    },
-                                    "telefono": {
-                                        "type": "string"
-                                    },
-                                    "logo": {
-                                        "description": "Logo del proveedor (jpg, png)",
-                                        "type": "file"
-                                    }
-                                },
-                                "type": "object"
+                                "$ref": "#/components/schemas/Proveedor"
                             }
                         }
                     }
                 },
                 "responses": {
                     "201": {
-                        "description": "Proveedor creado"
+                        "description": "Proveedor creado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Proveedor"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Entrada inválida",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InvalidInputException"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1164,14 +1262,15 @@
         "/api/proveedores/{id}": {
             "get": {
                 "tags": [
-                    "Proveedor"
+                    "Proveedores"
                 ],
-                "summary": "Obtener un proveedor por ID",
-                "operationId": "mostrarProveedor",
+                "summary": "Obtener un proveedor específico",
+                "operationId": "getProveedor",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID del proveedor",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -1180,7 +1279,24 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Proveedor encontrado"
+                        "description": "Proveedor encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Proveedor"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Proveedor no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResourceNotFoundException"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1191,14 +1307,15 @@
             },
             "put": {
                 "tags": [
-                    "Proveedor"
+                    "Proveedores"
                 ],
                 "summary": "Actualizar proveedor",
-                "operationId": "actualizarProveedor",
+                "operationId": "updateProveedor",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID del proveedor",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -1206,32 +1323,38 @@
                     }
                 ],
                 "requestBody": {
+                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "properties": {
-                                    "nombre": {
-                                        "type": "string"
-                                    },
-                                    "rfc": {
-                                        "type": "string"
-                                    },
-                                    "telefono": {
-                                        "type": "string"
-                                    },
-                                    "logo": {
-                                        "description": "Logo del proveedor (jpg, png)",
-                                        "type": "file"
-                                    }
-                                },
-                                "type": "object"
+                                "$ref": "#/components/schemas/Proveedor"
                             }
                         }
                     }
                 },
                 "responses": {
                     "200": {
-                        "description": "Proveedor actualizado"
+                        "description": "Proveedor actualizado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Proveedor"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Entrada inválida"
+                    },
+                    "404": {
+                        "description": "Proveedor no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResourceNotFoundException"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1242,14 +1365,15 @@
             },
             "delete": {
                 "tags": [
-                    "Proveedor"
+                    "Proveedores"
                 ],
                 "summary": "Eliminar proveedor",
-                "operationId": "eliminarProveedor",
+                "operationId": "deleteProveedor",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID del proveedor",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -1258,89 +1382,17 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": "Proveedor eliminado"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/proveedores/{id}/productos": {
-            "get": {
-                "tags": [
-                    "Proveedor"
-                ],
-                "summary": "Listar productos de un proveedor con filtros",
-                "operationId": "productosPorProveedor",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
+                        "description": "Proveedor eliminado exitosamente"
                     },
-                    {
-                        "name": "nombre",
-                        "in": "query",
-                        "description": "Filtrar por nombre de producto",
-                        "schema": {
-                            "type": "string"
+                    "404": {
+                        "description": "Proveedor no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResourceNotFoundException"
+                                }
+                            }
                         }
-                    },
-                    {
-                        "name": "categoria",
-                        "in": "query",
-                        "description": "Filtrar por categoría",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Listado de productos del proveedor"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/proveedores/{id}/sucursales": {
-            "get": {
-                "tags": [
-                    "Proveedor"
-                ],
-                "summary": "Listar sucursales de un proveedor con filtros",
-                "operationId": "sucursalesPorProveedor",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "nombre",
-                        "in": "query",
-                        "description": "Filtrar por nombre de sucursal",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Listado de sucursales del proveedor"
                     }
                 },
                 "security": [
@@ -2159,6 +2211,117 @@
                 },
                 "type": "object"
             },
+            "ApiResponse": {
+                "required": [
+                    "status",
+                    "code",
+                    "message"
+                ],
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "example": "SUCCESS"
+                    },
+                    "code": {
+                        "type": "integer",
+                        "example": 200
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Operación exitosa."
+                    },
+                    "data": {
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "ApiPaginatedResponse": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                        "properties": {
+                            "data": {
+                                "type": "object"
+                            },
+                            "meta": {
+                                "properties": {
+                                    "pagination": {
+                                        "properties": {
+                                            "current_page": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "from": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "last_page": {
+                                                "type": "integer",
+                                                "example": 5
+                                            },
+                                            "per_page": {
+                                                "type": "integer",
+                                                "example": 15
+                                            },
+                                            "to": {
+                                                "type": "integer",
+                                                "example": 15
+                                            },
+                                            "total": {
+                                                "type": "integer",
+                                                "example": 70
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "ApiErrorResponse": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "example": "ERROR"
+                            },
+                            "code": {
+                                "type": "integer",
+                                "example": 400
+                            },
+                            "message": {
+                                "type": "string",
+                                "example": "Ha ocurrido un error."
+                            },
+                            "errors": {
+                                "type": "object",
+                                "example": {
+                                    "email": [
+                                        "Este campo es requerido"
+                                    ]
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
             "Categoria": {
                 "required": [
                     "nombre",
@@ -2402,98 +2565,86 @@
             },
             "Proveedor": {
                 "title": "Proveedor",
-                "description": "Modelo de proveedor en el sistema.",
+                "description": "Esquema del modelo Proveedor",
                 "required": [
-                    "nombre",
+                    "nombre_comercial",
                     "razon_social",
-                    "rfc"
+                    "rfc",
+                    "email",
+                    "telefono",
+                    "estado",
+                    "municipio",
+                    "codigo_postal",
+                    "contacto_nombre",
+                    "contacto_telefono",
+                    "contacto_email"
                 ],
                 "properties": {
-                    "logo": {
-                        "description": "Ruta al logo del proveedor",
-                        "type": "string",
-                        "example": "logos/materiales-del-pacifico.png"
-                    },
                     "id": {
-                        "description": "ID del proveedor",
                         "type": "integer",
                         "example": 1
                     },
                     "nombre_comercial": {
-                        "description": "Nombre del proveedor",
                         "type": "string",
-                        "example": "Materiales del Pacífico S.A. de C.V."
-                    },
-                    "rfc": {
-                        "description": "RFC del proveedor",
-                        "type": "string",
-                        "example": "MAPC800101ABC"
+                        "example": "Materiales Rivera"
                     },
                     "razon_social": {
-                        "description": "Razón social del proveedor",
                         "type": "string",
-                        "example": "Materiales del Pacífico"
+                        "example": "Materiales de Construcción Rivera S.A. de C.V."
+                    },
+                    "rfc": {
+                        "type": "string",
+                        "example": "RIEM920313AB1"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "contacto@materialesrivera.com"
                     },
                     "telefono": {
-                        "description": "Teléfono del proveedor",
                         "type": "string",
-                        "example": "6679876543"
-                    },
-                    "correo": {
-                        "description": "Correo electrónico del proveedor",
-                        "type": "string",
-                        "example": "ventas@materialespacifico.mx"
+                        "example": "6671234567"
                     },
                     "estado": {
-                        "description": "Estado donde se encuentra el proveedor",
                         "type": "string",
                         "example": "Sinaloa"
                     },
                     "municipio": {
-                        "description": "Municipio donde se encuentra el proveedor",
                         "type": "string",
                         "example": "Culiacán"
                     },
                     "codigo_postal": {
-                        "description": "Código postal del proveedor",
                         "type": "string",
                         "example": "80000"
                     },
-                    "sitio_web": {
-                        "description": "Sitio web del proveedor",
+                    "contacto_nombre": {
                         "type": "string",
-                        "example": "http://materialespacifico.mx"
+                        "example": "Juan Pérez"
                     },
-                    "fecha_registro": {
-                        "description": "Fecha de registro del proveedor",
+                    "contacto_telefono": {
                         "type": "string",
-                        "format": "date-time",
-                        "example": "2025-04-17T12:00:00Z"
+                        "example": "6677654321"
+                    },
+                    "contacto_email": {
+                        "type": "string",
+                        "example": "juan.perez@materialesrivera.com"
                     },
                     "estatus": {
-                        "description": "Estatus del proveedor (activo o inactivo)",
                         "type": "string",
                         "example": "activo"
                     },
-                    "validado_por": {
-                        "description": "ID del usuario que validó el proveedor",
-                        "type": "integer",
-                        "example": 1
-                    },
                     "notas": {
-                        "description": "Notas adicionales sobre el proveedor",
                         "type": "string",
-                        "example": "Proveedor verificado"
+                        "example": "Proveedor confiable."
                     },
                     "created_at": {
-                        "description": "Fecha de creación del registro",
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "example": "2024-01-01T00:00:00Z"
                     },
                     "updated_at": {
-                        "description": "Fecha de la última actualización del registro",
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "example": "2024-01-02T00:00:00Z"
                     }
                 },
                 "type": "object"
@@ -2583,6 +2734,10 @@
     },
     "tags": [
         {
+            "name": "Proveedores",
+            "description": "CRUD de proveedores"
+        },
+        {
             "name": "Sucursales",
             "description": "Gestión de sucursales por proveedor"
         },
@@ -2601,10 +2756,6 @@
         {
             "name": "Producto",
             "description": "Producto"
-        },
-        {
-            "name": "Proveedor",
-            "description": "Proveedor"
         },
         {
             "name": "UnidadMedida",

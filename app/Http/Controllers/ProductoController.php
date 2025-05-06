@@ -129,7 +129,7 @@ class ProductoController extends Controller
     public function show($id)
     {
         // Intentar encontrar el producto, si no se encuentra lanzar ResourceNotFoundException
-        $producto = Producto::with(["unidad_medida", "grupo", "imagenes", "proveedor"])->find($id);
+        $producto = Producto::with(Producto::eagerLodable())->find($id);
         if (!$producto) {
             throw new ResourceNotFoundException("Producto no encontrado.");
         }
