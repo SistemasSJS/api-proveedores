@@ -11,8 +11,6 @@ use Illuminate\Database\Eloquent\Model;
  *     required={"nombre", "nivel"},
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="nombre", type="string", example="Herramientas Eléctricas"),
- *     @OA\Property(property="nivel", type="integer", example=2),
- *     @OA\Property(property="padre_id", type="integer", nullable=true, example=1),
  *     @OA\Property(property="created_at", type="string", format="date-time"),
  *     @OA\Property(property="updated_at", type="string", format="date-time")
  * )
@@ -20,30 +18,20 @@ use Illuminate\Database\Eloquent\Model;
 class Categoria extends BaseModel
 {
     use HasFactory;
-    protected $fillable = ['nombre', 'nivel', 'padre_id'];
+    protected $fillable = ['nombre'];
 
     protected static $filters = [
         'nombre' => 'nombre',
-        'nivel' => 'nivel',
+        'estatus' => 'estatus',
     ];
 
-    public function filterByNombre($query, $value)
+    public function scopeFilterByNombre($query, $value)
     {
         return $query->where('nombre', 'like', "%$value%");
     }
 
-    public function filterByNivel($query, $value)
+    public function scopeFilterByEstatus($query, $value)
     {
-        return $query->where('nivel', $value);
-    }
-
-    public function padre()
-    {
-        return $this->belongsTo(Categoria::class, 'padre_id');
-    }
-
-    public function subcategorias()
-    {
-        return $this->hasMany(Categoria::class, 'padre_id');
+        return $query->where('estatus', "%$value%");
     }
 }

@@ -23,8 +23,7 @@ class UnidadMedidaController extends Controller
     {
         $filters = $request->only(['nombre']);
         $unidadesMedida = UnidadMedida::filter($filters)->paginate(10);
-
-        return $this->success($unidadesMedida);
+        return $this->paginated($unidadesMedida);
     }
 
     /**

@@ -24,6 +24,17 @@ class UnidadMedida extends BaseModel
 
     protected $fillable = ['nombre', 'descripcion', 'estatus'];
 
+
+    public function scopeFilterByNombre($query, $value)
+    {
+        return $query->where('nombre', 'like', "%$value%");
+    }
+
+    public function scopeFilterByEstatus($query, $value)
+    {
+        return $query->where('estatus', "%$value%");
+    }
+
     public function productos()
     {
         return $this->hasMany(Producto::class);

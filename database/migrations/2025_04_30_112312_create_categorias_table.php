@@ -9,9 +9,8 @@ return new class extends Migration {
     {
         Schema::create('categorias', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre');
-            $table->unsignedTinyInteger('nivel')->default(1);
-            $table->foreignId('padre_id')->nullable()->constrained('categorias')->onDelete('set null');
+            $table->string('nombre')->unique();
+            $table->enum('estatus', ['activo', 'inactivo'])->default('activo');
             $table->timestamps();
         });
     }

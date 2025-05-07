@@ -450,6 +450,175 @@
                 ]
             }
         },
+        "/api/categorias": {
+            "get": {
+                "tags": [
+                    "Categoria"
+                ],
+                "summary": "Listar todas las categorías con filtros opcionales y paginación",
+                "operationId": "listarCategoria",
+                "parameters": [
+                    {
+                        "name": "nombre",
+                        "in": "query",
+                        "description": "Filtrar por nombre.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "estatus",
+                        "in": "query",
+                        "description": "Filtrar por estatus.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado paginado de categorías"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Categoria"
+                ],
+                "summary": "Crear una categoría",
+                "operationId": "crearCategoria",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Categoría creada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/categorias/{id}": {
+            "get": {
+                "tags": [
+                    "Categoria"
+                ],
+                "summary": "Obtener una categoría por ID",
+                "operationId": "mostrarCategoria",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Categoría encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Categoria"
+                ],
+                "summary": "Actualizar categoría",
+                "operationId": "actualizarCategoria",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Categoría actualizada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Categoria"
+                ],
+                "summary": "Eliminar categoría",
+                "operationId": "eliminarCategoria",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Categoría eliminada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/grupos": {
             "get": {
                 "tags": [
@@ -808,6 +977,344 @@
                 "responses": {
                     "204": {
                         "description": "Imagen eliminada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/lineas": {
+            "get": {
+                "tags": [
+                    "Linea"
+                ],
+                "summary": "Listar todas las líneas con filtros opcionales y paginación",
+                "operationId": "listarLinea",
+                "parameters": [
+                    {
+                        "name": "nombre",
+                        "in": "query",
+                        "description": "Filtrar por nombre.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "estatus",
+                        "in": "query",
+                        "description": "Filtrar por estatus.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado paginado de líneas"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Linea"
+                ],
+                "summary": "Crear una línea",
+                "operationId": "crearLinea",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Línea creada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/lineas/{id}": {
+            "get": {
+                "tags": [
+                    "Linea"
+                ],
+                "summary": "Obtener una línea por ID",
+                "operationId": "mostrarLinea",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Línea encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Linea"
+                ],
+                "summary": "Actualizar línea",
+                "operationId": "actualizarLinea",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Línea actualizada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Linea"
+                ],
+                "summary": "Eliminar línea",
+                "operationId": "eliminarLinea",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Línea eliminada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/marcas": {
+            "get": {
+                "tags": [
+                    "Marca"
+                ],
+                "summary": "Listar todas las marcas con filtros opcionales y paginación",
+                "operationId": "listarMarca",
+                "parameters": [
+                    {
+                        "name": "nombre",
+                        "in": "query",
+                        "description": "Filtrar por nombre.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "estatus",
+                        "in": "query",
+                        "description": "Filtrar por estatus.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado paginado de marcas"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Marca"
+                ],
+                "summary": "Crear una marca",
+                "operationId": "crearMarca",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "marca creada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/marcas/{id}": {
+            "get": {
+                "tags": [
+                    "Marca"
+                ],
+                "summary": "Obtener una marca por ID",
+                "operationId": "mostrarMarca",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "marca encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Marca"
+                ],
+                "summary": "Actualizar marca",
+                "operationId": "actualizarMarca",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "marca actualizada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Marca"
+                ],
+                "summary": "Eliminar marca",
+                "operationId": "eliminarMarca",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "marca eliminada"
                     }
                 },
                 "security": [
@@ -2336,15 +2843,6 @@
                         "type": "string",
                         "example": "Herramientas Eléctricas"
                     },
-                    "nivel": {
-                        "type": "integer",
-                        "example": 2
-                    },
-                    "padre_id": {
-                        "type": "integer",
-                        "example": 1,
-                        "nullable": true
-                    },
                     "created_at": {
                         "type": "string",
                         "format": "date-time"
@@ -2420,8 +2918,7 @@
             },
             "Linea": {
                 "required": [
-                    "nombre",
-                    "marca_id"
+                    "nombre"
                 ],
                 "properties": {
                     "id": {
@@ -2431,10 +2928,6 @@
                     "nombre": {
                         "type": "string",
                         "example": "Industrial"
-                    },
-                    "marca_id": {
-                        "type": "integer",
-                        "example": 1
                     },
                     "created_at": {
                         "type": "string",
@@ -2746,12 +3239,24 @@
             "description": "Autenticación"
         },
         {
+            "name": "Categoria",
+            "description": "Categoria"
+        },
+        {
             "name": "Grupo",
             "description": "Grupo"
         },
         {
             "name": "Imagen",
             "description": "Imagen"
+        },
+        {
+            "name": "Linea",
+            "description": "Linea"
+        },
+        {
+            "name": "Marca",
+            "description": "Marca"
         },
         {
             "name": "Producto",

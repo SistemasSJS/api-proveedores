@@ -9,8 +9,8 @@ return new class extends Migration {
     {
         Schema::create('lineas', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre');
-            $table->foreignId('marca_id')->constrained('marcas')->onDelete('cascade');
+            $table->string('nombre')->unique();
+            $table->enum('estatus', ['activo', 'inactivo'])->default('activo');
             $table->timestamps();
         });
     }

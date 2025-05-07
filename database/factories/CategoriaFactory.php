@@ -12,9 +12,8 @@ class CategoriaFactory extends Factory
     public function definition(): array
     {
         return [
-            'nombre' => $this->faker->words(2, true),
-            'nivel' => $this->faker->numberBetween(1, 3),
-            'padre_id' => null, // se puede actualizar luego en un seeder
+            'nombre' => $this->faker->unique()->company,
+            'estatus' => 'activo',
         ];
     }
 }

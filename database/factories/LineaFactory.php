@@ -13,8 +13,8 @@ class LineaFactory extends Factory
     public function definition(): array
     {
         return [
-            'nombre' => $this->faker->words(2, true),
-            'marca_id' => Marca::inRandomOrder()->first()?->id ?? Marca::factory(),
+            'nombre' => $this->faker->unique()->company,
+            'estatus' => 'activo',
         ];
     }
 }
