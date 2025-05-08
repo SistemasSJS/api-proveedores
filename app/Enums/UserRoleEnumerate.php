@@ -14,7 +14,7 @@ enum UserRoleEnumerate: string
     case SUPER_ADMIN = 'super_admin';
 
     /**
-     * Usuario administrador. Puede haber más de uno.
+     * Usuario administrador. Puede haber más de uno.1
      * Tiene privilegios elevados para la gestión general.
      */
     case ADMIN = 'admin';

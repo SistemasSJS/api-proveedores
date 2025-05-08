@@ -8,6 +8,7 @@ use App\Models\Linea;
 use App\Models\Marca;
 use App\Models\Producto;
 use App\Models\Proveedor;
+use App\Models\TipoEmpresa;
 use App\Models\UnidadMedida;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -20,9 +21,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call([
+            UserSeeder::class,
 
-        User::factory()->create();
+        ]);
+
         User::factory(10)->proveedor()->create();
+        TipoEmpresa::factory()->count(10)->create();
         Proveedor::factory()->count(10)->create();
         UnidadMedida::factory()->count(5)->create();
         Grupo::factory()->count(5)->create();

@@ -2,11 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRoleEnumerate;
 use App\Http\Controllers\Controller;
 use App\Models\Proveedor;
 use Illuminate\Http\Request;
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
+use App\Http\Requests\RegisterProveedorCompletarRequest;
+use App\Http\Requests\StoreProveedorRequest;
+use App\Mail\CompletaRegistroProveedorMail;
+use App\Models\User;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
+
 
 /**
  * @OA\Tag(
@@ -50,14 +60,35 @@ class ProveedorController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/proveedores",
-     *     summary="Crear proveedor",
-     *     operationId="storeProveedor",
-     *     tags={"Proveedores"},
+     *     path="/api/register_proveedor",
+     *     summary="Registra un proveedor",
+     *     operationId="RegisterProveedor",
+     *     tags={"Autenticación"},
      *     security={{"sanctum":{}}},
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/Proveedor")
+     *         @OA\JsonContent(
+     *             required={"nombre_propietario", "nombre_de_quien_registra", "nombre_comercial", "razon_social", "tipos_empresa_id", "descripcion_giro_empresa", "direccion_empresa", "email", "telefono", "pagina_web", "estado", "municipio", "codigo_postal", "contacto_nombre", "contacto_cargo", "contacto_telefono", "contacto_correo"},
+     *             @OA\Property(property="nombre_propietario", type="string", maxLength=255),
+     *             @OA\Property(property="nombre_de_quien_registra", type="string", maxLength=255),
+     *             @OA\Property(property="nombre_comercial", type="string", maxLength=255),
+     *             @OA\Property(property="razon_social", type="string", maxLength=255),
+     *             @OA\Property(property="tipos_empresa_id", type="integer", example=1),
+     *             @OA\Property(property="tipos_empresa_otro", type="string", maxLength=60),
+     *             @OA\Property(property="descripcion_giro_empresa", type="string", maxLength=255),
+     *             @OA\Property(property="direccion_empresa", type="string", maxLength=255),
+     *             @OA\Property(property="email", type="string", format="email", maxLength=255),
+     *             @OA\Property(property="telefono", type="string", maxLength=15),
+     *             @OA\Property(property="pagina_web", type="string", maxLength=255),
+     *             @OA\Property(property="estado", type="string", maxLength=255),
+     *             @OA\Property(property="municipio", type="string", maxLength=255),
+     *             @OA\Property(property="codigo_postal", type="string", maxLength=10),
+     *             @OA\Property(property="direccion_fiscal", type="string", maxLength=255),
+     *             @OA\Property(property="contacto_nombre", type="string", maxLength=150),
+     *             @OA\Property(property="contacto_cargo", type="string", maxLength=60),
+     *             @OA\Property(property="contacto_telefono", type="string", maxLength=15),
+     *             @OA\Property(property="contacto_correo", type="string", format="email", maxLength=60)
+     *         )
      *     ),
      *     @OA\Response(
      *         response=201,
@@ -71,38 +102,78 @@ class ProveedorController extends Controller
      *     )
      * )
      */
-    public function store(Request $request)
+    public function register_proveedor(StoreProveedorRequest $request)
     {
-        $request->validate([
-            'nombre_comercial' => 'required|string|max:255',
-            'razon_social' => 'required|string|max:255',
-            'rfc' => [
-                'required',
-                'string',
-                'min:12',
-                'max:13',
-                Rule::unique('proveedores'),
-            ],
-            'email' => [
-                'required',
-                'email',
-                'max:255',
-                Rule::unique('proveedores'),
-            ],
-            'telefono' => 'required|string|max:15',
-            'estado' => 'required|string|max:255',
-            'municipio' => 'required|string|max:255',
-            'codigo_postal' => 'required|string|max:10',
-            'contacto_nombre' => 'required|string|max:255',
-            'contacto_telefono' => 'required|string|max:15',
-            'contacto_email' => 'required|email|max:255',
-        ]);
+        $proveedor = Proveedor::create($request->validated());
+        // Generamos un token único
+        $token = Str::random(60);
 
+        // Guardamos el token en cache para validarlo después
+        Cache::put("registro_proveedor_{$token}", $proveedor->id, 3600); // Expira en 1 hora
 
-        $proveedor = Proveedor::create($request->all());
+        // Enviar correo con el link para completar el registro
+        $url = url("http://localhost:8100/auth/completar-registro-proveedor?token={$token}");
+        Mail::to($proveedor->email)->send(new CompletaRegistroProveedorMail($url));
 
-        return $this->success($proveedor->load(Proveedor::eagerLodable()), 201);
+        return $this->success($proveedor->load(Proveedor::eagerLodable()), 'Proveedor registrado. Revisa tu correo para continuar.', 200);
+        // return $this->success($proveedor->load(Proveedor::eagerLodable()), 201);
     }
+
+
+    /**
+     * 
+     */
+    public function register_proveedor_completar(RegisterProveedorCompletarRequest $request)
+    {
+        // Validamos los datos
+        $validated_data = $request->validated();
+
+        // Verificamos si el token existe en la caché (token temporal que generamos en el registro)
+        $proveedorId = Cache::get("registro_proveedor_{$request->token}");
+
+        if (!$proveedorId) {
+            return response()->json(['message' => 'Token inválido o expirado'], 400);
+        }
+
+        // Buscamos al proveedor por el ID guardado en la caché
+        $proveedor = Proveedor::findOrFail($proveedorId);
+
+        // Si el proveedor no tiene un usuario relacionado, lo creamos
+        if (!$proveedor->user) {
+            $user = User::create([
+                'name' => $proveedor->nombre_comercial,  // Usamos el nombre del proveedor (o puedes cambiarlo)
+                'email' => $proveedor->email,  // Asignamos el correo del proveedor
+                'password' => Hash::make($request->password),  // Guardamos la contraseña encriptada
+                'role' => UserRoleEnumerate::PROVEEDOR->value,  // Guardamos la contraseña encriptada
+            ]);
+
+            // Asocia el usuario con el proveedor
+            $proveedor->user()->associate($user);
+            $proveedor->save();  // Guardamos la relación
+
+        } else {
+            // Si ya existe un usuario, actualizamos solo la contraseña
+            $user = $proveedor->user;
+            $user->password = Hash::make($request->password);
+            $user->save();
+        }
+
+        // Eliminamos el token temporal de la caché
+        Cache::forget("registro_proveedor_{$request->token}");
+
+        // Generamos el token para la sesión del usuario
+        $token = $user->createToken('API Token')->plainTextToken;
+        return $this->success(
+            [
+                'user' => $user,
+                'proveedor' => $proveedor,
+                'token' => $token
+            ],
+            'Contraseña establecida correctamente',
+            201
+        );
+    }
+
 
     /**
      * @OA\Get(
@@ -203,7 +274,7 @@ class ProveedorController extends Controller
             'codigo_postal' => 'required|string|max:10',
             'contacto_nombre' => 'required|string|max:255',
             'contacto_telefono' => 'required|string|max:15',
-            'contacto_email' => 'required|email|max:255',
+            'contacto_correo' => 'required|email|max:255',
         ]);
 
 

@@ -11,7 +11,11 @@
     },
     "servers": [
         {
-            "url": "http://localhost:8000",
+            "url": "0.0.0.0:8080",
+            "description": "Servidor local: SQLite"
+        },
+        {
+            "url": "0.0.0.0:8080",
             "description": "Servidor local: SQLite"
         }
     ],
@@ -1720,144 +1724,29 @@
                         "sanctum": []
                     }
                 ]
-            }
-        },
-        "/api/register_proveedor": {
+            },
             "post": {
                 "tags": [
-                    "Autenticación"
+                    "Proveedor"
                 ],
-                "summary": "Registra un proveedor",
-                "operationId": "RegisterProveedor",
+                "summary": "Registrar un nuevo proveedor",
+                "operationId": "storeProveedor",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "nombre_propietario",
-                                    "nombre_de_quien_registra",
-                                    "nombre_comercial",
-                                    "razon_social",
-                                    "tipos_empresa_id",
-                                    "descripcion_giro_empresa",
-                                    "direccion_empresa",
-                                    "email",
-                                    "telefono",
-                                    "pagina_web",
-                                    "estado",
-                                    "municipio",
-                                    "codigo_postal",
-                                    "contacto_nombre",
-                                    "contacto_cargo",
-                                    "contacto_telefono",
-                                    "contacto_correo"
-                                ],
-                                "properties": {
-                                    "nombre_propietario": {
-                                        "type": "string",
-                                        "maxLength": 255
-                                    },
-                                    "nombre_de_quien_registra": {
-                                        "type": "string",
-                                        "maxLength": 255
-                                    },
-                                    "nombre_comercial": {
-                                        "type": "string",
-                                        "maxLength": 255
-                                    },
-                                    "razon_social": {
-                                        "type": "string",
-                                        "maxLength": 255
-                                    },
-                                    "tipos_empresa_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "tipos_empresa_otro": {
-                                        "type": "string",
-                                        "maxLength": 60
-                                    },
-                                    "descripcion_giro_empresa": {
-                                        "type": "string",
-                                        "maxLength": 255
-                                    },
-                                    "direccion_empresa": {
-                                        "type": "string",
-                                        "maxLength": 255
-                                    },
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "maxLength": 255
-                                    },
-                                    "telefono": {
-                                        "type": "string",
-                                        "maxLength": 15
-                                    },
-                                    "pagina_web": {
-                                        "type": "string",
-                                        "maxLength": 255
-                                    },
-                                    "estado": {
-                                        "type": "string",
-                                        "maxLength": 255
-                                    },
-                                    "municipio": {
-                                        "type": "string",
-                                        "maxLength": 255
-                                    },
-                                    "codigo_postal": {
-                                        "type": "string",
-                                        "maxLength": 10
-                                    },
-                                    "direccion_fiscal": {
-                                        "type": "string",
-                                        "maxLength": 255
-                                    },
-                                    "contacto_nombre": {
-                                        "type": "string",
-                                        "maxLength": 150
-                                    },
-                                    "contacto_cargo": {
-                                        "type": "string",
-                                        "maxLength": 60
-                                    },
-                                    "contacto_telefono": {
-                                        "type": "string",
-                                        "maxLength": 15
-                                    },
-                                    "contacto_correo": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "maxLength": 60
-                                    }
-                                },
-                                "type": "object"
+                                "$ref": "#/components/schemas/ProveedorCreate"
                             }
                         }
                     }
                 },
                 "responses": {
                     "201": {
-                        "description": "Proveedor creado exitosamente",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Proveedor"
-                                }
-                            }
-                        }
+                        "description": "Proveedor creado exitosamente"
                     },
                     "422": {
-                        "description": "Entrada inválida",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/InvalidInputException"
-                                }
-                            }
-                        }
+                        "description": "Errores de validación"
                     }
                 },
                 "security": [
@@ -2238,7 +2127,7 @@
                 }
             }
         },
-        "/api/tipos-empresa": {
+        "/api/tipoempresas": {
             "get": {
                 "tags": [
                     "TipoEmpresa"
@@ -2310,7 +2199,7 @@
                 ]
             }
         },
-        "/api/tipos-empresa/{id}": {
+        "/api/tipoempresas/{id}": {
             "get": {
                 "tags": [
                     "TipoEmpresa"
@@ -3341,31 +3230,37 @@
                     "contacto_nombre",
                     "contacto_telefono",
                     "contacto_correo",
-                    "tipos_empresa_id",
+                    "tipos_empresa",
                     "descripcion_giro_empresa",
-                    "direccion_empresa"
+                    "Direccion_empresa",
+                    "Ubicacion",
+                    "pagina_web",
+                    "Contraseña"
                 ],
                 "properties": {
                     "id": {
                         "type": "integer",
                         "example": 1
                     },
-                    "logo": {
+                    "nombre_comercial": {
                         "type": "string",
-                        "format": "uri",
-                        "example": "https://misitio.com/logo.png"
+                        "example": "Materiales Rivera"
+                    },
+                    "razon_social": {
+                        "type": "string",
+                        "example": "Materiales de Construcción Rivera S.A. de C.V."
                     },
                     "rfc": {
                         "type": "string",
                         "example": "RIEM920313AB1"
                     },
-                    "tipo_persona": {
+                    "email": {
                         "type": "string",
-                        "example": "Moral"
+                        "example": "contacto@materialesrivera.com"
                     },
-                    "direccion_fiscal": {
+                    "telefono": {
                         "type": "string",
-                        "example": "Calle Ficticia 123"
+                        "example": "6671234567"
                     },
                     "estado": {
                         "type": "string",
@@ -3379,79 +3274,9 @@
                         "type": "string",
                         "example": "80000"
                     },
-                    "estatus": {
-                        "type": "string",
-                        "example": "pendiente"
-                    },
-                    "notas": {
-                        "type": "string",
-                        "example": "Proveedor con buena reputación."
-                    },
-                    "validado_por": {
-                        "type": "integer",
-                        "example": 5,
-                        "nullable": true
-                    },
-                    "user_id": {
-                        "type": "integer",
-                        "example": 2,
-                        "nullable": true
-                    },
-                    "nombre_propietario": {
-                        "type": "string",
-                        "example": "Carlos López"
-                    },
-                    "nombre_de_quien_registra": {
-                        "type": "string",
-                        "example": "María Pérez"
-                    },
-                    "nombre_comercial": {
-                        "type": "string",
-                        "example": "Materiales Rivera"
-                    },
-                    "razon_social": {
-                        "type": "string",
-                        "example": "Materiales de Construcción Rivera S.A. de C.V."
-                    },
-                    "tipos_empresa_id": {
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "tipos_empresa_otro": {
-                        "type": "string",
-                        "example": "Familiar",
-                        "nullable": true
-                    },
-                    "descripcion_giro_empresa": {
-                        "type": "string",
-                        "example": "Venta de materiales de construcción."
-                    },
-                    "direccion_empresa": {
-                        "type": "string",
-                        "example": "Calle 123, Col. Centro"
-                    },
-                    "email": {
-                        "type": "string",
-                        "format": "email",
-                        "example": "contacto@materialesrivera.com"
-                    },
-                    "telefono": {
-                        "type": "string",
-                        "example": "6671234567"
-                    },
-                    "pagina_web": {
-                        "type": "string",
-                        "format": "uri",
-                        "example": "https://materialesrivera.com",
-                        "nullable": true
-                    },
                     "contacto_nombre": {
                         "type": "string",
                         "example": "Juan Pérez"
-                    },
-                    "contacto_cargo": {
-                        "type": "string",
-                        "example": "Gerente de compras"
                     },
                     "contacto_telefono": {
                         "type": "string",
@@ -3459,18 +3284,65 @@
                     },
                     "contacto_correo": {
                         "type": "string",
-                        "format": "email",
                         "example": "juan.perez@materialesrivera.com"
+                    },
+                    "estatus": {
+                        "type": "string",
+                        "example": "activo"
+                    },
+                    "notas": {
+                        "type": "string",
+                        "example": "Proveedor confiable."
                     },
                     "created_at": {
                         "type": "string",
                         "format": "date-time",
-                        "example": "2024-01-01T12:00:00Z"
+                        "example": "2024-01-01T00:00:00Z"
                     },
                     "updated_at": {
                         "type": "string",
                         "format": "date-time",
-                        "example": "2024-01-02T15:30:00Z"
+                        "example": "2024-01-02T00:00:00Z"
+                    },
+                    "tipos_empresa": {
+                        "type": "string",
+                        "enum": [
+                            "con_crud",
+                            "otro"
+                        ],
+                        "example": "otro"
+                    },
+                    "otro_tipos_empresa": {
+                        "type": "string",
+                        "maxLength": 15,
+                        "example": "Familiar"
+                    },
+                    "descripcion_giro_empresa": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "example": "Venta y distribución de materiales de construcción."
+                    },
+                    "Direccion_empresa": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "example": "Calle 123, Col. Centro, Culiacán, Sinaloa"
+                    },
+                    "Ubicacion": {
+                        "type": "string",
+                        "format": "point",
+                        "example": "25.6768,-100.3092"
+                    },
+                    "pagina_web": {
+                        "type": "string",
+                        "format": "url",
+                        "example": "https://constructor.com"
+                    },
+                    "Contraseña": {
+                        "type": "string",
+                        "format": "password",
+                        "maxLength": 60,
+                        "minLength": 8,
+                        "example": "S3gura@123"
                     }
                 },
                 "type": "object"
@@ -3622,6 +3494,10 @@
         {
             "name": "Producto",
             "description": "Producto"
+        },
+        {
+            "name": "Proveedor",
+            "description": "Proveedor"
         },
         {
             "name": "TipoEmpresa",

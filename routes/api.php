@@ -13,7 +13,7 @@ use App\Http\Controllers\UnidadMedidaController;
 use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\LineaController;
 use App\Http\Controllers\MarcaController;
-use App\Models\Marca;
+use App\Http\Controllers\TipoEmpresaController;
 
 /**
  * Rutas Publicas. Que no necesitan procteccion
@@ -23,16 +23,39 @@ use App\Models\Marca;
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 
+/**
+ * 
+ *  Registro de un proveedor:
+ *      1. Primero se registra el proveedor.
+ *      2. Envio de corrreo para confirmacion del email.
+ *      3. El usuario ingresa la contraseña y la confgirmacion para crear el usuario.
+ *      4. Se registra el usuario y se genera una sesion.
+ * 
+ */
+Route::post('register_proveedor', [ProveedorController::class, 'register_proveedor']);
+Route::post('register_proveedor_completar', [ProveedorController::class, 'register_proveedor_completar']);
+
+
+/**
+ * Rutas de listado de catalogos
+ */
 Route::get('categorias', [CategoriaController::class, 'index']);
 Route::get('lineas', [LineaController::class, 'index']);
 Route::get('marcas', [MarcaController::class, 'index']);
 Route::get('unidades-medida', [UnidadMedidaController::class, 'index']);
 Route::get('grupos', [GrupoController::class, 'index']);
+Route::get('tipos-empresa', [TipoEmpresaController::class, 'index']);
 
 
-Route::middleware(['auth:sanctum'])->group(function () {
+/**
+ * Rutas con proteccion con apitoken
+ */
+Route::middleware(
+    'auth:sanctum'
+)->group(function () {
 
     Route::get('me', [AuthController::class, 'me']);  // Obtener datos del proveedor autenticado
+    Route::get('logout', [AuthController::class, 'logout']);  // Obtener datos del proveedor autenticado
 
     Route::middleware([
         'role:'

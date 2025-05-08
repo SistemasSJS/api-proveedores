@@ -2,17 +2,16 @@
 
 namespace Database\Factories;
 
-use App\Models\Linea;
+use App\Models\TipoEmpresa;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class LineaFactory extends Factory
+class TipoEmpresaFactory extends Factory
 {
-    protected $model = Linea::class;
-
+    protected $model = TipoEmpresa::class;
     public function definition(): array
     {
         return [
-            'nombre' => $this->faker->unique()->company,
+            'nombre' => $this->faker->name,
             'estatus' => 'activo',
         ];
     }
