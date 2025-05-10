@@ -146,3 +146,46 @@ php artisan l5-swagger:generate
 Visita en tu navegador:
 
 http://localhost:8000/api/documentation
+
+
+
+🔐 Backend (Laravel)
+Instalar el paquete de validación:
+
+bash
+Copiar
+Editar
+composer require anhskohbo/no-captcha
+Agregar las claves en .env:
+
+env
+Copiar
+Editar
+NOCAPTCHA_SITEKEY=tu_clave_site
+NOCAPTCHA_SECRET=tu_clave_secreta
+Publicar el config (opcional):
+
+bash
+Copiar
+Editar
+php artisan vendor:publish --provider="Anhskohbo\NoCaptcha\NoCaptchaServiceProvider"
+Validar en tu StoreProveedorRequest:
+
+php
+Copiar
+Editar
+public function rules()
+{
+    return [
+        // tus reglas actuales...
+        'g-recaptcha-response' => ['required', 'captcha'],
+    ];
+}
+Registrar el provider (si usás Laravel < 8) en config/app.php:
+
+php
+Copiar
+Editar
+'providers' => [
+    Anhskohbo\NoCaptcha\NoCaptchaServiceProvider::class,
+],

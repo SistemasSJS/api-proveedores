@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ReCaptcha;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreProveedorRequest extends FormRequest
@@ -33,6 +34,7 @@ class StoreProveedorRequest extends FormRequest
             'contacto_cargo' => ['required', 'string', 'max:60'],
             'contacto_telefono' => ['required', 'string', 'max:15'],
             'contacto_correo' => ['required', 'email', 'max:60'],
+            'recaptcha_token' => ['required', new ReCaptcha],
         ];
     }
     public function messages()

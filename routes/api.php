@@ -57,12 +57,12 @@ Route::middleware(
     Route::get('me', [AuthController::class, 'me']);  // Obtener datos del proveedor autenticado
     Route::get('logout', [AuthController::class, 'logout']);  // Obtener datos del proveedor autenticado
 
-    Route::middleware([
+    Route::middleware(
         'role:'
-            . UserRoleEnumerate::SUPER_ADMIN->value . ','
             . UserRoleEnumerate::PROVEEDOR->value . ','
+            . UserRoleEnumerate::SUPER_ADMIN->value . ','
             . UserRoleEnumerate::ADMIN->value
-    ])->group(function () {
+    )->group(function () {
         Route::apiResource('proveedores', ProveedorController::class);
         Route::prefix('proveedores/{id}')->group(function () {
             Route::get('productos', [ProveedorController::class, 'productosPorProveedor']);
@@ -73,8 +73,9 @@ Route::middleware(
 
     Route::middleware(
         'role:'
+            . UserRoleEnumerate::PROVEEDOR->value . ','
             . UserRoleEnumerate::SUPER_ADMIN->value . ','
-            . UserRoleEnumerate::ADMIN->value
+            . UserRoleEnumerate::ADMIN->value 
     )->group(function () {
 
         /**

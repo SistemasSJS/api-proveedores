@@ -20,7 +20,7 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        $user = Auth::user('sanctum');
+        $user = Auth::user();
         if (!$user) {
             throw new UnauthorizedException('El usuario no está autenticado.');
         }
@@ -31,5 +31,6 @@ class RoleMiddleware
         }
 
         return $next($request);
+
     }
 }

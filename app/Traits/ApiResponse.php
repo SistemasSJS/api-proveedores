@@ -15,7 +15,7 @@ trait ApiResponse
             'message' => $message,
             'data' => $data,
             'errors' => null,
-        ], $code);
+        ], $code, [], JSON_UNESCAPED_UNICODE);
     }
 
     protected function error(string $message = 'Ha ocurrido un error.', $errors = null, int $code = 400): JsonResponse
@@ -26,7 +26,7 @@ trait ApiResponse
             'message' => $message,
             'data' => null,
             'errors' => $errors,
-        ], $code);
+        ], $code, [], JSON_UNESCAPED_UNICODE);
     }
 
     protected function paginated(LengthAwarePaginator $paginator, string $message = 'Datos paginados.', int $code = 200): JsonResponse
@@ -47,6 +47,6 @@ trait ApiResponse
                 ]
             ],
             'errors' => null,
-        ], $code);
+        ], $code, [], JSON_UNESCAPED_UNICODE);
     }
 }

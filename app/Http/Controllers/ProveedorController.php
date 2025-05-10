@@ -105,17 +105,22 @@ class ProveedorController extends Controller
     public function register_proveedor(StoreProveedorRequest $request)
     {
         $proveedor = Proveedor::create($request->validated());
+
         // Generamos un token único
         $token = Str::random(60);
 
+
         // Guardamos el token en cache para validarlo después
-        Cache::put("registro_proveedor_{$token}", $proveedor->id, 3600); // Expira en 1 hora
+        Cache::put("registro_proveedor_{$token}", $proveedor->id, 3600);
+        // Expira en 1 hora
+
 
         // Enviar correo con el link para completar el registro
-        $url = url("http://localhost:8100/auth/completar-registro-proveedor?token={$token}");
+        $url = config('services.frontend.url') . "/auth/completar-registro-proveedor?token={$token}";
         Mail::to($proveedor->email)->send(new CompletaRegistroProveedorMail($url));
 
         return $this->success($proveedor->load(Proveedor::eagerLodable()), 'Proveedor registrado. Revisa tu correo para continuar.', 200);
+
         // return $this->success($proveedor->load(Proveedor::eagerLodable()), 201);
     }
 
@@ -125,41 +130,59 @@ class ProveedorController extends Controller
      */
     public function register_proveedor_completar(RegisterProveedorCompletarRequest $request)
     {
+
         // Validamos los datos
         $validated_data = $request->validated();
+
 
         // Verificamos si el token existe en la caché (token temporal que generamos en el registro)
         $proveedorId = Cache::get("registro_proveedor_{$request->token}");
 
         if (!$proveedorId) {
-            return response()->json(['message' => 'Token inválido o expirado'], 400);
+
+            // return response()->json(['message' => 'Token inválido o expirado'], 400);
+            return $this->error(
+                'Token inválido o expirado',
+                400
+            );
         }
+
 
         // Buscamos al proveedor por el ID guardado en la caché
         $proveedor = Proveedor::findOrFail($proveedorId);
 
+
         // Si el proveedor no tiene un usuario relacionado, lo creamos
         if (!$proveedor->user) {
             $user = User::create([
-                'name' => $proveedor->nombre_comercial,  // Usamos el nombre del proveedor (o puedes cambiarlo)
-                'email' => $proveedor->email,  // Asignamos el correo del proveedor
-                'password' => Hash::make($request->password),  // Guardamos la contraseña encriptada
-                'role' => UserRoleEnumerate::PROVEEDOR->value,  // Guardamos la contraseña encriptada
+                'name' => $proveedor->nombre_comercial,
+                // Usamos el nombre del proveedor (o puedes cambiarlo)
+                'email' => $proveedor->email,
+                // Asignamos el correo del proveedor
+                'password' => Hash::make($request->password),
+                // Guardamos la contraseña encriptada
+                'role' => UserRoleEnumerate::PROVEEDOR->value,
+                // Guardamos la contraseña encriptada
             ]);
+
 
             // Asocia el usuario con el proveedor
             $proveedor->user()->associate($user);
-            $proveedor->save();  // Guardamos la relación
+            $proveedor->save();
+            // Guardamos la relación
 
         } else {
+
             // Si ya existe un usuario, actualizamos solo la contraseña
             $user = $proveedor->user;
             $user->password = Hash::make($request->password);
             $user->save();
         }
 
+
         // Eliminamos el token temporal de la caché
         Cache::forget("registro_proveedor_{$request->token}");
+
 
         // Generamos el token para la sesión del usuario
         $token = $user->createToken('API Token')->plainTextToken;
