@@ -19,8 +19,8 @@ abstract class BaseApiException extends Exception
 
     public function __construct(string $message = '', int $code = 0)
     {
-        parent::__construct($message ?: 'Error en la API', $code);
         $this->log();
+        parent::__construct($message ?: 'Error en la API', $code);
     }
 
     protected function log(): void

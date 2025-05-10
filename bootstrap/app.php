@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\Api\Handler;
+use App\Http\Middleware\LogIncomingRequests;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -15,6 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias(['role' => RoleMiddleware::class]);
+        $middleware->use([
+            LogIncomingRequests::class
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

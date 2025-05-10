@@ -2,10 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Exceptions\Api\Auth\UnauthorizedException;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use App\Exceptions\Api\Auth\UnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
 
 class RoleMiddleware
@@ -20,17 +19,12 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        $user = Auth::user();
-        if (!$user) {
-            throw new UnauthorizedException('El usuario no está autenticado.');
-        }
+        $user = $request->user();
 
-        // Asegura que el rol del usuario está en la lista que viene desde la ruta
-        if (!in_array($user->role, $roles)) {
+        if (!$user || !$user->hasRole($roles)) {
             throw new UnauthorizedException('El usuario no tiene el rol requerido.');
         }
 
         return $next($request);
-
     }
 }

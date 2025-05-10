@@ -3,10 +3,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Exceptions\Api\Auth\UnauthorizedException;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Illuminate\Support\Facades\Auth;
 
 /**
  * @decrepted
@@ -22,9 +22,10 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Verifica si el usuario autenticado es administrador
-        if (Auth::user()->role !== 'admin') {
-            return response()->json(['error' => 'No autorizado'], 403);
+        $user = $request->user();
+
+        if (!$user || !$user->isUserAdmin()) {
+            throw new UnauthorizedException('El usuario no tiene el rol requerido.');
         }
 
         return $next($request);

@@ -3,42 +3,40 @@
 namespace App\Enums;
 
 /**
- * Enumerado de los tipos de usuarios existentes en la plataforma.
+ * Enumerado de los roles de usuario en la plataforma.
  */
 enum UserRoleEnumerate: string
 {
     /**
-     * Usuario perteneciente al gerente general de la empresa.
-     * Rol único y con máximos privilegios.
+     * Usuario con el rol más alto. Acceso total al sistema.
      */
-    case SUPER_ADMIN = 'super_admin';
+    case SUPER_ADMIN = 'SUPER_ADMIN';
 
     /**
-     * Usuario administrador. Puede haber más de uno.1
-     * Tiene privilegios elevados para la gestión general.
+     * Usuario administrador. Puede haber más de uno.
+     * Tiene privilegios elevados de gestión.
      */
-    case ADMIN = 'admin';
+    case ADMIN = 'ADMIN';
 
     /**
-     * Usuario registrado estándar.
-     * Acceso limitado a funcionalidades básicas de la plataforma.
+     * Usuario estándar registrado.
+     * Acceso a funcionalidades básicas.
      */
-    case USUARIO = 'usuario';
+    case USUARIO = 'USUARIO';
 
     /**
-     * Usuario no registrado.
-     * Acceso restringido; posiblemente visitante o invitado.
+     * Usuario no registrado (invitado o visitante).
+     * Acceso muy limitado o solo lectura.
      */
-    case USUARIO_NO_REGISTRADO = 'usuario_no_registrado';
+    case USUARIO_NO_REGISTRADO = 'USUARIO_NO_REGISTRADO';
 
     /**
      * Usuario en proceso de registro o con perfil incompleto.
      */
-    case USUARIO_CONSTRUCCION = 'usuario_construccion';
+    case USUARIO_CONSTRUCCION = 'USUARIO_CONSTRUCCION';
 
     /**
-     * Usuario proveedor.
-     * Tiene acceso a funcionalidades específicas para proveedores.
+     * Usuario proveedor. Acceso a funcionalidades específicas de proveedor.
      */
-    case PROVEEDOR = 'proveedor';
+    case PROVEEDOR = 'PROVEEDOR';
 }
