@@ -10,17 +10,20 @@ class LogIncomingRequests
 {
     public function handle(Request $request, Closure $next)
     {
+        $user = $request->user();
+
         // Datos a registrar
         $log = [
-            'ip'       => $request->ip(),
             'method'   => $request->method(),
+            'path'       => $request->path(),
+            'host'       => $request->host(),
             'url'      => $request->fullUrl(),
-            'headers'  => $request->headers->all(),
+            'ip'       => $request->ip(),
             'body'     => $request->except(['password', 'password_confirmation']),
-            'user_id'  => optional($request->user())->id,
+            'headers'  => $request->headers->all(),
         ];
 
-        Log::channel('requests')->info('Incoming Request', $log);
+        Log::channel('requests')->info($request->path(), $log);
 
         return $next($request);
     }

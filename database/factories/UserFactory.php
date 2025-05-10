@@ -47,7 +47,7 @@ class UserFactory extends Factory
     public function proveedor(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => 'proveedor',
+            'role' => UserRoleEnumerate::PROVEEDOR->value,
         ]);
     }
 }
