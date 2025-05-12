@@ -39,6 +39,6 @@ return [
         'site' => env('RECAPTCHA_SITE_KEY'),
     ],
     'frontend' => [
-        'url' => env('FRONTEND_URL', 'http://localhost:8100'), // Valor por defecto
+        'url' => env('APP_FRONTEND_URL', 'http://localhost:8100'), // Valor por defecto
     ],
 ];

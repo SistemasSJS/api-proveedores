@@ -5,7 +5,54 @@ namespace App\Http\Requests;
 use App\Rules\ReCaptcha;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreProveedorRequest extends FormRequest
+
+
+/**
+ * @OA\Schema(
+ *     schema="RegistroProveedorRequest",
+ *     required={
+ *         "nombre_propietario",
+ *         "nombre_de_quien_registra",
+ *         "nombre_comercial",
+ *         "razon_social",
+ *         "tipos_empresa_id",
+ *         "descripcion_giro_empresa",
+ *         "direccion_empresa",
+ *         "email",
+ *         "telefono",
+ *         "pagina_web",
+ *         "estado",
+ *         "municipio",
+ *         "codigo_postal",
+ *         "contacto_nombre",
+ *         "contacto_cargo",
+ *         "contacto_telefono",
+ *         "contacto_correo",
+ *         "recaptcha_token"
+ *     },
+ *     @OA\Property(property="nombre_propietario", type="string", maxLength=255),
+ *     @OA\Property(property="nombre_de_quien_registra", type="string", maxLength=255),
+ *     @OA\Property(property="nombre_comercial", type="string", maxLength=255),
+ *     @OA\Property(property="razon_social", type="string", maxLength=255),
+ *     @OA\Property(property="tipos_empresa_id", type="integer", example=1),
+ *     @OA\Property(property="tipos_empresa_otro", type="string", maxLength=60, nullable=true),
+ *     @OA\Property(property="descripcion_giro_empresa", type="string", maxLength=255),
+ *     @OA\Property(property="direccion_empresa", type="string", maxLength=255),
+ *     @OA\Property(property="email", type="string", format="email", maxLength=255),
+ *     @OA\Property(property="telefono", type="string", maxLength=15),
+ *     @OA\Property(property="pagina_web", type="string", maxLength=255),
+ *     @OA\Property(property="estado", type="string", maxLength=255),
+ *     @OA\Property(property="municipio", type="string", maxLength=255),
+ *     @OA\Property(property="codigo_postal", type="string", maxLength=10),
+ *     @OA\Property(property="direccion_fiscal", type="string", maxLength=255, nullable=true),
+ *     @OA\Property(property="contacto_nombre", type="string", maxLength=150),
+ *     @OA\Property(property="contacto_cargo", type="string", maxLength=60),
+ *     @OA\Property(property="contacto_telefono", type="string", maxLength=15),
+ *     @OA\Property(property="contacto_correo", type="string", format="email", maxLength=60),
+ *     @OA\Property(property="recaptcha_token", type="string", description="Token de validación ReCAPTCHA v3")
+ * )
+ */
+class RegistroProveedorRequest extends FormRequest
 {
     public function authorize(): bool
     {

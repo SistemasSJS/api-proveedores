@@ -4,6 +4,32 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="RegisterProveedorCompletarRequest",
+ *     required={"token", "password", "password_confirmation"},
+ *     @OA\Property(
+ *         property="token",
+ *         type="string",
+ *         description="Token proporcionado para completar el registro",
+ *         example="abc123def456"
+ *     ),
+ *     @OA\Property(
+ *         property="password",
+ *         type="string",
+ *         format="password",
+ *         description="Nueva contraseña (mínimo 8 caracteres)",
+ *         example="MiClaveSegura123"
+ *     ),
+ *     @OA\Property(
+ *         property="password_confirmation",
+ *         type="string",
+ *         format="password",
+ *         description="Confirmación de la nueva contraseña",
+ *         example="MiClaveSegura123"
+ *     )
+ * )
+ */
 class RegisterProveedorCompletarRequest extends FormRequest
 {
     /**

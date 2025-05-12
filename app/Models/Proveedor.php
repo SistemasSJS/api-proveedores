@@ -131,7 +131,8 @@ class Proveedor extends BaseModel
     public static function eagerLodable(): array
     {
         return [
-            'user'
+            'user',
+            'tipos_empresa'
         ];
     }
 
@@ -211,6 +212,14 @@ class Proveedor extends BaseModel
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Usuario que registró al proveedor.
+     */
+    public function tipos_empresa()
+    {
+        return $this->belongsTo(TipoEmpresa::class);
     }
 
     /**

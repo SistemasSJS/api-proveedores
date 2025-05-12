@@ -169,7 +169,7 @@ bash
 Copiar
 Editar
 php artisan vendor:publish --provider="Anhskohbo\NoCaptcha\NoCaptchaServiceProvider"
-Validar en tu StoreProveedorRequest:
+Validar en tu RegistroProveedorRequest:
 
 php
 Copiar

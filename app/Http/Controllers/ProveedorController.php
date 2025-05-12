@@ -7,8 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Proveedor;
 use Illuminate\Http\Request;
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
+use App\Http\Requests\ActualizarProveedorRequest;
 use App\Http\Requests\RegisterProveedorCompletarRequest;
-use App\Http\Requests\StoreProveedorRequest;
+use App\Http\Requests\RegistroProveedorRequest;
 use App\Mail\CompletaRegistroProveedorMail;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
@@ -60,49 +61,40 @@ class ProveedorController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/register_proveedor",
-     *     summary="Registra un proveedor",
-     *     operationId="RegisterProveedor",
-     *     tags={"Autenticación"},
+     *     path="/api/proveedores",
+     *     summary="Registrar un nuevo proveedor",
+     *     description="Crea un nuevo proveedor. Requiere validación por correo para crear el usuario.",
+     *     operationId="registrarProveedor",
+     *     tags={"Proveedores"},
      *     security={{"sanctum":{}}},
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(
-     *             required={"nombre_propietario", "nombre_de_quien_registra", "nombre_comercial", "razon_social", "tipos_empresa_id", "descripcion_giro_empresa", "direccion_empresa", "email", "telefono", "pagina_web", "estado", "municipio", "codigo_postal", "contacto_nombre", "contacto_cargo", "contacto_telefono", "contacto_correo"},
-     *             @OA\Property(property="nombre_propietario", type="string", maxLength=255),
-     *             @OA\Property(property="nombre_de_quien_registra", type="string", maxLength=255),
-     *             @OA\Property(property="nombre_comercial", type="string", maxLength=255),
-     *             @OA\Property(property="razon_social", type="string", maxLength=255),
-     *             @OA\Property(property="tipos_empresa_id", type="integer", example=1),
-     *             @OA\Property(property="tipos_empresa_otro", type="string", maxLength=60),
-     *             @OA\Property(property="descripcion_giro_empresa", type="string", maxLength=255),
-     *             @OA\Property(property="direccion_empresa", type="string", maxLength=255),
-     *             @OA\Property(property="email", type="string", format="email", maxLength=255),
-     *             @OA\Property(property="telefono", type="string", maxLength=15),
-     *             @OA\Property(property="pagina_web", type="string", maxLength=255),
-     *             @OA\Property(property="estado", type="string", maxLength=255),
-     *             @OA\Property(property="municipio", type="string", maxLength=255),
-     *             @OA\Property(property="codigo_postal", type="string", maxLength=10),
-     *             @OA\Property(property="direccion_fiscal", type="string", maxLength=255),
-     *             @OA\Property(property="contacto_nombre", type="string", maxLength=150),
-     *             @OA\Property(property="contacto_cargo", type="string", maxLength=60),
-     *             @OA\Property(property="contacto_telefono", type="string", maxLength=15),
-     *             @OA\Property(property="contacto_correo", type="string", format="email", maxLength=60)
-     *         )
+     *         @OA\JsonContent(ref="#/components/schemas/RegistroProveedorRequest")
      *     ),
      *     @OA\Response(
      *         response=201,
-     *         description="Proveedor creado exitosamente",
-     *         @OA\JsonContent(ref="#/components/schemas/Proveedor")
+     *         description="Proveedor registrado exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Proveedor registrado exitosamente"),
+     *             @OA\Property(property="proveedor", ref="#/components/schemas/Proveedor"),
+     *             @OA\Property(property="sucursal", ref="#/components/schemas/Sucursal")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Entrada inválida",
-     *         @OA\JsonContent(ref="#/components/schemas/InvalidInputException")
+     *         description="Datos de entrada inválidos",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="The given data was invalid."),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 additionalProperties=@OA\Property(type="array", @OA\Items(type="string"))
+     *             )
+     *         )
      *     )
      * )
      */
-    public function register_proveedor(StoreProveedorRequest $request)
+    public function register_proveedor(RegistroProveedorRequest $request)
     {
         $proveedor = Proveedor::create($request->validated());
 
@@ -124,9 +116,43 @@ class ProveedorController extends Controller
         // return $this->success($proveedor->load(Proveedor::eagerLodable()), 201);
     }
 
-
     /**
-     * 
+     * @OA\Post(
+     *     path="/api/register_proveedor_completar",
+     *     summary="Completar el registro de un proveedor",
+     *     operationId="CompletarRegistroProveedor",
+     *     tags={"Proveedores"},
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"token", "password", "password_confirmation"},
+     *             @OA\Property(property="token", type="string", description="Token proporcionado para completar el registro", example="abc123def456"),
+     *             @OA\Property(property="password", type="string", format="password", description="Nueva contraseña (mínimo 8 caracteres)", example="MiClaveSegura123"),
+     *             @OA\Property(property="password_confirmation", type="string", format="password", description="Confirmación de la nueva contraseña", example="MiClaveSegura123")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Proveedor creado exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="proveedor", ref="#/components/schemas/Proveedor"),
+     *             @OA\Property(property="token", type="string", description="Token de sesión para el usuario")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Token inválido o expirado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Token inválido o expirado")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Entrada inválida",
+     *         @OA\JsonContent(ref="#/components/schemas/InvalidInputException")
+     *     )
+     * )
      */
     public function register_proveedor_completar(RegisterProveedorCompletarRequest $request)
     {
@@ -237,7 +263,7 @@ class ProveedorController extends Controller
     /**
      * @OA\Put(
      *     path="/api/proveedores/{id}",
-     *     summary="Actualizar proveedor",
+     *     summary="Actualizar un proveedor existente",
      *     operationId="updateProveedor",
      *     tags={"Proveedores"},
      *     security={{"sanctum":{}}},
@@ -250,7 +276,8 @@ class ProveedorController extends Controller
      *     ),
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/Proveedor")
+     *         description="Datos actualizados del proveedor",
+     *         @OA\JsonContent(ref="#/components/schemas/ActualizarProveedorRequest")
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -258,52 +285,35 @@ class ProveedorController extends Controller
      *         @OA\JsonContent(ref="#/components/schemas/Proveedor")
      *     ),
      *     @OA\Response(
-     *         response=422,
-     *         description="Entrada inválida"
-     *     ),
-     *     @OA\Response(
      *         response=404,
      *         description="Proveedor no encontrado",
      *         @OA\JsonContent(ref="#/components/schemas/ResourceNotFoundException")
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Errores de validación",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string"),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 additionalProperties=@OA\Property(type="array", @OA\Items(type="string"))
+     *             )
+     *         )
      *     )
      * )
      */
-    public function update(Request $request, $id)
+    public function update(ActualizarProveedorRequest $request, $id)
     {
         $proveedor = Proveedor::find($id);
+
         if (!$proveedor) {
             throw new ResourceNotFoundException("Proveedor no encontrado.");
         }
 
-        $request->validate([
-            'nombre_comercial' => 'required|string|max:255',
-            'razon_social' => 'required|string|max:255',
-            'rfc' => [
-                'required',
-                'string',
-                'min:12',
-                'max:13',
-                Rule::unique('proveedores')->ignore($id),
-            ],
-            'email' => [
-                'required',
-                'email',
-                'max:255',
-                Rule::unique('proveedores')->ignore($id),
-            ],
-            'telefono' => 'required|string|max:15',
-            'estado' => 'required|string|max:255',
-            'municipio' => 'required|string|max:255',
-            'codigo_postal' => 'required|string|max:10',
-            'contacto_nombre' => 'required|string|max:255',
-            'contacto_telefono' => 'required|string|max:15',
-            'contacto_correo' => 'required|email|max:255',
-        ]);
+        $proveedor->update($request->validated());
 
-
-        $proveedor->update($request->all());
-
-        return $this->success($proveedor->load(Proveedor::eagerLodable()), 201);
+        return $this->success($proveedor->load(Proveedor::eagerLodable()), 200);
     }
 
     /**

@@ -166,3 +166,7 @@ bower_components
 /vendor
 /node_modules
 .env
+
+stubs/
+.vscode/
+
