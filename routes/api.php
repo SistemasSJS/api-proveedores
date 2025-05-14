@@ -45,6 +45,7 @@ Route::get('marcas', [MarcaController::class, 'index']);
 Route::get('unidades-medida', [UnidadMedidaController::class, 'index']);
 Route::get('grupos', [GrupoController::class, 'index']);
 Route::get('tipos-empresa', [TipoEmpresaController::class, 'index']);
+// Route::get('proveedor', [ProveedorController::class, 'index']);
 
 
 /**
@@ -63,7 +64,8 @@ Route::middleware(
             . UserRoleEnumerate::SUPER_ADMIN->value . ','
             . UserRoleEnumerate::ADMIN->value
     )->group(function () {
-        Route::apiResource('proveedores', ProveedorController::class);
+
+        // Route::apiResource('proveedores', ProveedorController::class);
         Route::prefix('proveedores/{id}')->group(function () {
             Route::get('productos', [ProveedorController::class, 'productosPorProveedor']);
             Route::get('sucursales', [ProveedorController::class, 'sucursalesPorProveedor']);
@@ -71,16 +73,15 @@ Route::middleware(
     });
 
 
+    /**
+     * Rutas para los CRUDS. Only admins
+     */
     Route::middleware(
         'role:'
-            . UserRoleEnumerate::PROVEEDOR->value . ','
             . UserRoleEnumerate::SUPER_ADMIN->value . ','
-            . UserRoleEnumerate::ADMIN->value 
+            . UserRoleEnumerate::ADMIN->value
     )->group(function () {
 
-        /**
-         * Rutas para los CRUDS. Only admins
-         */
         Route::apiResource('users', UserController::class);
         Route::apiResource('proveedores', ProveedorController::class);
         Route::apiResource('sucursales', SucursalController::class);

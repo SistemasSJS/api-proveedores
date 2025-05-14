@@ -55,7 +55,14 @@ class ProveedorController extends Controller
     {
         $fields = Proveedor::getFilters();
         $filters = $request->only($fields);
-        $proveedores = Proveedor::with(Proveedor::eagerLodable())->filter($filters)->paginate(10);
+
+        $sortBy = $request->input('sort_by', 'nombre_comercial'); // Default sort by 'nombre_comercial'
+        $order = $request->input('order', 'asc'); // Default order is 'asc'
+
+        $proveedores = Proveedor::with(Proveedor::eagerLodable())
+            ->filter($filters)
+            ->orderBy($sortBy, $order)
+            ->paginate(10);
         return $this->paginated($proveedores);
     }
 
@@ -306,14 +313,12 @@ class ProveedorController extends Controller
     public function update(ActualizarProveedorRequest $request, $id)
     {
         $proveedor = Proveedor::find($id);
-
         if (!$proveedor) {
             throw new ResourceNotFoundException("Proveedor no encontrado.");
         }
-
-        $proveedor->update($request->validated());
-
-        return $this->success($proveedor->load(Proveedor::eagerLodable()), 200);
+        $proveedor->update($request->all());
+        $proveedor->load(Proveedor::eagerLodable());
+        return $this->success($proveedor, 200);
     }
 
     /**

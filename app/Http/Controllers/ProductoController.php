@@ -37,8 +37,15 @@ class ProductoController extends Controller
     {
         $fields = Producto::getFilters();
         $filters = $request->only($fields);
-        $productos = Producto::with(Producto::eagerLodable())->filter($filters)->paginate(10);
-        return $this->paginated($productos);
+
+        $sortBy = $request->input('sort_by', 'nombre_comercial'); // Default sort by 'nombre_comercial'
+        $order = $request->input('order', 'asc'); // Default order is 'asc'
+
+        $proveedores = Producto::with(Producto::eagerLodable())
+            ->filter($filters)
+            ->orderBy($sortBy, $order)
+            ->paginate(10);
+        return $this->paginated($proveedores);
     }
 
     /**
@@ -178,16 +185,13 @@ class ProductoController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // Verificar que el producto exista
         $producto = Producto::find($id);
         if (!$producto) {
             throw new ResourceNotFoundException("Producto no encontrado.");
         }
-
-        // Actualizar el producto
         $producto->update($request->all());
-
-        return $this->success($producto->load(["unidad_medida", "grupo", "imagenes", "proveedor"]), 200);
+        $producto->load(Producto::eagerLodable());
+        return $this->success($producto, 200);
     }
 
     /**

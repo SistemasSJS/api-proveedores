@@ -1,0 +1,472 @@
+[2025-05-12 18:45:21] local.ERROR: Undefined constant "App\Http\Controllers\this" {"userId":1,"exception":"[object] (Error(code: 0): Undefined constant \"App\\Http\\Controllers\\this\" at C:\\repositorio\\app\\api-proveedores\\app\\Http\\Controllers\\ProveedorController.php:320)
+[stacktrace]
+#0 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Controller.php(54): App\\Http\\Controllers\\ProveedorController->update(Object(App\\Http\\Requests\\ActualizarProveedorRequest), Object(App\\Models\\Proveedor), '2')
+#1 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(44): Illuminate\\Routing\\Controller->callAction('update', Array)
+#2 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(266): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\ProveedorController), 'update')
+#3 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(212): Illuminate\\Routing\\Route->runController()
+#4 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(808): Illuminate\\Routing\\Route->run()
+#5 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#6 C:\\repositorio\\app\\api-proveedores\\app\\Http\\Middleware\\RoleMiddleware.php(28): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#7 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): App\\Http\\Middleware\\RoleMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'SUPER_ADMIN', 'ADMIN')
+#8 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(51): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#9 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#10 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Auth\\Middleware\\Authenticate.php(64): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#11 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'sanctum')
+#12 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#13 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(807): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#14 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(786): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#15 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(750): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#16 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(739): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#17 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(201): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#18 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#19 C:\\repositorio\\app\\api-proveedores\\app\\Http\\Middleware\\LogIncomingRequests.php(28): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#20 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): App\\Http\\Middleware\\LogIncomingRequests->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#21 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#22 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#23 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#24 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#25 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(51): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#26 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#27 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#28 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#29 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(110): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#30 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#31 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php(62): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#32 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#33 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(58): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#34 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#35 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks.php(22): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#36 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#37 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\ValidatePathEncoding.php(26): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#38 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\ValidatePathEncoding->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#40 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(176): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#41 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(145): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#42 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1220): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#43 C:\\repositorio\\app\\api-proveedores\\public\\index.php(20): Illuminate\\Foundation\\Application->handleRequest(Object(Illuminate\\Http\\Request))
+#44 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(23): require_once('C:\\\\repositorio\\\\...')
+#45 {main}
+"} 
+[2025-05-12 18:45:53] local.ERROR: Undefined constant "App\Http\Controllers\this" {"userId":1,"exception":"[object] (Error(code: 0): Undefined constant \"App\\Http\\Controllers\\this\" at C:\\repositorio\\app\\api-proveedores\\app\\Http\\Controllers\\ProveedorController.php:320)
+[stacktrace]
+#0 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Controller.php(54): App\\Http\\Controllers\\ProveedorController->update(Object(App\\Http\\Requests\\ActualizarProveedorRequest), Object(App\\Models\\Proveedor), '2')
+#1 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(44): Illuminate\\Routing\\Controller->callAction('update', Array)
+#2 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(266): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\ProveedorController), 'update')
+#3 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(212): Illuminate\\Routing\\Route->runController()
+#4 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(808): Illuminate\\Routing\\Route->run()
+#5 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#6 C:\\repositorio\\app\\api-proveedores\\app\\Http\\Middleware\\RoleMiddleware.php(28): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#7 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): App\\Http\\Middleware\\RoleMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'SUPER_ADMIN', 'ADMIN')
+#8 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(51): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#9 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#10 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Auth\\Middleware\\Authenticate.php(64): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#11 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'sanctum')
+#12 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#13 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(807): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#14 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(786): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#15 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(750): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#16 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(739): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#17 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(201): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#18 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#19 C:\\repositorio\\app\\api-proveedores\\app\\Http\\Middleware\\LogIncomingRequests.php(28): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#20 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): App\\Http\\Middleware\\LogIncomingRequests->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#21 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#22 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#23 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#24 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#25 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(51): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#26 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#27 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#28 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#29 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(110): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#30 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#31 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php(62): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#32 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#33 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(58): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#34 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#35 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks.php(22): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#36 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#37 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\ValidatePathEncoding.php(26): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#38 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\ValidatePathEncoding->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#40 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(176): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#41 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(145): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#42 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1220): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#43 C:\\repositorio\\app\\api-proveedores\\public\\index.php(20): Illuminate\\Foundation\\Application->handleRequest(Object(Illuminate\\Http\\Request))
+#44 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(23): require_once('C:\\\\repositorio\\\\...')
+#45 {main}
+"} 
+[2025-05-13 09:32:12] local.ERROR: ErrorException: $ref "#/components/schemas/ActualizarProveedorRequest" not found for @OA\JsonContent() in \App\Http\Controllers\ProveedorController->update() in C:\repositorio\app\api-proveedores\app\Http\Controllers\ProveedorController.php on line 313 in C:\repositorio\app\api-proveedores\vendor\zircote\swagger-php\src\Loggers\DefaultLogger.php:23
+Stack trace:
+#0 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Foundation\Bootstrap\HandleExceptions.php(256): Illuminate\Foundation\Bootstrap\HandleExceptions->handleError(512, '$ref "#/compone...', 'C:\\repositorio\\...', 23)
+#1 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->Illuminate\Foundation\Bootstrap\{closure}(512, '$ref "#/compone...', 'C:\\repositorio\\...', 23)
+#2 C:\repositorio\app\api-proveedores\vendor\zircote\swagger-php\src\Loggers\DefaultLogger.php(23): trigger_error('$ref "#/compone...', 512)
+#3 C:\repositorio\app\api-proveedores\vendor\psr\log\src\LoggerTrait.php(61): OpenApi\Loggers\DefaultLogger->log('warning', '$ref "#/compone...', Array)
+#4 C:\repositorio\app\api-proveedores\vendor\zircote\swagger-php\src\Annotations\AbstractAnnotation.php(509): Psr\Log\AbstractLogger->warning('$ref "#/compone...', Array)
+#5 C:\repositorio\app\api-proveedores\vendor\zircote\swagger-php\src\Annotations\Schema.php(519): OpenApi\Annotations\AbstractAnnotation->validate(Array, Array, '#/paths/18/put/...', Object(stdClass))
+#6 C:\repositorio\app\api-proveedores\vendor\zircote\swagger-php\src\Annotations\AbstractAnnotation.php(590): OpenApi\Annotations\Schema->validate(Array, Array, '#/paths/18/put/...', Object(stdClass))
+#7 C:\repositorio\app\api-proveedores\vendor\zircote\swagger-php\src\Annotations\AbstractAnnotation.php(563): OpenApi\Annotations\AbstractAnnotation::_validate(Object(OpenApi\Annotations\MediaType), Array, Array, '#/paths/18/put/...', Object(stdClass))
+#8 C:\repositorio\app\api-proveedores\vendor\zircote\swagger-php\src\Annotations\AbstractAnnotation.php(590): OpenApi\Annotations\AbstractAnnotation->validate(Array, Array, '#/paths/18/put/...', Object(stdClass))
+#9 C:\repositorio\app\api-proveedores\vendor\zircote\swagger-php\src\Annotations\AbstractAnnotation.php(596): OpenApi\Annotations\AbstractAnnotation::_validate(Array, Array, Array, '#/paths/18/put/...', Object(stdClass))
+#10 C:\repositorio\app\api-proveedores\vendor\zircote\swagger-php\src\Annotations\AbstractAnnotation.php(563): OpenApi\Annotations\AbstractAnnotation::_validate(Object(OpenApi\Annotations\RequestBody), Array, Array, '#/paths/18/put/...', Object(stdClass))
+#11 C:\repositorio\app\api-proveedores\vendor\zircote\swagger-php\src\Annotations\AbstractAnnotation.php(590): OpenApi\Annotations\AbstractAnnotation->validate(Array, Array, '#/paths/18/put/...', Object(stdClass))
+#12 C:\repositorio\app\api-proveedores\vendor\zircote\swagger-php\src\Annotations\AbstractAnnotation.php(563): OpenApi\Annotations\AbstractAnnotation::_validate(Object(OpenApi\Annotations\Put), Array, Array, '#/paths/18/put', Object(stdClass))
+#13 C:\repositorio\app\api-proveedores\vendor\zircote\swagger-php\src\Annotations\Operation.php(223): OpenApi\Annotations\AbstractAnnotation->validate(Array, Array, '#/paths/18/put', Object(stdClass))
+#14 C:\repositorio\app\api-proveedores\vendor\zircote\swagger-php\src\Annotations\AbstractAnnotation.php(590): OpenApi\Annotations\Operation->validate(Array, Array, '#/paths/18/put', Object(stdClass))
+#15 C:\repositorio\app\api-proveedores\vendor\zircote\swagger-php\src\Annotations\AbstractAnnotation.php(563): OpenApi\Annotations\AbstractAnnotation::_validate(Object(OpenApi\Annotations\PathItem), Array, Array, '#/paths/18', Object(stdClass))
+#16 C:\repositorio\app\api-proveedores\vendor\zircote\swagger-php\src\Annotations\AbstractAnnotation.php(590): OpenApi\Annotations\AbstractAnnotation->validate(Array, Array, '#/paths/18', Object(stdClass))
+#17 C:\repositorio\app\api-proveedores\vendor\zircote\swagger-php\src\Annotations\AbstractAnnotation.php(596): OpenApi\Annotations\AbstractAnnotation::_validate(Array, Array, Array, '#/paths', Object(stdClass))
+#18 C:\repositorio\app\api-proveedores\vendor\zircote\swagger-php\src\Annotations\AbstractAnnotation.php(563): OpenApi\Annotations\AbstractAnnotation::_validate(Object(OpenApi\Annotations\OpenApi), Array, Array, '#', Object(stdClass))
+#19 C:\repositorio\app\api-proveedores\vendor\zircote\swagger-php\src\Annotations\OpenApi.php(170): OpenApi\Annotations\AbstractAnnotation->validate(Array, Array, '#', Object(stdClass))
+#20 C:\repositorio\app\api-proveedores\vendor\zircote\swagger-php\src\Analysis.php(423): OpenApi\Annotations\OpenApi->validate()
+#21 C:\repositorio\app\api-proveedores\vendor\zircote\swagger-php\src\Generator.php(370): OpenApi\Analysis->validate()
+#22 C:\repositorio\app\api-proveedores\vendor\darkaonline\l5-swagger\src\Generator.php(177): OpenApi\Generator->generate(Object(Symfony\Component\Finder\Finder), Object(OpenApi\Analysis))
+#23 C:\repositorio\app\api-proveedores\vendor\darkaonline\l5-swagger\src\Generator.php(118): L5Swagger\Generator->scanFilesForDocumentation()
+#24 C:\repositorio\app\api-proveedores\vendor\darkaonline\l5-swagger\src\Http\Controllers\SwaggerController.php(53): L5Swagger\Generator->generateDocs()
+#25 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Routing\Controller.php(54): L5Swagger\Http\Controllers\SwaggerController->docs(Object(Illuminate\Http\Request))
+#26 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Routing\ControllerDispatcher.php(44): Illuminate\Routing\Controller->callAction('docs', Array)
+#27 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Routing\Route.php(266): Illuminate\Routing\ControllerDispatcher->dispatch(Object(Illuminate\Routing\Route), Object(L5Swagger\Http\Controllers\SwaggerController), 'docs')
+#28 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Routing\Route.php(212): Illuminate\Routing\Route->runController()
+#29 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Routing\Router.php(808): Illuminate\Routing\Route->run()
+#30 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(170): Illuminate\Routing\Router->Illuminate\Routing\{closure}(Object(Illuminate\Http\Request))
+#31 C:\repositorio\app\api-proveedores\vendor\darkaonline\l5-swagger\src\Http\Middleware\Config.php(36): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#32 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): L5Swagger\Http\Middleware\Config->handle(Object(Illuminate\Http\Request), Object(Closure))
+#33 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(127): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#34 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Routing\Router.php(807): Illuminate\Pipeline\Pipeline->then(Object(Closure))
+#35 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Routing\Router.php(786): Illuminate\Routing\Router->runRouteWithinStack(Object(Illuminate\Routing\Route), Object(Illuminate\Http\Request))
+#36 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Routing\Router.php(750): Illuminate\Routing\Router->runRoute(Object(Illuminate\Http\Request), Object(Illuminate\Routing\Route))
+#37 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Routing\Router.php(739): Illuminate\Routing\Router->dispatchToRoute(Object(Illuminate\Http\Request))
+#38 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Foundation\Http\Kernel.php(201): Illuminate\Routing\Router->dispatch(Object(Illuminate\Http\Request))
+#39 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(170): Illuminate\Foundation\Http\Kernel->Illuminate\Foundation\Http\{closure}(Object(Illuminate\Http\Request))
+#40 C:\repositorio\app\api-proveedores\app\Http\Middleware\LogIncomingRequests.php(28): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#41 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): App\Http\Middleware\LogIncomingRequests->handle(Object(Illuminate\Http\Request), Object(Closure))
+#42 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Foundation\Http\Middleware\TransformsRequest.php(21): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#43 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull.php(31): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle(Object(Illuminate\Http\Request), Object(Closure))
+#44 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull->handle(Object(Illuminate\Http\Request), Object(Closure))
+#45 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Foundation\Http\Middleware\TransformsRequest.php(21): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#46 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Foundation\Http\Middleware\TrimStrings.php(51): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle(Object(Illuminate\Http\Request), Object(Closure))
+#47 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Foundation\Http\Middleware\TrimStrings->handle(Object(Illuminate\Http\Request), Object(Closure))
+#48 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Http\Middleware\ValidatePostSize.php(27): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#49 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Http\Middleware\ValidatePostSize->handle(Object(Illuminate\Http\Request), Object(Closure))
+#50 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance.php(110): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#51 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance->handle(Object(Illuminate\Http\Request), Object(Closure))
+#52 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Http\Middleware\HandleCors.php(49): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#53 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Http\Middleware\HandleCors->handle(Object(Illuminate\Http\Request), Object(Closure))
+#54 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Http\Middleware\TrustProxies.php(58): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#55 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Http\Middleware\TrustProxies->handle(Object(Illuminate\Http\Request), Object(Closure))
+#56 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Foundation\Http\Middleware\InvokeDeferredCallbacks.php(22): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#57 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Foundation\Http\Middleware\InvokeDeferredCallbacks->handle(Object(Illuminate\Http\Request), Object(Closure))
+#58 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Http\Middleware\ValidatePathEncoding.php(26): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#59 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Http\Middleware\ValidatePathEncoding->handle(Object(Illuminate\Http\Request), Object(Closure))
+#60 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(127): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#61 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Foundation\Http\Kernel.php(176): Illuminate\Pipeline\Pipeline->then(Object(Closure))
+#62 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Foundation\Http\Kernel.php(145): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter(Object(Illuminate\Http\Request))
+#63 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Foundation\Application.php(1220): Illuminate\Foundation\Http\Kernel->handle(Object(Illuminate\Http\Request))
+#64 C:\repositorio\app\api-proveedores\public\index.php(20): Illuminate\Foundation\Application->handleRequest(Object(Illuminate\Http\Request))
+#65 C:\repositorio\app\api-proveedores\vendor\laravel\framework\src\Illuminate\Foundation\resources\server.php(23): require_once('C:\\repositorio\\...')
+#66 {main}  
+[2025-05-13 09:36:32] local.ERROR: Uncaught Error: Class "App\Models\Model" not found in C:\repositorio\app\api-proveedores\app\Models\Linea.php:17
+Stack trace:
+#0 Command line code(1): include_once()
+#1 {main}
+  thrown {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Uncaught Error: Class \"App\\Models\\Model\" not found in C:\\repositorio\\app\\api-proveedores\\app\\Models\\Linea.php:17
+Stack trace:
+#0 Command line code(1): include_once()
+#1 {main}
+  thrown at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Linea.php:17)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:36:55] local.ERROR: Uncaught Error: Class "App\Models\Model" not found in C:\repositorio\app\api-proveedores\app\Models\Linea.php:17
+Stack trace:
+#0 C:\repositorio\app\api-proveedores\vendor\composer\ClassLoader.php(576): include()
+#1 C:\repositorio\app\api-proveedores\vendor\composer\ClassLoader.php(427): Composer\Autoload\{closure}('C:\\repositorio\\...')
+#2 [internal function]: Composer\Autoload\ClassLoader->loadClass('App\\Models\\Line...')
+#3 Command line code(1): class_exists('App\\Models\\Line...')
+#4 [internal function]: {closure}('App\\Models\\Line...')
+#5 Command line code(1): array_filter(Array, Object(Closure))
+#6 {main}
+  thrown {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Uncaught Error: Class \"App\\Models\\Model\" not found in C:\\repositorio\\app\\api-proveedores\\app\\Models\\Linea.php:17
+Stack trace:
+#0 C:\\repositorio\\app\\api-proveedores\\vendor\\composer\\ClassLoader.php(576): include()
+#1 C:\\repositorio\\app\\api-proveedores\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\repositorio\\\\...')
+#2 [internal function]: Composer\\Autoload\\ClassLoader->loadClass('App\\\\Models\\\\Line...')
+#3 Command line code(1): class_exists('App\\\\Models\\\\Line...')
+#4 [internal function]: {closure}('App\\\\Models\\\\Line...')
+#5 Command line code(1): array_filter(Array, Object(Closure))
+#6 {main}
+  thrown at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Linea.php:17)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:36:55] local.ERROR: Uncaught Error: Class "App\Models\Model" not found in C:\repositorio\app\api-proveedores\app\Models\Linea.php:17
+Stack trace:
+#0 Command line code(1): include_once()
+#1 {main}
+  thrown {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Uncaught Error: Class \"App\\Models\\Model\" not found in C:\\repositorio\\app\\api-proveedores\\app\\Models\\Linea.php:17
+Stack trace:
+#0 Command line code(1): include_once()
+#1 {main}
+  thrown at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Linea.php:17)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:37:54] local.ERROR: Uncaught Error: Class "App\Models\Model" not found in C:\repositorio\app\api-proveedores\app\Models\Linea.php:17
+Stack trace:
+#0 C:\repositorio\app\api-proveedores\vendor\composer\ClassLoader.php(576): include()
+#1 C:\repositorio\app\api-proveedores\vendor\composer\ClassLoader.php(427): Composer\Autoload\{closure}('C:\\repositorio\\...')
+#2 [internal function]: Composer\Autoload\ClassLoader->loadClass('App\\Models\\Line...')
+#3 Command line code(1): class_exists('App\\Models\\Line...')
+#4 [internal function]: {closure}('App\\Models\\Line...')
+#5 Command line code(1): array_filter(Array, Object(Closure))
+#6 {main}
+  thrown {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Uncaught Error: Class \"App\\Models\\Model\" not found in C:\\repositorio\\app\\api-proveedores\\app\\Models\\Linea.php:17
+Stack trace:
+#0 C:\\repositorio\\app\\api-proveedores\\vendor\\composer\\ClassLoader.php(576): include()
+#1 C:\\repositorio\\app\\api-proveedores\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\repositorio\\\\...')
+#2 [internal function]: Composer\\Autoload\\ClassLoader->loadClass('App\\\\Models\\\\Line...')
+#3 Command line code(1): class_exists('App\\\\Models\\\\Line...')
+#4 [internal function]: {closure}('App\\\\Models\\\\Line...')
+#5 Command line code(1): array_filter(Array, Object(Closure))
+#6 {main}
+  thrown at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Linea.php:17)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:38:15] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:38:27] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:38:43] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:38:52] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:38:54] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:39:01] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:39:13] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:39:20] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:39:35] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:39:49] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:39:54] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:39:56] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:40:03] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:40:09] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:40:54] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:41:54] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:42:55] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:43:55] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:44:55] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:45:55] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:46:55] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:47:55] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:48:55] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:49:55] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:50:31] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:50:32] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:50:55] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:51:55] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:52:52] local.ERROR: App\Models\Producto and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Producto. However, the definition differs and is considered incompatible. Class was composed {"userId":1,"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Producto and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Producto. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Producto.php:58)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:52:55] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:53:00] local.ERROR: App\Models\Proveedor and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Proveedor. However, the definition differs and is considered incompatible. Class was composed {"userId":1,"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Proveedor and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Proveedor. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Proveedor.php:51)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:53:55] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:54:33] local.ERROR: App\Models\Producto and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Producto. However, the definition differs and is considered incompatible. Class was composed {"userId":1,"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Producto and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Producto. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Producto.php:58)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:54:55] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:55:55] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 09:56:55] local.ERROR: App\Models\Categoria and App\Traits\Filterable define the same property ($filters) in the composition of App\Models\Categoria. However, the definition differs and is considered incompatible. Class was composed {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): App\\Models\\Categoria and App\\Traits\\Filterable define the same property ($filters) in the composition of App\\Models\\Categoria. However, the definition differs and is considered incompatible. Class was composed at C:\\repositorio\\app\\api-proveedores\\app\\Models\\Categoria.php:19)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-13 10:10:46] local.ERROR: $ref "#/components/schemas/ActualizarProveedorRequest" not found for @OA\JsonContent() in \App\Http\Controllers\ProveedorController->update() in C:\repositorio\app\api-proveedores\app\Http\Controllers\ProveedorController.php on line 313 {"exception":"[object] (ErrorException(code: 0): $ref \"#/components/schemas/ActualizarProveedorRequest\" not found for @OA\\JsonContent() in \\App\\Http\\Controllers\\ProveedorController->update() in C:\\repositorio\\app\\api-proveedores\\app\\Http\\Controllers\\ProveedorController.php on line 313 at C:\\repositorio\\app\\api-proveedores\\vendor\\zircote\\swagger-php\\src\\Loggers\\DefaultLogger.php:23)
+[stacktrace]
+#0 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(256): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(512, '$ref \"#/compone...', 'C:\\\\repositorio\\\\...', 23)
+#1 [internal function]: Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(512, '$ref \"#/compone...', 'C:\\\\repositorio\\\\...', 23)
+#2 C:\\repositorio\\app\\api-proveedores\\vendor\\zircote\\swagger-php\\src\\Loggers\\DefaultLogger.php(23): trigger_error('$ref \"#/compone...', 512)
+#3 C:\\repositorio\\app\\api-proveedores\\vendor\\psr\\log\\src\\LoggerTrait.php(61): OpenApi\\Loggers\\DefaultLogger->log('warning', '$ref \"#/compone...', Array)
+#4 C:\\repositorio\\app\\api-proveedores\\vendor\\zircote\\swagger-php\\src\\Annotations\\AbstractAnnotation.php(509): Psr\\Log\\AbstractLogger->warning('$ref \"#/compone...', Array)
+#5 C:\\repositorio\\app\\api-proveedores\\vendor\\zircote\\swagger-php\\src\\Annotations\\Schema.php(519): OpenApi\\Annotations\\AbstractAnnotation->validate(Array, Array, '#/paths/18/put/...', Object(stdClass))
+#6 C:\\repositorio\\app\\api-proveedores\\vendor\\zircote\\swagger-php\\src\\Annotations\\AbstractAnnotation.php(590): OpenApi\\Annotations\\Schema->validate(Array, Array, '#/paths/18/put/...', Object(stdClass))
+#7 C:\\repositorio\\app\\api-proveedores\\vendor\\zircote\\swagger-php\\src\\Annotations\\AbstractAnnotation.php(563): OpenApi\\Annotations\\AbstractAnnotation::_validate(Object(OpenApi\\Annotations\\MediaType), Array, Array, '#/paths/18/put/...', Object(stdClass))
+#8 C:\\repositorio\\app\\api-proveedores\\vendor\\zircote\\swagger-php\\src\\Annotations\\AbstractAnnotation.php(590): OpenApi\\Annotations\\AbstractAnnotation->validate(Array, Array, '#/paths/18/put/...', Object(stdClass))
+#9 C:\\repositorio\\app\\api-proveedores\\vendor\\zircote\\swagger-php\\src\\Annotations\\AbstractAnnotation.php(596): OpenApi\\Annotations\\AbstractAnnotation::_validate(Array, Array, Array, '#/paths/18/put/...', Object(stdClass))
+#10 C:\\repositorio\\app\\api-proveedores\\vendor\\zircote\\swagger-php\\src\\Annotations\\AbstractAnnotation.php(563): OpenApi\\Annotations\\AbstractAnnotation::_validate(Object(OpenApi\\Annotations\\RequestBody), Array, Array, '#/paths/18/put/...', Object(stdClass))
+#11 C:\\repositorio\\app\\api-proveedores\\vendor\\zircote\\swagger-php\\src\\Annotations\\AbstractAnnotation.php(590): OpenApi\\Annotations\\AbstractAnnotation->validate(Array, Array, '#/paths/18/put/...', Object(stdClass))
+#12 C:\\repositorio\\app\\api-proveedores\\vendor\\zircote\\swagger-php\\src\\Annotations\\AbstractAnnotation.php(563): OpenApi\\Annotations\\AbstractAnnotation::_validate(Object(OpenApi\\Annotations\\Put), Array, Array, '#/paths/18/put', Object(stdClass))
+#13 C:\\repositorio\\app\\api-proveedores\\vendor\\zircote\\swagger-php\\src\\Annotations\\Operation.php(223): OpenApi\\Annotations\\AbstractAnnotation->validate(Array, Array, '#/paths/18/put', Object(stdClass))
+#14 C:\\repositorio\\app\\api-proveedores\\vendor\\zircote\\swagger-php\\src\\Annotations\\AbstractAnnotation.php(590): OpenApi\\Annotations\\Operation->validate(Array, Array, '#/paths/18/put', Object(stdClass))
+#15 C:\\repositorio\\app\\api-proveedores\\vendor\\zircote\\swagger-php\\src\\Annotations\\AbstractAnnotation.php(563): OpenApi\\Annotations\\AbstractAnnotation::_validate(Object(OpenApi\\Annotations\\PathItem), Array, Array, '#/paths/18', Object(stdClass))
+#16 C:\\repositorio\\app\\api-proveedores\\vendor\\zircote\\swagger-php\\src\\Annotations\\AbstractAnnotation.php(590): OpenApi\\Annotations\\AbstractAnnotation->validate(Array, Array, '#/paths/18', Object(stdClass))
+#17 C:\\repositorio\\app\\api-proveedores\\vendor\\zircote\\swagger-php\\src\\Annotations\\AbstractAnnotation.php(596): OpenApi\\Annotations\\AbstractAnnotation::_validate(Array, Array, Array, '#/paths', Object(stdClass))
+#18 C:\\repositorio\\app\\api-proveedores\\vendor\\zircote\\swagger-php\\src\\Annotations\\AbstractAnnotation.php(563): OpenApi\\Annotations\\AbstractAnnotation::_validate(Object(OpenApi\\Annotations\\OpenApi), Array, Array, '#', Object(stdClass))
+#19 C:\\repositorio\\app\\api-proveedores\\vendor\\zircote\\swagger-php\\src\\Annotations\\OpenApi.php(170): OpenApi\\Annotations\\AbstractAnnotation->validate(Array, Array, '#', Object(stdClass))
+#20 C:\\repositorio\\app\\api-proveedores\\vendor\\zircote\\swagger-php\\src\\Analysis.php(423): OpenApi\\Annotations\\OpenApi->validate()
+#21 C:\\repositorio\\app\\api-proveedores\\vendor\\zircote\\swagger-php\\src\\Generator.php(370): OpenApi\\Analysis->validate()
+#22 C:\\repositorio\\app\\api-proveedores\\vendor\\darkaonline\\l5-swagger\\src\\Generator.php(177): OpenApi\\Generator->generate(Object(Symfony\\Component\\Finder\\Finder), Object(OpenApi\\Analysis))
+#23 C:\\repositorio\\app\\api-proveedores\\vendor\\darkaonline\\l5-swagger\\src\\Generator.php(118): L5Swagger\\Generator->scanFilesForDocumentation()
+#24 C:\\repositorio\\app\\api-proveedores\\vendor\\darkaonline\\l5-swagger\\src\\Console\\GenerateDocsCommand.php(73): L5Swagger\\Generator->generateDocs()
+#25 C:\\repositorio\\app\\api-proveedores\\vendor\\darkaonline\\l5-swagger\\src\\Console\\GenerateDocsCommand.php(56): L5Swagger\\Console\\GenerateDocsCommand->generateDocumentation(Object(L5Swagger\\GeneratorFactory), 'default')
+#26 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): L5Swagger\\Console\\GenerateDocsCommand->handle(Object(L5Swagger\\GeneratorFactory))
+#27 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(43): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#28 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(96): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#29 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#30 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(754): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#31 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(213): Illuminate\\Container\\Container->call(Array)
+#32 C:\\repositorio\\app\\api-proveedores\\vendor\\symfony\\console\\Command\\Command.php(279): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#33 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(182): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#34 C:\\repositorio\\app\\api-proveedores\\vendor\\symfony\\console\\Application.php(1094): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#35 C:\\repositorio\\app\\api-proveedores\\vendor\\symfony\\console\\Application.php(342): Symfony\\Component\\Console\\Application->doRunCommand(Object(L5Swagger\\Console\\GenerateDocsCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#36 C:\\repositorio\\app\\api-proveedores\\vendor\\symfony\\console\\Application.php(193): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#37 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(198): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#38 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1235): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#39 C:\\repositorio\\app\\api-proveedores\\artisan(16): Illuminate\\Foundation\\Application->handleCommand(Object(Symfony\\Component\\Console\\Input\\ArgvInput))
+#40 {main}
+"} 
+[2025-05-13 17:25:34] local.ERROR: Non-static method Illuminate\Database\Eloquent\Model::load() cannot be called statically {"userId":1,"exception":"[object] (Error(code: 0): Non-static method Illuminate\\Database\\Eloquent\\Model::load() cannot be called statically at C:\\repositorio\\app\\api-proveedores\\app\\Http\\Controllers\\ProductoController.php:44)
+[stacktrace]
+#0 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Controller.php(54): App\\Http\\Controllers\\ProductoController->index(Object(Illuminate\\Http\\Request))
+#1 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(44): Illuminate\\Routing\\Controller->callAction('index', Array)
+#2 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(266): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\ProductoController), 'index')
+#3 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(212): Illuminate\\Routing\\Route->runController()
+#4 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(808): Illuminate\\Routing\\Route->run()
+#5 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#6 C:\\repositorio\\app\\api-proveedores\\app\\Http\\Middleware\\RoleMiddleware.php(28): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#7 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): App\\Http\\Middleware\\RoleMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'SUPER_ADMIN', 'ADMIN')
+#8 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(51): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#9 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#10 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Auth\\Middleware\\Authenticate.php(64): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#11 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'sanctum')
+#12 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#13 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(807): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#14 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(786): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#15 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(750): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#16 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(739): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#17 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(201): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#18 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#19 C:\\repositorio\\app\\api-proveedores\\app\\Http\\Middleware\\LogIncomingRequests.php(28): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#20 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): App\\Http\\Middleware\\LogIncomingRequests->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#21 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#22 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#23 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#24 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#25 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(51): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#26 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#27 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#28 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#29 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(110): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#30 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#31 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php(62): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#32 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#33 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(58): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#34 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#35 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks.php(22): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#36 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#37 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\ValidatePathEncoding.php(26): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#38 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\ValidatePathEncoding->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#40 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(176): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#41 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(145): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#42 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1220): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#43 C:\\repositorio\\app\\api-proveedores\\public\\index.php(20): Illuminate\\Foundation\\Application->handleRequest(Object(Illuminate\\Http\\Request))
+#44 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(23): require_once('C:\\\\repositorio\\\\...')
+#45 {main}
+"} 

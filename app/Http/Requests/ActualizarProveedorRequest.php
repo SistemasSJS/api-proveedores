@@ -3,16 +3,29 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * @OA\Schema(
  *     schema="ActualizarProveedorRequest",
- *     type="object",
  *     required={
- *         "nombre_propietario", "nombre_de_quien_registra", "nombre_comercial",
- *         "razon_social", "tipos_empresa_id", "descripcion_giro_empresa", "direccion_empresa",
- *         "email", "telefono", "pagina_web", "estado", "municipio", "codigo_postal",
- *         "contacto_nombre", "contacto_cargo", "contacto_telefono", "contacto_correo"
+ *         "nombre_propietario",
+ *         "nombre_de_quien_registra",
+ *         "nombre_comercial",
+ *         "razon_social",
+ *         "tipos_empresa_id",
+ *         "descripcion_giro_empresa",
+ *         "direccion_empresa",
+ *         "email",
+ *         "telefono",
+ *         "pagina_web",
+ *         "estado",
+ *         "municipio",
+ *         "codigo_postal",
+ *         "contacto_nombre",
+ *         "contacto_cargo",
+ *         "contacto_telefono",
+ *         "contacto_correo"
  *     },
  *     @OA\Property(property="nombre_propietario", type="string", maxLength=255),
  *     @OA\Property(property="nombre_de_quien_registra", type="string", maxLength=255),
@@ -50,10 +63,10 @@ class ActualizarProveedorRequest extends FormRequest
             'nombre_comercial' => ['required', 'string', 'max:255'],
             'razon_social' => ['required', 'string', 'max:255'],
             'tipos_empresa_id' => ['required', 'integer', 'exists:tipos_empresa,id,estatus,activo'],
-            'tipos_empresa_otro' => ['string', 'max:60'],
+            'tipos_empresa_otro' => ['nullable', 'string', 'max:60'],
             'descripcion_giro_empresa' => ['required', 'string', 'max:255'],
             'direccion_empresa' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:proveedores'],
+            'email' => ['required', 'email', 'max:255'],
             'telefono' => ['required', 'string', 'max:15'],
             'pagina_web' => ['required', 'string', 'max:255'],
             'estado' => ['required', 'string', 'max:255'],
@@ -66,6 +79,7 @@ class ActualizarProveedorRequest extends FormRequest
             'contacto_correo' => ['required', 'email', 'max:60'],
         ];
     }
+
     public function messages()
     {
         return [

@@ -35,7 +35,6 @@ trait ApiResponse
             'status' => 'SUCCESS',
             'code' => $code,
             'message' => $message,
-            'data' => $paginator->items(),
             'meta' => [
                 'pagination' => [
                     'current_page' => $paginator->currentPage(),
@@ -46,6 +45,7 @@ trait ApiResponse
                     'total' => $paginator->total(),
                 ]
             ],
+            'data' => $paginator->items(),
             'errors' => null,
         ], $code, [], JSON_UNESCAPED_UNICODE);
     }
