@@ -19,7 +19,7 @@ return new class extends Migration {
             $table->string('estatus')->default('pendiente');
             $table->text('notas')->nullable();
             $table->foreignId('validado_por')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete(); // Relación con Users
+            // $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete(); // Relación con Users
             $table->timestamps();
 
             // requirede fields

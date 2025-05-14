@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\UserRoleEnumerate;
+use App\Models\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -29,7 +30,6 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
-            'role' => UserRoleEnumerate::ADMIN->value,
             'remember_token' => Str::random(10),
         ];
     }
@@ -46,8 +46,10 @@ class UserFactory extends Factory
 
     public function proveedor(): static
     {
+        $roleProveedorId = Role::where('nombre', UserRoleEnumerate::PROVEEDOR->value)->first()->id;
+
         return $this->state(fn(array $attributes) => [
-            'role' => UserRoleEnumerate::PROVEEDOR->value,
+            'role_id' => $roleProveedorId, // Asignamos el ID del rol
         ]);
     }
 }

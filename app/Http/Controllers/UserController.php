@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -26,13 +27,10 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        // Obtener los filtros de la solicitud
-        $filters = $request->only(['nombre', 'email', 'fecha_inicio', 'fecha_fin']);
-
-        // Aplicar los filtros usando el scopeFilter
-        $users = User::filter($filters)->paginate(10);
-
-        return $this->success($users);
+        $filters = $request->only(User::getFilters());
+        $originalPaginator = User::filter($filters)->paginate(10);
+        $users = UserResource::collection($originalPaginator)->resolve();
+        return $this->paginated($originalPaginator->setCollection(collect($users)));
     }
 
     /**
@@ -145,4 +143,8 @@ class UserController extends Controller
 
         return $this->success(null, 204);
     }
+
+    /**
+     * METODOS PARA LA GESTION DE ROLES
+     */
 }

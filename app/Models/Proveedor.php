@@ -229,4 +229,26 @@ class Proveedor extends BaseModel
     {
         return $this->belongsTo(User::class, 'validado_por');
     }
+
+    /**
+     * Relación con usuarios (Múltiples usuarios)
+     */
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'user_proveedor')
+            ->withPivot('is_main')
+            ->withTimestamps();
+    }
+
+    /**
+     * Método para obtener el usuario principal
+     */
+    public function mainUser()
+    {
+        return $this->belongsToMany(User::class)
+            ->wherePivot('is_main', true)
+            ->withPivot('is_main')
+            ->withTimestamps()
+            ->limit(1); // Por si acaso
+    }
 }

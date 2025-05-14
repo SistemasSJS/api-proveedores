@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Enums\UserRoleEnumerate;
 use App\Exceptions\Api\Auth\RegistrationException;
 use App\Exceptions\Api\Auth\UnauthorizedException;
+use App\Http\Requests\RegistrarProveedorUserRequest;
 use App\Models\User;
 use App\Models\Proveedor;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -81,50 +83,21 @@ class AuthController extends Controller
      *     )
      * )
      */
-    public function register(Request $request)
+    public function registrarUsuarioProveedor(RegistrarProveedorUserRequest $request)
     {
-        // Validación de entrada
-        $validator = Validator::make($request->all(), [
-            'razon_social' => 'required|string|max:255',
-            'nombre_comercial' => 'required|string|max:255',
-            'rfc' => 'required|string|max:13',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
-            'telefono' => 'required|string|max:15',
-            'direccion' => 'required|string|max:255',
-        ], [
-            'razon_social.required' => 'La razón social es obligatoria.',
-            'nombre_comercial.required' => 'El nombre comercial es obligatorio.',
-            'rfc.required' => 'El RFC es obligatorio.',
-            'email.required' => 'El correo electrónico es obligatorio.',
-            'email.email' => 'El correo electrónico debe ser válido.',
-            'email.unique' => 'Esta empresa ya está registrada en el sistema, por favor contacte a soporte técnico.',
-            'password.required' => 'La contraseña es obligatoria.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
-            'telefono.required' => 'El teléfono es obligatorio.',
-            'telefono.max' => 'El teléfono no debe exceder los 15 caracteres.',
-            'direccion.required' => 'La dirección es obligatoria.',
-            'direccion.max' => 'La dirección no debe exceder los 255 caracteres.',
-        ]);
-
-        if ($validator->fails()) {
-            // Lanzamos la excepción de validación personalizada
-            throw new RegistrationException("Error al registrar el proveedor. Campos no validados.", $validator->errors());
-        }
-
         try {
-            // Iniciar transacción
             DB::beginTransaction();
 
-            // Crear el usuario (proveedor)
             $user = User::create([
                 'name' => $request->nombre_comercial,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'role' => UserRoleEnumerate::PROVEEDOR->value,
             ]);
 
-            // Crear el proveedor asociado al usuario
+            $role = Role::where('name', 'Proveedor')->first();
+            $user->role()->associate($role);
+            $user->save();
+
             $proveedor = Proveedor::create([
                 'razon_social' => $request->razon_social,
                 'nombre_comercial' => $request->nombre_comercial,
@@ -132,13 +105,12 @@ class AuthController extends Controller
                 'email' => $request->email,
                 'telefono' => $request->telefono,
                 'direccion' => $request->direccion,
-                'user_id' => $user->id,
             ]);
 
-            // Confirmar transacción
+            $user->proveedores()->attach($proveedor->id, ['is_main' => true]);
+
             DB::commit();
 
-            // Crear token de autenticación con Sanctum
             $token = $user->createToken('sanctum')->plainTextToken;
 
             return $this->success(
@@ -288,12 +260,10 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        // Verificar si el usuario está autenticado
         if (!$request->user()) {
             throw new UnauthorizedException("No autorizado o sesión no válida");
         }
 
-        // Revocar todos los tokens del usuario autenticado
         $request->user()->tokens()->delete();
 
         return $this->success(

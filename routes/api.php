@@ -20,7 +20,7 @@ use App\Http\Controllers\TipoEmpresaController;
  * FIXME: Config Access Api Token on all routes, and settings CORDS. 
  * TODO: Verificar configuracion de origen para las petiones.  
  */
-Route::post('register', [AuthController::class, 'register']);
+Route::post('register-user-proveedor', [AuthController::class, 'registrarUsuarioProveedor']);
 Route::post('login', [AuthController::class, 'login']);
 
 /**

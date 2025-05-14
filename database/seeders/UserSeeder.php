@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Administrador',
                 'password' => Hash::make('admin123'), // Contraseña clara
-                'role' => UserRoleEnumerate::ADMIN->value,
+                // 'role' => UserRoleEnumerate::ADMIN->value,
                 'email_verified_at' => now(),
             ]
         );

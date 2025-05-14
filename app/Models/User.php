@@ -1,8 +1,9 @@
 <?php
 
 namespace App\Models;
+// app/Models/User.php
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+namespace App\Models;
 
 use App\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,43 +11,99 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @OA\Schema(
+ *     schema="User",
+ *     required={"name", "email"},
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="Juan Pérez"),
+ *     @OA\Property(property="email", type="string", example="juan@ejemplo.com"),
+ *     @OA\Property(property="role_id", type="integer", example=1),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasFactory, HasApiTokens, HasRoles;
+    use HasFactory, Notifiable, HasApiTokens, HasRoles;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'role',
-    ];
+    protected $fillable = ['name', 'email', 'password', 'role_id'];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected $hidden = ['password', 'remember_token'];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return ['email_verified_at' => 'datetime', 'password' => 'hashed'];
+    }
+
+    // Relación con Role (Un solo rol por usuario)
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    // Relación con proveedores (Varios proveedores)
+    public function proveedores()
+    {
+        return $this->belongsToMany(Proveedor::class, 'user_proveedor')
+            ->withPivot('is_main')
+            ->withTimestamps();
+    }
+
+    // Filtros disponibles para este modelo
+    protected static $filters = [
+        'name' => 'Nombre',
+        'email' => 'Email',
+        'role' => 'Role',
+    ];
+
+    // Filtro específico para 'name'
+    public function filterByNombre($query, $value)
+    {
+        return $query->where('name', 'like', "%$value%");
+    }
+
+    // Filtro específico para 'email'
+    public function filterByEmail($query, $value)
+    {
+        return $query->where('email', 'like', "%$value%");
+    }
+
+    // Filtro específico para 'role'
+    public function filterByRole($query, $value)
+    {
+        return $query->whereHas('role', function ($q) use ($value) {
+            $q->where('name', 'like', "%$value%");
+        });
+    }
+
+    /**
+     * Filtra los resultados de acuerdo a los filtros definidos.
+     * 
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param array $filters
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeFilter($query, array $filters)
+    {
+        foreach ($filters as $key => $value) {
+            if (isset(static::$filters[$key])) {
+                $method = 'filterBy' . ucfirst($filters[$key]);
+                if (method_exists($this, $method)) {
+                    $query = $this->$method($query, $value);
+                }
+            }
+        }
+        return $query;
+    }
+
+    /**
+     * Obtener los filtros definidos en la clase.
+     *
+     * @return array
+     */
+    public static function getFilters(): array
+    {
+        return array_values(static::$filters);
     }
 }

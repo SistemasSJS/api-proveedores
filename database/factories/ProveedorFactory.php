@@ -25,7 +25,6 @@ class ProveedorFactory extends Factory
             'municipio' => $this->faker->city,
             'codigo_postal' => $this->faker->postcode,
             'estatus' => 'activo',
-            'user_id' => User::inRandomOrder()->first()?->id, // Asignamos el admin por defecto si no hay usuario
             'tipos_empresa_id' => TipoEmpresa::inRandomOrder()->first()?->id, // Asignamos el admin por defecto si no hay usuario
             'notas' => $this->faker->sentence,
 
