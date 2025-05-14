@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\TipoEmpresaResource;
 use App\Models\TipoEmpresa;
 use Illuminate\Http\Request;
 
@@ -24,9 +25,10 @@ class TipoEmpresaController extends Controller
      */
     public function index(Request $request)
     {
-        $filters = $request->only(['nombre', 'estatus']);
-        $tipoEmpresas = TipoEmpresa::filter($filters)->paginate(10);
-        return $this->paginated($tipoEmpresas);
+        $filters = $request->only(TipoEmpresa::getFilters());
+        $originalPaginator = TipoEmpresa::filter($filters)->paginate(10);
+        $tipoEmpresas = TipoEmpresaResource::collection($originalPaginator)->resolve();
+        return $this->paginated($originalPaginator->setCollection(collect($tipoEmpresas)));
     }
 
     /**

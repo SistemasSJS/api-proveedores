@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UnidadMedidaResource;
 use App\Models\UnidadMedida;
 use Illuminate\Http\Request;
 
@@ -21,9 +22,10 @@ class UnidadMedidaController extends Controller
      */
     public function index(Request $request)
     {
-        $filters = $request->only(['nombre']);
-        $unidadesMedida = UnidadMedida::filter($filters)->paginate(10);
-        return $this->paginated($unidadesMedida);
+        $filters = $request->only(UnidadMedida::getFilters());
+        $originalPaginator = UnidadMedida::filter($filters)->paginate(10);
+        $unidadMedida = UnidadMedidaResource::collection($originalPaginator)->resolve();
+        return $this->paginated($originalPaginator->setCollection(collect($unidadMedida)));
     }
 
     /**

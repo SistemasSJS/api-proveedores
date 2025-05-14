@@ -39,13 +39,12 @@ Route::post('register_proveedor_completar', [ProveedorController::class, 'regist
 /**
  * Rutas de listado de catalogos
  */
-Route::get('categorias', [CategoriaController::class, 'index']);
-Route::get('lineas', [LineaController::class, 'index']);
-Route::get('marcas', [MarcaController::class, 'index']);
-Route::get('unidades-medida', [UnidadMedidaController::class, 'index']);
-Route::get('grupos', [GrupoController::class, 'index']);
-Route::get('tipos-empresa', [TipoEmpresaController::class, 'index']);
-// Route::get('proveedor', [ProveedorController::class, 'index']);
+Route::get('categorias-index', [CategoriaController::class, 'index']);
+Route::get('lineas-index', [LineaController::class, 'index']);
+Route::get('marcas-index', [MarcaController::class, 'index']);
+Route::get('unidades-medida-index', [UnidadMedidaController::class, 'index']);
+Route::get('grupos-index', [GrupoController::class, 'index']);
+Route::get('tipos-empresa-index', [TipoEmpresaController::class, 'index']);
 
 
 /**
@@ -92,5 +91,6 @@ Route::middleware(
         Route::apiResource('categorias', CategoriaController::class);
         Route::apiResource('lineas', LineaController::class);
         Route::apiResource('marcas', MarcaController::class);
+        // Route::apiResource('tipos-empresa', TipoEmpresaController::class);
     });
 });

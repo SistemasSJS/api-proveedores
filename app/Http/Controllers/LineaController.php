@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\LineaResource;
 use App\Models\Linea;
 use Illuminate\Http\Request;
 
@@ -21,9 +22,10 @@ class LineaController extends Controller
      */
     public function index(Request $request)
     {
-        $filters = $request->only(['nombre', 'estatus']);
-        $lineas = Linea::filter($filters)->paginate(10);
-        return $this->paginated($lineas);
+        $filters = $request->only(Linea::getFilters());
+        $originalPaginator = Linea::filter($filters)->paginate(10);
+        $lineas = LineaResource::collection($originalPaginator)->resolve();
+        return $this->paginated($originalPaginator->setCollection(collect($lineas)));
     }
 
     /**

@@ -22,12 +22,19 @@ class TipoEmpresa extends BaseModel
     protected $table = "tipos_empresa";
 
 
-    protected $fillable = ['nombre', 'estatus'];
+    protected $fillable = [
+        'nombre',
+        'estatus',
+        'created_at',
+        'update_at'
+    ];
 
     // Filtros disponibles para este modelo
     protected static $filters = [
         'nombre' => 'nombre',
         'estatus' => 'estatus',
+        'created_at' => 'created_at',
+        'update_at' => 'update_at'
     ];
 
     // Filtro específico para 'nombre'

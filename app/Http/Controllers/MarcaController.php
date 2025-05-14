@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\MarcaResource;
 use App\Models\Marca;
 use Illuminate\Http\Request;
 
@@ -21,9 +22,10 @@ class MarcaController extends Controller
      */
     public function index(Request $request)
     {
-        $filters = $request->only(['nombre']);
-        $unidadesMedida = Marca::filter($filters)->paginate(10);
-        return $this->paginated($unidadesMedida);
+        $filters = $request->only(Marca::getFilters());
+        $originalPaginator = Marca::filter($filters)->paginate(10);
+        $marcas = MarcaResource::collection($originalPaginator)->resolve();
+        return $this->paginated($originalPaginator->setCollection(collect($marcas)));
     }
 
     /**

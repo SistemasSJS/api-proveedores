@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\GrupoResource;
 use App\Models\Grupo;
 use Illuminate\Http\Request;
 
@@ -22,10 +23,10 @@ class GrupoController extends Controller
      */
     public function index(Request $request)
     {
-        $filters = $request->only(['nombre', 'estatus']);
-        $grupos = Grupo::filter($filters)->paginate(10);
-
-        return $this->paginated($grupos, 'Lista de grupos');
+        $filters = $request->only(Grupo::getFilters());
+        $originalPaginator = Grupo::filter($filters)->paginate(10);
+        $grupos = GrupoResource::collection($originalPaginator)->resolve();
+        return $this->paginated($originalPaginator->setCollection(collect($grupos)));
     }
 
     /**
