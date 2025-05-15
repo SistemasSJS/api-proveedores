@@ -131,7 +131,7 @@ class Proveedor extends BaseModel
     public static function eagerLodable(): array
     {
         return [
-            'user',
+            // 'user',
             'tipos_empresa'
         ];
     }
@@ -206,13 +206,13 @@ class Proveedor extends BaseModel
         return $this->hasMany(Producto::class);
     }
 
-    /**
-     * Usuario que registró al proveedor.
-     */
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
+    // /**
+    //  * Usuario que registró al proveedor.
+    //  */
+    // public function user()
+    // {
+    //     return $this->belongsTo(User::class);
+    // }
 
     /**
      * Usuario que registró al proveedor.
@@ -240,15 +240,15 @@ class Proveedor extends BaseModel
             ->withTimestamps();
     }
 
-    /**
-     * Método para obtener el usuario principal
-     */
-    public function mainUser()
-    {
-        return $this->belongsToMany(User::class)
-            ->wherePivot('is_main', true)
-            ->withPivot('is_main')
-            ->withTimestamps()
-            ->limit(1); // Por si acaso
-    }
+    // /**
+    //  * Método para obtener el usuario principal
+    //  */
+    // public function mainUser()
+    // {
+    //     return $this->belongsToMany(User::class)
+    //         ->wherePivot('is_main', true)
+    //         ->withPivot('is_main')
+    //         ->withTimestamps()
+    //         ->limit(1); // Por si acaso
+    // }
 }

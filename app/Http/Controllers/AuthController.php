@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\UserRoleEnumerate;
 use App\Exceptions\Api\Auth\RegistrationException;
 use App\Exceptions\Api\Auth\UnauthorizedException;
+use App\Http\Requests\RegisterProveedorCompletarRequest;
 use App\Http\Requests\RegistrarProveedorUserRequest;
 use App\Models\User;
 use App\Models\Proveedor;
@@ -83,7 +84,7 @@ class AuthController extends Controller
      *     )
      * )
      */
-    public function registrarUsuarioProveedor(RegistrarProveedorUserRequest $request)
+    public function registrarUsuarioProveedor(RegisterProveedorCompletarRequest $request)
     {
         try {
             DB::beginTransaction();
@@ -196,7 +197,7 @@ class AuthController extends Controller
         $token = $user->createToken('API Token')->plainTextToken;
 
         return $this->success([
-            'user' => $user,
+            'user' => $user->load(User::eagerLodable()),
             'token' => $token
         ], 'Login exitoso.', 201);
     }

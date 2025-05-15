@@ -91,6 +91,6 @@ Route::middleware(
         Route::apiResource('categorias', CategoriaController::class);
         Route::apiResource('lineas', LineaController::class);
         Route::apiResource('marcas', MarcaController::class);
-        // Route::apiResource('tipos-empresa', TipoEmpresaController::class);
+        Route::apiResource('tipos-empresa', TipoEmpresaController::class);
     });
 });

@@ -10,8 +10,8 @@ class CreateUserProveedorTable extends Migration
     {
         Schema::create('user_proveedor', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('proveedor_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
             $table->boolean('is_main')->default(false); // Campo para marcar si es principal
             $table->timestamps();
         });

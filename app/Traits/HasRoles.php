@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Enums\UserRoleEnumerate;
+use App\Models\User;
 
 trait HasRoles
 {
@@ -10,31 +11,39 @@ trait HasRoles
     {
         $roles = is_array($roles) ? $roles : [$roles];
 
+        if (!$this->relationLoaded('role')) {
+            $this->load('role');
+        }
+
+        $userRoleName = strtolower($this->role?->nombre ?? '');
+
         return in_array(
-            $this->role,
-            array_map(fn($role) => $role instanceof UserRoleEnumerate ? $role->value : $role, $roles)
+            $userRoleName,
+            array_map(fn($role) => strtolower($role instanceof UserRoleEnumerate ? $role->value : $role), $roles)
         );
     }
 
     public function isSuperAdmin(): bool
     {
-        return $this->role === UserRoleEnumerate::SUPER_ADMIN->value;
+        return strtolower($this->role?->name) === strtolower(UserRoleEnumerate::SUPER_ADMIN->value);
     }
 
     public function isAdmin(): bool
     {
-        return $this->role === UserRoleEnumerate::ADMIN->value;
+        return strtolower($this->role?->name) === strtolower(UserRoleEnumerate::ADMIN->value);
     }
 
     public function isUserAdmin(): bool
     {
-        return $this->role === UserRoleEnumerate::ADMIN->value || $this->role === UserRoleEnumerate::ADMIN->value;
+        $name = strtolower($this->role?->name);
+        return in_array($name, [
+            strtolower(UserRoleEnumerate::ADMIN->value),
+            strtolower(UserRoleEnumerate::SUPER_ADMIN->value),
+        ]);
     }
 
     public function isProveedor(): bool
     {
-        return $this->role === UserRoleEnumerate::PROVEEDOR->value;
+        return strtolower($this->role?->name) === strtolower(UserRoleEnumerate::PROVEEDOR->value);
     }
-
-    // Agrega aquí otros atajos que necesites
 }

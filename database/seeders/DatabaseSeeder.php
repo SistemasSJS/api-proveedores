@@ -39,16 +39,20 @@ class DatabaseSeeder extends Seeder
                 $userMain = User::factory()->proveedor()->create();
 
                 // 2. Crear el proveedor y asociarlo al usuario principal
-                $proveedor = Proveedor::factory()->create();
 
-                $userMain->proveedores()->attach($proveedor->id, ['is_mian' => true]);
+                $proveedor = Proveedor::factory()->create();
+                $userMain->proveedores()->attach($proveedor->id, ['is_main' => true]);
 
 
                 // 4. Crear usuarios secundarios y asignarlos al proveedor
-                User::factory(3)->proveedor()->create([
-                    'proveedor_id' => $proveedor->id,
-                    'role_id' => Role::where('nombre', 'PROVEEDOR')->first()->id, // Asignamos el rol de proveedor
-                ]);
+                User::factory(3)->proveedor()->create()->each(function ($user) use ($proveedor) {
+                    // Asignamos el proveedor al usuario como relación secundaria (is_main = false)
+                    $user->proveedores()->attach($proveedor->id, ['is_main' => false]);
+                });
+                // [
+                //     'proveedor_id' => $proveedor->id,
+                //     'role_id' => Role::where('nombre', 'PROVEEDOR')->first()->id, // Asignamos el rol de proveedor
+                // ]
             }
         });
 

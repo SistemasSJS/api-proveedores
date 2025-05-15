@@ -20,9 +20,9 @@ class RoleMiddleware
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
         $user = $request->user();
-
+        
         if (!$user || !$user->hasRole($roles)) {
-            throw new UnauthorizedException('El usuario no tiene el rol requerido.');
+            throw new UnauthorizedException('El usuario no tiene el rol requerido.' + $user->role);
         }
 
         return $next($request);

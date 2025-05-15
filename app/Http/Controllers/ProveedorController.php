@@ -11,6 +11,7 @@ use App\Http\Requests\ActualizarProveedorRequest;
 use App\Http\Requests\RegisterProveedorCompletarRequest;
 use App\Http\Requests\RegistroProveedorRequest;
 use App\Mail\CompletaRegistroProveedorMail;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
@@ -187,6 +188,7 @@ class ProveedorController extends Controller
 
         // Si el proveedor no tiene un usuario relacionado, lo creamos
         if (!$proveedor->user) {
+            $idRoleProveedor = Role::where('nombre', UserRoleEnumerate::PROVEEDOR->value)->first()->id;
             $user = User::create([
                 'name' => $proveedor->nombre_comercial,
                 // Usamos el nombre del proveedor (o puedes cambiarlo)
@@ -194,14 +196,16 @@ class ProveedorController extends Controller
                 // Asignamos el correo del proveedor
                 'password' => Hash::make($request->password),
                 // Guardamos la contraseña encriptada
-                'role' => UserRoleEnumerate::PROVEEDOR->value,
+                'role_id' => $idRoleProveedor,
                 // Guardamos la contraseña encriptada
             ]);
 
 
             // Asocia el usuario con el proveedor
-            $proveedor->user()->associate($user);
-            $proveedor->save();
+            // $proveedor->user()->associate($user);
+            // $proveedor->save();
+
+            $user->proveedores()->attach($proveedor->id, ['is_main' => true]);
             // Guardamos la relación
 
         } else {
@@ -221,8 +225,8 @@ class ProveedorController extends Controller
         $token = $user->createToken('API Token')->plainTextToken;
         return $this->success(
             [
-                'user' => $user,
-                'proveedor' => $proveedor,
+                'user' => $user->load(User::eagerLodable()),
+                'proveedor' => $proveedor->load(Proveedor::eagerLodable()),
                 'token' => $token
             ],
             'Contraseña establecida correctamente',
