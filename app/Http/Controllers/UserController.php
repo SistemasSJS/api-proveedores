@@ -10,6 +10,7 @@ use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
 {
+
     /**
      * @OA\Get(
      *     path="/api/users",
@@ -143,8 +144,4 @@ class UserController extends Controller
 
         return $this->success(null, 204);
     }
-
-    /**
-     * METODOS PARA LA GESTION DE ROLES
-     */
 }

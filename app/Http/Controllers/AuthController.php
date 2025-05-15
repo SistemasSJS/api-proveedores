@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\UserRoleEnumerate;
 use App\Exceptions\Api\Auth\RegistrationException;
 use App\Exceptions\Api\Auth\UnauthorizedException;
+use App\Http\Requests\ActualizarFotoPerfilUser;
 use App\Http\Requests\RegisterProveedorCompletarRequest;
 use App\Http\Requests\RegistrarProveedorUserRequest;
 use App\Models\User;
@@ -18,6 +19,28 @@ use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
+    /**
+     * 
+     */
+    public function update_foto_perfil(ActualizarFotoPerfilUser $request)
+    {
+        $file = $request->file('foto_perfil');
+        $nombre = uniqid() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('uploads', $nombre, 'public');
+        $url = asset("storage/$path");
+
+        $user = $request->user();
+        $user->foto_perfil_url = $url;
+        $user->save();
+
+        return $this->success(
+            ['path' => $url],
+            'Foto de perfil actualizada con éxito',
+            201
+        );
+    }
+
+
     /**
      * @OA\Post(
      *     path="/api/register",

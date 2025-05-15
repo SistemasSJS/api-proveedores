@@ -4,6 +4,7 @@ use App\Enums\UserRoleEnumerate;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\SucursalController;
 use App\Http\Controllers\ProductoController;
@@ -15,6 +16,8 @@ use App\Http\Controllers\LineaController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\TipoEmpresaController;
 
+
+Route::post('upload', [FileUploadController::class, 'store'])->name('upload');
 /**
  * Rutas Publicas. Que no necesitan procteccion
  * FIXME: Config Access Api Token on all routes, and settings CORDS. 
@@ -56,6 +59,7 @@ Route::middleware(
 
     Route::get('me', [AuthController::class, 'me']);  // Obtener datos del proveedor autenticado
     Route::get('logout', [AuthController::class, 'logout']);  // Obtener datos del proveedor autenticado
+    Route::get('update-img-perfil', [AuthController::class, 'update_foto_perfil']);  // Obtener datos del proveedor autenticado
 
     Route::middleware(
         'role:'
