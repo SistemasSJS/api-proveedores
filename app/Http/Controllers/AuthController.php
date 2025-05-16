@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\Api\Auth\UnauthorizedException;
 use App\Http\Requests\ActualizarFotoPerfilUser;
+use App\Http\Resources\UserAuthenticateResource;
 use App\Models\User;
 use App\Models\Proveedor;
 use App\Models\Role;
@@ -213,9 +214,11 @@ class AuthController extends Controller
 
         $token = $user->createToken('API Token')->plainTextToken;
 
+        $user->load(User::eagerLodable());
+
         return $this->success([
-            'user' => $user->load(User::eagerLodable()),
-            'token' => $token
+            'user' => new UserAuthenticateResource($user),
+            'token' => $token,
         ], 'Login exitoso.', 201);
     }
 

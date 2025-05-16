@@ -50,17 +50,22 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    public function getMainProveedorAttribute()
+    {
+        return $this->proveedores()->wherePivot('is_main', true)->first();
+    }
+
     // Filtros disponibles para este modelo
     protected static $filters = [
-        'name' => 'Nombre',
-        'email' => 'Email',
-        'role' => 'Role',
+        'nombre' => 'nombre',
+        'email' => 'email',
+        'role' => 'role',
     ];
 
     // Filtro específico para 'name'
     public function filterByNombre($query, $value)
     {
-        return $query->where('name', 'like', "%$value%");
+        return $query->where('nombre', 'like', "%$value%");
     }
 
     // Filtro específico para 'email'
@@ -116,7 +121,8 @@ class User extends Authenticatable
     public static function eagerLodable(): array
     {
         return [
-            'role'
+            'role',
+            'proveedores',
         ];
     }
 }
