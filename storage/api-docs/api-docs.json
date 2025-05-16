@@ -22,7 +22,7 @@
                     "Autenticación"
                 ],
                 "summary": "Registrar un proveedor",
-                "operationId": "8a56853624e025573120a09a4c75d468",
+                "operationId": "016cf67dd8930acce0c336b7abb83565",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -3034,6 +3034,17 @@
                 },
                 "type": "object"
             },
+            "ActualizarFotoPerfilUser": {
+                "required": [
+                    "foto_perfil"
+                ],
+                "properties": {
+                    "foto_perfil": {
+                        "type": "blob"
+                    }
+                },
+                "type": "object"
+            },
             "ActualizarProveedorRequest": {
                 "required": [
                     "nombre_propietario",
@@ -3096,6 +3107,113 @@
                     "telefono": {
                         "type": "string",
                         "maxLength": 15
+                    },
+                    "pagina_web": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "estado": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "municipio": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "codigo_postal": {
+                        "type": "string",
+                        "maxLength": 10
+                    },
+                    "direccion_fiscal": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "nullable": true
+                    },
+                    "contacto_nombre": {
+                        "type": "string",
+                        "maxLength": 150
+                    },
+                    "contacto_cargo": {
+                        "type": "string",
+                        "maxLength": 60
+                    },
+                    "contacto_telefono": {
+                        "type": "string",
+                        "maxLength": 15
+                    },
+                    "contacto_correo": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 60
+                    }
+                },
+                "type": "object"
+            },
+            "CrearProveedorUserRequest": {
+                "required": [
+                    "razon_social",
+                    "nombre_comercial",
+                    "rfc",
+                    "email",
+                    "password",
+                    "telefono",
+                    "direccion"
+                ],
+                "properties": {
+                    "razon_social": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "nombre_comercial": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "rfc": {
+                        "type": "string",
+                        "maxLength": 13
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "minLength": 8
+                    },
+                    "telefono": {
+                        "type": "string",
+                        "maxLength": 15
+                    },
+                    "direccion": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "nombre_propietario": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "nombre_de_quien_registra": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "tipos_empresa_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "tipos_empresa_otro": {
+                        "type": "string",
+                        "maxLength": 60,
+                        "nullable": true
+                    },
+                    "descripcion_giro_empresa": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "direccion_empresa": {
+                        "type": "string",
+                        "maxLength": 255
                     },
                     "pagina_web": {
                         "type": "string",
@@ -3851,6 +3969,39 @@
                     "estatus": {
                         "type": "string",
                         "example": "activo"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "required": [
+                    "name",
+                    "email"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Juan Pérez"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "juan@ejemplo.com"
+                    },
+                    "role_id": {
+                        "type": "integer",
+                        "example": 1
                     },
                     "created_at": {
                         "type": "string",

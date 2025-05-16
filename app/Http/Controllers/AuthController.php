@@ -2,19 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\UserRoleEnumerate;
-use App\Exceptions\Api\Auth\RegistrationException;
 use App\Exceptions\Api\Auth\UnauthorizedException;
 use App\Http\Requests\ActualizarFotoPerfilUser;
-use App\Http\Requests\RegisterProveedorCompletarRequest;
-use App\Http\Requests\RegistrarProveedorUserRequest;
 use App\Models\User;
 use App\Models\Proveedor;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
@@ -107,7 +101,7 @@ class AuthController extends Controller
      *     )
      * )
      */
-    public function registrarUsuarioProveedor(RegisterProveedorCompletarRequest $request)
+    public function registrarUsuarioProveedor(Request $request)
     {
         try {
             DB::beginTransaction();

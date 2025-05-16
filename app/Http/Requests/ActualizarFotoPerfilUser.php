@@ -4,6 +4,15 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="ActualizarFotoPerfilUser",
+ *     required={
+ *         "foto_perfil"
+ *     },
+ *     @OA\Property(property="foto_perfil", type="blob")
+ * )
+ */
 class ActualizarFotoPerfilUser extends FormRequest
 {
     /**
