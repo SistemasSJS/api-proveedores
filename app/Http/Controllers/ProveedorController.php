@@ -7,10 +7,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Proveedor;
 use Illuminate\Http\Request;
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
+use App\Http\Requests\ActualizarLogoProveedor;
 use App\Http\Requests\ActualizarProveedorRequest;
 use App\Http\Requests\RegisterProveedorCompletarRequest;
 use App\Http\Requests\RegistroProveedorRequest;
-use App\Http\Resources\ActualizarLogoProveedor;
 use App\Mail\CompletaRegistroProveedorMail;
 use App\Models\Role;
 use App\Models\User;
@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
+
 
 
 class ProveedorController extends Controller
@@ -25,8 +27,8 @@ class ProveedorController extends Controller
 
     public function updateLogoProveedor(ActualizarLogoProveedor $request, $id)
     {
-        $file = $request->file('logo');
-
+        Log::channel('requests')->info('FILES:', $request->allFiles());
+        Log::channel('requests')->info('ALL:', $request->all());
         $user = User::find($id);
         if (!$user) {
             throw new ResourceNotFoundException("Usuario no encontrado.");
@@ -37,12 +39,14 @@ class ProveedorController extends Controller
             throw new ResourceNotFoundException("Proveedor no encontrado.");
         }
 
-        $nombre = uniqid() . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs('uploads', $nombre, 'public');
-        $url = asset("storage/$path");
+        $file = $request->file('logo');
+        $filename = 'logo_' . $proveedor->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('uploads', $filename, 'public');
+        $url = asset("storage/{$path}");
+
         $proveedor->update(['logo' => $url]);
-        $proveedor->load(Proveedor::eagerLodable());
-        return $this->success($proveedor->load(Proveedor::eagerLodable()));
+
+        return $this->success($proveedor->fresh(Proveedor::eagerLodable()));
     }
 
     public function getProveedorByUserId(Request $request, $id)

@@ -1,9 +1,6 @@
 <?php
 
 namespace App\Models;
-// app/Models/User.php
-
-namespace App\Models;
 
 use App\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

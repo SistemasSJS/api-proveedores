@@ -21,7 +21,7 @@ class RoleMiddleware
     {
         $user = $request->user();
         
-        if (!$user || !$user->hasRole($roles)) {
+    if (!$user || !$user->hasRole($roles)) {
             throw new UnauthorizedException('El usuario no tiene el rol requerido.' + $user->role);
         }
 

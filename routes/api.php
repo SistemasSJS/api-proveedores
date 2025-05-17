@@ -70,7 +70,7 @@ Route::middleware(
     )->group(function () {
         
         Route::get('proveedor/user/{id}', [ProveedorController::class, 'getProveedorByUserId']);
-        Route::put('proveedor/user/${id}/logo', [ProveedorController::class, 'updateLogoProveedor']);
+        Route::put('proveedor/user/{id}/update-logo', [ProveedorController::class, 'updateLogoProveedor']);
         Route::prefix('proveedores/{id}')->group(function () {
             Route::get('productos', [ProveedorController::class, 'productosPorProveedor']);
             Route::get('sucursales', [ProveedorController::class, 'sucursalesPorProveedor']);
