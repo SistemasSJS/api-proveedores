@@ -42,17 +42,34 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class);
     }
 
-    // Relación con proveedores (Varios proveedores)
+    /**
+     * Permite obtener todos los proveedores relacionados con un usuario.
+     * $user->proveedores()
+     */
     public function proveedores()
     {
         return $this->belongsToMany(Proveedor::class, 'user_proveedor')
             ->withPivot('is_main')
             ->withTimestamps();
     }
+    /**
+     * Devuelve solo el proveedor principal de este usuario.
+     * $user->mainProveedor()
+     */
+    public function mainProveedor()
+    {
+        return $this->belongsToMany(Proveedor::class, 'user_proveedor')
+            ->wherePivot('is_main', true)
+            ->withTimestamps();
+    }
 
+    /**
+     * Devuelve el proveedor principal o null si no existe ninguno.
+     * $user->main_proveedor.
+     */
     public function getMainProveedorAttribute()
     {
-        return $this->proveedores()->wherePivot('is_main', true)->first();
+        return $this->mainProveedor->first();
     }
 
     // Filtros disponibles para este modelo

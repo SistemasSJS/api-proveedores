@@ -61,14 +61,16 @@ Route::middleware(
     Route::get('logout', [AuthController::class, 'logout']);  // Obtener datos del proveedor autenticado
     Route::get('update-img-perfil', [AuthController::class, 'update_foto_perfil']);  // Obtener datos del proveedor autenticado
 
+
     Route::middleware(
         'role:'
             . UserRoleEnumerate::PROVEEDOR->value . ','
             . UserRoleEnumerate::SUPER_ADMIN->value . ','
             . UserRoleEnumerate::ADMIN->value
     )->group(function () {
-
-        // Route::apiResource('proveedores', ProveedorController::class);
+        
+        Route::get('proveedor/user/{id}', [ProveedorController::class, 'getProveedorByUserId']);
+        Route::put('proveedor/user/${id}/logo', [ProveedorController::class, 'updateLogoProveedor']);
         Route::prefix('proveedores/{id}')->group(function () {
             Route::get('productos', [ProveedorController::class, 'productosPorProveedor']);
             Route::get('sucursales', [ProveedorController::class, 'sucursalesPorProveedor']);

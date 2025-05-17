@@ -20,10 +20,10 @@ class AuthController extends Controller
     public function update_foto_perfil(ActualizarFotoPerfilUser $request)
     {
         $file = $request->file('foto_perfil');
+        
         $nombre = uniqid() . '.' . $file->getClientOriginalExtension();
         $path = $file->storeAs('uploads', $nombre, 'public');
         $url = asset("storage/$path");
-
         $user = $request->user();
         $user->foto_perfil_url = $url;
         $user->save();
