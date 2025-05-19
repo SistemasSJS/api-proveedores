@@ -11,11 +11,62 @@
     },
     "servers": [
         {
-            "url": "http://localhost:8080",
+            "url": "http://192.168.0.132:8080",
             "description": "Servidor local: SQLite"
         }
     ],
     "paths": {
+        "/api/update-foto-perfil": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Actualizar foto de perfil",
+                "operationId": "ff70459930cee93cfafb746ad638d180",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "foto_perfil"
+                                ],
+                                "properties": {
+                                    "foto_perfil": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Foto de perfil actualizada con éxito",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "path": {
+                                            "type": "string",
+                                            "example": "/storage/uploads/unique_filename.jpg"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/register": {
             "post": {
                 "tags": [
@@ -1611,108 +1662,77 @@
                 ]
             }
         },
-        "/api/proveedores": {
+        "/api/proveedores/logo": {
+            "put": {
+                "tags": [
+                    "Proveedores"
+                ],
+                "summary": "Actualizar logo del proveedor",
+                "operationId": "a2f0280dee509efef8792e096563fcc0",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProveedorUpdateLogoRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Logo actualizado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/proveedores/user/{id}": {
             "get": {
                 "tags": [
                     "Proveedores"
                 ],
-                "summary": "Listar proveedores",
-                "operationId": "getProveedores",
+                "summary": "Obtener proveedor por ID de usuario",
+                "operationId": "15b74fe5a529ff898114e4f02ffabee8",
                 "parameters": [
                     {
-                        "name": "nombre_comercial",
-                        "in": "query",
-                        "description": "Filtrar por nombre comercial del proveedor.",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "razon_social",
-                        "in": "query",
-                        "description": "Filtrar por razón social",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "rfc",
-                        "in": "query",
-                        "description": "Filtrar por el RFC.",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "direccion_fiscal",
-                        "in": "query",
-                        "description": "Filtrar por direccion fiscal registrada.",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "estado",
-                        "in": "query",
-                        "description": "Filtrar por estado.",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "municipio",
-                        "in": "query",
-                        "description": "Filtrar por municipio.",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "fecha_registro",
-                        "in": "query",
-                        "description": "Filtrar por fecha del registro del proveedor.",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "estatus",
-                        "in": "query",
-                        "description": "Filtrar por el estatus del proveedor.",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "notas",
-                        "in": "query",
-                        "description": "Filtrar por notas agregadas al proveedor.",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "email",
-                        "in": "query",
-                        "description": "Filtrar por email.",
-                        "schema": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Lista de proveedores",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Proveedor"
-                                    }
-                                }
-                            }
-                        }
+                        "description": "Proveedor encontrado"
+                    },
+                    "404": {
+                        "description": "Proveedor no encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/proveedores": {
+            "get": {
+                "tags": [
+                    "Proveedores"
+                ],
+                "summary": "Listar todos los proveedores",
+                "operationId": "5eb7d790ae5c32c59bd58744f5ed3da5",
+                "responses": {
+                    "200": {
+                        "description": "Lista de proveedores"
                     }
                 },
                 "security": [
@@ -1726,161 +1746,20 @@
                     "Proveedores"
                 ],
                 "summary": "Registrar un nuevo proveedor",
-                "description": "Crea un nuevo proveedor. Requiere validación por correo para crear el usuario.",
-                "operationId": "registrarProveedor",
+                "operationId": "79171269ec4e7dfd0d46085f6aacf7f1",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/RegistroProveedorRequest"
+                                "$ref": "#/components/schemas/ProveedorRegisterRequest"
                             }
                         }
                     }
                 },
                 "responses": {
                     "201": {
-                        "description": "Proveedor registrado exitosamente",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Proveedor registrado exitosamente"
-                                        },
-                                        "proveedor": {
-                                            "$ref": "#/components/schemas/Proveedor"
-                                        },
-                                        "sucursal": {
-                                            "$ref": "#/components/schemas/Sucursal"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Datos de entrada inválidos",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "The given data was invalid."
-                                        },
-                                        "errors": {
-                                            "type": "object",
-                                            "additionalProperties": {
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "string"
-                                                },
-                                                "property": null
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/register_proveedor_completar": {
-            "post": {
-                "tags": [
-                    "Proveedores"
-                ],
-                "summary": "Completar el registro de un proveedor",
-                "operationId": "CompletarRegistroProveedor",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "token",
-                                    "password",
-                                    "password_confirmation"
-                                ],
-                                "properties": {
-                                    "token": {
-                                        "description": "Token proporcionado para completar el registro",
-                                        "type": "string",
-                                        "example": "abc123def456"
-                                    },
-                                    "password": {
-                                        "description": "Nueva contraseña (mínimo 8 caracteres)",
-                                        "type": "string",
-                                        "format": "password",
-                                        "example": "MiClaveSegura123"
-                                    },
-                                    "password_confirmation": {
-                                        "description": "Confirmación de la nueva contraseña",
-                                        "type": "string",
-                                        "format": "password",
-                                        "example": "MiClaveSegura123"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Proveedor creado exitosamente",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "proveedor": {
-                                            "$ref": "#/components/schemas/Proveedor"
-                                        },
-                                        "token": {
-                                            "description": "Token de sesión para el usuario",
-                                            "type": "string"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Token inválido o expirado",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Token inválido o expirado"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Entrada inválida",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/InvalidInputException"
-                                }
-                            }
-                        }
+                        "description": "Proveedor creado exitosamente"
                     }
                 },
                 "security": [
@@ -1895,13 +1774,12 @@
                 "tags": [
                     "Proveedores"
                 ],
-                "summary": "Obtener un proveedor específico",
-                "operationId": "getProveedor",
+                "summary": "Obtener un proveedor por ID",
+                "operationId": "1898d8b0458ba55e2c8240363838a2a6",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "ID del proveedor",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -1910,24 +1788,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Proveedor encontrado",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Proveedor"
-                                }
-                            }
-                        }
+                        "description": "Proveedor encontrado"
                     },
                     "404": {
-                        "description": "Proveedor no encontrado",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ResourceNotFoundException"
-                                }
-                            }
-                        }
+                        "description": "Proveedor no encontrado"
                     }
                 },
                 "security": [
@@ -1940,13 +1804,12 @@
                 "tags": [
                     "Proveedores"
                 ],
-                "summary": "Actualizar un proveedor existente",
-                "operationId": "updateProveedor",
+                "summary": "Actualizar proveedor existente",
+                "operationId": "72364f0ee2e9c4041a2f38af705cea3b",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "ID del proveedor",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -1954,61 +1817,18 @@
                     }
                 ],
                 "requestBody": {
-                    "description": "Datos actualizados del proveedor",
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/ActualizarProveedorRequest"
+                                "$ref": "#/components/schemas/ProveedorUpdateRequest"
                             }
                         }
                     }
                 },
                 "responses": {
                     "200": {
-                        "description": "Proveedor actualizado exitosamente",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Proveedor"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Proveedor no encontrado",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ResourceNotFoundException"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Errores de validación",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string"
-                                        },
-                                        "errors": {
-                                            "type": "object",
-                                            "additionalProperties": {
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "string"
-                                                },
-                                                "property": null
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Proveedor actualizado"
                     }
                 },
                 "security": [
@@ -2021,13 +1841,12 @@
                 "tags": [
                     "Proveedores"
                 ],
-                "summary": "Eliminar proveedor",
-                "operationId": "deleteProveedor",
+                "summary": "Eliminar un proveedor",
+                "operationId": "8b7ae059b2d7afad943975d96233b0b7",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "ID del proveedor",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -2036,17 +1855,296 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": "Proveedor eliminado exitosamente"
+                        "description": "Proveedor eliminado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/proveedores/completar-registro": {
+            "post": {
+                "tags": [
+                    "Proveedores"
+                ],
+                "summary": "Completar registro de proveedor",
+                "operationId": "8c85abb7fa91da9b1b471380e759109b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProveedorRegisterCompleteRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Registro completado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/proveedores/{proveedor}/users": {
+            "get": {
+                "tags": [
+                    "ProveedorUsuarios"
+                ],
+                "summary": "Obtener lista de usuarios asociados a un proveedor",
+                "operationId": "listarUsuariosProveedor",
+                "parameters": [
+                    {
+                        "name": "proveedor",
+                        "in": "path",
+                        "description": "ID del proveedor",
+                        "required": true
                     },
-                    "404": {
-                        "description": "Proveedor no encontrado",
+                    {
+                        "name": "sort_by",
+                        "in": "query",
+                        "description": "Campo para ordenar (por defecto 'name')",
+                        "required": false
+                    },
+                    {
+                        "name": "order",
+                        "in": "query",
+                        "description": "Orden ascendente o descendente (por defecto 'asc')",
+                        "required": false
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada de usuarios",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ResourceNotFoundException"
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/UserResource"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Usuarios obtenidos correctamente."
+                                        },
+                                        "meta": {
+                                            "description": "Metadatos de paginación",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "ProveedorUsuarios"
+                ],
+                "summary": "Crear usuario asociado a un proveedor",
+                "operationId": "crearUsuarioProveedor",
+                "parameters": [
+                    {
+                        "name": "proveedor",
+                        "in": "path",
+                        "description": "ID del proveedor",
+                        "required": true
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCreateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuario creado correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResource"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "409": {
+                        "description": "Ya existe un usuario principal"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/proveedores/{proveedor}/users/{user}": {
+            "get": {
+                "tags": [
+                    "ProveedorUsuarios"
+                ],
+                "summary": "Obtener usuario asociado a un proveedor por ID",
+                "operationId": "obtenerUsuarioProveedorPorId",
+                "parameters": [
+                    {
+                        "name": "proveedor",
+                        "in": "path",
+                        "description": "ID del proveedor",
+                        "required": true
+                    },
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "ID del usuario",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuario encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResource"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "Usuario no asociado al proveedor"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "ProveedorUsuarios"
+                ],
+                "summary": "Actualizar usuario asociado a un proveedor",
+                "operationId": "actualizarUsuarioProveedor",
+                "parameters": [
+                    {
+                        "name": "proveedor",
+                        "in": "path",
+                        "description": "ID del proveedor",
+                        "required": true
+                    },
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "ID del usuario",
+                        "required": true
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateProveedorUsuarioRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Usuario actualizado correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResource"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "No autorizado o usuario no asociado"
+                    },
+                    "409": {
+                        "description": "Ya hay otro usuario principal"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "ProveedorUsuarios"
+                ],
+                "summary": "Eliminar usuario asociado a un proveedor",
+                "operationId": "eliminarUsuarioProveedor",
+                "parameters": [
+                    {
+                        "name": "proveedor",
+                        "in": "path",
+                        "description": "ID del proveedor",
+                        "required": true
+                    },
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "ID del usuario",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuario eliminado correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Usuario eliminado correctamente."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "No autorizado, usuario no asociado o es usuario principal"
                     }
                 },
                 "security": [
@@ -3001,6 +3099,44 @@
                 },
                 "type": "object"
             },
+            "MainUserDuplicateException": {
+                "title": "Error por usuario principal duplicado (409)",
+                "description": "Se lanza cuando se intenta asignar un usuario principal a un proveedor que ya tiene uno.",
+                "required": [
+                    "message",
+                    "errorType"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Usuario principal duplicado."
+                    },
+                    "errorType": {
+                        "type": "string",
+                        "example": "main_user_duplicate"
+                    }
+                },
+                "type": "object"
+            },
+            "NotFoundRelationException": {
+                "title": "Error de relación no encontrada (404)",
+                "description": "Se lanza cuando no se encuentra la relación solicitada.",
+                "required": [
+                    "message",
+                    "errorType"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Relación no encontrada."
+                    },
+                    "errorType": {
+                        "type": "string",
+                        "example": "not_found_relation"
+                    }
+                },
+                "type": "object"
+            },
             "FormValidationException": {
                 "title": "Error de validación de formulario (422)",
                 "description": "Se lanza cuando los datos enviados en el formulario no son válidos.",
@@ -3149,6 +3285,36 @@
                 },
                 "type": "object"
             },
+            "AuthLoginRequest": {
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "juan.perez@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "contraseña123"
+                    }
+                },
+                "type": "object"
+            },
+            "AuthUpdateFotoPerfilRequest": {
+                "required": [
+                    "foto_perfil"
+                ],
+                "properties": {
+                    "foto_perfil": {
+                        "type": "blob"
+                    }
+                },
+                "type": "object"
+            },
             "CrearProveedorUserRequest": {
                 "required": [
                     "razon_social",
@@ -3214,6 +3380,366 @@
                     "direccion_empresa": {
                         "type": "string",
                         "maxLength": 255
+                    },
+                    "pagina_web": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "estado": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "municipio": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "codigo_postal": {
+                        "type": "string",
+                        "maxLength": 10
+                    },
+                    "direccion_fiscal": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "nullable": true
+                    },
+                    "contacto_nombre": {
+                        "type": "string",
+                        "maxLength": 150
+                    },
+                    "contacto_cargo": {
+                        "type": "string",
+                        "maxLength": 60
+                    },
+                    "contacto_telefono": {
+                        "type": "string",
+                        "maxLength": 15
+                    },
+                    "contacto_correo": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 60
+                    }
+                },
+                "type": "object"
+            },
+            "ProveedorCreateUserRequest": {
+                "required": [
+                    "razon_social",
+                    "nombre_comercial",
+                    "rfc",
+                    "email",
+                    "password",
+                    "telefono",
+                    "direccion"
+                ],
+                "properties": {
+                    "razon_social": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "nombre_comercial": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "rfc": {
+                        "type": "string",
+                        "maxLength": 13
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "minLength": 8
+                    },
+                    "telefono": {
+                        "type": "string",
+                        "maxLength": 15
+                    },
+                    "direccion": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "nombre_propietario": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "nombre_de_quien_registra": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "tipos_empresa_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "tipos_empresa_otro": {
+                        "type": "string",
+                        "maxLength": 60,
+                        "nullable": true
+                    },
+                    "descripcion_giro_empresa": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "direccion_empresa": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "pagina_web": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "estado": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "municipio": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "codigo_postal": {
+                        "type": "string",
+                        "maxLength": 10
+                    },
+                    "direccion_fiscal": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "nullable": true
+                    },
+                    "contacto_nombre": {
+                        "type": "string",
+                        "maxLength": 150
+                    },
+                    "contacto_cargo": {
+                        "type": "string",
+                        "maxLength": 60
+                    },
+                    "contacto_telefono": {
+                        "type": "string",
+                        "maxLength": 15
+                    },
+                    "contacto_correo": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 60
+                    }
+                },
+                "type": "object"
+            },
+            "ProveedorRegisterCompleteRequest": {
+                "required": [
+                    "token",
+                    "password",
+                    "password_confirmation"
+                ],
+                "properties": {
+                    "token": {
+                        "description": "Token proporcionado para completar el registro",
+                        "type": "string",
+                        "example": "abc123def456"
+                    },
+                    "password": {
+                        "description": "Nueva contraseña (mínimo 8 caracteres)",
+                        "type": "string",
+                        "format": "password",
+                        "example": "MiClaveSegura123"
+                    },
+                    "password_confirmation": {
+                        "description": "Confirmación de la nueva contraseña",
+                        "type": "string",
+                        "format": "password",
+                        "example": "MiClaveSegura123"
+                    }
+                },
+                "type": "object"
+            },
+            "ProveedorRegisterRequest": {
+                "required": [
+                    "nombre_propietario",
+                    "nombre_de_quien_registra",
+                    "nombre_comercial",
+                    "razon_social",
+                    "tipos_empresa_id",
+                    "descripcion_giro_empresa",
+                    "direccion_empresa",
+                    "email",
+                    "telefono",
+                    "pagina_web",
+                    "estado",
+                    "municipio",
+                    "codigo_postal",
+                    "contacto_nombre",
+                    "contacto_cargo",
+                    "contacto_telefono",
+                    "contacto_correo",
+                    "recaptcha_token"
+                ],
+                "properties": {
+                    "nombre_propietario": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "nombre_de_quien_registra": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "nombre_comercial": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "razon_social": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "tipos_empresa_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "tipos_empresa_otro": {
+                        "type": "string",
+                        "maxLength": 60,
+                        "nullable": true
+                    },
+                    "descripcion_giro_empresa": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "direccion_empresa": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255
+                    },
+                    "telefono": {
+                        "type": "string",
+                        "maxLength": 15
+                    },
+                    "pagina_web": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "estado": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "municipio": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "codigo_postal": {
+                        "type": "string",
+                        "maxLength": 10
+                    },
+                    "direccion_fiscal": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "nullable": true
+                    },
+                    "contacto_nombre": {
+                        "type": "string",
+                        "maxLength": 150
+                    },
+                    "contacto_cargo": {
+                        "type": "string",
+                        "maxLength": 60
+                    },
+                    "contacto_telefono": {
+                        "type": "string",
+                        "maxLength": 15
+                    },
+                    "contacto_correo": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 60
+                    },
+                    "recaptcha_token": {
+                        "description": "Token de validación ReCAPTCHA v3",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ProveedorUpdateLogoRequest": {
+                "required": [
+                    "logo"
+                ],
+                "properties": {
+                    "logo": {
+                        "type": "string",
+                        "format": "binary",
+                        "example": "logo.png"
+                    }
+                },
+                "type": "object"
+            },
+            "ProveedorUpdateRequest": {
+                "required": [
+                    "nombre_propietario",
+                    "nombre_de_quien_registra",
+                    "nombre_comercial",
+                    "razon_social",
+                    "tipos_empresa_id",
+                    "descripcion_giro_empresa",
+                    "direccion_empresa",
+                    "email",
+                    "telefono",
+                    "pagina_web",
+                    "estado",
+                    "municipio",
+                    "codigo_postal",
+                    "contacto_nombre",
+                    "contacto_cargo",
+                    "contacto_telefono",
+                    "contacto_correo"
+                ],
+                "properties": {
+                    "nombre_propietario": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "nombre_de_quien_registra": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "nombre_comercial": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "razon_social": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "tipos_empresa_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "tipos_empresa_otro": {
+                        "type": "string",
+                        "maxLength": 60,
+                        "nullable": true
+                    },
+                    "descripcion_giro_empresa": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "direccion_empresa": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255
+                    },
+                    "telefono": {
+                        "type": "string",
+                        "maxLength": 15
                     },
                     "pagina_web": {
                         "type": "string",
@@ -3388,6 +3914,161 @@
                     "recaptcha_token": {
                         "description": "Token de validación ReCAPTCHA v3",
                         "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "StoreProveedorUsuarioRequest": {
+                "required": [
+                    "name",
+                    "email",
+                    "password"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Juan Pérez"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "juan@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "secret"
+                    },
+                    "is_main": {
+                        "type": "boolean",
+                        "example": false
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateProveedorUsuarioRequest": {
+                "required": [
+                    "name",
+                    "email"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Juan Pérez"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "juan@example.com"
+                    },
+                    "is_main": {
+                        "type": "boolean",
+                        "example": false
+                    }
+                },
+                "type": "object"
+            },
+            "UserCreateRequest": {
+                "required": [
+                    "name",
+                    "email",
+                    "password",
+                    "telefono",
+                    "role"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "Juan Pérez"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255,
+                        "example": "juan.perez@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "contraseña123"
+                    },
+                    "telefono": {
+                        "type": "string",
+                        "example": "123456789"
+                    },
+                    "role": {
+                        "type": "string",
+                        "example": "user"
+                    }
+                },
+                "type": "object"
+            },
+            "UserUpdateRequest": {
+                "required": [
+                    "name",
+                    "email"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "Juan Pérez"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255,
+                        "example": "juan.perez@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "maxLength": 255,
+                        "example": "contraseña123"
+                    },
+                    "telefono": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "123456789"
+                    },
+                    "role": {
+                        "type": "string",
+                        "example": "user"
+                    }
+                },
+                "type": "object"
+            },
+            "UserResource": {
+                "title": "UserResource",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Juan Pérez"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "juan@example.com"
+                    },
+                    "role": {
+                        "type": "string",
+                        "example": "user"
+                    },
+                    "is_main": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "example": "2023-01-01T00:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "example": "2023-01-01T00:00:00Z"
                     }
                 },
                 "type": "object"
@@ -4026,7 +4707,11 @@
     "tags": [
         {
             "name": "Proveedores",
-            "description": "CRUD de proveedores"
+            "description": "Endpoints para la gestión de proveedores"
+        },
+        {
+            "name": "ProveedorUsuarios",
+            "description": "Endpoints para la gestión de usuarios asociados a proveedores"
         },
         {
             "name": "Sucursales",

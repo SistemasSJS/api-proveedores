@@ -14,6 +14,7 @@ use App\Http\Controllers\UnidadMedidaController;
 use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\LineaController;
 use App\Http\Controllers\MarcaController;
+use App\Http\Controllers\ProveedorUsuarioController;
 use App\Http\Controllers\TipoEmpresaController;
 
 
@@ -68,15 +69,31 @@ Route::middleware(
             . UserRoleEnumerate::SUPER_ADMIN->value . ','
             . UserRoleEnumerate::ADMIN->value
     )->group(function () {
-        
+
+        Route::post('proveedor/update-logo', [ProveedorController::class, 'updateLogo']);
         Route::get('proveedor/user/{id}', [ProveedorController::class, 'getProveedorByUserId']);
-        Route::put('proveedor/user/{id}/update-logo', [ProveedorController::class, 'updateLogoProveedor']);
+
+        /**
+         * Gestion de usarios de proveedor
+         */
+        /**
+         * Gestion de usarios de proveedor
+         */
+        Route::controller(ProveedorUsuarioController::class)->group(function () {
+            Route::post('proveedores/{proveedor}/users', 'store');
+            Route::get('proveedores/{proveedor}/users', 'index');
+            Route::get('proveedores/{proveedor}/users/{user}', 'getById');
+            Route::put('proveedores/{proveedor}/users/{user}', 'update');
+            Route::delete('proveedores/{proveedor}/users/{user}', 'destroy');
+        });
+
+
+
         Route::prefix('proveedores/{id}')->group(function () {
             Route::get('productos', [ProveedorController::class, 'productosPorProveedor']);
             Route::get('sucursales', [ProveedorController::class, 'sucursalesPorProveedor']);
         });
     });
-
 
     /**
      * Rutas para los CRUDS. Only admins
