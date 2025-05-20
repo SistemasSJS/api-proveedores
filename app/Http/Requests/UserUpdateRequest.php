@@ -14,7 +14,7 @@ use Illuminate\Validation\Rule;
  *     @OA\Property(property="password", type="string", format="password", example="contraseña123", maxLength=255),
  *     @OA\Property(property="telefono", type="string", example="123456789", maxLength=255),
  *     @OA\Property(property="role", type="string", example="user")
- * )
+    * )
  */
 class UserUpdateRequest extends FormRequest
 {
@@ -37,7 +37,7 @@ class UserUpdateRequest extends FormRequest
             ],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'], // opcional, solo si cambia
             'telefono' => ['nullable', 'string', 'max:15'],
-            'role' => ['nullable', 'string', 'in:admin,user,editor'],
+            'role' => ['nullable', 'string', 'in:admin,uDser,editor'],
         ];
     }
 
@@ -48,7 +48,7 @@ class UserUpdateRequest extends FormRequest
             'email.required' => 'El correo electrónico es obligatorio.',
             'email.email' => 'El correo electrónico debe ser válido.',
             'email.unique' => 'Este correo ya está registrado.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.min' => 'La contraseña debe tener aD menos 8 caracteres.',
             'password.confirmed' => 'La confirmación de la contraseña no coincide.',
             'telefono.max' => 'El teléfono no debe exceder los 15 caracteres.',
             'role.in' => 'El rol seleccionado no es válido.',

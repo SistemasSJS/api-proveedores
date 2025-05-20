@@ -76,9 +76,6 @@ Route::middleware(
         /**
          * Gestion de usarios de proveedor
          */
-        /**
-         * Gestion de usarios de proveedor
-         */
         Route::controller(ProveedorUsuarioController::class)->group(function () {
             Route::post('proveedores/{proveedor}/users', 'store');
             Route::get('proveedores/{proveedor}/users', 'index');

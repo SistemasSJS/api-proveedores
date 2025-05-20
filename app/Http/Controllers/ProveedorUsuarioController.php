@@ -145,7 +145,6 @@ class ProveedorUsuarioController extends Controller
         return $this->success(new UserResource($user), 'Usuario creado correctamente.', 201);
     }
 
-
     /**
      * @OA\Get(
      *     path="/api/proveedores/{proveedor}/users/{user}",
@@ -188,7 +187,6 @@ class ProveedorUsuarioController extends Controller
 
         return $this->success(new UserResource($user), 'Usuario obtenido correctamente.');
     }
-
 
     /**
      * @OA\Put(
@@ -254,7 +252,6 @@ class ProveedorUsuarioController extends Controller
 
         return $this->success(new UserResource($user), 'Usuario actualizado correctamente.');
     }
-
 
     /**
      * @OA\Delete(
