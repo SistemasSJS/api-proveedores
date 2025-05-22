@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * @OA\Schema(
- *     schema="StoreProveedorUsuarioRequest",
+ *     schema="ProveedorUsuairoStoreRequest",
  *     required={"name","email","password"},
  *     properties={
  *         @OA\Property(property="name", type="string", example="Juan Pérez"),
@@ -17,7 +17,7 @@ use Illuminate\Foundation\Http\FormRequest;
  *     }
  * )
  */
-class StoreProveedorUsuarioRequest extends FormRequest
+class ProveedorUsuairoStoreRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -27,10 +27,11 @@ class StoreProveedorUsuarioRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6',
-            'is_main' => 'nullable|boolean',
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'], // espera password_confirmation
+            'rol_id' => ['required', 'integer', 'exists:roles,id'],
+
         ];
     }
 
@@ -38,17 +39,14 @@ class StoreProveedorUsuarioRequest extends FormRequest
     {
         return [
             'name.required' => 'El nombre es obligatorio.',
-            'name.string' => 'El nombre debe ser una cadena de texto.',
-
             'email.required' => 'El correo electrónico es obligatorio.',
-            'email.email' => 'El correo electrónico no tiene un formato válido.',
-            'email.unique' => 'Ya existe un usuario con ese correo electrónico.',
-
+            'email.email' => 'El correo electrónico debe ser válido.',
+            'email.unique' => 'Este correo ya está registrado.',
             'password.required' => 'La contraseña es obligatoria.',
-            'password.string' => 'La contraseña debe ser una cadena de texto.',
-            'password.min' => 'La contraseña debe tener al menos :min caracteres.',
-
-            'is_main.boolean' => 'El campo "usuario principal" debe ser verdadero o falso.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.confirmed' => 'La confirmación de la contraseña no coincide.',
+            'rol_id.required' => 'El rol es obligatorio.',
+            'rol_id.exists' => 'El rol seleccionado no es válido.',
         ];
     }
 }

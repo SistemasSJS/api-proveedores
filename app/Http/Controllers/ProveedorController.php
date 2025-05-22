@@ -2,26 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Proveedor;
+
+use App\Http\Resources\UserAuthenticateResource;
 
 use App\Http\Requests\ProveedorUpdateRequest;
 use App\Http\Requests\ProveedorRegisterCompleteRequest;
 use App\Http\Requests\ProveedorRegisterRequest;
 use App\Http\Requests\ProveedorUpdateLogoRequest;
 
+
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-
 use Illuminate\Support\Str;
-use Illuminate\Http\Request;
-use App\Mail\CompletaRegistroProveedorMail;
-use App\Exceptions\Api\Crud\ResourceNotFoundException;
-use App\Http\Resources\UserAuthenticateResource;
 use Illuminate\Support\Facades\Storage;
+
+use App\Mail\CompletaRegistroProveedorMail;
+
+use App\Exceptions\Api\Crud\ResourceNotFoundException;
 
 
 /**

@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * @OA\Schema(
- *     schema="UserCreateRequest",
+ *     schema="UserStoreRequest",
  *     required={
  *        "name",
  *       "email",
@@ -22,7 +22,7 @@ use Illuminate\Foundation\Http\FormRequest;
  * )
  */
 
-class UserCreateRequest extends FormRequest
+class UserStoreRequest extends FormRequest
 {
     public function authorize(): bool
     {

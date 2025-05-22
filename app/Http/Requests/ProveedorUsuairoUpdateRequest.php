@@ -6,14 +6,14 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * @OA\Schema(
- *     schema="UpdateProveedorUsuarioRequest",
+ *     schema="ProveedorUsuairoUpdateRequest",
  *     required={"name","email"},
  *     @OA\Property(property="name", type="string", example="Juan Pérez"),
  *     @OA\Property(property="email", type="string", format="email", example="juan@example.com"),
  *     @OA\Property(property="is_main", type="boolean", example=false)
  * )
  */
-class UpdateProveedorUsuarioRequest extends FormRequest
+class ProveedorUsuairoUpdateRequest extends FormRequest
 {
     public function authorize(): bool
     {

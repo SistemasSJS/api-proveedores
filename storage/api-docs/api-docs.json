@@ -1977,7 +1977,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/UserCreateRequest"
+                                "$ref": "#/components/schemas/UserStoreRequest"
                             }
                         }
                     }
@@ -2077,7 +2077,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/UpdateProveedorUsuarioRequest"
+                                "$ref": "#/components/schemas/ProveedorUsuairoUpdateRequest"
                             }
                         }
                     }
@@ -3918,7 +3918,7 @@
                 },
                 "type": "object"
             },
-            "StoreProveedorUsuarioRequest": {
+            "ProveedorUsuairoStoreRequest": {
                 "required": [
                     "name",
                     "email",
@@ -3946,7 +3946,7 @@
                 },
                 "type": "object"
             },
-            "UpdateProveedorUsuarioRequest": {
+            "ProveedorUsuairoUpdateRequest": {
                 "required": [
                     "name",
                     "email"
@@ -3968,7 +3968,7 @@
                 },
                 "type": "object"
             },
-            "UserCreateRequest": {
+            "UserStoreRequest": {
                 "required": [
                     "name",
                     "email",

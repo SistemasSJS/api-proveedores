@@ -189,3 +189,37 @@ Editar
 'providers' => [
     Anhskohbo\NoCaptcha\NoCaptchaServiceProvider::class,
 ],
+
+
+
+
+
+# nose usan PERO TAMPOCO SE BORRA
+# - [X] CrearProveedorUserRequest        
+# - [X] ProveedorCreateUserRequest    
+
+# - [X] ActualizarFotoPerfilUser
+- AuthController
+  - [X] AuthLoginRequest
+  - [O] AuthUpdateFotoPerfilRequest      
+
+- ProveedorController
+  - [O] ProveedorRegisterCompleteRequest 
+  - [O] ProveedorRegisterRequest
+  - [O] ProveedorUpdateLogoRequest       
+  - [O] ProveedorUpdateRequest
+  # - [x] RegisterProveedorCompletarRequest
+  # - [X] RegistroProveedorRequest
+  # - [X] ActualizarLogoProveedor
+  # - [X] ActualizarProveedorRequest       
+
+- ProveedorUsuarioController
+  - [X] ProveedorUsuairoStoreRequest   
+  - [O] ProveedorUsuairoUpdateRequest
+  # ProveedorUsuairoUpdateRequest    ----> 
+  # ProveedorUsuairoStoreRequest  ---> 
+  
+- [O] UserStoreRequest ----> ProveedorUsuairoCreateRequest
+  - ProveedorUsuarioController
+
+- [] UserUpdateRequest

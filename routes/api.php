@@ -60,7 +60,7 @@ Route::middleware(
 
     Route::get('me', [AuthController::class, 'me']);  // Obtener datos del proveedor autenticado
     Route::get('logout', [AuthController::class, 'logout']);  // Obtener datos del proveedor autenticado
-    Route::get('update-img-perfil', [AuthController::class, 'update_foto_perfil']);  // Obtener datos del proveedor autenticado
+    Route::post('update-img-perfil', [AuthController::class, 'update_foto_perfil']);  // Obtener datos del proveedor autenticado
 
 
     Route::middleware(
@@ -80,7 +80,7 @@ Route::middleware(
             Route::post('proveedores/{proveedor}/users', 'store');
             Route::get('proveedores/{proveedor}/users', 'index');
             Route::get('proveedores/{proveedor}/users/{user}', 'getById');
-            Route::put('proveedores/{proveedor}/users/{user}', 'update');
+            Route::patch('proveedores/{proveedor}/users/{user}', 'update');
             Route::delete('proveedores/{proveedor}/users/{user}', 'destroy');
         });
 
