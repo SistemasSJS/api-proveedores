@@ -170,3 +170,4 @@ bower_components
 stubs/
 .vscode/
 
+storage/logs

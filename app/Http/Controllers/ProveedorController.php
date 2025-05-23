@@ -306,10 +306,23 @@ class ProveedorController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return $this->success([
-            'user' => new UserAuthenticateResource($user),
-
+            'user' => new UserAuthenticateResource($user->load(User::eagerLodable())),
             'proveedor' => $proveedor->load(Proveedor::eagerLodable()),
             'token' => $token,
         ], 'Registro completado', 201);
     }
+
+
+    // public function test(Request $request)
+    // {
+    //     $user = User::findOrFail(1);
+    //     $proveedor = Proveedor::findOrFail(1);
+    //     $token = $user->createToken('auth_token')->plainTextToken;
+
+    //     return $this->success([
+    //         'user' => new UserAuthenticateResource($user->load(User::eagerLodable())),
+    //         'proveedor' => $proveedor->load(Proveedor::eagerLodable()),
+    //         'token' => $token,
+    //     ], 'Registro completado', 201);
+    // }
 }

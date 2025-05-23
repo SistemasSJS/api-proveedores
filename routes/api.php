@@ -18,6 +18,8 @@ use App\Http\Controllers\ProveedorUsuarioController;
 use App\Http\Controllers\TipoEmpresaController;
 
 
+// Route::get('test', [ProveedorController::class, 'test']);
+
 Route::post('upload', [FileUploadController::class, 'store'])->name('upload');
 /**
  * Rutas Publicas. Que no necesitan procteccion
