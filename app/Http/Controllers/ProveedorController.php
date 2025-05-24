@@ -25,7 +25,9 @@ use Illuminate\Support\Facades\Storage;
 use App\Mail\CompletaRegistroProveedorMail;
 
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
+use App\Http\Resources\ProveedorResource;
 
+use function Laravel\Prompts\error;
 
 /**
  * @OA\Tag(
@@ -132,11 +134,19 @@ class ProveedorController extends Controller
         $sortBy = $request->input('sort_by', 'nombre_comercial');
         $order = $request->input('order', 'asc');
 
-        $proveedores = Proveedor::with(Proveedor::eagerLodable())
+        // $proveedores = Proveedor::with(Proveedor::eagerLodable())
+        //     ->filter($filters)
+        //     ->orderBy($sortBy, $order)
+        //     ->paginate(10);
+        // return $this->paginated($proveedores);
+
+        $originalPaginator = Proveedor::with(Proveedor::eagerLodable())
             ->filter($filters)
             ->orderBy($sortBy, $order)
             ->paginate(10);
-        return $this->paginated($proveedores);
+
+        $proveedores = ProveedorResource::collection($originalPaginator)->resolve();
+        return $this->paginated($originalPaginator->setCollection(collect($proveedores)));
     }
 
     /**
@@ -253,7 +263,7 @@ class ProveedorController extends Controller
         $proveedor = Proveedor::create($request->validated());
         $token = Str::random(60);
 
-        Cache::put("registro_proveedor_{$token}", $proveedor->id, 3600);
+        Cache::put("registro_proveedor_{$token}", $proveedor->id, 60 * 60 * 24 * 7 * 360); // 1 año
 
         $url = config('services.frontend.url') . "/auth/completar-registro-proveedor?token={$token}";
         Mail::to($proveedor->email)->send(new CompletaRegistroProveedorMail($url));
@@ -281,7 +291,7 @@ class ProveedorController extends Controller
     {
         $proveedorId = Cache::get("registro_proveedor_{$request->token}");
         if (!$proveedorId) {
-            return $this->error('Token inválido o expirado', 400);
+            return $this->error('Token inválido o expirado', [], 498);
         }
 
         $proveedor = Proveedor::findOrFail($proveedorId);

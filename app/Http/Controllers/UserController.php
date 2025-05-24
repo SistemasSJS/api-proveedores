@@ -35,11 +35,12 @@ class UserController extends Controller
         $sortBy = $request->input('sort_by', 'nombre_comercial');
         $order = $request->input('order', 'asc');
 
-        $originalPaginator = User::filter($filters)
+        $originalPaginator = User::with(User::eagerLodable())
+            ->filter($filters)
             ->orderBy($sortBy, $order)
             ->paginate(10);
 
-        
+
         $users = UserResource::collection($originalPaginator)->resolve();
         return $this->paginated($originalPaginator->setCollection(collect($users)));
     }
