@@ -26,7 +26,8 @@ Route::post('upload', [FileUploadController::class, 'store'])->name('upload');
  * FIXME: Config Access Api Token on all routes, and settings CORDS. 
  * TODO: Verificar configuracion de origen para las petiones.  
  */
-Route::post('register-user-proveedor', [AuthController::class, 'registrarUsuarioProveedor']);
+Route::post('auth/register', [AuthController::class, 'register']);
+Route::post('auth/completar-registro', [AuthController::class, 'register_completar']);
 Route::post('login', [AuthController::class, 'login']);
 
 /**

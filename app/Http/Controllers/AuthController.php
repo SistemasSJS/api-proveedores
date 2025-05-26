@@ -3,17 +3,112 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\Api\Auth\UnauthorizedException;
+use App\Http\Requests\AuthRegisterRequest;
+use App\Http\Requests\AuthRegisterCompleteRequest;
 use App\Http\Requests\AuthUpdateFotoPerfilRequest;
 use App\Http\Resources\UserAuthenticateResource;
+use App\Http\Resources\UserResource;
+use App\Mail\CompletaRegistroUsuarioMail;
 use App\Models\User;
-use App\Models\Proveedor;
-use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
+
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+
 
 class AuthController extends Controller
 {
+
+    /**
+     * @OA\Post(
+     *     path="/api/auth/register",
+     *     tags={"Autenticación"},
+     *     summary="Iniciar registro de usuario (Constructor o Solicitante)",
+     *     description="Guarda datos preliminares del usuario y envía correo con token para completar el registro.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/AuthRegisterRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Token generado y enviado por correo",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Datos guardados. Revisa tu correo para continuar el registro."),
+     *             @OA\Property(property="token", type="string", example="kJH23jhkL23JKnlk2323jh2h3k4")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Datos inválidos o incompletos"
+     *     )
+     * )
+     */
+
+    public function register(AuthRegisterRequest $request)
+    {
+        $validatedData = $request->validated();
+        $token = Str::random(60);
+        Cache::put("registro_user_construcc{$token}", $validatedData, 60 * 24 * 365);
+        $url = config('services.frontend.url') . "/auth/completar-registro-proveedor?token={$token}";
+        Mail::to($validatedData['email'])->send(new CompletaRegistroUsuarioMail($url));
+
+
+        return $this->success([
+            'message' => 'Datos guardados. Revisa tu correo para continuar el registro.',
+            'url' => $url
+        ], 'Proveedor pendiente de completar registro');
+    }
+
+
+    /**
+     * @OA\Post(
+     *     path="/api/auth/completar-registro",
+     *     tags={"Autenticación"},
+     *     summary="Completar registro de usuario (Constructor o Solicitante)",
+     *     description="Completa el registro del usuario usando el token previamente enviado por correo.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/AuthRegisterCompleteRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Usuario registrado correctamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Registro completado."),
+     *             @OA\Property(property="user", ref="#/components/schemas/UserResource")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=498,
+     *         description="Token inválido o expirado"
+     *     )
+     * )
+     */
+
+    public function register_completar(AuthRegisterCompleteRequest $request)
+    {
+        $data = Cache::get("registro_user_construcc{$request->token}");
+
+        if (!$data) {
+            return $this->error('Token inválido o expirado', [], 498);
+        }
+
+        $user = User::create([
+            'name' => $data['nombre_comercial'],
+            'email' => $data['email'],
+            'password' => Hash::make($request->password),
+        ]);
+
+        // TODO: Add request to CONSTRUCC APP
+        // ...
+
+        return $this->success([
+            'message' => 'Datos guardados. Registro completado con exito.',
+            'user' => new UserResource($user->load(User::eagerLodable()))
+        ], 'Proveedor pendiente de completar registro');
+    }
 
     /**
      * @OA\Post(
@@ -55,122 +150,6 @@ class AuthController extends Controller
             'Foto de perfil actualizada con éxito',
             201
         );
-    }
-
-
-    /**
-     * @OA\Post(
-     *     path="/api/register",
-     *     summary="Registrar un proveedor",
-     *     tags={"Autenticación"},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"razon_social", "nombre_comercial", "rfc", "email", "password", "telefono", "direccion"},
-     *             @OA\Property(property="razon_social", type="string", example="Proveedor S.A. de C.V."),
-     *             @OA\Property(property="nombre_comercial", type="string", example="Proveedor Comercial"),
-     *             @OA\Property(property="rfc", type="string", example="QUMA470929F37"),
-     *             @OA\Property(property="email", type="string", format="email", example="proveedor@empresa.com"),
-     *             @OA\Property(property="password", type="string", format="password", example="contraseñaSegura123"),
-     *             @OA\Property(property="telefono", type="string", example="1234567890"),
-     *             @OA\Property(property="direccion", type="string", example="Av. Ejemplo 123, Ciudad, Estado")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Proveedor registrado correctamente",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Proveedor registrado correctamente"),
-     *             @OA\Property(property="user", type="object",
-     *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="name", type="string", example="Proveedor Comercial"),
-     *                 @OA\Property(property="email", type="string", format="email", example="proveedor@empresa.com")
-     *             ),
-     *             @OA\Property(property="proveedor", type="object",
-     *                 @OA\Property(property="razon_social", type="string", example="Proveedor S.A. de C.V."),
-     *                 @OA\Property(property="nombre_comercial", type="string", example="Proveedor Comercial"),
-     *                 @OA\Property(property="email", type="string", format="email", example="proveedor@empresa.com"),
-     *                 @OA\Property(property="telefono", type="string", example="1234567890"),
-     *                 @OA\Property(property="direccion", type="string", example="Av. Ejemplo 123, Ciudad, Estado")
-     *             ),
-     *             @OA\Property(property="token", type="string", example="eyJ0eXAiOiJKV1QiLCJhbGciOi...")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Error de validación en el registro",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="error_type", type="string", example="registration_error"),
-     *             @OA\Property(property="message", type="string", example="Error al registrar el proveedor. Campos no validados."),
-     *             @OA\Property(property="code", type="integer", example=422),
-     *             @OA\Property(property="errors", type="object",
-     *                 @OA\Property(property="email", type="array",
-     *                     @OA\Items(type="string", example="El correo electrónico debe ser válido.")
-     *                 ),
-     *                 @OA\Property(property="password", type="array",
-     *                     @OA\Items(type="string", example="La contraseña debe tener al menos 8 caracteres.")
-     *                 )
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Error interno del servidor",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Error en el registro"),
-     *             @OA\Property(property="error", type="string", example="El mensaje de error generado en la transacción")
-     *         )
-     *     )
-     * )
-     */
-    public function registrarUsuarioProveedor(Request $request)
-    {
-        try {
-            DB::beginTransaction();
-
-            $user = User::create([
-                'name' => $request->nombre_comercial,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-            ]);
-
-            $role = Role::where('name', 'Proveedor')->first();
-            $user->role()->associate($role);
-            $user->save();
-
-            $proveedor = Proveedor::create([
-                'razon_social' => $request->razon_social,
-                'nombre_comercial' => $request->nombre_comercial,
-                'rfc' => $request->rfc,
-                'email' => $request->email,
-                'telefono' => $request->telefono,
-                'direccion' => $request->direccion,
-            ]);
-
-            $user->proveedores()->attach($proveedor->id, ['is_main' => true]);
-
-            DB::commit();
-
-            $token = $user->createToken('sanctum')->plainTextToken;
-
-            return $this->success(
-                [
-                    'user' => $user,
-                    'proveedor' => $proveedor,
-                    'token' => $token
-                ],
-                'Proveedor registrado correctamente',
-                201
-            );
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return $this->success([
-                'message' => 'Error en el registro',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
     }
 
     /**

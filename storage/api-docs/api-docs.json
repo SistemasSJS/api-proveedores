@@ -16,6 +16,95 @@
         }
     ],
     "paths": {
+        "/api/auth/register": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Iniciar registro de usuario (Constructor o Solicitante)",
+                "description": "Guarda datos preliminares del usuario y envía correo con token para completar el registro.",
+                "operationId": "d764dd091cc4494ae0baf360b03319f3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AuthRegisterRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Token generado y enviado por correo",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Datos guardados. Revisa tu correo para continuar el registro."
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "kJH23jhkL23JKnlk2323jh2h3k4"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Datos inválidos o incompletos"
+                    }
+                }
+            }
+        },
+        "/api/auth/completar-registro": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Completar registro de usuario (Constructor o Solicitante)",
+                "description": "Completa el registro del usuario usando el token previamente enviado por correo.",
+                "operationId": "b78afde74a76924abecccdacdf2f4b9d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AuthRegisterCompleteRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Usuario registrado correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registro completado."
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/UserResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "498": {
+                        "description": "Token inválido o expirado"
+                    }
+                }
+            }
+        },
         "/api/update-foto-perfil": {
             "post": {
                 "tags": [
@@ -65,199 +154,6 @@
                         "sanctum": []
                     }
                 ]
-            }
-        },
-        "/api/register": {
-            "post": {
-                "tags": [
-                    "Autenticación"
-                ],
-                "summary": "Registrar un proveedor",
-                "operationId": "016cf67dd8930acce0c336b7abb83565",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "razon_social",
-                                    "nombre_comercial",
-                                    "rfc",
-                                    "email",
-                                    "password",
-                                    "telefono",
-                                    "direccion"
-                                ],
-                                "properties": {
-                                    "razon_social": {
-                                        "type": "string",
-                                        "example": "Proveedor S.A. de C.V."
-                                    },
-                                    "nombre_comercial": {
-                                        "type": "string",
-                                        "example": "Proveedor Comercial"
-                                    },
-                                    "rfc": {
-                                        "type": "string",
-                                        "example": "QUMA470929F37"
-                                    },
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "proveedor@empresa.com"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "format": "password",
-                                        "example": "contraseñaSegura123"
-                                    },
-                                    "telefono": {
-                                        "type": "string",
-                                        "example": "1234567890"
-                                    },
-                                    "direccion": {
-                                        "type": "string",
-                                        "example": "Av. Ejemplo 123, Ciudad, Estado"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Proveedor registrado correctamente",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Proveedor registrado correctamente"
-                                        },
-                                        "user": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "integer",
-                                                    "example": 1
-                                                },
-                                                "name": {
-                                                    "type": "string",
-                                                    "example": "Proveedor Comercial"
-                                                },
-                                                "email": {
-                                                    "type": "string",
-                                                    "format": "email",
-                                                    "example": "proveedor@empresa.com"
-                                                }
-                                            },
-                                            "type": "object"
-                                        },
-                                        "proveedor": {
-                                            "properties": {
-                                                "razon_social": {
-                                                    "type": "string",
-                                                    "example": "Proveedor S.A. de C.V."
-                                                },
-                                                "nombre_comercial": {
-                                                    "type": "string",
-                                                    "example": "Proveedor Comercial"
-                                                },
-                                                "email": {
-                                                    "type": "string",
-                                                    "format": "email",
-                                                    "example": "proveedor@empresa.com"
-                                                },
-                                                "telefono": {
-                                                    "type": "string",
-                                                    "example": "1234567890"
-                                                },
-                                                "direccion": {
-                                                    "type": "string",
-                                                    "example": "Av. Ejemplo 123, Ciudad, Estado"
-                                                }
-                                            },
-                                            "type": "object"
-                                        },
-                                        "token": {
-                                            "type": "string",
-                                            "example": "eyJ0eXAiOiJKV1QiLCJhbGciOi..."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Error de validación en el registro",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "error_type": {
-                                            "type": "string",
-                                            "example": "registration_error"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Error al registrar el proveedor. Campos no validados."
-                                        },
-                                        "code": {
-                                            "type": "integer",
-                                            "example": 422
-                                        },
-                                        "errors": {
-                                            "properties": {
-                                                "email": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string",
-                                                        "example": "El correo electrónico debe ser válido."
-                                                    }
-                                                },
-                                                "password": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string",
-                                                        "example": "La contraseña debe tener al menos 8 caracteres."
-                                                    }
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error interno del servidor",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Error en el registro"
-                                        },
-                                        "error": {
-                                            "type": "string",
-                                            "example": "El mensaje de error generado en la transacción"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
             }
         },
         "/api/login": {
@@ -3170,121 +3066,6 @@
                 },
                 "type": "object"
             },
-            "ActualizarFotoPerfilUser": {
-                "required": [
-                    "foto_perfil"
-                ],
-                "properties": {
-                    "foto_perfil": {
-                        "type": "blob"
-                    }
-                },
-                "type": "object"
-            },
-            "ActualizarProveedorRequest": {
-                "required": [
-                    "nombre_propietario",
-                    "nombre_de_quien_registra",
-                    "nombre_comercial",
-                    "razon_social",
-                    "tipos_empresa_id",
-                    "descripcion_giro_empresa",
-                    "direccion_empresa",
-                    "email",
-                    "telefono",
-                    "pagina_web",
-                    "estado",
-                    "municipio",
-                    "codigo_postal",
-                    "contacto_nombre",
-                    "contacto_cargo",
-                    "contacto_telefono",
-                    "contacto_correo"
-                ],
-                "properties": {
-                    "nombre_propietario": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "nombre_de_quien_registra": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "nombre_comercial": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "razon_social": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "tipos_empresa_id": {
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "tipos_empresa_otro": {
-                        "type": "string",
-                        "maxLength": 60,
-                        "nullable": true
-                    },
-                    "descripcion_giro_empresa": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "direccion_empresa": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "email": {
-                        "type": "string",
-                        "format": "email",
-                        "maxLength": 255
-                    },
-                    "telefono": {
-                        "type": "string",
-                        "maxLength": 15
-                    },
-                    "pagina_web": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "estado": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "municipio": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "codigo_postal": {
-                        "type": "string",
-                        "maxLength": 10
-                    },
-                    "direccion_fiscal": {
-                        "type": "string",
-                        "maxLength": 255,
-                        "nullable": true
-                    },
-                    "contacto_nombre": {
-                        "type": "string",
-                        "maxLength": 150
-                    },
-                    "contacto_cargo": {
-                        "type": "string",
-                        "maxLength": 60
-                    },
-                    "contacto_telefono": {
-                        "type": "string",
-                        "maxLength": 15
-                    },
-                    "contacto_correo": {
-                        "type": "string",
-                        "format": "email",
-                        "maxLength": 60
-                    }
-                },
-                "type": "object"
-            },
             "AuthLoginRequest": {
                 "required": [
                     "email",
@@ -3304,6 +3085,67 @@
                 },
                 "type": "object"
             },
+            "AuthRegisterCompleteRequest": {
+                "required": [
+                    "token",
+                    "password",
+                    "password_confirmation"
+                ],
+                "properties": {
+                    "token": {
+                        "description": "Token proporcionado para completar el registro",
+                        "type": "string",
+                        "example": "abc123def456"
+                    },
+                    "password": {
+                        "description": "Nueva contraseña (mínimo 8 caracteres)",
+                        "type": "string",
+                        "format": "password",
+                        "example": "MiClaveSegura123"
+                    },
+                    "password_confirmation": {
+                        "description": "Confirmación de la nueva contraseña",
+                        "type": "string",
+                        "format": "password",
+                        "example": "MiClaveSegura123"
+                    }
+                },
+                "type": "object"
+            },
+            "AuthRegisterRequest": {
+                "required": [
+                    "email",
+                    "nombre",
+                    "tipo_empresa_id"
+                ],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "ejemplo@correo.com"
+                    },
+                    "nombre": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "Juan Pérez"
+                    },
+                    "tipo_empresa_id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "razon_social": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "Construcciones Pérez S.A. de C.V."
+                    },
+                    "nombre_comercial": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "Grupo Pérez"
+                    }
+                },
+                "type": "object"
+            },
             "AuthUpdateFotoPerfilRequest": {
                 "required": [
                     "foto_perfil"
@@ -3311,220 +3153,6 @@
                 "properties": {
                     "foto_perfil": {
                         "type": "blob"
-                    }
-                },
-                "type": "object"
-            },
-            "CrearProveedorUserRequest": {
-                "required": [
-                    "razon_social",
-                    "nombre_comercial",
-                    "rfc",
-                    "email",
-                    "password",
-                    "telefono",
-                    "direccion"
-                ],
-                "properties": {
-                    "razon_social": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "nombre_comercial": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "rfc": {
-                        "type": "string",
-                        "maxLength": 13
-                    },
-                    "email": {
-                        "type": "string",
-                        "format": "email",
-                        "maxLength": 255
-                    },
-                    "password": {
-                        "type": "string",
-                        "format": "password",
-                        "minLength": 8
-                    },
-                    "telefono": {
-                        "type": "string",
-                        "maxLength": 15
-                    },
-                    "direccion": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "nombre_propietario": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "nombre_de_quien_registra": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "tipos_empresa_id": {
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "tipos_empresa_otro": {
-                        "type": "string",
-                        "maxLength": 60,
-                        "nullable": true
-                    },
-                    "descripcion_giro_empresa": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "direccion_empresa": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "pagina_web": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "estado": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "municipio": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "codigo_postal": {
-                        "type": "string",
-                        "maxLength": 10
-                    },
-                    "direccion_fiscal": {
-                        "type": "string",
-                        "maxLength": 255,
-                        "nullable": true
-                    },
-                    "contacto_nombre": {
-                        "type": "string",
-                        "maxLength": 150
-                    },
-                    "contacto_cargo": {
-                        "type": "string",
-                        "maxLength": 60
-                    },
-                    "contacto_telefono": {
-                        "type": "string",
-                        "maxLength": 15
-                    },
-                    "contacto_correo": {
-                        "type": "string",
-                        "format": "email",
-                        "maxLength": 60
-                    }
-                },
-                "type": "object"
-            },
-            "ProveedorCreateUserRequest": {
-                "required": [
-                    "razon_social",
-                    "nombre_comercial",
-                    "rfc",
-                    "email",
-                    "password",
-                    "telefono",
-                    "direccion"
-                ],
-                "properties": {
-                    "razon_social": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "nombre_comercial": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "rfc": {
-                        "type": "string",
-                        "maxLength": 13
-                    },
-                    "email": {
-                        "type": "string",
-                        "format": "email",
-                        "maxLength": 255
-                    },
-                    "password": {
-                        "type": "string",
-                        "format": "password",
-                        "minLength": 8
-                    },
-                    "telefono": {
-                        "type": "string",
-                        "maxLength": 15
-                    },
-                    "direccion": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "nombre_propietario": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "nombre_de_quien_registra": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "tipos_empresa_id": {
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "tipos_empresa_otro": {
-                        "type": "string",
-                        "maxLength": 60,
-                        "nullable": true
-                    },
-                    "descripcion_giro_empresa": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "direccion_empresa": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "pagina_web": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "estado": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "municipio": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "codigo_postal": {
-                        "type": "string",
-                        "maxLength": 10
-                    },
-                    "direccion_fiscal": {
-                        "type": "string",
-                        "maxLength": 255,
-                        "nullable": true
-                    },
-                    "contacto_nombre": {
-                        "type": "string",
-                        "maxLength": 150
-                    },
-                    "contacto_cargo": {
-                        "type": "string",
-                        "maxLength": 60
-                    },
-                    "contacto_telefono": {
-                        "type": "string",
-                        "maxLength": 15
-                    },
-                    "contacto_correo": {
-                        "type": "string",
-                        "format": "email",
-                        "maxLength": 60
                     }
                 },
                 "type": "object"
@@ -3778,142 +3406,6 @@
                         "type": "string",
                         "format": "email",
                         "maxLength": 60
-                    }
-                },
-                "type": "object"
-            },
-            "RegisterProveedorCompletarRequest": {
-                "required": [
-                    "token",
-                    "password",
-                    "password_confirmation"
-                ],
-                "properties": {
-                    "token": {
-                        "description": "Token proporcionado para completar el registro",
-                        "type": "string",
-                        "example": "abc123def456"
-                    },
-                    "password": {
-                        "description": "Nueva contraseña (mínimo 8 caracteres)",
-                        "type": "string",
-                        "format": "password",
-                        "example": "MiClaveSegura123"
-                    },
-                    "password_confirmation": {
-                        "description": "Confirmación de la nueva contraseña",
-                        "type": "string",
-                        "format": "password",
-                        "example": "MiClaveSegura123"
-                    }
-                },
-                "type": "object"
-            },
-            "RegistroProveedorRequest": {
-                "required": [
-                    "nombre_propietario",
-                    "nombre_de_quien_registra",
-                    "nombre_comercial",
-                    "razon_social",
-                    "tipos_empresa_id",
-                    "descripcion_giro_empresa",
-                    "direccion_empresa",
-                    "email",
-                    "telefono",
-                    "pagina_web",
-                    "estado",
-                    "municipio",
-                    "codigo_postal",
-                    "contacto_nombre",
-                    "contacto_cargo",
-                    "contacto_telefono",
-                    "contacto_correo",
-                    "recaptcha_token"
-                ],
-                "properties": {
-                    "nombre_propietario": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "nombre_de_quien_registra": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "nombre_comercial": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "razon_social": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "tipos_empresa_id": {
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "tipos_empresa_otro": {
-                        "type": "string",
-                        "maxLength": 60,
-                        "nullable": true
-                    },
-                    "descripcion_giro_empresa": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "direccion_empresa": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "email": {
-                        "type": "string",
-                        "format": "email",
-                        "maxLength": 255
-                    },
-                    "telefono": {
-                        "type": "string",
-                        "maxLength": 15
-                    },
-                    "pagina_web": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "estado": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "municipio": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "codigo_postal": {
-                        "type": "string",
-                        "maxLength": 10
-                    },
-                    "direccion_fiscal": {
-                        "type": "string",
-                        "maxLength": 255,
-                        "nullable": true
-                    },
-                    "contacto_nombre": {
-                        "type": "string",
-                        "maxLength": 150
-                    },
-                    "contacto_cargo": {
-                        "type": "string",
-                        "maxLength": 60
-                    },
-                    "contacto_telefono": {
-                        "type": "string",
-                        "maxLength": 15
-                    },
-                    "contacto_correo": {
-                        "type": "string",
-                        "format": "email",
-                        "maxLength": 60
-                    },
-                    "recaptcha_token": {
-                        "description": "Token de validación ReCAPTCHA v3",
-                        "type": "string"
                     }
                 },
                 "type": "object"
