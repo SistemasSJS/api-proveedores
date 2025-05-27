@@ -51,7 +51,7 @@ class AuthController extends Controller
         $validatedData = $request->validated();
         $token = Str::random(60);
         Cache::put("registro_user_construcc{$token}", $validatedData, 60 * 24 * 365);
-        $url = config('services.frontend.url') . "/auth/completar-registro-proveedor?token={$token}";
+        $url = config('services.frontend.url') . "/auth/completar-registro-proveedor?is_user_construcc=true&token={$token}";
         Mail::to($validatedData['email'])->send(new CompletaRegistroUsuarioMail($url));
 
 
