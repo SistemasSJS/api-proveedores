@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\UserRoleEnumerate;
+use App\Http\Controllers\AdminHomeControler;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoriaController;
@@ -103,6 +104,7 @@ Route::middleware(
             . UserRoleEnumerate::SUPER_ADMIN->value . ','
             . UserRoleEnumerate::ADMIN->value
     )->group(function () {
+        Route::get('catalogos-resumen', [AdminHomeControler::class, 'getCatalogosCountItems']);
 
         Route::apiResource('users', UserController::class);
         Route::apiResource('proveedores', ProveedorController::class);

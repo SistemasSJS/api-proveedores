@@ -104,10 +104,13 @@ class AuthController extends Controller
         // TODO: Add request to CONSTRUCC APP
         // ...
 
-        return $this->success([
-            'message' => 'Datos guardados. Registro completado con exito.',
-            'user' => new UserResource($user->load(User::eagerLodable()))
-        ], 'Proveedor pendiente de completar registro');
+        return $this->success(
+            [
+                'user' => new UserResource($user->load(User::eagerLodable())),
+                'data' => $data
+            ],
+            'Proveedor pendiente de completar registro'
+        );
     }
 
     /**
