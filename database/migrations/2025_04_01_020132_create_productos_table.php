@@ -17,7 +17,7 @@ class CreateProductosTable extends Migration
             $table->string('nombre');
             $table->text('descripcion')->nullable();
             $table->string('sku')->nullable();
-            $table->string('modelo_codigo');
+            $table->string('modelo_codigo')->nullable();
             $table->foreignId('marca_id')->nullable()->constrained('marcas')->onDelete('set null');
             $table->foreignId('linea_id')->nullable()->constrained('lineas')->onDelete('set null');
             $table->foreignId('unidad_medida_id')->nullable()->constrained('unidad_medidas')->onDelete('set null');

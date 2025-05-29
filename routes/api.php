@@ -14,8 +14,11 @@ use App\Http\Controllers\ImagenController;
 use App\Http\Controllers\UnidadMedidaController;
 use App\Http\Controllers\LineaController;
 use App\Http\Controllers\MarcaController;
+use App\Http\Controllers\ProductoImportController;
 use App\Http\Controllers\ProveedorUsuarioController;
 use App\Http\Controllers\TipoEmpresaController;
+
+Route::post('import', [ProductoImportController::class, 'import']);
 
 
 // Route::get('test', [ProveedorController::class, 'test']);

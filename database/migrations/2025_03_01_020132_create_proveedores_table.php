@@ -23,23 +23,23 @@ return new class extends Migration {
             $table->timestamps();
 
             // requirede fields
-            $table->string('nombre_propietario')->after('id');
-            $table->string('nombre_de_quien_registra')->after('nombre_propietario');
-            $table->string('nombre_comercial')->after('nombre_de_quien_registra');
-            $table->string('razon_social')->after('nombre_comercial');
-            $table->foreignId('tipos_empresa_id')->constrained('tipos_empresa')->onDelete('cascade')->after('razon_social');
-            $table->string('tipos_empresa_otro')->nullable()->after('tipos_empresa_id');
-            $table->string('descripcion_giro_empresa')->after('tipos_empresa_otro');
-            $table->string('direccion_empresa')->after('descripcion_giro_empresa');
-            $table->string('email')->after('direccion_empresa');
-            $table->string('telefono')->after('email');
-            $table->string('pagina_web')->after('telefono');
+            $table->string('nombre_propietario')->nullable()->after('id');
+            $table->string('nombre_de_quien_registra')->nullable()->after('nombre_propietario');
+            $table->string('nombre_comercial')->nullable()->after('nombre_de_quien_registra');
+            $table->string('razon_social')->nullable()->after('nombre_comercial');
+            $table->foreignId('tipos_empresa_id')->nullable()->constrained('tipos_empresa')->onDelete('cascade')->after('razon_social');
+            $table->string('tipos_empresa_otro')->nullable()->nullable()->after('tipos_empresa_id');
+            $table->string('descripcion_giro_empresa')->nullable()->after('tipos_empresa_otro');
+            $table->string('direccion_empresa')->nullable()->after('descripcion_giro_empresa');
+            $table->string('email')->nullable()->after('direccion_empresa');
+            $table->string('telefono')->nullable()->after('email');
+            $table->string('pagina_web')->nullable()->after('telefono');
             // $table->point('ubicacion_empresa')->nullable()->after('pagina_web');
             // cONTACTO SERA TABLA RELAICONAL????
-            $table->string('contacto_nombre')->after('contacto_correo');
-            $table->string('contacto_cargo')->after('contacto_nombre');
-            $table->string('contacto_telefono')->after('contacto_cargo');
-            $table->string('contacto_correo')->after('contacto_telefonos');
+            $table->string('contacto_nombre')->nullable()->after('contacto_correo');
+            $table->string('contacto_cargo')->nullable()->after('contacto_nombre');
+            $table->string('contacto_telefono')->nullable()->after('contacto_cargo');
+            $table->string('contacto_correo')->nullable()->after('contacto_telefonos');
 
             // Crear índices en los campos más importantes para búsquedas rápidas
             $table->index('nombre_comercial');
