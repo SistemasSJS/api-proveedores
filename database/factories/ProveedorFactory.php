@@ -15,10 +15,12 @@ class ProveedorFactory extends Factory
     {
         // Aquí puedes agregar el rol si lo tienes
         return [
+            'logo' => null,
             'nombre_comercial' => $this->faker->company,
             'razon_social' => $this->faker->company . ' S.A. de C.V.',
             'rfc' => strtoupper($this->faker->bothify('???######???')),
-            'email' => $this->faker->companyEmail,
+            // 'email' => $this->faker->companyEmail,
+            'email' => $this->faker->unique()->safeEmail,
             'telefono' => $this->faker->phoneNumber,
             'direccion_fiscal' => $this->faker->address,
             'estado' => $this->faker->state,

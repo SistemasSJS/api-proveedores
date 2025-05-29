@@ -3627,7 +3627,7 @@
             "Producto": {
                 "required": [
                     "nombre",
-                    "proveedor_id"
+                    "catalogo_id"
                 ],
                 "properties": {
                     "id": {
@@ -3665,7 +3665,7 @@
                         "example": 5,
                         "nullable": true
                     },
-                    "proveedor_id": {
+                    "catalogo_id": {
                         "type": "integer",
                         "example": 3
                     },
@@ -3693,8 +3693,8 @@
                     "linea": {
                         "$ref": "#/components/schemas/Linea"
                     },
-                    "proveedor": {
-                        "$ref": "#/components/schemas/Proveedor"
+                    "catalogo": {
+                        "$ref": "#/components/schemas/Catalogo"
                     },
                     "unidad_medida": {
                         "$ref": "#/components/schemas/UnidadMedida"

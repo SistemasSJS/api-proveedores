@@ -77,7 +77,7 @@ class ProductoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'proveedor_id' => 'required|exists:proveedores,id',
+            'catalogo_id' => 'required|exists:catalogos,id',
             'nombre' => [
                 'required',
                 'string',
@@ -101,7 +101,7 @@ class ProductoController extends Controller
 
         $producto = Producto::create($request->all());
 
-        return $this->success($producto->load(["unidad_medida", "imagenes", "proveedor"]), 201);
+        return $this->success($producto->load(["unidad_medida", "imagenes", "catalogo"]), 201);
     }
 
     /**

@@ -12,7 +12,7 @@ class LineaFactory extends Factory
     public function definition(): array
     {
         return [
-            'nombre' => $this->faker->unique()->company,
+            'nombre' => $this->faker->unique()->word,
             'estatus' => 'activo',
         ];
     }

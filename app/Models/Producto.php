@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @OA\Schema(
  *     schema="Producto",
- *     required={"nombre", "proveedor_id"},
+ *     required={"nombre", "catalogo_id"},
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="nombre", type="string", example="Cemento gris 50kg"),
  *     @OA\Property(property="modelo_codigo", type="string", example="MX-458G-9"),
@@ -18,35 +18,16 @@ use Illuminate\Database\Eloquent\Model;
  *     @OA\Property(property="categoria_id", type="integer", nullable=true, example=2),
  *     @OA\Property(property="marca_id", type="integer", nullable=true, example=1),
  *     @OA\Property(property="linea_id", type="integer", nullable=true, example=5),
- *     @OA\Property(property="proveedor_id", type="integer", example=3),
+ *     @OA\Property(property="catalogo_id", type="integer", example=3),
  *     @OA\Property(property="unidad_medida_id", type="integer", nullable=true, example=1),
  *     @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-15T10:00:00Z"),
  *     @OA\Property(property="updated_at", type="string", format="date-time", example="2024-01-20T14:30:00Z"),
- *     @OA\Property(
- *         property="categoria",
- *         ref="#/components/schemas/Categoria"
- *     ),
- *     @OA\Property(
- *         property="marca",
- *         ref="#/components/schemas/Marca"
- *     ),
- *     @OA\Property(
- *         property="linea",
- *         ref="#/components/schemas/Linea"
- *     ),
- *     @OA\Property(
- *         property="proveedor",
- *         ref="#/components/schemas/Proveedor"
- *     ),
- *     @OA\Property(
- *         property="unidad_medida",
- *         ref="#/components/schemas/UnidadMedida"
- *     ),
- *     @OA\Property(
- *         property="imagenes",
- *         type="array",
- *         @OA\Items(ref="#/components/schemas/Imagen")
- *     )
+ *     @OA\Property(property="categoria", ref="#/components/schemas/Categoria"),
+ *     @OA\Property(property="marca", ref="#/components/schemas/Marca"),
+ *     @OA\Property(property="linea", ref="#/components/schemas/Linea"),
+ *     @OA\Property(property="catalogo", ref="#/components/schemas/Catalogo"),
+ *     @OA\Property(property="unidad_medida", ref="#/components/schemas/UnidadMedida"),
+ *     @OA\Property(property="imagenes", type="array", @OA\Items(ref="#/components/schemas/Imagen"))
  * )
  */
 class Producto extends BaseModel
@@ -66,7 +47,7 @@ class Producto extends BaseModel
         'categoria_id',
         'marca_id',
         'linea_id',
-        'proveedor_id',
+        'catalogo_id',
         'unidad_medida_id',
     ];
 
@@ -96,7 +77,7 @@ class Producto extends BaseModel
     public static function eagerLodable(): array
     {
         return [
-            'proveedor',
+            'catalogo',
             'unidad_medida',
             'imagenes',
             'categoria',
@@ -105,109 +86,51 @@ class Producto extends BaseModel
         ];
     }
 
-    /**
-     * Relación con el modelo Proveedor.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function proveedor()
+    public function catalogo()
     {
-        return $this->belongsTo(Proveedor::class);
+        return $this->belongsTo(Catalogo::class);
     }
 
-    /**
-     * Relación con el modelo UnidadMedida.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
     public function unidad_medida()
     {
         return $this->belongsTo(UnidadMedida::class);
     }
 
-    /**
-     * Relación con el modelo Imagen (uno a muchos).
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
     public function imagenes()
     {
         return $this->hasMany(Imagen::class);
     }
 
-    /**
-     * Relación con el modelo Categoria.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
     public function categoria()
     {
         return $this->belongsTo(Categoria::class);
     }
 
-    /**
-     * Relación con el modelo Marca.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
     public function marca()
     {
         return $this->belongsTo(Marca::class);
     }
 
-    /**
-     * Relación con el modelo Linea.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
     public function linea()
     {
         return $this->belongsTo(Linea::class);
     }
 
-    /**
-     * Filtro por nombre.
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string $value
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
     public function filterByNombre($query, $value)
     {
         return $query->where('nombre', 'like', "%$value%");
     }
 
-    /**
-     * Filtro por modelo o código.
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string $value
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
     public function filterByModeloCodigo($query, $value)
     {
         return $query->where('modelo_codigo', 'like', "%$value%");
     }
 
-    /**
-     * Filtro por descripción.
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string $value
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
     public function filterByDescripcion($query, $value)
     {
         return $query->where('descripcion', 'like', "%$value%");
     }
 
-    /**
-     * Filtro por SKU.
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string $value
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
     public function filterBySku($query, $value)
     {
         return $query->where('sku', 'like', "%$value%");
