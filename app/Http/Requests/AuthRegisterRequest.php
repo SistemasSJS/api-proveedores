@@ -25,10 +25,10 @@ class AuthRegisterRequest extends FormRequest
   public function rules(): array
   {
     return [
-      'email' => 'required|email|unique:proveedores,email',
-      'nombre' => 'required|string|max:255',
-      'tipo_empresa_id' => 'required|exists:tipos_empresa,id',
-      'razon_social' => 'string|max:255',
+      'nombre_empresa' => 'required|string|max:255',
+      'razons' => 'string|max:255',
+      'email' => 'required|email',
+      'tipo' => 'required',
       'nombre_comercial' => 'string|max:255',
     ];
   }
@@ -36,19 +36,21 @@ class AuthRegisterRequest extends FormRequest
   public function messages(): array
   {
     return [
+
+      'nombre_empresa.required' => 'El nombre es obligatorio.',
+      'nombre_empresa.string' => 'El nombre debe ser una cadena de texto.',
+
+      'razons.string' => 'La razón social debe ser una cadena de texto.',
+      'razons.max' => 'La razón social debe ser una cadena de texto de maximo 255 caracteres.',
+
       'email.required' => 'El correo electrónico es obligatorio.',
       'email.email' => 'El formato del correo electrónico no es válido.',
       'email.unique' => 'Este correo ya está registrado.',
 
-      'nombre.required' => 'El nombre es obligatorio.',
-      'nombre.string' => 'El nombre debe ser una cadena de texto.',
-
-      'tipo_empresa_id.required' => 'El tipo de empresa es obligatorio.',
-      'tipo_empresa_id.exists' => 'El tipo de empresa seleccionado no es válido.',
-
-      'razon_social.string' => 'La razón social debe ser una cadena de texto.',
+      'tipo.required' => 'El tipo de empresa es obligatorio.',
 
       'nombre_comercial.string' => 'El nombre comercial debe ser una cadena de texto.',
+      'nombre_comercial.max' => 'El nombre comercial  chdebe ser una cadena de texto de maximo 255 caracteres.',
     ];
   }
 }

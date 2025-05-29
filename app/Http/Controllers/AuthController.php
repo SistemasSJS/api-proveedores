@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRoleEnumerate;
 use App\Exceptions\Api\Auth\UnauthorizedException;
 use App\Http\Requests\AuthRegisterRequest;
 use App\Http\Requests\AuthRegisterCompleteRequest;
@@ -9,6 +10,7 @@ use App\Http\Requests\AuthUpdateFotoPerfilRequest;
 use App\Http\Resources\UserAuthenticateResource;
 use App\Http\Resources\UserResource;
 use App\Mail\CompletaRegistroUsuarioMail;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -16,7 +18,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-
+use Illuminate\Validation\ValidationData;
 
 class AuthController extends Controller
 {
@@ -51,14 +53,18 @@ class AuthController extends Controller
         $validatedData = $request->validated();
         $token = Str::random(60);
         Cache::put("registro_user_construcc{$token}", $validatedData, 60 * 24 * 365);
-        $url = config('services.frontend.url') . "/auth/completar-registro-proveedor?is_user_construcc=true&token={$token}";
+        $url = config('services.frontend.url') . "/auth/registro/completar?is_user_construcc=true&token={$token}";
         Mail::to($validatedData['email'])->send(new CompletaRegistroUsuarioMail($url));
 
 
-        return $this->success([
-            'message' => 'Datos guardados. Revisa tu correo para continuar el registro.',
-            'url' => $url
-        ], 'Proveedor pendiente de completar registro');
+        return $this->success(
+            [
+                ...$validatedData,
+                'url' => $url
+
+            ],
+            'Datos guardados. Revisa tu correo para continuar el registro.'
+        );
     }
 
 
@@ -96,21 +102,20 @@ class AuthController extends Controller
         }
 
         $user = User::create([
-            'name' => $data['nombre_comercial'],
+            'name' => $data['nombre_empresa'],
             'email' => $data['email'],
             'password' => Hash::make($request->password),
+            'role_id' => Role::where('nombre', UserRoleEnumerate::USUARIO_CONSTRUCCION->value)->first()->id
         ]);
 
         // TODO: Add request to CONSTRUCC APP
         // ...
 
-        return $this->success(
-            [
-                'user' => new UserResource($user->load(User::eagerLodable())),
-                'data' => $data
-            ],
-            'Proveedor pendiente de completar registro'
-        );
+        return $this->success($data, 'Proveedor pendiente de completar registro');
+        // [
+        //     'user' => new UserResource($user->load(User::eagerLodable())),
+        //     'data' => $data
+        // ],
     }
 
     /**

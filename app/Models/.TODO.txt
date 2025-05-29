@@ -1,0 +1,10 @@
+- [ ] Delete model grupo.
+  - GrupoController
+  - Migraciones Grupo
+  - Seeder 
+  - Factory 
+  - Rutas ApiResource
+
+- [ ] Add Modelo Catalogo 
+  - Migraciones 
+  
