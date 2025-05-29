@@ -97,12 +97,11 @@ class ProductoController extends Controller
             'precio_unitario' => 'required|numeric|min:0',
             'disponible' => 'required|boolean',
             'unidad_medida_id' => 'required|exists:unidad_medidas,id',
-            'grupo_id' => 'required|exists:grupos,id',
         ]);
 
         $producto = Producto::create($request->all());
 
-        return $this->success($producto->load(["unidad_medida", "grupo", "imagenes", "proveedor"]), 201);
+        return $this->success($producto->load(["unidad_medida", "imagenes", "proveedor"]), 201);
     }
 
     /**

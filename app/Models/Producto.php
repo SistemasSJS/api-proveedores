@@ -20,7 +20,6 @@ use Illuminate\Database\Eloquent\Model;
  *     @OA\Property(property="linea_id", type="integer", nullable=true, example=5),
  *     @OA\Property(property="proveedor_id", type="integer", example=3),
  *     @OA\Property(property="unidad_medida_id", type="integer", nullable=true, example=1),
- *     @OA\Property(property="grupo_id", type="integer", nullable=true, example=4),
  *     @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-15T10:00:00Z"),
  *     @OA\Property(property="updated_at", type="string", format="date-time", example="2024-01-20T14:30:00Z"),
  *     @OA\Property(
@@ -42,10 +41,6 @@ use Illuminate\Database\Eloquent\Model;
  *     @OA\Property(
  *         property="unidad_medida",
  *         ref="#/components/schemas/UnidadMedida"
- *     ),
- *     @OA\Property(
- *         property="grupo",
- *         ref="#/components/schemas/Grupo"
  *     ),
  *     @OA\Property(
  *         property="imagenes",
@@ -73,7 +68,6 @@ class Producto extends BaseModel
         'linea_id',
         'proveedor_id',
         'unidad_medida_id',
-        'grupo_id',
     ];
 
     /**
@@ -104,7 +98,6 @@ class Producto extends BaseModel
         return [
             'proveedor',
             'unidad_medida',
-            'grupo',
             'imagenes',
             'categoria',
             'marca',
@@ -130,16 +123,6 @@ class Producto extends BaseModel
     public function unidad_medida()
     {
         return $this->belongsTo(UnidadMedida::class);
-    }
-
-    /**
-     * Relación con el modelo Grupo.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function grupo()
-    {
-        return $this->belongsTo(Grupo::class);
     }
 
     /**

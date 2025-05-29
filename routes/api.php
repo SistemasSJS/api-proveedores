@@ -12,7 +12,6 @@ use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImagenController;
 use App\Http\Controllers\UnidadMedidaController;
-use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\LineaController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\ProveedorUsuarioController;
@@ -51,7 +50,6 @@ Route::get('categorias-index', [CategoriaController::class, 'index']);
 Route::get('lineas-index', [LineaController::class, 'index']);
 Route::get('marcas-index', [MarcaController::class, 'index']);
 Route::get('unidades-medida-index', [UnidadMedidaController::class, 'index']);
-Route::get('grupos-index', [GrupoController::class, 'index']);
 Route::get('tipos-empresa-index', [TipoEmpresaController::class, 'index']);
 
 
@@ -112,7 +110,6 @@ Route::middleware(
         Route::apiResource('productos', ProductoController::class);
         Route::apiResource('imagenes', ImagenController::class);
         Route::apiResource('unidades-medida', UnidadMedidaController::class);
-        Route::apiResource('grupos', GrupoController::class);
         Route::apiResource('categorias', CategoriaController::class);
         Route::apiResource('lineas', LineaController::class);
         Route::apiResource('marcas', MarcaController::class);

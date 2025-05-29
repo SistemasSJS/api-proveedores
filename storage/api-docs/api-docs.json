@@ -566,195 +566,6 @@
                 ]
             }
         },
-        "/api/grupos": {
-            "get": {
-                "tags": [
-                    "Grupo"
-                ],
-                "summary": "Listar todos los grupos con filtros opcionales y paginación",
-                "operationId": "listarGrupos",
-                "parameters": [
-                    {
-                        "name": "nombre",
-                        "in": "query",
-                        "description": "Filtrar por nombre",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "estatus",
-                        "in": "query",
-                        "description": "Filtrar por estatus",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "description": "Número de página",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Listado paginado de grupos"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Grupo"
-                ],
-                "summary": "Crear un grupo",
-                "operationId": "crearGrupo",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "nombre"
-                                ],
-                                "properties": {
-                                    "nombre": {
-                                        "type": "string"
-                                    },
-                                    "descripcion": {
-                                        "type": "string"
-                                    },
-                                    "estatus": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Grupo creado"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/grupos/{id}": {
-            "get": {
-                "tags": [
-                    "Grupo"
-                ],
-                "summary": "Obtener un grupo por ID",
-                "operationId": "mostrarGrupo",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Grupo encontrado"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "put": {
-                "tags": [
-                    "Grupo"
-                ],
-                "summary": "Actualizar grupo",
-                "operationId": "actualizarGrupo",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "nombre": {
-                                        "type": "string"
-                                    },
-                                    "descripcion": {
-                                        "type": "string"
-                                    },
-                                    "estatus": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Grupo actualizado"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Grupo"
-                ],
-                "summary": "Eliminar grupo",
-                "operationId": "eliminarGrupo",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "Grupo eliminado"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
         "/api/imagenes": {
             "get": {
                 "tags": [
@@ -3676,6 +3487,40 @@
                     }
                 ]
             },
+            "Catalogo": {
+                "required": [
+                    "nombre",
+                    "proveedor_id"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "nombre": {
+                        "type": "string",
+                        "example": "Catálogo 2024"
+                    },
+                    "descripcion": {
+                        "type": "string",
+                        "example": "Catálogo anual de Productos",
+                        "nullable": true
+                    },
+                    "proveedor_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "photo_url": {
+                        "type": "string",
+                        "example": "https://dominio.com/storage/catalogos/2024.jpg",
+                        "nullable": true
+                    },
+                    "Proveedor": {
+                        "$ref": "#/components/schemas/Proveedor"
+                    }
+                },
+                "type": "object"
+            },
             "Categoria": {
                 "required": [
                     "nombre",
@@ -3689,38 +3534,6 @@
                     "nombre": {
                         "type": "string",
                         "example": "Herramientas Eléctricas"
-                    },
-                    "created_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updated_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                "type": "object"
-            },
-            "Grupo": {
-                "required": [
-                    "nombre"
-                ],
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "nombre": {
-                        "type": "string",
-                        "example": "Cementos"
-                    },
-                    "descripcion": {
-                        "type": "string",
-                        "example": "Productos relacionados con cementos y derivados"
-                    },
-                    "estatus": {
-                        "type": "string",
-                        "example": "activo"
                     },
                     "created_at": {
                         "type": "string",
@@ -3861,11 +3674,6 @@
                         "example": 1,
                         "nullable": true
                     },
-                    "grupo_id": {
-                        "type": "integer",
-                        "example": 4,
-                        "nullable": true
-                    },
                     "created_at": {
                         "type": "string",
                         "format": "date-time",
@@ -3890,9 +3698,6 @@
                     },
                     "unidad_medida": {
                         "$ref": "#/components/schemas/UnidadMedida"
-                    },
-                    "grupo": {
-                        "$ref": "#/components/schemas/Grupo"
                     },
                     "imagenes": {
                         "type": "array",
@@ -4216,10 +4021,6 @@
         {
             "name": "Categoria",
             "description": "Categoria"
-        },
-        {
-            "name": "Grupo",
-            "description": "Grupo"
         },
         {
             "name": "Imagen",

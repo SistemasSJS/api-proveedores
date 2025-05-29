@@ -22,7 +22,6 @@ class CreateProductosTable extends Migration
             $table->foreignId('linea_id')->nullable()->constrained('lineas')->onDelete('set null');
             $table->foreignId('proveedor_id')->index()->constrained('proveedores')->onDelete('cascade');
             $table->foreignId('unidad_medida_id')->nullable()->constrained('unidad_medidas')->onDelete('set null');
-            $table->foreignId('grupo_id')->nullable()->constrained('grupos')->onDelete('set null');
 
             $table->timestamps();
         });

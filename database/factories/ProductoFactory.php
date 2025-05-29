@@ -6,7 +6,6 @@ use App\Models\Categoria;
 use App\Models\Producto;
 use App\Models\Proveedor;
 use App\Models\UnidadMedida;
-use App\Models\Grupo;
 use App\Models\Linea;
 use App\Models\Marca;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -25,7 +24,6 @@ class ProductoFactory extends Factory
 
             'proveedor_id' => Proveedor::inRandomOrder()->value('id') ?? 1,
             'unidad_medida_id' => UnidadMedida::inRandomOrder()->value('id') ?? 1,
-            'grupo_id' => Grupo::inRandomOrder()->value('id') ?? 1,
 
             'categoria_id' => Categoria::inRandomOrder()->value('id') ?? 1,
             'marca_id' => Marca::inRandomOrder()->value('id') ?? 1,
