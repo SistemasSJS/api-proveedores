@@ -11,7 +11,7 @@
     },
     "servers": [
         {
-            "url": "http://192.168.0.132:8080",
+            "url": "http://0.0.0.0:8080",
             "description": "Servidor local: SQLite"
         }
     ],

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Http\Requests\UserUpdateRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
@@ -85,7 +86,10 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        $user = User::findOrFail($id);
+        $user = User::find($id);
+    if (!$user){
+        throw new ResourceNotFoundException("Usuario no encontrado.");
+    }
         return $this->success($user);
     }
 
