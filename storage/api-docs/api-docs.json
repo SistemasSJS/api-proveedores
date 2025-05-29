@@ -3650,11 +3650,6 @@
                         "type": "string",
                         "example": "CMG-50"
                     },
-                    "categoria_id": {
-                        "type": "integer",
-                        "example": 2,
-                        "nullable": true
-                    },
                     "marca_id": {
                         "type": "integer",
                         "example": 1,
@@ -3683,9 +3678,6 @@
                         "type": "string",
                         "format": "date-time",
                         "example": "2024-01-20T14:30:00Z"
-                    },
-                    "categoria": {
-                        "$ref": "#/components/schemas/Categoria"
                     },
                     "marca": {
                         "$ref": "#/components/schemas/Marca"

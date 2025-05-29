@@ -13,16 +13,14 @@ class CreateProductosTable extends Migration
     {
         Schema::create('productos', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('catalogo_id')->index()->constrained('catalogos')->onDelete('cascade');
             $table->string('nombre');
-            $table->string('modelo_codigo');
             $table->text('descripcion')->nullable();
             $table->string('sku')->nullable();
-            $table->foreignId('categoria_id')->nullable()->constrained('categorias')->onDelete('set null');
+            $table->string('modelo_codigo');
             $table->foreignId('marca_id')->nullable()->constrained('marcas')->onDelete('set null');
             $table->foreignId('linea_id')->nullable()->constrained('lineas')->onDelete('set null');
-            $table->foreignId('catalogo_id')->index()->constrained('catalogos')->onDelete('cascade');
             $table->foreignId('unidad_medida_id')->nullable()->constrained('unidad_medidas')->onDelete('set null');
-
             $table->timestamps();
         });
     }

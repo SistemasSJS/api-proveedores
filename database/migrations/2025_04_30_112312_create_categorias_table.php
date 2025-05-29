@@ -10,8 +10,10 @@ return new class extends Migration {
         Schema::create('categorias', function (Blueprint $table) {
             $table->id();
             $table->string('nombre')->unique();
-            $table->enum('estatus', ['activo', 'inactivo'])->default('activo');
+            $table->text('descripcion')->nullable();
+            $table->string('photo_path')->nullable();
             $table->timestamps();
+            $table->enum('estatus', ['activo', 'inactivo'])->default('activo');
         });
     }
 

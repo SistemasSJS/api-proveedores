@@ -18,10 +18,11 @@ use Illuminate\Database\Eloquent\Model;
 class Categoria extends BaseModel
 {
     use HasFactory;
-    protected $fillable = ['nombre'];
+    protected $fillable = ['nombre', 'descripcion', 'photo_path'];
 
     protected static $filters = [
         'nombre' => 'nombre',
+        'descripcion' => 'descripcion',
         'estatus' => 'estatus',
     ];
 
@@ -33,5 +34,15 @@ class Categoria extends BaseModel
     public function scopeFilterByEstatus($query, $value)
     {
         return $query->where('estatus', "%$value%");
+    }
+
+    public function scopeFilterByDescripcion($query, $value)
+    {
+        return $query->where('descripcion', "%$value%");
+    }
+
+    public function productos()
+    {
+        return $this->belongsToMany(Producto::class, 'categoria_productro');
     }
 }

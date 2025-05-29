@@ -15,14 +15,12 @@ use Illuminate\Database\Eloquent\Model;
  *     @OA\Property(property="modelo_codigo", type="string", example="MX-458G-9"),
  *     @OA\Property(property="descripcion", type="string", example="Saco de cemento gris para construcción"),
  *     @OA\Property(property="sku", type="string", example="CMG-50"),
- *     @OA\Property(property="categoria_id", type="integer", nullable=true, example=2),
  *     @OA\Property(property="marca_id", type="integer", nullable=true, example=1),
  *     @OA\Property(property="linea_id", type="integer", nullable=true, example=5),
  *     @OA\Property(property="catalogo_id", type="integer", example=3),
  *     @OA\Property(property="unidad_medida_id", type="integer", nullable=true, example=1),
  *     @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-15T10:00:00Z"),
  *     @OA\Property(property="updated_at", type="string", format="date-time", example="2024-01-20T14:30:00Z"),
- *     @OA\Property(property="categoria", ref="#/components/schemas/Categoria"),
  *     @OA\Property(property="marca", ref="#/components/schemas/Marca"),
  *     @OA\Property(property="linea", ref="#/components/schemas/Linea"),
  *     @OA\Property(property="catalogo", ref="#/components/schemas/Catalogo"),
@@ -40,14 +38,13 @@ class Producto extends BaseModel
      * @var array<int, string>
      */
     protected $fillable = [
+        'catalogo_id',
         'nombre',
-        'modelo_codigo',
         'descripcion',
         'sku',
-        'categoria_id',
+        'modelo_codigo',
         'marca_id',
         'linea_id',
-        'catalogo_id',
         'unidad_medida_id',
     ];
 
@@ -79,9 +76,9 @@ class Producto extends BaseModel
         return [
             'catalogo',
             'unidad_medida',
-            'imagenes',
-            'categoria',
+            // 'imagenes',
             'marca',
+            'categorias',
             'linea',
         ];
     }
@@ -101,10 +98,6 @@ class Producto extends BaseModel
         return $this->hasMany(Imagen::class);
     }
 
-    public function categoria()
-    {
-        return $this->belongsTo(Categoria::class);
-    }
 
     public function marca()
     {
@@ -114,6 +107,11 @@ class Producto extends BaseModel
     public function linea()
     {
         return $this->belongsTo(Linea::class);
+    }
+
+    public function categorias()
+    {
+        return $this->belongsToMany(Categoria::class, 'categoria_producto');
     }
 
     public function filterByNombre($query, $value)

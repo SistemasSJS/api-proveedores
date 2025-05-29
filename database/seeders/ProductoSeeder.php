@@ -24,13 +24,11 @@ class ProductoSeeder extends Seeder
             Producto::factory()->count(10)->create([
                 'catalogo_id' => $catalogo->id,
                 'unidad_medida_id' => $unidad_medida->random()->id,
-                'categoria_id' => $categoria->random()->id,
                 'linea_id' => $lineas->random()->id,
                 'marca_id' => $marcas->random()->id,
-            ]);
-            // ->each(function ($Producto) use ($categoria) {
-            //     $Producto->categorias()->attach($categoria->random(rand(1, 3))->pluck('id')->toArray());
-            // });
+            ])->each(function ($Producto) use ($categoria) {
+                $Producto->categorias()->attach($categoria->random(rand(1, 3))->pluck('id')->toArray());
+            });
         }
     }
 }
