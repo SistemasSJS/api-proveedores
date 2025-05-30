@@ -10,10 +10,10 @@ use App\Models\Proveedor;
 
 use App\Http\Resources\UserAuthenticateResource;
 
-use App\Http\Requests\ProveedorUpdateRequest;
-use App\Http\Requests\ProveedorRegisterCompleteRequest;
-use App\Http\Requests\ProveedorRegisterRequest;
-use App\Http\Requests\ProveedorUpdateLogoRequest;
+use App\Http\Requests\Proveedor\ProveedorUpdateRequest;
+use App\Http\Requests\Proveedor\ProveedorRegisterCompleteRequest;
+use App\Http\Requests\Proveedor\ProveedorRegisterRequest;
+use App\Http\Requests\Proveedor\ProveedorUpdateLogoRequest;
 
 
 use Illuminate\Support\Facades\Cache;
@@ -133,12 +133,6 @@ class ProveedorController extends Controller
 
         $sortBy = $request->input('sort_by', 'nombre_comercial');
         $order = $request->input('order', 'asc');
-
-        // $proveedores = Proveedor::with(Proveedor::eagerLodable())
-        //     ->filter($filters)
-        //     ->orderBy($sortBy, $order)
-        //     ->paginate(10);
-        // return $this->paginated($proveedores);
 
         $originalPaginator = Proveedor::with(Proveedor::eagerLodable())
             ->filter($filters)

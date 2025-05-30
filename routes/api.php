@@ -4,6 +4,7 @@ use App\Enums\UserRoleEnumerate;
 use App\Http\Controllers\AdminHomeControler;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\ProveedorController;
@@ -11,14 +12,15 @@ use App\Http\Controllers\SucursalController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImagenController;
+use App\Http\Controllers\ImportProductoController;
 use App\Http\Controllers\UnidadMedidaController;
 use App\Http\Controllers\LineaController;
 use App\Http\Controllers\MarcaController;
-use App\Http\Controllers\ProductoImportController;
 use App\Http\Controllers\ProveedorUsuarioController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TipoEmpresaController;
 
-Route::post('import', [ProductoImportController::class, 'import']);
+Route::post('import', [ImportProductoController::class, 'import']);
 
 
 // Route::get('test', [ProveedorController::class, 'test']);
@@ -49,6 +51,7 @@ Route::post('register_proveedor_completar', [ProveedorController::class, 'regist
 /**
  * Rutas de listado de catalogos
  */
+Route::get('roles-index', [RoleController::class, 'index']);
 Route::get('categorias-index', [CategoriaController::class, 'index']);
 Route::get('lineas-index', [LineaController::class, 'index']);
 Route::get('marcas-index', [MarcaController::class, 'index']);
@@ -89,7 +92,10 @@ Route::middleware(
             Route::delete('proveedores/{proveedor}/users/{user}', 'destroy');
         });
 
-
+        /**
+         * Gestion de catalogos de proveedor
+         */
+        Route::apiResource('catalogos', CatalogoController::class);
 
         Route::prefix('proveedores/{id}')->group(function () {
             Route::get('productos', [ProveedorController::class, 'productosPorProveedor']);

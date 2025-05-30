@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Producto;
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Exceptions\Api\Crud\DeleteRestrictedException;
+use App\Http\Resources\ProductoResource;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -39,11 +40,13 @@ class ProductoController extends Controller
         $sortBy = $request->input('sort_by', 'nombre_comercial'); // Default sort by 'nombre_comercial'
         $order = $request->input('order', 'asc'); // Default order is 'asc'
 
-        $proveedores = Producto::with(Producto::eagerLodable())
+        $originalPaginator = Producto::with(Producto::eagerLodable())
             ->filter($filters)
             ->orderBy($sortBy, $order)
             ->paginate(10);
-        return $this->paginated($proveedores);
+
+        $data = ProductoResource::collection($originalPaginator)->resolve();
+        return $this->paginated($originalPaginator->setCollection(collect($data)));
     }
 
     /**

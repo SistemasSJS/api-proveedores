@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\RoleResource;
 use App\Models\Role;
 use Illuminate\Http\Request;
 
 class RoleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Role::all();
+        $filters = $request->only(Role::getFilters());
+        $originalPaginator = Role::filter($filters)->paginate(10);
+        $data = RoleResource::collection($originalPaginator)->resolve();
+        return $this->paginated($originalPaginator->setCollection(collect($data)));
     }
 
     public function store(Request $request)

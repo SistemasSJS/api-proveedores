@@ -36,6 +36,20 @@ class Catalogo extends BaseModel
     ];
 
 
+    /**
+     * Define las relaciones permitidas para cargar con with() (eager loading).
+     * Esto evita el problema N+1 y mejora el rendimiento de las consultas.
+     *
+     * @return string[]
+     */
+    public static function eagerLodable(): array
+    {
+        return [
+            'proveedor',
+            'productos'
+        ];
+    }
+
     public function scopeFilterByNombre($query, $value)
     {
         return $query->where('nombre', 'like', "%$value%");

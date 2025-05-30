@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserRoleEnumerate;
 use App\Exceptions\Api\Auth\UnauthorizedException;
-use App\Http\Requests\AuthRegisterRequest;
-use App\Http\Requests\AuthRegisterCompleteRequest;
-use App\Http\Requests\AuthUpdateFotoPerfilRequest;
+
+use App\Http\Requests\Auth\AuthRegisterRequest;
+use App\Http\Requests\Auth\AuthRegisterCompleteRequest;
+use App\Http\Requests\Auth\AuthUpdateFotoPerfilRequest;
+
 use App\Http\Resources\UserAuthenticateResource;
 use App\Http\Resources\UserResource;
+
 use App\Mail\CompletaRegistroUsuarioMail;
 use App\Models\Role;
 use App\Models\User;

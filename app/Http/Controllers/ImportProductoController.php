@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Producto\ImportProductoRequest;
+use App\Http\Requests\ImportProducto\ImportProductoRequest;
 use App\Models\Producto;
 use App\Models\Marca;
 use App\Models\Linea;
@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Storage;
  *     description="Operaciones Import sobre Productos"
  * )
  */
-class ProductoImportController extends Controller
+class ImportProductoController extends Controller
 {
 
     /**
@@ -77,11 +77,16 @@ class ProductoImportController extends Controller
 
                 $marca = Marca::firstOrCreate(['nombre' => $row['nombre_marca']]);
                 $linea = Linea::firstOrCreate(['nombre' => $row['nombre_linea']]);
-                $proveedor = Proveedor::firstOrCreate(['nombre' => $row['proveedor_nombre']], [
-                    'direccion' => $row['proveedor_direccion'],
-                    'telefono' => $row['proveedor_telefono'],
-                    'email' => $row['proveedor_email']
-                ]);
+                $proveedor = Proveedor::firstOrCreate(
+                    ['nombre_comercial' => $row['proveedor_nombre']],
+                    [
+                        'nombre_comercial' => $row['proveedor_nombre'],
+                        'razon_social' => $row['proveedor_nombre'],
+                        'direccion' => $row['proveedor_direccion'],
+                        'telefono' => $row['proveedor_telefono'],
+                        'email' => $row['proveedor_email']
+                    ]
+                );
                 $catalogo = Catalogo::firstOrCreate([
                     'nombre' => $row['nombre_catalogo'],
                     'proveedor_id' => $proveedor->id,

@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\ProveedorUsuario;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * @OA\Schema(
@@ -25,10 +26,28 @@ class ProveedorUsuairoUpdateRequest extends FormRequest
         $userId = $this->route('user')?->id;
 
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'is_main' => ['nullable', 'boolean'], // ejemplo roles
-
+            'name' => [
+                'sometimes',
+                'string',
+                'max:255'
+            ],
+            'email' => [
+                'sometimes',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($userId),
+            ],
+            'password' => [
+                'sometimes',
+                'string',
+                'min:8',
+                'confirmed' // espera password_confirmation
+            ],
+            'rol_id' => [
+                'sometimes',
+                'integer',
+                'exists:roles,id'
+            ],
         ];
     }
 

@@ -11,7 +11,7 @@
     },
     "servers": [
         {
-            "url": "http://0.0.0.0:8080",
+            "url": "http://192.168.0.132:8080",
             "description": "Servidor local: SQLite"
         }
     ],
@@ -397,6 +397,177 @@
                 ]
             }
         },
+        "/api/catalogos": {
+            "get": {
+                "tags": [
+                    "Catalogo"
+                ],
+                "summary": "Listar catálogos",
+                "operationId": "79d7091f67966403d84e6d7cab773453",
+                "parameters": [
+                    {
+                        "name": "sort_by",
+                        "in": "query",
+                        "description": "Campo para ordenar",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "nombre"
+                        }
+                    },
+                    {
+                        "name": "order",
+                        "in": "query",
+                        "description": "Dirección de ordenamiento",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ],
+                            "example": "asc"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado paginado de catálogos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiPaginatedResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Catalogo"
+                ],
+                "summary": "Crear un ítem de catálogo",
+                "operationId": "9245a2a81755a9bab7cfbfa8e4c85deb",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CatalogoStoreRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Ítem creado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/catalogos/{id}": {
+            "get": {
+                "tags": [
+                    "Catalogo"
+                ],
+                "summary": "Mostrar un ítem del catálogo por ID",
+                "operationId": "4d2f4ca04e0c4d6858f4d92cfe1662a5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ítem encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Catalogo"
+                ],
+                "summary": "Actualizar un ítem del catálogo",
+                "operationId": "87e2491a8be001127e69394bd0f73e6f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CatalogoUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Ítem actualizado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Catalogo"
+                ],
+                "summary": "Eliminar un ítem del catálogo",
+                "operationId": "470bee68853a365c5fd8830b518cc978",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Ítem eliminado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/categorias": {
             "get": {
                 "tags": [
@@ -742,6 +913,74 @@
                         "sanctum": []
                     }
                 ]
+            }
+        },
+        "/api/import": {
+            "post": {
+                "tags": [
+                    "ProductosImport"
+                ],
+                "summary": "Importar productos desde un archivo CSV",
+                "description": "Este endpoint permite importar productos desde un archivo CSV. El archivo debe contener información sobre marcas, líneas, catálogos, proveedores y categorías.",
+                "operationId": "importarProductos",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "file"
+                                ],
+                                "properties": {
+                                    "file": {
+                                        "description": "Archivo CSV con los datos de productos",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Productos importados correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Productos importados correctamente."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error al importar productos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error al importar productos"
+                                        },
+                                        "details": {
+                                            "type": "string",
+                                            "example": "Descripción del error interno"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/api/lineas": {
@@ -1367,74 +1606,6 @@
                         "sanctum": []
                     }
                 ]
-            }
-        },
-        "/api/import": {
-            "post": {
-                "tags": [
-                    "ProductosImport"
-                ],
-                "summary": "Importar productos desde un archivo CSV",
-                "description": "Este endpoint permite importar productos desde un archivo CSV. El archivo debe contener información sobre marcas, líneas, catálogos, proveedores y categorías.",
-                "operationId": "importarProductos",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "required": [
-                                    "file"
-                                ],
-                                "properties": {
-                                    "file": {
-                                        "description": "Archivo CSV con los datos de productos",
-                                        "type": "string",
-                                        "format": "binary"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Productos importados correctamente",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Productos importados correctamente."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error al importar productos",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Error al importar productos"
-                                        },
-                                        "details": {
-                                            "type": "string",
-                                            "example": "Descripción del error interno"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
             }
         },
         "/api/proveedores/logo": {
@@ -3036,6 +3207,100 @@
                 },
                 "type": "object"
             },
+            "CatalogoStoreRequest": {
+                "required": [
+                    "nombre",
+                    "descripcion",
+                    "proveedor_id"
+                ],
+                "properties": {
+                    "nombre": {
+                        "type": "string",
+                        "example": "Catálogo de materiales"
+                    },
+                    "descripcion": {
+                        "type": "string",
+                        "example": "Listado de productos para obra negra"
+                    },
+                    "proveedor_id": {
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "CatalogoUpdateRequest": {
+                "properties": {
+                    "nombre": {
+                        "type": "string",
+                        "example": "Catálogo actualizado"
+                    },
+                    "descripcion": {
+                        "type": "string",
+                        "example": "Nueva descripción del catálogo"
+                    },
+                    "proveedor_id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "photo_path": {
+                        "description": "Imagen del usuario en formato JPEG, PNG o WEBP (máximo 2MB)",
+                        "type": "string",
+                        "format": "binary"
+                    }
+                },
+                "type": "object"
+            },
+            "ProveedorUsuairoStoreRequest": {
+                "required": [
+                    "name",
+                    "email",
+                    "password"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Juan Pérez"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "juan@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "secret"
+                    },
+                    "is_main": {
+                        "type": "boolean",
+                        "example": false
+                    }
+                },
+                "type": "object"
+            },
+            "ProveedorUsuairoUpdateRequest": {
+                "required": [
+                    "name",
+                    "email"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Juan Pérez"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "juan@example.com"
+                    },
+                    "is_main": {
+                        "type": "boolean",
+                        "example": false
+                    }
+                },
+                "type": "object"
+            },
             "ProveedorRegisterCompleteRequest": {
                 "required": [
                     "token",
@@ -3285,56 +3550,6 @@
                         "type": "string",
                         "format": "email",
                         "maxLength": 60
-                    }
-                },
-                "type": "object"
-            },
-            "ProveedorUsuairoStoreRequest": {
-                "required": [
-                    "name",
-                    "email",
-                    "password"
-                ],
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "example": "Juan Pérez"
-                    },
-                    "email": {
-                        "type": "string",
-                        "format": "email",
-                        "example": "juan@example.com"
-                    },
-                    "password": {
-                        "type": "string",
-                        "format": "password",
-                        "example": "secret"
-                    },
-                    "is_main": {
-                        "type": "boolean",
-                        "example": false
-                    }
-                },
-                "type": "object"
-            },
-            "ProveedorUsuairoUpdateRequest": {
-                "required": [
-                    "name",
-                    "email"
-                ],
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "example": "Juan Pérez"
-                    },
-                    "email": {
-                        "type": "string",
-                        "format": "email",
-                        "example": "juan@example.com"
-                    },
-                    "is_main": {
-                        "type": "boolean",
-                        "example": false
                     }
                 },
                 "type": "object"
@@ -4062,6 +4277,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Catalogo",
+            "description": "Gestión de catálogo"
+        },
         {
             "name": "ProductosImport",
             "description": "Operaciones Import sobre Productos"

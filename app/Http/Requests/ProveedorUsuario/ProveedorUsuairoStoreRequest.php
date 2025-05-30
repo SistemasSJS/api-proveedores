@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\ProveedorUsuario;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -30,8 +30,7 @@ class ProveedorUsuairoStoreRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'], // espera password_confirmation
-            'rol_id' => ['required', 'integer', 'exists:roles,id'],
-
+            'role_id' => ['required', 'integer', 'exists:roles,id'],
         ];
     }
 

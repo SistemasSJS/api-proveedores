@@ -9,9 +9,10 @@ use App\Models\Proveedor;
 
 use App\Http\Resources\UserResource;
 
-use App\Http\Requests\UserStoreRequest;
-use App\Http\Requests\ProveedorUsuairoStoreRequest;
-use App\Http\Requests\ProveedorUsuairoUpdateRequest;
+use App\Http\Requests\User\UserStoreRequest;
+
+use App\Http\Requests\ProveedorUsuario\ProveedorUsuairoStoreRequest;
+use App\Http\Requests\ProveedorUsuario\ProveedorUsuairoUpdateRequest;
 
 use Illuminate\Support\Facades\Log;
 
@@ -128,7 +129,7 @@ class ProveedorUsuarioController extends Controller
      *     @OA\Response(response=409, description="Ya existe un usuario principal")
      * )
      */
-    public function store(UserStoreRequest $request, Proveedor $proveedor)
+    public function store(ProveedorUsuairoStoreRequest $request, Proveedor $proveedor)
     {
         $this->authorizeAccess($request->user(), $proveedor);
 
@@ -138,16 +139,18 @@ class ProveedorUsuarioController extends Controller
         // if (!empty($validated['is_main']) && $proveedor->users()->wherePivot('is_main', true)->exists()) {
         //     return $this->error('Ya existe un usuario principal.', null, 409);
         // }
-
-        $user = new User($validated);
-        $user->password = bcrypt($validated['password']);
-        $user->save();
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => bcrypt($validated['password']),
+            'role_id' => $validated['role_id'],
+        ]);
 
         $proveedor->users()->attach($user->id, [
             'is_main' => false,
         ]);
 
-        return $this->success(new UserResource($user), 'Usuario creado correctamente.', 201);
+        return $this->success(new UserResource($user->load(User::eagerLodable())), 'Usuario creado correctamente.', 201);
     }
 
     /**
@@ -228,38 +231,15 @@ class ProveedorUsuarioController extends Controller
      */
     public function update(ProveedorUsuairoUpdateRequest $request, Proveedor $proveedor, User $user)
     {
-        Log::info('Proveedor: ' . json_encode($proveedor));
-        Log::info('USER: ' . json_encode($user));
-        Log::info('request: ' . json_encode($request));
-
         $this->authorizeAccess($request->user(), $proveedor);
 
         if (!$proveedor->users()->find($user->id)) {
             throw new NotFoundRelationException('Usuario no asociado al proveedor.');
         }
         $validated = $request->validated();
-
-        // if (array_key_exists('is_main', $validated)) {
-        //     if ($validated['is_main']) {
-        //         // Obtener el usuario principal actual (si existe)
-        //         $usuarioPrincipal = $proveedor->users()
-        //             ->wherePivot('is_main', true)
-        //             ->first();
-
-        //         if ($usuarioPrincipal && $usuarioPrincipal->id !== $user->id) {
-        //             throw new MainUserDuplicateException('Ya hay otro usuario principal.', null, 409);
-        //         }
-        //     }
-
-        //     $proveedor->users()->updateExistingPivot($user->id, [
-        //         'is_main' => $validated['is_main']
-        //     ]);
-        // }
-
-        // No debe actualizar password aquí según los FormRequest
         $user->update($validated);
 
-        return $this->success(new UserResource($user), 'Usuario actualizado correctamente.');
+        return $this->success(new UserResource($user->fresh(User::eagerLodable())), 'Usuario actualizado correctamente.');
     }
 
     /**
