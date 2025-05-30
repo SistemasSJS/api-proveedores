@@ -17,7 +17,7 @@ use Illuminate\Http\Request;
  *     @OA\Response(response=200, description="Listado paginado de categorías")
  * )
  */
-class CategoriaController extends ControGgller
+class CategoriaController extends Controller
 {
     /**gG
      * Listar todas las categorías con filtros opcionales y paginación
