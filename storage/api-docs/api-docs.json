@@ -397,14 +397,22 @@
                 ]
             }
         },
-        "/api/catalogos": {
+        "/api/proveedores/{proveedor}/catalogos": {
             "get": {
                 "tags": [
                     "Catalogo"
                 ],
                 "summary": "Listar catálogos",
-                "operationId": "79d7091f67966403d84e6d7cab773453",
+                "operationId": "9f963b1d009c07397d11969184b8f7ae",
                 "parameters": [
+                    {
+                        "name": "proveedor",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
                     {
                         "name": "sort_by",
                         "in": "query",
@@ -453,7 +461,17 @@
                     "Catalogo"
                 ],
                 "summary": "Crear un ítem de catálogo",
-                "operationId": "9245a2a81755a9bab7cfbfa8e4c85deb",
+                "operationId": "8ae5050c4cd24c3efccedc8190b205af",
+                "parameters": [
+                    {
+                        "name": "proveedor",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -476,14 +494,22 @@
                 ]
             }
         },
-        "/api/catalogos/{id}": {
+        "/api/proveedores/{proveedor}/catalogos/{id}": {
             "get": {
                 "tags": [
                     "Catalogo"
                 ],
                 "summary": "Mostrar un ítem del catálogo por ID",
-                "operationId": "4d2f4ca04e0c4d6858f4d92cfe1662a5",
+                "operationId": "f62296f8ca651f0e6cf61b7f3d35a321",
                 "parameters": [
+                    {
+                        "name": "proveedor",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
                     {
                         "name": "id",
                         "in": "path",
@@ -509,8 +535,16 @@
                     "Catalogo"
                 ],
                 "summary": "Actualizar un ítem del catálogo",
-                "operationId": "87e2491a8be001127e69394bd0f73e6f",
+                "operationId": "8c219d957ef90a16ba72cf3853866aa4",
                 "parameters": [
+                    {
+                        "name": "proveedor",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
                     {
                         "name": "id",
                         "in": "path",
@@ -545,8 +579,16 @@
                     "Catalogo"
                 ],
                 "summary": "Eliminar un ítem del catálogo",
-                "operationId": "470bee68853a365c5fd8830b518cc978",
+                "operationId": "701cbef4a9b1447a1326146eee51e9ae",
                 "parameters": [
+                    {
+                        "name": "proveedor",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
                     {
                         "name": "id",
                         "in": "path",

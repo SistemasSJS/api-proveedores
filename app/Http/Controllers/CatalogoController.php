@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Catalogo;
+use App\Models\Proveedor;
 use App\Http\Requests\Catalogo\CatalogoStoreRequest;
 use App\Http\Requests\Catalogo\CatalogoUpdateRequest;
 use App\Http\Resources\CatalogoResource;
@@ -18,44 +19,25 @@ class CatalogoController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/catalogos",
+     *     path="/api/proveedores/{proveedor}/catalogos",
      *     summary="Listar catálogos",
      *     tags={"Catalogo"},
      *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="sort_by",
-     *         in="query",
-     *         description="Campo para ordenar",
-     *         required=false,
-     *         @OA\Schema(type="string", example="nombre")
-     *     ),
-     *     @OA\Parameter(
-     *         name="order",
-     *         in="query",
-     *         description="Dirección de ordenamiento",
-     *         required=false,
-     *         @OA\Schema(type="string", enum={"asc", "desc"}, example="asc")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Listado paginado de catálogos",
-     *         @OA\JsonContent(ref="#/components/schemas/ApiPaginatedResponse")
-     *     )
+     *     @OA\Parameter(name="proveedor", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="sort_by", in="query", description="Campo para ordenar", required=false, @OA\Schema(type="string", example="nombre")),
+     *     @OA\Parameter(name="order", in="query", description="Dirección de ordenamiento", required=false, @OA\Schema(type="string", enum={"asc", "desc"}, example="asc")),
+     *     @OA\Response(response=200, description="Listado paginado de catálogos", @OA\JsonContent(ref="#/components/schemas/ApiPaginatedResponse"))
      * )
      */
-    public function index(Request $request)
+    public function index(Request $request, Proveedor $proveedor)
     {
-        $user = $request->user();
         $filters = $request->only(Catalogo::getFilters());
-
         $sortBy = $request->input('sort_by', 'nombre');
         $order = $request->input('order', 'asc');
 
-        $query = Catalogo::with(Catalogo::eagerLodable())->filter($filters);
-
-        if ($user->role->nombre === 'PROVEEDOR') {
-            $query->where('proveedor_id', $user->mainProveedor()->first()->id);
-        }
+        $query = Catalogo::with(Catalogo::eagerLodable())
+            ->filter($filters)
+            ->where('proveedor_id', $proveedor->id);
 
         $originalPaginator = $query->orderBy($sortBy, $order)->paginate(10);
         $data = CatalogoResource::collection($originalPaginator)->resolve();
@@ -65,25 +47,19 @@ class CatalogoController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/catalogos",
+     *     path="/api/proveedores/{proveedor}/catalogos",
      *     summary="Crear un ítem de catálogo",
      *     tags={"Catalogo"},
      *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/CatalogoStoreRequest")
-     *     ),
+     *     @OA\Parameter(name="proveedor", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/CatalogoStoreRequest")),
      *     @OA\Response(response=201, description="Ítem creado")
      * )
      */
-    public function store(CatalogoStoreRequest $request)
+    public function store(CatalogoStoreRequest $request, Proveedor $proveedor)
     {
         $data = $request->validated();
-
-        // Si es proveedor, forzamos el proveedor_id
-        if ($request->user()->role->nombre === 'PROVEEDOR') {
-            $data['proveedor_id'] = $request->user()->mainProveedor()->first()->id;
-        }
+        $data['proveedor_id'] = $proveedor->id;
 
         $catalogo = Catalogo::create($data);
 
@@ -92,22 +68,20 @@ class CatalogoController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/catalogos/{id}",
+     *     path="/api/proveedores/{proveedor}/catalogos/{id}",
      *     summary="Mostrar un ítem del catálogo por ID",
      *     tags={"Catalogo"},
      *     security={{"sanctum":{}}},
+     *     @OA\Parameter(name="proveedor", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Response(response=200, description="Ítem encontrado")
      * )
      */
-    public function show(Request $request, $id)
+    public function show(Request $request, Proveedor $proveedor, $id)
     {
         $catalogo = Catalogo::with(Catalogo::eagerLodable())->findOrFail($id);
 
-        if (
-            $request->user()->role->nombre === 'PROVEEDOR' &&
-            $catalogo->proveedor_id !== $request->user()->mainProveedor()->first()->id
-        ) {
+        if ($catalogo->proveedor_id !== $proveedor->id) {
             abort(403, 'No autorizado para ver este catálogo.');
         }
 
@@ -116,25 +90,21 @@ class CatalogoController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/api/catalogos/{id}",
+     *     path="/api/proveedores/{proveedor}/catalogos/{id}",
      *     summary="Actualizar un ítem del catálogo",
      *     tags={"Catalogo"},
      *     security={{"sanctum":{}}},
+     *     @OA\Parameter(name="proveedor", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\RequestBody(
-     *         @OA\JsonContent(ref="#/components/schemas/CatalogoUpdateRequest")
-     *     ),
+     *     @OA\RequestBody(@OA\JsonContent(ref="#/components/schemas/CatalogoUpdateRequest")),
      *     @OA\Response(response=200, description="Ítem actualizado")
      * )
      */
-    public function update(CatalogoUpdateRequest $request, $id)
+    public function update(CatalogoUpdateRequest $request, Proveedor $proveedor, $id)
     {
         $catalogo = Catalogo::findOrFail($id);
 
-        if (
-            $request->user()->role->nombre === 'PROVEEDOR' &&
-            $catalogo->proveedor_id !== $request->user()->mainProveedor()->first()->id
-        ) {
+        if ($catalogo->proveedor_id !== $proveedor->id) {
             abort(403, 'No autorizado para actualizar este catálogo.');
         }
 
@@ -145,22 +115,20 @@ class CatalogoController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/api/catalogos/{id}",
+     *     path="/api/proveedores/{proveedor}/catalogos/{id}",
      *     summary="Eliminar un ítem del catálogo",
      *     tags={"Catalogo"},
      *     security={{"sanctum":{}}},
+     *     @OA\Parameter(name="proveedor", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Response(response=204, description="Ítem eliminado")
      * )
      */
-    public function destroy(Request $request, $id)
+    public function destroy(Request $request, Proveedor $proveedor, $id)
     {
         $catalogo = Catalogo::findOrFail($id);
 
-        if (
-            $request->user()->role->nombre === 'PROVEEDOR' &&
-            $catalogo->proveedor_id !== $request->user()->mainProveedor()->first()->id
-        ) {
+        if ($catalogo->proveedor_id !== $proveedor->id) {
             abort(403, 'No autorizado para eliminar este catálogo.');
         }
 

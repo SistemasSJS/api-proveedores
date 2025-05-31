@@ -82,7 +82,7 @@ Route::middleware(
         Route::get('proveedor/user/{id}', [ProveedorController::class, 'getProveedorByUserId']);
 
         /**
-         * Gestion de usarios de proveedor
+         * TODO: Gestion de usarios de proveedor: Adaptar similar a la  de catalogos 
          */
         Route::controller(ProveedorUsuarioController::class)->group(function () {
             Route::post('proveedores/{proveedor}/users', 'store');
@@ -95,8 +95,20 @@ Route::middleware(
         /**
          * Gestion de catalogos de proveedor
          */
-        Route::apiResource('catalogos', CatalogoController::class);
+        Route::prefix('proveedores/{proveedor}')->group(function () {
+            Route::apiResource('catalogos', CatalogoController::class)
+                ->except(['show', 'update', 'destroy']);
 
+            Route::middleware('catalogo.proveedor')->group(function () {
+                Route::get('catalogos/{catalogo}', [CatalogoController::class, 'show']);
+                Route::put('catalogos/{catalogo}', [CatalogoController::class, 'update']);
+                Route::delete('catalogos/{catalogo}', [CatalogoController::class, 'destroy']);
+            });
+        });
+
+        /**
+         * TODO: Gestion de Sucursales.... Similar a la de catalogos
+         */
         Route::prefix('proveedores/{id}')->group(function () {
             Route::get('productos', [ProveedorController::class, 'productosPorProveedor']);
             Route::get('sucursales', [ProveedorController::class, 'sucursalesPorProveedor']);
