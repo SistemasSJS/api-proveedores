@@ -171,3 +171,6 @@ stubs/
 .vscode/
 
 storage/logs
+public/hot
+storage/logs/laravel.log
+storage/logs/requests.log
