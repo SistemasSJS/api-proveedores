@@ -26,26 +26,29 @@ Route::post('import', [ImportProductoController::class, 'import']);
 // Route::get('test', [ProveedorController::class, 'test']);
 
 Route::post('upload', [FileUploadController::class, 'store'])->name('upload');
+
+
+
+/**
+ * RUTAS DE AUTENTICACION
+ */
+Route::post('login', [AuthController::class, 'login']);
+
+
 /**
  * Rutas Publicas. Que no necesitan procteccion
  * FIXME: Config Access Api Token on all routes, and settings CORDS. 
  * TODO: Verificar configuracion de origen para las petiones.  
  */
-Route::post('auth/register', [AuthController::class, 'register']);
-Route::post('auth/completar-registro', [AuthController::class, 'register_completar']);
-Route::post('login', [AuthController::class, 'login']);
+
 
 /**
- * 
- *  Registro de un proveedor:
- *      1. Primero se registra el proveedor.
- *      2. Envio de corrreo para confirmacion del email.
- *      3. El usuario ingresa la contraseña y la confgirmacion para crear el usuario.
- *      4. Se registra el usuario y se genera una sesion.
- * 
+ * Registro DE USUASIROS
  */
-Route::post('register_proveedor', [ProveedorController::class, 'register_proveedor']);
-Route::post('register_proveedor_completar', [ProveedorController::class, 'register_proveedor_completar']);
+Route::post('auth/register', [AuthController::class, 'register']);
+Route::post('auth/completar-registro', [AuthController::class, 'register_completar']);
+Route::post('register_proveedor', [AuthController::class, 'register_proveedor']);
+Route::post('register_proveedor_completar', [AuthController::class, 'register_proveedor_completar']);
 
 
 /**

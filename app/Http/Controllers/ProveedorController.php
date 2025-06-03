@@ -3,31 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
-use App\Models\Role;
-use App\Models\User;
-use App\Models\Proveedor;
-
-use App\Http\Resources\UserAuthenticateResource;
-
-use App\Http\Requests\Proveedor\ProveedorUpdateRequest;
-use App\Http\Requests\Proveedor\ProveedorRegisterCompleteRequest;
-use App\Http\Requests\Proveedor\ProveedorRegisterRequest;
-use App\Http\Requests\Proveedor\ProveedorUpdateLogoRequest;
-
-
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
-use App\Mail\CompletaRegistroProveedorMail;
-
-use App\Exceptions\Api\Crud\ResourceNotFoundException;
+use App\Models\User;
+use App\Models\Proveedor;
 use App\Http\Resources\ProveedorResource;
-
-use function Laravel\Prompts\error;
+use App\Http\Requests\Proveedor\ProveedorUpdateRequest;
+use App\Http\Requests\Proveedor\ProveedorUpdateLogoRequest;
+use App\Exceptions\Api\Crud\ResourceNotFoundException;
 
 /**
  * @OA\Tag(
@@ -235,87 +218,6 @@ class ProveedorController extends Controller
         $proveedor->update([['estatus' => 'baja']]);
         return $this->success(null, 204);
     }
-
-    /**
-     * @OA\Post(
-     *     path="/api/proveedores",
-     *     tags={"Proveedores"},
-     *     summary="Registrar un nuevo proveedor",
-     *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/ProveedorRegisterRequest")
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Proveedor creado exitosamente"
-     *     )
-     * )
-     */
-    public function register_proveedor(ProveedorRegisterRequest $request)
-    {
-        $proveedor = Proveedor::create($request->validated());
-        $token = Str::random(60);
-
-        Cache::put("registro_proveedor_{$token}", $proveedor->id, 60 * 60 * 24 * 7 * 360); // 1 año
-
-        $url = config('services.frontend.url') . "/auth/completar-registro-proveedor?token={$token}";
-        Mail::to($proveedor->email)->send(new CompletaRegistroProveedorMail($url));
-
-        return $this->success($proveedor->load(Proveedor::eagerLodable()), 'Proveedor registrado. Revisa tu correo para continuar.', 200);
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/api/proveedores/completar-registro",
-     *     tags={"Proveedores"},
-     *     summary="Completar registro de proveedor",
-     *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/ProveedorRegisterCompleteRequest")
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Registro completado exitosamente"
-     *     )
-     * )
-     */
-    public function register_proveedor_completar(ProveedorRegisterCompleteRequest $request)
-    {
-        $proveedorId = Cache::get("registro_proveedor_{$request->token}");
-        if (!$proveedorId) {
-            return $this->error('Token inválido o expirado', [], 498);
-        }
-
-        $proveedor = Proveedor::findOrFail($proveedorId);
-
-        if (!$proveedor->user) {
-            $idRoleProveedor = Role::where('nombre', 'PROVEEDOR')->first()->id;
-            $user = User::create([
-                'name' => $proveedor->nombre_comercial,
-                'email' => $proveedor->email,
-                'password' => Hash::make($request->password),
-                'role_id' => $idRoleProveedor,
-            ]);
-
-            $user->proveedores()->attach($proveedor->id, ['is_main' => true]);
-        } else {
-            $user = $proveedor->user;
-            $user->password = Hash::make($request->password);
-            $user->save();
-        }
-
-        Cache::forget("registro_proveedor_{$request->token}");
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return $this->success([
-            'user' => new UserAuthenticateResource($user->load(User::eagerLodable())),
-            'proveedor' => $proveedor->load(Proveedor::eagerLodable()),
-            'token' => $token,
-        ], 'Registro completado', 201);
-    }
-
 
     // public function test(Request $request)
     // {

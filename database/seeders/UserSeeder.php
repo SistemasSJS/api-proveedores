@@ -16,21 +16,22 @@ class UserSeeder extends Seeder
         $idRolAdmin = Role::where('nombre', UserRoleEnumerate::ADMIN->value)->first()->id;
         $idRolSuperAdmin = Role::where('nombre', UserRoleEnumerate::SUPER_ADMIN->value)->first()->id;
         User::firstOrCreate(
-            ['email' => 'jcsv@admin.admin'],
+            ['email' => 'juliocsv@sjs.com.mx'],
             [
                 'name' => 'Superadmin (JCSV)',
                 'foto_perfil_url' => $default_foto_url,
-                'password' => Hash::make('admin123'), // Contraseña clara
+                'password' => Hash::make('1233456'), // Contraseña clara
                 'role_id' => $idRolSuperAdmin,
                 'email_verified_at' => now(),
             ]
         );
         User::firstOrCreate(
-            ['email' => 'osaco@admin.admin'],
+            // ['email' => 'osaco@admin.admin'],
+            ['email' => 'dir.tecnico@sjs.com.mx'],
             [
                 'name' => 'Admin (OSACO)', //'Administrador',
                 'foto_perfil_url' => $default_foto_url,
-                'password' => Hash::make('admin123'), // Contraseña clara
+                'password' => Hash::make('1233456'), // Contraseña clara
                 'role_id' => $idRolAdmin,
                 'email_verified_at' => now(),
             ]
@@ -40,17 +41,17 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Desarrolador (JSSR)', //'Administrador',
                 'foto_perfil_url' => $default_foto_url,
-                'password' => Hash::make('admin123'), // Contraseña clara
+                'password' => Hash::make('1233456'), // Contraseña clara
                 'role_id' => $idRolAdmin,
                 'email_verified_at' => now(),
             ]
         );
         User::firstOrCreate(
-            ['email' => 'gmb@admin.admin'],
+            ['email' => 'sistemas_sjs@hotmail.com'],
             [
                 'name' => 'Auxiliar de desarrollador (GMB)', //'Administrador',
                 'foto_perfil_url' => $default_foto_url,
-                'password' => Hash::make('admin123'), // Contraseña clara
+                'password' => Hash::make('1233456'), // Contraseña clara
                 'role_id' => $idRolAdmin,
                 'email_verified_at' => now(),
             ]

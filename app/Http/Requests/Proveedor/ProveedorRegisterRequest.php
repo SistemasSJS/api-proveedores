@@ -4,8 +4,7 @@ namespace App\Http\Requests\Proveedor;
 
 use App\Rules\ReCaptcha;
 use Illuminate\Foundation\Http\FormRequest;
-
-
+use Illuminate\Validation\Rule;
 
 /**
  * @OA\Schema(
@@ -70,7 +69,12 @@ class ProveedorRegisterRequest extends FormRequest
             'tipos_empresa_otro' => ['string', 'max:60'],
             'descripcion_giro_empresa' => ['required', 'string', 'max:255'],
             'direccion_empresa' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:proveedores'],
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('users', 'email'),
+                Rule::unique('proveedores', 'email'),
+            ],
             'telefono' => ['required', 'string', 'max:15'],
             'pagina_web' => ['required', 'string', 'max:255'],
             'estado' => ['required', 'string', 'max:255'],

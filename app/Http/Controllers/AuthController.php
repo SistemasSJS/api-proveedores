@@ -8,11 +8,12 @@ use App\Exceptions\Api\Auth\UnauthorizedException;
 use App\Http\Requests\Auth\AuthRegisterRequest;
 use App\Http\Requests\Auth\AuthRegisterCompleteRequest;
 use App\Http\Requests\Auth\AuthUpdateFotoPerfilRequest;
-
+use App\Http\Requests\Proveedor\ProveedorRegisterCompleteRequest;
+use App\Http\Requests\Proveedor\ProveedorRegisterRequest;
 use App\Http\Resources\UserAuthenticateResource;
-use App\Http\Resources\UserResource;
-
+use App\Mail\CompletaRegistroProveedorMail;
 use App\Mail\CompletaRegistroUsuarioMail;
+use App\Models\Proveedor;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -21,7 +22,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationData;
 
 class AuthController extends Controller
 {
@@ -119,6 +119,91 @@ class AuthController extends Controller
         //     'user' => new UserResource($user->load(User::eagerLodable())),
         //     'data' => $data
         // ],
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/register_proveedor",
+     *     tags={"Autenticación"},
+     *     summary="Registrar un nuevo proveedor",
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/ProveedorRegisterRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Proveedor creado exitosamente"
+     *     )
+     * )
+     */
+    public function register_proveedor(ProveedorRegisterRequest $request)
+    {
+        /**
+         * FIXME: Validar correo IN USERS TABLAE
+         */
+
+
+        $proveedor = Proveedor::create($request->validated());
+        $token = Str::random(60);
+
+        Cache::put("registro_proveedor_{$token}", $proveedor->id, 60 * 60 * 24 * 7 * 360); // 1 año
+
+        $url = config('services.frontend.url') . "/auth/completar?token={$token}";
+        Mail::to($proveedor->email)->send(new CompletaRegistroProveedorMail($url));
+
+        return $this->success($proveedor->load(Proveedor::eagerLodable()), 'Proveedor registrado. Revisa tu correo para continuar.', 200);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/register_proveedor_completar",
+     *     tags={"Autenticación"},
+     *     summary="Completar registro de proveedor",
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/ProveedorRegisterCompleteRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Registro completado exitosamente"
+     *     )
+     * )
+     */
+    public function register_proveedor_completar(ProveedorRegisterCompleteRequest $request)
+    {
+        $proveedorId = Cache::get("registro_proveedor_{$request->token}");
+        if (!$proveedorId) {
+            return $this->error('Token inválido o expirado', [], 498);
+        }
+
+        $proveedor = Proveedor::findOrFail($proveedorId);
+
+        if (!$proveedor->user) {
+            $idRoleProveedor = Role::where('nombre', 'PROVEEDOR')->first()->id;
+            $user = User::create([
+                'name' => $proveedor->nombre_comercial,
+                'email' => $proveedor->email,
+                'password' => Hash::make($request->password),
+                'role_id' => $idRoleProveedor,
+            ]);
+
+            $user->proveedores()->attach($proveedor->id, ['is_main' => true]);
+        } else {
+            $user = $proveedor->user;
+            $user->password = Hash::make($request->password);
+            $user->save();
+        }
+
+        Cache::forget("registro_proveedor_{$request->token}");
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return $this->success([
+            'user' => new UserAuthenticateResource($user->load(User::eagerLodable())),
+            'proveedor' => $proveedor->load(Proveedor::eagerLodable()),
+            'token' => $token,
+        ], 'Registro completado', 201);
     }
 
     /**
