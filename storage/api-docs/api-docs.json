@@ -11,7 +11,7 @@
     },
     "servers": [
         {
-            "url": "http://192.168.0.132:8080",
+            "url": "http://127.0.0.1:8080",
             "description": "Servidor local: SQLite"
         }
     ],
@@ -103,6 +103,64 @@
                         "description": "Token inválido o expirado"
                     }
                 }
+            }
+        },
+        "/api/register_proveedor": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Registrar un nuevo proveedor",
+                "operationId": "066e9cfd024f35a5281304b7067d55fd",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProveedorRegisterRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Proveedor creado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/register_proveedor_completar": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Completar registro de proveedor",
+                "operationId": "fac665db243041cf5071a5f4e7927646",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProveedorRegisterCompleteRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Registro completado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         },
         "/api/update-foto-perfil": {
@@ -1728,33 +1786,6 @@
                         "sanctum": []
                     }
                 ]
-            },
-            "post": {
-                "tags": [
-                    "Proveedores"
-                ],
-                "summary": "Registrar un nuevo proveedor",
-                "operationId": "79171269ec4e7dfd0d46085f6aacf7f1",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ProveedorRegisterRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Proveedor creado exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
             }
         },
         "/api/proveedores/{id}": {
@@ -1844,35 +1875,6 @@
                 "responses": {
                     "204": {
                         "description": "Proveedor eliminado"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/proveedores/completar-registro": {
-            "post": {
-                "tags": [
-                    "Proveedores"
-                ],
-                "summary": "Completar registro de proveedor",
-                "operationId": "8c85abb7fa91da9b1b471380e759109b",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ProveedorRegisterCompleteRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Registro completado exitosamente"
                     }
                 },
                 "security": [
@@ -3372,34 +3374,17 @@
             },
             "ProveedorRegisterRequest": {
                 "required": [
-                    "nombre_propietario",
-                    "nombre_de_quien_registra",
                     "nombre_comercial",
                     "razon_social",
                     "tipos_empresa_id",
-                    "descripcion_giro_empresa",
-                    "direccion_empresa",
                     "email",
                     "telefono",
-                    "pagina_web",
-                    "estado",
-                    "municipio",
-                    "codigo_postal",
                     "contacto_nombre",
-                    "contacto_cargo",
                     "contacto_telefono",
                     "contacto_correo",
                     "recaptcha_token"
                 ],
                 "properties": {
-                    "nombre_propietario": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "nombre_de_quien_registra": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
                     "nombre_comercial": {
                         "type": "string",
                         "maxLength": 255
@@ -3417,14 +3402,6 @@
                         "maxLength": 60,
                         "nullable": true
                     },
-                    "descripcion_giro_empresa": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "direccion_empresa": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
                     "email": {
                         "type": "string",
                         "format": "email",
@@ -3434,34 +3411,9 @@
                         "type": "string",
                         "maxLength": 15
                     },
-                    "pagina_web": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "estado": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "municipio": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "codigo_postal": {
-                        "type": "string",
-                        "maxLength": 10
-                    },
-                    "direccion_fiscal": {
-                        "type": "string",
-                        "maxLength": 255,
-                        "nullable": true
-                    },
                     "contacto_nombre": {
                         "type": "string",
                         "maxLength": 150
-                    },
-                    "contacto_cargo": {
-                        "type": "string",
-                        "maxLength": 60
                     },
                     "contacto_telefono": {
                         "type": "string",

@@ -149,7 +149,7 @@ class AuthController extends Controller
 
         Cache::put("registro_proveedor_{$token}", $proveedor->id, 60 * 60 * 24 * 7 * 360); // 1 año
 
-        $url = config('services.frontend.url') . "/auth/completar?token={$token}";
+        $url = config('services.frontend.url') . "/auth/registro/completar?token={$token}";
         Mail::to($proveedor->email)->send(new CompletaRegistroProveedorMail($url));
 
         return $this->success($proveedor->load(Proveedor::eagerLodable()), 'Proveedor registrado. Revisa tu correo para continuar.', 200);
