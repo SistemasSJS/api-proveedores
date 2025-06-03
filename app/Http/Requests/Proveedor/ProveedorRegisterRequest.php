@@ -45,7 +45,7 @@ class ProveedorRegisterRequest extends FormRequest
             'nombre_comercial' => ['required', 'string', 'max:255'],
             'razon_social' => ['required', 'string', 'max:255'],
             'tipos_empresa_id' => ['required', 'integer', 'exists:tipos_empresa,id,estatus,activo'],
-            'tipos_empresa_otro' => ['string', 'max:60'],
+            'tipos_empresa_otro' => ['max:60'],
             'email' => [
                 'required',
                 'email',

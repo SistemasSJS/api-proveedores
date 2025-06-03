@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Superadmin (JCSV)',
                 'foto_perfil_url' => $default_foto_url,
-                'password' => Hash::make('1233456'), // Contraseña clara
+                'password' => Hash::make('123456'), // Contraseña clara
                 'role_id' => $idRolSuperAdmin,
                 'email_verified_at' => now(),
             ]
@@ -31,7 +31,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Admin (OSACO)', //'Administrador',
                 'foto_perfil_url' => $default_foto_url,
-                'password' => Hash::make('1233456'), // Contraseña clara
+                'password' => Hash::make('123456'), // Contraseña clara
                 'role_id' => $idRolAdmin,
                 'email_verified_at' => now(),
             ]
@@ -41,7 +41,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Desarrolador (JSSR)', //'Administrador',
                 'foto_perfil_url' => $default_foto_url,
-                'password' => Hash::make('1233456'), // Contraseña clara
+                'password' => Hash::make('123456'), // Contraseña clara
                 'role_id' => $idRolAdmin,
                 'email_verified_at' => now(),
             ]
@@ -51,7 +51,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Auxiliar de desarrollador (GMB)', //'Administrador',
                 'foto_perfil_url' => $default_foto_url,
-                'password' => Hash::make('1233456'), // Contraseña clara
+                'password' => Hash::make('123456'), // Contraseña clara
                 'role_id' => $idRolAdmin,
                 'email_verified_at' => now(),
             ]

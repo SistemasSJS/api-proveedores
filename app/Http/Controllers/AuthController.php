@@ -152,7 +152,10 @@ class AuthController extends Controller
         $url = config('services.frontend.url') . "/auth/registro/completar?token={$token}";
         Mail::to($proveedor->email)->send(new CompletaRegistroProveedorMail($url));
 
-        return $this->success($proveedor->load(Proveedor::eagerLodable()), 'Proveedor registrado. Revisa tu correo para continuar.', 200);
+        return $this->success([
+            'url' => $url,
+            'data' => $proveedor->load(Proveedor::eagerLodable())
+        ], 'Proveedor registrado. Revisa tu correo para continuar.', 200);
     }
 
     /**
