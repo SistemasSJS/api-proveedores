@@ -24,36 +24,50 @@ class Handler extends ExceptionHandler
     public function register(): void
     {
         $this->renderable(function (BaseApiException $e, $request) {
-            return $e->render($request);
+            if ($request->expectsJson()) {
+                return $e->render($request);
+            }
         });
 
         $this->renderable(function (AuthenticationException $e, $request) {
-            return $this->error('No autenticado.', null, 401);
+            if ($request->expectsJson()) {
+                return $this->error('No autenticado.', null, 401);
+            }
         });
 
         $this->renderable(function (ValidationException $e, $request) {
-            return $this->error('Datos inválidos.', $e->errors(), 422);
+            if ($request->expectsJson()) {
+                return $this->error('Datos inválidos.', [
+                    'success' => false,
+                    'error_type' => 'validation_error',
+                    'fields' => $e->errors(),
+                ], 422);
+            }
         });
 
         $this->renderable(function (NotFoundHttpException $e, $request) {
-            return $this->error('Ruta no encontrada.', null, 404);
+            if ($request->expectsJson()) {
+                return $this->error('Ruta no encontrada.', null, 404);
+            }
         });
 
         $this->renderable(function (Throwable $e, $request) {
-            if (config('app.debug')) {
-                return response()->json([
-                    'status' => 'error',
-                    'code' => $e->getCode() ?: 500,
-                    'message' => $e->getMessage(),
-                    'data' => null,
-                    'errors' => [
-                        'exception' => get_class($e),
-                        'trace' => $e->getTrace()
-                    ],
-                ], 500);
-            }
+            if ($request->expectsJson()) {
+                if (config('app.debug')) {
+                    return response()->json([
+                        'status' => 'ERROR',
+                        'code' => 500,
+                        'message' => $e->getMessage(),
+                        'data' => null,
+                        'errors' => [
+                            'exception' => get_class($e),
+                            'trace' => $e->getTrace(),
+                        ],
+                    ], 500);
+                }
 
-            return $this->error('Error interno del servidor.', null, 500);
+                return $this->error('Error interno del servidor.', null, 500);
+            }
         });
     }
 }

@@ -43,7 +43,8 @@ abstract class BaseApiException extends Exception
                 'message' => $this->getMessage(),
                 'code' => $this->statusCode,
             ], $this->additionalData),
-            code: 201
+            code: $this->statusCode,
         );
     }
 }
+    
