@@ -180,14 +180,25 @@ class ProveedorController extends Controller
      *     )
      * )
      */
-    public function update(ProveedorUpdateRequest $request, $id)
+    public function update(ProveedorUpdateRequest $request, Proveedor $proveedor)
     {
-        $proveedor = Proveedor::find($id);
-        if (!$proveedor) {
-            throw new ResourceNotFoundException("Proveedor no encontrado.");
+        $validated = $request->validated();
+        if ($request->hasFile('logo')) {
+            if ($proveedor->logo !== null) {
+                $rutaAnterior = str_replace(asset('storage') . '/', '', $proveedor->logo);
+                Storage::disk('public')->delete($rutaAnterior);
+            }
+            
+            $file = $request->file('logo');
+            $filename = 'logo_' . $proveedor->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs("uploads", $filename, 'public');
+            $url = asset("storage/{$path}");
+            $proveedor->update(['logo' => $url]);
         }
-        $proveedor->update($request->all());
+        
+        $proveedor->update($validated);
         $proveedor->load(Proveedor::eagerLodable());
+
         return $this->success($proveedor, 200);
     }
 

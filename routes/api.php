@@ -83,6 +83,7 @@ Route::middleware(
 
         Route::post('proveedor/update-logo', [ProveedorController::class, 'updateLogo']);
         Route::get('proveedor/user/{id}', [ProveedorController::class, 'getProveedorByUserId']);
+        Route::patch('proveedores/{proveedor}', [ProveedorController::class, 'update']);
 
         /**
          * TODO: Gestion de usarios de proveedor: Adaptar similar a la  de catalogos 

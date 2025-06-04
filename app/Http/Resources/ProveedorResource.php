@@ -19,7 +19,7 @@ class ProveedorResource extends JsonResource
             'telefono'                   => $this->telefono,
             'email'                      => $this->email,
             'direccion'                  => $this->direccion,
-            'logo'                       => $this->logo,
+            'logo'                       => asset('storage/' . $this->logo),
             'tipo_persona'              => $this->tipo_persona,
             'direccion_fiscal'          => $this->direccion_fiscal,
             'estado'                     => $this->estado,
