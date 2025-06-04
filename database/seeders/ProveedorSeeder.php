@@ -14,7 +14,12 @@ class ProveedorSeeder extends Seeder
         DB::transaction(function () {
             for ($i = 0; $i < 10; $i++) {
                 // 1. Crear usuario principal (dueño)
-                $userMain = User::factory()->proveedor()->create();
+                if ($i == 0) {
+                    $userMain = User::factory()->proveedor()->create(['email'=> 'test@test.com']);
+                }else {
+                    $userMain = User::factory()->proveedor()->create();
+
+                }
 
                 // 2. Crear proveedor
                 $proveedor = Proveedor::factory()->create();

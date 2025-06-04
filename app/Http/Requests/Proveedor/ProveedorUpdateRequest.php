@@ -56,31 +56,27 @@ class ProveedorUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'logo' => [
-                'sometimes',
-                'image',
-                'mimes:jpeg,png,jpg',
-                'max:2048', // tamaño máximo en KB (2MB)
-            ],
-            'nombre_propietario' => ['sometimes', 'string', 'max:255'],
-            'nombre_de_quien_registra' => ['sometimes', 'string', 'max:255'],
-            'nombre_comercial' => ['sometimes', 'string', 'max:255'],
-            'razon_social' => ['sometimes', 'string', 'max:255'],
-            'tipos_empresa_id' => ['sometimes', 'integer', 'exists:tipos_empresa,id,estatus,activo'],
+            // 'logo' => ['nullable','image','mimes:jpeg,png,jpg','max:2048', ],
+            'nombre_comercial' => ['nullable', 'string', 'max:255'],
+            'pagina_web' => ['nullable', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'telefono' => ['nullable', 'string', 'max:15'],
+
+            'nombre_propietario' => ['nullable', 'string', 'max:255'],
+            'nombre_de_quien_registra' => ['nullable', 'string', 'max:255'],
+            'razon_social' => ['nullable', 'string', 'max:255'],
+            'tipos_empresa_id' => ['nullable', 'integer', 'exists:tipos_empresa,id,estatus,activo'],
             'tipos_empresa_otro' => ['nullable', 'string', 'max:60'],
-            'descripcion_giro_empresa' => ['sometimes', 'string', 'max:255'],
-            'direccion_empresa' => ['sometimes', 'string', 'max:255'],
-            'email' => ['sometimes', 'email', 'max:255'],
-            'telefono' => ['sometimes', 'string', 'max:15'],
-            'pagina_web' => ['sometimes', 'string', 'max:255'],
-            'estado' => ['sometimes', 'string', 'max:255'],
-            'municipio' => ['sometimes', 'string', 'max:255'],
-            'codigo_postal' => ['sometimes', 'string', 'max:10'],
+            'descripcion_giro_empresa' => ['nullable', 'string', 'max:255'],
+            'direccion_empresa' => ['nullable', 'string', 'max:255'],
+            'estado' => ['nullable', 'string', 'max:255'],
+            'municipio' => ['nullable', 'string', 'max:255'],
+            'codigo_postal' => ['nullable', 'string', 'max:10'],
             'direccion_fiscal' => ['nullable', 'string', 'max:255'],
-            'contacto_nombre' => ['sometimes', 'string', 'max:150'],
-            'contacto_cargo' => ['sometimes', 'string', 'max:60'],
-            'contacto_telefono' => ['sometimes', 'string', 'max:15'],
-            'contacto_correo' => ['sometimes', 'email', 'max:60'],
+            'contacto_nombre' => ['nullable', 'string', 'max:150'],
+            'contacto_cargo' => ['nullable', 'string', 'max:60'],
+            'contacto_telefono' => ['nullable', 'string', 'max:15'],
+            'contacto_correo' => ['nullable', 'email', 'max:60'],
         ];
     }
 

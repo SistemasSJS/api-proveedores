@@ -60,6 +60,11 @@ class Proveedor extends BaseModel
      */
     protected $fillable = [
         'logo',
+        'nombre_comercial',
+        'pagina_web',
+        'email',
+        'telefono',
+        
         'rfc',
         'tipo_persona',
         'direccion_fiscal',
@@ -73,15 +78,11 @@ class Proveedor extends BaseModel
 
         'nombre_propietario',
         'nombre_de_quien_registra',
-        'nombre_comercial',
         'razon_social',
         'tipos_empresa_id',
         'tipos_empresa_otro',
         'descripcion_giro_empresa',
         'direccion_empresa',
-        'email',
-        'telefono',
-        'pagina_web',
         // 'ubicacion',
         'contacto_nombre',
         'contacto_cargo',

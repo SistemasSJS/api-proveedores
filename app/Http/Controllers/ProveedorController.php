@@ -183,24 +183,42 @@ class ProveedorController extends Controller
     public function update(ProveedorUpdateRequest $request, Proveedor $proveedor)
     {
         $validated = $request->validated();
+
         if ($request->hasFile('logo')) {
-            if ($proveedor->logo !== null) {
+            // Eliminar archivo anterior si existe
+            if ($proveedor->logo) {
+                // Extraer la ruta relativa desde la URL almacenada
                 $rutaAnterior = str_replace(asset('storage') . '/', '', $proveedor->logo);
                 Storage::disk('public')->delete($rutaAnterior);
             }
-            
+
+            // Guardar el nuevo archivo
             $file = $request->file('logo');
             $filename = 'logo_' . $proveedor->id . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs("uploads", $filename, 'public');
+            $path = $file->storeAs('uploads', $filename, 'public');
             $url = asset("storage/{$path}");
-            $proveedor->update(['logo' => $url]);
-        }
-        
-        $proveedor->update($validated);
-        $proveedor->load(Proveedor::eagerLodable());
 
-        return $this->success($proveedor, 200);
+            // Actualizar sólo el campo logo en el modelo
+            $proveedor->logo = $url;
+        }
+
+        // Actualizar el resto de los campos (excepto logo para no sobrescribir)
+        // Puedes excluir 'logo' de $validated si viene ahí para evitar sobrescribirlo
+        $datosActualizar = collect($validated)->except('logo')->toArray();
+
+        $proveedor->update($datosActualizar);
+
+        // Guardar el modelo si hubo cambio en logo
+        if ($request->hasFile('logo')) {
+            $proveedor->save();
+        }
+
+        // Recargar relaciones y datos actualizados
+        $proveedor->fresh(Proveedor::eagerLodable());
+
+        return $this->success($proveedor, 'Proveedor actualizado con éxito.', 200);
     }
+
 
     /**
      * @OA\Delete(
