@@ -11,6 +11,7 @@ use App\Http\Resources\ProveedorResource;
 use App\Http\Requests\Proveedor\ProveedorUpdateRequest;
 use App\Http\Requests\Proveedor\ProveedorUpdateLogoRequest;
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
+use App\Http\Resources\UserResource;
 
 /**
  * @OA\Tag(
@@ -64,7 +65,10 @@ class ProveedorController extends Controller
         $proveedor->update(['logo' => $url]);
         $user->update(['foto_perfil_url' => $url]);
 
-        return $this->success($proveedor->fresh(Proveedor::eagerLodable()));
+        return $this->success([
+            'proveedor' => new ProveedorResource(($proveedor->fresh(Proveedor::eagerLodable()))),
+            'user' => new UserResource(($user->fresh(User::eagerLodable()))),
+        ]);
     }
 
     /**

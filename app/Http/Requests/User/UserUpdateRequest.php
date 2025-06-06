@@ -35,8 +35,8 @@ class UserUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique('users', 'email')->ignore($userId),
             ],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'], // opcional, solo si cambia
-            'role' => ['nullable', 'string', 'in:admin,uDser,editor'],
+            // 'password' => ['nullable', 'string', 'min:8', 'confirmed'], // opcional, solo si cambia
+            // 'role' => ['nullable', 'string', 'in:admin,uDser,editor'],
         ];
     }
 

@@ -64,7 +64,7 @@ class Proveedor extends BaseModel
         'pagina_web',
         'email',
         'telefono',
-        
+
         'rfc',
         'tipo_persona',
         'direccion_fiscal',
@@ -118,8 +118,8 @@ class Proveedor extends BaseModel
         'tipos_empresa' => 'tipos_empresa',
         'otro_tipos_empresa' => 'otro_tipos_empresa',
         'descripcion_giro_empresa' => 'descripcion_giro_empresa',
-        'Direccion_empresa' => 'Direccion_empresa',
-        'Ubicacion' => 'Ubicacion',
+        'direccion_empresa' => 'fireccion_empresa',
+        'ubicacion' => 'ubicacion',
         'pagina_web' => 'pagina_web',
     ];
 
