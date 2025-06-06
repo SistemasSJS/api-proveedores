@@ -20,35 +20,29 @@ use App\Http\Controllers\ProveedorUsuarioController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TipoEmpresaController;
 
-Route::post('import', [ImportProductoController::class, 'import']);
-
-
+// Route::post('import', [ImportProductoController::class, 'import']);
 // Route::get('test', [ProveedorController::class, 'test']);
+// Route::post('upload', [FileUploadController::class, 'store'])->name('upload');
 
-Route::post('upload', [FileUploadController::class, 'store'])->name('upload');
-
-
-
-/**
- * RUTAS DE AUTENTICACION
- */
-Route::post('login', [AuthController::class, 'login']);
 
 
 /**
- * Rutas Publicas. Que no necesitan procteccion
- * FIXME: Config Access Api Token on all routes, and settings CORDS. 
- * TODO: Verificar configuracion de origen para las petiones.  
+ * RUTAS DE AUTENTICACION Y REGISTRO DE USUASIROS
  */
+Route::prefix('auth')->group(function () {
+    Route::post('login', [AuthController::class, 'login']);
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('completar-registro', [AuthController::class, 'register_completar']);
+    Route::post('register_proveedor', [AuthController::class, 'register_proveedor']);
+    Route::post('register_proveedor_completar', [AuthController::class, 'register_proveedor_completar']);
 
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('me', [AuthController::class, 'me']);  // Obtener datos del proveedor autenticado
+        Route::get('logout', [AuthController::class, 'logout']);  // Obtener datos del proveedor autenticado
+        Route::post('update-img-perfil', [AuthController::class, 'update_foto_perfil']);  // Obtener datos del proveedor autenticado
+    });
+});
 
-/**
- * Registro DE USUASIROS
- */
-Route::post('auth/register', [AuthController::class, 'register']);
-Route::post('auth/completar-registro', [AuthController::class, 'register_completar']);
-Route::post('register_proveedor', [AuthController::class, 'register_proveedor']);
-Route::post('register_proveedor_completar', [AuthController::class, 'register_proveedor_completar']);
 
 
 /**
@@ -69,9 +63,7 @@ Route::middleware(
     'auth:sanctum'
 )->group(function () {
 
-    Route::get('me', [AuthController::class, 'me']);  // Obtener datos del proveedor autenticado
-    Route::get('logout', [AuthController::class, 'logout']);  // Obtener datos del proveedor autenticado
-    Route::post('update-img-perfil', [AuthController::class, 'update_foto_perfil']);  // Obtener datos del proveedor autenticado
+
 
 
     Route::middleware(
@@ -86,7 +78,7 @@ Route::middleware(
         Route::patch('proveedores/{proveedor}', [ProveedorController::class, 'update']);
 
         /**
-         * TODO: Gestion de usarios de proveedor: Adaptar similar a la  de catalogos 
+         * TODO: Gestion de usarios de proveedor: Adaptar similar a la  de catalogos
          */
         Route::controller(ProveedorUsuarioController::class)->group(function () {
             Route::post('proveedores/{proveedor}/users', 'store');
