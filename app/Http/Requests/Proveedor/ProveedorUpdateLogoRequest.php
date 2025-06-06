@@ -30,7 +30,7 @@ class ProveedorUpdateLogoRequest extends FormRequest
                 'image',
                 'mimes:jpeg,png,jpg',
                 'max:2048', // tamaño máximo en KB (2MB)
-                'dimensions:min_width=200,min_height=200,max_width=1000,max_height=1000,ratio=1/1',
+                // 'dimensions:min_width=200,min_height=200,max_width=1000,max_height=1000,ratio=1/1',
             ],
         ];
     }

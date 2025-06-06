@@ -56,12 +56,11 @@ class ProveedorUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // 'logo' => ['nullable','image','mimes:jpeg,png,jpg','max:2048', ],
+            // 'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048',],
             'nombre_comercial' => ['nullable', 'string', 'max:255'],
             'pagina_web' => ['nullable', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:15'],
-
             'nombre_propietario' => ['nullable', 'string', 'max:255'],
             'nombre_de_quien_registra' => ['nullable', 'string', 'max:255'],
             'razon_social' => ['nullable', 'string', 'max:255'],
@@ -86,7 +85,7 @@ class ProveedorUpdateRequest extends FormRequest
             'logo.image' => 'El archivo debe ser una imagen válida.',
             'logo.mimes' => 'La imagen debe estar en formato JPG o PNG.',
             'logo.max' => 'La imagen no debe pesar más de 2MB.',
-            
+
             'nombre_propietario.string' => 'El nombre del propietario debe ser una cadena de texto.',
             'nombre_propietario.max' => 'El nombre del propietario no debe exceder los 255 caracteres.',
 

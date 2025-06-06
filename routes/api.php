@@ -63,9 +63,6 @@ Route::middleware(
     'auth:sanctum'
 )->group(function () {
 
-
-
-
     Route::middleware(
         'role:'
             . UserRoleEnumerate::PROVEEDOR->value . ','
@@ -73,12 +70,27 @@ Route::middleware(
             . UserRoleEnumerate::ADMIN->value
     )->group(function () {
 
-        Route::post('proveedor/update-logo', [ProveedorController::class, 'updateLogo']);
-        Route::get('proveedor/user/{id}', [ProveedorController::class, 'getProveedorByUserId']);
-        Route::patch('proveedores/{proveedor}', [ProveedorController::class, 'update']);
+        /**
+         *
+         */
+        // Route::post('proveedor/update-logo', [ProveedorController::class, 'updateLogo']);
+        // Route::get('proveedor/user/{id}', [ProveedorController::class, 'getProveedorByUserId']);
+        // Route::patch('proveedores/{proveedor}', [ProveedorController::class, 'update']);
+        Route::controller(ProveedorController::class)->group(function () {
+            Route::get('proveedores', 'index');
+            Route::post('proveedores', 'store');
+            Route::get('proveedores/{proveedor}', 'show');
+            Route::patch('proveedores/{proveedor}', 'update'); // PATCH también es válido
+            Route::delete('proveedores/{proveedor}', 'destroy');
+            Route::post('proveedores/update-logo', 'updateLogo');
+            Route::get('proveedores/user/{id}', 'getProveedorByUserId');
+        });
 
         /**
-         * TODO: Gestion de usarios de proveedor: Adaptar similar a la  de catalogos
+         * TODO: Gestion de recursos del proveedor adaptado similar al manejo de catalogos:
+         *      - [ ] Users
+         *      - [ ] Productos
+         *      - [ ] Sucursales
          */
         Route::controller(ProveedorUsuarioController::class)->group(function () {
             Route::post('proveedores/{proveedor}/users', 'store');

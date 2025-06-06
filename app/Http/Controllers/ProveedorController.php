@@ -52,11 +52,17 @@ class ProveedorController extends Controller
             Storage::disk('public')->delete($rutaAnterior);
         }
 
+        if ($user->foto_perfil_url !== null) {
+            $rutaAnterior = str_replace(asset('storage') . '/', '', $user->foto_perfil_url);
+            Storage::disk('public')->delete($rutaAnterior);
+        }
+
         $file = $request->file('logo');
         $filename = 'logo_' . $proveedor->id . '_' . time() . '.' . $file->getClientOriginalExtension();
         $path = $file->storeAs("uploads", $filename, 'public');
         $url = asset("storage/{$path}");
         $proveedor->update(['logo' => $url]);
+        $user->update(['foto_perfil_url' => $url]);
 
         return $this->success($proveedor->fresh(Proveedor::eagerLodable()));
     }
@@ -97,6 +103,7 @@ class ProveedorController extends Controller
     }
 
 
+
     /**
      * @OA\Get(
      *     path="/api/proveedores",
@@ -111,9 +118,7 @@ class ProveedorController extends Controller
      */
     public function index(Request $request)
     {
-        $fields = Proveedor::getFilters();
-        $filters = $request->only($fields);
-
+        $filters = $request->only(Proveedor::getFilters());
         $sortBy = $request->input('sort_by', 'nombre_comercial');
         $order = $request->input('order', 'asc');
 
@@ -121,9 +126,9 @@ class ProveedorController extends Controller
             ->filter($filters)
             ->orderBy($sortBy, $order)
             ->paginate(10);
+        $data = ProveedorResource::collection($originalPaginator)->resolve();
 
-        $proveedores = ProveedorResource::collection($originalPaginator)->resolve();
-        return $this->paginated($originalPaginator->setCollection(collect($proveedores)));
+        return $this->paginated($originalPaginator->setCollection(collect($data)));
     }
 
     /**
@@ -148,14 +153,14 @@ class ProveedorController extends Controller
      *     )
      * )
      */
-    public function show($id)
+    public function show(Request $request, Proveedor $proveedor)
     {
-        $proveedor = Proveedor::with(Proveedor::eagerLodable())->find($id);
-        if (!$proveedor) {
-            throw new ResourceNotFoundException("Proveedor no encontrado.");
-        }
+        // $proveedor = Proveedor::with(Proveedor::eagerLodable())->find($id);
+        // if (!$proveedor) {
+        //     throw new ResourceNotFoundException("Proveedor no encontrado.");
+        // }
 
-        return $this->success($proveedor);
+        return $this->success(new ProveedorResource($proveedor));
     }
 
     /**
@@ -183,41 +188,11 @@ class ProveedorController extends Controller
     public function update(ProveedorUpdateRequest $request, Proveedor $proveedor)
     {
         $validated = $request->validated();
-
-        if ($request->hasFile('logo')) {
-            // Eliminar archivo anterior si existe
-            if ($proveedor->logo) {
-                // Extraer la ruta relativa desde la URL almacenada
-                $rutaAnterior = str_replace(asset('storage') . '/', '', $proveedor->logo);
-                Storage::disk('public')->delete($rutaAnterior);
-            }
-
-            // Guardar el nuevo archivo
-            $file = $request->file('logo');
-            $filename = 'logo_' . $proveedor->id . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('uploads', $filename, 'public');
-            $url = asset("storage/{$path}");
-
-            // Actualizar sólo el campo logo en el modelo
-            $proveedor->logo = $url;
-        }
-
-        // Actualizar el resto de los campos (excepto logo para no sobrescribir)
-        // Puedes excluir 'logo' de $validated si viene ahí para evitar sobrescribirlo
-        $datosActualizar = collect($validated)->except('logo')->toArray();
-
-        $proveedor->update($datosActualizar);
-
-        // Guardar el modelo si hubo cambio en logo
-        if ($request->hasFile('logo')) {
-            $proveedor->save();
-        }
-
-        // Recargar relaciones y datos actualizados
-        $proveedor->fresh(Proveedor::eagerLodable());
-
-        return $this->success($proveedor, 'Proveedor actualizado con éxito.', 200);
+        $proveedor->update($validated);
+        $proveedor = $proveedor->fresh(Proveedor::eagerLodable());
+        return $this->success(new ProveedorResource($proveedor), 'Proveedor actualizado con éxito.', 200);
     }
+
 
 
     /**

@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
-use App\Http\Requests\UserUpdateRequest;
+use App\Http\Requests\User\UserStoreRequest;
+use App\Http\Requests\User\UserUpdateRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -65,7 +66,7 @@ class UserController extends Controller
      *     @OA\Response(response=201, description="Usuario creado")
      * )
      */
-    public function store(UserUpdateRequest $request)
+    public function store(UserStoreRequest $request)
     {
         $user = User::create($request->validate());
         return $this->success([
@@ -87,9 +88,9 @@ class UserController extends Controller
     public function show($id)
     {
         $user = User::find($id);
-    if (!$user){
-        throw new ResourceNotFoundException("Usuario no encontrado.");
-    }
+        if (!$user) {
+            throw new ResourceNotFoundException("Usuario no encontrado.");
+        }
         return $this->success($user);
     }
 
