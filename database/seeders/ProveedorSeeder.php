@@ -3,35 +3,96 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use App\Models\Proveedor;
 use App\Models\User;
+use App\Models\TipoEmpresa;
+use Illuminate\Support\Facades\DB;
 
 class ProveedorSeeder extends Seeder
 {
     public function run()
     {
         DB::transaction(function () {
-            for ($i = 0; $i < 10; $i++) {
-                // 1. Crear usuario principal (dueño)
-                if ($i == 0) {
-                    $userMain = User::factory()->proveedor()->create(['email'=> 'test@test.com']);
-                }else {
-                    $userMain = User::factory()->proveedor()->create();
+            // === PROVEEDOR 1: Fierro y Lámina ===
+            $user1 = User::factory()->proveedor()->create(['email' => 'contacto@fierroylaminadigital.mx']);
+            $tipo1 = TipoEmpresa::where('clave', 'comercial')->first();
 
-                }
+            $proveedor1 = Proveedor::factory()->create([
+                'nombre_comercial' => 'Fierro y Lámina',
+                'razon_social' => 'Fierro y Lámina S.A. de C.V.',
+                'rfc' => 'FILM750101XYZ',
+                'email' => 'ventas@fierroylaminadigital.mx',
+                'telefono' => '6671234567',
+                'logo' => 'http://192.168.0.132:8080/storage/uploads/logo_fierro_y_lamina.png',
+                'pagina_web' => 'https://www.fierroylaminadigital.mx/',
+                'tipos_empresa_id' => $tipo1->id,
+                'descripcion_giro_empresa' => 'Distribuidor de materiales de construcción',
+                'direccion_empresa' => 'Blvd. Pedro Infante 123, Culiacán, Sinaloa',
+                'estado' => 'Sinaloa',
+                'municipio' => 'Culiacán',
+                'codigo_postal' => '80000',
+                'nombre_propietario' => 'Juan Fierro',
+                'nombre_de_quien_registra' => 'Ana López',
+                'contacto_nombre' => 'Carlos Ramírez',
+                'contacto_cargo' => 'Ventas',
+                'contacto_telefono' => '6678901234',
+                'contacto_correo' => 'carlos.ramirez@fierroylaminadigital.mx',
+            ]);
+            $user1->proveedores()->attach($proveedor1->id, ['is_main' => true]);
 
-                // 2. Crear proveedor
-                $proveedor = Proveedor::factory()->create();
+            // === PROVEEDOR 2: Truper ===
+            $user2 = User::factory()->proveedor()->create(['email' => 'proveedor@truper.com']);
+            $tipo2 = TipoEmpresa::where('clave', 'industrial')->first();
 
-                // 3. Asociar proveedor al usuario principal
-                $userMain->proveedores()->attach($proveedor->id, ['is_main' => true]);
+            $proveedor2 = Proveedor::factory()->create([
+                'nombre_comercial' => 'Truper',
+                'razon_social' => 'Truper S.A. de C.V.',
+                'rfc' => 'TRU850101XYZ',
+                'email' => 'contacto@truper.com',
+                'telefono' => '8000187873',
+                'logo' => 'http://192.168.0.132:8080/storage/uploads/logo_truper.png',
+                'pagina_web' => 'https://www.truper.com/',
+                'tipos_empresa_id' => $tipo2->id,
+                'descripcion_giro_empresa' => 'Fabricación y distribución de herramientas',
+                'direccion_empresa' => 'Carretera México-Laredo Km 155, Jilotepec, Estado de México',
+                'estado' => 'Estado de México',
+                'municipio' => 'Jilotepec',
+                'codigo_postal' => '54240',
+                'nombre_propietario' => 'Roberto Trujillo',
+                'nombre_de_quien_registra' => 'Laura Méndez',
+                'contacto_nombre' => 'Fernando Pérez',
+                'contacto_cargo' => 'Gerente Comercial',
+                'contacto_telefono' => '5556781234',
+                'contacto_correo' => 'fernando.perez@truper.com',
+            ]);
+            $user2->proveedores()->attach($proveedor2->id, ['is_main' => true]);
 
-                // 4. Crear usuarios secundarios asociados al proveedor
-                User::factory(3)->proveedor()->create()->each(function ($user) use ($proveedor) {
-                    $user->proveedores()->attach($proveedor->id, ['is_main' => false]);
-                });
-            }
+            // === PROVEEDOR 3: Ejemplo ficticio ===
+            $user3 = User::factory()->proveedor()->create(['email' => 'demo@elgrangero.com']);
+            $tipo3 = TipoEmpresa::where('clave', 'obra_civil')->first();
+
+            $proveedor3 = Proveedor::factory()->create([
+                'nombre_comercial' => 'Granjas ElGranGero',
+                'razon_social' => 'Granjas ElGranGero S.A. de C.V.',
+                'rfc' => 'COEX900101XYZ',
+                'email' => 'contacto@elgrangero.com',
+                'telefono' => '4491234567',
+                'logo' => 'http://192.168.0.132:8080/storage/uploads/logo_el_gran_gero.png',
+                'pagina_web' => 'https://www.elgrangero.com',
+                'tipos_empresa_id' => $tipo3->id,
+                'descripcion_giro_empresa' => 'Obra civil y pavimentación',
+                'direccion_empresa' => 'Av. Central 456, Aguascalientes, Ags.',
+                'estado' => 'Aguascalientes',
+                'municipio' => 'Aguascalientes',
+                'codigo_postal' => '20000',
+                'nombre_propietario' => 'Patricia Torres',
+                'nombre_de_quien_registra' => 'Luis Gómez',
+                'contacto_nombre' => 'Verónica Salas',
+                'contacto_cargo' => 'Asistente Administrativo',
+                'contacto_telefono' => '4492345678',
+                'contacto_correo' => 'veronica@elgrangero.com',
+            ]);
+            $user3->proveedores()->attach($proveedor3->id, ['is_main' => true]);
         });
     }
 }

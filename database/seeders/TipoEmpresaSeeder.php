@@ -9,20 +9,26 @@ class TipoEmpresaSeeder extends Seeder
 {
     public function run()
     {
+        // Puedes generar una constante enum después, por ahora usamos nombres fijos
         $tipos_empresas = [
-            "Constructora de Obra Civil",
-            "Constructora de Vivienda",
-            "Constructora de Obra Comercial",
-            "Constructora Industrial",
-            "Constructora de Obra Pública",
-            "Empresa de Remodelación y Mantenimiento",
-            "Empresa de Urbanización",
-            "Empresa de Construcción Sostenible",
-            "Empresa de Servicios Especializados",
-            "Desarrolladora Inmobiliaria",
+            'otro' => "Otro",
+            'obra_civil' => "Constructora de Obra Civil",
+            'vivienda' => "Constructora de Vivienda",
+            'comercial' => "Constructora de Obra Comercial",
+            'industrial' => "Constructora Industrial",
+            'obra_publica' => "Constructora de Obra Pública",
+            'remodelacion' => "Empresa de Remodelación y Mantenimiento",
+            'urbanizacion' => "Empresa de Urbanización",
+            'sostenible' => "Empresa de Construcción Sostenible",
+            'especializados' => "Empresa de Servicios Especializados",
+            'desarrolladora' => "Desarrolladora Inmobiliaria",
         ];
-        foreach ($tipos_empresas as $name) {
-            TipoEmpresa::factory()->create(['nombre' => $name]);
+
+        foreach ($tipos_empresas as $key => $nombre) {
+            TipoEmpresa::factory()->create([
+                'clave' => $key,
+                'nombre' => $nombre
+            ]);
         }
     }
 }

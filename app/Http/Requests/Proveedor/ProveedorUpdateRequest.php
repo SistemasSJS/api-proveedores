@@ -7,6 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * @OA\Schema(
  *     schema="ProveedorUpdateRequest",
+ *     required={
  *         "nombre_propietario",
  *         "nombre_de_quien_registra",
  *         "nombre_comercial",

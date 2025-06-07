@@ -12,6 +12,7 @@ class TipoEmpresaFactory extends Factory
     {
         return [
             'nombre' => $this->faker->name,
+            'clave' => $this->faker->name,
             'estatus' => 'activo',
         ];
     }

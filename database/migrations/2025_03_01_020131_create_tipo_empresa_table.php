@@ -9,7 +9,8 @@ return new class extends Migration {
     {
         Schema::create('tipos_empresa', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre')->unique();
+            $table->string('clave')->unique();
+            $table->string('nombre');
             $table->enum('estatus', ['activo', 'inactivo'])->default('activo');
             $table->timestamps();
         });
