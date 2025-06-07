@@ -14,7 +14,7 @@ class ProveedorSeeder extends Seeder
     {
         DB::transaction(function () {
             // === PROVEEDOR 1: Fierro y Lámina ===
-            $user1 = User::factory()->proveedor()->create(['email' => 'contacto@fierroylaminadigital.mx']);
+            $user1 = User::factory()->proveedor()->create(['email' => 'proveedor@fierroylaminadigital.com']);
             $tipo1 = TipoEmpresa::where('clave', 'comercial')->first();
 
             $proveedor1 = Proveedor::factory()->create([
@@ -68,7 +68,7 @@ class ProveedorSeeder extends Seeder
             $user2->proveedores()->attach($proveedor2->id, ['is_main' => true]);
 
             // === PROVEEDOR 3: Ejemplo ficticio ===
-            $user3 = User::factory()->proveedor()->create(['email' => 'demo@elgrangero.com']);
+            $user3 = User::factory()->proveedor()->create(['email' => 'proveedor@elgrangero.com']);
             $tipo3 = TipoEmpresa::where('clave', 'obra_civil')->first();
 
             $proveedor3 = Proveedor::factory()->create([

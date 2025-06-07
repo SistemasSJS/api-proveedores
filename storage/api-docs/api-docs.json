@@ -668,6 +668,72 @@
                 ]
             }
         },
+        "/api/proveedores/{proveedor}/catalogos/{id}/productos": {
+            "get": {
+                "tags": [
+                    "Catalogo"
+                ],
+                "summary": "Obtener productos de un catálogo",
+                "operationId": "0f3a6bf1f0c9d49f6af661c9bbfc0ba3",
+                "parameters": [
+                    {
+                        "name": "proveedor",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Buscar por nombre o código",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sort_by",
+                        "in": "query",
+                        "description": "Campo para ordenar",
+                        "schema": {
+                            "type": "string",
+                            "example": "nombre"
+                        }
+                    },
+                    {
+                        "name": "order",
+                        "in": "query",
+                        "description": "asc o desc",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado paginado de productos"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/categorias": {
             "get": {
                 "tags": [
@@ -4180,6 +4246,10 @@
                     "nombre": {
                         "type": "string",
                         "example": "Pequeña"
+                    },
+                    "clave": {
+                        "type": "string",
+                        "example": "pequeña"
                     },
                     "estatus": {
                         "type": "string",

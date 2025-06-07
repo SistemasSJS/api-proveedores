@@ -111,6 +111,7 @@ Route::middleware(
                 Route::get('catalogos/{catalogo}', [CatalogoController::class, 'show']);
                 Route::put('catalogos/{catalogo}', [CatalogoController::class, 'update']);
                 Route::delete('catalogos/{catalogo}', [CatalogoController::class, 'destroy']);
+                Route::get('catalogos/{catalogo}/productos', [CatalogoController::class, 'productos']);
             });
         });
 

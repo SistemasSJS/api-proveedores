@@ -7,6 +7,8 @@ use App\Models\Proveedor;
 use App\Http\Requests\Catalogo\CatalogoStoreRequest;
 use App\Http\Requests\Catalogo\CatalogoUpdateRequest;
 use App\Http\Resources\CatalogoResource;
+use App\Http\Resources\ProductoResource;
+use App\Models\Producto;
 use Illuminate\Http\Request;
 use App\Traits\ApiResponse;
 
@@ -135,5 +137,47 @@ class CatalogoController extends Controller
         $catalogo->delete();
 
         return $this->success(null, 204);
+    }
+
+
+    /**
+     * @OA\Get(
+     *     path="/api/proveedores/{proveedor}/catalogos/{id}/productos",
+     *     summary="Obtener productos de un catálogo",
+     *     tags={"Catalogo"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(name="proveedor", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="search", in="query", description="Buscar por nombre o código", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="sort_by", in="query", description="Campo para ordenar", @OA\Schema(type="string", example="nombre")),
+     *     @OA\Parameter(name="order", in="query", description="asc o desc", @OA\Schema(type="string", enum={"asc", "desc"})),
+     *     @OA\Response(response=200, description="Listado paginado de productos")
+     * )
+     */
+    public function productos(Request $request, Proveedor $proveedor, $id)
+    {
+        return $this->success([], 'enro');
+        $catalogo = Catalogo::findOrFail($id);
+
+        if ($catalogo->proveedor_id !== $proveedor->id) {
+            abort(403, 'No autorizado para ver los productos de este catálogo.');
+        }
+
+        $query = $catalogo->productos()->with(Producto::eagerLodable());
+
+        $fields = Producto::getFilters();
+        $filters = $request->only($fields);
+
+        $sortBy = $request->input('sort_by', 'nombre_comercial'); // Default sort by 'nombre_comercial'
+        $order = $request->input('order', 'asc'); // Default order is 'asc'
+
+        $paginator = $query
+            ->filter($filters)
+            ->orderBy($sortBy, $order)
+            ->paginate(10);
+
+        return $this->paginated(
+            $paginator->setCollection(ProductoResource::collection($paginator->items())->collection)
+        );
     }
 }
