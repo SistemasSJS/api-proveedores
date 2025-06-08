@@ -71,57 +71,51 @@ Route::middleware(
     )->group(function () {
 
         /**
-         *
+         * Gestión de proveedores
          */
-        // Route::post('proveedor/update-logo', [ProveedorController::class, 'updateLogo']);
-        // Route::get('proveedor/user/{id}', [ProveedorController::class, 'getProveedorByUserId']);
-        // Route::patch('proveedores/{proveedor}', [ProveedorController::class, 'update']);
-        Route::controller(ProveedorController::class)->group(function () {
-            Route::get('proveedores', 'index');
-            Route::post('proveedores', 'store');
-            Route::get('proveedores/{proveedor}', 'show');
-            Route::patch('proveedores/{proveedor}', 'update'); // PATCH también es válido
-            Route::delete('proveedores/{proveedor}', 'destroy');
-            Route::post('proveedores/update-logo', 'updateLogo');
-            Route::get('proveedores/user/{id}', 'getProveedorByUserId');
-        });
+        Route::prefix('proveedores')->group(function () {
 
-        /**
-         * TODO: Gestion de recursos del proveedor adaptado similar al manejo de catalogos:
-         *      - [ ] Users
-         *      - [ ] Productos
-         *      - [ ] Sucursales
-         */
-        Route::controller(ProveedorUsuarioController::class)->group(function () {
-            Route::post('proveedores/{proveedor}/users', 'store');
-            Route::get('proveedores/{proveedor}/users', 'index');
-            Route::get('proveedores/{proveedor}/users/{user}', 'getById');
-            Route::patch('proveedores/{proveedor}/users/{user}', 'update');
-            Route::delete('proveedores/{proveedor}/users/{user}', 'destroy');
-        });
+            // CRUD de proveedores
+            Route::controller(ProveedorController::class)->group(function () {
+                Route::get('/', 'index');
+                Route::post('/', 'store');
+                Route::get('{proveedor}', 'show');
+                Route::patch('{proveedor}', 'update');
+                Route::delete('{proveedor}', 'destroy');
 
-        /**
-         * Gestion de catalogos de proveedor
-         */
-        Route::prefix('proveedores/{proveedor}')->group(function () {
-            Route::apiResource('catalogos', CatalogoController::class)
-                ->except(['show', 'update', 'destroy']);
+                // Extras RESTful
+                Route::post('{proveedor}/logo', 'updateLogo');
+            });
 
-            Route::middleware('catalogo.proveedor')->group(function () {
-                Route::get('catalogos/{catalogo}', [CatalogoController::class, 'show']);
-                Route::put('catalogos/{catalogo}', [CatalogoController::class, 'update']);
-                Route::delete('catalogos/{catalogo}', [CatalogoController::class, 'destroy']);
-                Route::get('catalogos/{catalogo}/productos', [CatalogoController::class, 'productos']);
+            // Usuarios asociados al proveedor
+            Route::prefix('{proveedor}/users')->controller(ProveedorUsuarioController::class)->group(function () {
+                Route::get('/', 'index');
+                Route::post('/', 'store');
+                Route::get('{user}', 'getById');
+                Route::patch('{user}', 'update');
+                Route::delete('{user}', 'destroy');
+            });
+
+            // Gestión de catálogos del proveedor
+            Route::prefix('{proveedor}/catalogos')->group(function () {
+                // Rutas sin middleware
+                Route::get('/', [CatalogoController::class, 'index']);
+                Route::post('/', [CatalogoController::class, 'store']);
+
+                // Rutas protegidas por el middleware de catálogo
+                Route::middleware('catalogo.proveedor')->group(function () {
+                    Route::get('{catalogo}', [CatalogoController::class, 'show']);
+                    Route::put('{catalogo}', [CatalogoController::class, 'update']);
+                    Route::delete('{catalogo}', [CatalogoController::class, 'destroy']);
+                    Route::get('{catalogo}/productos', [CatalogoController::class, 'productos']);
+                });
             });
         });
 
         /**
-         * TODO: Gestion de Sucursales.... Similar a la de catalogos
+         * Extra: Obtener proveedor por ID de usuario
          */
-        Route::prefix('proveedores/{id}')->group(function () {
-            Route::get('productos', [ProveedorController::class, 'productosPorProveedor']);
-            Route::get('sucursales', [ProveedorController::class, 'sucursalesPorProveedor']);
-        });
+        Route::get('proveedores/user/{id}', [ProveedorController::class, 'getProveedorByUserId']);
     });
 
     /**

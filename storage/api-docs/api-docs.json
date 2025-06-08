@@ -11,7 +11,7 @@
     },
     "servers": [
         {
-            "url": "http://192.168.0.132:8080",
+            "url": "http://localhost:8080",
             "description": "Servidor local: SQLite"
         }
     ],
@@ -105,13 +105,13 @@
                 }
             }
         },
-        "/api/register_proveedor": {
+        "/api/auth/register_proveedor": {
             "post": {
                 "tags": [
                     "Autenticación"
                 ],
                 "summary": "Registrar un nuevo proveedor",
-                "operationId": "066e9cfd024f35a5281304b7067d55fd",
+                "operationId": "ec785d6493e726f8129ea81dc3678eff",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -134,13 +134,13 @@
                 ]
             }
         },
-        "/api/register_proveedor_completar": {
+        "/api/auth/register_proveedor_completar": {
             "post": {
                 "tags": [
                     "Autenticación"
                 ],
                 "summary": "Completar registro de proveedor",
-                "operationId": "fac665db243041cf5071a5f4e7927646",
+                "operationId": "f8daf1db4691b29221fb257e67c74059",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -163,13 +163,13 @@
                 ]
             }
         },
-        "/api/update-foto-perfil": {
+        "/api/auth/update-foto-perfil": {
             "post": {
                 "tags": [
                     "Autenticación"
                 ],
                 "summary": "Actualizar foto de perfil",
-                "operationId": "ff70459930cee93cfafb746ad638d180",
+                "operationId": "0d6c05fe5c16e089c8d0f464cf140ad7",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -214,13 +214,13 @@
                 ]
             }
         },
-        "/api/login": {
+        "/api/auth/login": {
             "post": {
                 "tags": [
                     "Autenticación"
                 ],
                 "summary": "Autenticación de usuario",
-                "operationId": "a3b306d14572d1f4bd6c064b3233e7b8",
+                "operationId": "8dcb70df1020986038d098cc08d05dae",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -345,13 +345,13 @@
                 }
             }
         },
-        "/api/me": {
+        "/api/auth/me": {
             "get": {
                 "tags": [
                     "Autenticación"
                 ],
                 "summary": "Obtener información del usuario autenticado",
-                "operationId": "9d9bc556f927575aa492a88c28fe5908",
+                "operationId": "b9abb1a7a74670a19c215c2c133f14d8",
                 "responses": {
                     "200": {
                         "description": "Usuario autenticado",
@@ -399,13 +399,13 @@
                 ]
             }
         },
-        "/api/logout": {
+        "/api/auth/logout": {
             "post": {
                 "tags": [
                     "Autenticación"
                 ],
                 "summary": "Cerrar sesión y revocar tokens",
-                "operationId": "fe8f3429cd6979b3b4517e186505f9f9",
+                "operationId": "69281b12abb272c76871f19cb17ca563",
                 "responses": {
                     "200": {
                         "description": "Sesión cerrada correctamente",

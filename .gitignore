@@ -174,3 +174,12 @@ storage/logs
 public/hot
 storage/logs/laravel.log
 storage/logs/requests.log
+
+# Laravel
+/storage
+/vendor
+/public/build
+/.env
+
+# Log files
+/storage/logs

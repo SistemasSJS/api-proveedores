@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Models\Catalogo;
 use App\Models\Proveedor;
 use App\Http\Requests\Catalogo\CatalogoStoreRequest;
@@ -156,28 +157,19 @@ class CatalogoController extends Controller
      */
     public function productos(Request $request, Proveedor $proveedor, $id)
     {
-        return $this->success([], 'enro');
-        $catalogo = Catalogo::findOrFail($id);
-
-        if ($catalogo->proveedor_id !== $proveedor->id) {
-            abort(403, 'No autorizado para ver los productos de este catálogo.');
+        $catalogo = Catalogo::with(Catalogo::eagerLodable())->find($id);
+        if (!$catalogo) {
+            throw new ResourceNotFoundException("Producto no encontrado.");
         }
-
         $query = $catalogo->productos()->with(Producto::eagerLodable());
 
-        $fields = Producto::getFilters();
-        $filters = $request->only($fields);
+        $filters = $request->only(Producto::getFilters());
+        $sortBy = $request->input('sort_by', 'nombre_comercial');
+        $order = $request->input('order', 'asc');
 
-        $sortBy = $request->input('sort_by', 'nombre_comercial'); // Default sort by 'nombre_comercial'
-        $order = $request->input('order', 'asc'); // Default order is 'asc'
+        $paginator = $query->filter($filters)->orderBy($sortBy, $order)->paginate(10);
+        $data = ProductoResource::collection($paginator)->resolve();
 
-        $paginator = $query
-            ->filter($filters)
-            ->orderBy($sortBy, $order)
-            ->paginate(10);
-
-        return $this->paginated(
-            $paginator->setCollection(ProductoResource::collection($paginator->items())->collection)
-        );
+        return $this->paginated($paginator->setCollection(collect($data)));
     }
 }
