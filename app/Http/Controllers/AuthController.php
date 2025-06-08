@@ -10,7 +10,9 @@ use App\Http\Requests\Auth\AuthRegisterCompleteRequest;
 use App\Http\Requests\Auth\AuthUpdateFotoPerfilRequest;
 use App\Http\Requests\Proveedor\ProveedorRegisterCompleteRequest;
 use App\Http\Requests\Proveedor\ProveedorRegisterRequest;
+use App\Http\Resources\ProveedorResource;
 use App\Http\Resources\UserAuthenticateResource;
+use App\Http\Resources\UserResource;
 use App\Mail\CompletaRegistroProveedorMail;
 use App\Mail\CompletaRegistroUsuarioMail;
 use App\Models\Proveedor;
@@ -123,7 +125,7 @@ class AuthController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/register_proveedor",
+     *     path="/api/auth/register_proveedor",
      *     tags={"Autenticación"},
      *     summary="Registrar un nuevo proveedor",
      *     security={{"sanctum":{}}},
@@ -160,7 +162,7 @@ class AuthController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/register_proveedor_completar",
+     *     path="/api/auth/register_proveedor_completar",
      *     tags={"Autenticación"},
      *     summary="Completar registro de proveedor",
      *     security={{"sanctum":{}}},
@@ -204,14 +206,14 @@ class AuthController extends Controller
 
         return $this->success([
             'user' => new UserAuthenticateResource($user->load(User::eagerLodable())),
-            'proveedor' => $proveedor->load(Proveedor::eagerLodable()),
+            'proveedor' => new ProveedorResource($proveedor->load(Proveedor::eagerLodable())),
             'token' => $token,
         ], 'Registro completado', 201);
     }
 
     /**
      * @OA\Post(
-     *     path="/api/update-foto-perfil",
+     *     path="/api/auth/update-foto-perfil",
      *     summary="Actualizar foto de perfil",
      *     tags={"Autenticación"},
      *     security={{"sanctum":{}}},
@@ -253,7 +255,7 @@ class AuthController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/login",
+     *     path="/api/auth/login",
      *     summary="Autenticación de usuario",
      *     tags={"Autenticación"},
      *     @OA\RequestBody(
@@ -324,7 +326,7 @@ class AuthController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/me",
+     *     path="/api/auth/me",
      *     summary="Obtener información del usuario autenticado",
      *     tags={"Autenticación"},
      *     security={{"sanctum":{}}},
@@ -348,7 +350,7 @@ class AuthController extends Controller
         return $this->success(
             [
                 'success' => true,
-                'user' => $request->user()
+                'user' => new UserResource($request->user())
             ],
             'Usuario autenticado.',
             200
@@ -357,7 +359,7 @@ class AuthController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/logout",
+     *     path="/api/auth/logout",
      *     summary="Cerrar sesión y revocar tokens",
      *     tags={"Autenticación"},
      *     security={{"sanctum":{}}},

@@ -61,9 +61,9 @@ class ProveedorController extends Controller
         $file = $request->file('logo');
         $filename = 'logo_' . $proveedor->id . '_' . time() . '.' . $file->getClientOriginalExtension();
         $path = $file->storeAs("uploads", $filename, 'public');
-        $url = asset("storage/{$path}");
-        $proveedor->update(['logo' => $url]);
-        $user->update(['foto_perfil_url' => $url]);
+        // $url = asset("storage/{$path}");
+        $proveedor->update(['logo' => $path]);
+        $user->update(['foto_perfil_url' => $path]);
 
         return $this->success([
             'proveedor' => new ProveedorResource(($proveedor->fresh(Proveedor::eagerLodable()))),
@@ -103,7 +103,7 @@ class ProveedorController extends Controller
         if (!$proveedor) {
             throw new ResourceNotFoundException("Proveedor no encontrado.");
         }
-        return $this->success($proveedor->load(Proveedor::eagerLodable()));
+        return $this->success(new ProveedorResource($proveedor->load(Proveedor::eagerLodable())));
     }
 
 
