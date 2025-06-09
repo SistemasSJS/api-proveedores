@@ -19,7 +19,10 @@ class UserAuthenticateResource extends JsonResource
             'id'                => $this->id,
             'name'              => $this->name,
             'email'             => $this->email,
-            'foto_perfil_url'   => $this->foto_perfil_url,
+            // 'foto_perfil_url'   => $this->foto_perfil_url,
+
+            'foto_perfil_url' => asset('storage/' . $this->foto_perfil_url),
+
             'role'              => new RoleResource($this->whenLoaded('role')),
             /**
              * NOTE: Extra data no debería ser parte del recurso de usuario autenticado.

@@ -23,7 +23,7 @@ class MarcaController extends Controller
     public function index(Request $request)
     {
         $filters = $request->only(Marca::getFilters());
-        $originalPaginator = Marca::filter($filters)->paginate(10);
+        $originalPaginator = Marca::filter($filters)->paginate(1000);
         $marcas = MarcaResource::collection($originalPaginator)->resolve();
         return $this->paginated($originalPaginator->setCollection(collect($marcas)));
     }

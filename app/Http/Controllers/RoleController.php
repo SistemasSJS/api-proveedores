@@ -11,7 +11,7 @@ class RoleController extends Controller
     public function index(Request $request)
     {
         $filters = $request->only(Role::getFilters());
-        $originalPaginator = Role::filter($filters)->paginate(10);
+        $originalPaginator = Role::filter($filters)->paginate(1000);
         $data = RoleResource::collection($originalPaginator)->resolve();
         return $this->paginated($originalPaginator->setCollection(collect($data)));
     }

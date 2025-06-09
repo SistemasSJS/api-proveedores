@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  *     required={"nombre", "catalogo_id"},
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="nombre", type="string", example="Cemento gris 50kg"),
+ *     @OA\Property(property="logo", type="string", format="uri", example="https://misitio.com/logo.png"),
  *     @OA\Property(property="modelo_codigo", type="string", example="MX-458G-9"),
  *     @OA\Property(property="descripcion", type="string", example="Saco de cemento gris para construcción"),
  *     @OA\Property(property="sku", type="string", example="CMG-50"),
@@ -38,6 +39,8 @@ class Producto extends BaseModel
      * @var array<int, string>
      */
     protected $fillable = [
+
+        'logo',
         'catalogo_id',
         'nombre',
         'descripcion',

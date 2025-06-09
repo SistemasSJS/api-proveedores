@@ -15,6 +15,7 @@ class ProductoResource extends JsonResource
         return [
             'id'             => $this->id,
             'nombre'         => $this->nombre,
+            'logo' =>   $this->logo? asset('storage/' . $this->logo):null,
             'modelo_codigo'  => $this->modelo_codigo,
             'descripcion'    => $this->descripcion,
             'sku'            => $this->sku,

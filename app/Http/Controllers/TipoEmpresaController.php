@@ -26,7 +26,7 @@ class TipoEmpresaController extends Controller
     public function index(Request $request)
     {
         $filters = $request->only(TipoEmpresa::getFilters());
-        $originalPaginator = TipoEmpresa::filter($filters)->paginate(10);
+        $originalPaginator = TipoEmpresa::filter($filters)->paginate(1000);
         $tipoEmpresas = TipoEmpresaResource::collection($originalPaginator)->resolve();
         return $this->paginated($originalPaginator->setCollection(collect($tipoEmpresas)));
     }

@@ -25,7 +25,7 @@ class CategoriaController extends Controller
     public function index(Request $request)
     {
         $filters = $request->only(['nombre', 'estatus']);
-        $categorias = Categoria::filter($filters)->paginate(10);
+        $categorias = Categoria::filter($filters)->paginate(1000);
         return $this->paginated($categorias);
     }
 

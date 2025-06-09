@@ -16,6 +16,7 @@ use App\Http\Controllers\ImportProductoController;
 use App\Http\Controllers\UnidadMedidaController;
 use App\Http\Controllers\LineaController;
 use App\Http\Controllers\MarcaController;
+use App\Http\Controllers\ProductoCatalogoController;
 use App\Http\Controllers\ProveedorUsuarioController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TipoEmpresaController;
@@ -94,6 +95,7 @@ Route::middleware(
                 Route::get('{user}', 'getById');
                 Route::patch('{user}', 'update');
                 Route::delete('{user}', 'destroy');
+                // Route::post('{user}', 'upload_perfil');
             });
 
             // Gestión de catálogos del proveedor
@@ -105,9 +107,23 @@ Route::middleware(
                 // Rutas protegidas por el middleware de catálogo
                 Route::middleware('catalogo.proveedor')->group(function () {
                     Route::get('{catalogo}', [CatalogoController::class, 'show']);
-                    Route::put('{catalogo}', [CatalogoController::class, 'update']);
+                    Route::patch('{catalogo}', [CatalogoController::class, 'update']);
                     Route::delete('{catalogo}', [CatalogoController::class, 'destroy']);
-                    Route::get('{catalogo}/productos', [CatalogoController::class, 'productos']);
+                    Route::post('{catalogo}', [CatalogoController::class, 'upload_perfil']);
+
+
+                    // Rutas productos
+                    Route::prefix('{catalogo}/productos')->group(function () {
+                        Route::get('/', [ProductoCatalogoController::class, 'index']);
+                        Route::post('/', [ProductoCatalogoController::class, 'store']);
+
+                        Route::middleware('catalogo.producto')->group(function () {
+                            Route::get('{producto}', [ProductoCatalogoController::class, 'show']);
+                            Route::patch('{producto}', [ProductoCatalogoController::class, 'update']);
+                            Route::post('{producto}/logo', [ProductoCatalogoController::class, 'updateLogo']);
+                            // Route::delete('{producto}', [ProductoCatalogoController::class, 'destroy']);
+                        });
+                    });
                 });
             });
         });

@@ -140,36 +140,16 @@ class CatalogoController extends Controller
         return $this->success(null, 204);
     }
 
-
-    /**
-     * @OA\Get(
-     *     path="/api/proveedores/{proveedor}/catalogos/{id}/productos",
-     *     summary="Obtener productos de un catálogo",
-     *     tags={"Catalogo"},
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(name="proveedor", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Parameter(name="search", in="query", description="Buscar por nombre o código", @OA\Schema(type="string")),
-     *     @OA\Parameter(name="sort_by", in="query", description="Campo para ordenar", @OA\Schema(type="string", example="nombre")),
-     *     @OA\Parameter(name="order", in="query", description="asc o desc", @OA\Schema(type="string", enum={"asc", "desc"})),
-     *     @OA\Response(response=200, description="Listado paginado de productos")
-     * )
-     */
-    public function productos(Request $request, Proveedor $proveedor, $id)
+    public function upload_perfil(Request $request, Proveedor $proveedor, $id)
     {
-        $catalogo = Catalogo::with(Catalogo::eagerLodable())->find($id);
-        if (!$catalogo) {
-            throw new ResourceNotFoundException("Producto no encontrado.");
+        $catalogo = Catalogo::findOrFail($id);
+
+        if ($catalogo->proveedor_id !== $proveedor->id) {
+            abort(403, 'No autorizado para eliminar este catálogo.');
         }
-        $query = $catalogo->productos()->with(Producto::eagerLodable());
 
-        $filters = $request->only(Producto::getFilters());
-        $sortBy = $request->input('sort_by', 'nombre_comercial');
-        $order = $request->input('order', 'asc');
+        $catalogo->delete();
 
-        $paginator = $query->filter($filters)->orderBy($sortBy, $order)->paginate(10);
-        $data = ProductoResource::collection($paginator)->resolve();
-
-        return $this->paginated($paginator->setCollection(collect($data)));
+        return $this->success(null, 204);
     }
 }

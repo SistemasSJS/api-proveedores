@@ -23,7 +23,7 @@ class LineaController extends Controller
     public function index(Request $request)
     {
         $filters = $request->only(Linea::getFilters());
-        $originalPaginator = Linea::filter($filters)->paginate(10);
+        $originalPaginator = Linea::filter($filters)->paginate(1000);
         $lineas = LineaResource::collection($originalPaginator)->resolve();
         return $this->paginated($originalPaginator->setCollection(collect($lineas)));
     }

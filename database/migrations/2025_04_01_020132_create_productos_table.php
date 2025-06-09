@@ -15,6 +15,7 @@ class CreateProductosTable extends Migration
             $table->id();
             $table->foreignId('catalogo_id')->index()->constrained('catalogos')->onDelete('cascade');
             $table->string('nombre');
+            $table->string('logo')->nullable();
             $table->text('descripcion')->nullable();
             $table->string('sku')->nullable();
             $table->string('modelo_codigo')->nullable();

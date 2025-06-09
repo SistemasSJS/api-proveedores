@@ -23,7 +23,7 @@ class UnidadMedidaController extends Controller
     public function index(Request $request)
     {
         $filters = $request->only(UnidadMedida::getFilters());
-        $originalPaginator = UnidadMedida::filter($filters)->paginate(10);
+        $originalPaginator = UnidadMedida::filter($filters)->paginate(1000);
         $unidadMedida = UnidadMedidaResource::collection($originalPaginator)->resolve();
         return $this->paginated($originalPaginator->setCollection(collect($unidadMedida)));
     }
