@@ -40,7 +40,7 @@ class ProveedorController extends Controller
      *     )
      * )
      */
-    public function updateLogo(ProveedorUpdateLogoRequest $request)
+    public function updateLogo(ProveedorUpdateLogoRequest $request, Proveedor $proveedor)
     {
         $user = $request->user();
         $proveedor = $user->mainProveedor()->first();
