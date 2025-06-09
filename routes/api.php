@@ -21,7 +21,7 @@ use App\Http\Controllers\ProveedorUsuarioController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TipoEmpresaController;
 
-// Route::post('import', [ImportProductoController::class, 'import']);
+Route::post('import', [ImportProductoController::class, 'import']);
 // Route::get('test', [ProveedorController::class, 'test']);
 // Route::post('upload', [FileUploadController::class, 'store'])->name('upload');
 

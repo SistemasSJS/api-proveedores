@@ -668,72 +668,6 @@
                 ]
             }
         },
-        "/api/proveedores/{proveedor}/catalogos/{id}/productos": {
-            "get": {
-                "tags": [
-                    "Catalogo"
-                ],
-                "summary": "Obtener productos de un catálogo",
-                "operationId": "0f3a6bf1f0c9d49f6af661c9bbfc0ba3",
-                "parameters": [
-                    {
-                        "name": "proveedor",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "search",
-                        "in": "query",
-                        "description": "Buscar por nombre o código",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "sort_by",
-                        "in": "query",
-                        "description": "Campo para ordenar",
-                        "schema": {
-                            "type": "string",
-                            "example": "nombre"
-                        }
-                    },
-                    {
-                        "name": "order",
-                        "in": "query",
-                        "description": "asc o desc",
-                        "schema": {
-                            "type": "string",
-                            "enum": [
-                                "asc",
-                                "desc"
-                            ]
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Listado paginado de productos"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
         "/api/categorias": {
             "get": {
                 "tags": [
@@ -1478,6 +1412,72 @@
                 "responses": {
                     "204": {
                         "description": "marca eliminada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/proveedores/{proveedor}/Productoss/{id}/productos": {
+            "get": {
+                "tags": [
+                    "Productos"
+                ],
+                "summary": "Obtener productos de un catálogo",
+                "operationId": "2a689d485fe127389948bfa147cbcf1b",
+                "parameters": [
+                    {
+                        "name": "proveedor",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Buscar por nombre o código",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sort_by",
+                        "in": "query",
+                        "description": "Campo para ordenar",
+                        "schema": {
+                            "type": "string",
+                            "example": "nombre"
+                        }
+                    },
+                    {
+                        "name": "order",
+                        "in": "query",
+                        "description": "asc o desc",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado paginado de productos"
                     }
                 },
                 "security": [
@@ -3361,6 +3361,19 @@
                 },
                 "type": "object"
             },
+            "ProductoUpdateLogoRequest": {
+                "required": [
+                    "logo"
+                ],
+                "properties": {
+                    "logo": {
+                        "type": "string",
+                        "format": "binary",
+                        "example": "logo.png"
+                    }
+                },
+                "type": "object"
+            },
             "ProveedorUsuairoStoreRequest": {
                 "required": [
                     "name",
@@ -3981,6 +3994,11 @@
                         "type": "string",
                         "example": "Cemento gris 50kg"
                     },
+                    "logo": {
+                        "type": "string",
+                        "format": "uri",
+                        "example": "https://misitio.com/logo.png"
+                    },
                     "modelo_codigo": {
                         "type": "string",
                         "example": "MX-458G-9"
@@ -4348,6 +4366,10 @@
         {
             "name": "ProductosImport",
             "description": "Operaciones Import sobre Productos"
+        },
+        {
+            "name": "Productos",
+            "description": "CRUD de productos"
         },
         {
             "name": "Proveedores",

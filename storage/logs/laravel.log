@@ -9724,3 +9724,41 @@ Did you mean one of these?
 #48 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(23): require_once('C:\\\\repositorio\\\\...')
 #49 {main}
 "} 
+[2025-06-09 00:04:58] local.ERROR: The [pcntl] extension is required to run Pail. {"exception":"[object] (RuntimeException(code: 0): The [pcntl] extension is required to run Pail. at C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\pail\\src\\Guards\\EnsurePcntlIsAvailable.php:15)
+[stacktrace]
+#0 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\pail\\src\\Console\\Commands\\PailCommand.php(46): Laravel\\Pail\\Guards\\EnsurePcntlIsAvailable::check()
+#1 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Laravel\\Pail\\Console\\Commands\\PailCommand->handle(Object(Laravel\\Pail\\ProcessFactory))
+#2 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(43): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#3 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(96): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#4 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#5 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(754): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#6 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(213): Illuminate\\Container\\Container->call(Array)
+#7 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\symfony\\console\\Command\\Command.php(279): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#8 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(182): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#9 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\symfony\\console\\Application.php(1094): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#10 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\symfony\\console\\Application.php(342): Symfony\\Component\\Console\\Application->doRunCommand(Object(Laravel\\Pail\\Console\\Commands\\PailCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#11 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\symfony\\console\\Application.php(193): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#12 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(198): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1235): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#14 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\artisan(16): Illuminate\\Foundation\\Application->handleCommand(Object(Symfony\\Component\\Console\\Input\\ArgvInput))
+#15 {main}
+"} 
+[2025-06-09 00:05:19] local.ERROR: The [pcntl] extension is required to run Pail. {"exception":"[object] (RuntimeException(code: 0): The [pcntl] extension is required to run Pail. at C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\pail\\src\\Guards\\EnsurePcntlIsAvailable.php:15)
+[stacktrace]
+#0 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\pail\\src\\Console\\Commands\\PailCommand.php(46): Laravel\\Pail\\Guards\\EnsurePcntlIsAvailable::check()
+#1 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Laravel\\Pail\\Console\\Commands\\PailCommand->handle(Object(Laravel\\Pail\\ProcessFactory))
+#2 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(43): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#3 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(96): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#4 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#5 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(754): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#6 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(213): Illuminate\\Container\\Container->call(Array)
+#7 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\symfony\\console\\Command\\Command.php(279): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#8 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(182): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#9 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\symfony\\console\\Application.php(1094): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#10 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\symfony\\console\\Application.php(342): Symfony\\Component\\Console\\Application->doRunCommand(Object(Laravel\\Pail\\Console\\Commands\\PailCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#11 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\symfony\\console\\Application.php(193): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#12 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(198): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1235): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#14 C:\\repositorio\\sjsconstrucciones\\app\\api-proveedores\\artisan(16): Illuminate\\Foundation\\Application->handleCommand(Object(Symfony\\Component\\Console\\Input\\ArgvInput))
+#15 {main}
+"} 
