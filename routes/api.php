@@ -21,7 +21,6 @@ use App\Http\Controllers\ProveedorUsuarioController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TipoEmpresaController;
 
-Route::post('import', [ImportProductoController::class, 'import']);
 // Route::get('test', [ProveedorController::class, 'test']);
 // Route::post('upload', [FileUploadController::class, 'store'])->name('upload');
 
@@ -86,8 +85,10 @@ Route::middleware(
 
                 // Extras RESTful
                 Route::post('{proveedor}/logo', 'updateLogo');
+                Route::post('{proveedor}/logo', 'updateLogo');
             });
-
+            Route::post('{proveedor}/import', [ImportProductoController::class, 'import']);
+            
             // Usuarios asociados al proveedor
             Route::prefix('{proveedor}/users')->controller(ProveedorUsuarioController::class)->group(function () {
                 Route::get('/', 'index');

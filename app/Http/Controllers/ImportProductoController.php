@@ -63,7 +63,7 @@ class ImportProductoController extends Controller
      *     )
      * )
      */
-    public function import(ImportProductoRequest $request)
+    public function import(ImportProductoRequest $request, Proveedor $proveedor)
     {
         $file = $request->file('file');
         $handle = fopen($file->getRealPath(), 'r');
@@ -77,16 +77,16 @@ class ImportProductoController extends Controller
 
                 $marca = Marca::firstOrCreate(['nombre' => $row['nombre_marca']]);
                 $linea = Linea::firstOrCreate(['nombre' => $row['nombre_linea']]);
-                $proveedor = Proveedor::firstOrCreate(
-                    ['nombre_comercial' => $row['proveedor_nombre']],
-                    [
-                        'nombre_comercial' => $row['proveedor_nombre'],
-                        'razon_social' => $row['proveedor_nombre'],
-                        'direccion' => $row['proveedor_direccion'],
-                        'telefono' => $row['proveedor_telefono'],
-                        'email' => $row['proveedor_email']
-                    ]
-                );
+                // $proveedor = Proveedor::firstOrCreate(
+                //     ['nombre_comercial' => $row['proveedor_nombre']],
+                //     [
+                //         'nombre_comercial' => $row['proveedor_nombre'],
+                //         'razon_social' => $row['proveedor_nombre'],
+                //         'direccion' => $row['proveedor_direccion'],
+                //         'telefono' => $row['proveedor_telefono'],
+                //         'email' => $row['proveedor_email']
+                //     ]
+                // );
                 $catalogo = Catalogo::firstOrCreate([
                     'nombre' => $row['nombre_catalogo'],
                     'proveedor_id' => $proveedor->id,
