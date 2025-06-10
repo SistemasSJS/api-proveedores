@@ -18,12 +18,13 @@ class ProductoUpdateRequest extends FormRequest
             'descripcion' => ['sometimes', 'required', 'string', 'max:255'],
             'codigo_interno' => ['sometimes', 'required', 'string', 'max:50'],
             'proveedor_id' => ['sometimes', 'required', 'integer', 'exists:proveedores,id'],
+            // Aquí se espera un arreglo de categorías
+            'categorias' => ['sometimes', 'array', 'min:1'],
+            'categorias.*' => ['integer', 'exists:categorias,id'],
+
             'unidad_medida_id' => ['sometimes', 'required', 'integer', 'exists:unidad_medidas,id'],
-            'grupo_id' => ['sometimes', 'required', 'integer', 'exists:grupos,id'],
-            'categoria_id' => ['sometimes', 'required', 'integer', 'exists:categorias,id'],
             'marca_id' => ['sometimes', 'required', 'integer', 'exists:marcas,id'],
             'linea_id' => ['sometimes', 'required', 'integer', 'exists:lineas,id'],
-            'foto_url' => ['nullable', 'string', 'max:255'],
         ];
     }
 
@@ -37,10 +38,12 @@ class ProductoUpdateRequest extends FormRequest
             'proveedor_id.exists' => 'El proveedor seleccionado no es válido.',
             'unidad_medida_id.required' => 'La unidad de medida es obligatoria.',
             'unidad_medida_id.exists' => 'La unidad de medida seleccionada no es válida.',
-            'grupo_id.required' => 'El grupo es obligatorio.',
-            'grupo_id.exists' => 'El grupo seleccionado no es válido.',
-            'categoria_id.required' => 'La categoría es obligatoria.',
-            'categoria_id.exists' => 'La categoría seleccionada no es válida.',
+
+            'categorias.array' => 'Las categorías deben enviarse como un arreglo.',
+            'categorias.min' => 'Debe seleccionar al menos una categoría.',
+            'categorias.*.integer' => 'Cada categoría debe ser un identificador válido.',
+            'categorias.*.exists' => 'Una o más categorías seleccionadas no son válidas.',
+
             'marca_id.required' => 'La marca es obligatoria.',
             'marca_id.exists' => 'La marca seleccionada no es válida.',
             'linea_id.required' => 'La línea es obligatoria.',

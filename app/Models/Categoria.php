@@ -36,7 +36,6 @@ class Categoria extends BaseModel
 
 
     /**
-     * Productos asignados a la categoria
      */
     public function productos()
     {
@@ -46,7 +45,7 @@ class Categoria extends BaseModel
     /**
      * Categoiria padre
      */
-    public function padre()
+    public function categoria_padre()
     {
         return $this->belongsTo(Categoria::class, 'categoria_padre_id');
     }
@@ -54,7 +53,7 @@ class Categoria extends BaseModel
     /**
      * SubCategoiria de la categoria
      */
-    public function hijos()
+    public function categorias_hijos()
     {
         return $this->hasMany(Categoria::class, 'categoria_padre_id');
     }

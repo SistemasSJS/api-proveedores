@@ -18,12 +18,11 @@ class ProductoResource extends JsonResource
             'logo' => $this->logo
                 ? (preg_match('/^https?:\/\//', $this->logo) ? $this->logo : asset('storage/' . $this->logo))
                 : null,
-            'modelo_codigo'  => $this->modelo_codigo,
             'descripcion'    => $this->descripcion,
             'sku'            => $this->sku,
             'marca_id'       => $this->marca_id,
             'linea_id'       => $this->linea_id,
-            'catalogo_id'    => $this->catalogo_id,
+            'proveedor_id'    => $this->proveedor_id,
             'unidad_medida_id' => $this->unidad_medida_id,
 
             // Relaciones
@@ -65,12 +64,17 @@ class ProductoResource extends JsonResource
                     ];
                 });
             }),
-
             'categorias' => $this->whenLoaded('categorias', function () {
                 return $this->categorias->map(function ($categoria) {
                     return [
-                        'id'     => $categoria->id,
-                        'nombre' => $categoria->nombre,
+                        'id'                 => $categoria->id,
+                        'nombre'             => $categoria->nombre,
+                        'categoria_padre'    => $categoria->whenLoaded('categoria_padre', function () use ($categoria) {
+                            return [
+                                'id'     => $categoria->categoria_padre->id,
+                                'nombre' => $categoria->categoria_padre->nombre,
+                            ];
+                        }),
                     ];
                 });
             }),
