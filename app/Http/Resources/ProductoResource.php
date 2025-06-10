@@ -64,17 +64,11 @@ class ProductoResource extends JsonResource
                     ];
                 });
             }),
-            'categorias' => $this->whenLoaded('categorias', function () {
+            'categoria' => $this->whenLoaded('categorias', function () {
                 return $this->categorias->map(function ($categoria) {
                     return [
                         'id'                 => $categoria->id,
                         'nombre'             => $categoria->nombre,
-                        'categoria_padre'    => $categoria->whenLoaded('categoria_padre', function () use ($categoria) {
-                            return [
-                                'id'     => $categoria->categoria_padre->id,
-                                'nombre' => $categoria->categoria_padre->nombre,
-                            ];
-                        }),
                     ];
                 });
             }),

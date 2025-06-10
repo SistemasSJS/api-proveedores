@@ -11,7 +11,7 @@
     },
     "servers": [
         {
-            "url": "http://192.168.0.132:8080",
+            "url": "http://localhost:8080",
             "description": "Servidor local: SQLite"
         }
     ],
@@ -3361,6 +3361,48 @@
                 },
                 "type": "object"
             },
+            "CategoriaStoreRequest": {
+                "required": [
+                    "nombre",
+                    "descripcion"
+                ],
+                "properties": {
+                    "nombre": {
+                        "type": "string",
+                        "example": "Catálogo de materiales"
+                    },
+                    "descripcion": {
+                        "type": "string",
+                        "example": "Listado de productos para obra negra"
+                    },
+                    "categoria_padre_id": {
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "CategoriaUpdateRequest": {
+                "required": [
+                    "nombre",
+                    "descripcion"
+                ],
+                "properties": {
+                    "nombre": {
+                        "type": "string",
+                        "example": "Catálogo actualizado"
+                    },
+                    "descripcion": {
+                        "type": "string",
+                        "example": "Nueva descripción del catálogo"
+                    },
+                    "categoria_padre_id": {
+                        "type": "integer",
+                        "example": 2
+                    }
+                },
+                "type": "object"
+            },
             "ProductoUpdateLogoRequest": {
                 "required": [
                     "logo"
@@ -3879,8 +3921,7 @@
             },
             "Categoria": {
                 "required": [
-                    "nombre",
-                    "nivel"
+                    "nombre"
                 ],
                 "properties": {
                     "id": {
@@ -3889,6 +3930,18 @@
                     },
                     "nombre": {
                         "type": "string",
+                        "example": "Herramientas Eléctricas"
+                    },
+                    "descripcion": {
+                        "type": "text",
+                        "example": "Herramientas Eléctricas"
+                    },
+                    "photo_path": {
+                        "type": "string",
+                        "example": "Herramientas Eléctricas"
+                    },
+                    "categoria_padre_id": {
+                        "type": "integer",
                         "example": "Herramientas Eléctricas"
                     },
                     "created_at": {
@@ -3990,6 +4043,10 @@
                         "type": "integer",
                         "example": 1
                     },
+                    "sku": {
+                        "type": "string",
+                        "example": "CMG-50"
+                    },
                     "nombre": {
                         "type": "string",
                         "example": "Cemento gris 50kg"
@@ -4006,10 +4063,6 @@
                     "descripcion": {
                         "type": "string",
                         "example": "Saco de cemento gris para construcción"
-                    },
-                    "sku": {
-                        "type": "string",
-                        "example": "CMG-50"
                     },
                     "marca_id": {
                         "type": "integer",

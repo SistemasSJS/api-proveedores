@@ -9,7 +9,17 @@ class CategoriaSeeder extends Seeder
 {
     public function run()
     {
-        $categoria = ['Herramientas Eléctricas', 'Herramientas Manuales', 'Accesorios', 'Jardinería', 'Medición'];
+        $categoria = [
+            'Láminas y Aceros',
+            'Material de Construcción',
+            'Herramientas Básicas',
+            'Herramientas Manuales',
+            'Herramientas Eléctricas',
+            'Accesorios Industriales',
+            'Equipamiento Agroindustrial',
+            'Insumos para Granjas',
+            'Mantenimiento de Instalaciones'
+        ];
         foreach ($categoria as $name) {
             Categoria::factory()->create(['nombre' => $name]);
         }

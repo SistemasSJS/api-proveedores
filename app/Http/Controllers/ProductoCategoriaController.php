@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Storage;
 /**
  * @OA\Tag(name="Productos", description="Gestión de catálogo")
  */
-class ProductoCatalogoController extends Controller
+class ProductoCategoriaController extends Controller
 {
     use ApiResponse;
 
@@ -36,25 +36,19 @@ class ProductoCatalogoController extends Controller
      *     @OA\Response(response=200, description="Listado paginado de productos")
      * )
      */
-    public function index(Request $request, Proveedor $proveedor, $id)
+    public function index(Request $request, Proveedor $proveedor)
     {
-        $catalogo = Catalogo::with(Catalogo::eagerLodable())->find($id);
-        if (!$catalogo) {
-            throw new ResourceNotFoundException("Producto no encontrado.");
-        }
-
         $filters = $request->only(Producto::getFilters());
         $sortBy = $request->input('sort_by', 'nombre_comercial');
         $order = $request->input('order', 'asc');
         $perPage = $request->input('per_page', 10);
 
-        $query = $catalogo->productos();
 
-        $paginator = $query->with(Producto::eagerLodable())
+        $paginator = Producto::with(Producto::eagerLodable())
             ->filter($filters)
+            ->where('proveedor_id', $proveedor->id)
             ->orderBy($sortBy, $order)
             ->paginate($perPage);
-
         $data = ProductoResource::collection($paginator)->resolve();
 
         return $this->paginated($paginator->setCollection(collect($data)));
@@ -62,46 +56,38 @@ class ProductoCatalogoController extends Controller
 
 
 
-    public function show(Request $request, Proveedor $proveedor, $catalogoId, $id)
+    public function show(Request $request, Proveedor $proveedor, $productoId)
     {
-        $catalogo = Catalogo::where('proveedor_id', $proveedor->id)->find($catalogoId);
-        if (!$catalogo) {
-            throw new ResourceNotFoundException("Catálogo no encontrado para este proveedor.");
-        }
+        $producto = Producto::with(Producto::eagerLodable())->findOrFail($productoId);
 
-        $producto = $catalogo->productos()
-            ->with(Producto::eagerLodable())
-            ->find($id);
-        if (!$producto) {
-            throw new ResourceNotFoundException("Producto no encontrado en este catálogo.");
+
+        if ($producto->proveedor_id !== $proveedor->id) {
+            throw new ResourceNotFoundException("Producto no relacionado al proveedor.");
         }
 
         return $this->success(new ProductoResource($producto));
     }
 
-    public function store(ProductoStoreRequest $request, Proveedor $proveedor, $catalogoId)
+    public function store(ProductoStoreRequest $request, Proveedor $proveedor, $productoId)
     {
         $data = $request->validated();
-        $data['catalogo_id'] = $catalogoId;
+        $data['proveedor'] = $proveedor->id;
 
         $producto = Producto::create($data);
 
         return $this->success(new ProductoResource($producto));
     }
 
-    public function update(ProductoUpdateRequest $request, Proveedor $proveedor, $catalogoId, $id)
+    public function update(ProductoUpdateRequest  $request, Proveedor $proveedor, $productoId)
     {
-        $producto = Producto::findOrFail($id);
+        $producto = Producto::findOrFail($productoId);
         $producto->update($request->validated());
         return $this->success(new ProductoResource(($producto->fresh(Producto::eagerLodable()))));
     }
 
-    public function updateLogo(ProductoUpdateLogoRequest $request, Proveedor $proveedor, $catalogoId, $id)
+    public function updateLogo(ProductoUpdateLogoRequest $request, Proveedor $proveedor, $productoId)
     {
-        $catalogo = Catalogo::where('proveedor_id', $proveedor->id)->findOrFail($catalogoId);
-
-        $producto = $catalogo->productos()->findOrFail($id);
-
+        $producto = Producto::findOrFail($productoId);
         // Eliminar logo anterior si existe
         if ($producto->logo) {
             $rutaAnterior = str_replace(asset('storage') . '/', '', $producto->foto_url);

@@ -181,8 +181,10 @@ class ProveedorUsuarioController extends Controller
      *     @OA\Response(response=404, description="Usuario no asociado al proveedor")
      * )
      */
-    public function getById(Request $request, Proveedor $proveedor, User $user)
+    public function show(Request $request, Proveedor $proveedor, $user_id)
     {
+        $user = USer::findOrFail($user_id);
+        
         if (!$user) {
             throw new ResourceNotFoundException(404, 'Usuario no encontrado.');
         }
@@ -229,11 +231,13 @@ class ProveedorUsuarioController extends Controller
      *     @OA\Response(response=409, description="Ya hay otro usuario principal")
      * )
      */
-    public function update(ProveedorUsuairoUpdateRequest $request, Proveedor $proveedor, User $user)
+    public function update(ProveedorUsuairoUpdateRequest $request, Proveedor $proveedor, $user_id)
     {
         $this->authorizeAccess($request->user(), $proveedor);
+        $user = User::findOrFail($user_id);
 
-        if (!$proveedor->users()->find($user->id)) {
+
+        if (!$proveedor->users()->find($request->user())) {
             throw new NotFoundRelationException('Usuario no asociado al proveedor.');
         }
         $validated = $request->validated();
@@ -271,9 +275,11 @@ class ProveedorUsuarioController extends Controller
      *     @OA\Response(response=403, description="No autorizado, usuario no asociado o es usuario principal")
      * )
      */
-    public function destroy(Request $request, Proveedor $proveedor, User $user)
+    public function destroy(Request $request, Proveedor $proveedor, $user_id)
     {
         $this->authorizeAccess($request->user(), $proveedor);
+
+        $user = User::findOrFail($user_id);
 
         $pivotData = $proveedor->users()->find($user->id);
 

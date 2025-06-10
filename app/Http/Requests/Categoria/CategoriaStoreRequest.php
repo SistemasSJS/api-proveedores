@@ -8,7 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * @OA\Schema(
- *     schema="CatalogoStoreRequest",
+ *     schema="CategoriaStoreRequest",
  *     required={"nombre", "descripcion"},
  *     @OA\Property(property="nombre", type="string", example="Catálogo de materiales"),
  *     @OA\Property(property="descripcion", type="string", example="Listado de productos para obra negra"),

@@ -16,7 +16,7 @@ use App\Http\Controllers\ImportProductoController;
 use App\Http\Controllers\UnidadMedidaController;
 use App\Http\Controllers\LineaController;
 use App\Http\Controllers\MarcaController;
-use App\Http\Controllers\ProductoCatalogoController;
+use App\Http\Controllers\ProductoCategoriaController;
 use App\Http\Controllers\ProveedorUsuarioController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TipoEmpresaController;
@@ -85,48 +85,54 @@ Route::middleware(
 
                 // Extras RESTful
                 Route::post('{proveedor}/logo', 'updateLogo');
-                Route::post('{proveedor}/logo', 'updateLogo');
             });
             Route::post('{proveedor}/import', [ImportProductoController::class, 'import']);
 
             // Usuarios asociados al proveedor
-            Route::prefix('{proveedor}/users')->controller(ProveedorUsuarioController::class)->group(function () {
-                Route::get('/', 'index');
-                Route::post('/', 'store');
-                Route::get('{user}', 'getById');
-                Route::patch('{user}', 'update');
-                Route::delete('{user}', 'destroy');
-                // Route::post('{user}', 'upload_perfil');
-            });
-
-            // Gestión de catálogos del proveedor
-            Route::prefix('{proveedor}/catalogos')->group(function () {
-                // Rutas sin middleware
-                Route::get('/', [CatalogoController::class, 'index']);
-                Route::post('/', [CatalogoController::class, 'store']);
+            Route::prefix('{proveedor}/users')->group(function () {
+                Route::get('/', [ProveedorUsuarioController::class, 'index']);
+                Route::post('/', [ProveedorUsuarioController::class, 'store']);
 
                 // Rutas protegidas por el middleware de catálogo
-                Route::middleware('catalogo.proveedor')->group(function () {
-                    Route::get('{catalogo}', [CatalogoController::class, 'show']);
-                    Route::patch('{catalogo}', [CatalogoController::class, 'update']);
-                    Route::delete('{catalogo}', [CatalogoController::class, 'destroy']);
-                    Route::post('{catalogo}', [CatalogoController::class, 'upload_perfil']);
-
-
-                    // Rutas productos por catalogo
-                    Route::prefix('{catalogo}/productos')->group(function () {
-                        Route::get('/', [ProductoCatalogoController::class, 'index']);
-                        Route::post('/', [ProductoCatalogoController::class, 'store']);
-
-                        Route::middleware('catalogo.producto')->group(function () {
-                            Route::get('{producto}', [ProductoCatalogoController::class, 'show']);
-                            Route::patch('{producto}', [ProductoCatalogoController::class, 'update']);
-                            Route::post('{producto}/logo', [ProductoCatalogoController::class, 'updateLogo']);
-                            // Route::delete('{producto}', [ProductoCatalogoController::class, 'destroy']);
-                        });
-                    });
+                Route::middleware('proveedor.user')->group(function () {
+                    Route::get('{user}', [ProveedorUsuarioController::class, 'show']);
+                    Route::patch('{user}', [ProveedorUsuarioController::class, 'update']);
+                    Route::delete('{user}', [ProveedorUsuarioController::class, 'destroy']);
+                    // Route::post('{user}', [ProveedorUsuarioController::class,'upload_perfil']);
                 });
             });
+
+            // Rutas productos por catalogo
+            Route::prefix('{proveedor}/productos')->group(function () {
+                Route::get('/', [ProductoCategoriaController::class, 'index']);
+                Route::post('/', [ProductoCategoriaController::class, 'store']);
+
+                Route::middleware('proveedor.producto')->group(function () {
+                    Route::get('{producto}', [ProductoCategoriaController::class, 'show']);
+                    Route::patch('{producto}', [ProductoCategoriaController::class, 'update']);
+                    Route::post('{producto}/logo', [ProductoCategoriaController::class, 'updateLogo']);
+                    // Route::delete('{producto}', [ProductoCategoriaController::class, 'destroy']);
+                });
+            });
+
+            // // Gestión de catálogos del proveedor
+            // Route::prefix('{proveedor}/catalogos')->group(function () {
+            //     // Rutas sin middleware
+            //     Route::get('/', [CatalogoController::class, 'index']);
+            //     Route::post('/', [CatalogoController::class, 'store']);
+
+            //     // Rutas protegidas por el middleware de catálogo
+            //     Route::middleware('catalogo.proveedor')->group(function () {
+            //         Route::get('{catalogo}', [CatalogoController::class, 'show']);
+            //         Route::patch('{catalogo}', [CatalogoController::class, 'update']);
+            //         Route::delete('{catalogo}', [CatalogoController::class, 'destroy']);
+            //         Route::post('{catalogo}', [CatalogoController::class, 'upload_perfil']);
+
+
+            //         // Rutas productos por catalogo
+
+            //     });
+            // });
         });
 
         /**
