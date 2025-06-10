@@ -23,10 +23,10 @@ return new class extends Migration {
             $table->timestamps();
 
             // requirede fields
+            $table->string('razon_social')->unique()->after('nombre_comercial');
             $table->string('nombre_propietario')->nullable()->after('id');
             $table->string('nombre_de_quien_registra')->nullable()->after('nombre_propietario');
             $table->string('nombre_comercial')->nullable()->after('nombre_de_quien_registra');
-            $table->string('razon_social')->nullable()->after('nombre_comercial');
             $table->foreignId('tipos_empresa_id')->nullable()->constrained('tipos_empresa')->onDelete('cascade')->after('razon_social');
             $table->string('tipos_empresa_otro')->nullable()->nullable()->after('tipos_empresa_id');
             $table->string('descripcion_giro_empresa')->nullable()->after('tipos_empresa_otro');

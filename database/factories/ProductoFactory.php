@@ -15,7 +15,6 @@ class ProductoFactory extends Factory
             'nombre' => $this->faker->word,
             'descripcion' => $this->faker->sentence(10),
             'sku' => strtoupper($this->faker->unique()->bothify('??-###-??-#')),
-            'modelo_codigo' => strtoupper($this->faker->bothify('MDL-###-??')),
 
             // 'catalogo_id' => Catalogo::inRandomOrder()->value('id') ?? 1,
             // 'unidad_medida_id' => UnidadMedida::inRandomOrder()->value('id') ?? 1,

@@ -11,11 +11,11 @@ use Illuminate\Database\Eloquent\Model;
  *     schema="Producto",
  *     required={"nombre", "catalogo_id"},
  *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="sku", type="string", example="CMG-50"),
  *     @OA\Property(property="nombre", type="string", example="Cemento gris 50kg"),
  *     @OA\Property(property="logo", type="string", format="uri", example="https://misitio.com/logo.png"),
  *     @OA\Property(property="modelo_codigo", type="string", example="MX-458G-9"),
  *     @OA\Property(property="descripcion", type="string", example="Saco de cemento gris para construcción"),
- *     @OA\Property(property="sku", type="string", example="CMG-50"),
  *     @OA\Property(property="marca_id", type="integer", nullable=true, example=1),
  *     @OA\Property(property="linea_id", type="integer", nullable=true, example=5),
  *     @OA\Property(property="catalogo_id", type="integer", example=3),
@@ -39,16 +39,27 @@ class Producto extends BaseModel
      * @var array<int, string>
      */
     protected $fillable = [
-
-        'logo',
-        'catalogo_id',
+        'sku',
         'nombre',
         'descripcion',
-        'sku',
-        'modelo_codigo',
+        'logo',
+        'proveedor_id',
         'marca_id',
         'linea_id',
         'unidad_medida_id',
+    ];
+
+    /**
+     * The relations to eager load on every query.
+     *
+     * @var array
+     */
+    protected $with = [
+        'proveedor',
+        'marca',
+        'linea',
+        'unidad_medida',
+        'categorias'
     ];
 
     /**
@@ -77,54 +88,67 @@ class Producto extends BaseModel
     public static function eagerLodable(): array
     {
         return [
-            'catalogo',
+            'proveedor',
             'unidad_medida',
-            // 'imagenes',
+            // 'imagenes',// AUNNO
             'marca',
             'categorias',
             'linea',
         ];
     }
 
-    public function catalogo()
+    /**
+     * El proveedor al que pertenece el productio
+     */
+    public function proveedor()
     {
-        return $this->belongsTo(Catalogo::class);
+        return $this->belongsTo(Proveedor::class);
     }
 
+    /**
+     * Unidad de venta: pieza, metro, kilogramo, litro, etc.
+     */
     public function unidad_medida()
     {
         return $this->belongsTo(UnidadMedida::class);
     }
 
+    /**
+     * Galeria de imgs
+     */
     public function imagenes()
     {
         return $this->hasMany(Imagen::class);
     }
 
-
+    /**
+     * Proveedores materiales Los Mochis
+     */
     public function marca()
     {
         return $this->belongsTo(Marca::class);
     }
 
+    /**
+     * Línea o familia comercial. Puede agrupar productos con características similares.
+     */
     public function linea()
     {
         return $this->belongsTo(Linea::class);
     }
 
+    /**
+     * Un procducto puede tener mas de una catergoria
+     */
     public function categorias()
     {
         return $this->belongsToMany(Categoria::class, 'categoria_producto');
     }
 
+
     public function filterByNombre($query, $value)
     {
         return $query->where('nombre', 'like', "%$value%");
-    }
-
-    public function filterByModeloCodigo($query, $value)
-    {
-        return $query->where('modelo_codigo', 'like', "%$value%");
     }
 
     public function filterByDescripcion($query, $value)

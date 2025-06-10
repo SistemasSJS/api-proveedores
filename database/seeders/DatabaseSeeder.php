@@ -21,7 +21,6 @@ class DatabaseSeeder extends Seeder
             CategoriaSeeder::class,
             MarcaSeeder::class,
             LineaSeeder::class,
-            CatalogoSeeder::class,
             ProductoSeeder::class,
         ]);
 

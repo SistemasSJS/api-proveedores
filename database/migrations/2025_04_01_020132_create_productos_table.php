@@ -13,15 +13,16 @@ class CreateProductosTable extends Migration
     {
         Schema::create('productos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('catalogo_id')->index()->constrained('catalogos')->onDelete('cascade');
+            // CATALOGO YA NO FORMARA PARTE DE LA APP
+            $table->foreignId('proveedor_id')->index()->constrained('proveedores')->restrictOnDelete();
+            $table->string('sku')->unique();
             $table->string('nombre');
-            $table->string('logo')->nullable();
             $table->text('descripcion')->nullable();
-            $table->string('sku')->nullable();
-            $table->string('modelo_codigo')->nullable();
-            $table->foreignId('marca_id')->nullable()->constrained('marcas')->onDelete('set null');
-            $table->foreignId('linea_id')->nullable()->constrained('lineas')->onDelete('set null');
-            $table->foreignId('unidad_medida_id')->nullable()->constrained('unidad_medidas')->onDelete('set null');
+            $table->string('logo')->nullable();
+            $table->foreignId('marca_id')->nullable()->constrained('marcas')->nullOnDelete();
+            $table->foreignId('linea_id')->nullable()->constrained('lineas')->nullOnDelete();
+            $table->foreignId('unidad_medida_id')->nullable()->constrained('unidad_medidas')->nullOnDelete();
+            // ESPECIFICACIONES: 
             $table->timestamps();
         });
     }

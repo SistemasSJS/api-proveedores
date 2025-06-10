@@ -12,6 +12,7 @@ return new class extends Migration {
             $table->string('nombre')->unique();
             $table->text('descripcion')->nullable();
             $table->string('photo_path')->nullable();
+            $table->foreignId('categoria_padre_id')->nullable()->constrained('categorias')->nullOnDelete();
             $table->timestamps();
             $table->enum('estatus', ['activo', 'inactivo'])->default('activo');
         });
