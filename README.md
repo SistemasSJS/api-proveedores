@@ -1,239 +1,119 @@
-# Proveedores API Full Rest
+# 📦 Modelo Base para Sistema de Proveedores y Requisiciones
 
-_Aplicacion para manejo de catalago de proveedores._
+## 🏗️ Estructura General del Sistema
 
-## Comandos para inicializar configuracion
+El sistema permitirá que proveedores suban y gestionen su catálogo de productos.
+Los usuarios finales podrán realizar requisiciones sobre estos productos.
 
-```Bash
-    # instalacion de dependencias
-    composer install
-    npm install
+## 🗂️ Entidades Principales
 
-    # Generacion de la APP KEY en el archivo .env
-    php artisan key:generate
+1. **Proveedor**
 
-    # Ejecutar migraciones
-    php artisan migrate --seed
+   - Puede tener una o varias sucursales.
+   - Puede tener usuarios asociados:
+     - Usuario Principal (Main)
+     - Usuarios secundarios (Asociados)
+   - Gestiona su catálogo de productos completo.
 
-```
+2. **Producto**
 
-# Configuracion de modelos de datos basicos
+   - Relacionado con:
+     - Proveedor
+     - Marca
+     - Línea
+     - Categoría (con subcategorías anidadas hasta 2 niveles)
+     - Catálogo de fotos (múltiples imágenes)
+     - Tabla de especificaciones (estructura flexible, tipo key-value)
 
-## 1. Crear modelos con sus respectivas migraciones
+3. **Marca**
 
-```Bash
-    # MODEL Proveedor
-    php artisan make:model Proveedor -m
+   - Relacionada a los productos.
+   - Es gestionada por cada proveedor, no es global.
 
-    # MODEL Producto
-    php artisan make:model Producto -m
+4. **Línea**
 
-    # Migracion a DB
-    php artisan migrate
+   - Asociada a marcas y productos.
+   - También específica por proveedor.
 
-```
+5. **Categoría**
 
-## Generar ModelsClass
+   - Soporta subcategorías anidadas hasta 2 niveles.
+   - Ejemplo:
+     Categoría Padre → Subcategoría Nivel 1 → Subcategoría Nivel 2
 
-## Generar Controladores
+6. **Sucursal**
 
-```Bash
-    php artisan make:controller ProveedorController --api
-    php artisan make:controller ProductoController --api
-```
+   - Múltiples sucursales por proveedor.
+   - Los productos pueden asociarse a sucursales específicas (si es necesario).
 
-# Generar rutas en /routes/api.php
-
-```Bash
-    use App\Http\Controllers\ProveedorController;
-    use App\Http\Controllers\ProductoController;
+7. **Especificaciones**
 
-    Route::apiResource('proveedores', ProveedorController::class);
-    Route::apiResource('productos', ProductoController::class);
-```
+   - Tabla adicional que permite agregar propiedades dinámicas al producto.
+   - Ejemplo: Peso, Color, Material, Capacidad, etc.
 
-## PASOS PARA CONFIGURAR SWAGGER EN LARAVEL 12
+8. **Imágenes**
+   - Múltiples imágenes por producto.
+   - Pueden organizarse como galería/catálogo.
 
-1. 📦 Instala el paquete
+## 👥 Gestión de Usuarios y Roles
 
-```bash
-    composer require "darkaonline/l5-swagger"
-```
+| Rol           | Descripción / Acceso                                                                |
+| ------------- | ----------------------------------------------------------------------------------- |
+| ADMINISTRADOR | Acceso total a todo el sistema, configuración y administración general.             |
+| GERENTE       | Gestión integral de proveedores, catálogos y supervisores.                          |
+| SUPERVISOR    | Supervisión de operaciones diarias, control parcial sobre usuarios y requisiciones. |
+| VENTAS        | Acceso para gestionar requisiciones, clientes y ventas, sin acceso administrativo.  |
+| AUXILIAR      | Permisos limitados, apoyo en tareas específicas, sin acceso a funciones críticas.   |
 
-2. ⚙️ Publica los archivos de configuración
+### Asociación de Usuarios
 
-```bash
-    php artisan vendor:publish --provider "L5Swagger\L5SwaggerServiceProvider"
-```
+| Usuario       | proveedor_id (nullable) |
+| ------------- | ----------------------- |
+| ADMINISTRADOR | NULL                    |
+| GERENTE       | ID del proveedor        |
+| SUPERVISOR    | ID del proveedor        |
+| VENTAS        | ID del proveedor        |
+| AUXILIAR      | ID del proveedor        |
 
-Esto genera:
-config/l5-swagger.php
-Carpeta de documentación en storage/api-docs
+### Sugerencias Técnicas
 
-3. 🛠️ Configura tu archivo .env
-   Agrega (si no está ya):
+- Middleware por rol para controlar acceso granular.
+- Policies para validar la propiedad y permisos sobre recursos.
+- Recomendable implementar control de acceso estrictamente basado en roles para evitar fugas de datos o modificaciones no autorizadas.
 
-```
-    L5_SWAGGER_GENERATE_ALWAYS=true
-    L5_SWAGGER_CONST_HOST=http://localhost:8000
-```
+## 📋 Requisiciones
 
-🔁 L5_SWAGGER_GENERATE_ALWAYS=true genera la documentación cada vez que accedes, útil en desarrollo.
-
-4. 🧾 Anota tu controlador con comentarios Swagger
-   Aquí te dejo un ejemplo de cómo anotar el método index() de tu ProveedorController:
-
-php
-Copiar
-Editar
-/\*\*
-
-- @OA\Get(
--     path="/api/proveedores",
--     tags={"Proveedores"},
--     summary="Listar todos los proveedores",
--     @OA\Response(
--         response=200,
--         description="Lista de proveedores",
--         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Proveedor"))
--     )
-- )
-  \*/
-  public function index()
-  {
-  return response()->json(Proveedor::all());
-  }
-
-5. 🧬 Define el schema del modelo
-   Puedes anotar la clase del modelo Proveedor así:
-
-php
-Copiar
-Editar
-/\*\*
-
-- @OA\Schema(
--     title="Proveedor",
--     description="Modelo de proveedor",
--     @OA\Xml(name="Proveedor")
-- )
-  _/
-  class Proveedor extends Model
-  {
-  /\*\*
-  _ @OA\Property(example="1")
-  _ @var int
-  _/
-  public $id;
-
-      /**
-       * @OA\Property(example="Proveedor S.A.")
-       * @var string
-       */
-      public $nombre;
-
-      /**
-       * @OA\Property(example="proveedor@email.com")
-       * @var string
-       */
-      public $email;
+- Los clientes pueden realizar requisiciones sobre productos de distintos proveedores.
+- Cada requisición debe registrar:
+  - Usuario que la genera.
+  - Productos requeridos.
+  - Proveedor asociado.
 
-      /**
-       * @OA\Property(example="123456789")
-       * @var string
-       */
-      public $telefono;
+## 🔐 Seguridad y Acceso
 
-  }
+- Los proveedores solo pueden acceder a su propio catálogo.
+- Los proveedores asociados tienen acceso restringido según configuración.
+- Las operaciones CRUD deben estar protegidas por middleware y policies.
 
-6. 📄 Generar la documentación
-   php artisan l5-swagger:generate
+## 💾 Sugerencia de Tablas (Simplificada)
 
-7. 🌐 Accede a la documentación
-   Visita en tu navegador:
-
-http://localhost:8000/api/documentation
-
-🔐 Backend (Laravel)
-Instalar el paquete de validación:
-
-bash
-Copiar
-Editar
-composer require anhskohbo/no-captcha
-Agregar las claves en .env:
-
-env
-Copiar
-Editar
-NOCAPTCHA_SITEKEY=tu_clave_site
-NOCAPTCHA_SECRET=tu_clave_secreta
-Publicar el config (opcional):
-
-bash
-Copiar
-Editar
-php artisan vendor:publish --provider="Anhskohbo\NoCaptcha\NoCaptchaServiceProvider"
-Validar en tu RegistroProveedorRequest:
-
-php
-Copiar
-Editar
-public function rules()
-{
-return [
-// tus reglas actuales...
-'g-recaptcha-response' => ['required', 'captcha'],
-];
-}
-Registrar el provider (si usás Laravel < 8) en config/app.php:
-
-php
-Copiar
-Editar
-'providers' => [
-Anhskohbo\NoCaptcha\NoCaptchaServiceProvider::class,
-],
-
-# nose usan PERO TAMPOCO SE BORRA
-
-# - [X] CrearProveedorUserRequest
-
-# - [X] ProveedorCreateUserRequest
-
-# - [X] ActualizarFotoPerfilUser
-
-- AuthController
-
-  - [x] AuthLoginRequest
-  - [O] AuthUpdateFotoPerfilRequest
-
-- ProveedorController
-
-  - [O] ProveedorRegisterCompleteRequest
-  - [O] ProveedorRegisterRequest
-  - [O] ProveedorUpdateLogoRequest
-  - [O] ProveedorUpdateRequest
-
-  # - [x] RegisterProveedorCompletarRequest
-
-  # - [X] RegistroProveedorRequest
-
-  # - [X] ActualizarLogoProveedor
-
-  # - [X] ActualizarProveedorRequest
-
-- ProveedorUsuarioController
-
-  - [x] ProveedorUsuairoStoreRequest
-  - [O] ProveedorUsuairoUpdateRequest
-
-  # ProveedorUsuairoUpdateRequest ---->
-
-  # ProveedorUsuairoStoreRequest --->
-
-- [O] UserStoreRequest ----> ProveedorUsuairoCreateRequest
-
-  - ProveedorUsuarioController
-
-- [] UserUpdateRequest
+- `users` (rol_id, proveedor_id nullable)
+- `roles` (ADMINISTRADOR, GERENTE, SUPERVISOR, VENTAS, AUXILIAR)
+- `proveedors`
+- `sucursals`
+- `productos`
+- `categorias` (parent_id para anidación)
+- `marcas`
+- `lineas`
+- `imagenes` (producto_id)
+- `especificaciones` (producto_id, key, value)
+- `requisiciones` (usuario_id, proveedor_id, fecha)
+- `requisicion_productos` (requisicion_id, producto_id, cantidad)
+
+## 🚀 Ventajas del Modelo Propuesto
+
+- Escalable.
+- Multi-tenant (cada proveedor ve solo sus datos).
+- Seguridad segmentada.
+- Soporta catálogos complejos con marcas, líneas, subcategorías y especificaciones.
+- Optimizado para CRUD eficientes y filtros dinámicos.

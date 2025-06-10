@@ -22,7 +22,7 @@ class CreateProductosTable extends Migration
             $table->foreignId('marca_id')->nullable()->constrained('marcas')->nullOnDelete();
             $table->foreignId('linea_id')->nullable()->constrained('lineas')->nullOnDelete();
             $table->foreignId('unidad_medida_id')->nullable()->constrained('unidad_medidas')->nullOnDelete();
-            // ESPECIFICACIONES: 
+            // ESPECIFICACIONES:
             $table->timestamps();
         });
     }
