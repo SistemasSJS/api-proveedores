@@ -88,7 +88,7 @@ Route::middleware(
                 Route::post('{proveedor}/logo', 'updateLogo');
             });
             Route::post('{proveedor}/import', [ImportProductoController::class, 'import']);
-            
+
             // Usuarios asociados al proveedor
             Route::prefix('{proveedor}/users')->controller(ProveedorUsuarioController::class)->group(function () {
                 Route::get('/', 'index');
@@ -113,7 +113,7 @@ Route::middleware(
                     Route::post('{catalogo}', [CatalogoController::class, 'upload_perfil']);
 
 
-                    // Rutas productos
+                    // Rutas productos por catalogo
                     Route::prefix('{catalogo}/productos')->group(function () {
                         Route::get('/', [ProductoCatalogoController::class, 'index']);
                         Route::post('/', [ProductoCatalogoController::class, 'store']);

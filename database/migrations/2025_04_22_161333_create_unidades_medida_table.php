@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('unidad_medidas', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
+            $table->string('clave')->nullable();
             $table->string('descripcion')->nullable();
             $table->string('estatus')->default('activo');
             $table->timestamps();
