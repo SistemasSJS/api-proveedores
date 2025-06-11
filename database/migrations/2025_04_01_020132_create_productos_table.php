@@ -13,7 +13,6 @@ class CreateProductosTable extends Migration
     {
         Schema::create('productos', function (Blueprint $table) {
             $table->id();
-            // CATALOGO YA NO FORMARA PARTE DE LA APP
             $table->foreignId('proveedor_id')->index()->constrained('proveedores')->restrictOnDelete();
             $table->string('sku')->unique();
             $table->string('nombre');

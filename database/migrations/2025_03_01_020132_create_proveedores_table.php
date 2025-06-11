@@ -9,8 +9,9 @@ return new class extends Migration {
     {
         Schema::create('proveedores', function (Blueprint $table) {
             $table->id();
-            $table->string('logo')->nullable();
+            $table->string('razon_social')->unique()->after('nombre_comercial');
             $table->string('rfc')->unique()->nullable();
+            $table->string('logo')->nullable();
             $table->string('tipo_persona')->nullable();
             $table->string('direccion_fiscal')->nullable();
             $table->string('estado')->nullable();
@@ -23,7 +24,6 @@ return new class extends Migration {
             $table->timestamps();
 
             // requirede fields
-            $table->string('razon_social')->unique()->after('nombre_comercial');
             $table->string('nombre_propietario')->nullable()->after('id');
             $table->string('nombre_de_quien_registra')->nullable()->after('nombre_propietario');
             $table->string('nombre_comercial')->nullable()->after('nombre_de_quien_registra');
@@ -39,7 +39,7 @@ return new class extends Migration {
             $table->string('contacto_nombre')->nullable()->after('contacto_correo');
             $table->string('contacto_cargo')->nullable()->after('contacto_nombre');
             $table->string('contacto_telefono')->nullable()->after('contacto_cargo');
-            $table->string('contacto_correo')->nullable()->after('contacto_telefonos');
+            $table->string('contacto_correo')->nullable()->after('contacto_telefono');
 
             // Crear índices en los campos más importantes para búsquedas rápidas
             $table->index('nombre_comercial');

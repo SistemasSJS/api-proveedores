@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -13,11 +14,13 @@ return new class extends Migration
     {
         Schema::create('unidad_medidas', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
             $table->string('nombre');
             $table->string('clave')->nullable();
             $table->string('descripcion')->nullable();
             $table->string('estatus')->default('activo');
             $table->timestamps();
+            $table->unique(['nombre', 'proveedor_id']);
         });
     }
 

@@ -99,8 +99,6 @@ class ProductoSeeder extends Seeder
                 ],
             ],
             'Truper S.A. de C.V.' => [
-
-
                 'Herramientas Básicas' => [
                     [
                         'sku' => 'Martillo carpintero',

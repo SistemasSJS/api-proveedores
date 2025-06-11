@@ -4,24 +4,54 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Categoria;
+use App\Models\Proveedor;
 
 class CategoriaSeeder extends Seeder
 {
     public function run()
     {
-        $categoria = [
+        $fierroYLamina = Proveedor::where('nombre_comercial', 'Fierro y Lámina')->first();
+        $truper = Proveedor::where('nombre_comercial', 'Truper')->first();
+        $granjasElGranGero = Proveedor::where('nombre_comercial', 'Granjas ElGranGero')->first();
+
+        // Catálogos específicos
+        $fierroYLaminaCatalogos = [
             'Láminas y Aceros',
             'Material de Construcción',
-            'Herramientas Básicas',
+            'Herramientas Básicas'
+        ];
+
+        $truperCatalogos = [
             'Herramientas Manuales',
             'Herramientas Eléctricas',
-            'Accesorios Industriales',
+            'Accesorios Industriales'
+        ];
+
+        $granjasElGranGeroCatalogos = [
             'Equipamiento Agroindustrial',
             'Insumos para Granjas',
             'Mantenimiento de Instalaciones'
         ];
-        foreach ($categoria as $name) {
-            Categoria::factory()->create(['nombre' => $name]);
+
+        foreach ($fierroYLaminaCatalogos as $nombre) {
+            Categoria::factory()->create([
+                'proveedor_id' => $fierroYLamina->id,
+                'nombre' => $nombre,
+            ]);
+        }
+
+        foreach ($truperCatalogos as $nombre) {
+            Categoria::factory()->create([
+                'proveedor_id' => $truper->id,
+                'nombre' => $nombre,
+            ]);
+        }
+
+        foreach ($granjasElGranGeroCatalogos as $nombre) {
+            Categoria::factory()->create([
+                'proveedor_id' => $granjasElGranGero->id,
+                'nombre' => $nombre,
+            ]);
         }
     }
 }

@@ -9,9 +9,11 @@ return new class extends Migration {
     {
         Schema::create('marcas', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre')->unique();
+            $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
+            $table->string('nombre');
             $table->enum('estatus', ['activo', 'inactivo'])->default('activo');
             $table->timestamps();
+            $table->unique(['nombre', 'proveedor_id']);
         });
     }
 

@@ -9,12 +9,14 @@ return new class extends Migration {
     {
         Schema::create('categorias', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre')->unique();
+            $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
+            $table->string('nombre');
             $table->text('descripcion')->nullable();
             $table->string('photo_path')->nullable();
             $table->foreignId('categoria_padre_id')->nullable()->constrained('categorias')->nullOnDelete();
             $table->timestamps();
             $table->enum('estatus', ['activo', 'inactivo'])->default('activo');
+            $table->unique(['nombre', 'proveedor_id']);
         });
     }
 

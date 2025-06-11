@@ -14,6 +14,7 @@ class CreateUserProveedorTable extends Migration
             $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
             $table->boolean('is_main')->default(false); // Campo para marcar si es principal
             $table->timestamps();
+            $table->unique(['user_id', 'proveedor_id']); // Evitar duplicados
         });
     }
 
