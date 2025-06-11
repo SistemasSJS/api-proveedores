@@ -64,11 +64,6 @@ class ProveedorController extends Controller
         // $url = asset("storage/{$path}");
         $proveedor->update(['logo' => $path]);
         $user->update(['foto_perfil_url' => $path]);
-
-        return $this->success([
-            'proveedor' => new ProveedorResource(($proveedor->fresh(Proveedor::eagerLodable()))),
-            'user' => new UserResource(($user->fresh(User::eagerLodable()))),
-        ]);
     }
 
     /**
