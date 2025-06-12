@@ -16,13 +16,13 @@ class AdminHomeControler extends Controller
       [
         'name' => 'Proveedores',
         'count' => Proveedor::all()->count(),
-        'route' => '/pages/admin/proveedor',
+        'route' => '/pages/admin/proveedores',
         'icon' => 'briefcase',
       ],
       [
         'name' => 'Productos',
         'count' => Producto::all()->count(),
-        'route' => '/pages/admin/producto',
+        'route' => '/pages/admin/productos',
         'icon' => 'cube',
       ],
       [
