@@ -43,7 +43,7 @@ class ProveedorController extends Controller
     public function updateLogo(ProveedorUpdateLogoRequest $request, Proveedor $proveedor)
     {
         $user = $request->user();
-        $proveedor = $user->mainProveedor()->first();
+        $proveedor = $user->proveedorPrincipal();
         if (!$proveedor) {
             throw new ResourceNotFoundException("Proveedor no encontrado.");
         }
@@ -99,7 +99,7 @@ class ProveedorController extends Controller
         if (!$user) {
             throw new ResourceNotFoundException("Usuario no encontrado.");
         }
-        $proveedor = $user->mainProveedor()->first();
+        $proveedor = $user->proveedorPrincipal();
         if (!$proveedor) {
             throw new ResourceNotFoundException("Proveedor no encontrado.");
         }

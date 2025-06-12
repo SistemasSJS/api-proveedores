@@ -38,8 +38,13 @@ class ProveedorSeeder extends Seeder
                 'contacto_telefono' => '6678901234',
                 'contacto_correo' => 'carlos.ramirez@fierroylaminadigital.mx',
             ]);
-            $user1->proveedores()->attach($proveedor1->id, ['is_main' => true]);
-
+            // $user1->proveedores()->attach($proveedor1->id, ['is_main' => true]);
+            $user1->proveedores()->attach($proveedor1->id, [
+                'tipo_relacion' => 'PRINCIPAL',
+                'activo' => true,
+                'fecha_asignacion' => now(),
+                'observaciones' => 'Usuario principal del proveedor',
+            ]);
             // === PROVEEDOR 2: Truper ===
             $user2 = User::factory()->proveedor()->create(['email' => 'proveedor@truper.com']);
             $tipo2 = TipoEmpresa::where('clave', 'industrial')->first();
@@ -65,8 +70,13 @@ class ProveedorSeeder extends Seeder
                 'contacto_telefono' => '5556781234',
                 'contacto_correo' => 'fernando.perez@truper.com',
             ]);
-            $user2->proveedores()->attach($proveedor2->id, ['is_main' => true]);
-
+            // $user2->proveedores()->attach($proveedor2->id, ['is_main' => true]);
+            $user2->proveedores()->attach($proveedor2->id, [
+                'tipo_relacion' => 'PRINCIPAL',
+                'activo' => true,
+                'fecha_asignacion' => now(),
+                'observaciones' => 'Usuario principal del proveedor',
+            ]);
             // === PROVEEDOR 3: Ejemplo ficticio ===
             $user3 = User::factory()->proveedor()->create(['email' => 'proveedor@elgrangero.com']);
             $tipo3 = TipoEmpresa::where('clave', 'obra_civil')->first();
@@ -92,7 +102,13 @@ class ProveedorSeeder extends Seeder
                 'contacto_telefono' => '4492345678',
                 'contacto_correo' => 'veronica@elgrangero.com',
             ]);
-            $user3->proveedores()->attach($proveedor3->id, ['is_main' => true]);
+            // $user3->proveedores()->attach($proveedor3->id, ['is_main' => true]);
+            $user3->proveedores()->attach($proveedor3->id, [
+                'tipo_relacion' => 'PRINCIPAL',
+                'activo' => true,
+                'fecha_asignacion' => now(),
+                'observaciones' => 'Usuario principal del proveedor',
+            ]);
         });
     }
 }

@@ -15,8 +15,8 @@ class ProductoResource extends JsonResource
         return [
             'id'             => $this->id,
             'nombre'         => $this->nombre,
-            'logo' => $this->logo
-                ? (preg_match('/^https?:\/\//', $this->logo) ? $this->logo : asset('storage/' . $this->logo))
+            'imagen_principal' => $this->imagen_principal
+                ? (preg_match('/^https?:\/\//', $this->imagen_principal) ? $this->imagen_principal : asset('storage/' . $this->imagen_principal))
                 : null,
             'descripcion'    => $this->descripcion,
             'sku'            => $this->sku,

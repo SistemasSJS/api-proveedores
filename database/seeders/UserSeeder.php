@@ -13,11 +13,11 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $default_foto_url = 'http://192.168.0.132:8080/storage/uploads/default.png';
-        $idRolAdmin = Role::where('nombre', UserRoleEnumerate::ADMIN->value)->first()->id;
-        $idRolSuperAdmin = Role::where('nombre', UserRoleEnumerate::SUPER_ADMIN->value)->first()->id;
-        User::firstOrCreate(
-            ['email' => 'juliocsv@sjs.com.mx'],
+        $idRolAdmin = Role::where('nombre', UserRoleEnumerate::ADMINISTRADOR->value)->first()->id;
+        $idRolSuperAdmin = Role::where('nombre', UserRoleEnumerate::ADMINISTRADOR->value)->first()->id;
+        User::factory(
             [
+                'email' => 'juliocsv@sjs.com.mx',
                 'name' => 'Superadmin (JCSV)',
                 'foto_perfil_url' => $default_foto_url,
                 'password' => Hash::make('123456'), // Contraseña clara
@@ -25,7 +25,7 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
-        User::firstOrCreate(
+        User::factory(
             // ['email' => 'osaco@admin.admin'],
             ['email' => 'dir.tecnico@sjs.com.mx'],
             [
@@ -36,7 +36,7 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
-        User::firstOrCreate(
+        User::factory(
             ['email' => 'jssr@admin.admin'],
             [
                 'name' => 'Desarrolador (JSSR)', //'Administrador',
@@ -46,7 +46,7 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
-        User::firstOrCreate(
+        User::factory(
             ['email' => 'sistemas_sjs@hotmail.com'],
             [
                 'name' => 'Auxiliar de desarrollador (GMB)', //'Administrador',

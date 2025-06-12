@@ -4,7 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @OA\Schema(
@@ -59,7 +61,7 @@ class Producto extends BaseModel
      *
      * @var array
      */
-    protected $with = ['categoria', 'marca', 'linea', 'especificaciones', 'imagenes'];
+    protected $with = ['categorias', 'marca', 'linea', 'especificaciones', 'imagenes'];
 
     /**
      * Filtros disponibles para aplicar dinámicamente en consultas.
@@ -86,60 +88,42 @@ class Producto extends BaseModel
      */
     public static function eagerLodable(): array
     {
-        return [
-            'proveedor',
-            'unidad_medida',
-            // 'imagenes',// AUNNO
-            'marca',
-            'categorias',
-            'linea',
-        ];
+        return ['categorias', 'marca', 'linea', 'especificaciones', 'imagenes'];
     }
 
-    /**
-     * El proveedor al que pertenece el productio
-     */
-    public function proveedor()
+    public function proveedor(): BelongsTo
     {
         return $this->belongsTo(Proveedor::class);
     }
 
-    /**
-     * Unidad de venta: pieza, metro, kilogramo, litro, etc.
-     */
-    public function unidad_medida()
+    public function categorias(): BelongsToMany
     {
-        return $this->belongsTo(UnidadMedida::class);
+        return $this->belongsToMany(Categoria::class);
     }
 
-    public function categoria()
-    {
-        return $this->belongsTo(Categoria::class);
-    }
-
-    public function marca()
+    public function marca(): BelongsTo
     {
         return $this->belongsTo(Marca::class);
     }
 
-    public function linea()
+    public function linea(): BelongsTo
     {
         return $this->belongsTo(Linea::class);
     }
 
-    public function especificaciones()
+    public function especificaciones(): HasMany
     {
         return $this->hasMany(ProductoEspecificacion::class);
     }
 
-    public function imagenes()
+    public function imagenes(): HasMany
     {
-        return $this->hasMany(ProductoImagen::class)->orderBy('orden');
+        return $this->hasMany(ProductoImagen::class);
     }
 
-    public function sucursales()
+    public function sucursales(): BelongsToMany
     {
-        return $this->belongsToMany(Sucursal::class, 'producto_sucursales')
+        return $this->belongsToMany(Sucursal::class)
             ->withPivot('stock_local', 'precio_local', 'activo')
             ->withTimestamps();
     }

@@ -46,7 +46,7 @@ class UserFactory extends Factory
 
     public function proveedor(): static
     {
-        $roleProveedorId = Role::where('nombre', UserRoleEnumerate::PROVEEDOR->value)->first()->id;
+        $roleProveedorId = Role::where('nombre', UserRoleEnumerate::GERENTE->value)->first()->id;
 
         return $this->state(fn(array $attributes) => [
             'role_id' => $roleProveedorId, // Asignamos el ID del rol

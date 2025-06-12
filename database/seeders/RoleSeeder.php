@@ -2,18 +2,30 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Role;
-use App\Enums\UserRoleEnumerate;
+use Illuminate\Support\Facades\DB;
 
 class RoleSeeder extends Seeder
 {
-    public function run(): void
+    public function run()
     {
-        foreach (UserRoleEnumerate::cases() as $roleEnum) {
-            Role::updateOrCreate(
-                ['nombre' => $roleEnum->value],
-            );
+        $roles = [
+            ['nombre' => 'ADMINISTRADOR', 'descripcion' => 'Acceso total al sistema'],
+            ['nombre' => 'GERENTE', 'descripcion' => 'Gestión integral de proveedores'],
+            ['nombre' => 'SUPERVISOR', 'descripcion' => 'Supervisión de operaciones diarias'],
+            ['nombre' => 'VENTAS', 'descripcion' => 'Gestión de requisiciones y ventas'],
+            ['nombre' => 'AUXILIAR', 'descripcion' => 'Permisos limitados de apoyo'],
+        ];
+
+        foreach ($roles as $role) {
+            DB::table('roles')->insertOrIgnore([
+                'nombre' => $role['nombre'],
+                'descripcion' => $role['descripcion'],
+                'activo' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
         }
     }
 }

@@ -17,9 +17,11 @@ use App\Http\Controllers\UnidadMedidaController;
 use App\Http\Controllers\LineaController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\ProductoCategoriaController;
+use App\Http\Controllers\ProductoImagenController;
 use App\Http\Controllers\ProveedorUsuarioController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TipoEmpresaController;
+use App\Models\Producto;
 
 // Route::get('test', [ProveedorController::class, 'test']);
 // Route::post('upload', [FileUploadController::class, 'store'])->name('upload');
@@ -59,16 +61,8 @@ Route::get('tipos-empresa-index', [TipoEmpresaController::class, 'index']);
 /**
  * Rutas con proteccion con apitoken
  */
-Route::middleware(
-    'auth:sanctum'
-)->group(function () {
-
-    Route::middleware(
-        'role:'
-            . UserRoleEnumerate::PROVEEDOR->value . ','
-            . UserRoleEnumerate::SUPER_ADMIN->value . ','
-            . UserRoleEnumerate::ADMIN->value
-    )->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware('role:' . UserRoleEnumerate::GERENTE->value . ',' . UserRoleEnumerate::ADMINISTRADOR->value)->group(function () {
 
         /**
          * Gestión de proveedores
@@ -146,8 +140,7 @@ Route::middleware(
      */
     Route::middleware(
         'role:'
-            . UserRoleEnumerate::SUPER_ADMIN->value . ','
-            . UserRoleEnumerate::ADMIN->value
+            . UserRoleEnumerate::ADMINISTRADOR->value
     )->group(function () {
         Route::get('catalogos-resumen', [AdminHomeControler::class, 'getCatalogosCountItems']);
 
@@ -155,7 +148,7 @@ Route::middleware(
         Route::apiResource('proveedores', ProveedorController::class);
         Route::apiResource('sucursales', SucursalController::class);
         Route::apiResource('productos', ProductoController::class);
-        Route::apiResource('imagenes', ImagenController::class);
+        Route::apiResource('imagenes', ProductoImagenController::class);
         Route::apiResource('unidades-medida', UnidadMedidaController::class);
         Route::apiResource('categorias', CategoriaController::class);
         Route::apiResource('lineas', LineaController::class);

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @OA\Schema(
@@ -113,13 +115,9 @@ class Proveedor extends BaseModel
         'fecha_registro' => 'fecha_registro',
         'estatus' => 'estatus',
         'notas' => 'notas',
-        'nombre_comercial' => 'nombre_comercial',
         'email' => 'email',
-        'tipos_empresa' => 'tipos_empresa',
-        'otro_tipos_empresa' => 'otro_tipos_empresa',
         'descripcion_giro_empresa' => 'descripcion_giro_empresa',
-        'direccion_empresa' => 'fireccion_empresa',
-        'ubicacion' => 'ubicacion',
+        'direccion_empresa' => 'direccion_empresa',
         'pagina_web' => 'pagina_web',
     ];
 
@@ -223,30 +221,76 @@ class Proveedor extends BaseModel
         return $this->belongsTo(User::class, 'validado_por');
     }
 
+    // Relación directa con la tabla pivot
+    public function userProveedores(): HasMany
+    {
+        return $this->hasMany(UserProveedor::class);
+    }
+
     /**
-     * Relación con usuarios (Múltiples usuarios)
+     * Relación many-to-many con usuarios a través de tabla pivot
+     * Incluye campos adicionales de la relación (tipo, estado, fechas)
+     *
+     * @return BelongsToMany<User> Colección de usuarios relacionados con datos pivot
      */
-    public function users()
+    public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_proveedor')
-            ->withPivot('is_main')
+            ->withPivot('tipo_relacion', 'activo', 'fecha_asignacion', 'fecha_desasignacion', 'observaciones')
             ->withTimestamps();
     }
 
+    /**
+     * Obtiene el usuario principal activo del proveedor
+     * Un proveedor debe tener un usuario principal
+     *
+     * @return User|null El usuario principal del proveedor o null si no tiene
+     */
     public function usuarioPrincipal()
     {
-        return $this->hasOne(User::class)->where('is_main', true);
+        return $this->userProveedores()
+            ->where('activo', true)
+            ->where('tipo_relacion', 'PRINCIPAL')
+            ->with('user')
+            ->first()?->user;
     }
 
-    // /**
-    //  * Método para obtener el usuario principal
-    //  */
-    // public function mainUser()
-    // {
-    //     return $this->belongsToMany(User::class)
-    //         ->wherePivot('is_main', true)
-    //         ->withPivot('is_main')
-    //         ->withTimestamps()
-    //         ->limit(1); // Por si acaso
-    // }
+    /**
+     * Obtiene todos los usuarios activos del proveedor
+     * Incluye tanto principales como secundarios que estén activos
+     *
+     * @return BelongsToMany<User> Colección de usuarios activos
+     */
+    public function usuariosActivos(): BelongsToMany
+    {
+        return $this->users()->wherePivot('activo', true);
+    }
+
+    /**
+     * Obtiene todos los usuarios secundarios activos del proveedor
+     * Excluye al usuario principal
+     *
+     * @return BelongsToMany<User> Colección de usuarios secundarios activos
+     */
+    public function usuariosSecundarios(): BelongsToMany
+    {
+        return $this->users()
+            ->wherePivot('activo', true)
+            ->wherePivot('tipo_relacion', 'SECUNDARIO');
+    }
+
+    /**
+     * Verifica si un usuario específico tiene acceso al proveedor
+     * Útil para validaciones de autorización
+     *
+     * @param int $userId ID del usuario a verificar
+     * @return bool True si el usuario tiene acceso activo al proveedor
+     */
+    public function tieneUsuarioConAcceso(int $userId): bool
+    {
+        return $this->userProveedores()
+            ->where('user_id', $userId)
+            ->where('activo', true)
+            ->exists();
+    }
 }

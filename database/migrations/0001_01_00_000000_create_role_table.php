@@ -11,7 +11,9 @@ return new class extends Migration
     {
         Schema::create('roles', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre')->unique(); // Nombre del rol (Ej. admin, proveedor)
+            $table->string('nombre')->unique();
+            $table->string('descripcion')->nullable();
+            $table->boolean('activo')->default(true);
             $table->timestamps();
         });
     }

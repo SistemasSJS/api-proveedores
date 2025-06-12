@@ -89,8 +89,8 @@ class ProductoCategoriaController extends Controller
     {
         $producto = Producto::findOrFail($productoId);
         // Eliminar logo anterior si existe
-        if ($producto->logo) {
-            $rutaAnterior = str_replace(asset('storage') . '/', '', $producto->foto_url);
+        if ($producto->imagen_principal) {
+            $rutaAnterior = str_replace(asset('storage') . '/', '', $producto->imagen_principal);
             Storage::disk('public')->delete($rutaAnterior);
         }
 
@@ -100,7 +100,7 @@ class ProductoCategoriaController extends Controller
         $path = $file->storeAs('uploads', $filename, 'public');
 
         // Actualizar ruta en base de datos
-        $producto->update(['logo' => $path]);
+        $producto->update(['imagen_principal' => $path]);
 
         return $this->success(new ProductoResource($producto->fresh(Producto::eagerLodable())));
     }

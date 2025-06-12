@@ -4,6 +4,9 @@ namespace App\Models;
 
 use App\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -17,57 +20,17 @@ use Laravel\Sanctum\HasApiTokens;
  *     @OA\Property(property="email", type="string", example="juan@ejemplo.com"),
  *     @OA\Property(property="role_id", type="integer", example=1),
  *     @OA\Property(property="created_at", type="string", format="date-time"),
- *     @OA\Property(property="updated_at", type="string", format="date-time")
+ *     @OA\Property(property="updated_at", type="string", format$user1->proveedores()->attach($proveedor1->id, ['tipo_relacion' => 'PRINCIPAL', 'activo' => true]);="date-time")
  * )
  */
 class User extends Authenticatable
 {
-
     use HasFactory, Notifiable, HasApiTokens, HasRoles;
+
     protected $fillable = ['name', 'email', 'foto_perfil_url', 'password', 'role_id'];
 
     protected $hidden = ['password', 'remember_token'];
 
-    protected function casts(): array
-    {
-        return ['email_verified_at' => 'datetime', 'password' => 'hashed'];
-    }
-
-    // Relación con Role (Un solo rol por usuario)
-    public function role()
-    {
-        return $this->belongsTo(Role::class);
-    }
-
-    /**
-     * Permite obtener todos los proveedores relacionados con un usuario.
-     * $user->proveedores()
-     */
-    public function proveedores()
-    {
-        return $this->belongsToMany(Proveedor::class, 'user_proveedor')
-            ->withPivot('is_main')
-            ->withTimestamps();
-    }
-    /**
-     * Devuelve solo el proveedor principal de este usuario.
-     * $user->mainProveedor()
-     */
-    public function mainProveedor()
-    {
-        return $this->belongsToMany(Proveedor::class, 'user_proveedor')
-            ->wherePivot('is_main', true)
-            ->withTimestamps();
-    }
-
-    /**
-     * Devuelve el proveedor principal o null si no existe ninguno.
-     * $user->main_proveedor.
-     */
-    public function getMainProveedorAttribute()
-    {
-        return $this->mainProveedor->first();
-    }
 
     // Filtros disponibles para este modelo
     protected static $filters = [
@@ -75,6 +38,11 @@ class User extends Authenticatable
         'email' => 'email',
         'role' => 'role',
     ];
+
+    protected function casts(): array
+    {
+        return ['email_verified_at' => 'datetime', 'password' => 'hashed'];
+    }
 
     // Filtro específico para 'name'
     public function filterByNombre($query, $value)
@@ -98,7 +66,7 @@ class User extends Authenticatable
 
     /**
      * Filtra los resultados de acuerdo a los filtros definidos.
-     * 
+     *
      * @param \Illuminate\Database\Eloquent\Builder $query
      * @param array $filters
      * @return \Illuminate\Database\Eloquent\Builder
@@ -138,5 +106,110 @@ class User extends Authenticatable
             'role',
             'proveedores',
         ];
+    }
+
+    /**
+     * Relación con el rol del usuario
+     *
+     * @return BelongsTo<Role> El rol asignado al usuario
+     */
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+
+
+    /**
+     * Relación directa con la tabla pivot user_proveedor
+     * Útil para consultas complejas y acceso a campos pivot
+     *
+     * @return HasMany<UserProveedor> Colección de registros de la tabla pivot
+     */
+    public function userProveedores(): HasMany
+    {
+        return $this->hasMany(UserProveedor::class);
+    }
+
+    /**
+     * Relación many-to-many con proveedores a través de tabla pivot
+     * Incluye campos adicionales de la relación (tipo, estado, fechas)
+     *
+     * @return BelongsToMany<Proveedor> Colección de proveedores relacionados con datos pivot
+     */
+    public function proveedores(): BelongsToMany
+    {
+        return $this->belongsToMany(Proveedor::class, 'user_proveedor')
+            ->using(UserProveedor::class)
+            ->withPivot('tipo_relacion', 'activo', 'fecha_asignacion', 'fecha_desasignacion', 'observaciones')
+            ->withTimestamps();
+    }
+
+    /**
+     * Obtiene el proveedor principal activo del usuario
+     * Un usuario puede tener solo un proveedor principal activo
+     *
+     * @return Proveedor|null El proveedor principal del usuario o null si no tiene
+     */
+    public function proveedorPrincipal()
+    {
+        return $this->userProveedores()
+            ->where('activo', true)
+            ->where('tipo_relacion', 'PRINCIPAL')
+            ->with('proveedor')
+            ->first()?->proveedor;
+    }
+
+    /**
+     * Obtiene todos los proveedores activos del usuario
+     * Incluye tanto principales como secundarios que estén activos
+     *
+     * @return BelongsToMany<Proveedor> Colección de proveedores activos
+     */
+    public function proveedoresActivos(): BelongsToMany
+    {
+        return $this->proveedores()->wherePivot('activo', true);
+    }
+
+    /**
+     * Obtiene todos los proveedores secundarios activos del usuario
+     * Excluye al proveedor principal
+     *
+     * @return BelongsToMany<Proveedor> Colección de proveedores secundarios activos
+     */
+    public function proveedoresSecundarios(): BelongsToMany
+    {
+        return $this->proveedores()
+            ->wherePivot('activo', true)
+            ->wherePivot('tipo_relacion', 'SECUNDARIO');
+    }
+
+    /**
+     * Verifica si el usuario tiene acceso a un proveedor específico
+     * Útil para validaciones de autorización
+     *
+     * @param int $proveedorId ID del proveedor a verificar
+     * @return bool True si el usuario tiene acceso activo al proveedor
+     */
+    public function tieneAccesoAProveedor(int $proveedorId): bool
+    {
+        return $this->userProveedores()
+            ->where('proveedor_id', $proveedorId)
+            ->where('activo', true)
+            ->exists();
+    }
+
+    /**
+     * Obtiene el tipo de relación del usuario con un proveedor específico
+     *
+     * @param int $proveedorId ID del proveedor
+     * @return string|null 'PRINCIPAL', 'SECUNDARIO' o null si no hay relación activa
+     */
+    public function tipoRelacionConProveedor(int $proveedorId): ?string
+    {
+        return $this->userProveedores()
+            ->where('proveedor_id', $proveedorId)
+            ->where('activo', true)
+            ->value('tipo_relacion');
     }
 }

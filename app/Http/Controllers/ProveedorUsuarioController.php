@@ -184,12 +184,11 @@ class ProveedorUsuarioController extends Controller
     public function show(Request $request, Proveedor $proveedor, $user_id)
     {
         $user = USer::findOrFail($user_id);
-        
+
         if (!$user) {
             throw new ResourceNotFoundException(404, 'Usuario no encontrado.');
         }
 
-        Log::info('Proveedor: ' . $proveedor->id);
         $this->authorizeAccess($request->user(), $proveedor);
 
         if (!$proveedor->users()->find($user->id)) {
@@ -310,9 +309,9 @@ class ProveedorUsuarioController extends Controller
             return;
         }
 
-        $mainProveedor = $currentUser->mainProveedor()->first();
+        $proveedorPrincipal = $currentUser->proveedorPrincipal();
 
-        if (!$mainProveedor || $mainProveedor->id !== $proveedor->id) {
+        if (!$proveedorPrincipal || $proveedorPrincipal->id !== $proveedor->id) {
             throw new UnauthorizedException();
         }
     }

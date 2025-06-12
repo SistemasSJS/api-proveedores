@@ -2,29 +2,31 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * @OA\Schema(
- *     schema="ProductoImagen",
- *     required={"url", "producto_id"},
- *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="producto_id", type="integer", example=1),
- *     @OA\Property(property="url", type="string", format="url", example="https://miapp.com/storage/productos/1.jpg"),
- *     @OA\Property(property="created_at", type="string", format="date-time"),
- *     @OA\Property(property="updated_at", type="string", format="date-time")
- * )
- */
-class ProductoImagen extends BaseModel
+class ProductoImagen extends Model
 {
-    use HasFactory;
-    protected $table = "imagenes";
+    // Si usas plural, Laravel detecta automáticamente 'producto_imagenes', pero si quieres asegurarte:
+    protected $table = 'producto_imagenes';
 
+    protected $fillable = [
+        'producto_id',
+        'url_imagen',
+        'alt_text',
+        'orden',
+        'es_principal',
+    ];
 
-    protected $fillable = ['url', 'producto_id'];
+    protected $casts = [
+        'es_principal' => 'boolean',
+        'orden' => 'integer',
+    ];
 
-    public function producto()
+    /**
+     * Relación inversa hacia Producto.
+     */
+    public function producto(): BelongsTo
     {
         return $this->belongsTo(Producto::class);
     }

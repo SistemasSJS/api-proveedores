@@ -11,13 +11,13 @@ return new class extends Migration
     Schema::create('producto_especificaciones', function (Blueprint $table) {
       $table->id();
       $table->foreignId('producto_id')->constrained('productos')->onDelete('cascade');
-      $table->string('atributo', 100)->comment('peso, color, material, capacidad');
+      $table->string('atributo');
       $table->text('valor');
-      $table->string('unidad', 50)->nullable()->comment('kg, cm, litros');
-      $table->smallInteger('orden')->default(0);
+      $table->string('unidad')->nullable();
+      $table->integer('orden')->default(0);
       $table->timestamps();
 
-      $table->index(['producto_id', 'atributo'], 'idx_producto_atributo');
+      $table->index(['producto_id', 'orden']);
     });
   }
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\UserRoleEnumerate;
 use Illuminate\Support\Facades\Auth;
 
 if (!function_exists('currentProveedor')) {
@@ -17,13 +18,13 @@ if (!function_exists('currentProveedor')) {
     }
 
     // Si es proveedor real, devuelve el proveedor vinculado
-    if ($user->role->nombre === 'PROVEEDOR') {
+    if ($user->role->nombre === UserRoleEnumerate::GERENTE->value) {
       return $user->proveedor;
     }
 
     // Si es admin y está contextualizado, busca el proveedor de la sesión
     if (
-      $user->role->nombre === 'ADMIN'
+      $user->role->nombre === UserRoleEnumerate::ADMINISTRADOR->value
       && session()->has('proveedor_context_id')
     ) {
       return \App\Models\Proveedor::find(session('proveedor_context_id'));
@@ -42,7 +43,7 @@ if (!function_exists('isContextualizedAsProveedor')) {
     $user = Auth::user();
 
     return $user
-      && $user->role->nombre === 'ADMIN'
+      && $user->role->nombre === UserRoleEnumerate::ADMINISTRADOR->value
       && session()->has('proveedor_context_id');
   }
 }
@@ -56,7 +57,7 @@ if (!function_exists('isRealProveedor')) {
     $user = Auth::user();
 
     return $user
-      && $user->role->nombre === 'PROVEEDOR'
+      && $user->role->nombre === UserRoleEnumerate::GERENTE->value
       && !session()->has('proveedor_context_id');
   }
 }

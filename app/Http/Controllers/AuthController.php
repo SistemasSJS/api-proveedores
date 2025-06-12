@@ -110,7 +110,7 @@ class AuthController extends Controller
             'name' => $data['nombre_empresa'],
             'email' => $data['email'],
             'password' => Hash::make($request->password),
-            'role_id' => Role::where('nombre', UserRoleEnumerate::USUARIO_CONSTRUCCION->value)->first()->id
+            'role_id' => Role::where('nombre', UserRoleEnumerate::USUARIO->value)->first()->id
         ]);
 
         // TODO: Add request to CONSTRUCC APP
@@ -141,11 +141,6 @@ class AuthController extends Controller
      */
     public function register_proveedor(ProveedorRegisterRequest $request)
     {
-        /**
-         * FIXME: Validar correo IN USERS TABLAE
-         */
-
-
         $proveedor = Proveedor::create($request->validated());
         $token = Str::random(60);
 
@@ -186,7 +181,7 @@ class AuthController extends Controller
         $proveedor = Proveedor::findOrFail($proveedorId);
 
         if (!$proveedor->user) {
-            $idRoleProveedor = Role::where('nombre', 'PROVEEDOR')->first()->id;
+            $idRoleProveedor = Role::where('nombre', UserRoleEnumerate::GERENTE->value)->first()->id;
             $user = User::create([
                 'name' => $proveedor->nombre_comercial,
                 'email' => $proveedor->email,
@@ -349,7 +344,7 @@ class AuthController extends Controller
     {
         $user = $request->user();
         $user->load(User::eagerLodable());
-        $proveedor = $user->mainProveedor()->first();
+        $proveedor = $user->proveedorPrincipal();
 
         return $this->success([
             'user' => new UserAuthenticateResource($user),

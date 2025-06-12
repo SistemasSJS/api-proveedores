@@ -2,6 +2,8 @@
 
 namespace App\Traits;
 
+use App\Enums\UserRoleEnumerate;
+
 trait HasRoles
 {
     public function hasRole(string|array $roles): bool
@@ -15,21 +17,21 @@ trait HasRoles
 
     public function isSuperAdmin(): bool
     {
-        return $this->hasRole('super_admin');
+        return $this->hasRole(UserRoleEnumerate::ADMINISTRADOR->value);
     }
 
     public function isAdmin(): bool
     {
-        return $this->hasRole('admin');
+        return $this->hasRole(UserRoleEnumerate::ADMINISTRADOR->value);
     }
 
     public function isUserAdmin(): bool
     {
-        return $this->hasRole(['admin', 'super_admin']);
+        return $this->hasRole(UserRoleEnumerate::ADMINISTRADOR->value);
     }
 
     public function isProveedor(): bool
     {
-        return $this->hasRole('proveedor');
+        return $this->hasRole(UserRoleEnumerate::GERENTE->value);
     }
 }

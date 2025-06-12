@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Imagen;
+use App\Models\ProductoImagen;
 use Illuminate\Http\Request;
 
-class ImagenController extends Controller
+class ProductoImagenController extends Controller
 {
     /**
      * @OA\Get(
@@ -25,7 +25,7 @@ class ImagenController extends Controller
         $filters = $request->only(['producto_id']);
 
         // Aplicar los filtros usando el scopeFilter
-        $imagenes = Imagen::filter($filters)->paginate(10);
+        $imagenes = ProductoImagen::filter($filters)->paginate(10);
 
         return $this->paginated($imagenes);
     }
@@ -55,12 +55,12 @@ class ImagenController extends Controller
             'producto_id' => 'required|integer|exists:productos,id',
         ]);
 
-        $imagen = Imagen::create([
+        $imagen = ProductoImagen::create([
             'url' => $request->url,
             'producto_id' => $request->producto_id,
         ]);
 
-        return $this->success($imagen,'Imagen almacenada correctamente.', 201);
+        return $this->success($imagen, 'Imagen almacenada correctamente.', 201);
     }
 
     /**
@@ -76,8 +76,8 @@ class ImagenController extends Controller
      */
     public function show($id)
     {
-        $imagen = Imagen::findOrFail($id);
-        return $this->success($imagen,'Imagen encontrada.', 201);
+        $imagen = ProductoImagen::findOrFail($id);
+        return $this->success($imagen, 'Imagen encontrada.', 201);
     }
 
 
@@ -100,7 +100,7 @@ class ImagenController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $imagen = Imagen::findOrFail($id);
+        $imagen = ProductoImagen::findOrFail($id);
 
         $request->validate([
             'url' => 'required|string|url',
@@ -112,7 +112,7 @@ class ImagenController extends Controller
             'producto_id' => $request->producto_id,
         ]);
 
-        return $this->success($imagen,'Imagen actualizada correctamente.', 201);
+        return $this->success($imagen, 'Imagen actualizada correctamente.', 201);
     }
 
     /**
@@ -128,7 +128,7 @@ class ImagenController extends Controller
      */
     public function destroy($id)
     {
-        $imagen = Imagen::findOrFail($id);
+        $imagen = ProductoImagen::findOrFail($id);
         $imagen->delete();
 
         return $this->success(null, 204);

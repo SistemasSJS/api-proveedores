@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\Imagen;
+use App\Models\ProductoImagen;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
@@ -19,7 +19,7 @@ class ImagenPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Imagen $imagen): bool
+    public function view(User $user, ProductoImagen $imagen): bool
     {
         return $user->isUserAdmin();
     }
@@ -35,7 +35,7 @@ class ImagenPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Imagen $imagen): bool
+    public function update(User $user, ProductoImagen $imagen): bool
     {
         return $user->isUserAdmin();
     }
@@ -43,7 +43,7 @@ class ImagenPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Imagen $imagen): bool
+    public function delete(User $user, ProductoImagen $imagen): bool
     {
         return $user->isSuperAdmin(); // Solo super admin
     }
@@ -51,7 +51,7 @@ class ImagenPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Imagen $imagen): bool
+    public function restore(User $user, ProductoImagen $imagen): bool
     {
         return false;
     }
@@ -59,7 +59,7 @@ class ImagenPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Imagen $imagen): bool
+    public function forceDelete(User $user, ProductoImagen $imagen): bool
     {
         return false;
     }
