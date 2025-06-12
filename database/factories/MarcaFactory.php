@@ -13,7 +13,7 @@ class MarcaFactory extends Factory
     {
         return [
             'nombre' => $this->faker->unique()->company,
-            'estatus' => 'activo',
+            // 'estatus' => 'activo',
         ];
     }
 }

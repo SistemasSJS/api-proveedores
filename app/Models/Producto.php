@@ -42,11 +42,16 @@ class Producto extends BaseModel
         'sku',
         'nombre',
         'descripcion',
-        'logo',
+        'precio_base',
+        'imagen_principal',
         'proveedor_id',
+        'categoria_id',
         'marca_id',
         'linea_id',
-        'unidad_medida_id',
+        'activo',
+        'stock',
+        'peso_kg',
+        'dimensiones'
     ];
 
     /**
@@ -54,13 +59,7 @@ class Producto extends BaseModel
      *
      * @var array
      */
-    protected $with = [
-        'proveedor',
-        'marca',
-        'linea',
-        'unidad_medida',
-        'categorias'
-    ];
+    protected $with = ['categoria', 'marca', 'linea', 'especificaciones', 'imagenes'];
 
     /**
      * Filtros disponibles para aplicar dinámicamente en consultas.
@@ -113,36 +112,41 @@ class Producto extends BaseModel
         return $this->belongsTo(UnidadMedida::class);
     }
 
-    /**
-     * Galeria de imgs
-     */
-    public function imagenes()
+    public function categoria()
     {
-        return $this->hasMany(Imagen::class);
+        return $this->belongsTo(Categoria::class);
     }
 
-    /**
-     * Proveedores materiales Los Mochis
-     */
     public function marca()
     {
         return $this->belongsTo(Marca::class);
     }
 
-    /**
-     * Línea o familia comercial. Puede agrupar productos con características similares.
-     */
     public function linea()
     {
         return $this->belongsTo(Linea::class);
     }
 
-    /**
-     * Un procducto puede tener mas de una catergoria
-     */
-    public function categorias()
+    public function especificaciones()
     {
-        return $this->belongsToMany(Categoria::class, 'categoria_producto');
+        return $this->hasMany(ProductoEspecificacion::class);
+    }
+
+    public function imagenes()
+    {
+        return $this->hasMany(ProductoImagen::class)->orderBy('orden');
+    }
+
+    public function sucursales()
+    {
+        return $this->belongsToMany(Sucursal::class, 'producto_sucursales')
+            ->withPivot('stock_local', 'precio_local', 'activo')
+            ->withTimestamps();
+    }
+
+    public function scopeDelProveedor($query, $proveedorId)
+    {
+        return $query->where('proveedor_id', $proveedorId);
     }
 
 

@@ -4,20 +4,24 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void
+return new class extends Migration
+{
+    public function up()
     {
         Schema::create('marcas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
             $table->string('nombre');
-            $table->enum('estatus', ['activo', 'inactivo'])->default('activo');
+            $table->text('descripcion')->nullable();
+            $table->string('logo', 500)->nullable();
+            $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
+            $table->boolean('activo')->default(true);
             $table->timestamps();
-            $table->unique(['nombre', 'proveedor_id']);
+
+            $table->unique(['nombre', 'proveedor_id'], 'uk_marca_proveedor');
         });
     }
 
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('marcas');
     }

@@ -21,12 +21,6 @@ use Illuminate\Database\Eloquent\Model;
 class Categoria extends BaseModel
 {
     use HasFactory;
-    protected $fillable = [
-        'nombre',
-        'descripcion',
-        'photo_path',
-        'categoria_padre_id'
-    ];
 
     protected static $filters = [
         'nombre' => 'nombre',
@@ -34,28 +28,32 @@ class Categoria extends BaseModel
         'estatus' => 'estatus',
     ];
 
+    protected $fillable = ['nombre', 'descripcion', 'parent_id', 'nivel', 'proveedor_id', 'activo'];
 
-    /**
-     */
+    public function parent()
+    {
+        return $this->belongsTo(Categoria::class, 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Categoria::class, 'parent_id');
+    }
+
+    public function proveedor()
+    {
+        return $this->belongsTo(Proveedor::class);
+    }
+
     public function productos()
     {
-        return $this->belongsToMany(Producto::class);
+        return $this->hasMany(Producto::class);
     }
 
-    /**
-     * Categoiria padre
-     */
-    public function categoria_padre()
+    // Scope para multi-tenant
+    public function scopeDelProveedor($query, $proveedorId)
     {
-        return $this->belongsTo(Categoria::class, 'categoria_padre_id');
-    }
-
-    /**
-     * SubCategoiria de la categoria
-     */
-    public function categorias_hijos()
-    {
-        return $this->hasMany(Categoria::class, 'categoria_padre_id');
+        return $query->where('proveedor_id', $proveedorId);
     }
 
     public function scopeFilterByNombre($query, $value)

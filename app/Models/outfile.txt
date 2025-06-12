@@ -1,0 +1,1126 @@
+<?php
+
+namespace App\Models;
+
+/**
+ * @OA\Schema(
+ *     schema="ApiResponse",
+ *     type="object",
+ *     required={"status", "code", "message"},
+ *     @OA\Property(property="status", type="string", example="SUCCESS"),
+ *     @OA\Property(property="code", type="integer", example=200),
+ *     @OA\Property(property="message", type="string", example="Operación exitosa."),
+ *     @OA\Property(property="data", type="object", nullable=true),
+ *     @OA\Property(property="errors", type="object", nullable=true)
+ * )
+ */
+class ApiResponse {}
+
+
+// class ApiResponse {}
+/**
+ * @OA\Schema(
+ *     schema="ApiPaginatedResponse",
+ *     allOf={
+ *         @OA\Schema(ref="#/components/schemas/ApiResponse"),
+ *         @OA\Schema(
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object" 
+ *             ),
+ *             @OA\Property(
+ *                 property="meta",
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="pagination",
+ *                     type="object",
+ *                     @OA\Property(property="current_page", type="integer", example=1),
+ *                     @OA\Property(property="from", type="integer", example=1),
+ *                     @OA\Property(property="last_page", type="integer", example=5),
+ *                     @OA\Property(property="per_page", type="integer", example=15),
+ *                     @OA\Property(property="to", type="integer", example=15),
+ *                     @OA\Property(property="total", type="integer", example=70),
+ *                 )
+ *             )
+ *         )
+ *     }
+ * )
+ */
+class ApiPaginatedResponse {}
+
+
+
+/**
+ * @OA\Schema(
+ *     schema="ApiErrorResponse",
+ *     allOf={
+ *         @OA\Schema(ref="#/components/schemas/ApiResponse"),
+ *         @OA\Schema(
+ *             @OA\Property(property="status", type="string", example="ERROR"),
+ *             @OA\Property(property="code", type="integer", example=400),
+ *             @OA\Property(property="message", type="string", example="Ha ocurrido un error."),
+ *             @OA\Property(property="errors", type="object", example={"email": {"Este campo es requerido"}})
+ *         )
+ *     }
+ * )
+ */
+class ApiErrordResponse {}
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+abstract class BaseModel extends Model
+{
+    public $timestamps = true;
+
+    protected $hidden = [
+        "created_at",
+        "updated_at"
+    ];
+
+    protected static $filters = [];
+
+    /**
+     * Aplicar filtros con OR encadenado.
+     *
+     * @param $query
+     * @param array $filters
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeFilter($query, array $filters)
+    {
+        // Asegurarse de que se apliquen los filtros de manera encadenada con OR
+        foreach ($filters as $key => $value) {
+            if (!is_null($value)) {
+                // Se utiliza orWhere para que las condiciones se apliquen con OR
+                $query->orWhere($key, 'like', "%$value%");
+            }
+        }
+
+        return $query;
+    }
+
+    /**
+     * Obtener los filtros definidos en la clase.
+     *
+     * @return array
+     */
+    public static function getFilters(): array
+    {
+        return array_values(static::$filters);
+    }
+}
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * @OA\Schema(
+ *     schema="Catalogo",
+ *     required={"nombre", "proveedor_id"},
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="nombre", type="string", example="Catálogo 2024"),
+ *     @OA\Property(property="descripcion", type="string", nullable=true, example="Catálogo anual de Productos"),
+ *     @OA\Property(property="proveedor_id", type="integer", example=1),
+ *     @OA\Property(property="photo_url", type="string", nullable=true, example="https://dominio.com/storage/catalogos/2024.jpg"),
+ *     @OA\Property(property="Proveedor", ref="#/components/schemas/Proveedor")
+ * )
+ */
+class Catalogo extends BaseModel
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'nombre',
+        'descripcion',
+        'proveedor_id',
+        'photo_path',
+
+    ];
+
+    protected static $filters = [
+        'nombre' => 'nombre',
+        'descripcion' => 'descripcion',
+        'estatus' => 'estatus',
+    ];
+
+
+    /**
+     * Define las relaciones permitidas para cargar con with() (eager loading).
+     * Esto evita el problema N+1 y mejora el rendimiento de las consultas.
+     *
+     * @return string[]
+     */
+    public static function eagerLodable(): array
+    {
+        return [
+            'proveedor',
+            'productos'
+        ];
+    }
+
+    public function scopeFilterByNombre($query, $value)
+    {
+        return $query->where('nombre', 'like', "%$value%");
+    }
+
+    public function scopeFilterByEstatus($query, $value)
+    {
+        return $query->where('estatus', "%$value%");
+    }
+
+    public function scopeFilterByDescripcion($query, $value)
+    {
+        return $query->where('descripcion', "%$value%");
+    }
+
+    public function proveedor()
+    {
+        return $this->belongsTo(Proveedor::class);
+    }
+
+    public function productos()
+    {
+        return $this->hasMany(Producto::class);
+    }
+}
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * @OA\Schema(
+ *     schema="Categoria",
+ *     required={"nombre"},
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="nombre", type="string", example="Herramientas Eléctricas"),
+ *     @OA\Property(property="descripcion", type="text", example="Herramientas Eléctricas"),
+ *     @OA\Property(property="photo_path", type="string", example="Herramientas Eléctricas"),
+ *     @OA\Property(property="categoria_padre_id", type="integer", example="Herramientas Eléctricas"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
+class Categoria extends BaseModel
+{
+    use HasFactory;
+    protected $fillable = [
+        'nombre',
+        'descripcion',
+        'photo_path',
+        'categoria_padre_id'
+    ];
+
+    protected static $filters = [
+        'nombre' => 'nombre',
+        'descripcion' => 'descripcion',
+        'estatus' => 'estatus',
+    ];
+
+
+    /**
+     */
+    public function productos()
+    {
+        return $this->belongsToMany(Producto::class);
+    }
+
+    /**
+     * Categoiria padre
+     */
+    public function categoria_padre()
+    {
+        return $this->belongsTo(Categoria::class, 'categoria_padre_id');
+    }
+
+    /**
+     * SubCategoiria de la categoria
+     */
+    public function categorias_hijos()
+    {
+        return $this->hasMany(Categoria::class, 'categoria_padre_id');
+    }
+
+    public function scopeFilterByNombre($query, $value)
+    {
+        return $query->where('nombre', 'like', "%$value%");
+    }
+
+    public function scopeFilterByEstatus($query, $value)
+    {
+        return $query->where('estatus', "%$value%");
+    }
+
+    public function scopeFilterByDescripcion($query, $value)
+    {
+        return $query->where('descripcion', "%$value%");
+    }
+}
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * @OA\Schema(
+ *     schema="Imagen",
+ *     required={"url", "producto_id"},
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="producto_id", type="integer", example=1),
+ *     @OA\Property(property="url", type="string", format="url", example="https://miapp.com/storage/productos/1.jpg"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
+class Imagen extends BaseModel
+{
+    use HasFactory;
+    protected $table = "imagenes";
+
+
+    protected $fillable = ['url', 'producto_id'];
+
+    public function producto()
+    {
+        return $this->belongsTo(Producto::class);
+    }
+}
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+/**
+ * @OA\Schema(
+ *     schema="Linea",
+ *     required={"nombre"},
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="nombre", type="string", example="Industrial"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
+class Linea extends BaseModel
+{
+    use HasFactory;
+    protected $fillable = ['nombre'];
+
+    protected static $filters = [
+        'nombre' => 'nombre',
+        'estatus' => 'estatus',
+    ];
+
+    public function scopeFilterByNombre($query, $value)
+    {
+        return $query->where('nombre', 'like', "%$value%");
+    }
+
+    public function scopeFilterByEstatus($query, $value)
+    {
+        return $query->where('estatus', "%$value%");
+    }
+}
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+/**
+ * @OA\Schema(
+ *     schema="Marca",
+ *     required={"nombre"},
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="nombre", type="string", example="Truper"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
+class Marca extends BaseModel
+{
+    use HasFactory;
+
+    protected $fillable = ['nombre'];
+
+    protected static $filters = [
+        'nombre' => 'nombre',
+        'estatus' => 'estatus',
+    ];
+
+    public function scopeFilterByNombre($query, $value)
+    {
+        return $query->where('nombre', 'like', "%$value%");
+    }
+
+    public function scopeFilterByEstatus($query, $value)
+    {
+        return $query->where('estatus', "%$value%");
+    }
+}
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+
+/**
+ * @OA\Schema(
+ *     schema="Producto",
+ *     required={"nombre", "catalogo_id"},
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="sku", type="string", example="CMG-50"),
+ *     @OA\Property(property="nombre", type="string", example="Cemento gris 50kg"),
+ *     @OA\Property(property="logo", type="string", format="uri", example="https://misitio.com/logo.png"),
+ *     @OA\Property(property="modelo_codigo", type="string", example="MX-458G-9"),
+ *     @OA\Property(property="descripcion", type="string", example="Saco de cemento gris para construcción"),
+ *     @OA\Property(property="marca_id", type="integer", nullable=true, example=1),
+ *     @OA\Property(property="linea_id", type="integer", nullable=true, example=5),
+ *     @OA\Property(property="catalogo_id", type="integer", example=3),
+ *     @OA\Property(property="unidad_medida_id", type="integer", nullable=true, example=1),
+ *     @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-15T10:00:00Z"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time", example="2024-01-20T14:30:00Z"),
+ *     @OA\Property(property="marca", ref="#/components/schemas/Marca"),
+ *     @OA\Property(property="linea", ref="#/components/schemas/Linea"),
+ *     @OA\Property(property="catalogo", ref="#/components/schemas/Catalogo"),
+ *     @OA\Property(property="unidad_medida", ref="#/components/schemas/UnidadMedida"),
+ *     @OA\Property(property="imagenes", type="array", @OA\Items(ref="#/components/schemas/Imagen"))
+ * )
+ */
+class Producto extends BaseModel
+{
+    use HasFactory;
+
+    /**
+     * Atributos que se pueden asignar masivamente.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'sku',
+        'nombre',
+        'descripcion',
+        'logo',
+        'proveedor_id',
+        'marca_id',
+        'linea_id',
+        'unidad_medida_id',
+    ];
+
+    /**
+     * The relations to eager load on every query.
+     *
+     * @var array
+     */
+    protected $with = [
+        'proveedor',
+        'marca',
+        'linea',
+        'unidad_medida',
+        'categorias'
+    ];
+
+    /**
+     * Filtros disponibles para aplicar dinámicamente en consultas.
+     * El índice es el nombre del filtro recibido desde el request
+     * y el valor corresponde al nombre del método de filtro.
+     *
+     * Ejemplo: 'nombre' => 'nombre' buscará un método llamado `filterByNombre()`.
+     *
+     * @var array<string, string>
+     */
+    protected static $filters = [
+        'nombre' => 'nombre',
+        'modelo_codigo' => 'modelo_codigo',
+        'descripcion' => 'descripcion',
+        'sku' => 'sku',
+    ];
+
+    /**
+     * Relaciones disponibles para cargar con eager loading.
+     *
+     * Estas relaciones pueden usarse en `with()` para evitar el problema N+1.
+     *
+     * @return string[]
+     */
+    public static function eagerLodable(): array
+    {
+        return [
+            'proveedor',
+            'unidad_medida',
+            // 'imagenes',// AUNNO
+            'marca',
+            'categorias',
+            'linea',
+        ];
+    }
+
+    /**
+     * El proveedor al que pertenece el productio
+     */
+    public function proveedor()
+    {
+        return $this->belongsTo(Proveedor::class);
+    }
+
+    /**
+     * Unidad de venta: pieza, metro, kilogramo, litro, etc.
+     */
+    public function unidad_medida()
+    {
+        return $this->belongsTo(UnidadMedida::class);
+    }
+
+    /**
+     * Galeria de imgs
+     */
+    public function imagenes()
+    {
+        return $this->hasMany(Imagen::class);
+    }
+
+    /**
+     * Proveedores materiales Los Mochis
+     */
+    public function marca()
+    {
+        return $this->belongsTo(Marca::class);
+    }
+
+    /**
+     * Línea o familia comercial. Puede agrupar productos con características similares.
+     */
+    public function linea()
+    {
+        return $this->belongsTo(Linea::class);
+    }
+
+    /**
+     * Un procducto puede tener mas de una catergoria
+     */
+    public function categorias()
+    {
+        return $this->belongsToMany(Categoria::class, 'categoria_producto');
+    }
+
+
+    public function filterByNombre($query, $value)
+    {
+        return $query->where('nombre', 'like', "%$value%");
+    }
+
+    public function filterByDescripcion($query, $value)
+    {
+        return $query->where('descripcion', 'like', "%$value%");
+    }
+
+    public function filterBySku($query, $value)
+    {
+        return $query->where('sku', 'like', "%$value%");
+    }
+}
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+/**
+ * @OA\Schema(
+ *     schema="Proveedor",
+ *     title="Proveedor",
+ *     description="Esquema del modelo Proveedor",
+ *     required={
+ *         "nombre_comercial", "razon_social", "rfc", "email", "telefono",
+ *         "estado", "municipio", "codigo_postal", "contacto_nombre",
+ *         "contacto_telefono", "contacto_correo", "tipos_empresa_id",
+ *         "descripcion_giro_empresa", "direccion_empresa"
+ *     },
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="logo", type="string", format="uri", example="https://misitio.com/logo.png"),
+ *     @OA\Property(property="rfc", type="string", example="RIEM920313AB1"),
+ *     @OA\Property(property="tipo_persona", type="string", example="Moral"),
+ *     @OA\Property(property="direccion_fiscal", type="string", example="Calle Ficticia 123"),
+ *     @OA\Property(property="estado", type="string", example="Sinaloa"),
+ *     @OA\Property(property="municipio", type="string", example="Culiacán"),
+ *     @OA\Property(property="codigo_postal", type="string", example="80000"),
+ *     @OA\Property(property="estatus", type="string", example="pendiente"),
+ *     @OA\Property(property="notas", type="string", example="Proveedor con buena reputación."),
+ *     @OA\Property(property="validado_por", type="integer", nullable=true, example=5),
+ *     @OA\Property(property="user_id", type="integer", nullable=true, example=2),
+ *     @OA\Property(property="nombre_propietario", type="string", example="Carlos López"),
+ *     @OA\Property(property="nombre_de_quien_registra", type="string", example="María Pérez"),
+ *     @OA\Property(property="nombre_comercial", type="string", example="Materiales Rivera"),
+ *     @OA\Property(property="razon_social", type="string", example="Materiales de Construcción Rivera S.A. de C.V."),
+ *     @OA\Property(property="tipos_empresa_id", type="integer", example=1),
+ *     @OA\Property(property="tipos_empresa_otro", type="string", nullable=true, example="Familiar"),
+ *     @OA\Property(property="descripcion_giro_empresa", type="string", example="Venta de materiales de construcción."),
+ *     @OA\Property(property="direccion_empresa", type="string", example="Calle 123, Col. Centro"),
+ *     @OA\Property(property="email", type="string", format="email", example="contacto@materialesrivera.com"),
+ *     @OA\Property(property="telefono", type="string", example="6671234567"),
+ *     @OA\Property(property="pagina_web", type="string", format="uri", nullable=true, example="https://materialesrivera.com"),
+ *     @OA\Property(property="contacto_nombre", type="string", example="Juan Pérez"),
+ *     @OA\Property(property="contacto_cargo", type="string", example="Gerente de compras"),
+ *     @OA\Property(property="contacto_telefono", type="string", example="6677654321"),
+ *     @OA\Property(property="contacto_correo", type="string", format="email", example="juan.perez@materialesrivera.com"),
+ *     @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-01T12:00:00Z"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time", example="2024-01-02T15:30:00Z")
+ * )
+ */
+class Proveedor extends BaseModel
+{
+    use HasFactory;
+
+    protected $table = "proveedores";
+
+    /**
+     * Campos asignables masivamente. Incluyen información de contacto,
+     * datos fiscales, datos del contacto responsable, estado del proveedor
+     * y referencias internas del sistema.
+     */
+    protected $fillable = [
+        'logo',
+        'nombre_comercial',
+        'pagina_web',
+        'email',
+        'telefono',
+
+        'rfc',
+        'tipo_persona',
+        'direccion_fiscal',
+        'estado',
+        'municipio',
+        'codigo_postal',
+        'estatus',
+        'notas',
+        'validado_por',
+        'user_id',
+
+        'nombre_propietario',
+        'nombre_de_quien_registra',
+        'razon_social',
+        'tipos_empresa_id',
+        'tipos_empresa_otro',
+        'descripcion_giro_empresa',
+        'direccion_empresa',
+        // 'ubicacion',
+        'contacto_nombre',
+        'contacto_cargo',
+        'contacto_telefono',
+        'contacto_correo',
+    ];
+
+    /**
+     * Conversión automática de campos al acceder.
+     * En este caso, se formatea fecha_registro como objeto Carbon.
+     */
+    protected $casts = [
+        'fecha_registro' => 'datetime',
+    ];
+
+    /**
+     * Filtros disponibles para construir consultas dinámicas sobre este modelo.
+     * Utilizado por controladores o repositorios para permitir filtrado de datos
+     * sin escribir condiciones manuales.
+     */
+    protected static $filters = [
+        'nombre_comercial' => 'nombre_comercial',
+        'razon_social' => 'razon_social',
+        'rfc' => 'rfc',
+        'direccion_fiscal' => 'direccion_fiscal',
+        'estado' => 'estado',
+        'municipio' => 'municipio',
+        'fecha_registro' => 'fecha_registro',
+        'estatus' => 'estatus',
+        'notas' => 'notas',
+        'nombre_comercial' => 'nombre_comercial',
+        'email' => 'email',
+        'tipos_empresa' => 'tipos_empresa',
+        'otro_tipos_empresa' => 'otro_tipos_empresa',
+        'descripcion_giro_empresa' => 'descripcion_giro_empresa',
+        'direccion_empresa' => 'fireccion_empresa',
+        'ubicacion' => 'ubicacion',
+        'pagina_web' => 'pagina_web',
+    ];
+
+    /**
+     * Define las relaciones permitidas para cargar con with() (eager loading).
+     * Esto evita el problema N+1 y mejora el rendimiento de las consultas.
+     *
+     * @return string[]
+     */
+    public static function eagerLodable(): array
+    {
+        return [
+            // 'user',
+            'tipos_empresa'
+        ];
+    }
+
+    // ====== Scopes de filtro para campos individuales ======
+
+    public function scopeFilterByNombreComercial($query, $value)
+    {
+        return $query->where('nombre_comercial', 'like', "%$value%");
+    }
+
+    public function scopeFilterByRazonSocial($query, $value)
+    {
+        return $query->where('razon_social', 'like', "%$value%");
+    }
+
+    public function scopeFilterByRfc($query, $value)
+    {
+        return $query->where('rfc', 'like', "%$value%");
+    }
+
+    public function scopeFilterByDireccionFiscal($query, $value)
+    {
+        return $query->where('direccion_fiscal', 'like', "%$value%");
+    }
+
+    public function scopeFilterByEstado($query, $value)
+    {
+        return $query->where('estado', 'like', "%$value%");
+    }
+
+    public function scopeFilterByMunicipio($query, $value)
+    {
+        return $query->where('municipio', 'like', "%$value%");
+    }
+
+    public function scopeFilterByFechaRegistro($query, $value)
+    {
+        return $query->whereDate('fecha_registro', $value);
+    }
+
+    public function scopeFilterByEstatus($query, $value)
+    {
+        return $query->where('estatus', $value);
+    }
+
+    public function scopeFilterByNotas($query, $value)
+    {
+        return $query->where('notas', 'like', "%$value%");
+    }
+
+    public function scopeFilterByEmail($query, $value)
+    {
+        return $query->where('email', 'like', "%$value%");
+    }
+
+    // ====== Relaciones con otros modelos ======
+
+    /**
+     * Relación uno a muchos: un proveedor puede tener varias sucursales.
+     */
+    public function sucursales()
+    {
+        return $this->hasMany(Sucursal::class);
+    }
+
+    /**
+     * Relación uno a muchos: un proveedor puede tener múltiples productos registrados.
+     */
+    public function productos()
+    {
+        return $this->hasMany(Producto::class);
+    }
+
+    /**
+     * Usuario que registró al proveedor.
+     */
+    public function tipos_empresa()
+    {
+        return $this->belongsTo(TipoEmpresa::class);
+    }
+
+    /**
+     * Usuario que validó al proveedor (usando la columna validado_por).
+     */
+    public function validador()
+    {
+        return $this->belongsTo(User::class, 'validado_por');
+    }
+
+    /**
+     * Relación con usuarios (Múltiples usuarios)
+     */
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'user_proveedor')
+            ->withPivot('is_main')
+            ->withTimestamps();
+    }
+
+    public function usuarioPrincipal()
+    {
+        return $this->hasOne(User::class)->where('is_main', true);
+    }
+
+    // /**
+    //  * Método para obtener el usuario principal
+    //  */
+    // public function mainUser()
+    // {
+    //     return $this->belongsToMany(User::class)
+    //         ->wherePivot('is_main', true)
+    //         ->withPivot('is_main')
+    //         ->withTimestamps()
+    //         ->limit(1); // Por si acaso
+    // }
+}
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Role extends BaseModel
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'nombre',
+        'estatus',
+        'created_at',
+        'update_at'
+    ];
+
+    /**
+     * Filtros disponibles para construir consultas dinámicas sobre este modelo.
+     * Utilizado por controladores o repositorios para permitir filtrado de datos
+     * sin escribir condiciones manuales.
+     */
+    protected static $filters = [
+        'nombre' => 'nombre',
+        'estatus' => 'estatus',
+        'created_at' => 'created_at',
+        'update_at' => 'update_at'
+    ];
+
+    /**
+     * Filter data mediante el nombre del role.
+     */
+    public function scopeFilterByNombre($query, $value)
+    {
+        return $query->where('nombre', 'like', "%$value%");
+    }
+
+
+    /**
+     * Filtro específico para 'estatus'
+     */
+    public function scopeFilterByEstatus($query, $value)
+    {
+        return $query->where('estatus', $value);
+    }
+
+    /**
+     * Relacion de usuarios con este rol.
+     */
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
+}
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+
+/**
+ * @OA\Schema(
+ *     schema="Sucursal",
+ *     required={"nombre", "direccion", "proveedor_id"},
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="nombre", type="string", example="Sucursal Culiacán"),
+ *     @OA\Property(property="direccion", type="string", example="Av. Álvaro Obregón 1234"),
+ *     @OA\Property(property="telefono", type="string", example="6671234567"),
+ *     @OA\Property(property="correo", type="string", example="contacto@sucursal.com"),
+ *     @OA\Property(property="proveedor_id", type="integer", example=1),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
+class Sucursal extends BaseModel
+{
+    use HasFactory;
+    protected $table = "sucursales";
+    protected $fillable = [
+        'proveedor_id',
+        'nombre',
+        'direccion',
+    ];
+
+    public function proveedor()
+    {
+        return $this->belongsTo(Proveedor::class);
+    }
+
+    public function productos()
+    {
+        return $this->belongsToMany(Producto::class, 'producto_sucursal');
+    }
+}
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * @OA\Schema(
+ *     schema="TipoEmpresa",
+ *     required={"nombre"},
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="nombre", type="string", example="Pequeña"),
+ *     @OA\Property(property="clave", type="string", example="pequeña"),
+ *     @OA\Property(property="estatus", type="string", example="activo"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
+class TipoEmpresa extends BaseModel
+{
+    use HasFactory;
+    protected $table = "tipos_empresa";
+
+
+    protected $fillable = [
+        'nombre',
+        'clave',
+        'estatus',
+        'created_at',
+        'update_at'
+    ];
+
+    // Filtros disponibles para este modelo
+    protected static $filters = [
+        'nombre' => 'nombre',
+        'clave' => 'clave',
+        'estatus' => 'estatus',
+        'created_at' => 'created_at',
+        'update_at' => 'update_at'
+    ];
+
+    // Filtro específico para 'nombre'
+    public function scopeFilterByNombre($query, $value)
+    {
+        return $query->where('nombre', 'like', "%$value%");
+    }
+
+    // Filtro específico para 'clave'
+    public function scopeFilterByClave($query, $value)
+    {
+        return $query->where('clave', 'like', "%$value%");
+    }
+
+    // Filtro específico para 'estatus'
+    public function scopeFilterByEstatus($query, $value)
+    {
+        return $query->where('estatus', $value);
+    }
+}
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+
+/**
+ * @OA\Schema(
+ *     schema="UnidadMedida",
+ *     required={"nombre"},
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="nombre", type="string", example="Kilogramo"),
+ *     @OA\Property(property="descripcion", type="string", example="Unidad de peso equivalente a mil gramos"),
+ *     @OA\Property(property="estatus", type="string", example="activo"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
+class UnidadMedida extends BaseModel
+{
+    use HasFactory;
+
+    protected $fillable = ['nombre', 'clave', 'descripcion', 'estatus'];
+
+
+    public function scopeFilterByNombre($query, $value)
+    {
+        return $query->where('nombre', 'like', "%$value%");
+    }
+
+    public function scopeFilterByEstatus($query, $value)
+    {
+        return $query->where('estatus', "%$value%");
+    }
+
+    public function productos()
+    {
+        return $this->hasMany(Producto::class);
+    }
+}
+<?php
+
+namespace App\Models;
+
+use App\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+
+/**
+ * @OA\Schema(
+ *     schema="User",
+ *     required={"name", "email"},
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="Juan Pérez"),
+ *     @OA\Property(property="email", type="string", example="juan@ejemplo.com"),
+ *     @OA\Property(property="role_id", type="integer", example=1),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
+class User extends Authenticatable
+{
+
+    use HasFactory, Notifiable, HasApiTokens, HasRoles;
+    protected $fillable = ['name', 'email', 'foto_perfil_url', 'password', 'role_id'];
+
+    protected $hidden = ['password', 'remember_token'];
+
+    protected function casts(): array
+    {
+        return ['email_verified_at' => 'datetime', 'password' => 'hashed'];
+    }
+
+    // Relación con Role (Un solo rol por usuario)
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Permite obtener todos los proveedores relacionados con un usuario.
+     * $user->proveedores()
+     */
+    public function proveedores()
+    {
+        return $this->belongsToMany(Proveedor::class, 'user_proveedor')
+            ->withPivot('is_main')
+            ->withTimestamps();
+    }
+    /**
+     * Devuelve solo el proveedor principal de este usuario.
+     * $user->mainProveedor()
+     */
+    public function mainProveedor()
+    {
+        return $this->belongsToMany(Proveedor::class, 'user_proveedor')
+            ->wherePivot('is_main', true)
+            ->withTimestamps();
+    }
+
+    /**
+     * Devuelve el proveedor principal o null si no existe ninguno.
+     * $user->main_proveedor.
+     */
+    public function getMainProveedorAttribute()
+    {
+        return $this->mainProveedor->first();
+    }
+
+    // Filtros disponibles para este modelo
+    protected static $filters = [
+        'nombre' => 'nombre',
+        'email' => 'email',
+        'role' => 'role',
+    ];
+
+    // Filtro específico para 'name'
+    public function filterByNombre($query, $value)
+    {
+        return $query->where('nombre', 'like', "%$value%");
+    }
+
+    // Filtro específico para 'email'
+    public function filterByEmail($query, $value)
+    {
+        return $query->where('email', 'like', "%$value%");
+    }
+
+    // Filtro específico para 'role'
+    public function filterByRole($query, $value)
+    {
+        return $query->whereHas('role', function ($q) use ($value) {
+            $q->where('name', 'like', "%$value%");
+        });
+    }
+
+    /**
+     * Filtra los resultados de acuerdo a los filtros definidos.
+     * 
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param array $filters
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeFilter($query, array $filters)
+    {
+        foreach ($filters as $key => $value) {
+            if (isset(static::$filters[$key])) {
+                $method = 'filterBy' . ucfirst($filters[$key]);
+                if (method_exists($this, $method)) {
+                    $query = $this->$method($query, $value);
+                }
+            }
+        }
+        return $query;
+    }
+
+    /**
+     * Obtener los filtros definidos en la clase.
+     *
+     * @return array
+     */
+    public static function getFilters(): array
+    {
+        return array_values(static::$filters);
+    }
+
+    /**
+     * Define las relaciones permitidas para cargar con with() (eager loading).
+     * Esto evita el problema N+1 y mejora el rendimiento de las consultas.
+     *
+     * @return string[]
+     */
+    public static function eagerLodable(): array
+    {
+        return [
+            'role',
+            'proveedores',
+        ];
+    }
+}

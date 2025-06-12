@@ -4,23 +4,27 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void
+return new class extends Migration
+{
+    public function up()
     {
         Schema::create('categorias', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
             $table->string('nombre');
             $table->text('descripcion')->nullable();
-            $table->string('photo_path')->nullable();
-            $table->foreignId('categoria_padre_id')->nullable()->constrained('categorias')->nullOnDelete();
+            $table->unsignedBigInteger('parent_id')->nullable();
+            $table->tinyInteger('nivel')->default(0)->comment('0: Principal, 1: Subcategoría L1, 2: Subcategoría L2');
+            $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
+            $table->boolean('activo')->default(true);
             $table->timestamps();
-            $table->enum('estatus', ['activo', 'inactivo'])->default('activo');
-            $table->unique(['nombre', 'proveedor_id']);
+
+            $table->foreign('parent_id')->references('id')->on('categorias')->onDelete('cascade');
+            $table->index(['parent_id', 'proveedor_id'], 'idx_parent_proveedor');
+            // $table->check('nivel IN (0, 1, 2)');
         });
     }
 
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('categorias');
     }

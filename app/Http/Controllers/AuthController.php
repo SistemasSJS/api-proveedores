@@ -347,14 +347,15 @@ class AuthController extends Controller
      */
     public function me(Request $request)
     {
-        return $this->success(
-            [
-                'success' => true,
-                'user' => new UserResource($request->user())
-            ],
-            'Usuario autenticado.',
-            200
-        );
+        $user = $request->user();
+        $user->load(User::eagerLodable());
+        $proveedor = $user->mainProveedor()->first();
+
+        return $this->success([
+            'user' => new UserAuthenticateResource($user),
+            'token' => null,
+            'proveedor' => $proveedor
+        ], 'Login exitoso.', 200);
     }
 
     /**

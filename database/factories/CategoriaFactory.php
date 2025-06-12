@@ -13,7 +13,6 @@ class CategoriaFactory extends Factory
     {
         return [
             'nombre' => $this->faker->unique()->word,
-            'estatus' => 'activo',
         ];
     }
 }

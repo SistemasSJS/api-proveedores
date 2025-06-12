@@ -13,7 +13,7 @@ class LineaFactory extends Factory
     {
         return [
             'nombre' => $this->faker->unique()->word,
-            'estatus' => 'activo',
+            // 'estatus' => 'activo',
         ];
     }
 }

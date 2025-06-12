@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @OA\Schema(
- *     schema="Imagen",
+ *     schema="ProductoImagen",
  *     required={"url", "producto_id"},
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="producto_id", type="integer", example=1),
@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  *     @OA\Property(property="updated_at", type="string", format="date-time")
  * )
  */
-class Imagen extends BaseModel
+class ProductoImagen extends BaseModel
 {
     use HasFactory;
     protected $table = "imagenes";
