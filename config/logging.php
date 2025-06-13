@@ -132,6 +132,25 @@ return [
             'level' => 'info',
         ],
 
+        'api_access' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/api-access.log'),
+            'level' => 'info',
+            'days' => 90,
+        ],
+        'audit' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/audit.log'),
+            'level' => 'info',
+            'days' => 2555, // 7 años
+        ],
+        'security' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/security.log'),
+            'level' => 'warning',
+            'days' => 365,
+        ],
+
     ],
 
 ];

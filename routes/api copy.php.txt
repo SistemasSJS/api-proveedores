@@ -1,8 +1,9 @@
 <?php
+<?php
 
 use App\Enums\UserRoleEnumerate;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminHomeControler;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\CategoriaController;
@@ -21,27 +22,31 @@ use App\Http\Controllers\ProductoImagenController;
 use App\Http\Controllers\ProveedorUsuarioController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TipoEmpresaController;
+use App\Models\Producto;
 
-use App\Http\Middleware\EnsureProveedorOwnership;
-use App\Http\Middleware\ValidateApiAccess;
-use App\Http\Middleware\LogApiActions;
+// Route::get('test', [ProveedorController::class, 'test']);
+// Route::post('upload', [FileUploadController::class, 'store'])->name('upload');
+
+
 
 /**
- * RUTAS DE AUTENTICACION Y REGISTRO DE USUARIOS
+ * RUTAS DE AUTENTICACION Y REGISTRO DE USUASIROS
  */
 Route::prefix('auth')->group(function () {
-    Route::post('login', [AuthController::class, 'login'])->middleware([LogApiActions::class]);
+    Route::post('login', [AuthController::class, 'login']);
     Route::post('register', [AuthController::class, 'register']);
     Route::post('completar-registro', [AuthController::class, 'register_completar']);
     Route::post('register_proveedor', [AuthController::class, 'register_proveedor']);
     Route::post('register_proveedor_completar', [AuthController::class, 'register_proveedor_completar']);
 
     Route::middleware('auth:sanctum')->group(function () {
-        Route::get('me', [AuthController::class, 'me']);
-        Route::get('logout', [AuthController::class, 'logout']);
-        Route::post('update-img-perfil', [AuthController::class, 'update_foto_perfil']);
+        Route::get('me', [AuthController::class, 'me']);  // Obtener datos del proveedor autenticado
+        Route::get('logout', [AuthController::class, 'logout']);  // Obtener datos del proveedor autenticado
+        Route::post('update-img-perfil', [AuthController::class, 'update_foto_perfil']);  // Obtener datos del proveedor autenticado
     });
 });
+
+
 
 /**
  * Rutas de listado de catalogos
@@ -53,8 +58,9 @@ Route::get('marcas-index', [MarcaController::class, 'index']);
 Route::get('unidades-medida-index', [UnidadMedidaController::class, 'index']);
 Route::get('tipos-empresa-index', [TipoEmpresaController::class, 'index']);
 
+
 /**
- * Rutas con protección con apitoken
+ * Rutas con proteccion con apitoken
  */
 Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:' . UserRoleEnumerate::GERENTE->value . ',' . UserRoleEnumerate::ADMINISTRADOR->value)->group(function () {
@@ -64,17 +70,20 @@ Route::middleware('auth:sanctum')->group(function () {
          */
         Route::prefix('proveedores')->group(function () {
 
+            // CRUD de proveedores
             Route::controller(ProveedorController::class)->group(function () {
                 Route::get('/', 'index');
                 Route::post('/', 'store');
-                Route::get('{proveedor}', 'show')->middleware([ValidateApiAccess::class]);
+                Route::get('{proveedor}', 'show');
                 Route::patch('{proveedor}', 'update');
                 Route::delete('{proveedor}', 'destroy');
+
+                // Extras RESTful
                 Route::post('{proveedor}/logo', 'updateLogo');
             });
-
             Route::post('{proveedor}/import', [ImportProductoController::class, 'import']);
 
+            // Usuarios asociados al proveedor
             Route::prefix('{proveedor}/users')->group(function () {
                 Route::get('/', [ProveedorUsuarioController::class, 'index']);
                 Route::post('/', [ProveedorUsuarioController::class, 'store']);
@@ -84,10 +93,12 @@ Route::middleware('auth:sanctum')->group(function () {
                     Route::get('{user}', [ProveedorUsuarioController::class, 'show']);
                     Route::patch('{user}', [ProveedorUsuarioController::class, 'update']);
                     Route::delete('{user}', [ProveedorUsuarioController::class, 'destroy']);
+                    // Route::post('{user}', [ProveedorUsuarioController::class,'upload_perfil']);
                 });
             });
 
-            Route::prefix('{proveedor}/productos')->middleware([EnsureProveedorOwnership::class])->group(function () {
+            // Rutas productos por catalogo
+            Route::prefix('{proveedor}/productos')->group(function () {
                 Route::get('/', [ProductoCategoriaController::class, 'index']);
                 Route::post('/', [ProductoCategoriaController::class, 'store']);
 
@@ -95,14 +106,43 @@ Route::middleware('auth:sanctum')->group(function () {
                     Route::get('{producto}', [ProductoCategoriaController::class, 'show']);
                     Route::patch('{producto}', [ProductoCategoriaController::class, 'update']);
                     Route::post('{producto}/logo', [ProductoCategoriaController::class, 'updateLogo']);
+                    // Route::delete('{producto}', [ProductoCategoriaController::class, 'destroy']);
                 });
             });
+
+            // // Gestión de catálogos del proveedor
+            // Route::prefix('{proveedor}/catalogos')->group(function () {
+            //     // Rutas sin middleware
+            //     Route::get('/', [CatalogoController::class, 'index']);
+            //     Route::post('/', [CatalogoController::class, 'store']);
+
+            //     // Rutas protegidas por el middleware de catálogo
+            //     Route::middleware('catalogo.proveedor')->group(function () {
+            //         Route::get('{catalogo}', [CatalogoController::class, 'show']);
+            //         Route::patch('{catalogo}', [CatalogoController::class, 'update']);
+            //         Route::delete('{catalogo}', [CatalogoController::class, 'destroy']);
+            //         Route::post('{catalogo}', [CatalogoController::class, 'upload_perfil']);
+
+
+            //         // Rutas productos por catalogo
+
+            //     });
+            // });
         });
 
+        /**
+         * Extra: Obtener proveedor por ID de usuario
+         */
         Route::get('proveedores/user/{id}', [ProveedorController::class, 'getProveedorByUserId']);
     });
 
-    Route::middleware('role:' . UserRoleEnumerate::ADMINISTRADOR->value)->group(function () {
+    /**
+     * Rutas para los CRUDS. Only admins
+     */
+    Route::middleware(
+        'role:'
+            . UserRoleEnumerate::ADMINISTRADOR->value
+    )->group(function () {
         Route::get('catalogos-resumen', [AdminHomeControler::class, 'getCatalogosCountItems']);
 
         Route::apiResource('users', UserController::class);
