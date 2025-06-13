@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Exceptions\Api\Auth\UnauthorizedProveedorAccessException;
 use App\Services\Auth\ProveedorAccessService;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Middleware para asegurar que los usuarios solo accedan a recursos de proveedores
@@ -50,6 +51,8 @@ class EnsureProveedorOwnership
       return $next($request);
     }
 
+    Log::debug("message", [$request]);
+
     // Obtener el ID del proveedor desde los parámetros de la ruta
     $proveedorId = $this->getProveedorIdFromRequest($request, $parameterName);
 
@@ -57,6 +60,7 @@ class EnsureProveedorOwnership
       throw new UnauthorizedProveedorAccessException('ID de proveedor no encontrado en la solicitud.');
     }
 
+    $proveedorId = is_numeric($proveedorId) ? $proveedorId : $proveedorId->id;
     // Verificar si el usuario tiene acceso al proveedor
     if (!$this->proveedorAccessService->hasAccessToProveedor($user->id, $proveedorId)) {
       throw new UnauthorizedProveedorAccessException(
@@ -80,27 +84,30 @@ class EnsureProveedorOwnership
    * @param string $parameterName
    * @return int|null
    */
-  protected function getProveedorIdFromRequest(Request $request, string $parameterName): ?int
+  protected function getProveedorIdFromRequest(Request $request, string $parameterName)
   {
     // 1. Intentar obtener desde parámetros de ruta
     $proveedorId = $request->route($parameterName);
 
     if ($proveedorId) {
-      return (int) $proveedorId;
+      // return (int) $proveedorId;
+      return  $proveedorId;
     }
 
     // 2. Intentar obtener desde query parameters
     $proveedorId = $request->query('proveedor_id');
 
     if ($proveedorId) {
-      return (int) $proveedorId;
+      // return (int) $proveedorId;
+      return  $proveedorId;
     }
 
     // 3. Intentar obtener desde el body de la solicitud
     $proveedorId = $request->input('proveedor_id');
 
     if ($proveedorId) {
-      return (int) $proveedorId;
+      // return (int) $proveedorId;
+      return  $proveedorId;
     }
 
     // 4. Para rutas anidadas, intentar extraer de la URL
@@ -109,7 +116,8 @@ class EnsureProveedorOwnership
     $proveedorIndex = array_search('proveedores', $segments);
 
     if ($proveedorIndex !== false && isset($segments[$proveedorIndex + 1])) {
-      return (int) $segments[$proveedorIndex + 1];
+      // return (int) $segments[$proveedorIndex + 1];
+      return  $segments[$proveedorIndex + 1];
     }
 
     return null;

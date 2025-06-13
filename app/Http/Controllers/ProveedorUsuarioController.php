@@ -194,8 +194,8 @@ class ProveedorUsuarioController extends Controller
         if (!$proveedor->users()->find($user->id)) {
             throw new ResourceNotFoundException(404, 'Usuario no asociado al proveedor.');
         }
-
-        return $this->success(new UserResource($user), 'Usuario obtenido correctamente.');
+        
+        return $this->success(new UserResource($user->load(User::eagerLodable())), 'Usuario obtenido correctamente.');
     }
 
     /**

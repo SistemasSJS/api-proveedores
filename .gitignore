@@ -183,3 +183,5 @@ storage/logs/requests.log
 
 # Log files
 /storage/logs
+
+storage/
