@@ -146,8 +146,20 @@ class ProveedorUsuarioController extends Controller
             'role_id' => $validated['role_id'],
         ]);
 
+        // $proveedor->users()->attach($user->id, [
+        //     'is_main' => false,
+        // ]);
+        // TODO: add on  ProveedorUsuaiorStoreRequest params:
+        // - tipo_relacion: PRIMARIO | SECUNDARIO
+        // - activo ---> change a estatus string
+        // - fecha_asignacion
+        // - observaciones  ---> in from generar opciones prefabricadas. No dejar libre
+
         $proveedor->users()->attach($user->id, [
-            'is_main' => false,
+            'tipo_relacion' => 'SECUNDARIO',
+            'activo' => true,
+            'fecha_asignacion' => now(),
+            'observaciones' => 'Usuario secundario del proveedor',
         ]);
 
         return $this->success(new UserResource($user->load(User::eagerLodable())), 'Usuario creado correctamente.', 201);
@@ -194,7 +206,7 @@ class ProveedorUsuarioController extends Controller
         if (!$proveedor->users()->find($user->id)) {
             throw new ResourceNotFoundException(404, 'Usuario no asociado al proveedor.');
         }
-        
+
         return $this->success(new UserResource($user->load(User::eagerLodable())), 'Usuario obtenido correctamente.');
     }
 
