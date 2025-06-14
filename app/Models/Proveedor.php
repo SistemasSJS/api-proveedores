@@ -189,6 +189,18 @@ class Proveedor extends BaseModel
 
     // ====== Relaciones con otros modelos ======
 
+    public function categorias()
+    {
+        return $this->hasMany(Categoria::class);
+    }
+    public function marcas()
+    {
+        return $this->hasMany(Marca::class);
+    }
+    public function lineas()
+    {
+        return $this->hasMany(Linea::class);
+    }
     /**
      * Relación uno a muchos: un proveedor puede tener varias sucursales.
      */

@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Storage;
 /**
  * @OA\Tag(name="Productos", description="Gestión de catálogo")
  */
-class ProductoCategoriaController extends Controller
+class ProveedorProductoController extends Controller
 {
     use ApiResponse;
 

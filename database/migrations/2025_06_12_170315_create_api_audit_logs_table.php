@@ -69,7 +69,7 @@ return new class extends Migration
 
             // Foreign key constraints
             $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('proveedor_context')->references('id')->on('proveedors')->onDelete('set null');
+            $table->foreign('proveedor_context')->references('id')->on('proveedores')->onDelete('set null');
         });
 
         // Crear índice para búsquedas de texto en JSON (MySQL 5.7+)

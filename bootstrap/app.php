@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureCategoriaBelongsToProveedor;
 use App\Http\Middleware\EnsureProductoBelongsToProveedor;
 use App\Http\Middleware\EnsureUserBelongsToProveedor;
 use App\Http\Middleware\LogApiActions;
@@ -30,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'proveedor.user' => EnsureUserBelongsToProveedor::class,
             'proveedor.producto' => EnsureProductoBelongsToProveedor::class,
+            'proveedor.categoria' => EnsureCategoriaBelongsToProveedor::class,
             'proveedor.access' => EnsureProveedorOwnership::class,
             'api.access' => ValidateApiAccess::class,
             'audit' => LogApiActions::class,

@@ -3,10 +3,10 @@
 namespace App\Http\Middleware;
 
 use App\Exceptions\Api\Custom\NotFoundRelationException;
-use App\Models\Catalogo;
 use Closure;
 use Illuminate\Http\Request;
 use App\Models\Producto;
+use App\Models\Proveedor;
 
 class EnsureProductoBelongsToProveedor
 {
@@ -18,7 +18,7 @@ class EnsureProductoBelongsToProveedor
 
         // Si no tienes model binding, usa findOrFail para obtener instancias:
         if (is_numeric($proveedor)) {
-            $catalogo = Catalogo::findOrFail($proveedor);
+            $proveedor = Proveedor::findOrFail($proveedor);
         }
 
         if (is_numeric($producto)) {

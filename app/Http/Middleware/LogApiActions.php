@@ -22,28 +22,28 @@ class LogApiActions
      */
     private const CRITICAL_ACTIONS = [
         'POST' => [
-            'proveedores',
-            'proveedores/*/users',
-            'proveedores/*/productos',
-            'proveedores/*/productos/import',
-            'auth/login',
-            'auth/register'
+            'api/proveedores',
+            'api/proveedores/*/users',
+            'api/proveedores/*/productos',
+            'api/proveedores/*/productos/import',
+            'api/auth/login',
+            'api/auth/register'
         ],
         'PUT' => [
-            'proveedores/*',
-            'proveedores/*/users/*',
-            'usuarios/*'
+            'api/proveedores/*',
+            'api/proveedores/*/users/*',
+            'api/usuarios/*'
         ],
         'PATCH' => [
-            'proveedores/*',
-            'proveedores/*/users/*',
-            'usuarios/*'
+            'api/proveedores/*',
+            'api/proveedores/*/users/*',
+            'api/usuarios/*'
         ],
         'DELETE' => [
-            'proveedores/*',
-            'proveedores/*/users/*',
-            'proveedores/*/productos/*',
-            'usuarios/*'
+            'api/proveedores/*',
+            'api/proveedores/*/users/*',
+            'api/proveedores/*/productos/*',
+            'api/usuarios/*'
         ]
     ];
 
