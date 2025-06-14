@@ -94,6 +94,7 @@ Route::middleware('auth:sanctum')->group(function () {
                 Route::middleware('proveedor.producto')->group(function () {
                     Route::get('{producto}', [ProductoCategoriaController::class, 'show']);
                     Route::patch('{producto}', [ProductoCategoriaController::class, 'update']);
+                    // Route::delte('{producto}', [ProductoCategoriaController::class, 'destroy']);
                     Route::post('{producto}/logo', [ProductoCategoriaController::class, 'updateLogo']);
                 });
             });
