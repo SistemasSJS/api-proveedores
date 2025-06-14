@@ -48,6 +48,7 @@ Route::prefix('auth')->group(function () {
  */
 Route::get('roles-index', [RoleController::class, 'index']);
 Route::get('categorias-index', [CategoriaController::class, 'index']);
+Route::get('subcategorias-index', [CategoriaController::class, 'index']);
 Route::get('lineas-index', [LineaController::class, 'index']);
 Route::get('marcas-index', [MarcaController::class, 'index']);
 Route::get('unidades-medida-index', [UnidadMedidaController::class, 'index']);

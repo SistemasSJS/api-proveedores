@@ -90,6 +90,7 @@ class ProveedorUsuarioController extends Controller
 
         $sortBy = $request->input('sort_by', 'name');
         $order = $request->input('order', 'asc');
+        $perPage = $request->input('per_page', 10);
 
         $usersPaginate = $proveedor->users()
             ->with(User::eagerLodable())

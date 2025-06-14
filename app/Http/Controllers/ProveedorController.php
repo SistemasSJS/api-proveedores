@@ -125,11 +125,12 @@ class ProveedorController extends Controller
         $filters = $request->only(Proveedor::getFilters());
         $sortBy = $request->input('sort_by', 'nombre_comercial');
         $order = $request->input('order', 'asc');
+        $perPage = $request->input('per_page', 10);
 
         $originalPaginator = Proveedor::with(Proveedor::eagerLodable())
             ->filter($filters)
             ->orderBy($sortBy, $order)
-            ->paginate(10);
+            ->paginate($perPage);
         $data = ProveedorResource::collection($originalPaginator)->resolve();
 
         return $this->paginated($originalPaginator->setCollection(collect($data)));

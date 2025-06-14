@@ -38,12 +38,13 @@ class ProductoController extends Controller
         $filters = $request->only($fields);
 
         $sortBy = $request->input('sort_by', 'nombre_comercial'); // Default sort by 'nombre_comercial'
-        $order = $request->input('order', 'asc'); // Default order is 'asc'
+        $order =  $request->input('order', 'asc');
+        $perPage = $request->input('per_page', 10);
 
         $originalPaginator = Producto::with(Producto::eagerLodable())
             ->filter($filters)
             ->orderBy($sortBy, $order)
-            ->paginate(10);
+            ->paginate($perPage);
 
         $data = ProductoResource::collection($originalPaginator)->resolve();
         return $this->paginated($originalPaginator->setCollection(collect($data)));

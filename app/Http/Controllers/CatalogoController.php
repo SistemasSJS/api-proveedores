@@ -37,12 +37,13 @@ class CatalogoController extends Controller
         $filters = $request->only(Catalogo::getFilters());
         $sortBy = $request->input('sort_by', 'nombre');
         $order = $request->input('order', 'asc');
+        $perPage = $request->input('per_page', 10);
 
         $query = Catalogo::with(Catalogo::eagerLodable())
             ->filter($filters)
             ->where('proveedor_id', $proveedor->id);
 
-        $originalPaginator = $query->orderBy($sortBy, $order)->paginate(10);
+        $originalPaginator = $query->orderBy($sortBy, $order)->paginate($perPage);
         $data = CatalogoResource::collection($originalPaginator)->resolve();
 
         return $this->paginated($originalPaginator->setCollection(collect($data)));
