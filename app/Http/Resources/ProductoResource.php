@@ -26,53 +26,13 @@ class ProductoResource extends JsonResource
             'unidad_medida_id' => $this->unidad_medida_id,
 
             // Relaciones
-            'marca' => $this->whenLoaded('marca', function () {
-                return [
-                    'id'     => $this->marca->id,
-                    'nombre' => $this->marca->nombre,
-                ];
-            }),
-
-            'linea' => $this->whenLoaded('linea', function () {
-                return [
-                    'id'     => $this->linea->id,
-                    'nombre' => $this->linea->nombre,
-                ];
-            }),
-
-            'catalogo' => $this->whenLoaded('catalogo', function () {
-                return [
-                    'id'     => $this->catalogo->id,
-                    'nombre' => $this->catalogo->nombre,
-                ];
-            }),
-
-            'unidad_medida' => $this->whenLoaded('unidad_medida', function () {
-                return [
-                    'id'     => $this->unidad_medida->id,
-                    'nombre' => $this->unidad_medida->nombre,
-                    'clave'  => $this->unidad_medida->clave,
-                ];
-            }),
-
-            'imagenes' => $this->whenLoaded('imagenes', function () {
-                return $this->imagenes->map(function ($imagen) {
-                    return [
-                        'id'  => $imagen->id,
-                        'url' => $imagen->url,
-                        'tipo' => $imagen->tipo,
-                    ];
-                });
-            }),
-            'categoria' => $this->whenLoaded('categorias', function () {
-                return $this->categorias->map(function ($categoria) {
-                    return [
-                        'id'                 => $categoria->id,
-                        'nombre'             => $categoria->nombre,
-                    ];
-                });
-            }),
-
+            'marca' => new  MarcaResource($this->whenLoaded('marca')),
+            'linea' => new LineaResource($this->whenLoaded('linea')),
+            'especificaciones' => EspecificacionesResource::collection($this->whenLoaded('especificaciones')),
+            'unidad_medida' => new UnidadMedidaResource($this->whenLoaded('unidad_medida')),
+            'imagenes' => [],
+            // 'imagenes' => Imagen($this->whenLoaded('imagenes')),
+            'categorias' => CategoriaResource::collection($this->whenLoaded('categorias')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

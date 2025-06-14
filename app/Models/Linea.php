@@ -33,4 +33,9 @@ class Linea extends BaseModel
     {
         return $query->where('estatus', "%$value%");
     }
+
+    public function marca()
+    {
+        return $this->belongsTo(Linea::class);
+    }
 }

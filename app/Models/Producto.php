@@ -96,9 +96,10 @@ class Producto extends BaseModel
         return $this->belongsTo(Proveedor::class);
     }
 
+
     public function categorias(): BelongsToMany
     {
-        return $this->belongsToMany(Categoria::class);
+        return $this->belongsToMany(Categoria::class,  'categoria_producto', 'producto_id', 'categoria_id');
     }
 
     public function marca(): BelongsTo
@@ -113,7 +114,7 @@ class Producto extends BaseModel
 
     public function especificaciones(): HasMany
     {
-        return $this->hasMany(ProductoEspecificacion::class);
+        return $this->hasMany(ProductoEspecificacion::class, 'producto_id', 'especificacion_id');
     }
 
     public function imagenes(): HasMany
