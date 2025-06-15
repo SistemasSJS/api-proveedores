@@ -250,7 +250,6 @@ class ProductoSeeder extends Seeder
                 ],
             ],
             'Granjas ElGranGero S.A. de C.V.' => [
-
                 'Equipamiento Agroindustrial' => [
                     [
                         'sku' => 'TOL-ALI-031',

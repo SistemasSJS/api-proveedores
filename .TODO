@@ -1,27 +1,6 @@
-PROVEEDOR
-
-1. Ingresar a enlace: http://192.168.0.132/auth/registro/proveedor
-2. Llenar formulario con los datos 
-		razon_social o nombre_comercial 
-		tipos_empresa_id -> otro -> tipos_empresa_otro 
-		nombre_propietario 
-		email 
-		telefono 
-		nombre_de_quien_registra 
-		recaptcha_token 
-3. Enviar solicitud con datos validados de forma local.
-4. En el backend la ruta de registro: /api/register_proveedor
-		a. Valida que el correo no exista en la tablas: Usuario y proveedor. 
-		b. Registrar los datos del proveedor
-		c. Generar token para generar contraseña con la data de proveedor.
-		d. almacenar en cache token de un solo uso con 1 año de expiración.
-		e. Enviar por correo confirmación con el enlace: http://192.168.0.132/auth/registro/completar?token=
-5. Recibir correo y abrir enlace: http://192.168.0.132/auth/registro/completar?token=
-6. Generar contraseña 
-7. En el backend la ruta de registro: /api/register_proveedor_completar
-		a. Validar si el token es valido.
-		b. Extraer la data del token que es la del proveedor
-		c. Generar el usuario con el correo y la contraseña.
-		d. Relacionar el usuario con el proveedor como el usuario principal.
-		e. Generar token de sesión  y retornarlo junto a la informacion del usuario y del proveedor.
-8. Almacena el token el usuario y el proveedor en el localstorage y lo redirecciona a home.
+<!--
+ TODO: CATEGORIAS DE UN PRODUCTO
+	PRODUCTO MANEJA LAS CATEGORAIS ANIDADAS AS DOS NIVELES,
+	PUDIENDOSE REALCIONAR MAS DE UNA MDEDIANTE TABLA INTERMEDIA.
+	EL MODELO DE PRODUCTO TAMBIEN TIENE LA REFERENCIA A fk-cat
+-->

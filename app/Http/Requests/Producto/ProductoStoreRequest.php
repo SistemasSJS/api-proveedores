@@ -31,11 +31,11 @@ class ProductoStoreRequest extends FormRequest
              * 'proveedor_id' => ['required', 'integer', 'exists:proveedores,id'],
              *
              */
-            'unidad_medida_id' => ['required', 'integer', 'exists:unidad_medidas,id'],
+            // 'unidad_medida_id' => ['required', 'integer', 'exists:unidad_medidas,id'],
             'categorias' => ['required', 'array', 'min:1'],
             'categorias.*' => ['integer', 'exists:categorias,id'],
-            'especificaciones' => ['required', 'array', 'min:1'],
-            'especificaciones.*' => ['integer', 'exists:producto_especificaciones,id'],
+            // 'especificaciones' => ['required', 'array', 'min:1'],
+            // 'especificaciones.*' => ['integer', 'exists:producto_especificaciones,id'],
             'marca_id' => [
                 'required',
                 'integer',

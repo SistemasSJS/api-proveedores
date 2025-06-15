@@ -20,6 +20,7 @@ use App\Http\Controllers\ProveedorProductoController;
 use App\Http\Controllers\ProductoImagenController;
 use App\Http\Controllers\ProveedorCategoriaController;
 use App\Http\Controllers\ProveedorMarcaController;
+use App\Http\Controllers\ProveedorTipoEmpresaController;
 use App\Http\Controllers\ProveedorUsuarioController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TipoEmpresaController;
@@ -49,11 +50,11 @@ Route::prefix('auth')->group(function () {
  * Rutas de listado de catalogos
  */
 Route::get('roles-index', [RoleController::class, 'index']);
-Route::get('categorias-index', [CategoriaController::class, 'index']);
-Route::get('subcategorias-index', [CategoriaController::class, 'index']);
-Route::get('lineas-index', [LineaController::class, 'index']);
-Route::get('marcas-index', [MarcaController::class, 'index']);
-Route::get('unidades-medida-index', [UnidadMedidaController::class, 'index']);
+// Route::get('categorias-index', [CategoriaController::class, 'index']);
+// Route::get('subcategorias-index', [CategoriaController::class, 'index']);
+// Route::get('lineas-index', [LineaController::class, 'index']);
+// Route::get('marcas-index', [MarcaController::class, 'index']);
+// Route::get('unidades-medida-index', [UnidadMedidaController::class, 'index']);
 Route::get('tipos-empresa-index', [TipoEmpresaController::class, 'index']);
 
 /**
@@ -67,6 +68,9 @@ Route::middleware('auth:sanctum')->group(function () {
          */
         Route::prefix('proveedores')->group(function () {
 
+            /**
+             * PROVEDOR Y RUTAS DE GESTION DE PERFIL
+             */
             Route::controller(ProveedorController::class)->group(function () {
                 Route::get('/', 'index')->middleware(['audit']); // Auditar listado de proveedores
                 Route::post('/', 'store')->middleware(['audit']); // Auditar creación de proveedor
@@ -76,8 +80,12 @@ Route::middleware('auth:sanctum')->group(function () {
                 Route::post('{proveedor}/logo', 'updateLogo')->middleware(['api.access', 'audit']); // Auditar actualización de logo
             });
 
+            // TODO: Move to routes of products
             Route::post('{proveedor}/import', [ImportProductoController::class, 'import'])->middleware(['api.access', 'audit']); // Auditar importación
 
+            /**
+             * USUARIOS
+             */
             Route::prefix('{proveedor}/users')->group(function () {
                 Route::get('/', [ProveedorUsuarioController::class, 'index'])->middleware(['api.access']); // Validar proveedor accesible
                 Route::post('/', [ProveedorUsuarioController::class, 'store'])->middleware(['api.access', 'audit']); // Auditar creación de usuario
@@ -89,6 +97,9 @@ Route::middleware('auth:sanctum')->group(function () {
                 });
             });
 
+            /**p
+             * PRODUCTOS 
+             */
             Route::prefix('{proveedor}/productos')->middleware(['proveedor.access'])->group(function () {
                 Route::get('/', [ProveedorProductoController::class, 'index'])->middleware(['audit']); // Auditar listado
                 Route::post('/', [ProveedorProductoController::class, 'store'])->middleware(['audit']); // Auditar creación
@@ -101,33 +112,64 @@ Route::middleware('auth:sanctum')->group(function () {
                 });
             });
 
+            /**
+             * CATEGORIAS
+             */
             Route::prefix('{proveedor}/categorias')->middleware(['proveedor.access'])->group(function () {
                 Route::get('/', [ProveedorCategoriaController::class, 'index'])->middleware(['audit']); // Auditar listado
                 Route::post('/', [ProveedorCategoriaController::class, 'store'])->middleware(['audit']); // Auditar creación
-                Route::get('/{categoria}', [ProveedorCategoriaController::class, 'indexSubcategoria'])->middleware(['audit']); // Auditar listado
 
                 Route::middleware(['proveedor.categoria', 'audit'])->group(function () {
                     Route::get('{categoria}', [ProveedorCategoriaController::class, 'show']);
                     Route::patch('{categoria}', [ProveedorCategoriaController::class, 'update']);
                     Route::delete('{categoria}', [ProveedorCategoriaController::class, 'destroy']); // <-- Habilitado y auditado
                     Route::post('{categoria}/logo', [ProveedorCategoriaController::class, 'updateLogo']);
+                    Route::get('{categoria}/subcategorias', [ProveedorCategoriaController::class, 'index_sub_categorias'])->middleware(['audit']); // Auditar listado
                 });
-
-                Route::get('/{categoria}/subcategorias', [ProveedorMarcaController::class, 'index_lineas_por_marca'])->middleware(['audit']); // Auditar listado
-
             });
 
+            /**
+             * MARCAS
+             */
             Route::prefix('{proveedor}/marcas')->middleware(['proveedor.access'])->group(function () {
                 Route::get('/', [ProveedorMarcaController::class, 'index'])->middleware(['audit']); // Auditar listado
                 Route::post('/', [ProveedorMarcaController::class, 'store'])->middleware(['audit']); // Auditar creación
 
-                Route::middleware(['proveedor.categoria', 'audit'])->group(function () {
-                    Route::get('{categoria}', [ProveedorMarcaController::class, 'show']);
-                    Route::patch('{categoria}', [ProveedorMarcaController::class, 'update']);
-                    Route::delete('{categoria}', [ProveedorMarcaController::class, 'destroy']); // <-- Habilitado y auditado
-                    Route::post('{categoria}/logo', [ProveedorMarcaController::class, 'updateLogo']);
+                Route::middleware(['proveedor.marca', 'audit'])->group(function () {
+                    Route::get('{marca}', [ProveedorMarcaController::class, 'show']);
+                    Route::patch('{marca}', [ProveedorMarcaController::class, 'update']);
+                    Route::delete('{marca}', [ProveedorMarcaController::class, 'destroy']); // <-- Habilitado y auditado
+                    Route::post('{marca}/logo', [ProveedorMarcaController::class, 'updateLogo']);
+                    Route::get('/{marca}/lineas', [ProveedorMarcaController::class, 'index_lineas_por_marca'])->middleware(['audit']); // Auditar listado
                 });
             });
+
+            /**
+             * TIPOS DE EMRPESA
+             */
+            Route::prefix('{proveedor}/tipos-empresa')->middleware(['proveedor.access'])->group(function () {
+                Route::get('/', [ProveedorMarcaController::class, 'index'])->middleware(['audit']); // Auditar listado
+                Route::post('/', [ProveedorMarcaController::class, 'store'])->middleware(['audit']); // Auditar creación
+
+                Route::middleware(['proveedor.tipo-empresa', 'audit'])->group(function () {
+                    Route::get('{tipo-empresa}', [ProveedorTipoEmpresaController::class, 'show']);
+                    Route::patch('{tipo-empresa}', [ProveedorTipoEmpresaController::class, 'update']);
+                    Route::delete('{tipo-empresa}', [ProveedorTipoEmpresaController::class, 'destroy']); // <-- Habilitado y auditado
+                    Route::post('{tipo-empresa}/logo', [ProveedorTipoEmpresaController::class, 'updateLogo']);
+                });
+            });
+
+            /**
+             * RUTAS DE RECURSOS SELECT 
+             * 
+             *  - [ ] roles-index:----------:=> /api/proveedores/{proveedor_id}/roles
+             *  - [x] categorias-index:-----:=> /api/proveedores/{proveedor_id}/categorias
+             *  - [x] subcategorias-index:--:=> /api/proveedores/{proveedor_id}/categorias/{categoria_id}/subcategorias
+             *  - [x] marcas-index:---------:=> /api/proveedores/{proveedor_id}/marcas
+             *  - [x] lineas-index:---------:=> /api/proveedores/{proveedor_id},/marcas/{marca}/lineas
+             *  - [ ] unidades-medida-index::=> /api/proveedores/{proveedor_id}/unidades-medida
+             *   - [x] tipos-empresa-index:--:=> /api/proveedores/{proveedor_id}/tipos-empresa
+             */
         });
 
         Route::get('proveedores/user/{id}', [ProveedorController::class, 'getProveedorByUserId'])->middleware(['audit']); // Auditar consulta especial

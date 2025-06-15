@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Marca;
 use App\Models\Proveedor;
+use Illuminate\Database\Eloquent\RelationNotFoundException;
 use Illuminate\Http\Request;
 
 class ProveedorMarcaController extends Controller
@@ -18,6 +19,10 @@ class ProveedorMarcaController extends Controller
     public function index_lineas_por_marca(Request $request, Proveedor $proveedor, $marcaId)
     {
         $marca = Marca::findOrFail($marcaId);
+
+        if ($marca->provedor_id !== $proveedor->id) {
+            throw new RelationNotFoundException('La maraca no pertenece a este proveedor.', 403);
+        }
         $filters = $request->only(['nombre', 'estatus']);
         $data = $marca->lineas()->filter($filters)->paginate();
         return $this->paginated($data);

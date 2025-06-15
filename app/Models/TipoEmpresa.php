@@ -24,6 +24,7 @@ class TipoEmpresa extends BaseModel
 
 
     protected $fillable = [
+        'proveedor_id',
         'nombre',
         'clave',
         'estatus',

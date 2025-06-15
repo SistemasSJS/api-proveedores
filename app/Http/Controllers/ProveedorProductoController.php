@@ -57,21 +57,30 @@ class ProveedorProductoController extends Controller
     /**
      *
      */
-    public function store(ProductoUpdateRequest $request, Proveedor $proveedor, Producto $producto)
+    public function store(ProductoStoreRequest $request, Proveedor $proveedor)
     {
-        $data = $request->validated();
-        $producto->update($data);
+        // ✅ Verificar que el producto pertenezca al proveedor
+        // if ($producto->proveedor_id !== $proveedor->id) {
+        //     return $this->error('El producto no pertenece a este proveedor.', 403);
+        // }
 
-        // Actualizar categorías
-        if (isset($data['categorias'])) {
+        // ✅ Validar los datos del request
+        $data = $request->validated();
+        $data['proveedor_id'] = $proveedor->id;
+
+        $producto = Producto::create($data);
+
+        // ✅ Sincronizar categorías si existen en el request
+        if (isset($data['categorias']) && is_array($data['categorias'])) {
             $producto->categorias()->sync($data['categorias']);
         }
 
-        // Actualizar especificaciones
-        if (isset($data['especificaciones'])) {
+        // ✅ Sincronizar especificaciones si existen en el request
+        if (isset($data['especificaciones']) && is_array($data['especificaciones'])) {
             $producto->especificaciones()->sync($data['especificaciones']);
         }
 
+        // ✅ Retornar el recurso actualizado
         return $this->success(new ProductoResource($producto->fresh(Producto::eagerLodable())));
     }
 

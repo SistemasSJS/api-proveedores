@@ -75,8 +75,8 @@ class ImportProductoController extends Controller
             while (($data = fgetcsv($handle)) !== false) {
                 $row = array_combine($header, $data);
 
-                $marca = Marca::firstOrCreate(['nombre' => $row['nombre_marca']]);
-                $linea = Linea::firstOrCreate(['nombre' => $row['nombre_linea']]);
+                $marca = Marca::firstOrCreate(['nombre' => $row['nombre_marca'],  'proveedor_id' => $proveedor->id,]);
+                $linea = Linea::firstOrCreate(['nombre' => $row['nombre_linea'],  'proveedor_id' => $proveedor->id,]);
                 // $proveedor = Proveedor::firstOrCreate(
                 //     ['nombre_comercial' => $row['proveedor_nombre']],
                 //     [
@@ -87,10 +87,10 @@ class ImportProductoController extends Controller
                 //         'email' => $row['proveedor_email']
                 //     ]
                 // );
-                $catalogo = Catalogo::firstOrCreate([
-                    'nombre' => $row['nombre_catalogo'],
-                    'proveedor_id' => $proveedor->id,
-                ]);
+                // $catalogo = Catalogo::firstOrCreate([
+                //     'nombre' => $row['nombre_catalogo'],
+                //     'proveedor_id' => $proveedor->id,
+                // ]);
 
                 $producto = Producto::updateOrCreate(
                     ['sku' => $row['sku']],
@@ -100,7 +100,7 @@ class ImportProductoController extends Controller
                         'precio' => $row['precio'],
                         'cantidad_disponible' => $row['cantidad_disponible'],
                         'activo' => $row['activo'],
-                        'catalogo_id' => $catalogo->id,
+                        'proveedor_id' => $proveedor->id,
                         'marca_id' => $marca->id,
                         'linea_id' => $linea->id,
                     ]
@@ -111,7 +111,7 @@ class ImportProductoController extends Controller
                 $categoriaIds = [];
 
                 foreach ($categorias as $catNombre) {
-                    $categoria = Categoria::firstOrCreate(['nombre' => trim($catNombre)]);
+                    $categoria = Categoria::firstOrCreate(['nombre' => trim($catNombre),   'proveedor_id' => $proveedor->id,]);
                     $categoriaIds[] = $categoria->id;
                 }
 
