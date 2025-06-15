@@ -18,6 +18,7 @@ use App\Http\Controllers\LineaController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\ProveedorProductoController;
 use App\Http\Controllers\ProductoImagenController;
+use App\Http\Controllers\ProductoImportController;
 use App\Http\Controllers\ProveedorCategoriaController;
 use App\Http\Controllers\ProveedorMarcaController;
 use App\Http\Controllers\ProveedorTipoEmpresaController;
@@ -80,8 +81,19 @@ Route::middleware('auth:sanctum')->group(function () {
                 Route::post('{proveedor}/logo', 'updateLogo')->middleware(['api.access', 'audit']); // Auditar actualización de logo
             });
 
+
+            // routes/api.php
+            Route::controller(ProductoImportController::class)->group(function () {
+                Route::post('{proveedor}/import', 'upload');
+                Route::get('{proveedor}/import/{audit}/status', 'status');
+                Route::post('{proveedor}/import/{audit}/confirm',  'confirm');
+                Route::get('{proveedor}/imports', 'list');
+            });
+
+            Route::get('/import/template/{tipo}', [ProductoImportController::class, 'downloadTemplate']);
+
             // TODO: Move to routes of products
-            Route::post('{proveedor}/import', [ImportProductoController::class, 'import'])->middleware(['api.access', 'audit']); // Auditar importación
+            // Route::post('{proveedor}/import', [ImportProductoController::class, 'import'])->middleware(['api.access', 'audit']); // Auditar importación
 
             /**
              * USUARIOS
