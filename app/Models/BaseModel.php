@@ -24,17 +24,16 @@ abstract class BaseModel extends Model
      */
     public function scopeFilter($query, array $filters)
     {
-        // Asegurarse de que se apliquen los filtros de manera encadenada con OR
-        foreach ($filters as $key => $value) {
-            if (!is_null($value)) {
-                // Se utiliza orWhere para que las condiciones se apliquen con OR
-                $query->orWhere($key, 'like', "%$value%");
+        foreach ($filters as $filter => $value) {
+            if (isset(self::$filters[$filter]) && !is_null($value)) {
+                $method = 'filterBy' . ucfirst(self::$filters[$filter]);
+                if (method_exists($this, $method)) {
+                    $this->$method($query, $value);
+                }
             }
         }
-
         return $query;
     }
-
     /**
      * Obtener los filtros definidos en la clase.
      *

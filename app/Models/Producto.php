@@ -77,6 +77,7 @@ class Producto extends BaseModel
         'modelo_codigo' => 'modelo_codigo',
         'descripcion' => 'descripcion',
         'sku' => 'sku',
+        'categoria_id' => 'categoriaId',
     ];
 
     /**
@@ -134,6 +135,19 @@ class Producto extends BaseModel
         return $query->where('proveedor_id', $proveedorId);
     }
 
+    public function filterByCategoriaId($query, $value)
+    {
+        $ids = explode(',', $value); // Permite recibir múltiples IDs separados por coma
+        return $query->whereHas('categorias', function ($q) use ($ids) {
+            $q->whereIn('categoria_id', $ids);
+        });
+    }
+    // public function filterByCategoriaId($query, $value)
+    // {
+    //     return $query->whereHas('categorias', function ($q) use ($value) {
+    //         $q->where('categoria_id', $value);
+    //     });
+    // }
 
     public function filterByNombre($query, $value)
     {

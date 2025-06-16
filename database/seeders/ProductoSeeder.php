@@ -14,8 +14,6 @@ class ProductoSeeder extends Seeder
 {
     public function run()
     {
-        $marcas = Marca::all();
-        $lineas = Linea::all();
         $proveedores = Proveedor::all();
         $unidadMedidas = UnidadMedida::all();
 
@@ -367,7 +365,6 @@ class ProductoSeeder extends Seeder
 
 
         ];
-
         foreach ($proveedores as $proveedor) {
             $categoriasPorProveedor = $productosPorCategoria[$proveedor->razon_social] ?? null;
             if (!$categoriasPorProveedor) continue;
@@ -375,23 +372,35 @@ class ProductoSeeder extends Seeder
             foreach ($categoriasPorProveedor as $categoria_nombre => $productosCategoria) {
                 if (!$productosCategoria) continue;
 
+                // Traer marcas del proveedor como colección
+                $marcas = $proveedor->marcas()->get();
+
+                // Recolectar todas las líneas de esas marcas
+                $lineas = collect();
+                foreach ($marcas as $marca) {
+                    $lineas = $lineas->merge($marca->lineas()->get());
+                }
+
                 foreach ($productosCategoria as $productoData) {
                     $unidad = $unidadMedidas->where('descripcion', $productoData['unidad'])->first();
 
-                    // Crear el producto si no existe (evitar duplicados)
-                    $producto = Producto::firstOrCreate(
-                        [
-                            'proveedor_id' =>  $proveedor->id,
-                            'sku' => $productoData['sku'],
-                            'nombre' => $productoData['nombre'],
-                            'descripcion' =>  $productoData['descripcion'],
-                            'linea_id' => $lineas->random()->id,
-                            'marca_id' => $marcas->random()->id,
-                            'unidad_medida_id' => $unidad ? $unidad->id : $unidadMedidas->random()->id,
-                        ]
-                    );
-                    // Asignar categorías (múltiples)
-                    $categorias = Categoria::whereIn('nombre', ['Láminas y Aceros'])->get();
+                    // Validar que haya marcas y líneas para evitar error en random()
+                    if ($marcas->isEmpty() || $lineas->isEmpty()) {
+                        // Log o continue si no hay marcas o líneas
+                        continue;
+                    }
+
+                    $producto = Producto::firstOrCreate([
+                        'proveedor_id' => $proveedor->id,
+                        'sku' => $productoData['sku'],
+                        'nombre' => $productoData['nombre'],
+                        'descripcion' => $productoData['descripcion'],
+                        'linea_id' => $lineas->random()->id,
+                        'marca_id' => $marcas->random()->id,
+                        'unidad_medida_id' => $unidad ? $unidad->id : $unidadMedidas->random()->id,
+                    ]);
+
+                    $categorias = Categoria::whereIn('nombre', [$categoria_nombre])->get();
                     $producto->categorias()->sync($categorias->pluck('id'));
                 }
             }

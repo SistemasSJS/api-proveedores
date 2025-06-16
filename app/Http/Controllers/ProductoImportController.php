@@ -20,16 +20,15 @@ class ProductoImportController extends Controller
 
     // Validar proveedor
     $proveedor = Proveedor::findOrFail($proveedorId);
-
     try {
       // $file = $request->file('file');
       // $filename = "productos_csv_{$proveedor->id}_" . time() . '.' . $file->getClientOriginalExtension();
       // $path = $file->store('imports', $filename, 'private');
-      
+
 
       $file = $request->file('file');
       $filename = "productos_csv_{$proveedor->id}_" . time() . '.' . $file->getClientOriginalExtension();
-      $path = $file->storeAs('imports', $filename, 'local'); 
+      $path = $file->storeAs('imports', $filename, 'local');
 
       $jobId = Str::uuid()->toString();
 

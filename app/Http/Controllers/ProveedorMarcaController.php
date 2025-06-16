@@ -12,7 +12,11 @@ class ProveedorMarcaController extends Controller
     public function index(Request $request, Proveedor $proveedor)
     {
         $filters = $request->only(['nombre', 'estatus']);
-        $data = $proveedor->marcas()->filter($filters)->paginate();
+        // $data = $proveedor->marcas()->filter($filters)->paginate();
+        $data = Marca::with(['lineas', 'proveedor'])
+            ->filter($filters)
+            ->where('proveedor_id', $proveedor->id)
+            ->paginate();
         return $this->paginated($data);
     }
 
@@ -20,7 +24,7 @@ class ProveedorMarcaController extends Controller
     {
         $marca = Marca::findOrFail($marcaId);
 
-        if ($marca->provedor_id !== $proveedor->id) {
+        if ($marca->proveedor_id !== $proveedor->id) {
             throw new RelationNotFoundException('La maraca no pertenece a este proveedor.', 403);
         }
         $filters = $request->only(['nombre', 'estatus']);

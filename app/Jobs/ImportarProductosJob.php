@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Producto;
 use App\Models\Marca;
 use App\Models\Linea;
+use App\Models\Categoria;
 use App\Models\ImportAudit;
 use Illuminate\Support\Facades\Storage;
 
@@ -42,8 +43,8 @@ class ImportarProductosJob implements ShouldQueue
             $data = $this->parseCSV(Storage::path($audit->archivo));
 
             if (!$this->confirmado) {
-                // Generar preview
-                $preview = $this->generarPreview($data, $audit->proveedor_id);
+                // Generar preview detallado
+                $preview = $this->generarPreviewDetallado($data, $audit->proveedor_id);
                 $audit->update([
                     'estado' => 'preview',
                     'preview_data' => $preview,
@@ -82,41 +83,153 @@ class ImportarProductosJob implements ShouldQueue
         }, $data);
     }
 
-    private function generarPreview($data, $proveedorId)
+    private function generarPreviewDetallado($data, $proveedorId)
     {
         $preview = [
-            'productos' => ['nuevos' => [], 'actualizados' => []],
-            'marcas' => ['nuevas' => [], 'existentes' => []],
-            'lineas' => ['nuevas' => [], 'existentes' => []]
+            'productos' => [
+                'nuevos' => [],
+                'actualizados' => [],
+                'errores' => []
+            ],
+            'marcas' => [
+                'nuevas' => [],
+                'existentes' => []
+            ],
+            'lineas' => [
+                'nuevas' => [],
+                'existentes' => []
+            ],
+            'categorias' => [
+                'nuevas' => [],
+                'existentes' => []
+            ]
         ];
 
-        $marcasExistentes = Marca::pluck('nombre', 'id')->toArray();
-        $skusExistentes = Producto::where('proveedor_id', $proveedorId)
-            ->pluck('id', 'sku')->toArray();
+        // Cargar datos existentes
+        $marcasExistentes = Marca::with('lineas')->get()->keyBy('nombre');
+        $categoriasExistentes = Categoria::pluck('nombre', 'id')->toArray();
+        $productosExistentes = Producto::where('proveedor_id', $proveedorId)
+            ->with(['marca', 'linea'])
+            ->get()
+            ->keyBy('sku');
 
-        foreach (array_slice($data, 0, 100) as $row) { // Preview de primeros 100
-            // Verificar marca
-            if (!in_array($row['nombre_marca'], $marcasExistentes)) {
-                $preview['marcas']['nuevas'][] = $row['nombre_marca'];
+        foreach ($data as $index => $row) {
+            // Procesar marcas y líneas
+            $marcaNombre = trim($row['nombre_marca'] ?? '');
+            $lineaNombre = trim($row['nombre_linea'] ?? '');
+
+            if ($marcaNombre) {
+                if (!$marcasExistentes->has($marcaNombre)) {
+                    if (!isset($preview['marcas']['nuevas'][$marcaNombre])) {
+                        $preview['marcas']['nuevas'][$marcaNombre] = [
+                            'nombre' => $marcaNombre,
+                            'lineas' => []
+                        ];
+                    }
+                    if ($lineaNombre) {
+                        $preview['marcas']['nuevas'][$marcaNombre]['lineas'][] = $lineaNombre;
+                    }
+                } else {
+                    $marca = $marcasExistentes[$marcaNombre];
+                    if ($lineaNombre && !$marca->lineas->contains('nombre', $lineaNombre)) {
+                        if (!isset($preview['lineas']['nuevas'][$lineaNombre])) {
+                            $preview['lineas']['nuevas'][$lineaNombre] = [
+                                'nombre' => $lineaNombre,
+                                'marca' => $marcaNombre
+                            ];
+                        }
+                    }
+                }
             }
 
-            // Verificar producto
-            if (isset($skusExistentes[$row['sku']])) {
-                $preview['productos']['actualizados'][] = [
-                    'sku' => $row['sku'],
-                    'nombre' => $row['nombre_producto'],
-                    'precio' => $row['precio']
+            // Procesar categorías
+            if (isset($row['categorias'])) {
+                $categorias = array_map('trim', explode(',', $row['categorias']));
+                foreach ($categorias as $cat) {
+                    if (!in_array($cat, $categoriasExistentes)) {
+                        $preview['categorias']['nuevas'][$cat] = ['nombre' => $cat];
+                    }
+                }
+            }
+
+            // Procesar productos
+            $sku = trim($row['sku'] ?? '');
+            if (!$sku) {
+                $preview['productos']['errores'][] = [
+                    'fila' => $index + 2,
+                    'error' => 'SKU vacío',
+                    'data' => $row
                 ];
+                continue;
+            }
+
+            // Validar marca obligatoria
+            if (!$marcaNombre) {
+                $preview['productos']['errores'][] = [
+                    'fila' => $index + 2,
+                    'error' => 'Marca es obligatoria',
+                    'sku' => $sku,
+                    'data' => $row
+                ];
+                continue;
+            }
+
+            $productoData = [
+                'sku' => $sku,
+                'nombre' => $row['nombre_producto'] ?? '',
+                'descripcion' => $row['descripcion'] ?? '',
+                'precio' => floatval($row['precio'] ?? 0),
+                'stock' => intval($row['cantidad_disponible'] ?? 0),
+                'marca' => $marcaNombre,
+                'linea' => $lineaNombre,
+                'activo' => filter_var($row['activo'] ?? true, FILTER_VALIDATE_BOOLEAN),
+                'fila' => $index + 2
+            ];
+
+            if ($productosExistentes->has($sku)) {
+                $productoExistente = $productosExistentes[$sku];
+                $productoData['cambios'] = $this->detectarCambios($productoExistente, $productoData);
+                $productoData['id'] = $productoExistente->id;
+                $preview['productos']['actualizados'][] = $productoData;
             } else {
-                $preview['productos']['nuevos'][] = [
-                    'sku' => $row['sku'],
-                    'nombre' => $row['nombre_producto'],
-                    'precio' => $row['precio']
-                ];
+                $preview['productos']['nuevos'][] = $productoData;
             }
         }
 
+        // Convertir arrays asociativos a arrays indexados
+        $preview['marcas']['nuevas'] = array_values($preview['marcas']['nuevas']);
+        $preview['lineas']['nuevas'] = array_values($preview['lineas']['nuevas']);
+        $preview['categorias']['nuevas'] = array_values($preview['categorias']['nuevas']);
+
         return $preview;
+    }
+
+    private function detectarCambios($productoExistente, $productoNuevo)
+    {
+        $cambios = [];
+
+        if ($productoExistente->nombre != $productoNuevo['nombre']) {
+            $cambios['nombre'] = [
+                'anterior' => $productoExistente->nombre,
+                'nuevo' => $productoNuevo['nombre']
+            ];
+        }
+
+        if ($productoExistente->precio != $productoNuevo['precio']) {
+            $cambios['precio'] = [
+                'anterior' => $productoExistente->precio,
+                'nuevo' => $productoNuevo['precio']
+            ];
+        }
+
+        if ($productoExistente->stock != $productoNuevo['stock']) {
+            $cambios['stock'] = [
+                'anterior' => $productoExistente->stock,
+                'nuevo' => $productoNuevo['stock']
+            ];
+        }
+
+        return $cambios;
     }
 
     private function procesarImportacion($data, $audit)
@@ -136,11 +249,23 @@ class ImportarProductosJob implements ShouldQueue
                         $audit->update(['progreso' => ($index / $total) * 100]);
                     }
 
-                    $marca = Marca::firstOrCreate(['nombre' => $row['nombre_marca']]);
-                    $linea = Linea::firstOrCreate([
-                        'nombre' => $row['nombre_linea'],
-                        'marca_id' => $marca->id
+                    // Validar que exista nombre de marca
+                    if (empty(trim($row['nombre_marca'] ?? ''))) {
+                        throw new \Exception('El campo nombre_marca es obligatorio');
+                    }
+
+                    $marca = Marca::firstOrCreate([
+                        'nombre' => trim($row['nombre_marca'])
                     ]);
+
+                    // Solo crear línea si existe nombre de línea
+                    $linea = null;
+                    if (!empty(trim($row['nombre_linea'] ?? ''))) {
+                        $linea = Linea::firstOrCreate([
+                            'nombre' => trim($row['nombre_linea']),
+                            'marca_id' => $marca->id
+                        ]);
+                    }
 
                     $producto = Producto::where('sku', $row['sku'])
                         ->where('proveedor_id', $audit->proveedor_id)
@@ -154,7 +279,7 @@ class ImportarProductosJob implements ShouldQueue
                             'stock' => $row['cantidad_disponible'],
                             'activo' => filter_var($row['activo'], FILTER_VALIDATE_BOOLEAN),
                             'marca_id' => $marca->id,
-                            'linea_id' => $linea->id
+                            'linea_id' => $linea ? $linea->id : null
                         ]);
                         $actualizados++;
                     } else {
@@ -166,7 +291,7 @@ class ImportarProductosJob implements ShouldQueue
                             'stock' => $row['cantidad_disponible'],
                             'activo' => filter_var($row['activo'], FILTER_VALIDATE_BOOLEAN),
                             'marca_id' => $marca->id,
-                            'linea_id' => $linea->id,
+                            'linea_id' => $linea ? $linea->id : null,
                             'proveedor_id' => $audit->proveedor_id
                         ]);
                         $nuevos++;

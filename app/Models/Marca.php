@@ -32,7 +32,7 @@ class Marca extends BaseModel
 
     public function lineas()
     {
-        return $this->belongsTo(Linea::class);
+        return $this->hasMany(Linea::class);
     }
 
     public function productos()

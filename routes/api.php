@@ -20,6 +20,7 @@ use App\Http\Controllers\ProveedorProductoController;
 use App\Http\Controllers\ProductoImagenController;
 use App\Http\Controllers\ProductoImportController;
 use App\Http\Controllers\ProveedorCategoriaController;
+use App\Http\Controllers\ProveedorLineaController;
 use App\Http\Controllers\ProveedorMarcaController;
 use App\Http\Controllers\ProveedorTipoEmpresaController;
 use App\Http\Controllers\ProveedorUsuarioController;
@@ -110,7 +111,7 @@ Route::middleware('auth:sanctum')->group(function () {
             });
 
             /**p
-             * PRODUCTOS 
+             * PRODUCTOS
              */
             Route::prefix('{proveedor}/productos')->middleware(['proveedor.access'])->group(function () {
                 Route::get('/', [ProveedorProductoController::class, 'index'])->middleware(['audit']); // Auditar listado
@@ -159,21 +160,20 @@ Route::middleware('auth:sanctum')->group(function () {
             /**
              * TIPOS DE EMRPESA
              */
-            Route::prefix('{proveedor}/tipos-empresa')->middleware(['proveedor.access'])->group(function () {
-                Route::get('/', [ProveedorMarcaController::class, 'index'])->middleware(['audit']); // Auditar listado
-                Route::post('/', [ProveedorMarcaController::class, 'store'])->middleware(['audit']); // Auditar creación
+            Route::prefix('{proveedor}/lineas')->middleware(['proveedor.access'])->group(function () {
+                Route::get('/', [ProveedorLineaController::class, 'index'])->middleware(['audit']); // Auditar listado
+                Route::post('/', [ProveedorLineaController::class, 'store'])->middleware(['audit']); // Auditar creación
 
-                Route::middleware(['proveedor.tipo-empresa', 'audit'])->group(function () {
-                    Route::get('{tipo-empresa}', [ProveedorTipoEmpresaController::class, 'show']);
-                    Route::patch('{tipo-empresa}', [ProveedorTipoEmpresaController::class, 'update']);
-                    Route::delete('{tipo-empresa}', [ProveedorTipoEmpresaController::class, 'destroy']); // <-- Habilitado y auditado
-                    Route::post('{tipo-empresa}/logo', [ProveedorTipoEmpresaController::class, 'updateLogo']);
-                });
+                //     Route::middleware(['proveedor.linea', 'audit'])->group(function () {
+                //         Route::get('{linea}', [ProveedorLineaController::class, 'show']);
+                //         Route::patch('{linea}', [ProveedorLineaController::class, 'update']);
+                //         Route::delete('{linea}', [ProveedorLineaController::class, 'destroy']); // <-- Habilitado y auditado
+                // });
             });
 
             /**
-             * RUTAS DE RECURSOS SELECT 
-             * 
+             * RUTAS DE RECURSOS SELECT
+             *
              *  - [ ] roles-index:----------:=> /api/proveedores/{proveedor_id}/roles
              *  - [x] categorias-index:-----:=> /api/proveedores/{proveedor_id}/categorias
              *  - [x] subcategorias-index:--:=> /api/proveedores/{proveedor_id}/categorias/{categoria_id}/subcategorias
