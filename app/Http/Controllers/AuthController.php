@@ -189,7 +189,13 @@ class AuthController extends Controller
                 'role_id' => $idRoleProveedor,
             ]);
 
-            $user->proveedores()->attach($proveedor->id, ['is_main' => true]);
+            // $user->proveedores()->attach($proveedor->id, ['is_main' => true]);
+            $user->proveedores()->attach($proveedor->id, [
+                'tipo_relacion' => 'PRINCIPAL',
+                'activo' => true,
+                'fecha_asignacion' => now(),
+                'observaciones' => 'Usuario principal del proveedor',
+            ]);
         } else {
             $user = $proveedor->user;
             $user->password = Hash::make($request->password);
