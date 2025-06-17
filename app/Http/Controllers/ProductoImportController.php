@@ -112,6 +112,7 @@ class ProductoImportController extends Controller
       ->paginate(10);
 
     return response()->json($imports);
+    // return $this->paginated()
   }
 
   public function downloadTemplate($tipo)

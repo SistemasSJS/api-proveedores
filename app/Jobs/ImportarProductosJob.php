@@ -13,6 +13,7 @@ use App\Models\Marca;
 use App\Models\Linea;
 use App\Models\Categoria;
 use App\Models\ImportAudit;
+use App\Models\Proveedor;
 use Illuminate\Support\Facades\Storage;
 
 class ImportarProductosJob implements ShouldQueue
@@ -106,8 +107,27 @@ class ImportarProductosJob implements ShouldQueue
         ];
 
         // Cargar datos existentes
-        $marcasExistentes = Marca::with('lineas')->get()->keyBy('nombre');
-        $categoriasExistentes = Categoria::pluck('nombre', 'id')->toArray();
+        // $proveedor = Proveedor::with(Proveedor::eagerLodable());
+        // $categoriasExistentes = $proveedor->categorias()
+        //     ->pluck('nombre', 'id')->toArray();
+        // $marcasExistentes = $proveedor->marcas()
+        //     ->with('lineas')
+        //     ->get()
+        //     ->keyBy('nombre');
+        // $productosExistentes = $proveedor->productos()
+        //     ->with(['marca', 'linea'])
+        //     ->get()
+        //     ->keyBy('sku');
+
+        // $lineas = $proveedor->lineas();
+        // $sucursales = $proveedor->sucursales();
+
+        $marcasExistentes = Marca::with('lineas')
+            ->where('proveedor_id', $proveedorId)
+            ->get()
+            ->keyBy('nombre');
+        $categoriasExistentes = Categoria::where('proveedor_id', $proveedorId)
+            ->pluck('nombre', 'id')->toArray();
         $productosExistentes = Producto::where('proveedor_id', $proveedorId)
             ->with(['marca', 'linea'])
             ->get()
@@ -119,7 +139,7 @@ class ImportarProductosJob implements ShouldQueue
             $lineaNombre = trim($row['nombre_linea'] ?? '');
 
             if ($marcaNombre) {
-                if (!$marcasExistentes->has($marcaNombre)) {
+                if (!$marcasExistentes->has($marcaNombre)) { // no existe la marca
                     if (!isset($preview['marcas']['nuevas'][$marcaNombre])) {
                         $preview['marcas']['nuevas'][$marcaNombre] = [
                             'nombre' => $marcaNombre,
@@ -255,7 +275,8 @@ class ImportarProductosJob implements ShouldQueue
                     }
 
                     $marca = Marca::firstOrCreate([
-                        'nombre' => trim($row['nombre_marca'])
+                        'nombre' => trim($row['nombre_marca']),
+                        'provedor_id' => $audit->provedor_id
                     ]);
 
                     // Solo crear línea si existe nombre de línea
@@ -263,7 +284,8 @@ class ImportarProductosJob implements ShouldQueue
                     if (!empty(trim($row['nombre_linea'] ?? ''))) {
                         $linea = Linea::firstOrCreate([
                             'nombre' => trim($row['nombre_linea']),
-                            'marca_id' => $marca->id
+                            'marca_id' => $marca->id,
+                            'proveedor_id' => $audit->proveedor_id
                         ]);
                     }
 
@@ -301,7 +323,13 @@ class ImportarProductosJob implements ShouldQueue
                     $errores_detalle[] = [
                         'fila' => $index + 2,
                         'sku' => $row['sku'] ?? 'N/A',
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
+                        'extra' => [
+                            'code' => $e->getCode(),
+                            'file' => $e->getFile(),
+                            'line' => $e->getLine(),
+                            'trace' => $e->getTraceAsString(),
+                        ]
                     ];
                 }
             }

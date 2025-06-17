@@ -131,7 +131,12 @@ class Proveedor extends BaseModel
     {
         return [
             // 'user',
-            'tipos_empresa'
+            // 'tipos_empresa'
+            'categorias',
+            'marcas',
+            'lineas',
+            'sucursales',
+            'productos',
         ];
     }
 
