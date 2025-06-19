@@ -23,11 +23,11 @@ class ProveedorTest extends TestCase
 
         // Verifica que el proveedor se haya creado correctamente
         $response->assertStatus(201)
-                 ->assertJson([
-                     'razon_social' => 'Proveedor S.A. de C.V.',
-                     'nombre_comercial' => 'Proveedor Comercial',
-                     'email' => 'test@proveedor.com',
-                 ]);
+            ->assertJson([
+                'razon_social' => 'Proveedor S.A. de C.V.',
+                'nombre_comercial' => 'Proveedor Comercial',
+                'email' => 'test@proveedor.com',
+            ]);
 
         // Verifica que los datos se hayan guardado en la base de datos
         $this->assertDatabaseHas('proveedores', [
@@ -48,8 +48,8 @@ class ProveedorTest extends TestCase
             'telefono' => '1234567890',
         ]);
 
-        // Actualiza el proveedor
-        $response = $this->putJson('/api/proveedores/'.$proveedor->id, [
+        // Actualiza el proveedo
+        $response = $this->putJson('/api/proveedores/' . $proveedor->id, [
             'razon_social' => 'Proveedor Actualizado S.A.',
             'nombre_comercial' => 'Proveedor Actualizado Comercial',
             'email' => 'actualizado@proveedor.com',
@@ -57,11 +57,11 @@ class ProveedorTest extends TestCase
 
         // Verifica que la actualización fue exitosa
         $response->assertStatus(200)
-                 ->assertJson([
-                     'razon_social' => 'Proveedor Actualizado S.A.',
-                     'nombre_comercial' => 'Proveedor Actualizado Comercial',
-                     'email' => 'actualizado@proveedor.com',
-                 ]);
+            ->assertJson([
+                'razon_social' => 'Proveedor Actualizado S.A.',
+                'nombre_comercial' => 'Proveedor Actualizado Comercial',
+                'email' => 'actualizado@proveedor.com',
+            ]);
 
         // Verifica que los datos fueron actualizados en la base de datos
         $this->assertDatabaseHas('proveedores', [
@@ -83,13 +83,13 @@ class ProveedorTest extends TestCase
         ]);
 
         // Elimina el proveedor
-        $response = $this->deleteJson('/api/proveedores/'.$proveedor->id);
+        $response = $this->deleteJson('/api/proveedores/' . $proveedor->id);
 
         // Verifica que la eliminación fue exitosa
         $response->assertStatus(200)
-                 ->assertJson([
-                     'message' => 'Proveedor eliminado correctamente',
-                 ]);
+            ->assertJson([
+                'message' => 'Proveedor eliminado correctamente',
+            ]);
 
         // Verifica que el proveedor ya no esté en la base de datos
         $this->assertDatabaseMissing('proveedores', [

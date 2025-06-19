@@ -107,6 +107,7 @@ Route::middleware('auth:sanctum')->group(function () {
                     Route::get('{user}', [ProveedorUsuarioController::class, 'show']);
                     Route::patch('{user}', [ProveedorUsuarioController::class, 'update']);
                     Route::delete('{user}', [ProveedorUsuarioController::class, 'destroy']);
+                    Route::post('{user}/logo', [ProveedorUsuarioController::class, 'updateLogo']);
                 });
             });
 

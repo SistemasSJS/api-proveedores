@@ -9,17 +9,16 @@ use App\Models\Proveedor;
 
 use App\Http\Resources\UserResource;
 
-use App\Http\Requests\User\UserStoreRequest;
 
 use App\Http\Requests\ProveedorUsuario\ProveedorUsuairoStoreRequest;
 use App\Http\Requests\ProveedorUsuario\ProveedorUsuairoUpdateRequest;
-
-use Illuminate\Support\Facades\Log;
+use App\Http\Requests\ProveedorUsuario\ProveedorUsuairoUpdateLogoRequest;
 
 use App\Exceptions\Api\Auth\UnauthorizedException;
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Exceptions\Api\Custom\MainUserDuplicateException;
 use App\Exceptions\Api\Custom\NotFoundRelationException;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @OA\Tag(
@@ -196,14 +195,8 @@ class ProveedorUsuarioController extends Controller
      */
     public function show(Request $request, Proveedor $proveedor, $user_id)
     {
-        $user = USer::findOrFail($user_id);
-
-        if (!$user) {
-            throw new ResourceNotFoundException(404, 'Usuario no encontrado.');
-        }
-
         $this->authorizeAccess($request->user(), $proveedor);
-
+        $user = USer::findOrFail($user_id);
         if (!$proveedor->users()->find($user->id)) {
             throw new ResourceNotFoundException(404, 'Usuario no asociado al proveedor.');
         }
@@ -245,12 +238,12 @@ class ProveedorUsuarioController extends Controller
      */
     public function update(ProveedorUsuairoUpdateRequest $request, Proveedor $proveedor, $user_id)
     {
+        // 1. VALIDAR LA RELACION DEL USUARIO DE LA PETICON Y EL PROVEEDOR
+        // 2. VERIFICAR QUE EL USUARIO EN LOS PARAM QRY PERTENECE AL PROVEEDOR
         $this->authorizeAccess($request->user(), $proveedor);
-        $user = User::findOrFail($user_id);
-
-
-        if (!$proveedor->users()->find($request->user())) {
-            throw new NotFoundRelationException('Usuario no asociado al proveedor.');
+        $user = USer::findOrFail($user_id);
+        if (!$proveedor->users()->find($user->id)) {
+            throw new ResourceNotFoundException(404, 'Usuario no asociado al proveedor.');
         }
         $validated = $request->validated();
         $user->update($validated);
@@ -308,6 +301,30 @@ class ProveedorUsuarioController extends Controller
         $user->delete();
 
         return $this->success(message: 'Usuario eliminado correctamente.');
+    }
+
+    public function updateLogo(ProveedorUsuairoUpdateLogoRequest $request, Proveedor $proveedor, $user_id)
+    {
+        $this->authorizeAccess($request->user(), $proveedor);
+        $user = USer::findOrFail($user_id);
+        if (!$proveedor->users()->find($user->id)) {
+            throw new ResourceNotFoundException(404, 'Usuario no asociado al proveedor.');
+        }
+        // Eliminar logo anterior si existe
+        if ($user->foto_perfil_url) {
+            $rutaAnterior = str_replace(asset('storage') . '/', '', $user->foto_perfil_url);
+            Storage::disk('public')->delete($rutaAnterior);
+        }
+
+        // Guardar nuevo archivo
+        $file = $request->file('logo');
+        $filename = "logo_user_{$user->id}_" . time() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('uploads', $filename, 'public');
+
+        // Actualizar ruta en base de datos
+        $user->update(['foto_perfil_url' => $path]);
+
+        return $this->success(new UserResource($user->fresh(User::eagerLodable())));
     }
 
     /**
