@@ -110,4 +110,12 @@ class ProveedorProductoController extends Controller
 
         return $this->success(new ProductoResource($producto->fresh(Producto::eagerLodable())));
     }
+
+    public function destroy(Request $request, Proveedor $proveedor, $productoId)
+    {
+        $producto = Producto::findOrFail($productoId);
+        $producto->sucursales()->detach();
+        $producto->delete();
+        return $this->success(message: "Producto eliminado correctamente.");
+    }
 }

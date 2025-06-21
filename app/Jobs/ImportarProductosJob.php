@@ -148,6 +148,10 @@ class ImportarProductosJob implements ShouldQueue
                     }
                     if ($lineaNombre) {
                         $preview['marcas']['nuevas'][$marcaNombre]['lineas'][] = $lineaNombre;
+                        $preview['lineas']['nuevas'][$lineaNombre] = [
+                            'nombre' => $lineaNombre,
+                            'marca' => $marcaNombre
+                        ];
                     }
                 } else {
                     $marca = $marcasExistentes[$marcaNombre];
@@ -270,23 +274,26 @@ class ImportarProductosJob implements ShouldQueue
                     }
 
                     // Validar que exista nombre de marca
-                    if (empty(trim($row['nombre_marca'] ?? ''))) {
-                        throw new \Exception('El campo nombre_marca es obligatorio');
-                    }
+                    // if (empty(trim($row['nombre_marca'] ?? ''))) {
+                    //     throw new \Exception('El campo nombre_marca es obligatorio');
+                    // }
 
-                    $marca = Marca::firstOrCreate([
-                        'nombre' => trim($row['nombre_marca']),
-                        'provedor_id' => $audit->provedor_id
-                    ]);
-
-                    // Solo crear línea si existe nombre de línea
+                    $marca = null;
                     $linea = null;
-                    if (!empty(trim($row['nombre_linea'] ?? ''))) {
-                        $linea = Linea::firstOrCreate([
-                            'nombre' => trim($row['nombre_linea']),
-                            'marca_id' => $marca->id,
-                            'proveedor_id' => $audit->proveedor_id
+                    if (!empty(trim($row['nombre_marca'] ?? ''))) {
+                        $marca = Marca::firstOrCreate([
+                            'nombre' => trim($row['nombre_marca']),
+                            'provedor_id' => $audit->provedor_id
                         ]);
+
+                        // Solo crear línea si existe nombre de línea
+                        if (!empty(trim($row['nombre_linea'] ?? ''))) {
+                            $linea = Linea::firstOrCreate([
+                                'nombre' => trim($row['nombre_linea']),
+                                'marca_id' => $marca->id,
+                                'proveedor_id' => $audit->proveedor_id
+                            ]);
+                        }
                     }
 
                     $producto = Producto::where('sku', $row['sku'])
@@ -300,7 +307,7 @@ class ImportarProductosJob implements ShouldQueue
                             'precio' => $row['precio'],
                             'stock' => $row['cantidad_disponible'],
                             'activo' => filter_var($row['activo'], FILTER_VALIDATE_BOOLEAN),
-                            'marca_id' => $marca->id,
+                            'marca_id' => $marca ? $marca->id : null,
                             'linea_id' => $linea ? $linea->id : null
                         ]);
                         $actualizados++;
@@ -312,7 +319,7 @@ class ImportarProductosJob implements ShouldQueue
                             'precio' => $row['precio'],
                             'stock' => $row['cantidad_disponible'],
                             'activo' => filter_var($row['activo'], FILTER_VALIDATE_BOOLEAN),
-                            'marca_id' => $marca->id,
+                            'marca_id' => $marca ? $marca->id : null,
                             'linea_id' => $linea ? $linea->id : null,
                             'proveedor_id' => $audit->proveedor_id
                         ]);

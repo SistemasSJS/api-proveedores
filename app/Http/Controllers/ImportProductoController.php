@@ -72,13 +72,13 @@ class ImportProductoController extends Controller
 
         $path = $request->file('file')->store('imports');
 
-        ImportarProductosJob::dispatch($proveedor->id, $path);
+        // ImportarProductosJob::dispatch($proveedor->id, $path);
 
-        return response()->json([
-            'message' => 'Importación iniciada',
-            'job_id' => uniqid('import_')
-        ]);
-        // // Para archivos grandes, usar job
+        // return response()->json([
+        //     'message' => 'Importación iniciada',
+        //     'job_id' => uniqid('import_')
+        // ]);
+        // Para archivos grandes, usar job
         // if ($request->file('file')->getSize() > 1048576) { // >1MB
         //     ImportarProductosJob::dispatch($proveedor->id, $path);
 
@@ -88,9 +88,9 @@ class ImportProductoController extends Controller
         //     ]);
         // }
 
-        // // Procesamiento directo para archivos pequeños
-        // $result = $this->procesarArchivo($proveedor->id, $path);
-        return response()->json($result);
+        // Procesamiento directo para archivos pequeños
+        $result = $this->procesarArchivo($proveedor->id, $path);
+        return $this->success([$result]);
     }
 
     private function procesarArchivo($proveedorId, $path)
@@ -107,10 +107,16 @@ class ImportProductoController extends Controller
                     $producto = array_combine($headers, $row);
 
                     // Crear marca/línea si no existe
-                    $marca = Marca::firstOrCreate(['nombre' => $producto['nombre_marca']]);
+                    $marca = Marca::firstOrCreate([
+                        'nombre' => $producto['nombre_marca'],
+                        'proveedor_id' => $proveedorId
+                    ]);
+
+                    //
                     $linea = Linea::firstOrCreate([
                         'nombre' => $producto['nombre_linea'],
-                        'marca_id' => $marca->id
+                        'marca_id' => $marca->id,
+                        'proveedor_id' => $proveedorId
                     ]);
 
                     Producto::updateOrCreate(
@@ -134,7 +140,7 @@ class ImportProductoController extends Controller
                     $errores[] = [
                         'fila' => $index + 2,
                         'sku' => $producto['sku'] ?? 'N/A',
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ];
                 }
             }
