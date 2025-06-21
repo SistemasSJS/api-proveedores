@@ -42,18 +42,25 @@ class Producto extends BaseModel
      */
     protected $fillable = [
         'sku',
+        'modelo',
         'nombre',
         'descripcion',
-        'precio_base',
         'imagen_principal',
+        'activo',
+        'stock',
+        'precio_base',
+        'precio_de_lista',
+        'precio_público',
+        'precio_mayoreo',
+        'precio_con_IVA',
+        'precio_sin_IVA',
+        'precio_promocional',
+        'precio_distribuidor',
+        'precio_especial',
         'proveedor_id',
         'categoria_id',
         'marca_id',
         'linea_id',
-        'activo',
-        'stock',
-        'peso_kg',
-        'dimensiones'
     ];
 
     /**
@@ -61,7 +68,7 @@ class Producto extends BaseModel
      *
      * @var array
      */
-    protected $with = ['categorias', 'marca', 'linea', 'especificaciones', 'imagenes'];
+    protected $with = ['categoria', 'marca', 'linea', 'especificaciones', 'imagenes'];
 
     /**
      * Filtros disponibles para aplicar dinámicamente en consultas.
@@ -73,11 +80,10 @@ class Producto extends BaseModel
      * @var array<string, string>
      */
     protected static $filters = [
-        'nombre' => 'nombre',
-        'modelo_codigo' => 'modelo_codigo',
-        'descripcion' => 'descripcion',
         'sku' => 'sku',
-        'categoria_id' => 'categoriaId',
+        'nombre' => 'nombre',
+        'descripcion' => 'descripcion',
+        'modelo' => 'modelo',
     ];
 
     /**
@@ -89,7 +95,7 @@ class Producto extends BaseModel
      */
     public static function eagerLodable(): array
     {
-        return ['categorias', 'marca', 'linea', 'especificaciones', 'imagenes'];
+        return ['categoria', 'marca', 'linea', 'especificaciones', 'imagenes'];
     }
 
     public function proveedor(): BelongsTo
@@ -97,11 +103,11 @@ class Producto extends BaseModel
         return $this->belongsTo(Proveedor::class);
     }
 
-
-    public function categorias(): BelongsToMany
-    {
-        return $this->belongsToMany(Categoria::class,  'categoria_producto', 'producto_id', 'categoria_id');
-    }
+    // // NOTE: Sin uso. el producto solo debe tener una catergoria
+    // public function categorias(): BelongsToMany
+    // {
+    //     return $this->belongsToMany(Categoria::class,  'categoria_producto', 'producto_id', 'categoria_id');
+    // }
 
     public function marca(): BelongsTo
     {
@@ -111,6 +117,11 @@ class Producto extends BaseModel
     public function linea(): BelongsTo
     {
         return $this->belongsTo(Linea::class);
+    }
+
+    public function categoria(): BelongsTo
+    {
+        return $this->belongsTo(Categoria::class);
     }
 
     public function especificaciones(): HasMany
@@ -142,12 +153,6 @@ class Producto extends BaseModel
             $q->whereIn('categoria_id', $ids);
         });
     }
-    // public function filterByCategoriaId($query, $value)
-    // {
-    //     return $query->whereHas('categorias', function ($q) use ($value) {
-    //         $q->where('categoria_id', $value);
-    //     });
-    // }
 
     public function filterByNombre($query, $value)
     {

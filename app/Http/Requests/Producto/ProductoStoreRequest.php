@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Producto;
 
+use App\Models\Categoria;
 use App\Models\Linea;
 use App\Models\Marca;
 use Illuminate\Foundation\Http\FormRequest;
@@ -32,10 +33,20 @@ class ProductoStoreRequest extends FormRequest
              *
              */
             // 'unidad_medida_id' => ['required', 'integer', 'exists:unidad_medidas,id'],
-            'categorias' => ['required', 'array', 'min:1'],
-            'categorias.*' => ['integer', 'exists:categorias,id'],
+            // 'categorias' => ['required', 'array', 'min:1'],
+            // 'categorias.*' => ['integer', 'exists:categorias,id'],
             // 'especificaciones' => ['required', 'array', 'min:1'],
             // 'especificaciones.*' => ['integer', 'exists:producto_especificaciones,id'],
+            'categoria_id' => [
+                'required',
+                'integer',
+                'exists:categorias,id',
+                function ($attribute, $value, $fail) use ($proveedorId) {
+                    if (!Categoria::where('id', $value)->where('proveedor_id', $proveedorId)->exists()) {
+                        $fail('La categoria seleccionada no pertenece a este proveedor.');
+                    }
+                }
+            ],
             'marca_id' => [
                 'required',
                 'integer',

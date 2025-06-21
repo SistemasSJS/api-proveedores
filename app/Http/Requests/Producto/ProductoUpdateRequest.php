@@ -2,6 +2,9 @@
 
 namespace App\Http\Requests\Producto;
 
+use App\Models\Categoria;
+use App\Models\Linea;
+use App\Models\Marca;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProductoUpdateRequest extends FormRequest
@@ -13,18 +16,57 @@ class ProductoUpdateRequest extends FormRequest
 
     public function rules(): array
     {
+        $proveedorId = $this->route('proveedor')->id ?? $this->input('proveedor_id');
+
         return [
             'nombre' => ['sometimes', 'required', 'string', 'max:100'],
             'descripcion' => ['sometimes', 'required', 'string', 'max:255'],
             'codigo_interno' => ['sometimes', 'required', 'string', 'max:50'],
             'proveedor_id' => ['sometimes', 'required', 'integer', 'exists:proveedores,id'],
             // Aquí se espera un arreglo de categorías
-            'categorias' => ['sometimes', 'array', 'min:1'],
-            'categorias.*' => ['integer', 'exists:categorias,id'],
+            // 'categorias' => ['sometimes', 'array', 'min:1'],
+            // 'categorias.*' => ['integer', 'exists:categorias,id'],
 
             'unidad_medida_id' => ['sometimes', 'required', 'integer', 'exists:unidad_medidas,id'],
-            'marca_id' => ['sometimes', 'required', 'integer', 'exists:marcas,id'],
-            'linea_id' => ['sometimes', 'required', 'integer', 'exists:lineas,id'],
+            'categoria_id' => [
+                'required',
+                'integer',
+                'exists:categorias,id',
+                function ($attribute, $value, $fail) use ($proveedorId) {
+                    if (!Categoria::where('id', $value)->where('proveedor_id', $proveedorId)->exists()) {
+                        $fail('La categoria seleccionada no pertenece a este proveedor.');
+                    }
+                }
+            ],
+            'marca_id' => [
+                'required',
+                'integer',
+                'exists:marcas,id',
+                function ($attribute, $value, $fail) use ($proveedorId) {
+                    if (!Marca::where('id', $value)->where('proveedor_id', $proveedorId)->exists()) {
+                        $fail('La marca seleccionada no pertenece a este proveedor.');
+                    }
+                }
+            ],
+            'linea_id' => [
+                'required',
+                'integer',
+                'exists:lineas,id',
+                function ($attribute, $value, $fail) use ($proveedorId) {
+                    $marcaId = $this->input('marca_id');
+
+                    // Validar que la línea pertenezca al proveedor
+                    if (!Linea::where('id', $value)->where('proveedor_id', $proveedorId)->exists()) {
+                        $fail('La línea seleccionada no pertenece a este proveedor.');
+                        return;
+                    }
+
+                    // Validar que la línea esté relacionada con la marca seleccionada
+                    if ($marcaId && !Linea::where('id', $value)->where('marca_id', $marcaId)->exists()) {
+                        $fail('La línea seleccionada no pertenece a la marca especificada.');
+                    }
+                }
+            ],
         ];
     }
 

@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::table('productos', function (Blueprint $table) {
             // Asegurar campos obligatorios según especificaciones
             if (!Schema::hasColumn('productos', 'sku')) {
-                $table->string('sku')->unique();
+                $table->string('sku')->unique()->nullable();
             }
 
             if (!Schema::hasColumn('productos', 'nombre')) {
@@ -54,14 +54,6 @@ return new class extends Migration
 
             if (!Schema::hasColumn('productos', 'stock')) {
                 $table->integer('stock')->default(0);
-            }
-
-            if (!Schema::hasColumn('productos', 'peso_kg')) {
-                $table->decimal('peso_kg', 8, 3)->nullable();
-            }
-
-            if (!Schema::hasColumn('productos', 'dimensiones')) {
-                $table->string('dimensiones')->nullable();
             }
         });
     }

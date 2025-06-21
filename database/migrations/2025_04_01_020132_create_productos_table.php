@@ -13,22 +13,37 @@ class CreateProductosTable extends Migration
     {
         Schema::create('productos', function (Blueprint $table) {
             $table->id();
-            $table->string('sku', 100)->unique()->after('id');
-            $table->foreignId('proveedor_id')->index()->constrained('proveedores')->restrictOnDelete();
+            $table->string('sku', 100)->unique();
+            $table->string('modelo', 60)->nullable();
+            $table->string('codigo_interno', 60)->nullable();
             $table->string('nombre');
             $table->text('descripcion')->nullable();
             $table->string('logo')->nullable();
+            $table->string('imagen_principal', 500)->nullable();
+            $table->boolean('activo')->default(true);
+            $table->timestamps();
+
+            // Stocks
+            $table->integer('stock')->default(0);
+
+            // precios
+            $table->decimal('precio_base', 10, 2)->nullable();
+            $table->decimal('precio_de_lista', 10, 2)->nullable();
+            $table->decimal('precio_público', 10, 2)->nullable();
+            $table->decimal('precio_mayoreo', 10, 2)->nullable();
+            $table->decimal('precio_con_IVA', 10, 2)->nullable();
+            $table->decimal('precio_sin_IVA', 10, 2)->nullable();
+            $table->decimal('precio_promocional', 10, 2)->nullable();
+            $table->decimal('precio_distribuidor', 10, 2)->nullable();
+            $table->decimal('precio_especial', 10, 2)->nullable();
+
+            // FK
+            $table->foreignId('proveedor_id')->index()->constrained('proveedores')->restrictOnDelete();
             $table->foreignId('marca_id')->nullable()->constrained('marcas')->nullOnDelete();
             $table->foreignId('linea_id')->nullable()->constrained('lineas')->nullOnDelete();
             $table->foreignId('unidad_medida_id')->nullable()->constrained('unidad_medidas')->nullOnDelete();
-            $table->decimal('precio_base', 10, 2)->nullable()->after('descripcion');
-            $table->string('imagen_principal', 500)->nullable()->after('precio_base');
-            $table->foreignId('categoria_id')->nullable()->constrained('categorias')->onDelete('set null')->after('proveedor_id');
-            $table->boolean('activo')->default(true)->after('linea_id');
-            $table->integer('stock')->default(0)->after('activo');
-            $table->decimal('peso_kg', 8, 3)->nullable()->after('stock');
-            $table->string('dimensiones', 100)->nullable()->after('peso_kg');
-            $table->timestamps();
+            $table->foreignId('categoria_id')->nullable()->constrained('categorias')->onDelete('set null');
+
             $table->unique(['sku', 'proveedor_id'], 'uk_sku_proveedor');
             $table->index(['proveedor_id', 'categoria_id'], 'idx_proveedor_categoria');
             $table->index(['marca_id', 'linea_id'], 'idx_marca_linea');

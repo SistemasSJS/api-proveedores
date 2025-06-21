@@ -16,6 +16,7 @@ class ProveedorCategoriaController extends Controller
         $filters = $request->only(['nombre', 'estatus']);
         // $data = $proveedor->categorias()->filter($filters)->paginate();
         $data = Categoria::with(['children'])
+            ->whereNull('parent_id')
             ->filter($filters)
             ->where('proveedor_id', $proveedor->id)
             ->paginate();
@@ -23,7 +24,7 @@ class ProveedorCategoriaController extends Controller
     }
 
 
-    public function inDex_sub_categorias(Request $request, Proveedor $proveedor, $categoriaId)
+    public function index_sub_categorias(Request $request, Proveedor $proveedor, $categoriaId)
     {
         $categoriaPadre = Categoria::findOrFail($categoriaId);
 

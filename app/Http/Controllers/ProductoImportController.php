@@ -121,26 +121,25 @@ class ProductoImportController extends Controller
       'productos' => [
         'headers' => [
           'sku',
+          'nombre_modelo',
+          'codigo_interno',
           'nombre_producto',
-          'descripcion',
-          'precio',
-          'cantidad_disponible',
-          'activo',
+          'descripcion_producto',
           'nombre_marca',
           'nombre_linea',
-          'categorias'
+          'nombre_categoria_nivel_1',
+          'nombre_categoria_nivel_2',
+          'nombre_categoria_nivel_3',
+          'precio_base',
+          'precio_de_lista',
+          'precio_público',
+          'precio_mayoreo',
+          'precio_con_IVA',
+          'precio_sin_IVA',
+          'precio_promocional',
+          'precio_distribuidor',
+          'precio_especial',
         ],
-        'example' => [
-          'PRD001',
-          'Producto Ejemplo',
-          'Descripción del producto',
-          '99.99',
-          '100',
-          'true',
-          'Marca Ejemplo',
-          'Línea Ejemplo',
-          'Categoría1,Categoría2'
-        ]
       ]
     ];
 

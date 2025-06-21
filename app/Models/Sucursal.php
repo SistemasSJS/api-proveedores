@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Model;
 class Sucursal extends BaseModel
 {
     use HasFactory;
-    protected $table = "sucursales";
+    protected $table = 'sucursales';
     protected $fillable = [
         'proveedor_id',
         'nombre',

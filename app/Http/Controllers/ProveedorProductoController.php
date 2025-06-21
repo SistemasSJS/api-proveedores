@@ -94,27 +94,23 @@ class ProveedorProductoController extends Controller
     public function updateLogo(ProductoUpdateLogoRequest $request, Proveedor $proveedor, $productoId)
     {
         $producto = Producto::findOrFail($productoId);
-        // Eliminar logo anterior si existe
         if ($producto->imagen_principal) {
             $rutaAnterior = str_replace(asset('storage') . '/', '', $producto->imagen_principal);
             Storage::disk('public')->delete($rutaAnterior);
         }
 
-        // Guardar nuevo archivo
         $file = $request->file('logo');
         $filename = "logo_producto_{$producto->id}_" . time() . '.' . $file->getClientOriginalExtension();
         $path = $file->storeAs('uploads', $filename, 'public');
 
-        // Actualizar ruta en base de datos
         $producto->update(['imagen_principal' => $path]);
-
         return $this->success(new ProductoResource($producto->fresh(Producto::eagerLodable())));
     }
 
     public function destroy(Request $request, Proveedor $proveedor, $productoId)
     {
         $producto = Producto::findOrFail($productoId);
-        $producto->sucursales()->detach();
+        // $producto->sucursales()->detach();
         $producto->delete();
         return $this->success(message: "Producto eliminado correctamente.");
     }

@@ -365,6 +365,7 @@ class ProductoSeeder extends Seeder
 
 
         ];
+
         foreach ($proveedores as $proveedor) {
             $categoriasPorProveedor = $productosPorCategoria[$proveedor->razon_social] ?? null;
             if (!$categoriasPorProveedor) continue;
@@ -375,19 +376,21 @@ class ProductoSeeder extends Seeder
                 // Traer marcas del proveedor como colección
                 $marcas = $proveedor->marcas()->get();
 
-                // Recolectar todas las líneas de esas marcas
-                $lineas = collect();
-                foreach ($marcas as $marca) {
-                    $lineas = $lineas->merge($marca->lineas()->get());
-                }
-
                 foreach ($productosCategoria as $productoData) {
                     $unidad = $unidadMedidas->where('descripcion', $productoData['unidad'])->first();
+                    $categoria = Categoria::where('nombre', $categoria_nombre)->first();
 
                     // Validar que haya marcas y líneas para evitar error en random()
-                    if ($marcas->isEmpty() || $lineas->isEmpty()) {
-                        // Log o continue si no hay marcas o líneas
-                        continue;
+                    // if ($marcas->isEmpty() || $lineas->isEmpty()) {
+                    //     // Log o continue si no hay marcas o líneas
+                    //     continue;
+                    // }
+
+                    $marca_random = null;
+                    $linea_random = null;
+                    if (!$marcas->isEmpty()) {
+                        $marca_random = $marcas->random()->id;
+                        $linea_random = Linea::where('marca_id', $marca_random)->get()->random()->id;
                     }
 
                     $producto = Producto::firstOrCreate([
@@ -395,13 +398,14 @@ class ProductoSeeder extends Seeder
                         'sku' => $productoData['sku'],
                         'nombre' => $productoData['nombre'],
                         'descripcion' => $productoData['descripcion'],
-                        'linea_id' => $lineas->random()->id,
-                        'marca_id' => $marcas->random()->id,
+                        'categoria_id' => $categoria->id,
+                        'linea_id' => $linea_random,
+                        'marca_id' => $marca_random,
                         'unidad_medida_id' => $unidad ? $unidad->id : $unidadMedidas->random()->id,
                     ]);
 
-                    $categorias = Categoria::whereIn('nombre', [$categoria_nombre])->get();
-                    $producto->categorias()->sync($categorias->pluck('id'));
+                    // $categorias = Categoria::whereIn('nombre', [$categoria_nombre])->get();
+                    // $producto->categorias()->sync($categorias->pluck('id'));
                 }
             }
         }
