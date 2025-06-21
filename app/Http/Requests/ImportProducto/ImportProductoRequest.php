@@ -15,7 +15,7 @@ class ImportProductoRequest extends FormRequest
   {
     return [
 
-      'file' => 'required|file|mimes:csv,txt'
+      'file' => 'required|file|mimes:csv,txt,json,xlsx,xls|max:10240'
     ];
   }
 
@@ -24,7 +24,8 @@ class ImportProductoRequest extends FormRequest
     return [
       'file.required' => 'El file es obligatorio.',
       'file.file' => 'El file...',
-      'file.mimes' => 'El file debe ser: CSV TXT.',
+      'file.mimes' => 'El archivo debe ser de tipo: CSV, TXT, JSON, XLSX o XLS.',
+      'file.max' => 'El archivo no debe exceder los 10MB.',
     ];
   }
 }

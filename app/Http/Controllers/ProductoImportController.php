@@ -14,7 +14,7 @@ class ProductoImportController extends Controller
   public function upload(Request $request, $proveedorId)
   {
     $request->validate([
-      'file' => 'required|file|mimes:csv,txt|max:10240',
+      'file' => 'required|file|mimes:csv,txt,json,xlsx,xls|max:10240',
       'tipo' => 'required|in:productos,marcas,lineas,categorias'
     ]);
 
@@ -27,7 +27,13 @@ class ProductoImportController extends Controller
 
 
       $file = $request->file('file');
-      $filename = "productos_csv_{$proveedor->id}_" . time() . '.' . $file->getClientOriginalExtension();
+      $originalExtension = $file->getClientOriginalExtension();
+      $mimeType = $file->getMimeType();
+      
+      // Detect format based on extension and MIME type
+      $formato = $this->detectFileFormat($originalExtension, $mimeType);
+      
+      $filename = "productos_import_{$proveedor->id}_" . time() . '.' . $originalExtension;
       $path = $file->storeAs('imports', $filename, 'local');
 
       $jobId = Str::uuid()->toString();
@@ -37,6 +43,7 @@ class ProductoImportController extends Controller
         'proveedor_id' => $proveedorId,
         'tipo' => $request->tipo,
         'archivo' => $path,
+        'formato' => $formato,
         'estado' => 'pendiente'
       ]);
 
@@ -46,6 +53,7 @@ class ProductoImportController extends Controller
         'message' => 'Archivo cargado correctamente',
         'audit_id' => $audit->id,
         'job_id' => $jobId,
+        'formato' => $formato,
         'estado' => 'pendiente'
       ]);
     } catch (\Exception $e) {
@@ -70,6 +78,7 @@ class ProductoImportController extends Controller
       'id' => $audit->id,
       'job_id' => $audit->job_id,
       'tipo' => $audit->tipo,
+      'formato' => $audit->formato,
       'estado' => $audit->estado,
       'progreso' => $audit->progreso,
       'total_registros' => $audit->total_registros,
@@ -153,5 +162,40 @@ class ProductoImportController extends Controller
     return response($content)
       ->header('Content-Type', 'text/csv')
       ->header('Content-Disposition', "attachment; filename=template_{$tipo}.csv");
+  }
+
+  /**
+   * Detect file format based on extension and MIME type
+   */
+  private function detectFileFormat($extension, $mimeType)
+  {
+    $extension = strtolower($extension);
+    
+    switch ($extension) {
+      case 'csv':
+        return 'csv';
+      case 'txt':
+        return 'txt';
+      case 'json':
+        return 'json';
+      case 'xlsx':
+        return 'xlsx';
+      case 'xls':
+        return 'xls';
+      default:
+        // Fallback to MIME type detection
+        if (strpos($mimeType, 'text/csv') !== false) {
+          return 'csv';
+        } elseif (strpos($mimeType, 'text/plain') !== false) {
+          return 'txt';
+        } elseif (strpos($mimeType, 'application/json') !== false) {
+          return 'json';
+        } elseif (strpos($mimeType, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') !== false) {
+          return 'xlsx';
+        } elseif (strpos($mimeType, 'application/vnd.ms-excel') !== false) {
+          return 'xls';
+        }
+        return 'unknown';
+    }
   }
 }

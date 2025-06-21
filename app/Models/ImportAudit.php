@@ -12,7 +12,12 @@ class ImportAudit extends BaseModel
     'proveedor_id',
     'tipo',
     'archivo',
+    'formato',
     'estado',
+    'fase',
+    'logs',
+    'eta_seconds',
+    'mem_peak_mb',
     'total_registros',
     'nuevos',
     'actualizados',
@@ -28,6 +33,7 @@ class ImportAudit extends BaseModel
   protected $casts = [
     'preview_data' => 'array',
     'errores_detalle' => 'array',
+    'logs' => 'array',
     'inicio_proceso' => 'datetime',
     'fin_proceso' => 'datetime'
   ];
@@ -35,5 +41,32 @@ class ImportAudit extends BaseModel
   public function proveedor()
   {
     return $this->belongsTo(Proveedor::class);
+  }
+
+  /**
+   * Append a timestamped log entry to the logs array
+   *
+   * @param string $message
+   * @param array $context
+   * @return $this
+   */
+  public function appendLog(string $message, array $context = []): self
+  {
+    $logs = $this->logs ?? [];
+    
+    $logEntry = [
+      'timestamp' => now()->toISOString(),
+      'message' => $message,
+    ];
+    
+    if (!empty($context)) {
+      $logEntry['context'] = $context;
+    }
+    
+    $logs[] = $logEntry;
+    
+    $this->logs = $logs;
+    
+    return $this;
   }
 }
