@@ -58,7 +58,6 @@ Route::get('roles-index', [RoleController::class, 'index']);
 // Route::get('marcas-index', [MarcaController::class, 'index']);
 // Route::get('unidades-medida-index', [UnidadMedidaController::class, 'index']);
 Route::get('tipos-empresa-index', [TipoEmpresaController::class, 'index']);
-
 /**
  * Rutas protegidas con apitoken
  */
@@ -84,14 +83,16 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
             // routes/api.php
-            Route::controller(ProductoImportController::class)->group(function () {
-                Route::post('{proveedor}/import', 'upload');
-                Route::get('{proveedor}/import/{audit}/status', 'status');
-                Route::post('{proveedor}/import/{audit}/confirm',  'confirm');
-                Route::get('{proveedor}/imports', 'list');
+            Route::prefix('{proveedor}/imports')->middleware(['proveedor.access'])->group(function () {
+                Route::post('products', [ProductoImportController::class, 'upload']);
+                Route::get('products', [ProductoImportController::class, 'list']);
+                Route::get('{audit}', [ProductoImportController::class, 'status']);
+                Route::get('{audit}/logs', [ProductoImportController::class, 'status']);
+                Route::post('{audit}/confirm',  [ProductoImportController::class, 'confirm']);
             });
+            Route::get('/imports/products/template', [ProductoImportController::class, 'downloadTemplate']);
 
-            Route::get('/import/template/{tipo}', [ProductoImportController::class, 'downloadTemplate']);
+
 
             // TODO: Move to routes of products
             // Route::post('{proveedor}/import', [ImportProductoController::class, 'import'])->middleware(['api.access', 'audit']); // Auditar importación
@@ -99,7 +100,7 @@ Route::middleware('auth:sanctum')->group(function () {
             /**
              * USUARIOS
              */
-            Route::prefix('{proveedor}/users')->group(function () {
+            Route::prefix('{proveedor}/users')->middleware(['proveedor.access'])->group(function () {
                 Route::get('/', [ProveedorUsuarioController::class, 'index'])->middleware(['api.access']); // Validar proveedor accesible
                 Route::post('/', [ProveedorUsuarioController::class, 'store'])->middleware(['api.access', 'audit']); // Auditar creación de usuario
 

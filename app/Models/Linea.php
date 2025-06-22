@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Linea extends BaseModel
 {
     use HasFactory;
-    protected $fillable = ['nombre'];
+    protected $fillable = ['nombre', 'descripcion', 'marca_id', 'proveedor_id', 'activo'];
 
     protected static $filters = [
         'nombre' => 'nombre',
@@ -36,6 +36,6 @@ class Linea extends BaseModel
 
     public function marca()
     {
-        return $this->belongsTo(Linea::class);
+        return $this->belongsTo(Marca::class);
     }
 }

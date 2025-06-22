@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\ImportProducto;
+namespace App\Http\Requests\ProductoImport;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ImportProductoRequest extends FormRequest
+class ProductoImportUploadRequest extends FormRequest
 {
   public function authorize()
   {

@@ -6,7 +6,7 @@ use App\Services\Parsers\Contracts\FileParserInterface;
 use Illuminate\Http\UploadedFile;
 use InvalidArgumentException;
 use Exception;
-use Excel; // Old Laravel-Excel v1.x namespace
+use Maatwebsite\Excel\Facades\Excel;
 
 class ExcelParser implements FileParserInterface
 {
@@ -15,8 +15,8 @@ class ExcelParser implements FileParserInterface
         $this->validateFile($file);
         
         try {
-            // For the old version, use selectSheets to get first sheet data
-            $data = Excel::selectSheets(0)->load($file->getRealPath())->toArray();
+            // For Laravel Excel v1.x, load file and convert to array
+            $data = Excel::load($file->getRealPath())->toArray();
             return $this->normalizeExcelData($data);
         } catch (Exception $e) {
             throw new Exception("Failed to parse Excel file: " . $e->getMessage(), 0, $e);
@@ -34,8 +34,8 @@ class ExcelParser implements FileParserInterface
         }
 
         try {
-            // For the old version, use load() and toArray()
-            $data = Excel::selectSheets(0)->load($filePath)->toArray();
+            // For Laravel Excel v1.x, load file and convert to array
+            $data = Excel::load($filePath)->toArray();
             return $this->normalizeExcelData($data);
         } catch (Exception $e) {
             throw new Exception("Failed to parse Excel file: " . $e->getMessage(), 0, $e);

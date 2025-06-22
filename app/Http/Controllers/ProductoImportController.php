@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ProductoImport\ProductoImportUploadRequest;
 use Illuminate\Http\Request;
 use App\Models\ImportAudit;
 use App\Jobs\ImportarProductosJob;
@@ -11,28 +12,19 @@ use Illuminate\Support\Str;
 
 class ProductoImportController extends Controller
 {
-  public function upload(Request $request, $proveedorId)
+  public function upload(ProductoImportUploadRequest $request, $proveedorId)
   {
-    $request->validate([
-      'file' => 'required|file|mimes:csv,txt,json,xlsx,xls|max:10240',
-      'tipo' => 'required|in:productos,marcas,lineas,categorias'
-    ]);
 
     // Validar proveedor
     $proveedor = Proveedor::findOrFail($proveedorId);
     try {
-      // $file = $request->file('file');
-      // $filename = "productos_csv_{$proveedor->id}_" . time() . '.' . $file->getClientOriginalExtension();
-      // $path = $file->store('imports', $filename, 'private');
-
-
       $file = $request->file('file');
       $originalExtension = $file->getClientOriginalExtension();
       $mimeType = $file->getMimeType();
-      
+
       // Detect format based on extension and MIME type
       $formato = $this->detectFileFormat($originalExtension, $mimeType);
-      
+
       $filename = "productos_import_{$proveedor->id}_" . time() . '.' . $originalExtension;
       $path = $file->storeAs('imports', $filename, 'local');
 
@@ -41,7 +33,7 @@ class ProductoImportController extends Controller
       $audit = ImportAudit::create([
         'job_id' => $jobId,
         'proveedor_id' => $proveedorId,
-        'tipo' => $request->tipo,
+        'tipo' => 'productos',
         'archivo' => $path,
         'formato' => $formato,
         'estado' => 'pendiente'
@@ -64,7 +56,7 @@ class ProductoImportController extends Controller
     }
   }
 
-  public function status($proveedorId, $auditId)
+  public function status(Request $request, $proveedorId, $auditId)
   {
     $audit = ImportAudit::where('id', $auditId)
       ->where('proveedor_id', $proveedorId)
@@ -124,7 +116,7 @@ class ProductoImportController extends Controller
     // return $this->paginated()
   }
 
-  public function downloadTemplate($tipo)
+  public function downloadTemplate()
   {
     $templates = [
       'productos' => [
@@ -141,7 +133,7 @@ class ProductoImportController extends Controller
           'nombre_categoria_nivel_3',
           'precio_base',
           'precio_de_lista',
-          'precio_público',
+          'precio_publico',
           'precio_mayoreo',
           'precio_con_IVA',
           'precio_sin_IVA',
@@ -152,16 +144,18 @@ class ProductoImportController extends Controller
       ]
     ];
 
-    if (!isset($templates[$tipo])) {
-      return response()->json(['error' => 'Tipo no válido'], 400);
-    }
+    // if (!isset($templates[$tipo])) {
+    //   return response()->json(['error' => 'Tipo no válido'], 400);
+    // }
 
-    $content = implode(',', $templates[$tipo]['headers']) . "\n";
-    $content .= implode(',', $templates[$tipo]['example']);
+    $content = implode(',', $templates['productos']['headers']) . "\n";
+    // Agregar fila de ejemplo con datos de ejemplo
+    $exampleRow = array_fill(0, count($templates['productos']['headers']), 'ejemplo');
+    $content .= implode(',', $exampleRow);
 
     return response($content)
       ->header('Content-Type', 'text/csv')
-      ->header('Content-Disposition', "attachment; filename=template_{$tipo}.csv");
+      ->header('Content-Disposition', "attachment; filename=template_productos.csv");
   }
 
   /**
@@ -170,7 +164,7 @@ class ProductoImportController extends Controller
   private function detectFileFormat($extension, $mimeType)
   {
     $extension = strtolower($extension);
-    
+
     switch ($extension) {
       case 'csv':
         return 'csv';
@@ -199,3 +193,10 @@ class ProductoImportController extends Controller
     }
   }
 }
+
+// GET    /imports/products/template           - Download template
+// POST   /proveedores/{id}/imports/products   - Upload file
+// GET    /proveedores/{id}/imports/products   - List history (paginated)
+// GET    /proveedores/{id}/imports/{auditId}  - Get status with phases/logs
+// GET    /proveedores/{id}/imports/{auditId}/logs - Get detailed logs
+// POST   /proveedores/{id}/imports/{auditId}/confirm - Confirm import

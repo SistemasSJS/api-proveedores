@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('job_id')->unique();
             $table->foreignId('proveedor_id')->index()->constrained('proveedores')->restrictOnDelete();
-            $table->enum('tipo', ['productos', 'marcas', 'lineas', 'categorias']);
+            $table->enum('tipo', ['productos', 'marcas', 'lineas', 'categorias'])->default('productos');
             $table->string('archivo');
             $table->enum('estado', ['pendiente', 'procesando', 'preview', 'confirmado', 'completado', 'error']);
             $table->integer('total_registros')->default(0);

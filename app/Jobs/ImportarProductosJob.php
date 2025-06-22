@@ -38,7 +38,7 @@ class ImportarProductosJob implements ShouldQueue
     public function handle()
     {
         $this->startTime = microtime(true);
-        
+
         $audit = ImportAudit::find($this->auditId);
         if (!$audit) return;
 
@@ -68,10 +68,10 @@ class ImportarProductosJob implements ShouldQueue
     {
         // Phase 1: Parse (0-20%)
         $parsedData = $this->parsePhase($audit);
-        
+
         // Phase 2: Validate (20-40%)
         $validationResults = $this->validatePhase($audit, $parsedData);
-        
+
         // Phase 3: Preview (40-60%)
         $this->previewPhase($audit, $parsedData, $validationResults);
     }
@@ -81,24 +81,24 @@ class ImportarProductosJob implements ShouldQueue
      */
     private function parsePhase(ImportAudit $audit): array
     {
-        $audit->update(['fase' => 'parse', 'progreso' => 0])
-            ->appendLog('Iniciando fase de parsing');
+        $audit->update(['fase' => 'parse', 'progreso' => 0]);
+        $audit->refresh()->appendLog('Iniciando fase de parsing');
 
         try {
             $fileParserService = new FileParserService();
             $filePath = Storage::path($audit->archivo);
-            
+
             $data = $fileParserService->parseFile($filePath);
             $rowCount = count($data);
-            
+
             $audit->update([
                 'total_registros' => $rowCount,
                 'fase' => 'parse',
                 'progreso' => 20
-            ])->appendLog("Archivo parseado exitosamente. {$rowCount} filas encontradas");
-            
+            ]);
+            $audit->appendLog("Archivo parseado exitosamente. {$rowCount} filas encontradas");
+
             return $data;
-            
         } catch (Exception $e) {
             $audit->appendLog("Error en parsing: {$e->getMessage()}");
             throw new Exception("Error de formato en archivo: {$e->getMessage()}");
@@ -110,8 +110,8 @@ class ImportarProductosJob implements ShouldQueue
      */
     private function validatePhase(ImportAudit $audit, array $data): array
     {
-        $audit->update(['fase' => 'validate', 'progreso' => 20])
-            ->appendLog('Iniciando fase de validación');
+        $audit->update(['fase' => 'validate', 'progreso' => 20]);
+        $audit->appendLog('Iniciando fase de validación');
 
         $validator = new ProductImportValidator($audit->proveedor_id);
         $validationResults = [
@@ -130,7 +130,7 @@ class ImportarProductosJob implements ShouldQueue
         $totalRows = count($data);
         foreach ($data as $index => $row) {
             $rowValidation = $validator->validateRow($row, $index + 1);
-            
+
             if (!empty($rowValidation['errors'])) {
                 $validationResults['errors'][] = [
                     'row' => $index + 1,
@@ -138,7 +138,7 @@ class ImportarProductosJob implements ShouldQueue
                     'errors' => $rowValidation['errors']
                 ];
             }
-            
+
             if (!empty($rowValidation['warnings'])) {
                 $validationResults['warnings'][] = [
                     'row' => $index + 1,
@@ -156,11 +156,12 @@ class ImportarProductosJob implements ShouldQueue
 
         $errorCount = count($validationResults['errors']);
         $warningCount = count($validationResults['warnings']);
-        
+
         $audit->update([
             'progreso' => 40,
             'errores' => $errorCount
-        ])->appendLog("Validación completa. {$errorCount} errores, {$warningCount} advertencias");
+        ]);
+        $audit->appendLog("Validación completa. {$errorCount} errores, {$warningCount} advertencias");
 
         return $validationResults;
     }
@@ -170,14 +171,15 @@ class ImportarProductosJob implements ShouldQueue
      */
     private function previewPhase(ImportAudit $audit, array $data, array $validationResults): void
     {
-        $audit->update(['fase' => 'preview', 'progreso' => 40])
-            ->appendLog('Generando vista previa');
+        $audit->update(['fase' => 'preview', 'progreso' => 40]);
+        $audit->appendLog('Generando vista previa');
 
-        $previewData = $this->buildPreviewData($data, $validationResults, $audit->proveedor_id);
-        
+        // $previewData = $this->buildPreviewData($data, $validationResults, $audit->proveedor_id);
+        $previewData = $this->generarPreviewDetallado($data,  $audit->proveedor_id);
+
         $this->updateMemoryTracking();
         $eta = $this->calculateETA(count($data));
-        
+
         $audit->update([
             'estado' => 'preview',
             'fase' => 'preview',
@@ -186,7 +188,8 @@ class ImportarProductosJob implements ShouldQueue
             'errores_detalle' => $validationResults,
             'eta_seconds' => $eta,
             'mem_peak_mb' => $this->memoryPeakUsage
-        ])->appendLog('Vista previa generada. Esperando confirmación del usuario.');
+        ]);
+        $audit->appendLog('Vista previa generada. Esperando confirmación del usuario.');
     }
 
     /**
@@ -194,8 +197,8 @@ class ImportarProductosJob implements ShouldQueue
      */
     private function executeImportPhase(ImportAudit $audit): void
     {
-        $audit->update(['fase' => 'execute', 'progreso' => 60])
-            ->appendLog('Iniciando ejecución de importación confirmada');
+        $audit->update(['fase' => 'execute', 'progreso' => 60]);
+        $audit->appendLog('Iniciando ejecución de importación confirmada');
 
         // Re-parse data from file
         $fileParserService = new FileParserService();
@@ -205,7 +208,7 @@ class ImportarProductosJob implements ShouldQueue
         $resultado = $this->processImportWithTransaction($data, $audit);
 
         $this->updateMemoryTracking();
-        
+
         $audit->update([
             'estado' => 'completado',
             'fase' => 'execute',
@@ -216,7 +219,8 @@ class ImportarProductosJob implements ShouldQueue
             'errores' => $resultado['errores'],
             'errores_detalle' => $resultado['errores_detalle'],
             'mem_peak_mb' => $this->memoryPeakUsage
-        ])->appendLog("Importación completada. {$resultado['nuevos']} nuevos, {$resultado['actualizados']} actualizados, {$resultado['errores']} errores");
+        ]);
+        $audit->appendLog("Importación completada. {$resultado['nuevos']} nuevos, {$resultado['actualizados']} actualizados, {$resultado['errores']} errores");
     }
 
     /**
@@ -228,21 +232,21 @@ class ImportarProductosJob implements ShouldQueue
         $actualizados = 0;
         $errores = 0;
         $errores_detalle = [];
-        
+
         try {
             DB::transaction(function () use ($data, $audit, &$nuevos, &$actualizados, &$errores, &$errores_detalle) {
                 // Create savepoint for rollback capability
                 DB::statement('SAVEPOINT import_savepoint');
-                
+
                 try {
                     $this->processDataInChunks($data, $audit, $nuevos, $actualizados, $errores, $errores_detalle);
                 } catch (Exception $e) {
                     // Mark rollback phase and restore savepoint
-                    $audit->update(['fase' => 'rollback'])
-                        ->appendLog("Error durante ejecución: {$e->getMessage()}. Iniciando rollback.");
-                    
+                    $audit->update(['fase' => 'rollback']);
+                    $audit->appendLog("Error durante ejecución: {$e->getMessage()}. Iniciando rollback.");
+
                     DB::statement('ROLLBACK TO SAVEPOINT import_savepoint');
-                    
+
                     $audit->appendLog('Rollback completado');
                     throw $e;
                 }
@@ -256,7 +260,7 @@ class ImportarProductosJob implements ShouldQueue
             ];
             $errores++;
         }
-        
+
         return compact('nuevos', 'actualizados', 'errores', 'errores_detalle');
     }
 
@@ -267,22 +271,22 @@ class ImportarProductosJob implements ShouldQueue
     {
         $totalRows = count($data);
         $chunkSize = 100; // Process 100 rows at a time
-        
+
         $chunks = array_chunk($data, $chunkSize, true);
-        
+
         foreach ($chunks as $chunkIndex => $chunk) {
             $this->processChunk($chunk, $audit, $nuevos, $actualizados, $errores, $errores_detalle);
-            
+
             // Update progress chunk-wise
             $processedRows = ($chunkIndex + 1) * $chunkSize;
             $processedRows = min($processedRows, $totalRows);
             $progress = 60 + ($processedRows / $totalRows) * 40; // 60-100%
-            
+
             $audit->update(['progreso' => $progress]);
-            
+
             // Update memory tracking
             $this->updateMemoryTracking();
-            
+
             // Log progress every 10 chunks
             if ($chunkIndex % 10 === 0) {
                 $audit->appendLog("Procesados {$processedRows}/{$totalRows} registros");
@@ -298,13 +302,12 @@ class ImportarProductosJob implements ShouldQueue
         foreach ($chunk as $index => $row) {
             try {
                 $resultado = $this->processRow($row, $audit->proveedor_id);
-                
+
                 if ($resultado['isNew']) {
                     $nuevos++;
                 } else {
                     $actualizados++;
                 }
-                
             } catch (Exception $e) {
                 $errores++;
                 $errores_detalle[] = [
@@ -488,8 +491,10 @@ class ImportarProductosJob implements ShouldQueue
             ->where('proveedor_id', $proveedorId)
             ->get()
             ->keyBy('nombre');
-        $categoriasExistentes = Categoria::where('proveedor_id', $proveedorId)
-            ->pluck('nombre', 'id')->toArray();
+        $categoriasExistentes = Categoria::with('children')
+            ->where('proveedor_id', $proveedorId)
+            ->get()
+            ->keyBy('nombre');
         $productosExistentes = Producto::where('proveedor_id', $proveedorId)
             ->with(['marca', 'linea'])
             ->get()
@@ -501,7 +506,7 @@ class ImportarProductosJob implements ShouldQueue
             $lineaNombre = trim($row['nombre_linea'] ?? '');
 
             if ($marcaNombre) {
-                if (!$marcasExistentes->has($marcaNombre)) { // no existe la marca
+                if (!$marcasExistentes->has($marcaNombre)) {
                     if (!isset($preview['marcas']['nuevas'][$marcaNombre])) {
                         $preview['marcas']['nuevas'][$marcaNombre] = [
                             'nombre' => $marcaNombre,
@@ -527,60 +532,77 @@ class ImportarProductosJob implements ShouldQueue
                     }
                 }
             }
+            $cat_nivel_1 = trim($row['nombre_categoria_nivel_1'] ?? '');
+            $cat_nivel_2 = trim($row['nombre_categoria_nivel_2'] ?? '');
+            $cat_nivel_3 = trim($row['nombre_categoria_nivel_3'] ?? '');
 
-            // Procesar categorías
-            if (isset($row['categorias'])) {
-                $categorias = array_map('trim', explode(',', $row['categorias']));
-                foreach ($categorias as $cat) {
-                    if (!in_array($cat, $categoriasExistentes)) {
-                        $preview['categorias']['nuevas'][$cat] = ['nombre' => $cat];
+            if ($cat_nivel_1) {
+                if ($categoriasExistentes->has($cat_nivel_1)) {
+                    if (!isset($preview['categorias']['nuevas'][$cat_nivel_1])) {
+                        $preview['categorias']['nuevas'][$cat_nivel_1] = [
+                            'nombre' => $cat_nivel_1,
+                            'subcategorias' => [
+                                $cat_nivel_2,
+                                $cat_nivel_3
+                            ]
+                        ];
                     }
                 }
             }
 
-            // Procesar productos
-            $sku = trim($row['sku'] ?? '');
-            if (!$sku) {
-                $preview['productos']['errores'][] = [
-                    'fila' => $index + 2,
-                    'error' => 'SKU vacío',
-                    'data' => $row
-                ];
-                continue;
+            if ($cat_nivel_2) {
+                if ($categoriasExistentes->has($cat_nivel_2)) {
+                    if (!isset($preview['categorias']['nuevas'][$cat_nivel_2])) {
+                        $preview['categorias']['nuevas'][$cat_nivel_2] = [
+                            'nombre' => $cat_nivel_2,
+                            'subcategorias' => [
+                                $cat_nivel_3
+                            ]
+                        ];
+                    }
+                }
             }
 
-            // Validar marca obligatoria
-            if (!$marcaNombre) {
-                $preview['productos']['errores'][] = [
-                    'fila' => $index + 2,
-                    'error' => 'Marca es obligatoria',
-                    'sku' => $sku,
-                    'data' => $row
-                ];
-                continue;
+            if ($cat_nivel_3) {
+                if ($categoriasExistentes->has($cat_nivel_3)) {
+                    if (!isset($preview['categorias']['nuevas'][$cat_nivel_3])) {
+                        $preview['categorias']['nuevas'][$cat_nivel_3] = [
+                            'nombre' => $cat_nivel_3
+                        ];
+                    }
+                }
             }
 
             $productoData = [
-                'sku' => $sku,
-                'nombre' => $row['nombre_producto'] ?? '',
-                'descripcion' => $row['descripcion'] ?? '',
-                'precio' => floatval($row['precio'] ?? 0),
-                'stock' => intval($row['cantidad_disponible'] ?? 0),
-                'marca' => $marcaNombre,
-                'linea' => $lineaNombre,
-                'activo' => filter_var($row['activo'] ?? true, FILTER_VALIDATE_BOOLEAN),
-                'fila' => $index + 2
+                'fila' => $index + 2,
+                'sku' => $row['sku'] ?? '',
+                'nombre_modelo' => $row['nombre_modelo'] ?? '',
+                'codigo_interno' => $row['codigo_interno'] ?? '',
+                'nombre_producto' => $row['nombre_producto'] ?? '',
+                'descripcion_producto' => $row['descripcion_producto'] ?? '',
+                'nombre_marca' => $row['nombre_marca'] ?? '',
+                'nombre_linea' => $row['nombre_linea'] ?? '',
+                'nombre_categoria_nivel_1' => $row['nombre_categoria_nivel_1'] ?? '',
+                'nombre_categoria_nivel_2' => $row['nombre_categoria_nivel_2'] ?? '',
+                'nombre_categoria_nivel_3' => $row['nombre_categoria_nivel_3'] ?? '',
+                'precio_base' => $row['precio_base'] ?? '',
+                'precio_de_lista' => $row['precio_de_lista'] ?? '',
+                'precio_publico' => $row['precio_publico'] ?? '',
+                'precio_mayoreo' => $row['precio_mayoreo'] ?? '',
+                'precio_con_IVA' => $row['precio_con_IVA'] ?? '',
+                'precio_sin_IVA' => $row['precio_sin_IVA'] ?? '',
+                'precio_promocional' => $row['precio_promocional'] ?? '',
+                'precio_distribuidor' => $row['precio_distribuidor'] ?? '',
+                'precio_especial' => $row['precio_especial'] ?? '',
             ];
-
+            $sku = $row['sku'];
             if ($productosExistentes->has($sku)) {
-                $productoExistente = $productosExistentes[$sku];
-                $productoData['cambios'] = $this->detectarCambios($productoExistente, $productoData);
-                $productoData['id'] = $productoExistente->id;
                 $preview['productos']['actualizados'][] = $productoData;
             } else {
                 $preview['productos']['nuevos'][] = $productoData;
             }
         }
+
 
         // Convertir arrays asociativos a arrays indexados
         $preview['marcas']['nuevas'] = array_values($preview['marcas']['nuevas']);
@@ -628,41 +650,71 @@ class ImportarProductosJob implements ShouldQueue
         DB::transaction(function () use ($data, $audit, &$nuevos, &$actualizados, &$errores, &$errores_detalle) {
             $total = count($data);
 
+            // Pre-cargar marcas, líneas y productos existentes
+            $marcasExistentes = Marca::where('proveedor_id', $audit->proveedor_id)
+                ->get()
+                ->keyBy('nombre');
+
+            $lineasExistentes = Linea::where('proveedor_id', $audit->proveedor_id)
+                ->get()
+                ->groupBy('marca_id');
+
+            $productosExistentes = Producto::where('proveedor_id', $audit->proveedor_id)
+                ->get()
+                ->keyBy('sku');
+
             foreach ($data as $index => $row) {
                 try {
-                    // Actualizar progreso cada 10 registros
-                    if ($index % 10 == 0) {
+                    // Validar SKU obligatorio
+                    $sku = trim($row['sku'] ?? '');
+                    // if (empty($sku)) {
+                    //     throw new \Exception('El campo SKU es obligatorio');
+                    // }
+
+                    // Actualizar progreso cada 1% de avance
+                    if (($index + 1) % max(1, floor($total / 100)) == 0) {
                         $audit->update(['progreso' => ($index / $total) * 100]);
                     }
 
-                    // Validar que exista nombre de marca
-                    // if (empty(trim($row['nombre_marca'] ?? ''))) {
-                    //     throw new \Exception('El campo nombre_marca es obligatorio');
-                    // }
-
+                    // Procesar marca
                     $marca = null;
-                    $linea = null;
-                    if (!empty(trim($row['nombre_marca'] ?? ''))) {
-                        $marca = Marca::firstOrCreate([
-                            'nombre' => trim($row['nombre_marca']),
-                            'provedor_id' => $audit->provedor_id
-                        ]);
-
-                        // Solo crear línea si existe nombre de línea
-                        if (!empty(trim($row['nombre_linea'] ?? ''))) {
-                            $linea = Linea::firstOrCreate([
-                                'nombre' => trim($row['nombre_linea']),
-                                'marca_id' => $marca->id,
+                    $nombreMarca = trim($row['nombre_marca'] ?? '');
+                    if (!empty($nombreMarca)) {
+                        if ($marcasExistentes->has($nombreMarca)) {
+                            $marca = $marcasExistentes[$nombreMarca];
+                        } else {
+                            $marca = Marca::create([
+                                'nombre' => $nombreMarca,
                                 'proveedor_id' => $audit->proveedor_id
                             ]);
+                            $marcasExistentes[$nombreMarca] = $marca;
                         }
                     }
 
-                    $producto = Producto::where('sku', $row['sku'])
-                        ->where('proveedor_id', $audit->proveedor_id)
-                        ->first();
+                    // Procesar línea
+                    $linea = null;
+                    $nombreLinea = trim($row['nombre_linea'] ?? '');
+                    if (!empty($nombreLinea) && $marca) {
+                        $lineasMarca = $lineasExistentes->get($marca->id, collect());
 
-                    if ($producto) {
+                        $lineaExistente = $lineasMarca->firstWhere('nombre', $nombreLinea);
+
+                        if ($lineaExistente) {
+                            $linea = $lineaExistente;
+                        } else {
+                            $linea = Linea::create([
+                                'nombre' => $nombreLinea,
+                                'marca_id' => $marca->id,
+                                'proveedor_id' => $audit->proveedor_id
+                            ]);
+                            // Actualizar cache local
+                            $lineasExistentes[$marca->id][] = $linea;
+                        }
+                    }
+
+                    // Procesar producto
+                    if ($productosExistentes->has($sku)) {
+                        $producto = $productosExistentes[$sku];
                         $producto->update([
                             'nombre' => $row['nombre_producto'],
                             'descripcion' => $row['descripcion'],
@@ -674,8 +726,8 @@ class ImportarProductosJob implements ShouldQueue
                         ]);
                         $actualizados++;
                     } else {
-                        Producto::create([
-                            'sku' => $row['sku'],
+                        $producto = Producto::create([
+                            'sku' => $sku,
                             'nombre' => $row['nombre_producto'],
                             'descripcion' => $row['descripcion'],
                             'precio' => $row['precio'],
@@ -685,12 +737,14 @@ class ImportarProductosJob implements ShouldQueue
                             'linea_id' => $linea ? $linea->id : null,
                             'proveedor_id' => $audit->proveedor_id
                         ]);
+                        // Actualizar cache local
+                        $productosExistentes[$sku] = $producto;
                         $nuevos++;
                     }
                 } catch (\Exception $e) {
                     $errores++;
                     $errores_detalle[] = [
-                        'fila' => $index + 2,
+                        'fila' => $index + 2, // +2 porque la primera fila es cabecera
                         'sku' => $row['sku'] ?? 'N/A',
                         'error' => $e->getMessage(),
                         'extra' => [
@@ -706,6 +760,7 @@ class ImportarProductosJob implements ShouldQueue
 
         return compact('nuevos', 'actualizados', 'errores', 'errores_detalle');
     }
+
 
     /**
      * Build structured preview data with per-field validation
@@ -724,44 +779,42 @@ class ImportarProductosJob implements ShouldQueue
         ];
 
         // Show first 10 rows with field-level validation
-        $sampleSize = min(10, count($data));
+        // $sampleSize = min(10, count($data));
         $validator = new ProductImportValidator($proveedorId);
 
-        for ($i = 0; $i < $sampleSize; $i++) {
+        for ($i = 0; $i < count($data); $i++) { // recorriedo los datos por row
             $row = $data[$i];
-            $rowValidation = $validator->validateRow($row, $i + 1);
-            
+            // $rowValidation = $validator->validateRow($row, $i + 1);
+
             $previewRow = [];
             foreach ($row as $field => $value) {
-                $fieldErrors = [];
-                $fieldWarnings = [];
-                
-                // Extract field-specific errors/warnings from row validation
-                foreach ($rowValidation['errors'] as $error) {
-                    if (strpos($error, "'{$field}'") !== false || strpos($error, $field) !== false) {
-                        $fieldErrors[] = $error;
-                    }
-                }
-                
-                foreach ($rowValidation['warnings'] as $warning) {
-                    if (strpos($warning, "'{$field}'") !== false || strpos($warning, $field) !== false) {
-                        $fieldWarnings[] = $warning;
-                    }
-                }
-                
-                $previewRow[$field] = [
-                    'value' => $value,
-                    'errors' => $fieldErrors,
-                    'warnings' => $fieldWarnings
-                ];
+                // $fieldErrors = [];
+                // $fieldWarnings = [];
+
+                // // Extract field-specific errors/warnings from row validation
+                // foreach ($rowValidation['errors'] as $error) {
+                //     if (strpos($error, "'{$field}'") !== false || strpos($error, $field) !== false) {
+                //         $fieldErrors[] = $error;
+                //     }
+                // }
+
+                // foreach ($rowValidation['warnings'] as $warning) {
+                //     if (strpos($warning, "'{$field}'") !== false || strpos($warning, $field) !== false) {
+                //         $fieldWarnings[] = $warning;
+                //     }
+                // }
+                // $previewRow[$field] = [
+                //     'value' => $value,
+                //     'errors' => $fieldErrors,
+                //     'warnings' => $fieldWarnings
+                // ];
+                $previewRow[$field] = $value;
             }
-            
-            $preview['sample_data'][] = [
-                'row_number' => $i + 1,
-                'fields' => $previewRow
-            ];
+
+            $previewRow['row_number'] = $i + 1;
+            $preview['sample_data'][] = $previewRow;
         }
-        
+
         return $preview;
     }
 
@@ -773,10 +826,10 @@ class ImportarProductosJob implements ShouldQueue
         if ($value === null || $value === '') {
             return null;
         }
-        
+
         $cleanValue = preg_replace('/[^\d.,-]/', '', $value);
         $cleanValue = str_replace(',', '.', $cleanValue);
-        
+
         return is_numeric($cleanValue) ? (float)$cleanValue : null;
     }
 
@@ -788,12 +841,12 @@ class ImportarProductosJob implements ShouldQueue
         if (!$before) {
             return ['type' => 'created', 'changes' => []];
         }
-        
+
         $changes = [];
-        
+
         foreach ($after as $key => $newValue) {
             $oldValue = $before[$key] ?? null;
-            
+
             if ($oldValue !== $newValue) {
                 $changes[$key] = [
                     'from' => $oldValue,
@@ -801,7 +854,7 @@ class ImportarProductosJob implements ShouldQueue
                 ];
             }
         }
-        
+
         return [
             'type' => 'updated',
             'changes' => $changes
@@ -823,15 +876,15 @@ class ImportarProductosJob implements ShouldQueue
     private function calculateETA(int $totalRows): int
     {
         $elapsedTime = microtime(true) - $this->startTime;
-        
+
         if ($elapsedTime <= 0) {
             return 0;
         }
-        
+
         // Estimate based on preview generation time
         $estimatedSecondsPerRow = $elapsedTime / max(1, $totalRows);
         $executionTimeEstimate = $estimatedSecondsPerRow * $totalRows * 2; // 2x factor for execution
-        
+
         return (int)ceil($executionTimeEstimate);
     }
 
@@ -841,7 +894,7 @@ class ImportarProductosJob implements ShouldQueue
     private function handleError(ImportAudit $audit, Exception $e): void
     {
         $this->updateMemoryTracking();
-        
+
         $audit->update([
             'estado' => 'error',
             'fin_proceso' => now(),
@@ -853,6 +906,7 @@ class ImportarProductosJob implements ShouldQueue
                 'trace' => $e->getTraceAsString()
             ],
             'mem_peak_mb' => $this->memoryPeakUsage
-        ])->appendLog("Error fatal: {$e->getMessage()}");
+        ]);
+        $audit->appendLog("Error fatal: {$e->getMessage()}");
     }
 }
