@@ -50,7 +50,7 @@ class Producto extends BaseModel
         'stock',
         'precio_base',
         'precio_de_lista',
-        'precio_público',
+        'precio_publico',
         'precio_mayoreo',
         'precio_con_IVA',
         'precio_sin_IVA',

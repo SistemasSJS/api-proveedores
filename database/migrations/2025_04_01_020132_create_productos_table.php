@@ -29,7 +29,7 @@ class CreateProductosTable extends Migration
             // precios
             $table->decimal('precio_base', 10, 2)->nullable();
             $table->decimal('precio_de_lista', 10, 2)->nullable();
-            $table->decimal('precio_público', 10, 2)->nullable();
+            $table->decimal('precio_publico', 10, 2)->nullable();
             $table->decimal('precio_mayoreo', 10, 2)->nullable();
             $table->decimal('precio_con_IVA', 10, 2)->nullable();
             $table->decimal('precio_sin_IVA', 10, 2)->nullable();

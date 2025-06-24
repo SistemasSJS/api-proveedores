@@ -383,7 +383,7 @@ class ImportarProductosJob implements ShouldQueue
                 'unidad_medida_id' => $unidadMedida?->id,
                 'precio_base' => $this->parseDecimal($row['precio_base'] ?? null),
                 'precio_de_lista' => $this->parseDecimal($row['precio_de_lista'] ?? null),
-                'precio_público' => $this->parseDecimal($row['precio_público'] ?? null),
+                'precio_publico' => $this->parseDecimal($row['precio_publico'] ?? null),
                 'precio_mayoreo' => $this->parseDecimal($row['precio_mayoreo'] ?? null),
                 'precio_con_IVA' => $this->parseDecimal($row['precio_con_IVA'] ?? null),
                 'precio_sin_IVA' => $this->parseDecimal($row['precio_sin_IVA'] ?? null),
@@ -905,7 +905,7 @@ class ImportarProductosJob implements ShouldQueue
                 'code' => $e->getCode(),
                 'trace' => $e->getTraceAsString()
             ],
-            'mem_peak_mb' => $this->memoryPeakUsage
+            // 'mem_peak_mb' => $this->memoryPeakUsage
         ]);
         $audit->appendLog("Error fatal: {$e->getMessage()}");
     }

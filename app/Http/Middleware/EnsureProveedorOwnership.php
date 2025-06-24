@@ -51,8 +51,6 @@ class EnsureProveedorOwnership
       return $next($request);
     }
 
-    Log::debug("message", [$request]);
-
     // Obtener el ID del proveedor desde los parámetros de la ruta
     $proveedorId = $this->getProveedorIdFromRequest($request, $parameterName);
 

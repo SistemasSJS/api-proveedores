@@ -11,15 +11,15 @@ use App\Models\UnidadMedida;
 class ProductImportValidator
 {
     private array $requiredFields = [
-        'sku',
+        // 'sku',
         'nombre_producto',
-        'nombre_marca'
+        // 'nombre_marca'
     ];
 
     private array $numericFields = [
         'precio_base',
         'precio_de_lista',
-        'precio_público',
+        'precio_publico',
         'precio_mayoreo',
         'precio_con_IVA',
         'precio_sin_IVA',
@@ -186,7 +186,7 @@ class ProductImportValidator
             'unidad_medida' => 'optional',
             'precio_base' => 'optional',
             'precio_de_lista' => 'optional',
-            'precio_público' => 'optional',
+            'precio_publico' => 'optional',
             'precio_mayoreo' => 'optional',
             'precio_con_IVA' => 'optional',
             'precio_sin_IVA' => 'optional',
@@ -225,4 +225,3 @@ class ProductImportValidator
         ];
     }
 }
-
