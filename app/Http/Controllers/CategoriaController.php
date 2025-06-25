@@ -19,7 +19,7 @@ use Illuminate\Http\Request;
  */
 class CategoriaController extends Controller
 {
-    /**gG
+    /**
      * Listar todas las categorías con filtros opcionales y paginación
      */
     public function index(Request $request)

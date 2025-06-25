@@ -14,7 +14,6 @@ class ProveedorCategoriaController extends Controller
     public function index(Request $request, Proveedor $proveedor)
     {
         $filters = $request->only(['nombre', 'estatus']);
-        // $data = $proveedor->categorias()->filter($filters)->paginate();
         $data = Categoria::with(['children'])
             ->whereNull('parent_id')
             ->filter($filters)

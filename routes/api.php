@@ -112,7 +112,7 @@ Route::middleware('auth:sanctum')->group(function () {
                 });
             });
 
-            /**p
+            /**
              * PRODUCTOS
              */
             Route::prefix('{proveedor}/productos')->middleware(['proveedor.access'])->group(function () {
@@ -147,6 +147,9 @@ Route::middleware('auth:sanctum')->group(function () {
              * MARCAS
              */
             Route::prefix('{proveedor}/marcas')->middleware(['proveedor.access'])->group(function () {
+                /**
+                 * Marcas con lineas anidadas..
+                 */
                 Route::get('/', [ProveedorMarcaController::class, 'index'])->middleware(['audit']); // Auditar listado
                 Route::post('/', [ProveedorMarcaController::class, 'store'])->middleware(['audit']); // Auditar creación
 

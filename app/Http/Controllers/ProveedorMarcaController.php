@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\MarcaLineasResource;
 use App\Models\Marca;
 use App\Models\Proveedor;
 use Illuminate\Database\Eloquent\RelationNotFoundException;
@@ -9,17 +10,20 @@ use Illuminate\Http\Request;
 
 class ProveedorMarcaController extends Controller
 {
+    /** REVISADA: OK */
     public function index(Request $request, Proveedor $proveedor)
     {
-        $filters = $request->only(['nombre', 'estatus']);
-        // $data = $proveedor->marcas()->filter($filters)->paginate();
-        $data = Marca::with(['lineas', 'proveedor'])
+        $filters = $request->only(Marca::getFilters());
+        $originalPaginator = Marca::with(['lineas'])
             ->filter($filters)
             ->where('proveedor_id', $proveedor->id)
             ->paginate();
-        return $this->paginated($data);
+
+        $data = MarcaLineasResource::collection($originalPaginator)->resolve();
+        return $this->paginated($originalPaginator->setCollection(collect($data)));
     }
 
+    /** REVISADA: OK */
     public function index_lineas_por_marca(Request $request, Proveedor $proveedor, $marcaId)
     {
         $marca = Marca::findOrFail($marcaId);
