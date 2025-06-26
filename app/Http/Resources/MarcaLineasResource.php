@@ -15,14 +15,16 @@ class MarcaLineasResource extends JsonResource
   public function toArray(Request $request): array
   {
     return [
-      'id'         => $this->id,
-      'nombre'     => $this->nombre,
-      'logo'       => asset('storage/' . $this->logo),
-      'lineas'      => $this->whenLoaded("lineas", function () {
-        return [
-          'id'         => $this->lineas->id,
-          'nombre'     => $this->lineas->nombre,
-        ];
+      'id'     => $this->id,
+      'nombre' => $this->nombre,
+      'logo'   => asset('storage/' . $this->logo),
+      'lineas' => $this->whenLoaded('lineas', function () {
+        return $this->lineas->map(function ($linea) {
+          return [
+            'id'     => $linea->id,
+            'nombre' => $linea->nombre,
+          ];
+        });
       }),
     ];
   }
