@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ProductoImagen extends Model
+class ProductoImagen extends BaseModel
 {
     // Si usas plural, Laravel detecta automáticamente 'producto_imagenes', pero si quieres asegurarte:
     protected $table = 'producto_imagenes';

@@ -8,7 +8,11 @@ use App\Http\Middleware\LogApiActions;
 use App\Http\Middleware\LogIncomingRequests;
 use App\Http\Middleware\RoleMiddleware;
 use App\Http\Middleware\EnsureProveedorOwnership;
+use App\Http\Middleware\EnsureProveedorProductAccess;
+use App\Http\Middleware\EnsureRequisicionAccess;
+use App\Http\Middleware\EnsureSucursalBelongsToProveedor;
 use App\Http\Middleware\ValidateApiAccess;
+use App\Http\Middleware\ValidateProveedorRole;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -34,7 +38,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'proveedor.producto' => EnsureProductoBelongsToProveedor::class,
             'proveedor.categoria' => EnsureCategoriaBelongsToProveedor::class,
             'proveedor.marca' => EnsureMarcaBelongsToProveedor::class,
+            'proveedor.sucursal' => EnsureSucursalBelongsToProveedor::class,
             'proveedor.access' => EnsureProveedorOwnership::class,
+            'proveedor.producto.access' => EnsureProveedorProductAccess::class,
+            'proveedor.role' => ValidateProveedorRole::class,
+            'requisicion.access' => EnsureRequisicionAccess::class,
             'api.access' => ValidateApiAccess::class,
             'audit' => LogApiActions::class,
             'proveedor.full' => [

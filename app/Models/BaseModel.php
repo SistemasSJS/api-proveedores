@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Traits\AutoSwaggerSchema;
 use Illuminate\Database\Eloquent\Model;
 
 abstract class BaseModel extends Model
 {
+    use AutoSwaggerSchema;
     public $timestamps = true;
 
     protected $hidden = [

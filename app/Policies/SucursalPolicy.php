@@ -4,63 +4,89 @@ namespace App\Policies;
 
 use App\Models\Sucursal;
 use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Auth\Access\Response;
 
 class SucursalPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
-    {
-        return $user->isUserAdmin();
-    }
+    use HandlesAuthorization;
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Sucursal $sucursal): bool
+    public function viewAny(User $user, $proveedor = null)
     {
-        return $user->isUserAdmin();
-    }
+        if ($user->role?->name === 'ADMINISTRADOR') {
+            return true;
+        }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
-    {
-        return $user->isUserAdmin();
-    }
+        // Si hay un proveedor específico, verificar acceso
+        if ($proveedor) {
+            return $user->proveedores()->where('proveedor_id', $proveedor->id)->exists();
+        }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Sucursal $sucursal): bool
-    {
-        return $user->isUserAdmin();
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Sucursal $sucursal): bool
-    {
-        return $user->isSuperAdmin(); // Solo super admin
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Sucursal $sucursal): bool
-    {
         return false;
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Sucursal $sucursal): bool
+    public function view(User $user, Sucursal $sucursal)
     {
-        return false;
+        if ($user->role?->name === 'ADMINISTRADOR') {
+            return true;
+        }
+
+        return $user->proveedores()->where('proveedor_id', $sucursal->proveedor_id)->exists();
+    }
+
+    public function create(User $user, $proveedor)
+    {
+        if ($user->role?->name === 'ADMINISTRADOR') {
+            return true;
+        }
+
+        // Solo GERENTE puede crear sucursales
+        if ($user->role?->name !== 'GERENTE') {
+            return false;
+        }
+
+        return $user->proveedores()->where('proveedor_id', $proveedor->id)->exists();
+    }
+
+    public function update(User $user, Sucursal $sucursal)
+    {
+        if ($user->role?->name === 'ADMINISTRADOR') {
+            return true;
+        }
+
+        // Solo GERENTE puede actualizar sucursales
+        if ($user->role?->name !== 'GERENTE') {
+            return false;
+        }
+
+        return $user->proveedores()->where('proveedor_id', $sucursal->proveedor_id)->exists();
+    }
+
+    public function delete(User $user, Sucursal $sucursal)
+    {
+        if ($user->role?->name === 'ADMINISTRADOR') {
+            return true;
+        }
+
+        // Solo GERENTE puede eliminar sucursales
+        if ($user->role?->name !== 'GERENTE') {
+            return false;
+        }
+
+        return $user->proveedores()->where('proveedor_id', $sucursal->proveedor_id)->exists();
+    }
+
+    public function manageProducts(User $user, Sucursal $sucursal)
+    {
+        if ($user->role?->name === 'ADMINISTRADOR') {
+            return true;
+        }
+
+        // GERENTE y SUPERVISOR pueden gestionar productos en sucursales
+        if (!in_array($user->role?->name, ['GERENTE', 'SUPERVISOR'])) {
+            return false;
+        }
+
+        return $user->proveedores()->where('proveedor_id', $sucursal->proveedor_id)->exists();
     }
 }

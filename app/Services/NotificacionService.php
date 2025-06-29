@@ -8,7 +8,10 @@ use App\Models\User;
 
 class NotificacionService
 {
-  public static function enviarNuevaRequisicion(Requisicion $requisicion)
+  /**
+   * Enviar notificación de nueva requisición a usuarios del proveedor
+   */
+  public static function enviarNuevaRequisicion(Requisicion $requisicion): void
   {
     // Notificar a usuarios del proveedor con rol GERENTE o VENTAS
     $usuariosProveedor = User::whereHas('proveedores', function ($query) use ($requisicion) {
@@ -33,7 +36,10 @@ class NotificacionService
     }
   }
 
-  public static function enviarCambioEstatusRequisicion(Requisicion $requisicion)
+  /**
+   * Enviar notificación de cambio de estatus al cliente
+   */
+  public static function enviarCambioEstatusRequisicion(Requisicion $requisicion): void
   {
     $estatusTexto = match ($requisicion->estatus) {
       'en_proceso' => 'está siendo procesada',
@@ -56,7 +62,10 @@ class NotificacionService
     ]);
   }
 
-  public static function enviarCotizacionGenerada(Requisicion $requisicion)
+  /**
+   * Enviar notificación de cotización generada
+   */
+  public static function enviarCotizacionGenerada(Requisicion $requisicion): void
   {
     Notificacion::create([
       'usuario_id' => $requisicion->usuario_id,
@@ -71,7 +80,10 @@ class NotificacionService
     ]);
   }
 
-  public static function enviarRequisicionCancelada(Requisicion $requisicion)
+  /**
+   * Enviar notificación de requisición cancelada
+   */
+  public static function enviarRequisicionCancelada(Requisicion $requisicion): void
   {
     $usuariosProveedor = User::whereHas('proveedores', function ($query) use ($requisicion) {
       $query->where('proveedor_id', $requisicion->proveedor_id);

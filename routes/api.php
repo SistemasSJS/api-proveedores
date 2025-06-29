@@ -1,12 +1,14 @@
 <?php
 
 use App\Enums\UserRoleEnumerate;
+use App\Http\Controllers\AdminDashboardController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AdminHomeControler;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\ClienteDashboardController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\SucursalController;
@@ -36,7 +38,7 @@ use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProveedorDashboardController;
 use App\Http\Controllers\ProductoBusquedaController;
-
+use App\Http\Controllers\ProveedorReporteController;
 use App\Http\Middleware\EnsureProveedorOwnership;
 use App\Http\Middleware\ValidateApiAccess;
 use App\Http\Middleware\LogApiActions;
@@ -275,4 +277,21 @@ Route::middleware('auth:sanctum')->group(function () {
      */
     Route::get('productos/buscar', [ProductoBusquedaController::class, 'buscar'])->middleware(['audit']);
     Route::get('productos/{producto}/disponibilidad', [ProductoBusquedaController::class, 'verificarDisponibilidad'])->middleware(['audit']);
+
+    // Reportes para proveedores
+    Route::prefix('proveedores/{proveedor}/reportes')->middleware(['proveedor.access', 'proveedor.role:GERENTE'])->group(function () {
+        Route::get('ventas', [ProveedorReporteController::class, 'ventas']);
+        Route::get('productos-populares', [ProveedorReporteController::class, 'productosPopulares']);
+        Route::get('requisiciones-mensuales', [ProveedorReporteController::class, 'requisicionesMensuales']);
+        Route::get('inventario-sucursales', [ProveedorReporteController::class, 'inventarioSucursales']);
+        Route::get('rendimiento-categorias', [ProveedorReporteController::class, 'rendimientoCategorias']);
+        Route::get('clientes-activos', [ProveedorReporteController::class, 'clientesActivos']);
+        Route::post('exportar', [ProveedorReporteController::class, 'exportar']);
+    });
+
+    // Dashboard detallado
+    Route::get('dashboard/cliente/stats', [ClienteDashboardController::class, 'getStats']);
+    Route::get('dashboard/cliente/resumen-gastos', [ClienteDashboardController::class, 'getResumenGastos']);
+    Route::get('dashboard/admin/stats-completas', [AdminDashboardController::class, 'getStatsCompletas']);
+    Route::get('dashboard/admin/metricas-rendimiento', [AdminDashboardController::class, 'getMetricasRendimiento']);
 });

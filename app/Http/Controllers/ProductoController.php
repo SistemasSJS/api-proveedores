@@ -141,7 +141,7 @@ class ProductoController extends Controller
         if (!$producto) {
             throw new ResourceNotFoundException("Producto no encontrado.");
         }
-        return $this->success($producto);
+        return $this->success(new ProductoResource($producto));
     }
 
     /**
