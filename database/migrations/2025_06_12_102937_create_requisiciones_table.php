@@ -6,20 +6,26 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+     public function up()
     {
         Schema::create('requisiciones', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('proveedor_id')->constrained('proveedores');
-            $table->date('fecha_requisicion');
-            $table->enum('estatus', ['PENDIENTE', 'APROBADA', 'RECHAZADA', 'COMPLETADA'])->default('PENDIENTE');
+            $table->string('numero_requisicion')->unique();
+            $table->foreignId('usuario_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('proveedor_id')->constrained()->onDelete('cascade');
+            $table->enum('estatus', ['pendiente', 'en_proceso', 'cotizada', 'rechazada', 'entregada', 'cancelada'])
+                  ->default('pendiente');
+            $table->date('fecha_requerida');
+            $table->timestamp('fecha_cancelacion')->nullable();
+            $table->text('motivo_cancelacion')->nullable();
             $table->text('observaciones')->nullable();
-            $table->decimal('total_estimado', 12, 2)->nullable();
+            $table->text('observaciones_proveedor')->nullable();
+            $table->decimal('total_estimado', 12, 2)->default(0);
             $table->timestamps();
-
-            $table->index(['user_id', 'fecha_requisicion']);
+            
+            $table->index(['usuario_id', 'estatus']);
             $table->index(['proveedor_id', 'estatus']);
+            $table->index(['fecha_requerida']);
         });
     }
 

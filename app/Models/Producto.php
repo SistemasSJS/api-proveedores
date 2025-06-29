@@ -141,6 +141,23 @@ class Producto extends BaseModel
             ->withTimestamps();
     }
 
+    public function requisicionDetalles(): HasMany
+    {
+        return $this->hasMany(RequisicionDetalle::class);
+    }
+
+    public function getStockEnSucursal($sucursalId)
+    {
+        $pivotData = $this->sucursales()->where('sucursal_id', $sucursalId)->first()?->pivot;
+        return $pivotData ? $pivotData->stock_local : 0;
+    }
+
+    public function getPrecioEnSucursal($sucursalId)
+    {
+        $pivotData = $this->sucursales()->where('sucursal_id', $sucursalId)->first()?->pivot;
+        return $pivotData ? $pivotData->precio_local : $this->precio_base;
+    }
+
     public function scopeDelProveedor($query, $proveedorId)
     {
         return $query->where('proveedor_id', $proveedorId);

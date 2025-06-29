@@ -2,41 +2,55 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 
-/**
- * @OA\Schema(
- *     schema="Sucursal",
- *     required={"nombre", "direccion", "proveedor_id"},
- *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="nombre", type="string", example="Sucursal Culiacán"),
- *     @OA\Property(property="direccion", type="string", example="Av. Álvaro Obregón 1234"),
- *     @OA\Property(property="telefono", type="string", example="6671234567"),
- *     @OA\Property(property="correo", type="string", example="contacto@sucursal.com"),
- *     @OA\Property(property="proveedor_id", type="integer", example=1),
- *     @OA\Property(property="created_at", type="string", format="date-time"),
- *     @OA\Property(property="updated_at", type="string", format="date-time")
- * )
- */
 class Sucursal extends BaseModel
 {
     use HasFactory;
+
     protected $table = 'sucursales';
+
     protected $fillable = [
         'proveedor_id',
         'nombre',
         'direccion',
+        'telefono',
+        'email',
+        'encargado',
+        'activa',
+        'coordenadas_lat',
+        'coordenadas_lng',
     ];
 
-    public function proveedor()
+    protected $casts = [
+        'activa' => 'boolean',
+        'coordenadas_lat' => 'decimal:8',
+        'coordenadas_lng' => 'decimal:8',
+    ];
+
+    public function proveedor(): BelongsTo
     {
         return $this->belongsTo(Proveedor::class);
     }
 
-    public function productos()
+    public function productos(): BelongsToMany
     {
-        return $this->belongsToMany(Producto::class, 'producto_sucursal');
+        return $this->belongsToMany(Producto::class)
+            ->withPivot('stock_local', 'precio_local', 'activo')
+            ->withTimestamps();
+    }
+
+    public function scopeActivas($query)
+    {
+        return $query->where('activa', true);
+    }
+
+    public function scopeDelProveedor($query, $proveedorId)
+    {
+        return $query->where('proveedor_id', $proveedorId);
     }
 }

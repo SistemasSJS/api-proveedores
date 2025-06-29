@@ -209,10 +209,10 @@ class Proveedor extends BaseModel
     /**
      * Relación uno a muchos: un proveedor puede tener varias sucursales.
      */
-    public function sucursales()
-    {
-        return $this->hasMany(Sucursal::class);
-    }
+    // public function sucursales()
+    // {
+    //     return $this->hasMany(Sucursal::class);
+    // }
 
     /**
      * Relación uno a muchos: un proveedor puede tener múltiples productos registrados.
@@ -309,5 +309,20 @@ class Proveedor extends BaseModel
             ->where('user_id', $userId)
             ->where('activo', true)
             ->exists();
+    }
+
+    public function sucursales(): HasMany
+    {
+        return $this->hasMany(Sucursal::class);
+    }
+
+    public function requisiciones(): HasMany
+    {
+        return $this->hasMany(Requisicion::class);
+    }
+
+    public function sucursalesActivas(): HasMany
+    {
+        return $this->hasMany(Sucursal::class)->where('activa', true);
     }
 }
