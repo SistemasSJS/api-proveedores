@@ -38,8 +38,8 @@ class AppServiceProvider extends ServiceProvider
         Requisicion::class => RequisicionPolicy::class,
         Sucursal::class => SucursalPolicy::class,
         Notificacion::class => NotificacionPolicy::class,
-        Producto::class => ProductoPolicy::class,
-        Proveedor::class => ProveedorPolicy::class,
+        // Producto::class => ProductoPolicy::class,
+        // Proveedor::class => ProveedorPolicy::class,
     ];
 
     /**

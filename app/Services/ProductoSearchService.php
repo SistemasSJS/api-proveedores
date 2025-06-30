@@ -52,10 +52,10 @@ class ProductoSearchService
       $query->where('precio_base', '<=', $filtros['precio_max']);
     }
 
-    // Solo productos con stock
-    if (!empty($filtros['con_stock'])) {
-      $query->where('stock', '>', 0);
-    }
+    // // Solo productos con stock
+    // if (!empty($filtros['con_stock'])) {
+    //   $query->where('stock', '>', 0);
+    // }
 
     // Ordenamiento
     $ordenPor = $filtros['orden_por'] ?? 'nombre';

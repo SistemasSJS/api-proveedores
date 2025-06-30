@@ -51,10 +51,10 @@ Route::prefix('auth')->group(function () {
     Route::post('completar-registro', [AuthController::class, 'register_completar']);
     Route::post('register_proveedor', [AuthController::class, 'register_proveedor']);
     Route::post('register_proveedor_completar', [AuthController::class, 'register_proveedor_completar']);
+    Route::get('logout', [AuthController::class, 'logout']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('me', [AuthController::class, 'me']);
-        Route::get('logout', [AuthController::class, 'logout']);
         Route::post('update-img-perfil', [AuthController::class, 'update_foto_perfil']);
     });
 });
@@ -70,6 +70,23 @@ Route::get('roles-index', [RoleController::class, 'index']);
 // Route::get('unidades-medida-index', [UnidadMedidaController::class, 'index']);
 Route::get('tipos-empresa-index', [TipoEmpresaController::class, 'index']);
 
+
+/**
+ * Rutas públicas de catálogos: Productos, Proveedores, Sucursales, marcas, líneas, categorías, unidades de medida
+ */
+// Route::get('/', [ProveedorSucursalController::class, 'index'])->middleware(['audit']);
+Route::get('proveedores', [ProveedorController::class, 'index'])->middleware(['audit']);
+Route::get('sucursales', [SucursalController::class, 'index'])->middleware(['audit']);
+Route::get('productos', [ProductoController::class, 'index'])->middleware(['audit']);
+Route::get('imagenes', [ProductoImagenController::class, 'index'])->middleware(['audit']);
+Route::get('unidades-medida', [UnidadMedidaController::class, 'index'])->middleware(['audit']);
+Route::get('categorias', [CategoriaController::class, 'index'])->middleware(['audit']);
+Route::get('lineas', [LineaController::class, 'index'])->middleware(['audit']);
+Route::get('marcas', [MarcaController::class, 'index'])->middleware(['audit']);
+Route::get('tipos-empresa', [TipoEmpresaController::class, 'index'])->middleware(['audit']);
+
+
+
 /**
  * Rutas protegidas con auth:sanctum
  */
@@ -78,7 +95,7 @@ Route::middleware('auth:sanctum')->group(function () {
     /**
      * Rutas con roles GERENTE y ADMINISTRADOR
      */
-    Route::middleware('role:' . UserRoleEnumerate::GERENTE->value . ',' . UserRoleEnumerate::ADMINISTRADOR->value)->group(function () {
+    Route::middleware('role:' . UserRoleEnumerate::CLIENTE->value . UserRoleEnumerate::GERENTE->value . ',' . UserRoleEnumerate::ADMINISTRADOR->value)->group(function () {
 
         /**
          * Gestión de proveedores
@@ -87,7 +104,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
             // Rutas CRUD y perfil para proveedores
             Route::controller(ProveedorController::class)->group(function () {
-                Route::get('/', 'index')->middleware(['audit']);
+                // Route::get('/', 'index')->middleware(['audit']);
                 Route::post('/', 'store')->middleware(['audit']);
                 Route::get('{proveedor}', 'show')->middleware(['api.access', 'audit']);
                 Route::patch('{proveedor}', 'update')->middleware(['api.access', 'audit']);
@@ -149,7 +166,7 @@ Route::middleware('auth:sanctum')->group(function () {
             });
 
             /**
-             * Gestión de marcas del proveedor
+             * Gestión de 1 del proveedor
              */
             Route::prefix('{proveedor}/marcas')->middleware(['proveedor.access'])->group(function () {
                 Route::get('/', [ProveedorMarcaController::class, 'index'])->middleware(['audit']);
@@ -170,11 +187,11 @@ Route::middleware('auth:sanctum')->group(function () {
                 Route::get('/', [ProveedorLineaController::class, 'index'])->middleware(['audit']);
                 Route::post('/', [ProveedorLineaController::class, 'store'])->middleware(['audit']);
                 // Opcional: Rutas para show, update, delete
-                // Route::middleware(['proveedor.linea', 'audit'])->group(function () {
-                //     Route::get('{linea}', [ProveedorLineaController::class, 'show']);
-                //     Route::patch('{linea}', [ProveedorLineaController::class, 'update']);
-                //     Route::delete('{linea}', [ProveedorLineaController::class, 'destroy']);
-                // });
+                Route::middleware(['proveedor.linea', 'audit'])->group(function () {
+                    Route::get('{linea}', [ProveedorLineaController::class, 'show']);
+                    Route::patch('{linea}', [ProveedorLineaController::class, 'update']);
+                    Route::delete('{linea}', [ProveedorLineaController::class, 'destroy']);
+                });
             });
 
             /**
@@ -226,23 +243,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('proveedores/user/{id}', [ProveedorController::class, 'getProveedorByUserId'])->middleware(['audit']);
     });
 
-    /**
-     * Rutas exclusivas para ADMINISTRADOR
-     */
-    Route::middleware('role:' . UserRoleEnumerate::ADMINISTRADOR->value)->group(function () {
-        Route::get('catalogos-resumen', [AdminHomeControler::class, 'getCatalogosCountItems'])->middleware(['audit']);
-
-        Route::apiResource('users', UserController::class)->middleware(['audit']);
-        Route::apiResource('proveedores', ProveedorController::class)->middleware(['audit']);
-        Route::apiResource('sucursales', SucursalController::class)->middleware(['audit']);
-        Route::apiResource('productos', ProductoController::class)->middleware(['audit']);
-        Route::apiResource('imagenes', ProductoImagenController::class)->middleware(['audit']);
-        Route::apiResource('unidades-medida', UnidadMedidaController::class)->middleware(['audit']);
-        Route::apiResource('categorias', CategoriaController::class)->middleware(['audit']);
-        Route::apiResource('lineas', LineaController::class)->middleware(['audit']);
-        Route::apiResource('marcas', MarcaController::class)->middleware(['audit']);
-        Route::apiResource('tipos-empresa', TipoEmpresaController::class)->middleware(['audit']);
-    });
 
     /**
      * Gestión de requisiciones global (cliente)
@@ -293,4 +293,22 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('dashboard/cliente/resumen-gastos', [ClienteDashboardController::class, 'getResumenGastos']);
     Route::get('dashboard/admin/stats-completas', [AdminDashboardController::class, 'getStatsCompletas']);
     Route::get('dashboard/admin/metricas-rendimiento', [AdminDashboardController::class, 'getMetricasRendimiento']);
+
+    /**
+     * Rutas exclusivas para ADMINISTRADORPp
+     */
+    Route::middleware('role:' . UserRoleEnumerate::ADMINISTRADOR->value)->group(function () {
+        Route::get('catalogos-resumen', [AdminHomeControler::class, 'getCatalogosCountItems'])->middleware(['audit']);
+
+        Route::apiResource('users', UserController::class)->middleware(['audit']);
+        Route::apiResource('proveedores', ProveedorController::class)->middleware(['audit'])->except(['index']);
+        Route::apiResource('sucursales', SucursalController::class)->middleware(['audit'])->except(['index']);
+        Route::apiResource('productos', ProductoController::class)->middleware(['audit'])->except(['index']);
+        Route::apiResource('imagenes', ProductoImagenController::class)->middleware(['audit'])->except(['index']);
+        Route::apiResource('unidades-medida', UnidadMedidaController::class)->middleware(['audit'])->except(['index']);
+        Route::apiResource('categorias', CategoriaController::class)->middleware(['audit'])->except(['index']);
+        Route::apiResource('lineas', LineaController::class)->middleware(['audit'])->except(['index']);
+        Route::apiResource('marcas', MarcaController::class)->middleware(['audit'])->except(['index']); // api/marca ---> admin
+        Route::apiResource('tipos-empresa', TipoEmpresaController::class)->middleware(['audit'])->except(['index']);
+    });
 });

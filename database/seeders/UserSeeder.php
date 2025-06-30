@@ -12,9 +12,22 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $default_foto_url = 'http://192.168.0.132:8080/storage/uploads/default.png';
+        $default_foto_url = 'http://localhost/uploads/default.png';
         $idRolAdmin = Role::where('nombre', UserRoleEnumerate::ADMINISTRADOR->value)->first()->id;
         $idRolSuperAdmin = Role::where('nombre', UserRoleEnumerate::ADMINISTRADOR->value)->first()->id;
+        $userClienteId = Role::where('nombre', UserRoleEnumerate::CLIENTE->value)->first()->id;
+
+        User::firstOrCreate(
+            [
+                'email' => 'user@user.com',
+                'name' => 'Usuario de prueba',
+                'foto_perfil_url' => $default_foto_url,
+                'password' => Hash::make('123456'), // Contraseña clara
+                'role_id' => $userClienteId,
+                'email_verified_at' => now(),
+            ]
+        );
+
         User::firstOrCreate(
             [
                 'email' => 'juliocsv@sjs.com.mx',

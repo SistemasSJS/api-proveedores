@@ -27,7 +27,7 @@ class RoleMiddleware
         }
 
         if (!$user->hasRole($roles)) {
-            throw new UnauthorizedException("El usuario no tiene un rol asignado.");
+            throw new UnauthorizedException("El usuario no tiene un rol asignado. Roles permitidos: " . implode(', ', $roles) . '.' . " Rol actual: " . ($user->role->nombre ?? 'desconocido'));
         }
 
         if (!$user->hasRole($roles)) {

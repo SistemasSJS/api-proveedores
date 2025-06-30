@@ -11,4 +11,5 @@ enum UserRoleEnumerate: string
     case VENTAS = 'VENTAS';
     case AUXILIAR = 'AUXILIAR';
     case USUARIO = 'USUARIO';
+    case CLIENTE = 'CLIENTE';
 }

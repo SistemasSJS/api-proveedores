@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ProductoCatalogoResource;
 use App\Models\Producto;
 use App\Models\Proveedor;
 use App\Services\ProductoSearchService;
@@ -28,11 +29,12 @@ class ProductoBusquedaController extends Controller
             'linea_id' => 'nullable|exists:lineas,id',
             'precio_min' => 'nullable|numeric|min:0',
             'precio_max' => 'nullable|numeric|min:0',
-            'con_stock' => 'nullable|boolean',
+            // 'con_stock' => 'nullable|boolean',
             'orden_por' => 'nullable|in:nombre,precio_base,stock,created_at',
             'direccion' => 'nullable|in:asc,desc',
             'per_page' => 'nullable|integer|min:5|max:100',
         ]);
+        // $con_stock = filter_var($request->input('con_stock'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
 
         $filtros = [
             'buscar' => $request->buscar,
@@ -42,7 +44,7 @@ class ProductoBusquedaController extends Controller
             'linea_id' => $request->linea_id,
             'precio_min' => $request->precio_min,
             'precio_max' => $request->precio_max,
-            'con_stock' => $request->boolean('con_stock'),
+            // 'con_stock' => $con_stock,
             'orden_por' => $request->orden_por ?? 'nombre',
             'direccion' => $request->direccion ?? 'asc',
             'per_page' => $request->per_page ?? 20,
@@ -50,7 +52,8 @@ class ProductoBusquedaController extends Controller
 
         $productos = $this->searchService->buscar($filtros);
 
-        return ProductoResource::collection($productos);
+        $data = ProductoCatalogoResource::collection($productos)->resolve();
+        return $this->paginated($productos->setCollection(collect($data)));
     }
 
     public function buscarParaRequisicion(Request $request, Proveedor $proveedor)

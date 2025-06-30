@@ -13,7 +13,8 @@ class ProductoPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->isUserAdmin();
+        // return $user->isUserAdmin();
+        return true;
     }
 
     /**
@@ -21,7 +22,8 @@ class ProductoPolicy
      */
     public function view(User $user, Producto $producto): bool
     {
-        return $user->isUserAdmin();
+        // return $user->isUserAdmin();
+        return true;
     }
 
     /**
@@ -29,7 +31,8 @@ class ProductoPolicy
      */
     public function create(User $user): bool
     {
-        return $user->isUserAdmin();
+        // return $user->isUserAdmin();
+        return true;
     }
 
     /**
@@ -37,7 +40,8 @@ class ProductoPolicy
      */
     public function update(User $user, Producto $producto): bool
     {
-        return $user->isUserAdmin();
+        // return $user->isUserAdmin();
+        return true;
     }
 
     /**
