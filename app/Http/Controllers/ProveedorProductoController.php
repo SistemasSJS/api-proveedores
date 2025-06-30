@@ -17,16 +17,10 @@ use App\Traits\ApiResponse;
 use Database\Factories\ProductoFactory;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * @OA\Tag(name="Productos", description="Gestión de catálogo")
- */
 class ProveedorProductoController extends Controller
 {
     use ApiResponse;
 
-    /**
-     *
-     */
     public function index(Request $request, Proveedor $proveedor)
     {
         $filters = $request->only(Producto::getFilters());
@@ -54,9 +48,6 @@ class ProveedorProductoController extends Controller
         return $this->success(new ProductoResource($producto));
     }
 
-    /**
-     *
-     */
     public function store(ProductoStoreRequest $request, Proveedor $proveedor)
     {
         // ✅ Verificar que el producto pertenezca al proveedor

@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use ReflectionClass;
@@ -85,23 +86,30 @@ class GenerateSwaggerDocs extends Command
     protected function generateModelSchema($className, $modelName)
     {
         try {
+            if (!class_exists($className)) {
+                $this->warn("Clase no encontrada: {$className}");
+                return null;
+            }
+
+            // Validar que extienda Eloquent\Model
+            if (!is_subclass_of($className, Model::class)) {
+                $this->warn("{$className} no es un modelo Eloquent, omitido.");
+                return null;
+            }
+
             $reflection = new ReflectionClass($className);
             $instance = $reflection->newInstanceWithoutConstructor();
 
-            // Obtener fillable fields
+            // Obtener fillable, hidden, y casts
             $fillable = $instance->getFillable() ?? [];
-
-            // Obtener hidden fields
             $hidden = $instance->getHidden() ?? [];
-
-            // Obtener casts para tipos
             $casts = method_exists($instance, 'getCasts') ? $instance->getCasts() : [];
 
             $properties = $this->generateSchemaProperties($fillable, $casts, $hidden);
             $relations = $this->detectRelations($reflection);
 
             return $this->buildSchemaAnnotation($modelName, $properties, $relations);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->warn("Error generando schema para {$modelName}: {$e->getMessage()}");
             return null;
         }

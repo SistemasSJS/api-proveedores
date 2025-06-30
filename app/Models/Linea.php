@@ -4,16 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-/**
- * @OA\Schema(
- *     schema="Linea",
- *     required={"nombre"},
- *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="nombre", type="string", example="Industrial"),
- *     @OA\Property(property="created_at", type="string", format="date-time"),
- *     @OA\Property(property="updated_at", type="string", format="date-time")
- * )
- */
+
 class Linea extends BaseModel
 {
     use HasFactory;

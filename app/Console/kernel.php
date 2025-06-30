@@ -2,18 +2,30 @@
 
 namespace App\Console;
 
+use App\Console\Commands\BackupDatabase;
+use App\Console\Commands\CleanupNotifications;
+use App\Console\Commands\GenerateMonthlyReports;
+use App\Console\Commands\GenerateSwaggerDocs;
+use App\Console\Commands\ProcessPendingRequisiciones;
+use App\Console\Commands\SendDailyReports;
+use App\Console\Commands\SwaggerGenerateAll;
+use App\Console\Commands\UpdateProductPrices;
+use GenerateCompleteSwagger;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 class Kernel extends ConsoleKernel
 {
   protected $commands = [
-    Commands\GenerateMonthlyReports::class,
-    Commands\CleanupNotifications::class,
-    Commands\SendDailyReports::class,
-    // Commands\ProcessPendingRequisiciones::class,
-    // Commands\UpdateProductPrices::class,
-    // Commands\BackupDatabase::class,
+    BackupDatabase::class,
+    SwaggerGenerateAll::class,
+    CleanupNotifications::class,
+    GenerateSwaggerDocs::class,
+    GenerateMonthlyReports::class,
+    GenerateSwaggerDocs::class,
+    ProcessPendingRequisiciones::class,
+    SendDailyReports::class,
+    UpdateProductPrices::class,
   ];
 
   protected function schedule(Schedule $schedule): void
@@ -49,6 +61,13 @@ class Kernel extends ConsoleKernel
     $schedule->command('monitor:performance')
       ->everyFifteenMinutes()
       ->withoutOverlapping();
+
+    // Regenerar documentación Swagger en desarrollo
+    if (app()->environment('local')) {
+      $schedule->command('swagger:generate-all')
+        ->hourly()
+        ->withoutOverlapping();
+    }
   }
 
   protected function commands(): void

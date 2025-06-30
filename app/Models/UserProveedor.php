@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\AutoSwaggerSchema;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class UserProveedor extends Pivot
 {
   use HasFactory;
+
 
   protected $table = 'user_proveedor';
 

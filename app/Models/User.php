@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\AutoSwaggerSchema;
 use App\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,20 +12,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-/**
- * @OA\Schema(
- *     schema="User",
- *     required={"name", "email"},
- *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="Juan Pérez"),
- *     @OA\Property(property="email", type="string", example="juan@ejemplo.com"),
- *     @OA\Property(property="role_id", type="integer", example=1),
- *     @OA\Property(property="created_at", type="string", format="date-time"),
- *     @OA\Property(property="updated_at", type="string", format$user1->proveedores()->attach($proveedor1->id, ['tipo_relacion' => 'PRINCIPAL', 'activo' => true]);="date-time")
- * )
- */
 class User extends Authenticatable
 {
+    use AutoSwaggerSchema;
+
     use HasFactory, Notifiable, HasApiTokens, HasRoles;
 
     protected $fillable = ['name', 'email', 'foto_perfil_url', 'password', 'role_id'];

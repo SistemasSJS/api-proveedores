@@ -7,48 +7,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * @OA\Schema(
- *     schema="Proveedor",
- *     title="Proveedor",
- *     description="Esquema del modelo Proveedor",
- *     required={
- *         "nombre_comercial", "razon_social", "rfc", "email", "telefono",
- *         "estado", "municipio", "codigo_postal", "contacto_nombre",
- *         "contacto_telefono", "contacto_correo", "tipos_empresa_id",
- *         "descripcion_giro_empresa", "direccion_empresa"
- *     },
- *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="logo", type="string", format="uri", example="https://misitio.com/logo.png"),
- *     @OA\Property(property="rfc", type="string", example="RIEM920313AB1"),
- *     @OA\Property(property="tipo_persona", type="string", example="Moral"),
- *     @OA\Property(property="direccion_fiscal", type="string", example="Calle Ficticia 123"),
- *     @OA\Property(property="estado", type="string", example="Sinaloa"),
- *     @OA\Property(property="municipio", type="string", example="Culiacán"),
- *     @OA\Property(property="codigo_postal", type="string", example="80000"),
- *     @OA\Property(property="estatus", type="string", example="pendiente"),
- *     @OA\Property(property="notas", type="string", example="Proveedor con buena reputación."),
- *     @OA\Property(property="validado_por", type="integer", nullable=true, example=5),
- *     @OA\Property(property="user_id", type="integer", nullable=true, example=2),
- *     @OA\Property(property="nombre_propietario", type="string", example="Carlos López"),
- *     @OA\Property(property="nombre_de_quien_registra", type="string", example="María Pérez"),
- *     @OA\Property(property="nombre_comercial", type="string", example="Materiales Rivera"),
- *     @OA\Property(property="razon_social", type="string", example="Materiales de Construcción Rivera S.A. de C.V."),
- *     @OA\Property(property="tipos_empresa_id", type="integer", example=1),
- *     @OA\Property(property="tipos_empresa_otro", type="string", nullable=true, example="Familiar"),
- *     @OA\Property(property="descripcion_giro_empresa", type="string", example="Venta de materiales de construcción."),
- *     @OA\Property(property="direccion_empresa", type="string", example="Calle 123, Col. Centro"),
- *     @OA\Property(property="email", type="string", format="email", example="contacto@materialesrivera.com"),
- *     @OA\Property(property="telefono", type="string", example="6671234567"),
- *     @OA\Property(property="pagina_web", type="string", format="uri", nullable=true, example="https://materialesrivera.com"),
- *     @OA\Property(property="contacto_nombre", type="string", example="Juan Pérez"),
- *     @OA\Property(property="contacto_cargo", type="string", example="Gerente de compras"),
- *     @OA\Property(property="contacto_telefono", type="string", example="6677654321"),
- *     @OA\Property(property="contacto_correo", type="string", format="email", example="juan.perez@materialesrivera.com"),
- *     @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-01T12:00:00Z"),
- *     @OA\Property(property="updated_at", type="string", format="date-time", example="2024-01-02T15:30:00Z")
- * )
- */
 class Proveedor extends BaseModel
 {
     use HasFactory;

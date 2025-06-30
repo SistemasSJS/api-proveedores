@@ -13,33 +13,9 @@ use App\Http\Requests\Proveedor\ProveedorUpdateLogoRequest;
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Http\Resources\UserResource;
 
-/**
- * @OA\Tag(
- *     name="Proveedores",
- *     description="Endpoints para la gestión de proveedores"
- * )
- */
 class ProveedorController extends Controller
 {
 
-    /**
-     * @OA\Put(
-     *     path="/api/proveedores/logo",
-     *     tags={"Proveedores"},
-     *     summary="Actualizar logo del proveedor",
-     *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\MediaType(mediaType="multipart/form-data",
-     *             @OA\Schema(ref="#/components/schemas/ProveedorUpdateLogoRequest")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Logo actualizado"
-     *     )
-     * )
-     */
     public function updateLogo(ProveedorUpdateLogoRequest $request, Proveedor $proveedor)
     {
         $user = $request->user();
@@ -71,28 +47,6 @@ class ProveedorController extends Controller
         ]);
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/proveedores/user/{id}",
-     *     tags={"Proveedores"},
-     *     summary="Obtener proveedor por ID de usuario",
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Proveedor encontrado"
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Proveedor no encontrado"
-     *     )
-     * )
-     */
     public function getProveedorByUserId(Request $request, $id)
     {
         $user = User::find($id);
@@ -108,18 +62,6 @@ class ProveedorController extends Controller
 
 
 
-    /**
-     * @OA\Get(
-     *     path="/api/proveedores",
-     *     tags={"Proveedores"},
-     *     summary="Listar todos los proveedores",
-     *     security={{"sanctum":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Lista de proveedores"
-     *     )
-     * )
-     */
     public function index(Request $request)
     {
         $filters = $request->only(Proveedor::getFilters());
@@ -136,28 +78,6 @@ class ProveedorController extends Controller
         return $this->paginated($originalPaginator->setCollection(collect($data)));
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/proveedores/{id}",
-     *     tags={"Proveedores"},
-     *     summary="Obtener un proveedor por ID",
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Proveedor encontrado"
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Proveedor no encontrado"
-     *     )
-     * )
-     */
     public function show(Request $request, Proveedor $proveedor)
     {
         // $proveedor = Proveedor::with(Proveedor::eagerLodable())->find($id);
@@ -168,28 +88,6 @@ class ProveedorController extends Controller
         return $this->success(new ProveedorResource($proveedor));
     }
 
-    /**
-     * @OA\Put(
-     *     path="/api/proveedores/{id}",
-     *     tags={"Proveedores"},
-     *     summary="Actualizar proveedor existente",
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/ProveedorUpdateRequest")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Proveedor actualizado"
-     *     )
-     * )
-     */
     public function update(ProveedorUpdateRequest $request, Proveedor $proveedor)
     {
         $validated = $request->validated();
@@ -200,24 +98,6 @@ class ProveedorController extends Controller
 
 
 
-    /**
-     * @OA\Delete(
-     *     path="/api/proveedores/{id}",
-     *     tags={"Proveedores"},
-     *     summary="Eliminar un proveedor",
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=204,
-     *         description="Proveedor eliminado"
-     *     )
-     * )
-     */
     public function destroy($id)
     {
         $proveedor = Proveedor::find($id);

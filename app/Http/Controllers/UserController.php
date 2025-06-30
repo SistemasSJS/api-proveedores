@@ -14,21 +14,6 @@ use Illuminate\Validation\Rules\Password;
 class UserController extends Controller
 {
 
-    /**
-     * @OA\Get(
-     *     path="/api/users",
-     *     summary="Listar todos los usuarios con filtros opcionales y paginación",
-     *     operationId="listarUsuarios",
-     *     tags={"Usuario"},
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(name="nombre", in="query", description="Filtrar por nombre", @OA\Schema(type="string")),
-     *     @OA\Parameter(name="email", in="query", description="Filtrar por email", @OA\Schema(type="string")),
-     *     @OA\Parameter(name="fecha_inicio", in="query", description="Filtrar por fecha de inicio", @OA\Schema(type="string", format="date")),
-     *     @OA\Parameter(name="fecha_fin", in="query", description="Filtrar por fecha de fin", @OA\Schema(type="string", format="date")),
-     *     @OA\Parameter(name="page", in="query", description="Número de página", @OA\Schema(type="integer")),
-     *     @OA\Response(response=200, description="Listado paginado de usuarios")
-     * )
-     */
     public function index(Request $request)
     {
         $fields = User::getFilters();
@@ -48,25 +33,6 @@ class UserController extends Controller
         return $this->paginated($originalPaginator->setCollection(collect($users)));
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/users",
-     *     summary="Crear un usuario",
-     *     operationId="crearUsuario",
-     *     tags={"Usuario"},
-     *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"name", "email", "password"},
-     *             @OA\Property(property="name", type="string"),
-     *             @OA\Property(property="email", type="string", format="email"),
-     *             @OA\Property(property="password", type="string", format="password")
-     *         )
-     *     ),
-     *     @OA\Response(response=201, description="Usuario creado")
-     * )
-     */
     public function store(UserStoreRequest $request)
     {
         $user = User::create($request->validate());
@@ -75,17 +41,6 @@ class UserController extends Controller
         ], 201);
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/users/{id}",
-     *     summary="Obtener un usuario por ID",
-     *     operationId="mostrarUsuario",
-     *     tags={"Usuario"},
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=200, description="Usuario encontrado")
-     * )
-     */
     public function show($id)
     {
         $user = User::find($id);
@@ -95,24 +50,6 @@ class UserController extends Controller
         return $this->success($user);
     }
 
-    /**
-     * @OA\Put(
-     *     path="/api/users/{id}",
-     *     summary="Actualizar usuario",
-     *     operationId="actualizarUsuario",
-     *     tags={"Usuario"},
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\RequestBody(
-     *         @OA\JsonContent(
-     *             @OA\Property(property="name", type="string"),
-     *             @OA\Property(property="email", type="string", format="email"),
-     *             @OA\Property(property="password", type="string", format="password")
-     *         )
-     *     ),
-     *     @OA\Response(response=200, description="Usuario actualizado")
-     * )
-     */
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
@@ -134,17 +71,6 @@ class UserController extends Controller
         return $this->success($user);
     }
 
-    /**
-     * @OA\Delete(
-     *     path="/api/users/{id}",
-     *     summary="Eliminar usuario",
-     *     operationId="eliminarUsuario",
-     *     tags={"Usuario"},
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=204, description="Usuario eliminado")
-     * )
-     */
     public function destroy($id)
     {
         $user = User::findOrFail($id);

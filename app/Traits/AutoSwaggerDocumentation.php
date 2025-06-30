@@ -5,29 +5,6 @@ namespace App\Traits;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Model;
 
-
-/**
- * EJEMPLO DE USO EN UN CONTROLADOR:
- * 
- * <?php
- * 
- * namespace App\Http\Controllers;
- * 
- * use App\Traits\AutoSwaggerDocumentation;
- * 
- * class ProductoController extends Controller 
- * {
- *     use AutoSwaggerDocumentation;
- * 
- *     // Tus métodos normales...
- *     public function index() {}
- *     public function store() {}
- *     // etc...
- * }
- */
-
-
-
 /**
  * Trait para generar documentación Swagger automáticamente
  * Solo agregar este trait a tus controladores

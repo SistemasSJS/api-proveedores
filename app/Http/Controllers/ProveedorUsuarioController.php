@@ -20,66 +20,9 @@ use App\Exceptions\Api\Custom\MainUserDuplicateException;
 use App\Exceptions\Api\Custom\NotFoundRelationException;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * @OA\Tag(
- *     name="ProveedorUsuarios",
- *     description="Endpoints para la gestión de usuarios asociados a proveedores"
- * )
- */
-
 class ProveedorUsuarioController extends Controller
 {
 
-    /**
-     * @OA\Get(
-     *     path="/api/proveedores/{proveedor}/users",
-     *     summary="Obtener lista de usuarios asociados a un proveedor",
-     *     tags={"ProveedorUsuarios"},
-     *     operationId="listarUsuariosProveedor",
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="proveedor",
-     *         in="path",
-     *         description="ID del proveedor",
-     *         required=true,
-     *     ),
-     *     @OA\Parameter(
-     *         name="sort_by",
-     *         in="query",
-     *         description="Campo para ordenar (por defecto 'name')",
-     *         required=false,
-     *     ),
-     *     @OA\Parameter(
-     *         name="order",
-     *         in="query",
-     *         description="Orden ascendente o descendente (por defecto 'asc')",
-     *         required=false,
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Lista paginada de usuarios",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(ref="#/components/schemas/UserResource")
-     *             ),
-     *             @OA\Property(
-     *                 property="message",
-     *                 type="string",
-     *                 example="Usuarios obtenidos correctamente."
-     *             ),
-     *             @OA\Property(
-     *                 property="meta",
-     *                 type="object",
-     *                 description="Metadatos de paginación"
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(response=403, description="No autorizado")
-     * )
-     */
     public function index(Request $request, Proveedor $proveedor)
     {
         $this->authorizeAccess($request->user(), $proveedor);
@@ -103,32 +46,6 @@ class ProveedorUsuarioController extends Controller
         );
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/proveedores/{proveedor}/users",
-     *     summary="Crear usuario asociado a un proveedor",
-     *     operationId="crearUsuarioProveedor",
-     *     tags={"ProveedorUsuarios"},
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="proveedor",
-     *         in="path",
-     *         description="ID del proveedor",
-     *         required=true,
-     *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/UserStoreRequest")
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Usuario creado correctamente",
-     *         @OA\JsonContent(ref="#/components/schemas/UserResource")
-     *     ),
-     *     @OA\Response(response=403, description="No autorizado"),
-     *     @OA\Response(response=409, description="Ya existe un usuario principal")
-     * )
-     */
     public function store(ProveedorUsuairoStoreRequest $request, Proveedor $proveedor)
     {
         $this->authorizeAccess($request->user(), $proveedor);
@@ -165,34 +82,6 @@ class ProveedorUsuarioController extends Controller
         return $this->success(new UserResource($user->load(User::eagerLodable())), 'Usuario creado correctamente.', 201);
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/proveedores/{proveedor}/users/{user}",
-     *     summary="Obtener usuario asociado a un proveedor por ID",
-     *     operationId="obtenerUsuarioProveedorPorId",
-     *     tags={"ProveedorUsuarios"},
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="proveedor",
-     *         in="path",
-     *         description="ID del proveedor",
-     *         required=true,
-     *     ),
-     *     @OA\Parameter(
-     *         name="user",
-     *         in="path",
-     *         description="ID del usuario",
-     *         required=true,
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Usuario encontrado",
-     *         @OA\JsonContent(ref="#/components/schemas/UserResource")
-     *     ),
-     *     @OA\Response(response=403, description="No autorizado"),
-     *     @OA\Response(response=404, description="Usuario no asociado al proveedor")
-     * )
-     */
     public function show(Request $request, Proveedor $proveedor, $user_id)
     {
         $this->authorizeAccess($request->user(), $proveedor);
@@ -204,38 +93,6 @@ class ProveedorUsuarioController extends Controller
         return $this->success(new UserResource($user->load(User::eagerLodable())), 'Usuario obtenido correctamente.');
     }
 
-    /**
-     * @OA\Put(
-     *     path="/api/proveedores/{proveedor}/users/{user}",
-     *     summary="Actualizar usuario asociado a un proveedor",
-     *     operationId="actualizarUsuarioProveedor",
-     *     tags={"ProveedorUsuarios"},
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="proveedor",
-     *         in="path",
-     *         description="ID del proveedor",
-     *         required=true,
-     *     ),
-     *     @OA\Parameter(
-     *         name="user",
-     *         in="path",
-     *         description="ID del usuario",
-     *         required=true,
-     *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/ProveedorUsuairoUpdateRequest")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Usuario actualizado correctamente",
-     *         @OA\JsonContent(ref="#/components/schemas/UserResource")
-     *     ),
-     *     @OA\Response(response=403, description="No autorizado o usuario no asociado"),
-     *     @OA\Response(response=409, description="Ya hay otro usuario principal")
-     * )
-     */
     public function update(ProveedorUsuairoUpdateRequest $request, Proveedor $proveedor, $user_id)
     {
         // 1. VALIDAR LA RELACION DEL USUARIO DE LA PETICON Y EL PROVEEDOR
@@ -251,35 +108,6 @@ class ProveedorUsuarioController extends Controller
         return $this->success(new UserResource($user->fresh(User::eagerLodable())), 'Usuario actualizado correctamente.');
     }
 
-    /**
-     * @OA\Delete(
-     *     path="/api/proveedores/{proveedor}/users/{user}",
-     *     summary="Eliminar usuario asociado a un proveedor",
-     *     operationId="eliminarUsuarioProveedor",
-     *     tags={"ProveedorUsuarios"},
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="proveedor",
-     *         in="path",
-     *         description="ID del proveedor",
-     *         required=true,
-     *     ),
-     *     @OA\Parameter(
-     *         name="user",
-     *         in="path",
-     *         description="ID del usuario",
-     *         required=true,
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Usuario eliminado correctamente",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Usuario eliminado correctamente.")
-     *         )
-     *     ),
-     *     @OA\Response(response=403, description="No autorizado, usuario no asociado o es usuario principal")
-     * )
-     */
     public function destroy(Request $request, Proveedor $proveedor, $user_id)
     {
         $this->authorizeAccess($request->user(), $proveedor);
@@ -327,12 +155,6 @@ class ProveedorUsuarioController extends Controller
         return $this->success(new UserResource($user->fresh(User::eagerLodable())));
     }
 
-    /**
-     * Autoriza si el usuario actual puede acceder al proveedor
-     *
-     * @param User $currentUser Usuario autenticado
-     * @param Proveedor $proveedor Proveedor objetivo
-     */
     protected function authorizeAccess(User $currentUser, Proveedor $proveedor)
     {
         if ($currentUser->isUserAdmin()) {

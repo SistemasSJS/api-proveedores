@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ImportProducto\ImportProductoRequest;
 use App\Jobs\ImportarProductosJob;
 use App\Models\Producto;
 use App\Models\Marca;
@@ -16,142 +15,97 @@ use Illuminate\Support\Facades\Storage;
 
 
 
-/**
- * @OA\Tag(
- *     name="ProductosImport",
- *     description="Operaciones Import sobre Productos"
- * )
- */
 class ImportProductoController extends Controller
 {
 
-    /**
-     * @OA\Post(
-     *     path="/api/import",
-     *     tags={"ProductosImport"},
-     *     summary="Importar productos desde un archivo CSV",
-     *     description="Este endpoint permite importar productos desde un archivo CSV. El archivo debe contener información sobre marcas, líneas, catálogos, proveedores y categorías.",
-     *     operationId="importarProductos",
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\MediaType(
-     *             mediaType="multipart/form-data",
-     *             @OA\Schema(
-     *                 required={"file"},
-     *                 @OA\Property(
-     *                     property="file",
-     *                     type="string",
-     *                     format="binary",
-     *                     description="Archivo CSV con los datos de productos"
-     *                 )
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Productos importados correctamente",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Productos importados correctamente.")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Error al importar productos",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string", example="Error al importar productos"),
-     *             @OA\Property(property="details", type="string", example="Descripción del error interno")
-     *         )
-     *     )
-     * )
-     */
-    public function import(ImportProductoRequest $request, Proveedor $proveedor)
-    {
-        $request->validated([
-            'file' => 'required|file|mimes:csv,xlsx|max:10240'
-        ]);
+    // public function import(ImportProductoRequest $request, Proveedor $proveedor)
+    // {
+    //     $request->validated([
+    //         'file' => 'required|file|mimes:csv,xlsx|max:10240'
+    //     ]);
 
-        $path = $request->file('file')->store('imports');
+    //     $path = $request->file('file')->store('imports');
 
-        // ImportarProductosJob::dispatch($proveedor->id, $path);
+    //     // ImportarProductosJob::dispatch($proveedor->id, $path);
 
-        // return response()->json([
-        //     'message' => 'Importación iniciada',
-        //     'job_id' => uniqid('import_')
-        // ]);
-        // Para archivos grandes, usar job
-        // if ($request->file('file')->getSize() > 1048576) { // >1MB
-        //     ImportarProductosJob::dispatch($proveedor->id, $path);
+    //     // return response()->json([
+    //     //     'message' => 'Importación iniciada',
+    //     //     'job_id' => uniqid('import_')
+    //     // ]);
+    //     // Para archivos grandes, usar job
+    //     // if ($request->file('file')->getSize() > 1048576) { // >1MB
+    //     //     ImportarProductosJob::dispatch($proveedor->id, $path);
 
-        //     return response()->json([
-        //         'message' => 'Importación iniciada',
-        //         'job_id' => uniqid('import_')
-        //     ]);
-        // }
+    //     //     return response()->json([
+    //     //         'message' => 'Importación iniciada',
+    //     //         'job_id' => uniqid('import_')
+    //     //     ]);
+    //     // }
 
-        // Procesamiento directo para archivos pequeños
-        $result = $this->procesarArchivo($proveedor->id, $path);
-        return $this->success([$result]);
-    }
+    //     // Procesamiento directo para archivos pequeños
+    //     $result = $this->procesarArchivo($proveedor->id, $path);
+    //     return $this->success([$result]);
+    // }
 
-    private function procesarArchivo($proveedorId, $path)
-    {
-        $data = array_map('str_getcsv', file(storage_path("app/$path")));
-        $headers = array_shift($data);
+    // private function procesarArchivo($proveedorId, $path)
+    // {
+    //     $data = array_map('str_getcsv', file(storage_path("app/$path")));
+    //     $headers = array_shift($data);
 
-        $errores = [];
-        $exitosos = 0;
+    //     $errores = [];
+    //     $exitosos = 0;
 
-        DB::transaction(function () use ($data, $headers, $proveedorId, &$errores, &$exitosos) {
-            foreach ($data as $index => $row) {
-                try {
-                    $producto = array_combine($headers, $row);
+    //     DB::transaction(function () use ($data, $headers, $proveedorId, &$errores, &$exitosos) {
+    //         foreach ($data as $index => $row) {
+    //             try {
+    //                 $producto = array_combine($headers, $row);
 
-                    // Crear marca/línea si no existe
-                    $marca = Marca::firstOrCreate([
-                        'nombre' => $producto['nombre_marca'],
-                        'proveedor_id' => $proveedorId
-                    ]);
+    //                 // Crear marca/línea si no existe
+    //                 $marca = Marca::firstOrCreate([
+    //                     'nombre' => $producto['nombre_marca'],
+    //                     'proveedor_id' => $proveedorId
+    //                 ]);
 
-                    //
-                    $linea = Linea::firstOrCreate([
-                        'nombre' => $producto['nombre_linea'],
-                        'marca_id' => $marca->id,
-                        'proveedor_id' => $proveedorId
-                    ]);
+    //                 //
+    //                 $linea = Linea::firstOrCreate([
+    //                     'nombre' => $producto['nombre_linea'],
+    //                     'marca_id' => $marca->id,
+    //                     'proveedor_id' => $proveedorId
+    //                 ]);
 
-                    Producto::updateOrCreate(
-                        [
-                            'sku' => $producto['sku'],
-                            'proveedor_id' => $proveedorId
-                        ],
-                        [
-                            'nombre' => $producto['nombre_producto'],
-                            'descripcion' => $producto['descripcion'],
-                            'precio' => $producto['precio'],
-                            'stock' => $producto['cantidad_disponible'],
-                            'activo' => $producto['activo'] === 'true',
-                            'marca_id' => $marca->id,
-                            'linea_id' => $linea->id
-                        ]
-                    );
+    //                 Producto::updateOrCreate(
+    //                     [
+    //                         'sku' => $producto['sku'],
+    //                         'proveedor_id' => $proveedorId
+    //                     ],
+    //                     [
+    //                         'nombre' => $producto['nombre_producto'],
+    //                         'descripcion' => $producto['descripcion'],
+    //                         'precio' => $producto['precio'],
+    //                         'stock' => $producto['cantidad_disponible'],
+    //                         'activo' => $producto['activo'] === 'true',
+    //                         'marca_id' => $marca->id,
+    //                         'linea_id' => $linea->id
+    //                     ]
+    //                 );
 
-                    $exitosos++;
-                } catch (\Exception $e) {
-                    $errores[] = [
-                        'fila' => $index + 2,
-                        'sku' => $producto['sku'] ?? 'N/A',
-                        'error' => $e->getMessage(),
-                    ];
-                }
-            }
-        });
+    //                 $exitosos++;
+    //             } catch (\Exception $e) {
+    //                 $errores[] = [
+    //                     'fila' => $index + 2,
+    //                     'sku' => $producto['sku'] ?? 'N/A',
+    //                     'error' => $e->getMessage(),
+    //                 ];
+    //             }
+    //         }
+    //     });
 
-        return [
-            'total' => count($data),
-            'exitosos' => $exitosos,
-            'errores' => $errores
-        ];
-    }
+    //     return [
+    //         'total' => count($data),
+    //         'exitosos' => $exitosos,
+    //         'errores' => $errores
+    //     ];
+    // }
     // public function import(ImportProductoRequest $request, Proveedor $proveedor)
     // {
     //     $file = $request->file('file');

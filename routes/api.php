@@ -15,7 +15,6 @@ use App\Http\Controllers\SucursalController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImagenController;
-use App\Http\Controllers\ImportProductoController;
 use App\Http\Controllers\UnidadMedidaController;
 use App\Http\Controllers\LineaController;
 use App\Http\Controllers\MarcaController;

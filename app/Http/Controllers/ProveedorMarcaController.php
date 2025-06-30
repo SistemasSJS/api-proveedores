@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 
 class ProveedorMarcaController extends Controller
 {
-    /** REVISADA: OK */
     public function index(Request $request, Proveedor $proveedor)
     {
         $filters = $request->only(Marca::getFilters());
@@ -23,7 +22,6 @@ class ProveedorMarcaController extends Controller
         return $this->paginated($originalPaginator->setCollection(collect($data)));
     }
 
-    /** REVISADA: OK */
     public function index_lineas_por_marca(Request $request, Proveedor $proveedor, $marcaId)
     {
         $marca = Marca::findOrFail($marcaId);

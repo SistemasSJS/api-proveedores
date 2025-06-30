@@ -4,17 +4,8 @@ namespace App\Http\Requests\User;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-/**
- * @OA\Schema(
- *     schema="Usuari oUpdateLogoRequest",
- *     required={
- *         "logo"
- *     },
- *     @OA\Property(property="logo", type="string", format="binary", example="logo.png"),
- * )
- */
-class UserUpdateLogoRequest extends FormRequest
 
+class UserUpdateLogoRequest extends FormRequest
 {
 
   public function authorize(): bool

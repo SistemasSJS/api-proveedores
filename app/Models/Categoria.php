@@ -5,19 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * @OA\Schema(
- *     schema="Categoria",
- *     required={"nombre"},
- *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="nombre", type="string", example="Herramientas Eléctricas"),
- *     @OA\Property(property="descripcion", type="text", example="Herramientas Eléctricas"),
- *     @OA\Property(property="photo_path", type="string", example="Herramientas Eléctricas"),
- *     @OA\Property(property="categoria_padre_id", type="integer", example="Herramientas Eléctricas"),
- *     @OA\Property(property="created_at", type="string", format="date-time"),
- *     @OA\Property(property="updated_at", type="string", format="date-time")
- * )
- */
+
 class Categoria extends BaseModel
 {
     use HasFactory;

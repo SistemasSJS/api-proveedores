@@ -13,25 +13,10 @@ use App\Models\Producto;
 use Illuminate\Http\Request;
 use App\Traits\ApiResponse;
 
-/**
- * @OA\Tag(name="Catalogo", description="Gestión de catálogo")
- */
 class CatalogoController extends Controller
 {
     use ApiResponse;
 
-    /**
-     * @OA\Get(
-     *     path="/api/proveedores/{proveedor}/catalogos",
-     *     summary="Listar catálogos",
-     *     tags={"Catalogo"},
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(name="proveedor", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Parameter(name="sort_by", in="query", description="Campo para ordenar", required=false, @OA\Schema(type="string", example="nombre")),
-     *     @OA\Parameter(name="order", in="query", description="Dirección de ordenamiento", required=false, @OA\Schema(type="string", enum={"asc", "desc"}, example="asc")),
-     *     @OA\Response(response=200, description="Listado paginado de catálogos", @OA\JsonContent(ref="#/components/schemas/ApiPaginatedResponse"))
-     * )
-     */
     public function index(Request $request, Proveedor $proveedor)
     {
         $filters = $request->only(Catalogo::getFilters());
@@ -49,17 +34,6 @@ class CatalogoController extends Controller
         return $this->paginated($originalPaginator->setCollection(collect($data)));
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/proveedores/{proveedor}/catalogos",
-     *     summary="Crear un ítem de catálogo",
-     *     tags={"Catalogo"},
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(name="proveedor", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/CatalogoStoreRequest")),
-     *     @OA\Response(response=201, description="Ítem creado")
-     * )
-     */
     public function store(CatalogoStoreRequest $request, Proveedor $proveedor)
     {
         $data = $request->validated();
@@ -70,17 +44,6 @@ class CatalogoController extends Controller
         return $this->success(new CatalogoResource($catalogo), 201);
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/proveedores/{proveedor}/catalogos/{id}",
-     *     summary="Mostrar un ítem del catálogo por ID",
-     *     tags={"Catalogo"},
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(name="proveedor", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=200, description="Ítem encontrado")
-     * )
-     */
     public function show(Request $request, Proveedor $proveedor, $id)
     {
         $catalogo = Catalogo::with(Catalogo::eagerLodable())->findOrFail($id);
@@ -92,18 +55,6 @@ class CatalogoController extends Controller
         return $this->success(new CatalogoResource($catalogo));
     }
 
-    /**
-     * @OA\Put(
-     *     path="/api/proveedores/{proveedor}/catalogos/{id}",
-     *     summary="Actualizar un ítem del catálogo",
-     *     tags={"Catalogo"},
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(name="proveedor", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\RequestBody(@OA\JsonContent(ref="#/components/schemas/CatalogoUpdateRequest")),
-     *     @OA\Response(response=200, description="Ítem actualizado")
-     * )
-     */
     public function update(CatalogoUpdateRequest $request, Proveedor $proveedor, $id)
     {
         $catalogo = Catalogo::findOrFail($id);
@@ -117,17 +68,6 @@ class CatalogoController extends Controller
         return $this->success(new CatalogoResource($catalogo));
     }
 
-    /**
-     * @OA\Delete(
-     *     path="/api/proveedores/{proveedor}/catalogos/{id}",
-     *     summary="Eliminar un ítem del catálogo",
-     *     tags={"Catalogo"},
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(name="proveedor", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=204, description="Ítem eliminado")
-     * )
-     */
     public function destroy(Request $request, Proveedor $proveedor, $id)
     {
         $catalogo = Catalogo::findOrFail($id);

@@ -28,31 +28,6 @@ use Illuminate\Support\Str;
 class AuthController extends Controller
 {
 
-    /**
-     * @OA\Post(
-     *     path="/api/auth/register",
-     *     tags={"Autenticación"},
-     *     summary="Iniciar registro de usuario (Constructor o Solicitante)",
-     *     description="Guarda datos preliminares del usuario y envía correo con token para completar el registro.",
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/AuthRegisterRequest")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Token generado y enviado por correo",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Datos guardados. Revisa tu correo para continuar el registro."),
-     *             @OA\Property(property="token", type="string", example="kJH23jhkL23JKnlk2323jh2h3k4")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Datos inválidos o incompletos"
-     *     )
-     * )
-     */
-
     public function register(AuthRegisterRequest $request)
     {
         $validatedData = $request->validated();
@@ -72,31 +47,6 @@ class AuthController extends Controller
         );
     }
 
-
-    /**
-     * @OA\Post(
-     *     path="/api/auth/completar-registro",
-     *     tags={"Autenticación"},
-     *     summary="Completar registro de usuario (Constructor o Solicitante)",
-     *     description="Completa el registro del usuario usando el token previamente enviado por correo.",
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/AuthRegisterCompleteRequest")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Usuario registrado correctamente",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Registro completado."),
-     *             @OA\Property(property="user", ref="#/components/schemas/UserResource")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=498,
-     *         description="Token inválido o expirado"
-     *     )
-     * )
-     */
 
     public function register_completar(AuthRegisterCompleteRequest $request)
     {
@@ -123,22 +73,6 @@ class AuthController extends Controller
         // ],
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/auth/register_proveedor",
-     *     tags={"Autenticación"},
-     *     summary="Registrar un nuevo proveedor",
-     *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/ProveedorRegisterRequest")
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Proveedor creado exitosamente"
-     *     )
-     * )
-     */
     public function register_proveedor(ProveedorRegisterRequest $request)
     {
         $proveedor = Proveedor::create($request->validated());
@@ -155,22 +89,6 @@ class AuthController extends Controller
         ], 'Proveedor registrado. Revisa tu correo para continuar.', 200);
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/auth/register_proveedor_completar",
-     *     tags={"Autenticación"},
-     *     summary="Completar registro de proveedor",
-     *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/ProveedorRegisterCompleteRequest")
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Registro completado exitosamente"
-     *     )
-     * )
-     */
     public function register_proveedor_completar(ProveedorRegisterCompleteRequest $request)
     {
         $proveedorId = Cache::get("registro_proveedor_{$request->token}");
@@ -212,30 +130,6 @@ class AuthController extends Controller
         ], 'Registro completado', 201);
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/auth/update-foto-perfil",
-     *     summary="Actualizar foto de perfil",
-     *     tags={"Autenticación"},
-     *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\MediaType(mediaType="multipart/form-data",
-     *             @OA\Schema(
-     *                 required={"foto_perfil"},
-     *                 @OA\Property(property="foto_perfil", type="string", format="binary")
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Foto de perfil actualizada con éxito",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="path", type="string", example="/storage/uploads/unique_filename.jpg")
-     *         )
-     *     )
-     * )
-     */
     public function update_foto_perfil(AuthUpdateFotoPerfilRequest $request)
     {
         $file = $request->file('foto_perfil');
@@ -254,54 +148,6 @@ class AuthController extends Controller
         );
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/auth/login",
-     *     summary="Autenticación de usuario",
-     *     tags={"Autenticación"},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"email", "password"},
-     *             @OA\Property(property="email", type="string", format="email", example="user@example.com"),
-     *             @OA\Property(property="password", type="string", format="password", example="secret123")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Login exitoso",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Login exitoso."),
-     *             @OA\Property(property="token", type="string", example="eyJ0eXAiOiJKV1QiLCJhbGciOi..."),
-     *             @OA\Property(property="user", type="object",
-     *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="name", type="string", example="Juan Pérez"),
-     *                 @OA\Property(property="email", type="string", format="email", example="juan@example.com")
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Credenciales inválidas",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Credenciales incorrectas."),
-     *             @OA\Property(property="code", type="integer", example=401)
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Error interno del servidor",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error en el inicio de sesión."),
-     *             @OA\Property(property="error", type="string", example="Mensaje de excepción"),
-     *             @OA\Property(property="code", type="integer", example=500)
-     *         )
-     *     )
-     * )
-     */
     public function login(Request $request)
     {
         $request->validate([
@@ -325,27 +171,6 @@ class AuthController extends Controller
         ], 'Login exitoso.', 201);
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/auth/me",
-     *     summary="Obtener información del usuario autenticado",
-     *     tags={"Autenticación"},
-     *     security={{"sanctum":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Usuario autenticado",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Usuario autenticado."),
-     *             @OA\Property(property="user", type="object",
-     *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="name", type="string", example="Juan Pérez"),
-     *                 @OA\Property(property="email", type="string", format="email", example="juan@example.com")
-     *             )
-     *         )
-     *     )
-     * )
-     */
     public function me(Request $request)
     {
         $user = $request->user();
@@ -359,30 +184,6 @@ class AuthController extends Controller
         ], 'Login exitoso.', 200);
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/auth/logout",
-     *     summary="Cerrar sesión y revocar tokens",
-     *     tags={"Autenticación"},
-     *     security={{"sanctum":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Sesión cerrada correctamente",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Sesión cerrada correctamente")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="No autenticado o sesión no válida",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="No autorizado o sesión no válida")
-     *         )
-     *     )
-     * )
-     */
     public function logout(Request $request)
     {
         if (!$request->user()) {

@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Jobs;
+
 use App\Services\ReporteService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Storage;
