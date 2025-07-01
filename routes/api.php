@@ -51,11 +51,11 @@ Route::prefix('auth')->group(function () {
     Route::post('completar-registro', [AuthController::class, 'register_completar']);
     Route::post('register_proveedor', [AuthController::class, 'register_proveedor']);
     Route::post('register_proveedor_completar', [AuthController::class, 'register_proveedor_completar']);
-    Route::get('logout', [AuthController::class, 'logout']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('me', [AuthController::class, 'me']);
         Route::post('update-img-perfil', [AuthController::class, 'update_foto_perfil']);
+        Route::get('logout', [AuthController::class, 'logout']);
     });
 });
 
@@ -95,7 +95,7 @@ Route::middleware('auth:sanctum')->group(function () {
     /**
      * Rutas con roles GERENTE y ADMINISTRADOR
      */
-    Route::middleware('role:' . UserRoleEnumerate::CLIENTE->value . UserRoleEnumerate::GERENTE->value . ',' . UserRoleEnumerate::ADMINISTRADOR->value)->group(function () {
+    Route::middleware('role:' . UserRoleEnumerate::CLIENTE->value . ',' . UserRoleEnumerate::GERENTE->value . ',' . UserRoleEnumerate::ADMINISTRADOR->value)->group(function () {
 
         /**
          * Gestión de proveedores
