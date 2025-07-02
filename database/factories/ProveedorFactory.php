@@ -41,6 +41,30 @@ class ProveedorFactory extends Factory
             'contacto_telefono' => $this->faker->phoneNumber,
             'contacto_correo' => $this->faker->safeEmail,
             'pagina_web' => $this->faker->url,
+
         ];
+    }
+
+    public function principal(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'principal' => true,
+            'calificacion' => $this->faker->randomFloat(2, 4.0, 5.0),
+            'activo' => true
+        ]);
+    }
+
+    public function activo(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'activo' => true,
+        ]);
+    }
+
+    public function altaCalificacion(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'calificacion' => $this->faker->randomFloat(2, 4.5, 5.0),
+        ]);
     }
 }

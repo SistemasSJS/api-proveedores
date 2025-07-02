@@ -393,17 +393,25 @@ class ProductoSeeder extends Seeder
                         $linea_random = Linea::where('marca_id', $marca_random)->get()->random()->id;
                     }
 
-                    $producto = Producto::firstOrCreate([
-                        'proveedor_id' => $proveedor->id,
-                        'sku' => $productoData['sku'],
-                        'nombre' => $productoData['nombre'],
-                        'descripcion' => $productoData['descripcion'],
-                        'categoria_id' => $categoria->id,
-                        'linea_id' => $linea_random,
-                        'marca_id' => $marca_random,
-                        'unidad_medida_id' => $unidad ? $unidad->id : $unidadMedidas->random()->id,
-                    ]);
+                    $esDestacado = (bool)random_int(0, 1);
 
+                    $producto = Producto::firstOrCreate(
+                        [
+                            'proveedor_id' => $proveedor->id,
+                            'sku' => $productoData['sku'],
+                        ],
+                        [
+                            'nombre' => $productoData['nombre'],
+                            'descripcion' => $productoData['descripcion'],
+                            'categoria_id' => $categoria->id,
+                            'linea_id' => $linea_random,
+                            'marca_id' => $marca_random,
+                            'unidad_medida_id' => $unidad ? $unidad->id : $unidadMedidas->random()->id,
+                            'activo' => $esDestacado ? true : (bool)random_int(0, 1),
+                            'destacado' => $esDestacado,
+                            'stock' => $esDestacado ? random_int(10, 100) : random_int(0, 200),
+                        ]
+                    );
                     // $categorias = Categoria::whereIn('nombre', [$categoria_nombre])->get();
                     // $producto->categorias()->sync($categorias->pluck('id'));
                 }

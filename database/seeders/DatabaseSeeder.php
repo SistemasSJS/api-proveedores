@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             MarcaSeeder::class,
             LineaSeeder::class,
             ProductoSeeder::class,
+            AccesoRapidoSeeder::class,
         ]);
 
         // Llamar al Seeder de Usuarios

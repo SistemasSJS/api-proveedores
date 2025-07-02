@@ -38,6 +38,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProveedorDashboardController;
 use App\Http\Controllers\ProductoBusquedaController;
 use App\Http\Controllers\ProveedorReporteController;
+use App\Http\Controllers\TiendaController;
 use App\Http\Middleware\EnsureProveedorOwnership;
 use App\Http\Middleware\ValidateApiAccess;
 use App\Http\Middleware\LogApiActions;
@@ -93,14 +94,28 @@ Route::get('tipos-empresa', [TipoEmpresaController::class, 'index'])->middleware
 Route::middleware('auth:sanctum')->group(function () {
 
     /**
+     * RUTAS DE LA TIENDA ONLINE
+     */
+    Route::prefix('tienda')->middleware(['auth:sanctum'])->group(function () {
+        Route::get('accesos-rapidos', [TiendaController::class, 'accesosRapidos'])->middleware(['audit']);
+        Route::get('proveedores/principales', [TiendaController::class, 'proveedoresPrincipales'])->middleware(['audit']);
+        Route::get('productos/destacados', [TiendaController::class, 'productosDestacados'])->middleware(['audit']);
+        Route::get('productos/mas-pedidos', [TiendaController::class, 'productosMasPedidos'])->middleware(['audit']);
+        Route::get('productos/recientes', [TiendaController::class, 'productosRecientes'])->middleware(['audit']);
+    });
+
+    /**
      * Rutas con roles GERENTE y ADMINISTRADOR
      */
     Route::middleware('role:' . UserRoleEnumerate::CLIENTE->value . ',' . UserRoleEnumerate::GERENTE->value . ',' . UserRoleEnumerate::ADMINISTRADOR->value)->group(function () {
+
 
         /**
          * Gestión de proveedores
          */
         Route::prefix('proveedores')->group(function () {
+
+
 
             // Rutas CRUD y perfil para proveedores
             Route::controller(ProveedorController::class)->group(function () {
