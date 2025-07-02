@@ -121,7 +121,7 @@ class ProveedorUsuarioController extends Controller
             throw new NotFoundRelationException('Usuario no asociado al proveedor.');
         }
 
-        if ($pivotData->is_main) {
+        if ($pivotData->proveedorPrincipal()) {
             throw new MainUserDuplicateException('No se puede eliminar al usuario principal.');
         }
 

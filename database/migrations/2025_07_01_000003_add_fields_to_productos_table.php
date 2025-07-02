@@ -12,6 +12,8 @@ return new class extends Migration
             $table->boolean('destacado')->default(false)->after('activo');
             $table->string('codigo')->nullable()->after('destacado');
             $table->string('categoria')->nullable()->after('codigo');
+            $table->boolean('principal')->default(false)->after('categoria');
+
             // $table->integer('stock')->default(0)->after('categoria');
         });
     }

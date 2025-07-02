@@ -62,6 +62,7 @@ class ProveedorUpdateRequest extends FormRequest
             'pagina_web' => ['nullable', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:15'],
+            'tipo_persona' => ['nullable', 'string', 'in:Física,Moral'],
             'nombre_propietario' => ['nullable', 'string', 'max:255'],
             'nombre_de_quien_registra' => ['nullable', 'string', 'max:255'],
             'razon_social' => ['nullable', 'string', 'max:255'],

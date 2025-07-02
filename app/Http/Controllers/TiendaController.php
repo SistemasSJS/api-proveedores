@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\ProductoResource;
-use App\Http\Resources\ProveedorResource;
+use App\Http\Resources\TiendaProductoResource;
+use App\Http\Resources\TiendaProveedorResource;
 use App\Models\Proveedor;
 use App\Models\Producto;
 use App\Models\AccesoRapido;
 use App\Models\Pedido;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use Carbon\Carbon;
 
 class TiendaController extends Controller
 {
-    public function accesosRapidos(): JsonResponse
+    public function accesosRapidos()
     {
         $accesos = AccesoRapido::where('activo', true)
             ->orderBy('orden')
@@ -24,9 +23,9 @@ class TiendaController extends Controller
         return $this->success($accesos);
     }
 
-    public function proveedoresPrincipales(Request $request): JsonResponse
+    public function proveedoresPrincipales(Request $request)
     {
-        $query = Proveedor::where('activo', true)
+        $query = Proveedor::where('estatus', 'activo')
             ->where('principal', true);
 
         // Filtros de búsqueda
@@ -50,18 +49,19 @@ class TiendaController extends Controller
             $query->where('calificacion', '>=', $request->get('calificacion_min'));
         }
 
-        $proveedores = $query->with(['productos' => function ($q) {
-            $q->where('activo', true)->limit(3);
-        }])
-            ->select('id', 'nombre', 'descripcion', 'logo', 'calificacion', 'categoria', 'ciudad')
+        // $proveedores = $query->with(['productos' => function ($q) {
+        //     $q->where('activo', true)->limit(3);
+        // }])
+        $proveedores = $query->with(Proveedor::eagerLodable())
+            // ->select('id', 'nombre', 'descripcion', 'logo', 'calificacion', 'categoria', 'ciudad')
             ->orderBy('calificacion', 'desc')
             ->paginate($request->get('per_page', 15));
 
-        $data = ProveedorResource::collection($proveedores)->resolve();
+        $data = TiendaProveedorResource::collection($proveedores)->resolve();
         return $this->paginated($proveedores->setCollection(collect($data)));
     }
 
-    public function productosDestacados(Request $request): JsonResponse
+    public function productosDestacados(Request $request)
     {
         $limit = $request->get('limit', 6);
 
@@ -98,18 +98,16 @@ class TiendaController extends Controller
             $query->where('stock', '>', 0);
         }
 
-        $productos = $query->with(['proveedor:id,nombre,logo'])
-            ->select('id', 'nombre', 'descripcion', 'precio', 'imagen', 'stock', 'categoria', 'proveedor_id')
+        $productos = $query->with(Producto::eagerLodable())
+            // ->select('id', 'nombre', 'descripcion', 'precio', 'imagen', 'stock', 'categoria', 'proveedor_id')
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();
-        return response()->json([
-            'success' => true,
-            'data' => $productos
-        ]);
+
+        return $this->success(TiendaProductoResource::collection($productos));
     }
 
-    public function productosMasPedidos(Request $request): JsonResponse
+    public function productosMasPedidos(Request $request)
     {
         $limit = $request->get('limit', 8);
 
@@ -181,13 +179,10 @@ class TiendaController extends Controller
             ->limit($limit)
             ->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $productos
-        ]);
+        return $this->success(TiendaProductoResource::collection($productos));
     }
 
-    public function productosRecientes(Request $request): JsonResponse
+    public function productosRecientes(Request $request)
     {
         $limit = $request->get('limit', 8);
 
@@ -228,16 +223,10 @@ class TiendaController extends Controller
             $query->where('created_at', '>=', Carbon::now()->subDays($dias));
         }
 
-        $productos = $query->with(['proveedor:id,nombre,logo'])
-            ->select('id', 'nombre', 'descripcion', 'precio', 'imagen', 'stock', 'categoria', 'proveedor_id', 'created_at')
+        $productos = $query->with(Producto::eagerLodable())
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();
-
-        return $this->success($productos);
-        // return response()->json([
-        //     'success' => true,
-        //     'data' => $productos
-        // ]);
+        return $this->success(TiendaProductoResource::collection($productos));
     }
 }

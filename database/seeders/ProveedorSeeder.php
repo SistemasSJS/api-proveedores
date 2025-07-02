@@ -12,12 +12,18 @@ class ProveedorSeeder extends Seeder
 {
     public function run()
     {
+
         DB::transaction(function () {
+            $default_foto_url = '/uploads/default.png';
+
             // === PROVEEDOR 1: Fierro y Lámina ===
-            $user1 = User::factory()->proveedor()->create(['email' => 'proveedor@fierroylaminadigital.com']);
+            $user1 = User::factory()->proveedor()->create([
+                'email' => 'proveedor@fierroylaminadigital.com',
+                'name' => 'Fierro y Lamina',
+                'foto_perfil_url' => $default_foto_url,
+            ]);
             $tipo1 = TipoEmpresa::where('clave', 'comercial')->first();
 
-            $esPrincipal = (bool)random_int(0, 1);
             $proveedor1 = Proveedor::factory()->create([
                 'nombre_comercial' => 'Fierro y Lámina',
                 'razon_social' => 'Fierro y Lámina S.A. de C.V.',
@@ -38,7 +44,7 @@ class ProveedorSeeder extends Seeder
                 'contacto_cargo' => 'Ventas',
                 'contacto_telefono' => '6678901234',
                 'contacto_correo' => 'carlos.ramirez@fierroylaminadigital.mx',
-                'principal' => $esPrincipal,
+                'principal' => true,
                 'calificacion' => round(mt_rand(30, 50) / 10, 2),
             ]);
             // $user1->proveedores()->attach($proveedor1->id, ['is_main' => true]);
@@ -49,10 +55,13 @@ class ProveedorSeeder extends Seeder
                 'observaciones' => 'Usuario principal del proveedor',
             ]);
             // === PROVEEDOR 2: Truper ===
-            $user2 = User::factory()->proveedor()->create(['email' => 'proveedor@truper.com']);
+            $user2 = User::factory()->proveedor()->create([
+                'email' => 'proveedor@truper.com',
+                'name' => 'Truper',
+                'foto_perfil_url' => $default_foto_url,
+            ]);
             $tipo2 = TipoEmpresa::where('clave', 'industrial')->first();
 
-            $esPrincipal = (bool)random_int(0, 1);
             $proveedor2 = Proveedor::factory()->create([
                 'nombre_comercial' => 'Truper',
                 'razon_social' => 'Truper S.A. de C.V.',
@@ -73,7 +82,7 @@ class ProveedorSeeder extends Seeder
                 'contacto_cargo' => 'Gerente Comercial',
                 'contacto_telefono' => '5556781234',
                 'contacto_correo' => 'fernando.perez@truper.com',
-                'principal' => $esPrincipal,
+                'principal' => true,
                 'calificacion' => round(mt_rand(30, 50) / 10, 2),
             ]);
             // $user2->proveedores()->attach($proveedor2->id, ['is_main' => true]);
@@ -84,10 +93,13 @@ class ProveedorSeeder extends Seeder
                 'observaciones' => 'Usuario principal del proveedor',
             ]);
             // === PROVEEDOR 3: Ejemplo ficticio ===
-            $user3 = User::factory()->proveedor()->create(['email' => 'proveedor@elgrangero.com']);
+            $user3 = User::factory()->proveedor()->create([
+                'email' => 'proveedor@elgrangero.com',
+                'name' => 'El Gran Gero',
+                'foto_perfil_url' => $default_foto_url,
+            ]);
             $tipo3 = TipoEmpresa::where('clave', 'obra_civil')->first();
 
-            $esPrincipal = (bool)random_int(0, 1);
             $proveedor3 = Proveedor::factory()->create([
                 'nombre_comercial' => 'Granjas ElGranGero',
                 'razon_social' => 'Granjas ElGranGero S.A. de C.V.',
@@ -108,7 +120,7 @@ class ProveedorSeeder extends Seeder
                 'contacto_cargo' => 'Asistente Administrativo',
                 'contacto_telefono' => '4492345678',
                 'contacto_correo' => 'veronica@elgrangero.com',
-                'principal' => $esPrincipal,
+                'principal' => true,
                 'calificacion' => round(mt_rand(30, 50) / 10, 2),
             ]);
             // $user3->proveedores()->attach($proveedor3->id, ['is_main' => true]);

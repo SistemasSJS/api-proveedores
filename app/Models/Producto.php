@@ -38,6 +38,9 @@ class Producto extends BaseModel
         'categoria_id',
         'marca_id',
         'linea_id',
+        'destacado',
+        'principal',
+        'stock',
     ];
 
     /**
@@ -45,7 +48,7 @@ class Producto extends BaseModel
      *
      * @var array
      */
-    protected $with = ['categoria', 'marca', 'linea', 'especificaciones', 'imagenes'];
+    protected $with = ['proveedor', 'categoria', 'marca', 'linea', 'especificaciones', 'imagenes'];
 
     /**
      * Filtros disponibles para aplicar dinámicamente en consultas.
@@ -63,6 +66,13 @@ class Producto extends BaseModel
         'modelo' => 'modelo',
     ];
 
+    protected $casts = [
+        'especificaciones' => 'array',
+        'imagenes' => 'array',
+        'tags' => 'array',
+    ];
+
+
     /**
      * Relaciones disponibles para cargar con eager loading.
      *
@@ -72,7 +82,7 @@ class Producto extends BaseModel
      */
     public static function eagerLodable(): array
     {
-        return ['categoria', 'marca', 'linea', 'especificaciones', 'imagenes'];
+        return ['proveedor', 'categoria', 'marca', 'linea', 'especificaciones', 'imagenes'];
     }
 
     public function proveedor(): BelongsTo

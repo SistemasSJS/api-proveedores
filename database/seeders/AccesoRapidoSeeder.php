@@ -13,7 +13,7 @@ class AccesoRapidoSeeder extends Seeder
             [
                 'titulo' => 'Productos Destacados',
                 'descripcion' => 'Ver productos más populares y recomendados',
-                'icono' => 'star',
+                'icono' => 'star-outline',
                 'url' => '/tienda/productos/destacados',
                 'color' => '#ffc107',
                 'orden' => 1,
@@ -22,7 +22,7 @@ class AccesoRapidoSeeder extends Seeder
             [
                 'titulo' => 'Proveedores Principales',
                 'descripcion' => 'Explorar proveedores de confianza',
-                'icono' => 'storefront',
+                'icono' => 'storefront-outline',
                 'url' => '/tienda/proveedores/principales',
                 'color' => '#007bff',
                 'orden' => 2,
@@ -31,7 +31,7 @@ class AccesoRapidoSeeder extends Seeder
             [
                 'titulo' => 'Más Pedidos',
                 'descripcion' => 'Productos con mayor demanda',
-                'icono' => 'bag-check',
+                'icono' => 'bag-handle-outline',
                 'url' => '/tienda/productos/mas-pedidos',
                 'color' => '#28a745',
                 'orden' => 3,
@@ -40,7 +40,7 @@ class AccesoRapidoSeeder extends Seeder
             [
                 'titulo' => 'Novedades',
                 'descripcion' => 'Productos agregados recientemente',
-                'icono' => 'clock-history',
+                'icono' => 'time-outline',
                 'url' => '/tienda/productos/recientes',
                 'color' => '#17a2b8',
                 'orden' => 4,
@@ -49,7 +49,7 @@ class AccesoRapidoSeeder extends Seeder
             [
                 'titulo' => 'Mi Carrito',
                 'descripcion' => 'Ver productos en el carrito de compras',
-                'icono' => 'cart-plus',
+                'icono' => 'cart-outline',
                 'url' => '/tienda/carrito',
                 'color' => '#dc3545',
                 'orden' => 5,
@@ -58,7 +58,7 @@ class AccesoRapidoSeeder extends Seeder
             [
                 'titulo' => 'Mis Pedidos',
                 'descripcion' => 'Historial y estado de pedidos',
-                'icono' => 'clipboard-check',
+                'icono' => 'receipt-outline',
                 'url' => '/tienda/mis-pedidos',
                 'color' => '#6f42c1',
                 'orden' => 6,
@@ -67,7 +67,7 @@ class AccesoRapidoSeeder extends Seeder
             [
                 'titulo' => 'Catálogo',
                 'descripcion' => 'Explorar todo el catálogo de productos',
-                'icono' => 'grid-3x3-gap',
+                'icono' => 'grid-outline',
                 'url' => '/tienda/catalogo',
                 'color' => '#fd7e14',
                 'orden' => 7,
@@ -76,19 +76,19 @@ class AccesoRapidoSeeder extends Seeder
             [
                 'titulo' => 'Favoritos',
                 'descripcion' => 'Productos marcados como favoritos',
-                'icono' => 'heart',
+                'icono' => 'heart-outline',
                 'url' => '/tienda/favoritos',
                 'color' => '#e83e8c',
                 'orden' => 8,
                 'activo' => true
             ]
         ];
-
         foreach ($accesos as $acceso) {
             AccesoRapido::create($acceso);
         }
 
         // Crear algunos accesos adicionales usando factory
-        AccesoRapido::factory(5)->create();
+        // AccesoRapido::factory(5)->create();
+
     }
 }

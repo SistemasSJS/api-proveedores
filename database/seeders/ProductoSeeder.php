@@ -394,6 +394,7 @@ class ProductoSeeder extends Seeder
                     }
 
                     $esDestacado = (bool)random_int(0, 1);
+                    $esPrincipal = (bool)random_int(0, 1);
 
                     $producto = Producto::firstOrCreate(
                         [
@@ -409,6 +410,7 @@ class ProductoSeeder extends Seeder
                             'unidad_medida_id' => $unidad ? $unidad->id : $unidadMedidas->random()->id,
                             'activo' => $esDestacado ? true : (bool)random_int(0, 1),
                             'destacado' => $esDestacado,
+                            'principal' => $esPrincipal,
                             'stock' => $esDestacado ? random_int(10, 100) : random_int(0, 200),
                         ]
                     );

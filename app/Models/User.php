@@ -109,8 +109,6 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class);
     }
 
-
-
     /**
      * Relación directa con la tabla pivot user_proveedor
      * Útil para consultas complejas y acceso a campos pivot

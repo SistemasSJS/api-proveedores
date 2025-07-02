@@ -48,6 +48,11 @@ class Proveedor extends BaseModel
         'contacto_cargo',
         'contacto_telefono',
         'contacto_correo',
+
+        'principal',
+        'calificacion',
+        'categoria',
+        'ciudad',
     ];
 
     /**
