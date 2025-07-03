@@ -98,10 +98,16 @@ Route::middleware('auth:sanctum')->group(function () {
      */
     Route::prefix('tienda')->middleware(['auth:sanctum'])->group(function () {
         Route::get('accesos-rapidos', [TiendaController::class, 'accesosRapidos'])->middleware(['audit']);
-        Route::get('proveedores/principales', [TiendaController::class, 'proveedoresPrincipales'])->middleware(['audit']);
-        Route::get('productos/destacados', [TiendaController::class, 'productosDestacados'])->middleware(['audit']);
-        Route::get('productos/mas-pedidos', [TiendaController::class, 'productosMasPedidos'])->middleware(['audit']);
-        Route::get('productos/recientes', [TiendaController::class, 'productosRecientes'])->middleware(['audit']);
+
+        Route::prefix('proveedores')->group(function () {
+            Route::get('principales', [TiendaController::class, 'proveedoresPrincipales'])->middleware(['audit']);
+        });
+
+        Route::prefix('productos')->group(function () {
+            Route::get('destacados', [TiendaController::class, 'productosDestacados'])->middleware(['audit']);
+            Route::get('mas-pedidos', [TiendaController::class, 'productosMasPedidos'])->middleware(['audit']);
+            Route::get('recientes', [TiendaController::class, 'productosRecientes'])->middleware(['audit']);
+        });
     });
 
     /**
