@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\TiendaAccesoRapidoResource;
+use App\Http\Resources\TiendaProductoDestacadoResource;
 use App\Http\Resources\TiendaProductoResource;
 use App\Http\Resources\TiendaProveedorResource;
 use App\Models\Proveedor;
@@ -20,7 +22,7 @@ class TiendaController extends Controller
             ->select('id', 'titulo', 'descripcion', 'icono', 'url', 'color')
             ->get();
 
-        return $this->success($accesos);
+        return $this->success(TiendaAccesoRapidoResource::collection($accesos));
     }
 
     public function proveedoresPrincipales(Request $request)
@@ -99,12 +101,17 @@ class TiendaController extends Controller
         }
 
         $productos = $query->with(Producto::eagerLodable())
-            // ->select('id', 'nombre', 'descripcion', 'precio', 'imagen', 'stock', 'categoria', 'proveedor_id')
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();
 
-        return $this->success(TiendaProductoResource::collection($productos));
+        $productos->each(function ($producto) {
+            $producto->motivo = 'oferta';        // Atributo dinámico, no columna
+            $producto->descuento = 10;
+            $producto->mensaje = '¡Oferta especial!';
+        });
+
+        return $this->success(TiendaProductoDestacadoResource::collection($productos));
     }
 
     public function productosMasPedidos(Request $request)
