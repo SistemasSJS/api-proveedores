@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Requisicion extends BaseModel
@@ -67,6 +68,18 @@ class Requisicion extends BaseModel
     public function cotizacion(): HasOne
     {
         return $this->hasOne(Cotizacion::class);
+    }
+
+    public function productos(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Producto::class,
+            RequisicionDetalle::class,
+            'requisicion_id', // Foreign key en RequisicionDetalle
+            'id',             // Foreign key en Producto
+            'id',             // Local key en Requisicion
+            'producto_id'     // Local key en RequisicionDetalle
+        );
     }
 
     public function scopePendientes($query)

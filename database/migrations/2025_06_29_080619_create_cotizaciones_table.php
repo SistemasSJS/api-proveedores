@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('cotizaciones', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('requisicion_id')->constrained()->onDelete('cascade');
+            $table->foreignId('requisicion_id')->constrained()->nullOnDelete('cascade');
             $table->timestamp('fecha_cotizacion');
             $table->date('fecha_vencimiento');
             $table->decimal('total', 12, 2);

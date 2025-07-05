@@ -1,9 +1,11 @@
 <?php
 
-use App\Enums\UserRoleEnumerate;
-use App\Http\Controllers\AdminDashboardController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\PedidoController;
+use App\Http\Controllers\Api\ProveedorPedidoController;
+use App\Enums\UserRoleEnumerate;
 
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminHomeControler;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CatalogoController;
@@ -98,10 +100,16 @@ Route::middleware('auth:sanctum')->group(function () {
      */
     Route::prefix('tienda')->middleware(['auth:sanctum'])->group(function () {
         Route::get('accesos-rapidos', [TiendaController::class, 'accesosRapidos'])->middleware(['audit']);
-        Route::get('proveedores/principales', [TiendaController::class, 'proveedoresPrincipales'])->middleware(['audit']);
-        Route::get('productos/destacados', [TiendaController::class, 'productosDestacados'])->middleware(['audit']);
-        Route::get('productos/mas-pedidos', [TiendaController::class, 'productosMasPedidos'])->middleware(['audit']);
-        Route::get('productos/recientes', [TiendaController::class, 'productosRecientes'])->middleware(['audit']);
+
+        Route::prefix('proveedores')->group(function () {
+            Route::get('principales', [TiendaController::class, 'proveedoresPrincipales'])->middleware(['audit']);
+        });
+
+        Route::prefix('productos')->group(function () {
+            Route::get('destacados', [TiendaController::class, 'productosDestacados'])->middleware(['audit']);
+            Route::get('mas-pedidos', [TiendaController::class, 'productosMasPedidos'])->middleware(['audit']);
+            Route::get('recientes', [TiendaController::class, 'productosRecientes'])->middleware(['audit']);
+        });
     });
 
     /**
@@ -326,4 +334,297 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('marcas', MarcaController::class)->middleware(['audit'])->except(['index']); // api/marca ---> admin
         Route::apiResource('tipos-empresa', TipoEmpresaController::class)->middleware(['audit'])->except(['index']);
     });
+});
+
+
+
+/**
+ ************************************************************************************************************************* 
+ ************************************************************************************************************************* 
+ ************************************************************************************************************************* 
+ ************************************************************************************************************************* 
+ ************************************************************************************************************************* 
+ ************************************************************************************************************************* 
+ ************************************************************************************************************************* 
+ */
+
+
+
+// Rutas para clientes (gestión de sus pedidos)
+Route::middleware(['auth:sanctum'])->group(function () {
+
+    // Rutas principales de pedidos
+    Route::apiResource('pedidos', PedidoController::class)->except(['update']);
+
+    // Rutas específicas para pedidos
+    Route::prefix('pedidos')->group(function () {
+
+        // Actualizar estatus (solo cancelar para clientes)
+        Route::patch('{pedido}/status', [PedidoController::class, 'updateStatus'])
+            ->name('pedidos.update-status');
+
+        // Cancelar pedido
+        Route::patch('{pedido}/cancel', [PedidoController::class, 'cancel'])
+            ->name('pedidos.cancel');
+
+        // Duplicar pedido
+        Route::post('{pedido}/duplicate', [PedidoController::class, 'duplicar'])
+            ->name('pedidos.duplicate');
+
+        // Confirmar recepción
+        Route::patch('{pedido}/confirm-reception', [PedidoController::class, 'confirmarRecepcion'])
+            ->name('pedidos.confirm-reception');
+
+        // Estadísticas de pedidos
+        Route::get('estadisticas', [PedidoController::class, 'estadisticas'])
+            ->name('pedidos.estadisticas');
+
+        // Exportar pedidos
+        Route::post('export', [PedidoController::class, 'exportar'])
+            ->name('pedidos.export');
+    });
+});
+
+// Rutas para proveedores (gestión de pedidos de sus clientes)
+Route::middleware(['auth:sanctum'])->group(function () {
+
+    Route::prefix('proveedores/{proveedor}')->group(function () {
+
+        // Dashboard de pedidos
+        Route::get('pedidos/dashboard', [ProveedorPedidoController::class, 'dashboard'])
+            ->name('proveedor.pedidos.dashboard');
+
+        // Listar pedidos del proveedor
+        Route::get('pedidos', [ProveedorPedidoController::class, 'index'])
+            ->name('proveedor.pedidos.index');
+
+        // Ver pedido específico
+        Route::get('pedidos/{pedido}', [ProveedorPedidoController::class, 'show'])
+            ->name('proveedor.pedidos.show');
+
+        // Actualizar estatus del pedido
+        Route::patch('pedidos/{pedido}/status', [ProveedorPedidoController::class, 'updateStatus'])
+            ->name('proveedor.pedidos.update-status');
+
+        // Preparar envío
+        Route::patch('pedidos/{pedido}/prepare-shipment', [ProveedorPedidoController::class, 'prepareShipment'])
+            ->name('proveedor.pedidos.prepare-shipment');
+
+        // Confirmar entrega
+        Route::patch('pedidos/{pedido}/confirm-delivery', [ProveedorPedidoController::class, 'confirmDelivery'])
+            ->name('proveedor.pedidos.confirm-delivery');
+
+        // Rechazar pedido
+        Route::patch('pedidos/{pedido}/reject', [ProveedorPedidoController::class, 'rechazar'])
+            ->name('proveedor.pedidos.reject');
+
+        // Exportar pedidos del proveedor
+        Route::post('pedidos/export', [ProveedorPedidoController::class, 'exportar'])
+            ->name('proveedor.pedidos.export');
+    });
+});
+
+// Rutas públicas o con autenticación específica
+Route::middleware(['throttle:60,1'])->group(function () {
+
+    // Webhook para actualizaciones de tracking (transportistas)
+    Route::post('pedidos/{pedido}/tracking-update', [PedidoController::class, 'trackingUpdate'])
+        ->name('pedidos.tracking-update');
+
+    // Consulta pública de estado de pedido (con token)
+    Route::get('pedidos/{pedido}/status/{token}', [PedidoController::class, 'publicStatus'])
+        ->name('pedidos.public-status');
+});
+
+// Rutas administrativas
+Route::middleware(['auth:sanctum', 'role:ADMINISTRADOR'])->group(function () {
+
+    Route::prefix('admin/pedidos')->group(function () {
+
+        // Listar todos los pedidos
+        Route::get('/', [PedidoController::class, 'adminIndex'])
+            ->name('admin.pedidos.index');
+
+        // Estadísticas generales
+        Route::get('stats', [PedidoController::class, 'adminStats'])
+            ->name('admin.pedidos.stats');
+
+        // Forzar cambio de estatus
+        Route::patch('{pedido}/force-status', [PedidoController::class, 'forceStatus'])
+            ->name('admin.pedidos.force-status');
+
+        // Eliminar pedido
+        Route::delete('{pedido}', [PedidoController::class, 'destroy'])
+            ->name('admin.pedidos.destroy');
+
+        // Reportes avanzados
+        Route::get('reports', [PedidoController::class, 'adminReports'])
+            ->name('admin.pedidos.reports');
+
+        // Auditoria de pedidos
+        Route::get('{pedido}/audit', [PedidoController::class, 'auditLog'])
+            ->name('admin.pedidos.audit');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Rutas de desarrollo y testing
+|--------------------------------------------------------------------------
+|
+| Estas rutas solo están disponibles en ambiente de desarrollo
+|
+*/
+
+if (app()->environment('local', 'testing')) {
+    Route::prefix('test/pedidos')->group(function () {
+
+        // Generar pedidos de prueba
+        Route::post('generate-test-data', [PedidoController::class, 'generateTestData'])
+            ->name('test.pedidos.generate');
+
+        // Simular webhook de transportista
+        Route::post('simulate-tracking', [PedidoController::class, 'simulateTracking'])
+            ->name('test.pedidos.simulate-tracking');
+
+        // Benchmark de rendimiento
+        Route::get('performance', [PedidoController::class, 'performanceTest'])
+            ->name('test.pedidos.performance');
+    });
+}
+
+/*
+|--------------------------------------------------------------------------
+| Rutas de integración con servicios externos
+|--------------------------------------------------------------------------
+*/
+
+// Integración con sistema de facturación
+Route::prefix('integration')->middleware(['auth:sanctum'])->group(function () {
+
+    // Sincronizar con sistema de facturación
+    Route::post('pedidos/{pedido}/sync-billing', [PedidoController::class, 'syncBilling'])
+        ->name('integration.pedidos.sync-billing');
+
+    // Generar factura automática
+    Route::post('pedidos/{pedido}/generate-invoice', [PedidoController::class, 'generateInvoice'])
+        ->name('integration.pedidos.generate-invoice');
+
+    // Webhook de confirmación de pago
+    Route::post('pedidos/{pedido}/payment-confirmed', [PedidoController::class, 'paymentConfirmed'])
+        ->name('integration.pedidos.payment-confirmed');
+});
+
+// Rutas de notificaciones
+Route::prefix('notifications')->middleware(['auth:sanctum'])->group(function () {
+
+    // Marcar notificación como leída
+    Route::patch('pedidos/{pedido}/mark-read', [PedidoController::class, 'markNotificationRead'])
+        ->name('notifications.pedidos.mark-read');
+
+    // Configurar alertas de pedidos
+    Route::post('pedidos/alerts', [PedidoController::class, 'configureAlerts'])
+        ->name('notifications.pedidos.configure-alerts');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Middleware personalizado para rutas de pedidos
+|--------------------------------------------------------------------------
+*/
+
+// Middleware para verificar ownership de pedidos
+Route::middleware(['auth:sanctum', 'verify.pedido.owner'])->group(function () {
+
+    // Rutas que requieren verificación de propiedad
+    Route::get('my-pedidos/{pedido}/detailed', [PedidoController::class, 'detailedView'])
+        ->name('my-pedidos.detailed');
+
+    Route::patch('my-pedidos/{pedido}/update-preferences', [PedidoController::class, 'updatePreferences'])
+        ->name('my-pedidos.update-preferences');
+});
+
+// Middleware para verificar acceso de proveedor
+Route::middleware(['auth:sanctum', 'verify.proveedor.access'])->group(function () {
+
+    // Rutas que requieren acceso específico de proveedor
+    Route::get('proveedor-pedidos/{pedido}/internal-notes', [ProveedorPedidoController::class, 'internalNotes'])
+        ->name('proveedor-pedidos.internal-notes');
+
+    Route::post('proveedor-pedidos/{pedido}/add-note', [ProveedorPedidoController::class, 'addInternalNote'])
+        ->name('proveedor-pedidos.add-note');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Rutas de consulta y reporting
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth:sanctum'])->group(function () {
+
+    // Reportes de pedidos por cliente
+    Route::get('reports/my-pedidos', [PedidoController::class, 'myPedidosReport'])
+        ->name('reports.my-pedidos');
+
+    // Reportes de pedidos por proveedor
+    Route::get('reports/proveedor/{proveedor}/pedidos', [ProveedorPedidoController::class, 'proveedorPedidosReport'])
+        ->name('reports.proveedor-pedidos');
+
+    // Análisis de tendencias
+    Route::get('analytics/pedidos-trends', [PedidoController::class, 'pedidosTrends'])
+        ->name('analytics.pedidos-trends');
+
+    // Comparativas de rendimiento
+    Route::get('analytics/performance-comparison', [PedidoController::class, 'performanceComparison'])
+        ->name('analytics.performance-comparison');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Rutas de búsqueda y filtrado
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth:sanctum'])->group(function () {
+
+    // Búsqueda avanzada de pedidos
+    Route::post('pedidos/search', [PedidoController::class, 'advancedSearch'])
+        ->name('pedidos.advanced-search');
+
+    // Filtros guardados
+    Route::get('pedidos/saved-filters', [PedidoController::class, 'savedFilters'])
+        ->name('pedidos.saved-filters');
+
+    Route::post('pedidos/save-filter', [PedidoController::class, 'saveFilter'])
+        ->name('pedidos.save-filter');
+
+    // Búsqueda de pedidos por proveedor
+    Route::post('proveedores/{proveedor}/pedidos/search', [ProveedorPedidoController::class, 'advancedSearch'])
+        ->name('proveedor.pedidos.advanced-search');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Rutas de exportación y documentos
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth:sanctum'])->group(function () {
+
+    // Generar PDF de pedido
+    Route::get('pedidos/{pedido}/pdf', [PedidoController::class, 'generatePDF'])
+        ->name('pedidos.pdf');
+
+    // Descargar comprobante de pedido
+    Route::get('pedidos/{pedido}/receipt', [PedidoController::class, 'downloadReceipt'])
+        ->name('pedidos.receipt');
+
+    // Generar etiqueta de envío
+    Route::get('pedidos/{pedido}/shipping-label', [PedidoController::class, 'shippingLabel'])
+        ->name('pedidos.shipping-label');
+
+    // Documentos de entrega
+    Route::get('pedidos/{pedido}/delivery-documents', [PedidoController::class, 'deliveryDocuments'])
+        ->name('pedidos.delivery-documents');
 });
