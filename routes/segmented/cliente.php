@@ -23,20 +23,20 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::CLIENTE->value])
         Route::get('/', [PedidoController::class, 'index'])->middleware(['audit']);
         Route::post('/', [PedidoController::class, 'store'])->middleware(['audit']);
         Route::get('{pedido}', [PedidoController::class, 'show'])->middleware(['audit']);
-        
+
         // Acciones específicas del cliente
         Route::patch('{pedido}/status', [PedidoController::class, 'updateStatus'])
             ->middleware(['audit'])
             ->name('cliente.pedidos.update-status');
-            
+
         Route::patch('{pedido}/cancel', [PedidoController::class, 'cancel'])
             ->middleware(['audit'])
             ->name('cliente.pedidos.cancel');
-            
+
         Route::post('{pedido}/duplicate', [PedidoController::class, 'duplicar'])
             ->middleware(['audit'])
             ->name('cliente.pedidos.duplicate');
-            
+
         Route::patch('{pedido}/confirm-reception', [PedidoController::class, 'confirmarRecepcion'])
             ->middleware(['audit'])
             ->name('cliente.pedidos.confirm-reception');
@@ -45,7 +45,7 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::CLIENTE->value])
         Route::get('estadisticas', [PedidoController::class, 'estadisticas'])
             ->middleware(['audit'])
             ->name('cliente.pedidos.estadisticas');
-            
+
         Route::post('export', [PedidoController::class, 'exportar'])
             ->middleware(['audit'])
             ->name('cliente.pedidos.export');
@@ -54,21 +54,12 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::CLIENTE->value])
         Route::get('{pedido}/pdf', [PedidoController::class, 'generatePDF'])
             ->middleware(['audit'])
             ->name('cliente.pedidos.pdf');
-            
+
         Route::get('{pedido}/receipt', [PedidoController::class, 'downloadReceipt'])
             ->middleware(['audit'])
             ->name('cliente.pedidos.receipt');
     });
 
-    /**
-     * GESTIÓN DE REQUISICIONES (CLIENTE)
-     */
-    Route::prefix('requisiciones')->group(function () {
-        Route::get('/', [RequisicionController::class, 'index'])->middleware(['audit']);
-        Route::post('/', [RequisicionController::class, 'store'])->middleware(['audit']);
-        Route::get('{requisicion}', [RequisicionController::class, 'show'])->middleware(['audit']);
-        Route::patch('{requisicion}/cancelar', [RequisicionController::class, 'cancelar'])->middleware(['audit']);
-    });
 
     /**
      * DASHBOARD CLIENTE
@@ -86,7 +77,6 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::CLIENTE->value])
             ->middleware(['audit'])
             ->name('cliente.reportes.mis-pedidos');
     });
-
 });
 
 /**
@@ -94,7 +84,7 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::CLIENTE->value])
  * Estas rutas mantienen compatibilidad con el código existente
  */
 Route::middleware(['auth:sanctum'])->group(function () {
-    
+
     // Rutas principales de pedidos (compatibilidad)
     Route::apiResource('pedidos', PedidoController::class)->except(['update']);
 
@@ -113,5 +103,4 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('export', [PedidoController::class, 'exportar'])
             ->name('pedidos.export');
     });
-
 });

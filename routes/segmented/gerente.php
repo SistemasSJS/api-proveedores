@@ -16,27 +16,23 @@ use App\Http\Controllers\ProveedorReporteController;
 use App\Http\Controllers\ProveedorDashboardController;
 use App\Enums\UserRoleEnumerate;
 
-/*
-|--------------------------------------------------------------------------
-| RUTAS ESPECÍFICAS PARA ROL: GERENTE (PROVEEDOR)
-|--------------------------------------------------------------------------
-| Estas rutas solo son accesibles para usuarios con rol GERENTE
-*/
 
-Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::GERENTE->value])->group(function () {
+/**
+ * GESTIÓN DE PROVEEDORES
+ */
+Route::prefix('proveedores')
+    ->middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::GERENTE->value])
+    ->group(function () {
 
-    /**
-     * GESTIÓN DE PROVEEDORES
-     */
-    Route::prefix('proveedores')->group(function () {
-        
-        // CRUD Básico
+        /**
+         * CRUD BASICO
+         */
         Route::post('/', [ProveedorController::class, 'store'])->middleware(['audit']);
         Route::get('{proveedor}', [ProveedorController::class, 'show'])->middleware(['api.access', 'audit']);
         Route::patch('{proveedor}', [ProveedorController::class, 'update'])->middleware(['api.access', 'audit']);
         Route::delete('{proveedor}', [ProveedorController::class, 'destroy'])->middleware(['api.access', 'audit']);
         Route::post('{proveedor}/logo', [ProveedorController::class, 'updateLogo'])->middleware(['api.access', 'audit']);
-        
+
         // Consultas especiales
         Route::get('user/{id}', [ProveedorController::class, 'getProveedorByUserId'])->middleware(['audit']);
 
@@ -46,7 +42,7 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::GERENTE->value])
         Route::prefix('{proveedor}/usuarios')->middleware(['proveedor.access'])->group(function () {
             Route::get('/', [ProveedorUsuarioController::class, 'index'])->middleware(['api.access', 'audit']);
             Route::post('/', [ProveedorUsuarioController::class, 'store'])->middleware(['api.access', 'audit']);
-            
+
             Route::middleware(['api.access', 'proveedor.user', 'audit'])->group(function () {
                 Route::get('{user}', [ProveedorUsuarioController::class, 'show']);
                 Route::patch('{user}', [ProveedorUsuarioController::class, 'update']);
@@ -61,7 +57,7 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::GERENTE->value])
         Route::prefix('{proveedor}/productos')->middleware(['proveedor.access'])->group(function () {
             Route::get('/', [ProveedorProductoController::class, 'index'])->middleware(['audit']);
             Route::post('/', [ProveedorProductoController::class, 'store'])->middleware(['audit']);
-            
+
             Route::middleware(['proveedor.producto', 'audit'])->group(function () {
                 Route::get('{producto}', [ProveedorProductoController::class, 'show']);
                 Route::patch('{producto}', [ProveedorProductoController::class, 'update']);
@@ -76,7 +72,7 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::GERENTE->value])
         Route::prefix('{proveedor}/categorias')->middleware(['proveedor.access'])->group(function () {
             Route::get('/', [ProveedorCategoriaController::class, 'index'])->middleware(['audit']);
             Route::post('/', [ProveedorCategoriaController::class, 'store'])->middleware(['audit']);
-            
+
             Route::middleware(['proveedor.categoria', 'audit'])->group(function () {
                 Route::get('{categoria}', [ProveedorCategoriaController::class, 'show']);
                 Route::patch('{categoria}', [ProveedorCategoriaController::class, 'update']);
@@ -92,7 +88,7 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::GERENTE->value])
         Route::prefix('{proveedor}/marcas')->middleware(['proveedor.access'])->group(function () {
             Route::get('/', [ProveedorMarcaController::class, 'index'])->middleware(['audit']);
             Route::post('/', [ProveedorMarcaController::class, 'store'])->middleware(['audit']);
-            
+
             Route::middleware(['proveedor.marca', 'audit'])->group(function () {
                 Route::get('{marca}', [ProveedorMarcaController::class, 'show']);
                 Route::patch('{marca}', [ProveedorMarcaController::class, 'update']);
@@ -108,7 +104,7 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::GERENTE->value])
         Route::prefix('{proveedor}/lineas')->middleware(['proveedor.access'])->group(function () {
             Route::get('/', [ProveedorLineaController::class, 'index'])->middleware(['audit']);
             Route::post('/', [ProveedorLineaController::class, 'store'])->middleware(['audit']);
-            
+
             Route::middleware(['proveedor.linea', 'audit'])->group(function () {
                 Route::get('{linea}', [ProveedorLineaController::class, 'show']);
                 Route::patch('{linea}', [ProveedorLineaController::class, 'update']);
@@ -122,7 +118,7 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::GERENTE->value])
         Route::prefix('{proveedor}/sucursales')->middleware(['proveedor.access'])->group(function () {
             Route::get('/', [ProveedorSucursalController::class, 'index'])->middleware(['audit']);
             Route::post('/', [ProveedorSucursalController::class, 'store'])->middleware(['audit']);
-            
+
             Route::middleware(['proveedor.sucursal', 'audit'])->group(function () {
                 Route::get('{sucursal}', [ProveedorSucursalController::class, 'show']);
                 Route::patch('{sucursal}', [ProveedorSucursalController::class, 'update']);
@@ -154,37 +150,14 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::GERENTE->value])
          * PEDIDOS DEL PROVEEDOR
          */
         Route::prefix('{proveedor}/pedidos')->middleware(['proveedor.access'])->group(function () {
-            Route::get('dashboard', [ProveedorPedidoController::class, 'dashboard'])
-                ->middleware(['audit'])
-                ->name('gerente.proveedor.pedidos.dashboard');
-                
-            Route::get('/', [ProveedorPedidoController::class, 'index'])
-                ->middleware(['audit'])
-                ->name('gerente.proveedor.pedidos.index');
-                
-            Route::get('{pedido}', [ProveedorPedidoController::class, 'show'])
-                ->middleware(['audit'])
-                ->name('gerente.proveedor.pedidos.show');
-                
-            Route::patch('{pedido}/status', [ProveedorPedidoController::class, 'updateStatus'])
-                ->middleware(['audit'])
-                ->name('gerente.proveedor.pedidos.update-status');
-                
-            Route::patch('{pedido}/prepare-shipment', [ProveedorPedidoController::class, 'prepareShipment'])
-                ->middleware(['audit'])
-                ->name('gerente.proveedor.pedidos.prepare-shipment');
-                
-            Route::patch('{pedido}/confirm-delivery', [ProveedorPedidoController::class, 'confirmDelivery'])
-                ->middleware(['audit'])
-                ->name('gerente.proveedor.pedidos.confirm-delivery');
-                
-            Route::patch('{pedido}/reject', [ProveedorPedidoController::class, 'rechazar'])
-                ->middleware(['audit'])
-                ->name('gerente.proveedor.pedidos.reject');
-                
-            Route::post('export', [ProveedorPedidoController::class, 'exportar'])
-                ->middleware(['audit'])
-                ->name('gerente.proveedor.pedidos.export');
+            Route::get('dashboard', [ProveedorPedidoController::class, 'dashboard'])->middleware(['audit'])->name('gerente.proveedor.pedidos.dashboard');
+            Route::get('/', [ProveedorPedidoController::class, 'index'])->middleware(['audit'])->name('gerente.proveedor.pedidos.index');
+            Route::get('{pedido}', [ProveedorPedidoController::class, 'show'])->middleware(['audit'])->name('gerente.proveedor.pedidos.show');
+            Route::patch('{pedido}/status', [ProveedorPedidoController::class, 'updateStatus'])->middleware(['audit'])->name('gerente.proveedor.pedidos.update-status');
+            Route::patch('{pedido}/prepare-shipment', [ProveedorPedidoController::class, 'prepareShipment'])->middleware(['audit'])->name('gerente.proveedor.pedidos.prepare-shipment');
+            Route::patch('{pedido}/confirm-delivery', [ProveedorPedidoController::class, 'confirmDelivery'])->middleware(['audit'])->name('gerente.proveedor.pedidos.confirm-delivery');
+            Route::patch('{pedido}/reject', [ProveedorPedidoController::class, 'rechazar'])->middleware(['audit'])->name('gerente.proveedor.pedidos.reject');
+            Route::post('export', [ProveedorPedidoController::class, 'exportar'])->middleware(['audit'])->name('gerente.proveedor.pedidos.export');
         });
 
         /**
@@ -216,8 +189,6 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::GERENTE->value])
          */
         Route::get('{proveedor}/dashboard/stats', [ProveedorDashboardController::class, 'getStats'])
             ->middleware(['proveedor.access', 'audit']);
+
+        Route::get('proveedores/imports/products/template', [ProductoImportController::class, 'downloadTemplate']);
     });
-
-    Route::get('proveedores/imports/products/template', [ProductoImportController::class, 'downloadTemplate']);
-
-});

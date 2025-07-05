@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('numero_requisicion')->unique();
             $table->foreignId('usuario_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('proveedor_id')->constrained()->onDelete('cascade');
+            $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
             $table->enum('estatus', ['pendiente', 'en_proceso', 'cotizada', 'rechazada', 'entregada', 'cancelada'])
                   ->default('pendiente');
             $table->date('fecha_requerida');
