@@ -106,6 +106,10 @@ class Producto extends BaseModel
     //     return $this->belongsToMany(Categoria::class,  'categoria_producto', 'producto_id', 'categoria_id');
     // }
 
+    public function pedidoProductos()
+    {
+        return $this->hasMany(PedidoDetalle::class);
+    }
     public function marca(): BelongsTo
     {
         return $this->belongsTo(Marca::class);

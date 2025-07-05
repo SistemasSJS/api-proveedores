@@ -15,6 +15,7 @@ class CotizacionDetalle extends BaseModel
 
     protected $fillable = [
         'cotizacion_id',
+        'producto_id',
         'requisicion_detalle_id',
         'cantidad_cotizada',
         'precio_unitario',
@@ -29,6 +30,14 @@ class CotizacionDetalle extends BaseModel
         'subtotal' => 'decimal:2',
         'tiempo_entrega_dias' => 'integer',
     ];
+
+    public function producto(): BelongsTo
+    {
+        return $this->belongsTo(Producto::class);
+        //  'producto_id', 'id')
+        //     ->through($this->requisicionDetalle());
+    }
+
 
     public function cotizacion(): BelongsTo
     {

@@ -15,7 +15,7 @@ class ClienteDashboardController extends Controller
     /**
      * Estadísticas del dashboard del cliente
      */
-    public function getStats(Request $request): JsonResponse
+    public function getStats(Request $request)
     {
         $user = Auth::user();
 
@@ -112,15 +112,12 @@ class ClienteDashboardController extends Controller
             ->take(5)
             ->values();
 
-        return response()->json([
-            'success' => true,
-            'data' => [
+        return $this->success([
                 'stats' => $stats,
                 'requisiciones_recientes' => $requisicionesRecientes,
                 'notificaciones_recientes' => $notificacionesRecientes,
                 'requisiciones_por_mes' => $requisicionesPorMes,
                 'proveedores_frecuentes' => $proveedoresFrecuentes,
-            ],
         ]);
     }
 

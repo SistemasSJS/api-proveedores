@@ -12,6 +12,7 @@ class PedidoDetalle extends BaseModel
 
     protected $fillable = [
         'pedido_id',
+        'producto_id',
         'cotizacion_detalle_id',
         'cantidad_confirmada',
         'precio_unitario_final',
@@ -52,8 +53,9 @@ class PedidoDetalle extends BaseModel
 
     public function producto(): BelongsTo
     {
-        return $this->belongsTo(Producto::class, 'producto_id', 'id')
-            ->through($this->requisicionDetalle());
+        return $this->belongsTo(Producto::class);
+        //  'producto_id', 'id')
+        //     ->through($this->requisicionDetalle());
     }
 
     // Scopes
@@ -83,7 +85,7 @@ class PedidoDetalle extends BaseModel
     {
         $subtotal = $this->cantidad_confirmada * $this->precio_unitario_final;
         $descuento = $this->cantidad_confirmada * $this->descuento_unitario;
-        
+
         $this->update([
             'subtotal' => $subtotal,
             'descuento_total' => $descuento
@@ -94,7 +96,7 @@ class PedidoDetalle extends BaseModel
     {
         $pendiente = $this->cantidad_confirmada - $this->cantidad_entregada;
         $completa = $pendiente <= 0;
-        
+
         $this->update([
             'cantidad_pendiente' => max(0, $pendiente),
             'entrega_completa' => $completa
@@ -146,7 +148,7 @@ class PedidoDetalle extends BaseModel
 
     public function getColorEstadoEntrega(): string
     {
-        return match($this->getEstadoEntrega()) {
+        return match ($this->getEstadoEntrega()) {
             'completa' => 'green',
             'parcial' => 'orange',
             'pendiente' => 'red',

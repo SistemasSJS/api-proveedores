@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Http\Resources\TiendaAccesoRapidoResource;
 use App\Http\Resources\TiendaProductoDestacadoResource;
 use App\Http\Resources\TiendaProductoResource;
@@ -235,5 +236,15 @@ class TiendaController extends Controller
             ->limit($limit)
             ->get();
         return $this->success(TiendaProductoResource::collection($productos));
+    }
+
+    public function show($id)
+    {
+        // Intentar encontrar el producto, si no se encuentra lanzar ResourceNotFoundException
+        $producto = Producto::with(Producto::eagerLodable())->find($id);
+        if (!$producto) {
+            throw new ResourceNotFoundException("Producto no encontrado.");
+        }
+        return $this->success(new TiendaProductoResource($producto));
     }
 }

@@ -15,6 +15,7 @@ use App\Http\Controllers\PedidoController;
 use App\Http\Controllers\AdminHomeControler;
 use App\Http\Controllers\AdminDashboardController;
 use App\Enums\UserRoleEnumerate;
+use App\Http\Controllers\AdminPedidosController;
 
 /*
 |--------------------------------------------------------------------------
@@ -49,27 +50,27 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
      * GESTIÓN ADMINISTRATIVA DE PEDIDOS
      */
     Route::prefix('pedidos')->group(function () {
-        Route::get('/', [PedidoController::class, 'adminIndex'])
+        Route::get('/', [AdminPedidosController::class, 'adminIndex'])
             ->middleware(['audit'])
             ->name('admin.pedidos.index');
-            
-        Route::get('stats', [PedidoController::class, 'adminStats'])
+
+        Route::get('stats', [AdminPedidosController::class, 'adminStats'])
             ->middleware(['audit'])
             ->name('admin.pedidos.stats');
-            
-        Route::patch('{pedido}/force-status', [PedidoController::class, 'forceStatus'])
+
+        Route::patch('{pedido}/force-status', [AdminPedidosController::class, 'forceStatus'])
             ->middleware(['audit'])
             ->name('admin.pedidos.force-status');
-            
-        Route::delete('{pedido}', [PedidoController::class, 'destroy'])
+
+        Route::delete('{pedido}', [AdminPedidosController::class, 'destroy'])
             ->middleware(['audit'])
             ->name('admin.pedidos.destroy');
-            
-        Route::get('reports', [PedidoController::class, 'adminReports'])
+
+        Route::get('reports', [AdminPedidosController::class, 'adminReports'])
             ->middleware(['audit'])
             ->name('admin.pedidos.reports');
-            
-        Route::get('{pedido}/audit', [PedidoController::class, 'auditLog'])
+
+        Route::get('{pedido}/audit', [AdminPedidosController::class, 'auditLog'])
             ->middleware(['audit'])
             ->name('admin.pedidos.audit');
     });
@@ -90,16 +91,15 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
         Route::post('pedidos/{pedido}/sync-billing', [PedidoController::class, 'syncBilling'])
             ->middleware(['audit'])
             ->name('admin.integration.pedidos.sync-billing');
-            
+
         Route::post('pedidos/{pedido}/generate-invoice', [PedidoController::class, 'generateInvoice'])
             ->middleware(['audit'])
             ->name('admin.integration.pedidos.generate-invoice');
-            
+
         Route::post('pedidos/{pedido}/payment-confirmed', [PedidoController::class, 'paymentConfirmed'])
             ->middleware(['audit'])
             ->name('admin.integration.pedidos.payment-confirmed');
     });
-
 });
 
 /**
@@ -107,7 +107,7 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
  * Mantienen el comportamiento existente
  */
 Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->value])->group(function () {
-    
+
     // Resumen de catálogos (compatibilidad)
     Route::get('catalogos-resumen', [AdminHomeControler::class, 'getCatalogosCountItems'])->middleware(['audit']);
 
@@ -126,7 +126,6 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
     // Dashboard stats (compatibilidad)
     Route::get('dashboard/admin/stats-completas', [AdminDashboardController::class, 'getStatsCompletas']);
     Route::get('dashboard/admin/metricas-rendimiento', [AdminDashboardController::class, 'getMetricasRendimiento']);
-
 });
 
 /**
@@ -137,27 +136,27 @@ Route::middleware(['auth:sanctum', 'role:ADMINISTRADOR'])->group(function () {
     Route::prefix('admin/pedidos')->group(function () {
 
         // Listar todos los pedidos (compatibilidad)
-        Route::get('/', [PedidoController::class, 'adminIndex'])
+        Route::get('/', [AdminPedidosController::class, 'adminIndex'])
             ->name('admin.pedidos.index');
 
         // Estadísticas generales (compatibilidad)
-        Route::get('stats', [PedidoController::class, 'adminStats'])
+        Route::get('stats', [AdminPedidosController::class, 'adminStats'])
             ->name('admin.pedidos.stats');
 
         // Forzar cambio de estatus (compatibilidad)
-        Route::patch('{pedido}/force-status', [PedidoController::class, 'forceStatus'])
+        Route::patch('{pedido}/force-status', [AdminPedidosController::class, 'forceStatus'])
             ->name('admin.pedidos.force-status');
 
         // Eliminar pedido (compatibilidad)
-        Route::delete('{pedido}', [PedidoController::class, 'destroy'])
+        Route::delete('{pedido}', [AdminPedidosController::class, 'destroy'])
             ->name('admin.pedidos.destroy');
 
         // Reportes avanzados (compatibilidad)
-        Route::get('reports', [PedidoController::class, 'adminReports'])
+        Route::get('reports', [AdminPedidosController::class, 'adminReports'])
             ->name('admin.pedidos.reports');
 
         // Auditoria de pedidos (compatibilidad)
-        Route::get('{pedido}/audit', [PedidoController::class, 'auditLog'])
+        Route::get('{pedido}/audit', [AdminPedidosController::class, 'auditLog'])
             ->name('admin.pedidos.audit');
     });
 });

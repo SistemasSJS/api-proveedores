@@ -5,6 +5,7 @@ use App\Http\Controllers\TiendaController;
 use App\Http\Controllers\ProductoBusquedaController;
 use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProductoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('destacados', [TiendaController::class, 'productosDestacados'])->middleware(['audit']);
             Route::get('mas-pedidos', [TiendaController::class, 'productosMasPedidos'])->middleware(['audit']);
             Route::get('recientes', [TiendaController::class, 'productosRecientes'])->middleware(['audit']);
+            Route::get('{producto}', [TiendaController::class, 'show'])->middleware(['audit']);
         });
     });
 

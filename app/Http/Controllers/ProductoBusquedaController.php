@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Http\Resources\ProductoCatalogoResource;
 use App\Models\Producto;
 use App\Models\Proveedor;

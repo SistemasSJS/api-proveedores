@@ -11,6 +11,8 @@ return new class extends Migration
         Schema::create('cotizacion_detalles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cotizacion_id')->constrained()->onDelete('cascade');
+            $table->foreignId('producto_id')->constrained('productos')->onDelete('cascade');
+
             $table->foreignId('requisicion_detalle_id')->constrained()->nullOnDelete('cascade');
             $table->integer('cantidad_cotizada');
             $table->decimal('precio_unitario', 10, 2);
@@ -19,7 +21,7 @@ return new class extends Migration
             $table->text('observaciones')->nullable();
             $table->timestamps();
 
-            $table->index(['cotizacion_id']);
+            $table->index(['cotizacion_id', 'producto_id']);
             $table->index(['requisicion_detalle_id']);
         });
     }
