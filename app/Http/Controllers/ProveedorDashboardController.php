@@ -23,7 +23,7 @@ class ProveedorDashboardController extends Controller
             ->limit(5)
             ->get();
 
-        return response()->json([
+        return $this->success([
             'stats' => $stats,
             'requisiciones_recientes' => RequisicionResource::collection($requisiciones_recientes),
         ]);

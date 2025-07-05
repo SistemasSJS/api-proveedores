@@ -1,0 +1,26 @@
+nombre_producto,sku,nombre_marca,nombre_linea,nombre_categoria_nivel_1,nombre_categoria_nivel_2,descripcion_producto,precio_base,codigo_interno,unidad_medida
+Martillo de Uña 16 oz,FDM-HER-001,Truper,Herramientas Manuales,Herramientas de Mano,Martillos,Martillo profesional con mango de fibra de vidrio antideslizante y diseño ergonómico,215.50,FDM-HER-001,pza
+Desarmador Plano 6x150mm,FDM-HER-002,Truper,Desarmadores,Herramientas de Mano,Desarmadores,Desarmador con punta magnética tratada térmicamente,52.80,FDM-HER-002,pza
+Pinza de Electricista 8",FDM-HER-003,Truper,Pinzas y Alicates,Herramientas Eléctricas,Pinzas,Pinza aislada certificada para 1000V con corte lateral,268.90,FDM-HER-003,pza
+Taladro Percutor 1/2" 750W,FDM-ELE-001,Pretul,Herramientas Eléctricas,Herramientas Eléctricas,Taladros,Taladro percutor con mandril de cierre rápido y velocidad variable,2150.00,FDM-ELE-001,pza
+Sierra Circular 7-1/4" 1400W,FDM-ELE-002,DeWalt,Herramientas Eléctricas,Herramientas Eléctricas,Sierras,Sierra circular con disco de carburo de tungsteno y guía láser,2780.00,FDM-ELE-002,pza
+Flexómetro 5m x 25mm,FDM-MED-001,Truper,Medición,Herramientas de Medición,Flexómetros,Cinta métrica con gancho magnético y freno automático,98.50,FDM-MED-001,pza
+Nivel Torpedo Magnético 9",FDM-MED-002,Stanley,Medición,Herramientas de Medición,Niveles,Nivel de aluminio con 3 burbujas de alta precisión,178.00,FDM-MED-002,pza
+Llave Stillson 14",FDM-PLO-001,Ridgid,Plomería,Herramientas de Mano,Llaves para Tubo,Llave para tubo con mordazas forjadas en acero,325.00,FDM-PLO-001,pza
+Juego de Llaves Allen 9 pzas,FDM-HER-004,Volteck,Herramientas Manuales,Herramientas de Mano,Llaves Allen,Set de llaves hexagonales métricas cromadas,142.00,FDM-HER-004,cj
+Escalera de Aluminio 6 Peldaños,FDM-ESC-001,Cuprum,Escaleras,Construcción,Escaleras,Escalera tipo tijera con spreader de seguridad,1785.00,FDM-ESC-001,pza
+Candado de Latón 50mm,FDM-SEG-001,Master Lock,Cerrajería,Seguridad,Candados,Candado macizo con cilindro de pines anti-ganzúa,195.00,FDM-SEG-001,pza
+Cerradura de Embutir 3 Golpes,FDM-SEG-002,Phillips,Cerrajería,Seguridad,Cerraduras,Cerradura multipunto con cilindro de alta seguridad,520.00,FDM-SEG-002,pza
+Manguera Jardín 1/2" x 20m,FDM-JAR-001,Truper,Jardinería,Jardinería,Mangueras,Manguera reforzada 4 capas resistente a torsión,265.00,FDM-JAR-001,pza
+Aspersor Giratorio 360°,FDM-JAR-002,Rain Bird,Jardinería,Jardinería,Aspersores,Aspersor de bronce con cobertura ajustable,168.00,FDM-JAR-002,pza
+Tijera para Podar 8",FDM-JAR-003,Felco,Jardinería,Herramientas de Mano,Tijeras de Podar,Tijera bypass con hoja de acero japonés,225.00,FDM-JAR-003,pza
+Pala Cuadrada Mango Largo,FDM-JAR-004,Truper,Herramientas Agrícolas,Construcción,Palas,Pala forjada en una pieza con mango de fresno,278.00,FDM-JAR-004,pza
+Carretilla 5.5 ft³,FDM-CON-001,Truper,Equipo de Construcción,Construcción,Carretillas,Carretilla con tina de acero calibre 18 y llanta neumática,1450.00,FDM-CON-001,pza
+Casco de Seguridad Blanco,FDM-SEG-003,3M,Seguridad Industrial,Seguridad Industrial,Cascos,Casco con suspensión de 6 puntos y ajuste de matraca,125.00,FDM-SEG-003,pza
+Guantes de Carnaza Largos,FDM-SEG-004,Truper,Seguridad Industrial,Seguridad Industrial,Guantes,Guantes para soldador reforzados con kevlar,89.00,FDM-SEG-004,par
+Lentes de Seguridad Claros,FDM-SEG-005,3M,Seguridad Industrial,Seguridad Industrial,Lentes,Lentes con protección UV y antiempañante,45.00,FDM-SEG-005,pza
+Disco de Corte Metal 7",FDM-ABR-001,Norton,Abrasivos,Herramientas de Corte,Discos de Corte,Disco abrasivo para corte de acero y metales ferrosos,32.50,FDM-ABR-001,pza
+Broca para Concreto 1/2" x 6",FDM-BRO-001,Bosch,Brocas y Accesorios,Herramientas de Corte,Brocas,Broca con punta de carburo y espiral rápida,58.00,FDM-BRO-001,pza
+Extensión Eléctrica 20m Cal 12,FDM-ELE-003,Volteck,Material Eléctrico,Material Eléctrico,Extensiones,Cable uso rudo con contactos aterrizados,485.00,FDM-ELE-003,pza
+Multicontacto 6 Entradas con Supresor,FDM-ELE-004,Koblenz,Material Eléctrico,Material Eléctrico,Multicontactos,Regulador con protección contra picos de voltaje,235.00,FDM-ELE-004,pza
+Lámpara LED de Emergencia,FDM-ILU-001,Volteck,Iluminación,Iluminación,Lámparas,Lámpara recargable con 6 horas de autonomía,345.00,FDM-ILU-001,pza

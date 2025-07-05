@@ -1,0 +1,181 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\SucursalController;
+use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\ProductoImagenController;
+use App\Http\Controllers\UnidadMedidaController;
+use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\LineaController;
+use App\Http\Controllers\MarcaController;
+use App\Http\Controllers\TipoEmpresaController;
+use App\Http\Controllers\PedidoController;
+use App\Http\Controllers\AdminHomeControler;
+use App\Http\Controllers\AdminDashboardController;
+use App\Enums\UserRoleEnumerate;
+
+/*
+|--------------------------------------------------------------------------
+| RUTAS ESPECÍFICAS PARA ROL: ADMINISTRADOR
+|--------------------------------------------------------------------------
+| Estas rutas solo son accesibles para usuarios con rol ADMINISTRADOR
+*/
+
+Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->value])->prefix('admin')->group(function () {
+
+    /**
+     * GESTIÓN GENERAL DE USUARIOS
+     */
+    Route::apiResource('usuarios', UserController::class)->middleware(['audit']);
+
+    /**
+     * GESTIÓN DE CATÁLOGOS MAESTROS
+     */
+    Route::prefix('catalogos')->group(function () {
+        Route::apiResource('proveedores', ProveedorController::class)->middleware(['audit'])->except(['index']);
+        Route::apiResource('sucursales', SucursalController::class)->middleware(['audit'])->except(['index']);
+        Route::apiResource('productos', ProductoController::class)->middleware(['audit'])->except(['index']);
+        Route::apiResource('imagenes', ProductoImagenController::class)->middleware(['audit'])->except(['index']);
+        Route::apiResource('unidades-medida', UnidadMedidaController::class)->middleware(['audit'])->except(['index']);
+        Route::apiResource('categorias', CategoriaController::class)->middleware(['audit'])->except(['index']);
+        Route::apiResource('lineas', LineaController::class)->middleware(['audit'])->except(['index']);
+        Route::apiResource('marcas', MarcaController::class)->middleware(['audit'])->except(['index']);
+        Route::apiResource('tipos-empresa', TipoEmpresaController::class)->middleware(['audit'])->except(['index']);
+    });
+
+    /**
+     * GESTIÓN ADMINISTRATIVA DE PEDIDOS
+     */
+    Route::prefix('pedidos')->group(function () {
+        Route::get('/', [PedidoController::class, 'adminIndex'])
+            ->middleware(['audit'])
+            ->name('admin.pedidos.index');
+            
+        Route::get('stats', [PedidoController::class, 'adminStats'])
+            ->middleware(['audit'])
+            ->name('admin.pedidos.stats');
+            
+        Route::patch('{pedido}/force-status', [PedidoController::class, 'forceStatus'])
+            ->middleware(['audit'])
+            ->name('admin.pedidos.force-status');
+            
+        Route::delete('{pedido}', [PedidoController::class, 'destroy'])
+            ->middleware(['audit'])
+            ->name('admin.pedidos.destroy');
+            
+        Route::get('reports', [PedidoController::class, 'adminReports'])
+            ->middleware(['audit'])
+            ->name('admin.pedidos.reports');
+            
+        Route::get('{pedido}/audit', [PedidoController::class, 'auditLog'])
+            ->middleware(['audit'])
+            ->name('admin.pedidos.audit');
+    });
+
+    /**
+     * DASHBOARD ADMINISTRATIVO
+     */
+    Route::prefix('dashboard')->group(function () {
+        Route::get('catalogos-resumen', [AdminHomeControler::class, 'getCatalogosCountItems'])->middleware(['audit']);
+        Route::get('stats-completas', [AdminDashboardController::class, 'getStatsCompletas'])->middleware(['audit']);
+        Route::get('metricas-rendimiento', [AdminDashboardController::class, 'getMetricasRendimiento'])->middleware(['audit']);
+    });
+
+    /**
+     * INTEGRACIÓN CON SERVICIOS EXTERNOS
+     */
+    Route::prefix('integracion')->group(function () {
+        Route::post('pedidos/{pedido}/sync-billing', [PedidoController::class, 'syncBilling'])
+            ->middleware(['audit'])
+            ->name('admin.integration.pedidos.sync-billing');
+            
+        Route::post('pedidos/{pedido}/generate-invoice', [PedidoController::class, 'generateInvoice'])
+            ->middleware(['audit'])
+            ->name('admin.integration.pedidos.generate-invoice');
+            
+        Route::post('pedidos/{pedido}/payment-confirmed', [PedidoController::class, 'paymentConfirmed'])
+            ->middleware(['audit'])
+            ->name('admin.integration.pedidos.payment-confirmed');
+    });
+
+});
+
+/**
+ * RUTAS GLOBALES ADMINISTRATIVAS (COMPATIBILIDAD)
+ * Mantienen el comportamiento existente
+ */
+Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->value])->group(function () {
+    
+    // Resumen de catálogos (compatibilidad)
+    Route::get('catalogos-resumen', [AdminHomeControler::class, 'getCatalogosCountItems'])->middleware(['audit']);
+
+    // API Resources (compatibilidad)
+    Route::apiResource('users', UserController::class)->middleware(['audit']);
+    Route::apiResource('proveedores', ProveedorController::class)->middleware(['audit'])->except(['index']);
+    Route::apiResource('sucursales', SucursalController::class)->middleware(['audit'])->except(['index']);
+    Route::apiResource('productos', ProductoController::class)->middleware(['audit'])->except(['index']);
+    Route::apiResource('imagenes', ProductoImagenController::class)->middleware(['audit'])->except(['index']);
+    Route::apiResource('unidades-medida', UnidadMedidaController::class)->middleware(['audit'])->except(['index']);
+    Route::apiResource('categorias', CategoriaController::class)->middleware(['audit'])->except(['index']);
+    Route::apiResource('lineas', LineaController::class)->middleware(['audit'])->except(['index']);
+    Route::apiResource('marcas', MarcaController::class)->middleware(['audit'])->except(['index']);
+    Route::apiResource('tipos-empresa', TipoEmpresaController::class)->middleware(['audit'])->except(['index']);
+
+    // Dashboard stats (compatibilidad)
+    Route::get('dashboard/admin/stats-completas', [AdminDashboardController::class, 'getStatsCompletas']);
+    Route::get('dashboard/admin/metricas-rendimiento', [AdminDashboardController::class, 'getMetricasRendimiento']);
+
+});
+
+/**
+ * RUTAS ADMINISTRATIVAS DE PEDIDOS (COMPATIBILIDAD)
+ */
+Route::middleware(['auth:sanctum', 'role:ADMINISTRADOR'])->group(function () {
+
+    Route::prefix('admin/pedidos')->group(function () {
+
+        // Listar todos los pedidos (compatibilidad)
+        Route::get('/', [PedidoController::class, 'adminIndex'])
+            ->name('admin.pedidos.index');
+
+        // Estadísticas generales (compatibilidad)
+        Route::get('stats', [PedidoController::class, 'adminStats'])
+            ->name('admin.pedidos.stats');
+
+        // Forzar cambio de estatus (compatibilidad)
+        Route::patch('{pedido}/force-status', [PedidoController::class, 'forceStatus'])
+            ->name('admin.pedidos.force-status');
+
+        // Eliminar pedido (compatibilidad)
+        Route::delete('{pedido}', [PedidoController::class, 'destroy'])
+            ->name('admin.pedidos.destroy');
+
+        // Reportes avanzados (compatibilidad)
+        Route::get('reports', [PedidoController::class, 'adminReports'])
+            ->name('admin.pedidos.reports');
+
+        // Auditoria de pedidos (compatibilidad)
+        Route::get('{pedido}/audit', [PedidoController::class, 'auditLog'])
+            ->name('admin.pedidos.audit');
+    });
+});
+
+/**
+ * INTEGRACIÓN CON SERVICIOS EXTERNOS (COMPATIBILIDAD)
+ */
+Route::prefix('integration')->middleware(['auth:sanctum'])->group(function () {
+
+    // Sincronizar con sistema de facturación (compatibilidad)
+    Route::post('pedidos/{pedido}/sync-billing', [PedidoController::class, 'syncBilling'])
+        ->name('integration.pedidos.sync-billing');
+
+    // Generar factura automática (compatibilidad)
+    Route::post('pedidos/{pedido}/generate-invoice', [PedidoController::class, 'generateInvoice'])
+        ->name('integration.pedidos.generate-invoice');
+
+    // Webhook de confirmación de pago (compatibilidad)
+    Route::post('pedidos/{pedido}/payment-confirmed', [PedidoController::class, 'paymentConfirmed'])
+        ->name('integration.pedidos.payment-confirmed');
+});

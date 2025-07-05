@@ -11,7 +11,6 @@ return new class extends Migration
         Schema::table('productos', function (Blueprint $table) {
             $table->boolean('destacado')->default(false)->after('activo');
             $table->string('codigo')->nullable()->after('destacado');
-            $table->string('categoria')->nullable()->after('codigo');
             $table->boolean('principal')->default(false)->after('categoria');
 
             // $table->integer('stock')->default(0)->after('categoria');
@@ -21,7 +20,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('productos', function (Blueprint $table) {
-            $table->dropColumn(['destacado', 'codigo', 'categoria', 'stock']);
+            $table->dropColumn(['destacado', 'codigo', 'stock']);
         });
     }
 };
