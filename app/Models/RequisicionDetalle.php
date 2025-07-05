@@ -12,21 +12,20 @@ class RequisicionDetalle extends BaseModel
     /** @use HasFactory<\Database\Factories\RequisicionDetalleFactory> */
     use HasFactory;
 
-    protected $table = 'requisicion_detalles';
+    protected $table = 'requisicion_productos';
 
     protected $fillable = [
         'requisicion_id',
         'producto_id',
         'cantidad',
-        'precio_unitario_estimado',
-        'subtotal_estimado',
-        'observaciones',
+        'precio_unitario',
+        'subtotal',
     ];
 
     protected $casts = [
         'cantidad' => 'integer',
-        'precio_unitario_estimado' => 'decimal:2',
-        'subtotal_estimado' => 'decimal:2',
+        'precio_unitario' => 'decimal:2',
+        'subtotal' => 'decimal:2',
     ];
 
     public function requisicion(): BelongsTo

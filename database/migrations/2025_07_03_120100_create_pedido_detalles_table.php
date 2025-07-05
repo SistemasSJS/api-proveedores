@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
 
             // Relaciones 
-            $table->foreignId('pedido_id')->constrained()->onDelete('cascade');
+            $table->foreignId('pedido_id')->constrained('pedidos')->onDelete('cascade');
             $table->foreignId('producto_id')->constrained('productos')->onDelete('cascade');
-            $table->foreignId('cotizacion_detalle_id')->constrained()->onDelete('cascade');
+            $table->foreignId('cotizacion_detalle_id')->constrained('cotizacion_detalles')->onDelete('cascade');
 
             // Información del producto
             $table->integer('cantidad_confirmada');
@@ -38,7 +38,7 @@ return new class extends Migration
             $table->timestamps();
 
             // Índices
-            $table->unique(['requisicion_id', 'producto_id']);
+            $table->unique(['pedido_id', 'producto_id']);
             $table->index(['cotizacion_detalle_id']);
             $table->index(['entrega_completa']);
         });

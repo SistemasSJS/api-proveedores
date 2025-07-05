@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             
             // Relaciones
-            $table->foreignId('requisicion_id')->constrained()->onDelete('cascade');
-            $table->foreignId('cotizacion_id')->constrained()->onDelete('cascade');
+            $table->foreignId('requisicion_id')->constrained('requisiciones')->onDelete('cascade');
+            $table->foreignId('cotizacion_id')->constrained('cotizaciones')->onDelete('cascade');
             
             // Información del pedido
             $table->string('numero_pedido', 20)->unique();
