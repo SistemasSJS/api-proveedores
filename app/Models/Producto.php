@@ -40,7 +40,6 @@ class Producto extends BaseModel
         'linea_id',
         'destacado',
         'principal',
-        'stock',
     ];
 
     /**
@@ -67,8 +66,6 @@ class Producto extends BaseModel
     ];
 
     protected $casts = [
-        'especificaciones' => 'array',
-        'imagenes' => 'array',
         'tags' => 'array',
     ];
 
@@ -82,7 +79,20 @@ class Producto extends BaseModel
      */
     public static function eagerLodable(): array
     {
-        return ['proveedor', 'categoria', 'marca', 'linea', 'especificaciones', 'imagenes'];
+        return [
+            'marca',
+            'linea',
+            'categoria',
+            'unidad_medida',
+            'especificaciones',
+            'imagenes',
+        ];
+    }
+
+
+    public function unidad_medida(): BelongsTo
+    {
+        return $this->belongsTo(UnidadMedida::class);
     }
 
     public function proveedor(): BelongsTo
@@ -113,7 +123,7 @@ class Producto extends BaseModel
 
     public function especificaciones(): HasMany
     {
-        return $this->hasMany(ProductoEspecificacion::class, 'producto_id', 'especificacion_id');
+        return $this->hasMany(ProductoEspecificacion::class);
     }
 
     public function imagenes(): HasMany
@@ -152,10 +162,8 @@ class Producto extends BaseModel
 
     public function filterByCategoriaId($query, $value)
     {
-        $ids = explode(',', $value); // Permite recibir múltiples IDs separados por coma
-        return $query->whereHas('categorias', function ($q) use ($ids) {
-            $q->whereIn('categoria_id', $ids);
-        });
+        $ids = explode(',', $value);
+        return $query->whereIn('categoria_id', $ids);
     }
 
     public function filterByNombre($query, $value)

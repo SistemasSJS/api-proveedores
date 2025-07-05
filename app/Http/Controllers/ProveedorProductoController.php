@@ -33,8 +33,8 @@ class ProveedorProductoController extends Controller
             ->where('proveedor_id', $proveedor->id)
             ->orderBy($sortBy, $order)
             ->paginate($perPage);
-        $data = ProductoResource::collection($paginator)->resolve();
 
+        $data = ProductoResource::collection($paginator)->resolve();
         return $this->paginated($paginator->setCollection(collect($data)));
     }
 
@@ -70,9 +70,8 @@ class ProveedorProductoController extends Controller
         if (isset($data['especificaciones']) && is_array($data['especificaciones'])) {
             $producto->especificaciones()->sync($data['especificaciones']);
         }
-
-        // ✅ Retornar el recurso actualizado
-        return $this->success(new ProductoResource($producto->fresh(Producto::eagerLodable())));
+        // ✅ Retornar el recurso con relaciones cargadas
+        return $this->success(new ProductoResource($producto));
     }
 
     public function update(ProductoUpdateRequest  $request, Proveedor $proveedor, $productoId)

@@ -17,10 +17,12 @@ class ProductoResource extends JsonResource
             'sku'            => $this->sku,
             'nombre'         => $this->nombre,
             'descripcion'    => $this->descripcion,
+            // 'imagen_principal' => $this->imagen_principal
+            //     ? (preg_match('/^https?:\/\//', $this->imagen_principal) ? $this->imagen_principal : asset('storage/' . $this->imagen_principal))
+            //     : null,
             'imagen_principal' => $this->imagen_principal
-                ? (preg_match('/^https?:\/\//', $this->imagen_principal) ? $this->imagen_principal : asset('storage/' . $this->imagen_principal))
+                ? asset('storage/' . $this->imagen_principal)
                 : null,
-
             //
             'marca_id'       => $this->marca_id,
             'linea_id'       => $this->linea_id,
