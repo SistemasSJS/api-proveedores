@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('cotizacion_detalles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cotizacion_id')->constrained()->onDelete('cascade');
-            $table->foreignId('requisicion_detalle_id')->constrained()->onDelete('cascade');
+            $table->foreignId('requisicion_detalle_id')->constrained()->nullOnDelete('cascade');
             $table->integer('cantidad_cotizada');
             $table->decimal('precio_unitario', 10, 2);
             $table->decimal('subtotal', 12, 2);

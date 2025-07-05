@@ -72,7 +72,7 @@ class ProveedorProductoController extends Controller
         }
 
         // ✅ Retornar el recurso actualizado
-        return $this->success(new ProductoResource($producto->fresh(Producto::eagerLodable())));
+        return $this->success(new ProductoResource($producto));
     }
 
     public function update(ProductoUpdateRequest  $request, Proveedor $proveedor, $productoId)
