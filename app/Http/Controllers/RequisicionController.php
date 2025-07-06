@@ -56,7 +56,7 @@ class RequisicionController extends Controller
 
         $requisicion->load(['proveedor', 'detalles.producto', 'cotizacion.detalles']);
 
-        return new RequisicionResource($requisicion);
+        return $this->success(new RequisicionResource($requisicion));
     }
 
     /**

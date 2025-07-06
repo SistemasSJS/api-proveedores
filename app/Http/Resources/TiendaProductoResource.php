@@ -10,7 +10,7 @@ class TiendaProductoResource extends JsonResource
   {
     return [
       'id'               => (string) $this->id,
-      'nombre'           => $this->nombre_comercial,
+      'nombre'           => $this->nombre,
       'descripcion'      => $this->descripcion,
       'precio'           => (float) $this->precio,
       'precioAnterior'   => $this->whenNotNull($this->precio_anterior),

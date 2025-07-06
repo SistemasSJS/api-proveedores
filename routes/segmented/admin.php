@@ -35,15 +35,77 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
      * GESTIÓN DE CATÁLOGOS MAESTROS
      */
     Route::prefix('catalogos')->group(function () {
-        Route::apiResource('proveedores', ProveedorController::class)->middleware(['audit'])->except(['index']);
-        Route::apiResource('sucursales', SucursalController::class)->middleware(['audit'])->except(['index']);
-        Route::apiResource('productos', ProductoController::class)->middleware(['audit'])->except(['index']);
-        Route::apiResource('imagenes', ProductoImagenController::class)->middleware(['audit'])->except(['index']);
-        Route::apiResource('unidades-medida', UnidadMedidaController::class)->middleware(['audit'])->except(['index']);
-        Route::apiResource('categorias', CategoriaController::class)->middleware(['audit'])->except(['index']);
-        Route::apiResource('lineas', LineaController::class)->middleware(['audit'])->except(['index']);
-        Route::apiResource('marcas', MarcaController::class)->middleware(['audit'])->except(['index']);
-        Route::apiResource('tipos-empresa', TipoEmpresaController::class)->middleware(['audit'])->except(['index']);
+        // Proveedores
+        Route::get('proveedores', [ProveedorController::class, 'index']);
+        Route::post('proveedores', [ProveedorController::class, 'store'])->middleware('audit');
+        Route::get('proveedores/{proveedor}', [ProveedorController::class, 'show']);
+        Route::put('proveedores/{proveedor}', [ProveedorController::class, 'update'])->middleware('audit');
+        Route::patch('proveedores/{proveedor}', [ProveedorController::class, 'update'])->middleware('audit');
+        Route::delete('proveedores/{proveedor}', [ProveedorController::class, 'destroy'])->middleware('audit');
+
+        // Sucursales
+        Route::get('sucursales', [SucursalController::class, 'index']);
+        Route::post('sucursales', [SucursalController::class, 'store'])->middleware('audit');
+        Route::get('sucursales/{sucursal}', [SucursalController::class, 'show']);
+        Route::put('sucursales/{sucursal}', [SucursalController::class, 'update'])->middleware('audit');
+        Route::patch('sucursales/{sucursal}', [SucursalController::class, 'update'])->middleware('audit');
+        Route::delete('sucursales/{sucursal}', [SucursalController::class, 'destroy'])->middleware('audit');
+
+        // Productos
+        Route::get('productos', [ProductoController::class, 'index']);
+        Route::post('productos', [ProductoController::class, 'store'])->middleware('audit');
+        Route::get('productos/{producto}', [ProductoController::class, 'show']);
+        Route::put('productos/{producto}', [ProductoController::class, 'update'])->middleware('audit');
+        Route::patch('productos/{producto}', [ProductoController::class, 'update'])->middleware('audit');
+        Route::delete('productos/{producto}', [ProductoController::class, 'destroy'])->middleware('audit');
+
+        // Imágenes
+        Route::get('imagenes', [ProductoImagenController::class, 'index']);
+        Route::post('imagenes', [ProductoImagenController::class, 'store'])->middleware('audit');
+        Route::get('imagenes/{imagen}', [ProductoImagenController::class, 'show']);
+        Route::put('imagenes/{imagen}', [ProductoImagenController::class, 'update'])->middleware('audit');
+        Route::patch('imagenes/{imagen}', [ProductoImagenController::class, 'update'])->middleware('audit');
+        Route::delete('imagenes/{imagen}', [ProductoImagenController::class, 'destroy'])->middleware('audit');
+
+        // Unidades de medida
+        Route::get('unidades-medida', [UnidadMedidaController::class, 'index']);
+        Route::post('unidades-medida', [UnidadMedidaController::class, 'store'])->middleware('audit');
+        Route::get('unidades-medida/{unidad_medida}', [UnidadMedidaController::class, 'show']);
+        Route::put('unidades-medida/{unidad_medida}', [UnidadMedidaController::class, 'update'])->middleware('audit');
+        Route::patch('unidades-medida/{unidad_medida}', [UnidadMedidaController::class, 'update'])->middleware('audit');
+        Route::delete('unidades-medida/{unidad_medida}', [UnidadMedidaController::class, 'destroy'])->middleware('audit');
+
+        // Categorías
+        Route::get('categorias', [CategoriaController::class, 'index']);
+        Route::post('categorias', [CategoriaController::class, 'store'])->middleware('audit');
+        Route::get('categorias/{categoria}', [CategoriaController::class, 'show']);
+        Route::put('categorias/{categoria}', [CategoriaController::class, 'update'])->middleware('audit');
+        Route::patch('categorias/{categoria}', [CategoriaController::class, 'update'])->middleware('audit');
+        Route::delete('categorias/{categoria}', [CategoriaController::class, 'destroy'])->middleware('audit');
+
+        // Líneas
+        Route::get('lineas', [LineaController::class, 'index']);
+        Route::post('lineas', [LineaController::class, 'store'])->middleware('audit');
+        Route::get('lineas/{linea}', [LineaController::class, 'show']);
+        Route::put('lineas/{linea}', [LineaController::class, 'update'])->middleware('audit');
+        Route::patch('lineas/{linea}', [LineaController::class, 'update'])->middleware('audit');
+        Route::delete('lineas/{linea}', [LineaController::class, 'destroy'])->middleware('audit');
+
+        // Marcas
+        Route::get('marcas', [MarcaController::class, 'index']);
+        Route::post('marcas', [MarcaController::class, 'store'])->middleware('audit');
+        Route::get('marcas/{marca}', [MarcaController::class, 'show']);
+        Route::put('marcas/{marca}', [MarcaController::class, 'update'])->middleware('audit');
+        Route::patch('marcas/{marca}', [MarcaController::class, 'update'])->middleware('audit');
+        Route::delete('marcas/{marca}', [MarcaController::class, 'destroy'])->middleware('audit');
+
+        // Tipos de empresa
+        Route::get('tipos-empresa', [TipoEmpresaController::class, 'index']);
+        Route::post('tipos-empresa', [TipoEmpresaController::class, 'store'])->middleware('audit');
+        Route::get('tipos-empresa/{tipo_empresa}', [TipoEmpresaController::class, 'show']);
+        Route::put('tipos-empresa/{tipo_empresa}', [TipoEmpresaController::class, 'update'])->middleware('audit');
+        Route::patch('tipos-empresa/{tipo_empresa}', [TipoEmpresaController::class, 'update'])->middleware('audit');
+        Route::delete('tipos-empresa/{tipo_empresa}', [TipoEmpresaController::class, 'destroy'])->middleware('audit');
     });
 
     /**
