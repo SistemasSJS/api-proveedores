@@ -190,5 +190,5 @@ Route::prefix('proveedores')
         Route::get('{proveedor}/dashboard/stats', [ProveedorDashboardController::class, 'getStats'])
             ->middleware(['proveedor.access', 'audit']);
 
-        Route::get('proveedores/imports/products/template', [ProductoImportController::class, 'downloadTemplate']);
+        Route::get('imports/products/template', [ProductoImportController::class, 'downloadTemplate']);
     });
