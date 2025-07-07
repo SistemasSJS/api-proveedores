@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('marca_id')->constrained('marcas')->onDelete('cascade');
             $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
             $table->boolean('activo')->default(true);
-            $table->enum('estado', EstadoGeneral::values())->default(EstadoGeneral::Activo->value);
+            $table->enum('estatus', EstadoGeneral::values())->default(EstadoGeneral::ACTIVO->value);
             $table->timestamps();
 
             $table->unique(['nombre', 'marca_id'], 'uk_linea_marca');

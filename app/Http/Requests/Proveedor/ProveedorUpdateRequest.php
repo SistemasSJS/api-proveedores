@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Proveedor;
 
+use App\Enums\EstadoUsuario;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 /**
  * @OA\Schema(
@@ -78,6 +80,7 @@ class ProveedorUpdateRequest extends FormRequest
             'contacto_cargo' => ['nullable', 'string', 'max:60'],
             'contacto_telefono' => ['nullable', 'string', 'max:15'],
             'contacto_correo' => ['nullable', 'email', 'max:60'],
+            'estatus' => ['nullable', new Enum(EstadoUsuario::class)],
         ];
     }
 
@@ -145,6 +148,9 @@ class ProveedorUpdateRequest extends FormRequest
 
             'contacto_correo.email' => 'El correo electrónico del contacto debe tener un formato válido.',
             'contacto_correo.max' => 'El correo electrónico del contacto no debe exceder los 60 caracteres.',
+
+            'estatus' => 'El estatus seleccionado no es válido.',
+            'estatus.enum' => 'El estatus debe ser uno de los valores permitidos: ' . implode(', ', EstadoUsuario::values()),
         ];
     }
 }

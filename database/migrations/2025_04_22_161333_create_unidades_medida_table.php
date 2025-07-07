@@ -1,6 +1,7 @@
 
 <?php
 
+use App\Enums\EstadoGeneral;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -18,7 +19,7 @@ return new class extends Migration
             $table->string('nombre');
             $table->string('clave')->nullable();
             $table->string('descripcion')->nullable();
-            $table->string('estatus')->default('activo');
+            $table->enum('estatus', EstadoGeneral::values())->default(EstadoGeneral::ACTIVO->value);
             $table->timestamps();
             $table->unique(['nombre', 'proveedor_id']);
         });

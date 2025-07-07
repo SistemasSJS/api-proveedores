@@ -24,13 +24,26 @@ class Sucursal extends BaseModel
         'activa',
         'coordenadas_lat',
         'coordenadas_lng',
+        'estatus'
     ];
-
     protected $casts = [
         'activa' => 'boolean',
-        'coordenadas_lat' => 'decimal:8',
-        'coordenadas_lng' => 'decimal:8',
+        'coordenadas_lat' => 'float',
+        'coordenadas_lng' => 'float',
     ];
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+    ];
+
+    protected static $filters = [
+        'sku' => 'sku',
+        'nombre' => 'nombre',
+        'descripcion' => 'descripcion',
+        'modelo' => 'modelo',
+    ];
+
+
 
     public function proveedor(): BelongsTo
     {

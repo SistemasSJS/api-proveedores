@@ -16,7 +16,7 @@ return new class extends Migration
       $table->integer('stock_local')->default(0);
       $table->decimal('precio_local', 10, 2)->nullable();
       $table->boolean('activo')->default(true);
-      $table->enum('estado', EstadoGeneral::values())->default(EstadoGeneral::Activo->value);;
+      $table->enum('estatus', EstadoGeneral::values())->default(EstadoGeneral::ACTIVO->value);;
       $table->timestamps();
 
       $table->unique(['producto_id', 'sucursal_id'], 'uk_producto_sucursal');

@@ -15,8 +15,8 @@ return new class extends Migration
             $table->text('descripcion')->nullable();
             $table->string('logo', 500)->nullable();
             $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
-                        $table->boolean('activo')->default(true);
-            $table->enum('estado', EstadoGeneral::values())->default(EstadoGeneral::Activo->value);;
+            $table->boolean('activo')->default(true);
+            $table->enum('estatus', EstadoGeneral::values())->default(EstadoGeneral::ACTIVO->value);
             $table->timestamps();
 
             $table->unique(['nombre', 'proveedor_id'], 'uk_marca_proveedor');

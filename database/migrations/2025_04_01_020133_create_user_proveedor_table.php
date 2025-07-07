@@ -15,7 +15,7 @@ return new class extends Migration
             $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
             $table->enum('tipo_relacion', ['PRINCIPAL', 'SECUNDARIO'])->default('SECUNDARIO');
             $table->boolean('activo')->default(true);
-            $table->enum('estado', EstadoUsuario::values())->default(EstadoUsuario::Registrado->value);;
+            $table->enum('estado', EstadoUsuario::values())->default(EstadoUsuario::REGISTRADO->value);;
             $table->timestamp('fecha_asignacion')->useCurrent();
             $table->timestamp('fecha_desasignacion')->nullable();
             $table->text('observaciones')->nullable();

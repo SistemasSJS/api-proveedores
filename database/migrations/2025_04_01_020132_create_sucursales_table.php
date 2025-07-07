@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\EstadoGeneral;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -9,7 +10,7 @@ return new class extends Migration {
     {
         Schema::create('sucursales', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('proveedor_id')->constrained()->onDelete('cascade');
+            $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
             $table->string('nombre', 100);
             $table->text('direccion');
             $table->string('telefono', 20)->nullable();
@@ -18,6 +19,7 @@ return new class extends Migration {
             $table->boolean('activa')->default(true);
             $table->decimal('coordenadas_lat', 10, 8)->nullable();
             $table->decimal('coordenadas_lng', 11, 8)->nullable();
+            $table->enum('estatus', EstadoGeneral::values())->default(EstadoGeneral::ACTIVO->value);
             $table->timestamps();
 
             $table->index(['proveedor_id', 'activa']);

@@ -16,8 +16,8 @@ return new class extends Migration
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->tinyInteger('nivel')->default(0)->comment('0: Principal, 1: Subcategoría L1, 2: Subcategoría L2');
             $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
-                        $table->boolean('activo')->default(true);
-            $table->enum('estado', EstadoGeneral::values())->default(EstadoGeneral::Activo->value);;
+            $table->boolean('activo')->default(true);
+            $table->enum('estatus', EstadoGeneral::values())->default(EstadoGeneral::ACTIVO->value);
             $table->timestamps();
 
             $table->foreign('parent_id')->references('id')->on('categorias')->onDelete('cascade');

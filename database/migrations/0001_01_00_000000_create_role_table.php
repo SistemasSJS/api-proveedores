@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('nombre')->unique();
             $table->string('descripcion')->nullable();
             $table->boolean('activo')->default(true);
-            $table->enum('estado', EstadoGeneral::values())->default(EstadoGeneral::Activo->value);
+            $table->enum('estado', EstadoGeneral::values())->default(EstadoGeneral::ACTIVO->value);
             $table->timestamps();
         });
     }

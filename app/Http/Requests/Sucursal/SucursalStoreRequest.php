@@ -15,6 +15,9 @@ class SucursalStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // add proveedor validate
+            'proveedor_id' => 'required|exists:proveedores,id',
+
             'nombre' => 'required|string|max:100',
             'direccion' => 'required|string|max:255',
             'telefono' => 'nullable|string|max:20',

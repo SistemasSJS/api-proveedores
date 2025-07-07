@@ -4,13 +4,23 @@ namespace App\Enums;
 
 enum EstadoUsuario: string
 {
-  case Registrado   = 'registrado';
-  case Verificado   = 'verificado';
-  case Suspendido   = 'suspendido';
-  case Bloqueado    = 'bloqueado';
+  case REGISTRADO   = 'registrado';
+  case VERIFICADO   = 'verificado';
+  case SUSPENDIDO   = 'suspendido';
+  case BLOQUEADO    = 'bloqueado';
 
   public static function values(): array
   {
     return array_column(self::cases(), 'value');
+  }
+
+  public function label(): string
+  {
+    return match ($this) {
+      self::REGISTRADO => 'Registrado',
+      self::VERIFICADO => 'Verificado',
+      self::SUSPENDIDO => 'Suspendido',
+      self::BLOQUEADO  => 'Bloqueado',
+    };
   }
 }

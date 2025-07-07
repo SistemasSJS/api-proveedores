@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\EstadoProceso;
 use Illuminate\Database\Seeder;
 use App\Models\Requisicion;
 use App\Models\RequisicionDetalle;
@@ -35,7 +36,7 @@ class RequisicionesSeeder extends Seeder
             'numero_requisicion' => 'REQ-' . now()->format('Y') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT),
             'fecha_requerida' => now()->addDays(rand(10, 30)),
             // 'prioridad' => collect(['baja', 'media', 'alta'])->random(),
-            'estatus' => collect( ['pendiente', 'en_proceso', 'cotizada', 'rechazada', 'entregada', 'cancelada'])->random(),
+            'estatus' => collect(EstadoProceso::values())->random(),
             'observaciones' => 'Observaciones generales de la requisición',
             'total_estimado' => $total
           ]);

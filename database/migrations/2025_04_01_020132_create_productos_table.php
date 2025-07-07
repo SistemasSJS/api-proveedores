@@ -21,8 +21,8 @@ class CreateProductosTable extends Migration
             $table->text('descripcion')->nullable();
             $table->string('logo')->nullable();
             $table->string('imagen_principal', 500)->nullable();
-                        $table->boolean('activo')->default(true);
-            $table->enum('estado', EstadoGeneral::values())->default(EstadoGeneral::Activo->value);;
+            $table->boolean('activo')->default(true);
+            $table->enum('estatus', EstadoGeneral::values())->default(EstadoGeneral::ACTIVO->value);
             $table->timestamps();
 
             // Stocks

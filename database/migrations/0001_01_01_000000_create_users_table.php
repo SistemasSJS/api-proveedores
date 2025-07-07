@@ -24,7 +24,7 @@ return new class extends Migration
             $table->foreignId('role_id')->nullable()->constrained('roles')->onDelete('cascade');
             $table->rememberToken();
             $table->enum('status', EstadoUsuario::values())
-                ->default(EstadoUsuario::Registrado->value);
+                ->default(EstadoUsuario::REGISTRADO->value);
             $table->timestamps();
         });
 

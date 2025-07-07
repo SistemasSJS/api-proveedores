@@ -46,6 +46,7 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
         // Sucursales
         Route::get('sucursales', [SucursalController::class, 'index']);
         Route::post('sucursales', [SucursalController::class, 'store'])->middleware('audit');
+        Route::get('sucursales/groupedByProveedor', [SucursalController::class, 'indexGroupedByProveedor'])->middleware('audit');
         Route::get('sucursales/{sucursal}', [SucursalController::class, 'show']);
         Route::put('sucursales/{sucursal}', [SucursalController::class, 'update'])->middleware('audit');
         Route::patch('sucursales/{sucursal}', [SucursalController::class, 'update'])->middleware('audit');
@@ -164,79 +165,79 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
     });
 });
 
-/**
- * RUTAS GLOBALES ADMINISTRATIVAS (COMPATIBILIDAD)
- * Mantienen el comportamiento existente
- */
-Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->value])->group(function () {
+// /**
+//  * RUTAS GLOBALES ADMINISTRATIVAS (COMPATIBILIDAD)
+//  * Mantienen el comportamiento existente
+//  */
+// Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->value])->group(function () {
 
-    // Resumen de catálogos (compatibilidad)
-    Route::get('catalogos-resumen', [AdminHomeControler::class, 'getCatalogosCountItems'])->middleware(['audit']);
+//     // Resumen de catálogos (compatibilidad)
+//     Route::get('catalogos-resumen', [AdminHomeControler::class, 'getCatalogosCountItems'])->middleware(['audit']);
 
-    // API Resources (compatibilidad)
-    Route::apiResource('users', UserController::class)->middleware(['audit']);
-    Route::apiResource('proveedores', ProveedorController::class)->middleware(['audit'])->except(['index']);
-    Route::apiResource('sucursales', SucursalController::class)->middleware(['audit'])->except(['index']);
-    Route::apiResource('productos', ProductoController::class)->middleware(['audit'])->except(['index']);
-    Route::apiResource('imagenes', ProductoImagenController::class)->middleware(['audit'])->except(['index']);
-    Route::apiResource('unidades-medida', UnidadMedidaController::class)->middleware(['audit'])->except(['index']);
-    Route::apiResource('categorias', CategoriaController::class)->middleware(['audit'])->except(['index']);
-    Route::apiResource('lineas', LineaController::class)->middleware(['audit'])->except(['index']);
-    Route::apiResource('marcas', MarcaController::class)->middleware(['audit'])->except(['index']);
-    Route::apiResource('tipos-empresa', TipoEmpresaController::class)->middleware(['audit'])->except(['index']);
+//     // API Resources (compatibilidad)
+//     Route::apiResource('users', UserController::class)->middleware(['audit']);
+//     Route::apiResource('proveedores', ProveedorController::class)->middleware(['audit'])->except(['index']);
+//     Route::apiResource('sucursales', SucursalController::class)->middleware(['audit'])->except(['index']);
+//     Route::apiResource('productos', ProductoController::class)->middleware(['audit'])->except(['index']);
+//     Route::apiResource('imagenes', ProductoImagenController::class)->middleware(['audit'])->except(['index']);
+//     Route::apiResource('unidades-medida', UnidadMedidaController::class)->middleware(['audit'])->except(['index']);
+//     Route::apiResource('categorias', CategoriaController::class)->middleware(['audit'])->except(['index']);
+//     Route::apiResource('lineas', LineaController::class)->middleware(['audit'])->except(['index']);
+//     Route::apiResource('marcas', MarcaController::class)->middleware(['audit'])->except(['index']);
+//     Route::apiResource('tipos-empresa', TipoEmpresaController::class)->middleware(['audit'])->except(['index']);
 
-    // Dashboard stats (compatibilidad)
-    Route::get('dashboard/admin/stats-completas', [AdminDashboardController::class, 'getStatsCompletas']);
-    Route::get('dashboard/admin/metricas-rendimiento', [AdminDashboardController::class, 'getMetricasRendimiento']);
-});
+//     // Dashboard stats (compatibilidad)
+//     Route::get('dashboard/admin/stats-completas', [AdminDashboardController::class, 'getStatsCompletas']);
+//     Route::get('dashboard/admin/metricas-rendimiento', [AdminDashboardController::class, 'getMetricasRendimiento']);
+// });
 
-/**
- * RUTAS ADMINISTRATIVAS DE PEDIDOS (COMPATIBILIDAD)
- */
-Route::middleware(['auth:sanctum', 'role:ADMINISTRADOR'])->group(function () {
+// /**
+//  * RUTAS ADMINISTRATIVAS DE PEDIDOS (COMPATIBILIDAD)
+//  */
+// Route::middleware(['auth:sanctum', 'role:ADMINISTRADOR'])->group(function () {
 
-    Route::prefix('admin/pedidos')->group(function () {
+//     Route::prefix('admin/pedidos')->group(function () {
 
-        // Listar todos los pedidos (compatibilidad)
-        Route::get('/', [AdminPedidosController::class, 'adminIndex'])
-            ->name('admin.pedidos.index');
+//         // Listar todos los pedidos (compatibilidad)
+//         Route::get('/', [AdminPedidosController::class, 'adminIndex'])
+//             ->name('admin.pedidos.index');
 
-        // Estadísticas generales (compatibilidad)
-        Route::get('stats', [AdminPedidosController::class, 'adminStats'])
-            ->name('admin.pedidos.stats');
+//         // Estadísticas generales (compatibilidad)
+//         Route::get('stats', [AdminPedidosController::class, 'adminStats'])
+//             ->name('admin.pedidos.stats');
 
-        // Forzar cambio de estatus (compatibilidad)
-        Route::patch('{pedido}/force-status', [AdminPedidosController::class, 'forceStatus'])
-            ->name('admin.pedidos.force-status');
+//         // Forzar cambio de estatus (compatibilidad)
+//         Route::patch('{pedido}/force-status', [AdminPedidosController::class, 'forceStatus'])
+//             ->name('admin.pedidos.force-status');
 
-        // Eliminar pedido (compatibilidad)
-        Route::delete('{pedido}', [AdminPedidosController::class, 'destroy'])
-            ->name('admin.pedidos.destroy');
+//         // Eliminar pedido (compatibilidad)
+//         Route::delete('{pedido}', [AdminPedidosController::class, 'destroy'])
+//             ->name('admin.pedidos.destroy');
 
-        // Reportes avanzados (compatibilidad)
-        Route::get('reports', [AdminPedidosController::class, 'adminReports'])
-            ->name('admin.pedidos.reports');
+//         // Reportes avanzados (compatibilidad)
+//         Route::get('reports', [AdminPedidosController::class, 'adminReports'])
+//             ->name('admin.pedidos.reports');
 
-        // Auditoria de pedidos (compatibilidad)
-        Route::get('{pedido}/audit', [AdminPedidosController::class, 'auditLog'])
-            ->name('admin.pedidos.audit');
-    });
-});
+//         // Auditoria de pedidos (compatibilidad)
+//         Route::get('{pedido}/audit', [AdminPedidosController::class, 'auditLog'])
+//             ->name('admin.pedidos.audit');
+//     });
+// });
 
-/**
- * INTEGRACIÓN CON SERVICIOS EXTERNOS (COMPATIBILIDAD)
- */
-Route::prefix('integration')->middleware(['auth:sanctum'])->group(function () {
+// /**
+//  * INTEGRACIÓN CON SERVICIOS EXTERNOS (COMPATIBILIDAD)
+//  */
+// Route::prefix('integration')->middleware(['auth:sanctum'])->group(function () {
 
-    // Sincronizar con sistema de facturación (compatibilidad)
-    Route::post('pedidos/{pedido}/sync-billing', [PedidoController::class, 'syncBilling'])
-        ->name('integration.pedidos.sync-billing');
+//     // Sincronizar con sistema de facturación (compatibilidad)
+//     Route::post('pedidos/{pedido}/sync-billing', [PedidoController::class, 'syncBilling'])
+//         ->name('integration.pedidos.sync-billing');
 
-    // Generar factura automática (compatibilidad)
-    Route::post('pedidos/{pedido}/generate-invoice', [PedidoController::class, 'generateInvoice'])
-        ->name('integration.pedidos.generate-invoice');
+//     // Generar factura automática (compatibilidad)
+//     Route::post('pedidos/{pedido}/generate-invoice', [PedidoController::class, 'generateInvoice'])
+//         ->name('integration.pedidos.generate-invoice');
 
-    // Webhook de confirmación de pago (compatibilidad)
-    Route::post('pedidos/{pedido}/payment-confirmed', [PedidoController::class, 'paymentConfirmed'])
-        ->name('integration.pedidos.payment-confirmed');
-});
+//     // Webhook de confirmación de pago (compatibilidad)
+//     Route::post('pedidos/{pedido}/payment-confirmed', [PedidoController::class, 'paymentConfirmed'])
+//         ->name('integration.pedidos.payment-confirmed');
+// });

@@ -49,8 +49,7 @@ return new class extends Migration
 
             // Campos adicionales
             if (!Schema::hasColumn('productos', 'activo')) {
-                            $table->boolean('activo')->default(true);
-            $table->enum('estado', EstadoGeneral::values())->default(EstadoGeneral::Activo->value);;
+                $table->boolean('activo')->default(true);
             }
 
             if (!Schema::hasColumn('productos', 'stock')) {

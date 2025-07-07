@@ -96,6 +96,7 @@ class AdminDashboardController extends Controller
     private function getCatalogosStats()
     {
         return [
+            'usuarios' => User::count(),
             'proveedores' => Proveedor::count(),
             'productos' => Producto::count(),
             'categorias' => Categoria::count(),

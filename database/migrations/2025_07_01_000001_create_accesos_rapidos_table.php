@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('url');
             $table->string('color')->default('#007bff');
             $table->integer('orden')->default(0);
-                        $table->boolean('activo')->default(true);
-            $table->enum('estado', EstadoGeneral::values())->default(EstadoGeneral::Activo->value);;
+            $table->boolean('activo')->default(true);
+            $table->enum('estado', EstadoGeneral::values())->default(EstadoGeneral::ACTIVO->value);
             $table->timestamps();
         });
     }

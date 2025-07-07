@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-  public function up()
+    public function up()
     {
         Schema::create('producto_sucursal', function (Blueprint $table) {
             $table->id();
@@ -15,10 +15,10 @@ return new class extends Migration
             $table->foreignId('sucursal_id')->constrained()->onDelete('cascade');
             $table->integer('stock_local')->default(0);
             $table->decimal('precio_local', 10, 2)->nullable();
-                        $table->boolean('activo')->default(true);
-            $table->enum('estado', EstadoGeneral::values())->default(EstadoGeneral::Activo->value);;
+            $table->boolean('activo')->default(true);
+            $table->enum('estatus', EstadoGeneral::values())->default(EstadoGeneral::ACTIVO->value);
             $table->timestamps();
-            
+
             $table->unique(['producto_id', 'sucursal_id']);
             $table->index(['sucursal_id', 'activo']);
         });
