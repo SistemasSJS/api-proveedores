@@ -12,7 +12,7 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $default_foto_url = '/uploads/default.png';
+        $default_foto_url = 'uploads/default.png';
         $idRolAdmin = Role::where('nombre', UserRoleEnumerate::ADMINISTRADOR->value)->first()->id;
         $idRolSuperAdmin = Role::where('nombre', UserRoleEnumerate::ADMINISTRADOR->value)->first()->id;
         $userClienteId = Role::where('nombre', UserRoleEnumerate::CLIENTE->value)->first()->id;

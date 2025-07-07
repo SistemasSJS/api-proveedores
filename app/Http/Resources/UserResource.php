@@ -41,7 +41,7 @@ class UserResource extends JsonResource
             'role'              => new RoleResource($this->whenLoaded('role')),
             'created_at'        => optional($this->created_at)->toDateTimeString(),
             'updated_at'        => optional($this->updated_at)->toDateTimeString(),
-            'status'            => $pivot ? ($pivot->activo ? 'activo' : 'inactivo') : null,
+            'status'            => $this->status,
             'extra_data'        => $pivot ? [
                 'tipo_relacion'        => $pivot->tipo_relacion,
                 'is_main'              => $pivot->is_main ?? false,

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\EstadoGeneral;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -20,7 +21,8 @@ class CreateProductosTable extends Migration
             $table->text('descripcion')->nullable();
             $table->string('logo')->nullable();
             $table->string('imagen_principal', 500)->nullable();
-            $table->boolean('activo')->default(true);
+                        $table->boolean('activo')->default(true);
+            $table->enum('estado', EstadoGeneral::values())->default(EstadoGeneral::Activo->value);;
             $table->timestamps();
 
             // Stocks

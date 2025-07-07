@@ -1,10 +1,11 @@
 
 <?php
 
+use App\Enums\EstadoGeneral;
+use App\Enums\EstadoUsuario;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Enums\UserRoleEnumerate;
 
 return new class extends Migration
 {
@@ -22,6 +23,8 @@ return new class extends Migration
             $table->string('password');
             $table->foreignId('role_id')->nullable()->constrained('roles')->onDelete('cascade');
             $table->rememberToken();
+            $table->enum('status', EstadoUsuario::values())
+                ->default(EstadoUsuario::Registrado->value);
             $table->timestamps();
         });
 

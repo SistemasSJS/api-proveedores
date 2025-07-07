@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\EstadoGeneral;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,7 +17,8 @@ return new class extends Migration
             $table->string('url');
             $table->string('color')->default('#007bff');
             $table->integer('orden')->default(0);
-            $table->boolean('activo')->default(true);
+                        $table->boolean('activo')->default(true);
+            $table->enum('estado', EstadoGeneral::values())->default(EstadoGeneral::Activo->value);;
             $table->timestamps();
         });
     }

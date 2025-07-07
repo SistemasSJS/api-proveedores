@@ -19,24 +19,11 @@ class UserAuthenticateResource extends JsonResource
             'id'                => $this->id,
             'name'              => $this->name,
             'email'             => $this->email,
-            // 'foto_perfil_url'   => $this->foto_perfil_url,
 
             'foto_perfil_url' => asset('storage/' . $this->foto_perfil_url),
 
             'role'              => new RoleResource($this->whenLoaded('role')),
-            /**
-             * NOTE: Extra data no debería ser parte del recurso de usuario autenticado.
-             *      En su lugar, se debería crear un recurso específico para el proveedor
-             *      y usarlo en el controlador correspondiente.
-             *      La ruta seria algio como:
-             *     /api/proveedor/{id}/user  
-             *      En el controlador se puede usar el recurso de usuario autenticado
-             */
-            // 
-            // 'extra_data'    => $this->when(
-            //     $this->role->nombre === 'PROVEEDOR',
-            //     fn() => new ProveedorResource($this->main_proveedor)
-            // ),
+            'estado'            => $this->estado,   
             'created_at'        => $this->created_at,
             'updated_at'        => $this->updated_at,
         ];
