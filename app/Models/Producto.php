@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -59,10 +60,13 @@ class Producto extends BaseModel
      * @var array<string, string>
      */
     protected static $filters = [
-        'sku' => 'sku',
-        'nombre' => 'nombre',
-        'descripcion' => 'descripcion',
-        'modelo' => 'modelo',
+        'nombre'       => 'Nombre',
+        'descripcion'  => 'Descripcion',
+        'sku'          => 'Sku',
+        'categoria_id' => 'CategoriaId',
+        'proveedor_id' => 'proveedorId',
+        'marca_id' => 'marcaId',
+        'linea_id' => 'lineaId',
     ];
 
     protected $casts = [
@@ -89,7 +93,6 @@ class Producto extends BaseModel
         ];
     }
 
-
     public function unidad_medida(): BelongsTo
     {
         return $this->belongsTo(UnidadMedida::class);
@@ -100,16 +103,11 @@ class Producto extends BaseModel
         return $this->belongsTo(Proveedor::class);
     }
 
-    // // NOTE: Sin uso. el producto solo debe tener una catergoria
-    // public function categorias(): BelongsToMany
-    // {
-    //     return $this->belongsToMany(Categoria::class,  'categoria_producto', 'producto_id', 'categoria_id');
-    // }
-
     public function pedidoProductos()
     {
         return $this->hasMany(PedidoDetalle::class);
     }
+
     public function marca(): BelongsTo
     {
         return $this->belongsTo(Marca::class);
@@ -168,6 +166,18 @@ class Producto extends BaseModel
     {
         $ids = explode(',', $value);
         return $query->whereIn('categoria_id', $ids);
+    }
+
+    public function filterByMarcaId($query, $value)
+    {
+        $ids = explode(',', $value);
+        return $query->whereIn('marca_id', $ids);
+    }
+
+    public function filterByLineaId($query, $value)
+    {
+        $ids = explode(',', $value);
+        return $query->whereIn('linea_id', $ids);
     }
 
     public function filterByNombre($query, $value)

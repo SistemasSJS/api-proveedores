@@ -23,19 +23,29 @@ class ProveedorProductoController extends Controller
 
     public function index(Request $request, Proveedor $proveedor)
     {
+        /**
+         * NOTE: para los filtros se debe revisar el metodo getFilters() 
+         * y verifiacar  que exiata el scope para el filtro   
+         *  - categoria_id
+         *  - marca_id
+         *  
+         * Para este caso seria asi: ?categoria_id=3,7&marca_id=1
+         */
         $filters = $request->only(Producto::getFilters());
+
         $sortBy = $request->input('sort_by', 'nombre_comercial');
         $order = $request->input('order', 'asc');
         $perPage = $request->input('per_page', 10);
 
-        $paginator = Producto::with(Producto::eagerLodable())
+        $paginator = Producto::query()
             ->filter($filters)
-            ->where('proveedor_id', $proveedor->id)
+            // ->where('proveedor_id', $proveedor->id)
             ->orderBy($sortBy, $order)
             ->paginate($perPage);
 
-        $data = ProductoResource::collection($paginator)->resolve();
-        return $this->paginated($paginator->setCollection(collect($data)));
+        return $this->paginated($paginator);
+        // $data = ProductoResource::collection($paginator)->resolve();
+        // return $paginator->setCollection(collect($data)));
     }
 
 
