@@ -39,7 +39,7 @@ Route::prefix('proveedores')
         /**
          * USUARIOS DEL PROVEEDOR
          */
-        Route::prefix('{proveedor}/usuarios')->middleware(['proveedor.access'])->group(function () {
+        Route::prefix('{proveedor}/users')->middleware(['proveedor.access'])->group(function () {
             Route::get('/', [ProveedorUsuarioController::class, 'index'])->middleware(['api.access', 'audit']);
             Route::post('/', [ProveedorUsuarioController::class, 'store'])->middleware(['api.access', 'audit']);
 

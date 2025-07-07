@@ -23,16 +23,11 @@ class SucursalController extends Controller
         ]);
 
         $query = Sucursal::with('proveedor')
-            ->where('estatus', EstadoGeneral::ACTIVO->value) // filtro por defecto para solo activas
-            ->when($request->filled('nombre'), fn($q) =>
-            $q->where('nombre', 'like', '%' . $request->nombre . '%'))
-            ->when($request->filled('estatus'), fn($q) =>
-            $q->where('estatus', $request->estatus))
-            ->when($request->filled('proveedor_id'), fn($q) =>
-            $q->where('proveedor_id', $request->proveedor_id));
-
+            ->where('estatus', EstadoGeneral::ACTIVO->value)
+            ->when($request->filled('nombre'), fn($q) => $q->where('nombre', 'like', '%' . $request->nombre . '%'))
+            ->when($request->filled('estatus'), fn($q) => $q->where('estatus', $request->estatus))
+            ->when($request->filled('proveedor_id'), fn($q) => $q->where('proveedor_id', $request->proveedor_id));
         $perPage = $request->input('per_page', 10);
-
         $paginator = $query->paginate($perPage);
 
         return response()->json([
@@ -56,7 +51,7 @@ class SucursalController extends Controller
             'per_page' => 'nullable|integer|min:1|max:100',
         ]);
 
-        
+
         $query = Sucursal::with('proveedor')
             ->where('estatus', EstadoGeneral::ACTIVO->value)
             ->when($request->filled('nombre'), fn($q) => $q->where('nombre', 'like', '%' . $request->nombre . '%'))
@@ -64,6 +59,7 @@ class SucursalController extends Controller
             ->when($request->filled('proveedor_id'), fn($q) => $q->where('proveedor_id', $request->proveedor_id));
         $perPage = $request->input('per_page', 10);
         $paginator = $query->paginate($perPage);
+
         $grouped = collect($paginator->items())
             ->groupBy('proveedor_id')
             ->map(function ($sucursales) {
@@ -74,6 +70,7 @@ class SucursalController extends Controller
                     'sucursales' => SucursalResource::collection($sucursales),
                 ];
             })->values();
+
         return response()->json([
             'data' => $grouped,
             'pagination' => [
@@ -85,6 +82,11 @@ class SucursalController extends Controller
         ]);
     }
 
+    public function show(Request $reuqest, $sucursalId)
+    {
+        $sucursal = Sucursal::with(Sucursal::eagerLodable())->findOrFail($sucursalId);
+        return $this->success(new SucursalResource($sucursal));
+    }
 
     public function store(SucursalStoreRequest $request)
     {
