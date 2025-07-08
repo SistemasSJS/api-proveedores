@@ -240,7 +240,6 @@ class TiendaController extends Controller
 
     public function show($id)
     {
-        // Intentar encontrar el producto, si no se encuentra lanzar ResourceNotFoundException
         $producto = Producto::with(Producto::eagerLodable())->find($id);
         if (!$producto) {
             throw new ResourceNotFoundException("Producto no encontrado.");

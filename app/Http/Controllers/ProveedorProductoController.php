@@ -39,7 +39,7 @@ class ProveedorProductoController extends Controller
 
         $paginator = Producto::query()
             ->filter($filters)
-            // ->where('proveedor_id', $proveedor->id)
+            ->where('proveedor_id', $proveedor->id)
             ->orderBy($sortBy, $order)
             ->paginate($perPage);
 
