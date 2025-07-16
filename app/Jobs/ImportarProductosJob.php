@@ -573,6 +573,7 @@ class ImportarProductosJob implements ShouldQueue
                 }
             }
 
+            // FIXME: update fields on preview productos for only fields: codigo, nombre, descripcion, categoriam, marca, precio X 3
             $productoData = [
                 'fila' => $index + 2,
                 'sku' => $row['sku'] ?? '',

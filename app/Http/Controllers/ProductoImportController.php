@@ -30,25 +30,15 @@ class ProductoImportController extends Controller
 
       $jobId = Str::uuid()->toString();
 
-      // $audit = ImportAudit::create([
-      //   'job_id' => $jobId,
-      //   'proveedor_id' => $proveedorId,
-      //   'tipo' => 'productos',
-      //   'archivo' => $path,
-      //   'formato' => $formato,
-      //   'estado' => 'pendiente'
-      // ]);
-      // ImportarProductosJob::dispatch($audit->id, false);
       $audit = ImportAudit::create([
         'job_id' => $jobId,
         'proveedor_id' => $proveedorId,
         'tipo' => 'productos',
         'archivo' => $path,
         'formato' => $formato,
-        'estado' => 'confirmado'
+        'estado' => 'pendiente'
       ]);
-
-      ImportarProductosJob::dispatch($audit->id, true);
+      ImportarProductosJob::dispatch($audit->id, false);
 
       return response()->json([
         'message' => 'Archivo cargado correctamente',
