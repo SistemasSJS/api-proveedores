@@ -34,7 +34,7 @@ class ProveedorMarcaController extends Controller
         return $this->paginated($data);
     }
 
-    public function store(Request $request, Proveedor $proveedor, $marcaId)
+    public function store(Request $request, Proveedor $proveedor)
     {
         $request->validate([
             'nombre' => 'required|string|max:255',
@@ -42,6 +42,7 @@ class ProveedorMarcaController extends Controller
 
         $marca = Marca::create([
             'nombre' => $request->nombre,
+            'proveedor_id' => $proveedor->id,
         ]);
 
         return $this->success($marca, 201);
