@@ -20,6 +20,7 @@ class Producto extends BaseModel
      */
     protected $fillable = [
         'sku',
+        'codigo_interno',
         'modelo',
         'nombre',
         'descripcion',
@@ -41,7 +42,7 @@ class Producto extends BaseModel
         'linea_id',
         'destacado',
         'principal',
-        'estatus',
+        'estatus',          
     ];
 
     /**
