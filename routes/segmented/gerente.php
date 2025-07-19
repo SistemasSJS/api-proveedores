@@ -57,6 +57,7 @@ Route::prefix('proveedores')
         Route::prefix('{proveedor}/productos')->middleware(['proveedor.access'])->group(function () {
             Route::get('/', [ProveedorProductoController::class, 'index'])->middleware(['audit']);
             Route::post('/', [ProveedorProductoController::class, 'store'])->middleware(['audit']);
+            Route::post('/bulk', [ProveedorProductoController::class, 'bulkStore'])->middleware(['audit']);
 
             Route::middleware(['proveedor.producto', 'audit'])->group(function () {
                 Route::get('{producto}', [ProveedorProductoController::class, 'show']);

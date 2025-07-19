@@ -6,15 +6,15 @@ use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Http\Requests\Producto\ProductoStoreRequest;
 use App\Http\Requests\Producto\ProductoUpdateLogoRequest;
 use App\Http\Requests\Producto\ProductoUpdateRequest;
+use App\Http\Requests\ProductoImport\ProductoBulkStoreRequest;
 use App\Models\Proveedor;
 use App\Http\Resources\ProductoResource;
-use App\Models\Catalogo;
-use App\Models\Linea;
+use App\Models\Categoria;
 use App\Models\Marca;
 use App\Models\Producto;
+use App\Models\UnidadMedida;
 use Illuminate\Http\Request;
 use App\Traits\ApiResponse;
-use Database\Factories\ProductoFactory;
 use Illuminate\Support\Facades\Storage;
 
 class ProveedorProductoController extends Controller
@@ -48,7 +48,6 @@ class ProveedorProductoController extends Controller
         // return $paginator->setCollection(collect($data)));
     }
 
-
     public function show(Request $request, Proveedor $proveedor, $productoId)
     {
         $producto = Producto::with(Producto::eagerLodable())->findOrFail($productoId);
@@ -57,6 +56,83 @@ class ProveedorProductoController extends Controller
         }
         return $this->success(new ProductoResource($producto));
     }
+
+    public function bulkStore(ProductoBulkStoreRequest $request, Proveedor $proveedor)
+    {
+        $productosData = $request->validated()['productos'];
+        $productosCreados = [];
+        $errores = [];
+
+        foreach ($productosData as $index => $item) {
+            try {
+                // Buscar o crear relaciones (por nombre + proveedor)
+                $marca = isset($item['marca'])
+                    ? Marca::firstOrCreate(
+                        ['nombre' => $item['marca'], 'proveedor_id' => $proveedor->id]
+                    )
+                    : null;
+
+                $categoria = isset($item['categoria'])
+                    ? Categoria::firstOrCreate(
+                        ['nombre' => $item['categoria'], 'proveedor_id' => $proveedor->id]
+                    )
+                    : null;
+
+                $unidad = isset($item['unidad_medida'])
+                    ? UnidadMedida::firstOrCreate(
+                        ['nombre' => $item['unidad_medida'], 'proveedor_id' => $proveedor->id]
+                    )
+                    : null;
+
+                $subcategoria = null;
+                if ($categoria && isset($item['subcategoria'])) {
+                    $subcategoria = Categoria::firstOrCreate(
+                        [
+                            'nombre' => $item['subcategoria'],
+                            'categoria_id' => $categoria->id,
+                            'proveedor_id' => $proveedor->id,
+                        ]
+                    );
+                }
+
+                // Crear producto
+                $producto = Producto::create([
+                    'codigo' => $item['codigo'],
+                    'nombre_comercial' => $item['producto'],
+                    'descripcion' => $item['descripcion'] ?? null,
+                    'modelo' => $item['modelo'] ?? null,
+                    'precio' => $item['precio'],
+                    'precio_mayoreo' => $item['precio_mayoreo'] ?? null,
+                    'precio_menuedeo' => $item['precio_menuedeo'] ?? null,
+                    'marca_id' => $marca?->id,
+                    'categoria_id' => $categoria?->id,
+                    'subcategoria_id' => $subcategoria?->id,
+                    'unidad_medida_id' => $unidad?->id,
+                    'proveedor_id' => $proveedor->id,
+                ]);
+
+                $productosCreados[] = new ProductoResource($producto->fresh(Producto::eagerLodable()));
+            } catch (\Throwable $e) {
+                $errores[] = [
+                    'item' => $item,
+                    'error' => $e->getMessage(),
+                ];
+                report($e); // Para que quede en logs
+                continue;
+            }
+        }
+
+        return $this->success([
+            'productos_creados' => $productosCreados,
+            'errores' => $errores,
+            'resumen' => [
+                'total_intentos' => count($productosData),
+                'exitosos' => count($productosCreados),
+                'fallidos' => count($errores),
+            ]
+        ], 'Proceso de carga masiva finalizado.');
+    }
+
 
     public function store(ProductoStoreRequest $request, Proveedor $proveedor)
     {
