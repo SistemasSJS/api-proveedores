@@ -20,7 +20,7 @@ class ProductoBulkStoreRequest extends FormRequest
       'productos.*.unidad_medida' => 'nullable|string|max:255',
       'productos.*.precio' => 'required|numeric|min:0',
       'productos.*.precio_mayoreo' => 'nullable|numeric|min:0',
-      'productos.*.precio_menuedeo' => 'nullable|numeric|min:0',
+      'productos.*.precio_menudeo' => 'nullable|numeric|min:0',
     ];
   }
 }

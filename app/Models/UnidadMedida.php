@@ -22,7 +22,7 @@ class UnidadMedida extends BaseModel
 {
     use HasFactory;
 
-    protected $fillable = ['nombre', 'clave', 'descripcion', 'estatus'];
+    protected $fillable = ['proveedor_id', 'nombre', 'clave', 'descripcion', 'estatus'];
 
 
     public function scopeFilterByNombre($query, $value)

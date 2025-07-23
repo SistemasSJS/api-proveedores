@@ -61,6 +61,7 @@ class ProveedorProductoController extends Controller
     {
         $productosData = $request->validated()['productos'];
         $productosCreados = [];
+        $productosActualizados = [];
         $errores = [];
 
         foreach ($productosData as $index => $item) {
@@ -95,43 +96,57 @@ class ProveedorProductoController extends Controller
                     );
                 }
 
-                // Crear producto
-                $producto = Producto::create([
-                    'codigo' => $item['codigo'],
-                    'nombre_comercial' => $item['producto'],
-                    'descripcion' => $item['descripcion'] ?? null,
-                    'modelo' => $item['modelo'] ?? null,
-                    'precio' => $item['precio'],
-                    'precio_mayoreo' => $item['precio_mayoreo'] ?? null,
-                    'precio_menuedeo' => $item['precio_menuedeo'] ?? null,
-                    'marca_id' => $marca?->id,
-                    'categoria_id' => $categoria?->id,
-                    'subcategoria_id' => $subcategoria?->id,
-                    'unidad_medida_id' => $unidad?->id,
-                    'proveedor_id' => $proveedor->id,
-                ]);
+                // Crear o actualizar producto por código + proveedor_id
+                $producto = Producto::updateOrCreate(
+                    [
+                        'codigo_interno' => $item['codigo'],
+                        'proveedor_id' => $proveedor->id,
+                    ],
+                    [
+                        'nombre' => $item['producto'],
+                        'descripcion' => $item['descripcion'] ?? null,
+                        'modelo' => $item['modelo'] ?? null,
+                        'precio' => $item['precio'],
+                        'precio_mayoreo' => $item['precio_mayoreo'] ?? null,
+                        'precio_menuedeo' => $item['precio_menuedeo'] ?? null,
+                        'marca_id' => $marca?->id,
+                        'categoria_id' => $categoria?->id,
+                        'subcategoria_id' => $subcategoria?->id,
+                        'unidad_medida_id' => $unidad?->id,
+                    ]
+                );
 
-                $productosCreados[] = new ProductoResource($producto->fresh(Producto::eagerLodable()));
+                $productoResource = new ProductoResource($producto->fresh(Producto::eagerLodable()));
+
+                if ($producto->wasRecentlyCreated) {
+                    $productosCreados[] = $productoResource;
+                } else {
+                    $productosActualizados[] = $productoResource;
+                }
             } catch (\Throwable $e) {
                 $errores[] = [
                     'item' => $item,
                     'error' => $e->getMessage(),
                 ];
-                report($e); // Para que quede en logs
+                report($e);
                 continue;
             }
         }
 
         return $this->success([
             'productos_creados' => $productosCreados,
+            'productos_actualizados' => $productosActualizados,
             'errores' => $errores,
             'resumen' => [
                 'total_intentos' => count($productosData),
-                'exitosos' => count($productosCreados),
+                'exitosos' => count($productosCreados) + count($productosActualizados),
+                'creados' => count($productosCreados),
+                'actualizados' => count($productosActualizados),
                 'fallidos' => count($errores),
             ]
         ], 'Proceso de carga masiva finalizado.');
     }
+
 
 
     public function store(ProductoStoreRequest $request, Proveedor $proveedor)
