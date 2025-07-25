@@ -15,6 +15,7 @@ class ProductoResource extends JsonResource
     {
         return [
             'id'             => $this->id,
+            'codigo_interno'            => $this->codigo_interno,
             'sku'            => $this->sku,
             'nombre'         => $this->nombre,
             'descripcion'    => $this->descripcion,
@@ -33,7 +34,7 @@ class ProductoResource extends JsonResource
 
             // Relaciones
             'marca' => new  MarcaResource($this->whenLoaded('marca')),
-            'linea' => new LineaResource($this->whenLoaded('linea')),
+            // 'linea' => new LineaResource($this->whenLoaded('linea')),
             'categoria' => new CategoriaResource($this->whenLoaded('categoria')),
             'especificaciones' => EspecificacionesResource::collection($this->whenLoaded('especificaciones')),
             'unidad_medida' => new UnidadMedidaResource($this->whenLoaded('unidad_medida')),

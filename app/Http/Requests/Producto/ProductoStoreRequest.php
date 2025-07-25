@@ -19,24 +19,10 @@ class ProductoStoreRequest extends FormRequest
         $proveedorId = $this->route('proveedor')->id ?? $this->input('proveedor_id');
 
         return [
+            'codigo_interno' => ['required', 'string', 'max:50'],
             'nombre' => ['required', 'string', 'max:100'],
             'descripcion' => ['required', 'string', 'max:255'],
-            'sku' => ['required', 'string', 'max:50'],
-            /**
-             * El proveedor viaja de forma implicita en el request.
-             * Mediante el se realiza al validacion de permisos...
-             * Solo el proveedor tiene la facutad de Gestionar los datos de los
-             * catalogos.
-             *
-             *
-             * 'proveedor_id' => ['required', 'integer', 'exists:proveedores,id'],
-             *
-             */
-            // 'unidad_medida_id' => ['required', 'integer', 'exists:unidad_medidas,id'],
-            // 'categorias' => ['required', 'array', 'min:1'],
-            // 'categorias.*' => ['integer', 'exists:categorias,id'],
-            // 'especificaciones' => ['required', 'array', 'min:1'],
-            // 'especificaciones.*' => ['integer', 'exists:producto_especificaciones,id'],
+            'unidad_medida_id' => ['required', 'integer', 'exists:unidad_medidas,id'],
             'categoria_id' => [
                 'required',
                 'integer',
@@ -57,25 +43,39 @@ class ProductoStoreRequest extends FormRequest
                     }
                 }
             ],
-            'linea_id' => [
-                'required',
-                'integer',
-                'exists:lineas,id',
-                function ($attribute, $value, $fail) use ($proveedorId) {
-                    $marcaId = $this->input('marca_id');
+            /**
+         * El proveedor viaja de forma implicita en el request.
+         * Mediante el se realiza al validacion de permisos...
+         * Solo el proveedor tiene la facutad de Gestionar los datos de los
+         * catalogos.
+         *
+         *
+         * 'proveedor_id' => ['required', 'integer', 'exists:proveedores,id'],
+         *
+         */
+            // 'categorias' => ['required', 'array', 'min:1'],
+            // 'categorias.*' => ['integer', 'exists:categorias,id'],
+            // 'especificaciones' => ['required', 'array', 'min:1'],
+            // 'especificaciones.*' => ['integer', 'exists:producto_especificaciones,id'],
+            // 'linea_id' => [
+            //     'required',
+            //     'integer',
+            //     'exists:lineas,id',
+            //     function ($attribute, $value, $fail) use ($proveedorId) {
+            //         $marcaId = $this->input('marca_id');
 
-                    // Validar que la línea pertenezca al proveedor
-                    if (!Linea::where('id', $value)->where('proveedor_id', $proveedorId)->exists()) {
-                        $fail('La línea seleccionada no pertenece a este proveedor.');
-                        return;
-                    }
+            //         // Validar que la línea pertenezca al proveedor
+            //         if (!Linea::where('id', $value)->where('proveedor_id', $proveedorId)->exists()) {
+            //             $fail('La línea seleccionada no pertenece a este proveedor.');
+            //             return;
+            //         }
 
-                    // Validar que la línea esté relacionada con la marca seleccionada
-                    if ($marcaId && !Linea::where('id', $value)->where('marca_id', $marcaId)->exists()) {
-                        $fail('La línea seleccionada no pertenece a la marca especificada.');
-                    }
-                }
-            ],
+            //         // Validar que la línea esté relacionada con la marca seleccionada
+            //         if ($marcaId && !Linea::where('id', $value)->where('marca_id', $marcaId)->exists()) {
+            //             $fail('La línea seleccionada no pertenece a la marca especificada.');
+            //         }
+            //     }
+            // ],
         ];
     }
 

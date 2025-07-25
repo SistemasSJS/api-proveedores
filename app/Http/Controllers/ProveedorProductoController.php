@@ -147,8 +147,6 @@ class ProveedorProductoController extends Controller
         ], 'Proceso de carga masiva finalizado.');
     }
 
-
-
     public function store(ProductoStoreRequest $request, Proveedor $proveedor)
     {
         // ✅ Verificar que el producto pertenezca al proveedor
