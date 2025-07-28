@@ -160,16 +160,6 @@ class ProveedorProductoController extends Controller
 
         $producto = Producto::create($data);
 
-        // ✅ Sincronizar categorías si existen en el request
-        if (isset($data['categorias']) && is_array($data['categorias'])) {
-            $producto->categorias()->sync($data['categorias']);
-        }
-
-        // ✅ Sincronizar especificaciones si existen en el request
-        if (isset($data['especificaciones']) && is_array($data['especificaciones'])) {
-            $producto->especificaciones()->sync($data['especificaciones']);
-        }
-        // ✅ Retornar el recurso con relaciones cargadas
         return $this->success(new ProductoResource($producto));
     }
 

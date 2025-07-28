@@ -2,9 +2,8 @@
 
 namespace App\Http\Requests\Categoria;
 
-
+use App\Models\Categoria;
 use Illuminate\Foundation\Http\FormRequest;
-
 
 /**
  * @OA\Schema(
@@ -24,10 +23,24 @@ class CategoriaStoreRequest extends FormRequest
 
     public function rules(): array
     {
+        $proveedorId = $this->route('proveedor')?->id;
+
         return [
             'nombre' => ['required', 'string', 'max:60'],
             'descripcion' => ['required', 'string', 'max:255'],
-            'categoria_padre_id' => ['nulleable', 'integer', 'exists:categorias,id'],
+            'categoria_padre_id' => [
+                'nullable',
+                'integer',
+                'exists:categorias,id',
+                function ($attribute, $value, $fail) use ($proveedorId) {
+                    if (!Categoria::where('id', $value)
+                        ->where('proveedor_id', $proveedorId)
+                        ->where('nivel', '<', 2) // No permitir más de 2 niveles
+                        ->exists()) {
+                        $fail('La categoría padre no es válida o no pertenece a este proveedor.');
+                    }
+                }
+            ],
         ];
     }
 
@@ -36,8 +49,7 @@ class CategoriaStoreRequest extends FormRequest
         return [
             'nombre.required' => 'El nombre es obligatorio.',
             'descripcion.required' => 'La descripción es obligatoria.',
-            'proveedor_id.required' => 'El proveedor es obligatorio.',
-            'categoria_padre_id.exists' => 'La categroia seleccionado no es válido.',
+            'categoria_padre_id.exists' => 'La categoría seleccionada no es válida.',
         ];
     }
 }

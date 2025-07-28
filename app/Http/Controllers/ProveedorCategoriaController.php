@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Categoria\CategoriaStoreRequest;
 use App\Models\Categoria;
 use App\Models\Proveedor;
 use Illuminate\Database\Eloquent\RelationNotFoundException;
@@ -9,7 +10,6 @@ use Illuminate\Http\Request;
 
 class ProveedorCategoriaController extends Controller
 {
-
 
     public function index(Request $request, Proveedor $proveedor)
     {
@@ -21,7 +21,6 @@ class ProveedorCategoriaController extends Controller
             ->paginate();
         return $this->paginated($data);
     }
-
 
     public function index_sub_categorias(Request $request, Proveedor $proveedor, $categoriaId)
     {
@@ -37,15 +36,26 @@ class ProveedorCategoriaController extends Controller
         return $this->paginated($data);
     }
 
-
-    public function store(Request $request, Proveedor $proveedor)
+    public function store(CategoriaStoreRequest $request, Proveedor $proveedor)
     {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-        ]);
+        $categoriaPadreId = $request->input('categoria_padre_id');
+        $nivel = 0;
+
+        if ($categoriaPadreId) {
+            $padre = Categoria::findOrFail($categoriaPadreId);
+            $nivel = $padre->nivel + 1;
+
+            if ($nivel > 2) {
+                return $this->error('Solo se permiten hasta 2 niveles de subcategorías.', 422);
+            }
+        }
 
         $categoria = Categoria::create([
             'nombre' => $request->nombre,
+            'descripcion' => $request->descripcion,
+            'parent_id' => $categoriaPadreId,
+            'proveedor_id' => $proveedor->id,
+            'nivel' => $nivel,
         ]);
 
         return $this->success($categoria, 201);

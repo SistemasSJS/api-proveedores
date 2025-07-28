@@ -23,59 +23,60 @@ class ProductoStoreRequest extends FormRequest
             'nombre' => ['required', 'string', 'max:100'],
             'descripcion' => ['required', 'string', 'max:255'],
             'unidad_medida_id' => ['required', 'integer', 'exists:unidad_medidas,id'],
+
             'categoria_id' => [
                 'required',
                 'integer',
                 'exists:categorias,id',
                 function ($attribute, $value, $fail) use ($proveedorId) {
-                    if (!Categoria::where('id', $value)->where('proveedor_id', $proveedorId)->exists()) {
-                        $fail('La categoria seleccionada no pertenece a este proveedor.');
+                    $categoria = Categoria::delProveedor($proveedorId)->find($value);
+
+                    if (!$categoria) {
+                        return $fail('La categoría padre no pertenece al proveedor.');
+                    }
+
+                    if ($categoria->nivel !== 0) {
+                        return $fail('La categoría padre debe estar en el nivel 0.');
                     }
                 }
             ],
+            'sub_categoria_id' => [
+                'required',
+                'integer',
+                'exists:categorias,id',
+                function ($attribute, $value, $fail) use ($proveedorId) {
+                    $subcategoria = Categoria::with('parent')->delProveedor($proveedorId)->find($value);
+
+                    if (!$subcategoria) {
+                        return $fail('La subcategoría no pertenece al proveedor.');
+                    }
+
+                    $padre = $subcategoria->parent;
+                    $categoriaId = $this->input('categoria_id');
+
+                    if (!$padre || $padre->id != $categoriaId) {
+                        return $fail('La subcategoría no pertenece a la categoría padre especificada.');
+                    }
+
+                    // Validar jerarquía coherente
+                    if (($subcategoria->nivel === 1 && $padre->nivel !== 0) ||
+                        ($subcategoria->nivel === 2 && $padre->nivel !== 1)
+                    ) {
+                        return $fail('La jerarquía entre categoría y subcategoría es incorrecta.');
+                    }
+                }
+            ],
+
             'marca_id' => [
                 'required',
                 'integer',
                 'exists:marcas,id',
                 function ($attribute, $value, $fail) use ($proveedorId) {
-                    if (!Marca::where('id', $value)->where('proveedor_id', $proveedorId)->exists()) {
+                    if (!\App\Models\Marca::where('id', $value)->where('proveedor_id', $proveedorId)->exists()) {
                         $fail('La marca seleccionada no pertenece a este proveedor.');
                     }
                 }
             ],
-            /**
-         * El proveedor viaja de forma implicita en el request.
-         * Mediante el se realiza al validacion de permisos...
-         * Solo el proveedor tiene la facutad de Gestionar los datos de los
-         * catalogos.
-         *
-         *
-         * 'proveedor_id' => ['required', 'integer', 'exists:proveedores,id'],
-         *
-         */
-            // 'categorias' => ['required', 'array', 'min:1'],
-            // 'categorias.*' => ['integer', 'exists:categorias,id'],
-            // 'especificaciones' => ['required', 'array', 'min:1'],
-            // 'especificaciones.*' => ['integer', 'exists:producto_especificaciones,id'],
-            // 'linea_id' => [
-            //     'required',
-            //     'integer',
-            //     'exists:lineas,id',
-            //     function ($attribute, $value, $fail) use ($proveedorId) {
-            //         $marcaId = $this->input('marca_id');
-
-            //         // Validar que la línea pertenezca al proveedor
-            //         if (!Linea::where('id', $value)->where('proveedor_id', $proveedorId)->exists()) {
-            //             $fail('La línea seleccionada no pertenece a este proveedor.');
-            //             return;
-            //         }
-
-            //         // Validar que la línea esté relacionada con la marca seleccionada
-            //         if ($marcaId && !Linea::where('id', $value)->where('marca_id', $marcaId)->exists()) {
-            //             $fail('La línea seleccionada no pertenece a la marca especificada.');
-            //         }
-            //     }
-            // ],
         ];
     }
 

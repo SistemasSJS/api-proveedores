@@ -30,7 +30,7 @@ class ProductoImportController extends Controller
 
       $jobId = Str::uuid()->toString();
 
-      $audit = ImportAudit::create([
+        $audit = ImportAudit::create([
         'job_id' => $jobId,
         'proveedor_id' => $proveedorId,
         'tipo' => 'productos',

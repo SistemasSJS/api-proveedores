@@ -22,6 +22,10 @@ class ProveedorMarcaController extends Controller
         return $this->paginated($originalPaginator->setCollection(collect($data)));
     }
 
+    /**
+     * @decrepted 
+     * Lineas ya no forma parte del modelo de datos.
+     */
     public function index_lineas_por_marca(Request $request, Proveedor $proveedor, $marcaId)
     {
         $marca = Marca::findOrFail($marcaId);
