@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('import_audits', function (Blueprint $table) {
-            $table->string('formato')->nullable()->after('archivo');
+            $table->string('formato')->nullable();
         });
     }
 

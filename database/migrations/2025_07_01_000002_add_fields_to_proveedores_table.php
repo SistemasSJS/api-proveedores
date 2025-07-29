@@ -9,10 +9,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('proveedores', function (Blueprint $table) {
-            $table->boolean('principal')->default(false)->after('activo');
-            $table->decimal('calificacion', 3, 2)->default(0)->after('principal');
-            $table->string('categoria')->nullable()->after('calificacion');
-            $table->string('ciudad')->nullable()->after('categoria');
+            $table->boolean('principal')->default(false);
+            $table->decimal('calificacion', 3, 2)->default(0);
+            $table->string('categoria')->nullable();
+            $table->string('ciudad')->nullable();
         });
     }
 

@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('import_audits', function (Blueprint $table) {
-            $table->enum('fase', ['parse', 'validate', 'preview', 'confirm', 'execute', 'rollback'])->nullable()->after('estado');
-            $table->longText('logs')->nullable()->after('fase');
-            $table->integer('eta_seconds')->nullable()->after('logs');
-            $table->integer('mem_peak_mb')->nullable()->after('eta_seconds');
+            $table->enum('fase', ['parse', 'validate', 'preview', 'confirm', 'execute', 'rollback'])->nullable();
+            $table->longText('logs')->nullable();
+            $table->integer('eta_seconds')->nullable();
+            $table->integer('mem_peak_mb')->nullable();
         });
     }
 
