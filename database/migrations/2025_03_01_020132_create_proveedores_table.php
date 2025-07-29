@@ -18,7 +18,7 @@ return new class extends Migration {
             $table->string('estado')->nullable();
             $table->string('municipio')->nullable();
             $table->string('codigo_postal')->nullable();
-            $table->string('estatus', EstadoUsuario::values())
+            $table->enum('estatus', EstadoUsuario::values())
                 ->default(EstadoUsuario::REGISTRADO->value);
             $table->text('notas')->nullable();
             $table->foreignId('validado_por')->nullable()->constrained('users')->nullOnDelete();
