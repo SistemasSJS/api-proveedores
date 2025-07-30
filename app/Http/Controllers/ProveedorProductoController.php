@@ -33,7 +33,7 @@ class ProveedorProductoController extends Controller
          */
         $filters = $request->only(Producto::getFilters());
 
-        $sortBy = $request->input('sort_by', 'nombre_comercial');
+        $sortBy = $request->input('sort_by', 'nombre');
         $order = $request->input('order', 'asc');
         $perPage = $request->input('per_page', 10);
 
