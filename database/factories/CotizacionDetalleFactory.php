@@ -26,7 +26,7 @@ class CotizacionDetalleFactory extends Factory
             'precio_unitario' => $precioUnitario,
             'descuento_detalle' => $descuento,
             'total' => $total,
-            'tiempo_entrega_detalle' => $this->faker->numberBetween(1, 15) . ' días',
+            'tiempo_entrega_dias' => $this->faker->numberBetween(1, 15),
             'observaciones' => $this->faker->optional()->sentence(8),
             'disponibilidad' => $this->faker->randomElement(['inmediata', 'bajo_pedido', 'importacion']),
             'minimo_compra' => $this->faker->optional()->numberBetween(1, 10),

@@ -54,7 +54,7 @@ class CotizacionesSeeder extends Seeder
             'cantidad_cotizada' => $cantidadCotizada,
             'precio_unitario' => $precioUnitario,
             'subtotal' => $total,
-            'tiempo_entrega_dias' => rand(3, 10) . ' días',
+            'tiempo_entrega_dias' => rand(3, 21),
             'observaciones' => 'Observaciones específicas del producto cotizado'
           ]);
 

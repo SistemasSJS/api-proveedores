@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\EstadoUsuario;
 use App\Models\Proveedor;
 use App\Models\TipoEmpresa;
 use App\Models\User;
@@ -26,7 +27,7 @@ class ProveedorFactory extends Factory
             'estado' => $this->faker->state,
             'municipio' => $this->faker->city,
             'codigo_postal' => $this->faker->postcode,
-            'estatus' => 'activo',
+            'estatus' => EstadoUsuario::REGISTRADO->value,
             'tipos_empresa_id' => TipoEmpresa::inRandomOrder()->first()?->id, // Asignamos el admin por defecto si no hay usuario
             'notas' => $this->faker->sentence,
 

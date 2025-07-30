@@ -17,8 +17,8 @@ class CotizacionFactory extends Factory
         $subtotal = $this->faker->numberBetween(10000, 500000);
         $descuento = $this->faker->numberBetween(0, 15);
         $impuestos = 16;
-        $total = $subtotal * (1 - $descuento/100) * (1 + $impuestos/100);
-        
+        $total = $subtotal * (1 - $descuento / 100) * (1 + $impuestos / 100);
+
         return [
             'requisicion_id' => Requisicion::factory(),
             'numero_cotizacion' => 'COT-' . date('Y') . '-' . str_pad($this->faker->unique()->numberBetween(1, 9999), 4, '0', STR_PAD_LEFT),
@@ -31,7 +31,7 @@ class CotizacionFactory extends Factory
             'total' => $total,
             'observaciones' => $this->faker->optional()->paragraph(2),
             'condiciones_pago' => $this->faker->randomElement(['Contado', '15 días', '30 días', '45 días', '60 días']),
-            'tiempo_entrega' => $this->faker->numberBetween(3, 21) . ' días hábiles',
+            'tiempo_entrega_dias' => $this->faker->numberBetween(3, 21),
             'validez_oferta' => $fechaVencimiento->format('Y-m-d'),
             'garantia' => $this->faker->randomElement(['6 meses', '1 año', '2 años', 'Sin garantía']),
             'descuento_por_volumen' => $this->faker->optional()->numberBetween(5, 20),
