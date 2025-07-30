@@ -6,7 +6,6 @@ use App\Http\Controllers\ProveedorUsuarioController;
 use App\Http\Controllers\ProveedorProductoController;
 use App\Http\Controllers\ProveedorCategoriaController;
 use App\Http\Controllers\ProveedorMarcaController;
-use App\Http\Controllers\ProveedorLineaController;
 use App\Http\Controllers\ProveedorSucursalController;
 use App\Http\Controllers\SucursalProductoController;
 use App\Http\Controllers\ProveedorRequisicionController;
@@ -99,19 +98,6 @@ Route::prefix('proveedores')
             });
         });
 
-        /**
-         * LÍNEAS DEL PROVEEDOR
-         */
-        Route::prefix('{proveedor}/lineas')->middleware(['proveedor.access'])->group(function () {
-            Route::get('/', [ProveedorLineaController::class, 'index'])->middleware(['audit']);
-            Route::post('/', [ProveedorLineaController::class, 'store'])->middleware(['audit']);
-
-            Route::middleware(['proveedor.linea', 'audit'])->group(function () {
-                Route::get('{linea}', [ProveedorLineaController::class, 'show']);
-                Route::patch('{linea}', [ProveedorLineaController::class, 'update']);
-                Route::delete('{linea}', [ProveedorLineaController::class, 'destroy']);
-            });
-        });
 
         /**
          * SUCURSALES DEL PROVEEDOR

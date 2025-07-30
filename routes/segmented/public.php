@@ -21,6 +21,13 @@ use App\Http\Controllers\PedidoController;
 | Estas rutas no requieren autenticación
 */
 
+Route::get('status', function () {
+    return response()->json([
+        'status' => 'ok',
+        'message' => 'API funcionando correctamente',
+        'timestamp' => now(),
+    ]);
+});
 
 /**
  * CATÁLOGOS PÚBLICOS
