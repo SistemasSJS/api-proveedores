@@ -84,7 +84,7 @@ class UserSeeder extends Seeder
                     'nombre' => 'María Elena González',
                     'email' => 'maria.gonzalez@gmail.com',
                 ],
-                [sel
+                [
                     'nombre' => 'Roberto Silva Castro',
                     'email' => 'roberto.silva@ingenieria.mx',
                 ],
