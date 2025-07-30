@@ -16,18 +16,23 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             UserSeeder::class,
             TipoEmpresaSeeder::class,
-            ProveedorSeeder::class,
-            SucursalSeeder::class,
-            UnidadMedidaSeeder::class,
-            CategoriaSeeder::class,
-            MarcaSeeder::class,
-            LineaSeeder::class,
-            ProductoSeeder::class,
-            AccesoRapidoSeeder::class,
-            RequisicionesSeeder::class,
-            CotizacionesSeeder::class,
-            PedidosSeeder::class,
         ]);
+
+        if (config('app.debug')) {
+            $this->call([
+                ProveedorSeeder::class,
+                SucursalSeeder::class,
+                UnidadMedidaSeeder::class,
+                CategoriaSeeder::class,
+                MarcaSeeder::class,
+                LineaSeeder::class,
+                ProductoSeeder::class,
+                AccesoRapidoSeeder::class,
+                RequisicionesSeeder::class,
+                CotizacionesSeeder::class,
+                PedidosSeeder::class,
+            ]);
+        }
 
         // Llamar al Seeder de Usuarios
         // $this->call([UserSeeder::class]);

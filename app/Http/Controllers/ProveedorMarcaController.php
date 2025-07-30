@@ -13,8 +13,7 @@ class ProveedorMarcaController extends Controller
     public function index(Request $request, Proveedor $proveedor)
     {
         $filters = $request->only(Marca::getFilters());
-        $originalPaginator = Marca::with(['lineas'])
-            ->filter($filters)
+        $originalPaginator = Marca::filter($filters)
             ->where('proveedor_id', $proveedor->id)
             ->paginate();
 
