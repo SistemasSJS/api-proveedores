@@ -86,5 +86,9 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
+
+        if (env('APP_ENV') === 'production') {
+            $this->app['request']->server->set('HTTPS', true);
+        }
     }
 }
