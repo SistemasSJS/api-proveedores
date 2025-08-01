@@ -20,11 +20,11 @@ class UserController extends Controller
         $fields = User::getFilters();
         $filters = $request->only($fields);
 
-        $sortBy = $request->input('sort_by', 'nombre_comercial');
+        $sortBy = $request->input('sort_by', 'name');
         $order = $request->input('order', 'asc');
         $perPage = $request->input('per_page', 10);
 
-        $originalPaginator = User::with(User::eagerLodable())
+        $originalPaginator = User::with(array_merge(User::eagerLodable(), ['role']))
             ->filter($filters)
             ->orderBy($sortBy, $order)
             ->paginate($perPage);

@@ -38,10 +38,11 @@ class UserResource extends JsonResource
             'name'              => $this->name,
             'foto_perfil_url'   => asset('storage/' . $this->foto_perfil_url),
             'email'             => $this->email,
+            'role_id'           => $this->whenLoaded('role', fn() => $this->role_id),
+            'status'            => $this->whenLoaded('role', fn() => $this->status),
             'role'              => new RoleResource($this->whenLoaded('role')),
             'created_at'        => optional($this->created_at)->toDateTimeString(),
             'updated_at'        => optional($this->updated_at)->toDateTimeString(),
-            'status'            => $this->status,
             'extra_data'        => $pivot ? [
                 'tipo_relacion'        => $pivot->tipo_relacion,
                 'is_main'              => $pivot->is_main ?? false,
