@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRoleEnumerate;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Proveedor;
@@ -13,6 +14,7 @@ use App\Models\Sucursal;
 use App\Models\UnidadMedida;
 use App\Models\TipoEmpresa;
 use App\Models\Pedido;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -114,13 +116,19 @@ class AdminDashboardController extends Controller
     private function getUsuariosStats()
     {
         $total = User::count();
-        $activos = User::where('estado', 'activo')->count();
+        $activos = User::where('status', 'activo')->count();
+
+        $roleAdminId = Role::where('nombre', UserRoleEnumerate::ADMINISTRADOR)->first()->id;
+        $roleGerenteId = Role::where('nombre', UserRoleEnumerate::GERENTE)->first()->id;
+        $roleClienteId = Role::where('nombre', UserRoleEnumerate::CLIENTE)->first()->id;
+
+
 
         return [
             'total' => $total,
-            'administradores' => User::where('rol', 'ADMINISTRADOR')->count(),
-            'proveedores' => User::where('rol', 'PROVEEDOR')->count(),
-            'clientes' => User::where('rol', 'CLIENTE')->count(),
+            'administradores' => User::where('role_id', $roleAdminId)->count(),
+            'proveedores' => User::where('role_id', $roleGerenteId)->count(),
+            'clientes' => User::where('role_id', $roleClienteId)->count(),
             'activos' => $activos,
             'inactivos' => $total - $activos,
         ];
@@ -132,13 +140,13 @@ class AdminDashboardController extends Controller
     private function getPedidosStats()
     {
         $total = Pedido::count();
-        $pendientes = Pedido::where('estado', 'pendiente')->count();
-        $enProceso = Pedido::where('estado', 'en_proceso')->count();
-        $cotizados = Pedido::where('estado', 'cotizado')->count();
-        $entregados = Pedido::where('estado', 'entregado')->count();
-        $cancelados = Pedido::where('estado', 'cancelado')->count();
+        $pendientes = Pedido::where('estatus', 'pendiente')->count();
+        $enProceso = Pedido::where('estatus', 'en_proceso')->count();
+        $cotizados = Pedido::where('estatus', 'cotizado')->count();
+        $entregados = Pedido::where('estatus', 'entregado')->count();
+        $cancelados = Pedido::where('estatus', 'cancelado')->count();
 
-        $montoTotal = Pedido::sum('monto_total') ?? 0;
+        $montoTotal = Pedido::sum('subtotal') ?? 0;
         $montoPromedio = $total > 0 ? $montoTotal / $total : 0;
 
         return [
@@ -199,7 +207,7 @@ class AdminDashboardController extends Controller
     private function getConversionRate()
     {
         $totalPedidos = Pedido::count();
-        $pedidosEntregados = Pedido::where('estado', 'entregado')->count();
+        $pedidosEntregados = Pedido::where('estatus', 'entregado')->count();
 
         if ($totalPedidos === 0) {
             return 0;
