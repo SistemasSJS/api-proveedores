@@ -11,6 +11,7 @@ use App\Http\Middleware\EnsureProveedorOwnership;
 use App\Http\Middleware\EnsureProveedorProductAccess;
 use App\Http\Middleware\EnsureRequisicionAccess;
 use App\Http\Middleware\EnsureSucursalBelongsToProveedor;
+use App\Http\Middleware\EnsureUnidadMedidaBelongsToProveedor;
 use App\Http\Middleware\ValidateApiAccess;
 use App\Http\Middleware\ValidateProveedorRole;
 use Illuminate\Foundation\Application;
@@ -38,6 +39,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'proveedor.producto' => EnsureProductoBelongsToProveedor::class,
             'proveedor.categoria' => EnsureCategoriaBelongsToProveedor::class,
             'proveedor.marca' => EnsureMarcaBelongsToProveedor::class,
+            'proveedor.unidad' => EnsureUnidadMedidaBelongsToProveedor::class,
             'proveedor.sucursal' => EnsureSucursalBelongsToProveedor::class,
             'proveedor.access' => EnsureProveedorOwnership::class,
             'proveedor.producto.access' => EnsureProveedorProductAccess::class,

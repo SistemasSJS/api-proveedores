@@ -16,11 +16,12 @@ class ProductoController extends Controller
         $fields = Producto::getFilters();
         $filters = $request->only($fields);
 
-        $sortBy = $request->input('sort_by', 'nombre_comercial'); // Default sort by 'nombre_comercial'
+        $sortBy = $request->input('sort_by', 'nombre'); // Default sort by 'nombre_comercial'
         $order =  $request->input('order', 'asc');
         $perPage = $request->input('per_page', 10);
 
-        $originalPaginator = Producto::with(Producto::eagerLodable())
+        $originalPaginator = Producto::query()
+            ->with(Producto::eagerLodable())
             ->filter($filters)
             ->orderBy($sortBy, $order)
             ->paginate($perPage);

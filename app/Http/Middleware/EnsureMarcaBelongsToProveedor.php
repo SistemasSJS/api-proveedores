@@ -7,6 +7,7 @@ use App\Models\Marca;
 use Closure;
 use Illuminate\Http\Request;
 use App\Models\Proveedor;
+use Nette\Schema\Expect;
 
 class EnsureMarcaBelongsToProveedor
 {
@@ -24,14 +25,17 @@ class EnsureMarcaBelongsToProveedor
         if (is_numeric($marca)) {
             $marca = Marca::findOrFail($marca);
         }
-
-
+        
+        
+        // if(is_string($marca)) {
+        //    throw new Expect('Marca es string' . $marca); 
+        // }
         if ($marca->proveedor_id !== $proveedor->id) {
-            throw new NotFoundRelationException('La categoria no pertenece al proveedor.');
+            throw new NotFoundRelationException('La marca no pertenece al proveedor.');
         }
 
 
-        $request->attributes->set('marca', $proveedor->marcas);
+        $request->attributes->set('marcas', $proveedor->marcas);
 
         return $next($request);
     }

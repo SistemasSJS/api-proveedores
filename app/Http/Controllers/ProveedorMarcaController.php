@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\EstadoGeneral;
 use App\Http\Resources\MarcaLineasResource;
+use App\Http\Resources\MarcaResource;
 use App\Models\Marca;
 use App\Models\Proveedor;
 use Illuminate\Database\Eloquent\RelationNotFoundException;
@@ -10,6 +12,18 @@ use Illuminate\Http\Request;
 
 class ProveedorMarcaController extends Controller
 {
+
+    public function all(Request $request, Proveedor $proveedor)
+    {
+        // Obtener todas las categorías activas para el proveedor con las subcategorías (hijas)
+        $data = Marca::where('proveedor_id', $proveedor->id)
+            ->where('estatus', EstadoGeneral::ACTIVO->value)
+            ->paginate(10000);
+
+        $marcas =   MarcaResource::collection($data)->resolve();
+        return $this->paginated($data->setCollection(collect($marcas)));
+    }
+
     public function index(Request $request, Proveedor $proveedor)
     {
         $filters = $request->only(Marca::getFilters());

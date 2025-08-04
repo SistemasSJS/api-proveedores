@@ -39,4 +39,9 @@ class UnidadMedida extends BaseModel
     {
         return $this->hasMany(Producto::class);
     }
+
+    public function proveedor()
+    {
+        return $this->belongsTo(Proveedor::class);
+    }
 }

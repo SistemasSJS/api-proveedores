@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 class Producto extends BaseModel
 {
     use HasFactory;
@@ -61,6 +61,7 @@ class Producto extends BaseModel
         'nombre'       => 'Nombre',
         'descripcion'  => 'Descripcion',
         'sku'          => 'Sku',
+        'codigo'          => 'Codigo',
         'categoria_id' => 'CategoriaId',
         'proveedor_id' => 'proveedorId',
         'marca_id' => 'marcaId',
@@ -214,5 +215,9 @@ class Producto extends BaseModel
     public function filterBySku($query, $value)
     {
         return $query->where('sku', 'like', "%$value%");
+    }
+    public function filterByCodigo($query, $value)
+    {
+        return $query->where('codigo_interno', 'like', "%$value%");
     }
 }

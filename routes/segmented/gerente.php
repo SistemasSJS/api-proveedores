@@ -14,7 +14,7 @@ use App\Http\Controllers\ProductoImportController;
 use App\Http\Controllers\ProveedorReporteController;
 use App\Http\Controllers\ProveedorDashboardController;
 use App\Enums\UserRoleEnumerate;
-
+use App\Http\Controllers\ProveedorUnidadMedidaController;
 
 /**
  * GESTIÓN DE PROVEEDORES
@@ -72,6 +72,7 @@ Route::prefix('proveedores')
         Route::prefix('{proveedor}/categorias')->middleware(['proveedor.access'])->group(function () {
             Route::get('/', [ProveedorCategoriaController::class, 'index'])->middleware(['audit']);
             Route::post('/', [ProveedorCategoriaController::class, 'store'])->middleware(['audit']);
+            Route::get('/all', [ProveedorCategoriaController::class, 'all'])->middleware(['audit']);
 
             Route::middleware(['proveedor.categoria', 'audit'])->group(function () {
                 Route::get('{categoria}', [ProveedorCategoriaController::class, 'show']);
@@ -88,6 +89,7 @@ Route::prefix('proveedores')
         Route::prefix('{proveedor}/marcas')->middleware(['proveedor.access'])->group(function () {
             Route::get('/', [ProveedorMarcaController::class, 'index'])->middleware(['audit']);
             Route::post('/', [ProveedorMarcaController::class, 'store'])->middleware(['audit']);
+            Route::get('/all', [ProveedorMarcaController::class, 'all'])->middleware(['audit']);
 
             Route::middleware(['proveedor.marca', 'audit'])->group(function () {
                 Route::get('{marca}', [ProveedorMarcaController::class, 'show']);
@@ -95,6 +97,23 @@ Route::prefix('proveedores')
                 Route::delete('{marca}', [ProveedorMarcaController::class, 'destroy']);
                 Route::post('{marca}/logo', [ProveedorMarcaController::class, 'updateLogo']);
                 Route::get('{marca}/lineas', [ProveedorMarcaController::class, 'index_lineas_por_marca']);
+            });
+        });
+
+        /**
+         * UNIDA MEDIDA DEL PROVEEDOR
+         */
+        Route::prefix('{proveedor}/unidades')->middleware(['proveedor.access'])->group(function () {
+            Route::get('/', [ProveedorUnidadMedidaController::class, 'index'])->middleware(['audit']);
+            Route::post('/', [ProveedorUnidadMedidaController::class, 'store'])->middleware(['audit']);
+            Route::get('/all', [ProveedorUnidadMedidaController::class, 'all'])->middleware(['audit']);
+
+            Route::middleware(['proveedor.unidad', 'audit'])->group(function () {
+                Route::get('{unidad}', [ProveedorUnidadMedidaController::class, 'show']);
+                Route::patch('{unidad}', [ProveedorUnidadMedidaController::class, 'update']);
+                Route::delete('{unidad}', [ProveedorUnidadMedidaController::class, 'destroy']);
+                Route::post('{unidad}/logo', [ProveedorUnidadMedidaController::class, 'updateLogo']);
+                Route::get('{unidad}/lineas', [ProveedorUnidadMedidaController::class, 'index_lineas_por_marca']);
             });
         });
 
@@ -108,8 +127,8 @@ Route::prefix('proveedores')
 
             Route::middleware(['proveedor.sucursal', 'audit'])->group(function () {
                 Route::get('{sucursal}', [ProveedorSucursalController::class, 'show']);
-                Route::patch('{sucursal}', [ProveedorSucursalController::class, 'update']);
                 Route::delete('{sucursal}', [ProveedorSucursalController::class, 'destroy']);
+                Route::patch('{sucursal}', [ProveedorSucursalController::class, 'update']);
 
                 /**
                  * PRODUCTOS POR SUCURSAL

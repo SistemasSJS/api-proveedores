@@ -2,47 +2,84 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Http\Requests\Sucursal\SucursalStoreRequest;
 use App\Http\Requests\Sucursal\SucursalUpdateRequest;
 use App\Http\Resources\SucursalResource;
 use App\Models\Proveedor;
 use App\Models\Sucursal;
-use Illuminate\Support\Facades\Request;
+use App\Traits\ApiResponse;
+use Illuminate\Http\Request;
 
 class ProveedorSucursalController extends Controller
 {
+    use ApiResponse;
+
     public function index(Request $request, Proveedor $proveedor)
     {
-        $sucursales = $proveedor->sucursales()
-            ->when($request->buscar, function ($query, $buscar) {
-                $query->where('nombre', 'like', "%{$buscar}%")
-                    ->orWhere('direccion', 'like', "%{$buscar}%");
-            })
-            ->paginate($request->per_page ?? 15);
+        /**
+         * Filtrado dinámico: ?nombre=matriz&activa=1&estatus=activa
+         * Paginación y ordenamiento: ?per_page=10&sort_by=nombre&order=asc
+         */
+        $filters = $request->only(Sucursal::$filters ?? []);
+        $perPage = $request->input('per_page', 15);
+        $sortBy = $request->input('sort_by', 'nombre');
+        $order = $request->input('order', 'asc');
 
-        return SucursalResource::collection($sucursales);
+        $query = Sucursal::query()
+            ->filter($filters ?? [])
+            ->delProveedor($proveedor->id)
+            ->orderBy($sortBy, $order);
+
+        $paginator = $query->paginate($perPage);
+
+        return $this->paginated($paginator);
+    }
+
+    public function show(Request $request, Proveedor $proveedor, $sucursalId)
+    {
+        $sucursal = Sucursal::with(Sucursal::eagerLodable())->findOrFail($sucursalId);
+
+        if ($sucursal->proveedor_id !== $proveedor->id) {
+            throw new ResourceNotFoundException("Sucursal no relacionada al proveedor.");
+        }
+
+        return $this->success(new SucursalResource($sucursal));
     }
 
     public function store(SucursalStoreRequest $request, Proveedor $proveedor)
     {
-        $sucursal = $proveedor->sucursales()->create($request->validated());
-        return new SucursalResource($sucursal);
+        $data = $request->validated();
+        $data['proveedor_id'] = $proveedor->id;
+
+        $sucursal = Sucursal::create($data);
+
+        return $this->success(new SucursalResource($sucursal));
     }
 
-    public function show(Proveedor $proveedor, Sucursal $sucursal)
+    public function update(SucursalUpdateRequest $request, Proveedor $proveedor, $sucursalId)
     {
-        return new SucursalResource($sucursal->load('productos'));
-    }
+        $sucursal = Sucursal::findOrFail($sucursalId);
 
-    public function update(SucursalUpdateRequest $request, Proveedor $proveedor, Sucursal $sucursal)
-    {
+        if ($sucursal->proveedor_id !== $proveedor->id) {
+            throw new ResourceNotFoundException("Sucursal no relacionada al proveedor.");
+        }
+
         $sucursal->update($request->validated());
-        return new SucursalResource($sucursal);
+
+        return $this->success(new SucursalResource($sucursal->fresh()));
     }
 
-    public function destroy(Proveedor $proveedor, Sucursal $sucursal)
+    public function destroy(Request $request, Proveedor $proveedor, $sucursalId)
     {
+        $sucursal = Sucursal::findOrFail($sucursalId);
+
+        if ($sucursal->proveedor_id !== $proveedor->id) {
+            throw new ResourceNotFoundException("Sucursal no relacionada al proveedor.");
+        }
+
         $sucursal->delete();
-        return response()->json(['message' => 'Sucursal eliminada correctamente']);
+
+        return $this->success(message: "Sucursal eliminada correctamente.");
     }
 }

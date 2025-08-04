@@ -95,6 +95,7 @@ class Proveedor extends BaseModel
         return [
             // 'user',
             // 'tipos_empresa'
+            'unidades',
             'categorias',
             'marcas',
             'lineas',
@@ -168,6 +169,10 @@ class Proveedor extends BaseModel
     public function lineas()
     {
         return $this->hasMany(Linea::class);
+    }
+    public function unidades()
+    {
+        return $this->hasMany(UnidadMedida::class);
     }
     /**
      * Relación uno a muchos: un proveedor puede tener varias sucursales.

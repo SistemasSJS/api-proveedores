@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 
 class Marca extends BaseModel
@@ -21,10 +22,10 @@ class Marca extends BaseModel
         return $this->belongsTo(Proveedor::class);
     }
 
-    public function lineas()
-    {
-        return $this->hasMany(Linea::class);
-    }
+    // public function lineas()
+    // {
+    //     return $this->hasMany(Linea::class);
+    // }
 
     public function productos()
     {

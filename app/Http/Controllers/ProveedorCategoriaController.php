@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\EstadoGeneral;
 use App\Http\Requests\Categoria\CategoriaStoreRequest;
+use App\Http\Resources\CategoriaResource;
 use App\Models\Categoria;
 use App\Models\Proveedor;
 use Illuminate\Database\Eloquent\RelationNotFoundException;
@@ -10,6 +12,19 @@ use Illuminate\Http\Request;
 
 class ProveedorCategoriaController extends Controller
 {
+
+    public function all(Request $request, Proveedor $proveedor)
+    {
+        // Obtener todas las categorías activas para el proveedor con las subcategorías (hijas)
+        $data = Categoria::with(['children'])
+            ->whereNull('parent_id')
+            ->where('proveedor_id', $proveedor->id)
+            ->where('estatus', EstadoGeneral::ACTIVO->value)
+            ->paginate(10000);
+
+        $categorias =    CategoriaResource::collection($data)->resolve();
+        return $this->paginated($data->setCollection(collect($categorias)));
+    }
 
     public function index(Request $request, Proveedor $proveedor)
     {

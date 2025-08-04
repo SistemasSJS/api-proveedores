@@ -25,8 +25,8 @@ class ProductoCatalogoResource extends JsonResource
       'activo' => $this->activo,
       'proveedor' => [
         'id' => $this->proveedor->id,
-        'nombre_comercial' => $this->proveedor->nombre_comercial,
-        'logo' => $this->proveedor->logo,
+        'nomblogre_comercial' => $this->proveedor->nombre_comercial,
+        'o' => $this->proveedor->logo,
       ],
       'marca' => $this->when($this->marca, [
         'id' => $this->marca?->id,

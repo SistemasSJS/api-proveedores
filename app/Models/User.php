@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\AutoSwaggerSchema;
+use App\Traits\Filterable;
 use App\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,7 +15,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use AutoSwaggerSchema;
+    use AutoSwaggerSchema, Filterable;
 
     use HasFactory, Notifiable, HasApiTokens, HasRoles;
 
@@ -25,11 +26,11 @@ class User extends Authenticatable
 
     // Filtros disponibles para este modelo
     protected static $filters = [
-        'nombre' => 'nombre',
-        'email' => 'email',
-        'role' => 'role',
+        'nombre' => 'Nombre',
+        'email' => 'Email',
+        'role' => 'Role',
     ];
-
+    
     protected function casts(): array
     {
         return ['email_verified_at' => 'datetime', 'password' => 'hashed'];
@@ -55,35 +56,35 @@ class User extends Authenticatable
         });
     }
 
-    /**
-     * Filtra los resultados de acuerdo a los filtros definidos.
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param array $filters
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function scopeFilter($query, array $filters)
-    {
-        foreach ($filters as $key => $value) {
-            if (isset(static::$filters[$key])) {
-                $method = 'filterBy' . ucfirst($filters[$key]);
-                if (method_exists($this, $method)) {
-                    $query = $this->$method($query, $value);
-                }
-            }
-        }
-        return $query;
-    }
+    // /**
+    //  * Filtra los resultados de acuerdo a los filtros definidos.
+    //  *
+    //  * @param \Illuminate\Database\Eloquent\Builder $query
+    //  * @param array $filters
+    //  * @return \Illuminate\Database\Eloquent\Builder
+    //  */
+    // public function scopeFilter($query, array $filters)
+    // {
+    //     foreach ($filters as $key => $value) {
+    //         if (isset(static::$filters[$key])) {
+    //             $method = 'filterBy' . ucfirst($filters[$key]);
+    //             if (method_exists($this, $method)) {
+    //                 $query = $this->$method($query, $value);
+    //             }
+    //         }
+    //     }
+    //     return $query;
+    // }
 
-    /**
-     * Obtener los filtros definidos en la clase.
-     *
-     * @return array
-     */
-    public static function getFilters(): array
-    {
-        return array_values(static::$filters);
-    }
+    // /**
+    //  * Obtener los filtros definidos en la clase.
+    //  *
+    //  * @return array
+    //  */
+    // public static function getFilters(): array
+    // {
+    //     return array_values(static::$filters);
+    // }
 
     /**
      * Define las relaciones permitidas para cargar con with() (eager loading).
