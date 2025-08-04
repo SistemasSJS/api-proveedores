@@ -60,9 +60,22 @@ class ProveedorProductoController extends Controller
     public function bulkStore(ProductoBulkStoreRequest $request, Proveedor $proveedor)
     {
         $productosData = $request->validated()['productos'];
+        $errores = [];
+
         $productosCreados = [];
         $productosActualizados = [];
-        $errores = [];
+
+        $marcasCreadas = [];
+        $marcasActualizadas = [];
+
+        $subcategoriasCreadas = [];
+        $subcategoriasActualizadas = [];
+
+        $categoriasCreadas = [];
+        $categoriasActualizadas = [];
+
+        $unidadesCreadas = [];
+        $unidadesActualizadas = [];
 
         foreach ($productosData as $index => $item) {
             try {
@@ -72,28 +85,48 @@ class ProveedorProductoController extends Controller
                         ['nombre' => $item['marca'], 'proveedor_id' => $proveedor->id]
                     )
                     : null;
+                if ($marca->wasRecentlyCreated) {
+                    $marcasCreadas[] = $marca;
+                } else {
+                    $marcasActualizadas[] = $marca;
+                }
 
                 $categoria = isset($item['categoria'])
                     ? Categoria::firstOrCreate(
                         ['nombre' => $item['categoria'], 'proveedor_id' => $proveedor->id]
                     )
                     : null;
+                if ($categoria->wasRecentlyCreated) {
+                    $categoriasCreadas[] = $categoria;
+                } else {
+                    $categoriasActualizadas[] = $categoria;
+                }
 
                 $unidad = isset($item['unidad_medida'])
                     ? UnidadMedida::firstOrCreate(
                         ['nombre' => $item['unidad_medida'], 'proveedor_id' => $proveedor->id]
                     )
                     : null;
+                if ($unidad->wasRecentlyCreated) {
+                    $unidadesCreadas[] = $unidad;
+                } else {
+                    $unidadesActualizadas[] = $unidad;
+                }
 
                 $subcategoria = null;
                 if ($categoria && isset($item['subcategoria'])) {
                     $subcategoria = Categoria::firstOrCreate(
                         [
                             'nombre' => $item['subcategoria'],
-                            'categoria_id' => $categoria->id,
+                            'parent_id' => $categoria->id,
                             'proveedor_id' => $proveedor->id,
                         ]
                     );
+                }
+                if ($subcategoria->wasRecentlyCreated) {
+                    $subcategoriasCreadas[] = $subcategoria;
+                } else {
+                    $subcategoriasActualizadas[] = $subcategoria;
                 }
 
                 // Crear o actualizar producto por código + proveedor_id
@@ -134,8 +167,26 @@ class ProveedorProductoController extends Controller
         }
 
         return $this->success([
-            'productos_creados' => $productosCreados,
-            'productos_actualizados' => $productosActualizados,
+            'productos' => [
+                'creados' => $productosCreados,
+                'actualizados' => $productosActualizados,
+            ],
+            'marcas' => [
+                'creados' => $marcasCreadas,
+                'actualizados' => $marcasActualizadas,
+            ],
+            'categorias' => [
+                'creados' => $categoriasCreadas,
+                'actualizados' => $categoriasActualizadas,
+            ],
+            'subcategorias' => [
+                'creados' => $subcategoriasCreadas,
+                'actualizados' => $subcategoriasActualizadas,
+            ],
+            'unidades' => [
+                'creados' => $unidadesCreadas,
+                'actualizados' => $unidadesActualizadas,
+            ],
             'errores' => $errores,
             'resumen' => [
                 'total_intentos' => count($productosData),

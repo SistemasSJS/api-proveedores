@@ -21,7 +21,7 @@ class SucursalResource extends JsonResource
             'proveedor_id' => $this->proveedor_id,
             'proveedor' => new ProveedorResource($this->whenLoaded('proveedor')),
             'productos_count' => $this->whenCounted('productos'),
-            'status' => $this->estatus,
+            'estatus' => $this->estatus,
             'productos' => ProductoResource::collection($this->whenLoaded('productos')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

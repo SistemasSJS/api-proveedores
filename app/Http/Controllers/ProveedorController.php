@@ -60,7 +60,6 @@ class ProveedorController extends Controller
         return $this->success(new ProveedorResource($proveedor->load(Proveedor::eagerLodable())));
     }
 
-public
 
     public function index(Request $request)
     {
