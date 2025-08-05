@@ -58,7 +58,8 @@ class ProductoImportController extends Controller
   public function status(Request $request, $proveedorId, $auditId)
   {
     $audit = ImportAudit::where('id', $auditId)
-      ->where('proveedor_id', $proveedorId)
+      ->where('proveedor_i
+      d', $proveedorId)
       ->first();
 
     if (!$audit) {
