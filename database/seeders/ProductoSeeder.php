@@ -378,7 +378,12 @@ class ProductoSeeder extends Seeder
 
                 foreach ($productosCategoria as $productoData) {
                     $unidad = $unidadMedidas->where('descripcion', $productoData['unidad'])->first();
-                    $categoria = Categoria::where('nombre', $categoria_nombre)->first();
+                    $categoriaPadre = Categoria::where('nombre', $categoria_nombre)->first();
+                    $subCategoria = null;
+
+                    if ($categoriaPadre && $categoriaPadre->children->isNotEmpty()) {
+                        $subCategoria = $categoriaPadre->children->random();
+                    }
 
                     // Validar que haya marcas y líneas para evitar error en random()
                     // if ($marcas->isEmpty() || $lineas->isEmpty()) {
@@ -404,7 +409,8 @@ class ProductoSeeder extends Seeder
                         [
                             'nombre' => $productoData['nombre'],
                             'descripcion' => $productoData['descripcion'],
-                            'categoria_id' => $categoria->id,
+                            'categoria_id' => $categoriaPadre ? $categoriaPadre->id :  null,
+                            'subcategoria_id' => $subCategoria ? $subCategoria->id :  null,
                             'linea_id' => $linea_random,
                             'marca_id' => $marca_random,
                             'unidad_medida_id' => $unidad ? $unidad->id : $unidadMedidas->random()->id,

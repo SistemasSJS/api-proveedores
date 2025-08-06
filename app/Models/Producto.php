@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 use Illuminate\Database\Eloquent\Relations\HasMany;
+
 class Producto extends BaseModel
 {
     use HasFactory;
@@ -42,13 +43,13 @@ class Producto extends BaseModel
         'linea_id',
         'destacado',
         'principal',
-        'estatus',          
+        'estatus',
     ];
 
     /**
      * The relations to eager load on every query.
      */
-    protected $with = ['proveedor', 'categoria', 'marca', 'linea', 'especificaciones', 'imagenes'];
+    protected $with = ['proveedor', 'categoria', 'subcategoria', 'marca', 'linea', 'especificaciones', 'imagenes'];
 
     /**
      * Filtros disponibles para aplicar dinámicamente en consultas.
@@ -63,6 +64,7 @@ class Producto extends BaseModel
         'sku'          => 'Sku',
         'codigo'          => 'Codigo',
         'categoria_id' => 'CategoriaId',
+        'subcategoria_id' => 'SubCategoriaId',
         'proveedor_id' => 'proveedorId',
         'marca_id' => 'marcaId',
         'linea_id' => 'lineaId',
@@ -94,8 +96,8 @@ class Producto extends BaseModel
     {
         return [
             'marca',
-            'linea',
             'categoria',
+            'subcategoria',
             'unidad_medida',
             'especificaciones',
             'imagenes',
@@ -128,6 +130,11 @@ class Producto extends BaseModel
     }
 
     public function categoria(): BelongsTo
+    {
+        return $this->belongsTo(Categoria::class);
+    }
+
+    public function subcategoria(): BelongsTo
     {
         return $this->belongsTo(Categoria::class);
     }
@@ -182,6 +189,13 @@ class Producto extends BaseModel
         $ids = array_filter(explode(',', $value));
         if (empty($ids)) return $query;
         return $query->whereIn('categoria_id', $ids);
+    }
+
+    public function filterBySubCategoriaId($query, $value)
+    {
+        $ids = array_filter(explode(',', $value));
+        if (empty($ids)) return $query;
+        return $query->whereIn('subcategoria_id', $ids);
     }
 
     public function filterByMarcaId($query, $value)

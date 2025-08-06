@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\EstadoGeneral;
 use App\Http\Requests\Categoria\CategoriaStoreRequest;
+use App\Http\Resources\CategoriaAcordeonResource;
 use App\Http\Resources\CategoriaResource;
 use App\Models\Categoria;
 use App\Models\Proveedor;
@@ -22,7 +23,7 @@ class ProveedorCategoriaController extends Controller
             ->where('estatus', EstadoGeneral::ACTIVO->value)
             ->paginate(10000);
 
-        $categorias =    CategoriaResource::collection($data)->resolve();
+        $categorias =    CategoriaAcordeonResource::collection($data)->resolve();
         return $this->paginated($data->setCollection(collect($categorias)));
     }
 
