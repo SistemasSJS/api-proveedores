@@ -17,17 +17,15 @@ class UnidadMedidaStoreRequest extends FormRequest
       'clave' => ['required', 'string', 'max:10'],
       'nombre' => ['required', 'string', 'max:100'],
       'descripcion' => ['nullable', 'string', 'max:255'],
-      'activo' => ['boolean'],
     ];
   }
 
-  public function attributes(): array
+  public function messages(): array
   {
     return [
-      'clave' => 'clave',
-      'nombre' => 'nombre de unidad',
-      'descripcion' => 'descripción',
-      'activo' => 'estado activo',
+      'clave.required' => 'El nombre es obligatorio.',
+      'nombre.required' => 'El nombre es obligatorio.',
+
     ];
   }
 }

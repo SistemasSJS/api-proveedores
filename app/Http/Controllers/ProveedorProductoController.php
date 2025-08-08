@@ -6,7 +6,8 @@ use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Http\Requests\Producto\ProductoStoreRequest;
 use App\Http\Requests\Producto\ProductoUpdateLogoRequest;
 use App\Http\Requests\Producto\ProductoUpdateRequest;
-use App\Http\Requests\ProductoImport\ProductoBulkStoreRequest;
+use App\Http\Requests\ProveedorImportProducto\ProductoBulkStoreJsonRequest;
+use App\Http\Requests\ProveedorImportProducto\ProductoBulkStoreRequest;
 use App\Models\Proveedor;
 use App\Http\Resources\ProductoResource;
 use App\Models\Categoria;
@@ -60,6 +61,156 @@ class ProveedorProductoController extends Controller
     public function bulkStore(ProductoBulkStoreRequest $request, Proveedor $proveedor)
     {
         $productosData = $request->validated()['productos'];
+        $errores = [];
+
+        $productosCreados = [];
+        $productosActualizados = [];
+
+        $marcasCreadas = [];
+        $marcasActualizadas = [];
+
+        $subcategoriasCreadas = [];
+        $subcategoriasActualizadas = [];
+
+        $categoriasCreadas = [];
+        $categoriasActualizadas = [];
+
+        $unidadesCreadas = [];
+        $unidadesActualizadas = [];
+
+        foreach ($productosData as $index => $item) {
+            try {
+                // Buscar o crear relaciones (por nombre + proveedor)
+                $marca = isset($item['marca'])
+                    ? Marca::firstOrCreate(
+                        ['nombre' => $item['marca'], 'proveedor_id' => $proveedor->id]
+                    )
+                    : null;
+                if ($marca->wasRecentlyCreated) {
+                    $marcasCreadas[] = $marca;
+                } else {
+                    $marcasActualizadas[] = $marca;
+                }
+
+                $categoria = isset($item['categoria'])
+                    ? Categoria::firstOrCreate(
+                        ['nombre' => $item['categoria'], 'proveedor_id' => $proveedor->id]
+                    )
+                    : null;
+                if ($categoria->wasRecentlyCreated) {
+                    $categoriasCreadas[] = $categoria;
+                } else {
+                    $categoriasActualizadas[] = $categoria;
+                }
+
+                $unidad = isset($item['unidad_medida'])
+                    ? UnidadMedida::firstOrCreate(
+                        ['nombre' => $item['unidad_medida'], 'proveedor_id' => $proveedor->id]
+                    )
+                    : null;
+                if ($unidad->wasRecentlyCreated) {
+                    $unidadesCreadas[] = $unidad;
+                } else {
+                    $unidadesActualizadas[] = $unidad;
+                }
+
+                $subcategoria = null;
+                if ($categoria && isset($item['subcategoria'])) {
+                    $subcategoria = Categoria::firstOrCreate(
+                        [
+                            'nombre' => $item['subcategoria'],
+                            'parent_id' => $categoria->id,
+                            'proveedor_id' => $proveedor->id,
+                        ]
+                    );
+                }
+                if ($subcategoria->wasRecentlyCreated) {
+                    $subcategoriasCreadas[] = $subcategoria;
+                } else {
+                    $subcategoriasActualizadas[] = $subcategoria;
+                }
+
+                // Crear o actualizar producto por código + proveedor_id
+                $producto = Producto::updateOrCreate(
+                    [
+                        'codigo_interno' => $item['codigo'],
+                        'proveedor_id' => $proveedor->id,
+                    ],
+                    [
+                        'nombre' => $item['producto'],
+                        'descripcion' => $item['descripcion'] ?? null,
+                        'modelo' => $item['modelo'] ?? null,
+                        'precio' => $item['precio'],
+                        'precio_mayoreo' => $item['precio_mayoreo'] ?? null,
+                        'precio_menuedeo' => $item['precio_menuedeo'] ?? null,
+                        'marca_id' => $marca?->id,
+                        'categoria_id' => $categoria?->id,
+                        'subcategoria_id' => $subcategoria?->id,
+                        'unidad_medida_id' => $unidad?->id,
+                    ]
+                );
+
+                $productoResource = new ProductoResource($producto->fresh(Producto::eagerLodable()));
+
+                if ($producto->wasRecentlyCreated) {
+                    $productosCreados[] = $productoResource;
+                } else {
+                    $productosActualizados[] = $productoResource;
+                }
+            } catch (\Throwable $e) {
+                $errores[] = [
+                    'item' => $item,
+                    'error' => $e->getMessage(),
+                ];
+                report($e);
+                continue;
+            }
+        }
+
+        return $this->success([
+            'productos' => [
+                'creados' => $productosCreados,
+                'actualizados' => $productosActualizados,
+            ],
+            'marcas' => [
+                'creados' => $marcasCreadas,
+                'actualizados' => $marcasActualizadas,
+            ],
+            'categorias' => [
+                'creados' => $categoriasCreadas,
+                'actualizados' => $categoriasActualizadas,
+            ],
+            'subcategorias' => [
+                'creados' => $subcategoriasCreadas,
+                'actualizados' => $subcategoriasActualizadas,
+            ],
+            'unidades' => [
+                'creados' => $unidadesCreadas,
+                'actualizados' => $unidadesActualizadas,
+            ],
+            'errores' => $errores,
+            'resumen' => [
+                'total_intentos' => count($productosData),
+                'exitosos' => count($productosCreados) + count($productosActualizados),
+                'creados' => count($productosCreados),
+                'actualizados' => count($productosActualizados),
+                'fallidos' => count($errores),
+            ]
+        ], 'Proceso de carga masiva finalizado.');
+    }
+
+    public function bulkStoreJson(ProductoBulkStoreJsonRequest $request, Proveedor $proveedor)
+    {
+        $file = $request->file('file');
+
+        // try {
+        $jsonContent = file_get_contents($file->getRealPath());
+        $productosData = json_decode($jsonContent, true);
+
+        if (!is_array($productosData)) {
+            return $this->error('El archivo JSON debe contener un array de productos.', 422);
+        }
+        $productosData = $request->validated()['file'];
         $errores = [];
 
         $productosCreados = [];

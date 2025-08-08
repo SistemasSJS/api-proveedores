@@ -57,6 +57,8 @@ Route::prefix('proveedores')
             Route::get('/', [ProveedorProductoController::class, 'index'])->middleware(['audit']);
             Route::post('/', [ProveedorProductoController::class, 'store'])->middleware(['audit']);
             Route::post('/bulk', [ProveedorProductoController::class, 'bulkStore'])->middleware(['audit']);
+            Route::post('/bulk-json', [ProveedorProductoController::class, 'bulkStoreJson'])->middleware(['audit']);
+            // Route::post('/bulk-json', [ProveedorProductoController::class, 'bulkStoreJson']);
 
             Route::middleware(['proveedor.producto', 'audit'])->group(function () {
                 Route::get('{producto}', [ProveedorProductoController::class, 'show']);
@@ -112,8 +114,6 @@ Route::prefix('proveedores')
                 Route::get('{unidad}', [ProveedorUnidadMedidaController::class, 'show']);
                 Route::patch('{unidad}', [ProveedorUnidadMedidaController::class, 'update']);
                 Route::delete('{unidad}', [ProveedorUnidadMedidaController::class, 'destroy']);
-                Route::post('{unidad}/logo', [ProveedorUnidadMedidaController::class, 'updateLogo']);
-                Route::get('{unidad}/lineas', [ProveedorUnidadMedidaController::class, 'index_lineas_por_marca']);
             });
         });
 
