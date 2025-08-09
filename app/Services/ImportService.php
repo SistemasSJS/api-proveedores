@@ -66,6 +66,7 @@ class ImportService
     {
         $importAudit = ImportAudit::create([
             'proveedor_id' => $proveedor->id,
+            'archivo'=> 'PENDIENTE_ALMACENAR',
             'tipo' => 'productos',
             'formato' => 'json',
             'estado' => 'processing',

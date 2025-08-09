@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('import_audits', function (Blueprint $table) {
             if (!Schema::hasColumn('import_audits', 'archivo')) {
-                $table->strip_tags('archivo')
+                $table->string('archivo')
                     ->nullable();
             }
         });
