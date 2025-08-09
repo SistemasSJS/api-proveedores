@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProveedorImportoProducto\ProveedorImportProductoRequest;
 use App\Models\Marca;
 use App\Models\Categoria;
 use App\Models\UnidadMedida;
@@ -12,6 +11,7 @@ use App\Traits\ApiResponse;
 use App\Http\Requests\ProveedorImportProducto\MarcaBulkStoreRequest;
 use App\Http\Requests\ProveedorImportProducto\CategoriaBulkStoreRequest;
 use App\Http\Requests\ProveedorImportProducto\ProductoBulkStoreJsonRequest;
+use App\Http\Requests\ProveedorImportProducto\ProveedorImportProductoRequest;
 use App\Http\Requests\ProveedorImportProducto\UnidadMedidaBulkStoreRequest;
 use App\Http\Resources\ElementoImportadoResource;
 use App\Http\Resources\ProductoResource;
