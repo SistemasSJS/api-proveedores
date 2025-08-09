@@ -18,6 +18,7 @@ use App\Models\UnidadMedida;
 use Illuminate\Http\Request;
 use App\Traits\ApiResponse;
 use App\Services\ImportService;
+use App\Services\ImportProcessorService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -26,10 +27,12 @@ class ProveedorProductoController extends Controller
     use ApiResponse;
 
     protected ImportService $importService;
+    protected ImportProcessorService $importProcessorService;
 
-    public function __construct(ImportService $importService)
+    public function __construct(ImportService $importService, ImportProcessorService $importProcessorService)
     {
         $this->importService = $importService;
+        $this->importProcessorService = $importProcessorService;
     }
 
     public function index(Request $request, Proveedor $proveedor)
@@ -117,12 +120,83 @@ class ProveedorProductoController extends Controller
 
 
     /**
+     * Importación masiva de productos optimizada con nuevo ImportProcessorService
+     */
+    public function bulkStoreOptimized(ProveedorImportProductoRequest $request, Proveedor $proveedor)
+    {
+        $productosData = $request->input('productos', []);
+        
+        // Crear entrada de auditoría inicial
+        $importAudit = $this->createImportAudit($proveedor, $productosData, 'bulk_optimized');
+        
+        try {
+            // Procesar con el nuevo servicio optimizado
+            $result = $this->importProcessorService->processImport(
+                $productosData,
+                $proveedor,
+                $importAudit,
+                false // No usar preview para importación directa
+            );
+            
+            // Determinar mensaje de respuesta basado en tipo de procesamiento
+            if ($result['processing_type'] === 'async') {
+                return $this->success($result, 'Importación iniciada en segundo plano debido al gran volumen de datos.');
+            } else {
+                return $this->success($result, 'Importación procesada exitosamente.');
+            }
+            
+        } catch (\Throwable $e) {
+            // Manejar error y actualizar auditoría
+            $this->handleImportError($importAudit, $e);
+            
+            return $this->error('Error durante la importación: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
      * Importación masiva de productos - delegado al servicio de importación
-     * @deprecated Usa el nuevo endpoint /productos/import para aprovechar el sistema de auditoría
+     * @deprecated Usa el nuevo endpoint bulkStoreOptimized para mejor rendimiento
      */
     public function bulkStore(ProveedorImportProductoRequest $request, Proveedor $proveedor)
     {
         // Delegamos al servicio de importación para mantener consistencia
         return $this->importService->processImport($request, $proveedor);
+    }
+
+    /**
+     * Crear entrada de auditoría para importación
+     */
+    private function createImportAudit(Proveedor $proveedor, array $productosData, string $tipo = 'bulk'): \App\Models\ImportAudit
+    {
+        return \App\Models\ImportAudit::create([
+            'proveedor_id' => $proveedor->id,
+            'tipo' => $tipo,
+            'formato' => 'json',
+            'estado' => 'processing',
+            'fase' => 'processing',
+            'total_registros' => count($productosData),
+            'progreso' => 0,
+            'inicio_proceso' => now(),
+        ]);
+    }
+
+    /**
+     * Manejar error de importación
+     */
+    private function handleImportError(\App\Models\ImportAudit $importAudit, \Throwable $e): void
+    {
+        $importAudit->update([
+            'estado' => 'failed',
+            'fase' => 'completed',
+            'fin_proceso' => now(),
+        ]);
+
+        $importAudit->appendLog('Error durante la importación', [
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ]);
+        
+        $importAudit->save();
     }
 }
