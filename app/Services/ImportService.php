@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\EstadoImportacion;
 use App\Http\Requests\ProveedorImportProducto\ProveedorImportProductoRequest;
 use App\Models\ImportAudit;
 use App\Models\Proveedor;
@@ -25,36 +26,33 @@ class ImportService
     {
         // Validar el request como si fuera ProveedorImportProductoRequest
         $validator = validator($request->all(), (new ProveedorImportProductoRequest)->rules());
-        
+
         if ($validator->fails()) {
             return $this->error('Datos de importación inválidos.', 422, $validator->errors());
         }
 
         $productosData = $request->input('productos', []);
-        
-        // Crear entrada de auditoría
         $importAudit = $this->createImportAudit($proveedor, $productosData);
-        
+
         try {
             // Ejecutar la importación
             $result = $this->executeBulkImport($productosData, $proveedor, $importAudit);
-            
+
             // Actualizar auditoría con resultados
             $this->updateImportAuditResults($importAudit, $result);
-            
+
             return $this->success($result, 'Proceso de importación completado exitosamente.');
-            
         } catch (\Throwable $e) {
             // Registrar error y actualizar auditoría
             $this->handleImportError($importAudit, $e);
-            
+
             Log::error('Error en importación de productos', [
                 'proveedor_id' => $proveedor->id,
                 'import_audit_id' => $importAudit->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return $this->error('Error durante la importación: ' . $e->getMessage(), 500);
         }
     }
@@ -66,11 +64,11 @@ class ImportService
     {
         $importAudit = ImportAudit::create([
             'proveedor_id' => $proveedor->id,
-            'archivo'=> 'PENDIENTE_ALMACENAR',
+            'archivo' => 'PENDIENTE_ALMACENAR',
             'tipo' => 'productos',
             'formato' => 'json',
-            'estado' => 'processing',
-            'fase' => 'processing',
+            'estado' => EstadoImportacion::PROCESANDO->value,
+            // 'fase' => 'processing',s
             'total_registros' => count($productosData),
             'progreso' => 0,
             'inicio_proceso' => now(),
@@ -111,11 +109,11 @@ class ImportService
 
         foreach (array_chunk($productosData, $chunkSize) as $lote) {
             $currentChunk++;
-            
+
             // Actualizar progreso
             $progreso = ($currentChunk / $totalChunks) * 100;
             $importAudit->update(['progreso' => $progreso]);
-            
+
             $importAudit->appendLog("Procesando lote {$currentChunk} de {$totalChunks}", [
                 'registros_en_lote' => count($lote),
                 'progreso' => $progreso
@@ -125,7 +123,7 @@ class ImportService
             DB::beginTransaction();
             try {
                 $resultado = $this->processChunk($lote, $proveedor, $importAudit);
-                
+
                 // Acumular resultados
                 $productosCreados = array_merge($productosCreados, $resultado['productosCreados']);
                 $productosActualizados = array_merge($productosActualizados, $resultado['productosActualizados']);
@@ -140,17 +138,16 @@ class ImportService
                 $errores = array_merge($errores, $resultado['errores']);
 
                 DB::commit();
-                
+
                 $importAudit->appendLog("Lote {$currentChunk} procesado exitosamente", [
                     'productos_creados' => count($resultado['productosCreados']),
                     'productos_actualizados' => count($resultado['productosActualizados']),
                     'errores' => count($resultado['errores'])
                 ]);
                 $importAudit->save();
-                
             } catch (\Throwable $e) {
                 DB::rollBack();
-                
+
                 // Registrar todos los items del lote como errores
                 foreach ($lote as $item) {
                     $errores[] = [
@@ -158,7 +155,7 @@ class ImportService
                         'error' => $e->getMessage()
                     ];
                 }
-                
+
                 $importAudit->appendLog("Error procesando lote {$currentChunk}", [
                     'error' => $e->getMessage(),
                     'registros_fallidos' => count($lote)
@@ -358,8 +355,8 @@ class ImportService
     private function updateImportAuditResults(ImportAudit $importAudit, array $result): void
     {
         $importAudit->update([
-            'estado' => 'completed',
-            'fase' => 'completed',
+            'estado' => EstadoImportacion::COMPLETADO->value,
+            // 'fase' => 'completed',
             'progreso' => 100,
             'fin_proceso' => now(),
             'nuevos' => $result['resumen']['creados'],
@@ -371,7 +368,7 @@ class ImportService
         $importAudit->appendLog('Importación completada exitosamente', [
             'resumen' => $result['resumen']
         ]);
-        
+
         $importAudit->save();
     }
 
@@ -381,8 +378,8 @@ class ImportService
     private function handleImportError(ImportAudit $importAudit, \Throwable $e): void
     {
         $importAudit->update([
-            'estado' => 'failed',
-            'fase' => 'completed',
+            'estado' => EstadoImportacion::ERROR->value,
+            // 'fase' => 'completed',
             'fin_proceso' => now(),
         ]);
 
@@ -391,7 +388,7 @@ class ImportService
             'file' => $e->getFile(),
             'line' => $e->getLine()
         ]);
-        
+
         $importAudit->save();
     }
 }

@@ -15,6 +15,7 @@ use App\Http\Controllers\ProveedorReporteController;
 use App\Http\Controllers\ProveedorDashboardController;
 use App\Http\Controllers\ImportHistoryController;
 use App\Enums\UserRoleEnumerate;
+use App\Http\Controllers\ImportStatsController;
 use App\Http\Controllers\ProveedorUnidadMedidaController;
 
 /**
@@ -59,7 +60,7 @@ Route::prefix('proveedores')
             Route::post('/', [ProveedorProductoController::class, 'store'])->middleware(['audit']);
             Route::post('/bulk', [ProveedorProductoController::class, 'bulkStore'])->middleware(['audit']);
             Route::post('/bulk-json', [ProveedorProductoController::class, 'bulkStoreJson'])->middleware(['audit']);
-            
+
             // Nueva ruta de importación integrada con el servicio
             Route::post('/import', [ImportHistoryController::class, 'import'])->middleware(['audit']);
 
@@ -175,6 +176,7 @@ Route::prefix('proveedores')
         Route::prefix('{proveedor}/import-history')->middleware(['proveedor.access'])->group(function () {
             Route::get('/', [ImportHistoryController::class, 'index'])->middleware(['audit']);
             Route::post('/', [ImportHistoryController::class, 'store'])->middleware(['audit']);
+            Route::get('/statistics', [ImportStatsController::class, 'dashboard'])->middleware(['audit']);
             Route::get('{importHistory}', [ImportHistoryController::class, 'show'])->middleware(['audit']);
             Route::patch('{importHistory}', [ImportHistoryController::class, 'update'])->middleware(['audit']);
             Route::delete('{importHistory}', [ImportHistoryController::class, 'destroy'])->middleware(['audit']);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\EstadoImportacion;
 use App\Models\ImportAudit;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
@@ -40,9 +41,9 @@ class ImportStatsController extends Controller
     {
         $level = $request->input('level');
         $limit = $request->input('limit', 100);
-        
+
         $logs = $importAudit->getStructuredLogs($level, $limit);
-        
+
         return $this->success([
             'logs' => $logs,
             'total_logs' => count($importAudit->logs ?? []),
@@ -61,31 +62,40 @@ class ImportStatsController extends Controller
     {
         $days = $request->input('days', 7);
         $proveedorId = $request->input('proveedor_id');
-        
+
         $query = ImportAudit::where('created_at', '>=', now()->subDays($days));
-        
+
         if ($proveedorId) {
             $query->where('proveedor_id', $proveedorId);
         }
-        
+
         $audits = $query->get();
-        
+
         // Statistics
         $totalImports = $audits->count();
-        $completedImports = $audits->where('estado', 'completed')->count();
-        $failedImports = $audits->where('estado', 'failed')->count();
-        $inProgressImports = $audits->whereIn('estado', ['processing', 'queued'])->count();
-        
+        $completedImports = $audits->where(
+            'estado',
+            EstadoImportacion::COMPLETADO->value,
+        )->count();
+        $failedImports = $audits->where(
+            'estado',
+            EstadoImportacion::ERROR->value,
+        )->count();
+        $inProgressImports = $audits->whereIn('estado', [
+            EstadoImportacion::PROCESANDO->value,
+            EstadoImportacion::PENDIENTE->value,
+        ])->count();
+
         $totalRecords = $audits->sum('total_registros');
         $totalSuccessful = $audits->sum('nuevos') + $audits->sum('actualizados');
         $totalErrors = $audits->sum('errores');
-        
+
         $successRate = $totalRecords > 0 ? round(($totalSuccessful / $totalRecords) * 100, 2) : 0;
-        
+
         // Performance metrics
         $avgProcessingTime = $audits->where('processing_time', '>', 0)->avg('processing_time') ?? 0;
         $avgMemoryUsage = $audits->where('memory_usage', '>', 0)->avg('memory_usage') ?? 0;
-        
+
         // Error types frequency
         $errorTypesFrequency = [];
         foreach ($audits as $audit) {
@@ -94,24 +104,24 @@ class ImportStatsController extends Controller
                 $errorTypesFrequency[$type] = ($errorTypesFrequency[$type] ?? 0) + 1;
             }
         }
-        
+
         // Sort error types by frequency
         arsort($errorTypesFrequency);
-        
+
         // Daily statistics
         $dailyStats = $audits->groupBy(function ($audit) {
             return $audit->created_at->format('Y-m-d');
         })->map(function ($dayAudits) {
             return [
                 'total_imports' => $dayAudits->count(),
-                'completed' => $dayAudits->where('estado', 'completed')->count(),
-                'failed' => $dayAudits->where('estado', 'failed')->count(),
+                'completed' => $dayAudits->where('estado', EstadoImportacion::COMPLETADO->value,)->count(),
+                'failed' => $dayAudits->where('estado', EstadoImportacion::ERROR->value,)->count(),
                 'total_records' => $dayAudits->sum('total_registros'),
                 'successful_records' => $dayAudits->sum('nuevos') + $dayAudits->sum('actualizados'),
                 'error_records' => $dayAudits->sum('errores'),
             ];
         });
-        
+
         return $this->success([
             'period' => [
                 'days' => $days,
@@ -150,7 +160,7 @@ class ImportStatsController extends Controller
                         'estado' => $audit->estado,
                         'total_registros' => $audit->total_registros,
                         'errores' => $audit->errores,
-                        'success_rate' => $audit->total_registros > 0 
+                        'success_rate' => $audit->total_registros > 0
                             ? round((($audit->nuevos + $audit->actualizados) / $audit->total_registros) * 100, 2)
                             : 0,
                         'processing_time' => $audit->processing_time,
@@ -169,20 +179,20 @@ class ImportStatsController extends Controller
         $page = $request->input('page', 1);
         $perPage = $request->input('per_page', 50);
         $errorType = $request->input('error_type');
-        
+
         $errorDetails = $importAudit->errores_detalle ?? [];
-        
+
         // Filter by error type if specified
         if ($errorType) {
             $errorDetails = array_filter($errorDetails, function ($error) use ($errorType) {
                 return ($error['error_type'] ?? '') === $errorType;
             });
         }
-        
+
         $total = count($errorDetails);
         $offset = ($page - 1) * $perPage;
         $paginatedErrors = array_slice($errorDetails, $offset, $perPage);
-        
+
         return $this->success([
             'errors' => $paginatedErrors,
             'pagination' => [
