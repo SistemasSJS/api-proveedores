@@ -42,7 +42,7 @@ class ProveedorImportProductoRequest extends FormRequest
       'productos.*.subcategoria' => ['nullable', 'string', 'max:255'],
       'productos.*.modelo' => ['nullable', 'string', 'max:255'],
       'productos.*.unidad_medida' => ['nullable', 'string', 'max:255'],
-      'productos.*.precio' => ['required', 'numeric', 'min:0'],
+      'productos.*.precio' => ['nullable', 'numeric', 'min:0'],
       'productos.*.precio_mayoreo' => ['nullable', 'numeric', 'min:0'],
       'productos.*.precio_menudeo' => ['nullable', 'numeric', 'min:0'],
     ];
@@ -54,8 +54,8 @@ class ProveedorImportProductoRequest extends FormRequest
       'productos.required' => 'Debe proporcionar al menos un producto para importar.',
       'productos.*.codigo.required' => 'Cada producto debe tener un código.',
       'productos.*.producto.required' => 'Cada producto debe tener un nombre.',
-      'productos.*.precio.required' => 'Cada producto debe tener un precio.',
-      'productos.*.precio.numeric' => 'El precio debe ser un número válido.',
+      'productos.*.precio.numeric' => 'El precio debe ser un número válido cuando se proporcione.',
+      'productos.*.precio.min' => 'El precio debe ser mayor o igual a 0.',
     ];
   }
 }
