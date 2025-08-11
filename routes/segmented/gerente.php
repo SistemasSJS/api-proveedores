@@ -63,6 +63,10 @@ Route::prefix('proveedores')
 
             // Nueva ruta de importación integrada con el servicio
             Route::post('/import', [ImportHistoryController::class, 'import'])->middleware(['audit']);
+            
+            // Nuevos endpoints de importación CSV
+            Route::post('/import-preview', [ImportHistoryController::class, 'importPreview'])->middleware(['audit']);
+            Route::post('/import-confirm', [ImportHistoryController::class, 'importConfirm'])->middleware(['audit']);
 
             Route::middleware(['proveedor.producto', 'audit'])->group(function () {
                 Route::get('{producto}', [ProveedorProductoController::class, 'show']);
@@ -178,6 +182,7 @@ Route::prefix('proveedores')
             Route::post('/', [ImportHistoryController::class, 'store'])->middleware(['audit']);
             Route::get('/statistics', [ImportStatsController::class, 'dashboard'])->middleware(['audit']);
             Route::get('{importHistory}', [ImportHistoryController::class, 'show'])->middleware(['audit']);
+            Route::get('{importHistory}/detailed', [ImportHistoryController::class, 'showDetailed'])->middleware(['audit']);
             Route::patch('{importHistory}', [ImportHistoryController::class, 'update'])->middleware(['audit']);
             Route::delete('{importHistory}', [ImportHistoryController::class, 'destroy'])->middleware(['audit']);
         });
