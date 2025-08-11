@@ -10,29 +10,32 @@ use App\Models\UnidadMedida;
 
 class ProductImportValidator
 {
+
+    private array $optionalFields = [
+        'descripcion',
+        'subcategoria'
+    ];
+
     private array $requiredFields = [
-        // 'sku',
-        'nombre_producto',
-        // 'nombre_marca'
+        'codigo',
+        'producto',
+        'marca',
+        'categoria',
+        'unidad_medida'
     ];
 
     private array $numericFields = [
-        'precio_base',
-        'precio_de_lista',
-        'precio_publico',
+        'precio',
         'precio_mayoreo',
-        'precio_con_IVA',
-        'precio_sin_IVA',
-        'precio_promocional',
-        'precio_distribuidor',
-        'precio_especial'
+        'precio_menudeo'
     ];
 
     private int $proveedorId;
-    private array $existingSkus = [];
+    private array $existingCodigos = [];
     private array $existingMarcas = [];
     private array $existingLineas = [];
     private array $existingCategorias = [];
+    private array $existingSubcat = [];
     private array $existingUnidadMedidas = [];
 
     public function __construct(int $proveedorId)
@@ -43,6 +46,7 @@ class ProductImportValidator
 
     /**
      * Validate a single row
+     * 
      *
      * @param array $row
      * @param int $rowIndex (1-based)
@@ -60,21 +64,21 @@ class ProductImportValidator
             }
         }
 
-        // Validate SKU uniqueness within file (will be checked later during batch processing)
-        $sku = trim($row['sku'] ?? '');
-        if ($sku) {
-            if (in_array($sku, $this->existingSkus)) {
-                $warnings[] = "SKU '{$sku}' ya existe y será actualizado";
+        // Validate codigo unico
+        $codigo = trim($row['codigo'] ?? '');
+        if ($codigo) {
+            if (in_array($codigo, $this->existingCodigos)) {
+                $warnings[] = "Codigo '{$codigo}' ya existe y será actualizado";
             }
 
-            // Validate SKU format (alphanumeric, hyphens, underscores)
-            if (!preg_match('/^[a-zA-Z0-9_-]+$/', $sku)) {
-                $errors[] = "SKU '{$sku}' contiene caracteres no válidos";
+            // Validate codigo format (alphanumeric, hyphens, underscores)
+            if (!preg_match('/^[a-zA-Z0-9_-]+$/', $codigo)) {
+                $errors[] = "Codigo '{$codigo}' contiene caracteres no válidos";
             }
 
-            // Validate SKU length
-            if (strlen($sku) > 100) {
-                $errors[] = "SKU '{$sku}' excede la longitud máxima de 100 caracteres";
+            // Validate codigo length
+            if (strlen($codigo) > 100) {
+                $errors[] = "Codigo '{$codigo}' excede la longitud máxima de 100 caracteres";
             }
         }
 
@@ -93,12 +97,6 @@ class ProductImportValidator
         $marcaNombre = trim($row['nombre_marca'] ?? '');
         if ($marcaNombre && strlen($marcaNombre) > 255) {
             $errors[] = "Nombre de marca excede 255 caracteres";
-        }
-
-        // Validate linea
-        $lineaNombre = trim($row['nombre_linea'] ?? '');
-        if ($lineaNombre && strlen($lineaNombre) > 255) {
-            $errors[] = "Nombre de línea excede 255 caracteres";
         }
 
         // Validate categorias (3-level nesting)
@@ -142,9 +140,9 @@ class ProductImportValidator
      */
     private function loadExistingData(): void
     {
-        // Load existing SKUs for this provider
-        $this->existingSkus = Producto::where('proveedor_id', $this->proveedorId)
-            ->pluck('sku')
+        // Load existing codigos for this provider
+        $this->existingCodigos = Producto::where('proveedor_id', $this->proveedorId)
+            ->pluck('codigo')
             ->toArray();
 
         // Load existing marcas
@@ -162,6 +160,11 @@ class ProductImportValidator
             ->pluck('nombre')
             ->toArray();
 
+        $this->existingCategorias = Categoria::where('proveedor_id', $this->proveedorId)
+            ->pluck('nombre')
+            ->toArray();
+
+        $this->existingSubcat = Categoria::where('parent_id', $id)->pluck('id')->toArray();
         // Load existing unidad medidas
         $this->existingUnidadMedidas = UnidadMedida::pluck('descripcion')
             ->toArray();
@@ -173,26 +176,16 @@ class ProductImportValidator
     public function getExpectedHeaders(): array
     {
         return [
-            'sku' => 'required',
-            'nombre_modelo' => 'optional',
-            'codigo_interno' => 'optional',
-            'nombre_producto' => 'required',
-            'descripcion_producto' => 'optional',
-            'nombre_marca' => 'required',
-            'nombre_linea' => 'optional',
-            'nombre_categoria_nivel_1' => 'optional',
-            'nombre_categoria_nivel_2' => 'optional',
-            'nombre_categoria_nivel_3' => 'optional',
-            'unidad_medida' => 'optional',
-            'precio_base' => 'optional',
-            'precio_de_lista' => 'optional',
-            'precio_publico' => 'optional',
+            'codigo' => 'required',
+            'producto' => 'required',
+            'decripcion' => 'optional',
+            'marca' => 'required',
+            'categoria' => 'required',
+            'subcategoria' => 'optional',
+            'unidad_medida' => 'required',
+            'precio' => 'optional',
             'precio_mayoreo' => 'optional',
-            'precio_con_IVA' => 'optional',
-            'precio_sin_IVA' => 'optional',
-            'precio_promocional' => 'optional',
-            'precio_distribuidor' => 'optional',
-            'precio_especial' => 'optional'
+            'precio_menudeo' => 'optional',
         ];
     }
 

@@ -67,6 +67,15 @@ class ImportarProductosJob implements ShouldQueue
     private function executePreviewPhases(ImportAudit $audit): void
     {
         // Phase 1: Parse (0-20%)
+        /**
+         * Asociativew data: [
+         *  {
+         *      CODIGO: 000000,
+         *      PRODCUTO: 000000,
+         *      ....
+         * }
+         * ]
+         */
         $parsedData = $this->parsePhase($audit);
 
         // Phase 2: Validate (20-40%)
