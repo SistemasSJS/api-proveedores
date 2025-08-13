@@ -119,84 +119,88 @@ class ProveedorProductoController extends Controller
     }
 
 
-    /**
-     * Importación masiva de productos optimizada con nuevo ImportProcessorService
-     */
-    public function bulkStoreOptimized(ProveedorImportProductoRequest $request, Proveedor $proveedor)
-    {
-        $productosData = $request->input('productos', []);
-        
-        // Crear entrada de auditoría inicial
-        $importAudit = $this->createImportAudit($proveedor, $productosData, 'bulk_optimized');
-        
-        try {
-            // Procesar con el nuevo servicio optimizado
-            $result = $this->importProcessorService->processImport(
-                $productosData,
-                $proveedor,
-                $importAudit,
-                false // No usar preview para importación directa
-            );
-            
-            // Determinar mensaje de respuesta basado en tipo de procesamiento
-            if ($result['processing_type'] === 'async') {
-                return $this->success($result, 'Importación iniciada en segundo plano debido al gran volumen de datos.');
-            } else {
-                return $this->success($result, 'Importación procesada exitosamente.');
-            }
-            
-        } catch (\Throwable $e) {
-            // Manejar error y actualizar auditoría
-            $this->handleImportError($importAudit, $e);
-            
-            return $this->error('Error durante la importación: ' . $e->getMessage(), 500);
-        }
-    }
+    /***********************************************************************/
+    /************************BULK INSERT ***********************************/
+    /***********************************************************************/
 
-    /**
-     * Importación masiva de productos - delegado al servicio de importación
-     * @deprecated Usa el nuevo endpoint bulkStoreOptimized para mejor rendimiento
-     */
+
     public function bulkStore(ProveedorImportProductoRequest $request, Proveedor $proveedor)
     {
         // Delegamos al servicio de importación para mantener consistencia
         return $this->importService->processImport($request, $proveedor);
     }
 
+    public function validateProductosByCodigo(Request $request, Proveedor $proveedor)
+    {
+        $codigos = $request->input('codigos', []);
+
+        if (!is_array($codigos) || empty($codigos)) {
+            return $this->error('Debe enviar un array de códigos de producto.', 422);
+        }
+
+        // Buscar productos que coincidan con los códigos y el proveedor
+        $productos = Producto::where('proveedor_id', $proveedor->id)
+            ->whereIn('codigo', $codigos)
+            ->get(['id', 'codigo', 'nombre']);
+
+        // Obtener códigos encontrados
+        $codigosEncontrados = $productos->pluck('codigo')->toArray();
+
+        // Determinar los códigos que no existen
+        $codigosNoEncontrados = array_values(array_diff($codigos, $codigosEncontrados));
+
+        return $this->success([
+            'encontrados' => $productos,
+            'no_encontrados' => $codigosNoEncontrados,
+        ]);
+    }
+
+    /***********************************************************************/
+    /***********************************************************************/
+    /***********************************************************************/
+    /***********************************************************************/
+    /***********************************************************************/
+    /***********************************************************************/
+    /***********************************************************************/
+    /***********************************************************************/
+    /***********************************************************************/
+    /***********************************************************************/
+    /***********************************************************************/
+
     /**
      * Crear entrada de auditoría para importación
      */
-    private function createImportAudit(Proveedor $proveedor, array $productosData, string $tipo = 'bulk'): \App\Models\ImportAudit
-    {
-        return \App\Models\ImportAudit::create([
-            'proveedor_id' => $proveedor->id,
-            'tipo' => $tipo,
-            'formato' => 'json',
-            'estado' => 'processing',
-            'fase' => 'processing',
-            'total_registros' => count($productosData),
-            'progreso' => 0,
-            'inicio_proceso' => now(),
-        ]);
-    }
+    // private function createImportAudit(Proveedor $proveedor, array $productosData, string $tipo = 'bulk'): \App\Models\ImportAudit
+    // {
+    //     return \App\Models\ImportAudit::create([
+    //         'proveedor_id' => $proveedor->id,
+    //         'tipo' => $tipo,
+    //         'formato' => 'json',
+    //         'estado' => 'processing',
+    //         'fase' => 'processing',
+    //         'total_registros' => count($productosData),
+    //         'progreso' => 0,
+    //         'inicio_proceso' => now(),
+    //     ]);
+    // }
 
-    /**
-     * Manejar error de importación
-     */
-    private function handleImportError(\App\Models\ImportAudit $importAudit, \Throwable $e): void
-    {
-        $importAudit->update([
-            'estado' => 'failed',
-            'fase' => 'completed',
-            'fin_proceso' => now(),
-        ]);
+    // /**
+    //  * Manejar error de importación
+    //  */
+    // private function handleImportError(\App\Models\ImportAudit $importAudit, \Throwable $e): void
+    // {
+    //     $importAudit->update([
+    //         'estado' => 'failed',
+    //         'fase' => 'completed',
+    //         'fin_proceso' => now(),
+    //     ]);
 
-        $importAudit->appendLog('Error durante la importación', [
-            'error' => $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine()
-        ]);
-        
-        $importAudit->save();
-    }
+    //     $importAudit->appendLog('Error durante la importación', [
+    //         'error' => $e->getMessage(),
+    //         'file' => $e->getFile(),
+    //         'line' => $e->getLine()
+    //     ]);
+
+    //     $importAudit->save();
+    // }
 }
