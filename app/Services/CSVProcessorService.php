@@ -3,11 +3,16 @@
 namespace App\Services;
 
 use App\Models\ImportValidationCache;
+use App\Models\Marca;
+use App\Models\Categoria;
+use App\Models\UnidadMedida;
+use App\Models\Producto;
 use App\Services\ProductImportValidator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Support\Collection;
 
 class CSVProcessorService
 {
@@ -55,6 +60,9 @@ class CSVProcessorService
             // Generate quality metrics
             $qualityMetrics = $this->generateQualityMetrics($validationResults, $csvData);
 
+            // Generate catalog breakdown analysis
+            $catalogBreakdown = $this->generateCatalogBreakdown($csvData['data'], $proveedorId);
+
             // Cache the full data for later confirmation
             $cacheData = [
                 'full_data' => $csvData['data'],
@@ -89,15 +97,16 @@ class CSVProcessorService
                     'validation' => $headerValidation,
                     'mapping_suggestions' => $this->generateHeaderMappingSuggestions($csvData['headers'] ?? [], $validator)
                 ],
-                'preview_data' => array_slice($previewData, 0, 10), // Solo primeras 10 para el frontend
+                'preview_data' => $previewData, // Solo primeras 10 para el frontend
                 'validation_summary' => $validationResults['summary'],
-                'validation_details' => array_slice($validationResults['validation_results'], 0, 20), // Primeros 20 errores
+                'validation_details' => $validationResults['validation_results'], // Primeros 20 errores
                 'quality_metrics' => $qualityMetrics,
                 'processing_info' => [
                     'processing_time' => $processingTime,
                     'memory_used' => round(memory_get_peak_usage(true) / 1024 / 1024, 2) . ' MB',
                     'can_proceed' => $qualityMetrics['can_proceed'] ?? false
-                ]
+                ],
+                'catalogos' => $catalogBreakdown
             ];
         } catch (\Throwable $e) {
             Log::error('Error processing CSV preview', [
@@ -406,5 +415,343 @@ class CSVProcessorService
     public function cleanupExpiredPreviews(): int
     {
         return ImportValidationCache::where('expires_at', '<', now())->delete();
+    }
+
+    /**
+     * Generate enhanced catalog breakdown with existing vs new items analysis
+     * 
+     * @param array $csvData Array of CSV data rows
+     * @param int $proveedorId Proveedor ID for scoped queries
+     * @return array Enhanced breakdown with catalog analysis
+     */
+    public function generateCatalogBreakdown(array $csvData, int $proveedorId): array
+    {
+        // Extract unique values from CSV data
+        $csvMarcas = $this->extractUniqueValues($csvData, 'marca');
+        $csvCategorias = $this->extractUniqueValues($csvData, 'categoria');
+        $csvSubcategorias = $this->extractUniqueValues($csvData, 'subcategoria');
+        $csvUnidades = $this->extractUniqueValues($csvData, 'unidad_medida');
+        $csvProductos = $this->extractUniqueValues($csvData, 'codigo');
+
+        // Get existing catalogs from database
+        $existingMarcas = $this->getExistingMarcas($proveedorId);
+        $existingCategorias = $this->getExistingCategorias($proveedorId);
+        $existingSubcategorias = $this->getExistingSubcategorias($proveedorId);
+        $existingUnidades = $this->getExistingUnidades($proveedorId);
+        $existingProductos = $this->getExistingProductos($proveedorId);
+
+        return [
+            'productos' => $this->analyzeProductos($csvProductos, $existingProductos, $csvData),
+            'marcas' => $this->analyzeMarcas($csvMarcas, $existingMarcas),
+            'categorias' => $this->analyzeCategorias($csvCategorias, $existingCategorias),
+            'subcategorias' => $this->analyzeSubcategorias($csvSubcategorias, $existingSubcategorias),
+            'unidades' => $this->analyzeUnidades($csvUnidades, $existingUnidades),
+        ];
+    }
+
+    /**
+     * Extract unique values from CSV data for a specific field
+     */
+    private function extractUniqueValues(array $csvData, string $field): array
+    {
+        $values = collect($csvData)
+            ->pluck($field)
+            ->filter(function ($value) {
+                return !empty($value) && trim($value) !== '';
+            })
+            ->map(function ($value) {
+                return trim($value);
+            })
+            ->unique()
+            ->values()
+            ->toArray();
+
+        return $values;
+    }
+
+    /**
+     * Get existing marcas for the proveedor
+     */
+    private function getExistingMarcas(int $proveedorId): Collection
+    {
+        return Marca::where('proveedor_id', $proveedorId)
+            ->where('activo', true)
+            ->select('id', 'nombre', 'descripcion')
+            ->get();
+    }
+
+    /**
+     * Get existing categorias for the proveedor
+     */
+    private function getExistingCategorias(int $proveedorId): Collection
+    {
+        return Categoria::where('proveedor_id', $proveedorId)
+            ->where('activo', true)
+            ->whereNull('parent_id') // Solo categorías principales
+            ->select('id', 'nombre', 'descripcion', 'nivel')
+            ->get();
+    }
+
+    /**
+     * Get existing subcategorias for the proveedor
+     */
+    private function getExistingSubcategorias(int $proveedorId): Collection
+    {
+        return Categoria::where('proveedor_id', $proveedorId)
+            ->where('activo', true)
+            ->whereNotNull('parent_id') // Solo subcategorías
+            ->select('id', 'nombre', 'descripcion', 'parent_id', 'nivel')
+            ->with('parent:id,nombre')
+            ->get();
+    }
+
+    /**
+     * Get existing unidades de medida for the proveedor
+     */
+    private function getExistingUnidades(int $proveedorId): Collection
+    {
+        return UnidadMedida::where('proveedor_id', $proveedorId)
+            ->where('estatus', 'activo')
+            ->select('id', 'nombre', 'clave', 'descripcion')
+            ->get();
+    }
+
+    /**
+     * Get existing productos for the proveedor
+     */
+    private function getExistingProductos(int $proveedorId): Collection
+    {
+        return Producto::where('proveedor_id', $proveedorId)
+            ->select('id', 'codigo_interno', 'sku', 'nombre')
+            ->get();
+    }
+
+    /**
+     * Analyze productos: existing vs new vs duplicates
+     */
+    private function analyzeProductos(array $csvProductos, Collection $existingProductos, array $csvData): array
+    {
+        $existingCodigos = $existingProductos->pluck('codigo_interno')->toArray();
+        
+        $nuevos = array_diff($csvProductos, $existingCodigos);
+        $existentes = array_intersect($csvProductos, $existingCodigos);
+        
+        // Detect duplicates within CSV data
+        $codigoCounts = array_count_values($csvProductos);
+        $duplicados = array_filter($codigoCounts, function($count) {
+            return $count > 1;
+        });
+
+        return [
+            'total' => count($csvProductos),
+            'nuevos' => count($nuevos),
+            'existentes' => count($existentes),
+            'duplicados' => count($duplicados),
+            'duplicados_detail' => array_keys($duplicados)
+        ];
+    }
+
+    /**
+     * Analyze marcas: existing vs new
+     */
+    private function analyzeMarcas(array $csvMarcas, Collection $existingMarcas): array
+    {
+        $existingNames = $existingMarcas->pluck('nombre')->map('strtolower')->toArray();
+        $csvMarcasLower = array_map('strtolower', $csvMarcas);
+        
+        $nuevas = [];
+        $existentes = [];
+        
+        foreach ($csvMarcas as $marca) {
+            if (in_array(strtolower($marca), $existingNames)) {
+                $existentes[] = $marca;
+            } else {
+                $nuevas[] = $marca;
+            }
+        }
+        
+        // Merge existing data with new items
+        $mergedData = $existingMarcas->map(function ($marca) {
+            return [
+                'id' => $marca->id,
+                'nombre' => $marca->nombre,
+                'descripcion' => $marca->descripcion,
+                'es_nueva' => false
+            ];
+        })->toArray();
+        
+        // Add new marcas
+        foreach ($nuevas as $marca) {
+            $mergedData[] = [
+                'id' => null,
+                'nombre' => $marca,
+                'descripcion' => null,
+                'es_nueva' => true
+            ];
+        }
+
+        return [
+            'total' => count($csvMarcas),
+            'nuevas' => count($nuevas),
+            'existentes' => count($existentes),
+            'data' => $mergedData
+        ];
+    }
+
+    /**
+     * Analyze categorias: existing vs new
+     */
+    private function analyzeCategorias(array $csvCategorias, Collection $existingCategorias): array
+    {
+        $existingNames = $existingCategorias->pluck('nombre')->map('strtolower')->toArray();
+        
+        $nuevas = [];
+        $existentes = [];
+        
+        foreach ($csvCategorias as $categoria) {
+            if (in_array(strtolower($categoria), $existingNames)) {
+                $existentes[] = $categoria;
+            } else {
+                $nuevas[] = $categoria;
+            }
+        }
+        
+        // Merge existing data with new items
+        $mergedData = $existingCategorias->map(function ($categoria) {
+            return [
+                'id' => $categoria->id,
+                'nombre' => $categoria->nombre,
+                'descripcion' => $categoria->descripcion,
+                'nivel' => $categoria->nivel,
+                'es_nueva' => false
+            ];
+        })->toArray();
+        
+        // Add new categorias
+        foreach ($nuevas as $categoria) {
+            $mergedData[] = [
+                'id' => null,
+                'nombre' => $categoria,
+                'descripcion' => null,
+                'nivel' => 1,
+                'es_nueva' => true
+            ];
+        }
+
+        return [
+            'total' => count($csvCategorias),
+            'nuevas' => count($nuevas),
+            'existentes' => count($existentes),
+            'data' => $mergedData
+        ];
+    }
+
+    /**
+     * Analyze subcategorias: existing vs new
+     */
+    private function analyzeSubcategorias(array $csvSubcategorias, Collection $existingSubcategorias): array
+    {
+        if (empty($csvSubcategorias)) {
+            return [
+                'total' => 0,
+                'nuevas' => 0,
+                'existentes' => 0,
+                'data' => []
+            ];
+        }
+        
+        $existingNames = $existingSubcategorias->pluck('nombre')->map('strtolower')->toArray();
+        
+        $nuevas = [];
+        $existentes = [];
+        
+        foreach ($csvSubcategorias as $subcategoria) {
+            if (in_array(strtolower($subcategoria), $existingNames)) {
+                $existentes[] = $subcategoria;
+            } else {
+                $nuevas[] = $subcategoria;
+            }
+        }
+        
+        // Merge existing data with new items
+        $mergedData = $existingSubcategorias->map(function ($subcategoria) {
+            return [
+                'id' => $subcategoria->id,
+                'nombre' => $subcategoria->nombre,
+                'descripcion' => $subcategoria->descripcion,
+                'parent_id' => $subcategoria->parent_id,
+                'parent_nombre' => $subcategoria->parent ? $subcategoria->parent->nombre : null,
+                'nivel' => $subcategoria->nivel,
+                'es_nueva' => false
+            ];
+        })->toArray();
+        
+        // Add new subcategorias
+        foreach ($nuevas as $subcategoria) {
+            $mergedData[] = [
+                'id' => null,
+                'nombre' => $subcategoria,
+                'descripcion' => null,
+                'parent_id' => null,
+                'parent_nombre' => null,
+                'nivel' => 2,
+                'es_nueva' => true
+            ];
+        }
+
+        return [
+            'total' => count($csvSubcategorias),
+            'nuevas' => count($nuevas),
+            'existentes' => count($existentes),
+            'data' => $mergedData
+        ];
+    }
+
+    /**
+     * Analyze unidades de medida: existing vs new
+     */
+    private function analyzeUnidades(array $csvUnidades, Collection $existingUnidades): array
+    {
+        $existingNames = $existingUnidades->pluck('nombre')->map('strtolower')->toArray();
+        
+        $nuevas = [];
+        $existentes = [];
+        
+        foreach ($csvUnidades as $unidad) {
+            if (in_array(strtolower($unidad), $existingNames)) {
+                $existentes[] = $unidad;
+            } else {
+                $nuevas[] = $unidad;
+            }
+        }
+        
+        // Merge existing data with new items
+        $mergedData = $existingUnidades->map(function ($unidad) {
+            return [
+                'id' => $unidad->id,
+                'nombre' => $unidad->nombre,
+                'clave' => $unidad->clave,
+                'descripcion' => $unidad->descripcion,
+                'es_nueva' => false
+            ];
+        })->toArray();
+        
+        // Add new unidades
+        foreach ($nuevas as $unidad) {
+            $mergedData[] = [
+                'id' => null,
+                'nombre' => $unidad,
+                'clave' => null,
+                'descripcion' => null,
+                'es_nueva' => true
+            ];
+        }
+
+        return [
+            'total' => count($csvUnidades),
+            'nuevas' => count($nuevas),
+            'existentes' => count($existentes),
+            'data' => $mergedData
+        ];
     }
 }

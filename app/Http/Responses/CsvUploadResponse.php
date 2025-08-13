@@ -18,8 +18,10 @@ class CsvUploadResponse
         public array $headers,
         public array $previewData,
         public array $validationSummary,
+        public array $validationDetails,
         public array $qualityMetrics,
         public array $processingInfo,
+        public array $catalogos,
         public string $estado = 'preview',
         public string $mensaje = 'Archivo CSV analizado correctamente. Revise los datos de vista previa antes de confirmar la importación.'
     ) {}
@@ -37,8 +39,10 @@ class CsvUploadResponse
             'headers' => $this->headers,
             'preview_data' => $this->previewData,
             'validation_summary' => $this->validationSummary,
+            'validation_details' => $this->validationDetails,
             'quality_metrics' => $this->qualityMetrics,
             'processing_info' => $this->processingInfo,
+            'catalogos' => $this->catalogos,
             'estado' => $this->estado,
             'mensaje' => $this->mensaje
         ];
@@ -57,8 +61,10 @@ class CsvUploadResponse
             headers: $processingResult['headers'],
             previewData: $processingResult['preview_data'],
             validationSummary: $processingResult['validation_summary'],
+            validationDetails: $processingResult['validation_details'],
             qualityMetrics: $processingResult['quality_metrics'],
-            processingInfo: $processingResult['processing_info']
+            processingInfo: $processingResult['processing_info'],
+            catalogos: $processingResult['catalogos'] ?? []
         );
     }
 }
