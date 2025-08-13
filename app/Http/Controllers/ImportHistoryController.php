@@ -125,9 +125,8 @@ class ImportHistoryController extends Controller
             $options = $request->getValidatedWithDefaults();
             $csvFile = $request->file('csv_file');
 
-            // Initialize validator and processor
-            $validator = new ProductImportValidator($proveedor->id);
-            $processor = new CSVProcessorService($validator);
+            // Initialize processor
+            $processor = new CSVProcessorService();
 
             // Process CSV and get preview
             $result = $processor->processCSVPreview($csvFile, $proveedor->id, $options);
@@ -177,8 +176,7 @@ class ImportHistoryController extends Controller
             $previewToken = $request->input('preview_token');
 
             // Initialize processor
-            $validator = new ProductImportValidator($proveedor->id);
-            $processor = new CSVProcessorService($validator);
+            $processor = new CSVProcessorService();
 
             // Retrieve cached preview data
             $previewData = $processor->getCachedPreviewData($previewToken);

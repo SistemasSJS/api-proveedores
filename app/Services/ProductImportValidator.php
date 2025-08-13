@@ -71,8 +71,8 @@ class ProductImportValidator
                 $warnings[] = "Codigo '{$codigo}' ya existe y será actualizado";
             }
 
-            // Validate codigo format (alphanumeric, hyphens, underscores)
-            if (!preg_match('/^[a-zA-Z0-9_-]+$/', $codigo)) {
+            // Validate codigo format (allow alphanumeric, hyphens, underscores, dots, slashes, spaces)
+            if (!preg_match('/^[a-zA-Z0-9_\-.\/ ]+$/', $codigo)) {
                 $errors[] = "Codigo '{$codigo}' contiene caracteres no válidos";
             }
 
@@ -94,21 +94,15 @@ class ProductImportValidator
         }
 
         // Validate marca
-        $marcaNombre = trim($row['nombre_marca'] ?? '');
+        $marcaNombre = trim($row['marca'] ?? '');
         if ($marcaNombre && strlen($marcaNombre) > 255) {
             $errors[] = "Nombre de marca excede 255 caracteres";
         }
 
-        // Validate categorias (3-level nesting)
-        $categoria1 = trim($row['nombre_categoria_nivel_1'] ?? '');
-        $categoria2 = trim($row['nombre_categoria_nivel_2'] ?? '');
-        $categoria3 = trim($row['nombre_categoria_nivel_3'] ?? '');
-
-        if ($categoria2 && !$categoria1) {
-            $errors[] = "No se puede definir categoría nivel 2 sin categoría nivel 1";
-        }
-        if ($categoria3 && !$categoria2) {
-            $errors[] = "No se puede definir categoría nivel 3 sin categoría nivel 2";
+        // Validate categoria
+        $categoria = trim($row['categoria'] ?? '');
+        if ($categoria && strlen($categoria) > 255) {
+            $errors[] = "Nombre de categoría excede 255 caracteres";
         }
 
         // Validate unidad de medida if provided
@@ -118,13 +112,13 @@ class ProductImportValidator
         }
 
         // Validate product name length
-        $nombreProducto = trim($row['nombre_producto'] ?? '');
+        $nombreProducto = trim($row['producto'] ?? '');
         if ($nombreProducto && strlen($nombreProducto) > 255) {
             $errors[] = "Nombre del producto excede 255 caracteres";
         }
 
         // Validate description length
-        $descripcion = trim($row['descripcion_producto'] ?? '');
+        $descripcion = trim($row['descripcion'] ?? '');
         if ($descripcion && strlen($descripcion) > 65535) {
             $warnings[] = "Descripción muy larga, puede ser truncada";
         }
@@ -142,7 +136,7 @@ class ProductImportValidator
     {
         // Load existing codigos for this provider
         $this->existingCodigos = Producto::where('proveedor_id', $this->proveedorId)
-            ->pluck('codigo')
+            ->pluck('codigo_interno')
             ->toArray();
 
         // Load existing marcas
@@ -160,11 +154,6 @@ class ProductImportValidator
             ->pluck('nombre')
             ->toArray();
 
-        $this->existingCategorias = Categoria::where('proveedor_id', $this->proveedorId)
-            ->pluck('nombre')
-            ->toArray();
-
-        $this->existingSubcat = Categoria::where('parent_id', $id)->pluck('id')->toArray();
         // Load existing unidad medidas
         $this->existingUnidadMedidas = UnidadMedida::pluck('descripcion')
             ->toArray();
@@ -178,7 +167,7 @@ class ProductImportValidator
         return [
             'codigo' => 'required',
             'producto' => 'required',
-            'decripcion' => 'optional',
+            'descripcion' => 'optional',
             'marca' => 'required',
             'categoria' => 'required',
             'subcategoria' => 'optional',

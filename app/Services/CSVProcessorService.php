@@ -11,24 +11,18 @@ use Illuminate\Support\Str;
 
 class CSVProcessorService
 {
-    private ProductImportValidator $validator;
-    
-    public function __construct(ProductImportValidator $validator)
-    {
-        $this->validator = $validator;
-    }
 
     /**
      * Process CSV file and generate preview with validation
      */
     public function processCSVPreview(
-        UploadedFile $csvFile, 
+        UploadedFile $csvFile,
         int $proveedorId,
         array $options = []
     ): array {
         $startTime = microtime(true);
         $token = $this->generatePreviewToken();
-        
+
         // Default options
         $options = array_merge([
             'delimiter' => ',',
@@ -40,20 +34,23 @@ class CSVProcessorService
         ], $options);
 
         try {
+            // Create validator for this proveedor
+            $validator = new ProductImportValidator($proveedorId);
+
             // Parse CSV file
             $csvData = $this->parseCSV($csvFile, $options);
-            
+
             // Validate headers if present
             $headerValidation = [];
             if ($options['has_header'] && !empty($csvData['headers'])) {
-                $headerValidation = $this->validator->validateHeaders($csvData['headers']);
+                $headerValidation = $validator->validateHeaders($csvData['headers']);
             }
 
             // Get preview data (limited rows)
             $previewData = array_slice($csvData['data'], 0, $options['preview_rows']);
-            
+
             // Validate preview data
-            $validationResults = $this->validator->validateBatch($previewData);
+            $validationResults = $this->validateBatch($previewData, $validator);
 
             // Generate quality metrics
             $qualityMetrics = $this->generateQualityMetrics($validationResults, $csvData);
@@ -90,7 +87,7 @@ class CSVProcessorService
                 'headers' => [
                     'detected' => $csvData['headers'] ?? [],
                     'validation' => $headerValidation,
-                    'mapping_suggestions' => $this->generateHeaderMappingSuggestions($csvData['headers'] ?? [])
+                    'mapping_suggestions' => $this->generateHeaderMappingSuggestions($csvData['headers'] ?? [], $validator)
                 ],
                 'preview_data' => array_slice($previewData, 0, 10), // Solo primeras 10 para el frontend
                 'validation_summary' => $validationResults['summary'],
@@ -102,7 +99,6 @@ class CSVProcessorService
                     'can_proceed' => $qualityMetrics['can_proceed'] ?? false
                 ]
             ];
-
         } catch (\Throwable $e) {
             Log::error('Error processing CSV preview', [
                 'error' => $e->getMessage(),
@@ -130,7 +126,7 @@ class CSVProcessorService
 
         // Read file content
         $content = file_get_contents($file->getRealPath());
-        
+
         // Convert encoding if needed
         if ($encoding !== 'UTF-8') {
             $content = mb_convert_encoding($content, 'UTF-8', $encoding);
@@ -138,7 +134,7 @@ class CSVProcessorService
 
         // Split into lines
         $lines = array_filter(array_map('trim', explode("\n", $content)));
-        
+
         if (empty($lines)) {
             throw new \Exception('El archivo CSV está vacío');
         }
@@ -149,7 +145,7 @@ class CSVProcessorService
         foreach ($lines as $index => $line) {
             // Parse CSV line
             $row = str_getcsv($line, $delimiter);
-            
+
             if ($index === 0 && $hasHeader) {
                 $headers = array_map('trim', $row);
                 continue;
@@ -181,7 +177,7 @@ class CSVProcessorService
     {
         $summary = $validationResults['summary'];
         $totalRows = $summary['total_records'];
-        
+
         if ($totalRows === 0) {
             return ['can_proceed' => false, 'quality_score' => 0];
         }
@@ -214,11 +210,54 @@ class CSVProcessorService
     }
 
     /**
+     * Validate batch of rows
+     */
+    private function validateBatch(array $previewData, ProductImportValidator $validator): array
+    {
+        $validationResults = [];
+        $summary = [
+            'total_records' => count($previewData),
+            'correct_records' => 0,
+            'warning_records' => 0,
+            'error_records' => 0,
+            'errors_by_type' => []
+        ];
+
+        foreach ($previewData as $index => $row) {
+            $rowValidation = $validator->validateRow($row, $index + 1);
+
+            $status = 'correct';
+            if (!empty($rowValidation['errors'])) {
+                $status = 'error';
+                $summary['error_records']++;
+            } elseif (!empty($rowValidation['warnings'])) {
+                $status = 'warning';
+                $summary['warning_records']++;
+            } else {
+                $summary['correct_records']++;
+            }
+
+            $validationResults[] = [
+                'row_index' => $index + 1,
+                'status' => $status,
+                'errors' => $rowValidation['errors'],
+                'warnings' => $rowValidation['warnings'],
+                'data' => $row
+            ];
+        }
+
+        return [
+            'summary' => $summary,
+            'validation_results' => $validationResults
+        ];
+    }
+
+    /**
      * Generate header mapping suggestions
      */
-    private function generateHeaderMappingSuggestions(array $detectedHeaders): array
+    private function generateHeaderMappingSuggestions(array $detectedHeaders, ProductImportValidator $validator): array
     {
-        $expectedHeaders = $this->validator->getExpectedHeaders();
+        $expectedHeaders = $validator->getExpectedHeaders();
         $suggestions = [];
 
         foreach ($detectedHeaders as $detectedHeader) {
@@ -248,7 +287,7 @@ class CSVProcessorService
 
         foreach ($expectedHeaders as $expectedHeader) {
             $normalizedExpected = strtolower($expectedHeader);
-            
+
             // Exact match
             if ($normalizedDetected === $normalizedExpected) {
                 return $expectedHeader;
@@ -256,7 +295,7 @@ class CSVProcessorService
 
             // Partial match
             similar_text($normalizedDetected, $normalizedExpected, $similarity);
-            
+
             if ($similarity > $highestSimilarity && $similarity > 60) {
                 $highestSimilarity = $similarity;
                 $bestMatch = $expectedHeader;
@@ -297,7 +336,7 @@ class CSVProcessorService
     private function estimateProcessingTime(int $totalRows): string
     {
         $seconds = ceil($totalRows / 100); // Aproximadamente 100 registros por segundo
-        
+
         if ($seconds < 60) {
             return "{$seconds} segundos";
         } elseif ($seconds < 3600) {
@@ -317,7 +356,7 @@ class CSVProcessorService
     {
         // Cache in Redis/database for 1 hour
         Cache::put("csv_preview:{$token}", $data, 3600);
-        
+
         // Also store in ImportValidationCache for persistence
         ImportValidationCache::create([
             'token' => $token,
@@ -336,13 +375,13 @@ class CSVProcessorService
     {
         // Try cache first
         $data = Cache::get("csv_preview:{$token}");
-        
+
         if (!$data) {
             // Try database
             $cached = ImportValidationCache::where('token', $token)
                 ->where('expires_at', '>', now())
                 ->first();
-                
+
             if ($cached) {
                 $data = $cached->validation_data;
                 // Re-cache for faster access

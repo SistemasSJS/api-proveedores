@@ -17,6 +17,7 @@ use App\Http\Controllers\ImportHistoryController;
 use App\Enums\UserRoleEnumerate;
 use App\Http\Controllers\ImportStatsController;
 use App\Http\Controllers\ProveedorUnidadMedidaController;
+use App\Http\Controllers\CsvImportController;
 
 /**
  * GESTIÓN DE PROVEEDORES
@@ -63,7 +64,7 @@ Route::prefix('proveedores')
 
             // Nueva ruta de importación integrada con el servicio
             Route::post('/import', [ImportHistoryController::class, 'import'])->middleware(['audit']);
-            
+
             // Nuevos endpoints de importación CSV
             Route::post('/import-preview', [ImportHistoryController::class, 'importPreview'])->middleware(['audit']);
             Route::post('/import-confirm', [ImportHistoryController::class, 'importConfirm'])->middleware(['audit']);
@@ -196,6 +197,15 @@ Route::prefix('proveedores')
             Route::get('{audit}', [ProductoImportController::class, 'status'])->middleware(['audit']);
             Route::get('{audit}/logs', [ProductoImportController::class, 'status'])->middleware(['audit']);
             Route::post('{audit}/confirm', [ProductoImportController::class, 'confirm'])->middleware(['audit']);
+        });
+
+        /**
+         * CSV IMPORT ROUTES
+         */
+        Route::prefix('{proveedor}/csv-import')->middleware(['proveedor.access'])->group(function () {
+            Route::post('/upload', [CsvImportController::class, 'upload'])->middleware(['audit']);
+            Route::post('/validate-producto', [CsvImportController::class, 'validateProducto'])->middleware(['audit']);
+            Route::post('/confirm', [CsvImportController::class, 'confirm'])->middleware(['audit']);
         });
 
         /**
