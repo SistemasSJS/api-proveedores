@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use App\Services\CSVProcessorService;
 use App\Services\ProductImportValidator;
+use App\Http\Responses\CsvUploadResponse;
+use App\Http\Responses\CsvConfirmResponse;
+use App\Http\Responses\CsvValidateProductResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Exception;
@@ -104,19 +107,9 @@ class CsvImportController extends Controller
                 'total_rows' => $processingResult['file_info']['total_rows']
             ]);
 
-            return $this->success([
-                'audit_id' => $audit->id,
-                'job_id' => $jobId,
-                'preview_token' => $processingResult['preview_token'],
-                'file_info' => $processingResult['file_info'],
-                'headers' => $processingResult['headers'],
-                'preview_data' => $processingResult['preview_data'],
-                'validation_summary' => $processingResult['validation_summary'],
-                'quality_metrics' => $processingResult['quality_metrics'],
-                'processing_info' => $processingResult['processing_info'],
-                'estado' => 'preview',
-                'mensaje' => 'Archivo CSV analizado correctamente. Revise los datos de vista previa antes de confirmar la importación.'
-            ], 'Archivo cargado y analizado correctamente');
+            $response = CsvUploadResponse::fromProcessorResult($audit->id, $jobId, $processingResult);
+            
+            return $this->success($response->toArray(), 'Archivo cargado y analizado correctamente');
         } catch (Exception $e) {
             Log::error('Error en upload CSV', [
                 'proveedor_id' => $id,
@@ -200,30 +193,16 @@ class CsvImportController extends Controller
             if ($importResult['success']) {
                 $audit->appendLog('Importación completada exitosamente', $importResult['stats']);
 
-                return $this->success([
-                    'audit_id' => $audit->id,
-                    'estado' => 'completado',
-                    'estadisticas' => $importResult['stats'],
-                    'resumen' => [
-                        'total_procesados' => $importResult['stats']['total_processed'],
-                        'creados' => $importResult['stats']['created'],
-                        'actualizados' => $importResult['stats']['updated'],
-                        'errores' => $importResult['stats']['errors'],
-                        'tasa_exito' => $importResult['stats']['success_rate']
-                    ]
-                ], 'Importación completada exitosamente');
+                $response = CsvConfirmResponse::success($audit->id, $importResult['stats']);
+                return $this->success($response->toArray(), 'Importación completada exitosamente');
             } else {
                 $audit->appendLog('Importación falló', [
                     'error' => $importResult['error'],
                     'stats' => $importResult['stats']
                 ], 'error');
 
-                return $this->error('Error durante la importación: ' . $importResult['error'], 500, [
-                    'audit_id' => $audit->id,
-                    'estado' => 'error',
-                    'estadisticas' => $importResult['stats'],
-                    'errores_detalle' => $importResult['error_details']
-                ]);
+                $response = CsvConfirmResponse::error($audit->id, $importResult['stats'], $importResult['error_details']);
+                return $this->error('Error durante la importación: ' . $importResult['error'], 500, $response->toArray());
             }
         } catch (Exception $e) {
             Log::error('Error en confirm CSV import', [
@@ -276,26 +255,27 @@ class CsvImportController extends Controller
                 ->first();
 
             $isValid = empty($validationResult['errors']);
-
-            $response = [
-                'valido' => $isValid,
-                'errores' => $validationResult['errors'] ?? [],
-                'advertencias' => $validationResult['warnings'] ?? [],
-                'existe' => !is_null($existingProduct),
-                'producto_existente' => $existingProduct ? [
-                    'id' => $existingProduct->id,
-                    'nombre' => $existingProduct->nombre,
-                    'precio' => $existingProduct->precio,
-                    'updated_at' => $existingProduct->updated_at
-                ] : null,
-                'sugerencias' => [],
-                'acciones_recomendadas' => $this->getRecommendedActions(['is_valid' => $isValid, 'errors' => $validationResult['errors']], $existingProduct)
-            ];
+            
+            $existingProductData = $existingProduct ? [
+                'id' => $existingProduct->id,
+                'nombre' => $existingProduct->nombre,
+                'precio' => $existingProduct->precio,
+                'updated_at' => $existingProduct->updated_at
+            ] : null;
+            
+            $recommendedActions = $this->getRecommendedActions(['is_valid' => $isValid, 'errors' => $validationResult['errors']], $existingProduct);
+            
+            $response = CsvValidateProductResponse::fromValidation(
+                $validationResult,
+                !is_null($existingProduct),
+                $existingProductData,
+                $recommendedActions
+            );
 
             if ($isValid) {
-                return $this->success($response, 'Producto validado correctamente');
+                return $this->success($response->toArray(), 'Producto validado correctamente');
             } else {
-                return $this->error('Producto no válido', 422, $response);
+                return $this->error('Producto no válido', 422, $response->toArray());
             }
         } catch (Exception $e) {
             Log::error('Error en validateProducto', [
