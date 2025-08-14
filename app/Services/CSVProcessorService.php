@@ -14,11 +14,45 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Collection;
 
+/**
+ * Servicio para procesar archivos CSV y generar una vista previa
+ *
+ * Este servicio se encarga de:
+ * - Leer y parsear el archivo CSV.
+ * - Validar encabezados y filas (usando ProductImportValidator).
+ * - Calcular métricas de calidad, desglose de catálogo y sugerencias.
+ * - Cachear datos para confirmación.
+ * - Retornar una estructura de datos que el controlador puede presentar al usuario.
+ *
+ * El controlador que lo consume debe:
+ * - Invocar `processCSVPreview(...)`.
+ * - Procesar el arreglo resultante (éxito, datos para vista previa, métricas, token, etc.).
+ * - Manejar errores según el valor de retorno (`success => false`) o excepciones lanzadas.
+ */
 class CSVProcessorService
 {
 
     /**
-     * Process CSV file and generate preview with validation
+     * Procesa un archivo CSV generando una vista previa y validaciones.
+     *
+     * @param UploadedFile $csvFile Archivo CSV subido.
+     * @param int $proveedorId ID del proveedor para contexto.
+     * @param array $options Opciones de parseo y validación (delimiter, encoding, etc.).
+     *
+     * @return array Estructura con:
+     *  - success: bool
+     *  - preview_token: string|null
+     *  - file_info: array
+     *  - headers: array ('detected', 'validation', 'mapping_suggestions')
+     *  - preview_data: array (primeras filas)
+     *  - validation_summary: array
+     *  - validation_details: array
+     *  - quality_metrics: array (incluye can_proceed, quality_score, recommendation)
+     *  - processing_info: array (tiempo, memoria, can_proceed)
+     *  - catalogos: array (desglose de productos, marcas, categorías, etc.)
+     *  - error y error_type en caso de fallo
+     *
+     * @throws \Throwable En caso de error inesperado durante el procesamiento.
      */
     public function processCSVPreview(
         UploadedFile $csvFile,
@@ -28,42 +62,47 @@ class CSVProcessorService
         $startTime = microtime(true);
         $token = $this->generatePreviewToken();
 
-        // Default options
+        // Opciones por defecto
         $options = array_merge([
             'delimiter' => ',',
             'encoding' => 'UTF-8',
             'has_header' => true,
-            'preview_rows' => 100,
+            'preview_rows' => -1,
             'strict_validation' => false,
             'auto_create_relations' => true
         ], $options);
 
         try {
-            // Create validator for this proveedor
+            // Crear validador para este proveedor
             $validator = new ProductImportValidator($proveedorId);
 
-            // Parse CSV file
+            // Parsear archivo CSV
             $csvData = $this->parseCSV($csvFile, $options);
 
-            // Validate headers if present
+            // Validar encabezados si existen
             $headerValidation = [];
             if ($options['has_header'] && !empty($csvData['headers'])) {
                 $headerValidation = $validator->validateHeaders($csvData['headers']);
             }
 
-            // Get preview data (limited rows)
-            $previewData = array_slice($csvData['data'], 0, $options['preview_rows']);
+            // Obtener datos de vista previa (filas limitadas)
+            // si es -1, la vista previa no limita la cantidad de registros
+            if ($options['preview_rows'] >= 0) {
+                $previewData = array_slice($csvData['data'], 0, $options['preview_rows']);
+            } else {
+                $previewData = $csvData;
+            }
 
-            // Validate preview data
+            // Validar datos de la vista previa
             $validationResults = $this->validateBatch($previewData, $validator);
 
-            // Generate quality metrics
+            // Generar métricas de calidad
             $qualityMetrics = $this->generateQualityMetrics($validationResults, $csvData);
 
-            // Generate catalog breakdown analysis
+            // Generar análisis del desglose de catálogo
             $catalogBreakdown = $this->generateCatalogBreakdown($csvData['data'], $proveedorId);
 
-            // Cache the full data for later confirmation
+            // Cachear los datos completos para confirmación posterior
             $cacheData = [
                 'full_data' => $csvData['data'],
                 'headers' => $csvData['headers'] ?? [],
@@ -109,7 +148,7 @@ class CSVProcessorService
                 'catalogos' => $catalogBreakdown
             ];
         } catch (\Throwable $e) {
-            Log::error('Error processing CSV preview', [
+            Log::error('Error procesando la vista previa del CSV', [
                 'error' => $e->getMessage(),
                 'file' => $csvFile->getClientOriginalName(),
                 'proveedor_id' => $proveedorId,
@@ -125,7 +164,12 @@ class CSVProcessorService
     }
 
     /**
-     * Parse CSV file with specified options
+     * Parsea un CSV según las opciones dadas.
+     *
+     * @param UploadedFile $file
+     * @param array $options
+     * @return array ['headers' => array, 'data' => array, 'total_rows' => int]
+     * @throws \Exception Si el archivo está vacío.
      */
     private function parseCSV(UploadedFile $file, array $options): array
     {
@@ -133,15 +177,15 @@ class CSVProcessorService
         $encoding = $options['encoding'];
         $hasHeader = $options['has_header'];
 
-        // Read file content
+        // Leer contenido del archivo
         $content = file_get_contents($file->getRealPath());
 
-        // Convert encoding if needed
+        // Convertir la codificación si es necesario
         if ($encoding !== 'UTF-8') {
             $content = mb_convert_encoding($content, 'UTF-8', $encoding);
         }
 
-        // Split into lines
+        // Separar en líneas
         $lines = array_filter(array_map('trim', explode("\n", $content)));
 
         if (empty($lines)) {
@@ -152,7 +196,7 @@ class CSVProcessorService
         $headers = [];
 
         foreach ($lines as $index => $line) {
-            // Parse CSV line
+            // Parsear línea del CSV
             $row = str_getcsv($line, $delimiter);
 
             if ($index === 0 && $hasHeader) {
@@ -160,7 +204,7 @@ class CSVProcessorService
                 continue;
             }
 
-            // Convert row to associative array if headers exist
+            // Convertir la fila a array asociativo si hay encabezados
             if (!empty($headers)) {
                 $associativeRow = [];
                 foreach ($headers as $headerIndex => $header) {
@@ -180,7 +224,7 @@ class CSVProcessorService
     }
 
     /**
-     * Generate quality metrics for the imported data
+     * Genera métricas de calidad para los datos importados
      */
     private function generateQualityMetrics(array $validationResults, array $csvData): array
     {
@@ -219,7 +263,11 @@ class CSVProcessorService
     }
 
     /**
-     * Validate batch of rows
+     * Valida un lote de filas para generar un resumen y detalles.
+     *
+     * @param array $previewData
+     * @param ProductImportValidator $validator
+     * @return array ['summary' => array, 'validation_results' => array]
      */
     private function validateBatch(array $previewData, ProductImportValidator $validator): array
     {
@@ -235,12 +283,12 @@ class CSVProcessorService
         foreach ($previewData as $index => $row) {
             $rowValidation = $validator->validateRow($row, $index + 1);
 
-            $status = 'correct';
+            $status = 'correcto';
             if (!empty($rowValidation['errors'])) {
                 $status = 'error';
                 $summary['error_records']++;
             } elseif (!empty($rowValidation['warnings'])) {
-                $status = 'warning';
+                $status = 'advertencia';
                 $summary['warning_records']++;
             } else {
                 $summary['correct_records']++;
@@ -262,7 +310,7 @@ class CSVProcessorService
     }
 
     /**
-     * Generate header mapping suggestions
+     * Genera sugerencias de mapeo de encabezados
      */
     private function generateHeaderMappingSuggestions(array $detectedHeaders, ProductImportValidator $validator): array
     {
@@ -285,7 +333,7 @@ class CSVProcessorService
     }
 
     /**
-     * Find best header match using similarity
+     * Encuentra la mejor coincidencia para un encabezado usando similitud
      */
     private function findBestHeaderMatch(string $detectedHeader, array $expectedHeaders): ?string
     {
@@ -297,12 +345,12 @@ class CSVProcessorService
         foreach ($expectedHeaders as $expectedHeader) {
             $normalizedExpected = strtolower($expectedHeader);
 
-            // Exact match
+            // Coincidencia exacta
             if ($normalizedDetected === $normalizedExpected) {
                 return $expectedHeader;
             }
 
-            // Partial match
+            // Coincidencia parcial
             similar_text($normalizedDetected, $normalizedExpected, $similarity);
 
             if ($similarity > $highestSimilarity && $similarity > 60) {
@@ -315,7 +363,7 @@ class CSVProcessorService
     }
 
     /**
-     * Calculate header similarity percentage
+     * Calcula el porcentaje de similitud entre dos encabezados
      */
     private function calculateHeaderSimilarity(string $header1, string $header2): float
     {
@@ -324,7 +372,7 @@ class CSVProcessorService
     }
 
     /**
-     * Get quality recommendation based on score and error rate
+     * Obtiene la recomendación de calidad según la puntuación y el porcentaje de error
      */
     private function getQualityRecommendation(float $score, float $errorRate): string
     {
@@ -340,7 +388,7 @@ class CSVProcessorService
     }
 
     /**
-     * Estimate processing time based on number of rows
+     * Estima el tiempo de procesamiento basado en la cantidad de filas
      */
     private function estimateProcessingTime(int $totalRows): string
     {
@@ -359,14 +407,14 @@ class CSVProcessorService
     }
 
     /**
-     * Cache preview data for later confirmation
+     * Guarda en caché los datos de vista previa para confirmación posterior
      */
     private function cachePreviewData(string $token, array $data): void
     {
-        // Cache in Redis/database for 1 hour
+        // Guardar en Redis/base de datos por 1 hora
         Cache::put("csv_preview:{$token}", $data, 3600);
 
-        // Also store in ImportValidationCache for persistence
+        // También guardar en ImportValidationCache para persistencia
         ImportValidationCache::create([
             'token' => $token,
             'proveedor_id' => $data['proveedor_id'],
@@ -378,22 +426,22 @@ class CSVProcessorService
     }
 
     /**
-     * Retrieve cached preview data
+     * Recupera los datos de vista previa en caché
      */
     public function getCachedPreviewData(string $token): ?array
     {
-        // Try cache first
+        // Intentar primero desde la caché
         $data = Cache::get("csv_preview:{$token}");
 
         if (!$data) {
-            // Try database
+            // Intentar desde la base de datos
             $cached = ImportValidationCache::where('token', $token)
                 ->where('expires_at', '>', now())
                 ->first();
 
             if ($cached) {
                 $data = $cached->validation_data;
-                // Re-cache for faster access
+                // Volver a cachear para acceso rápido
                 Cache::put("csv_preview:{$token}", $data, 3600);
             }
         }
@@ -402,7 +450,7 @@ class CSVProcessorService
     }
 
     /**
-     * Generate unique preview token
+     * Genera un token único para la vista previa
      */
     private function generatePreviewToken(): string
     {
@@ -410,7 +458,7 @@ class CSVProcessorService
     }
 
     /**
-     * Clean up expired preview data
+     * Elimina datos de vista previa expirados
      */
     public function cleanupExpiredPreviews(): int
     {
@@ -418,22 +466,22 @@ class CSVProcessorService
     }
 
     /**
-     * Generate enhanced catalog breakdown with existing vs new items analysis
-     * 
-     * @param array $csvData Array of CSV data rows
-     * @param int $proveedorId Proveedor ID for scoped queries
-     * @return array Enhanced breakdown with catalog analysis
+     * Genera un desglose detallado del catálogo con análisis de existentes vs nuevos
+     *
+     * @param array $csvData Datos de las filas del CSV
+     * @param int $proveedorId ID del proveedor para las consultas
+     * @return array Desglose detallado con análisis de catálogo
      */
     public function generateCatalogBreakdown(array $csvData, int $proveedorId): array
     {
-        // Extract unique values from CSV data
+        // Extraer valores únicos del CSV
         $csvMarcas = $this->extractUniqueValues($csvData, 'marca');
         $csvCategorias = $this->extractUniqueValues($csvData, 'categoria');
         $csvSubcategorias = $this->extractUniqueValues($csvData, 'subcategoria');
         $csvUnidades = $this->extractUniqueValues($csvData, 'unidad_medida');
         $csvProductos = $this->extractUniqueValues($csvData, 'codigo');
 
-        // Get existing catalogs from database
+        // Obtener catálogos existentes desde la base de datos
         $existingMarcas = $this->getExistingMarcas($proveedorId);
         $existingCategorias = $this->getExistingCategorias($proveedorId);
         $existingSubcategorias = $this->getExistingSubcategorias($proveedorId);
@@ -450,7 +498,7 @@ class CSVProcessorService
     }
 
     /**
-     * Extract unique values from CSV data for a specific field
+     * Extrae valores únicos de un campo específico en los datos del CSV
      */
     private function extractUniqueValues(array $csvData, string $field): array
     {
@@ -470,7 +518,7 @@ class CSVProcessorService
     }
 
     /**
-     * Get existing marcas for the proveedor
+     * Obtiene las marcas existentes para el proveedor
      */
     private function getExistingMarcas(int $proveedorId): Collection
     {
@@ -481,7 +529,7 @@ class CSVProcessorService
     }
 
     /**
-     * Get existing categorias for the proveedor
+     * Obtiene las categorías existentes para el proveedor
      */
     private function getExistingCategorias(int $proveedorId): Collection
     {
@@ -493,10 +541,12 @@ class CSVProcessorService
     }
 
     /**
-     * Get existing subcategorias for the proveedor
+     * Obtiene las subcategorías existentes para el proveedor
      */
     private function getExistingSubcategorias(int $proveedorId): Collection
     {
+
+
         return Categoria::where('proveedor_id', $proveedorId)
             ->where('activo', true)
             ->whereNotNull('parent_id') // Solo subcategorías
@@ -532,13 +582,13 @@ class CSVProcessorService
     private function analyzeProductos(array $csvProductos, Collection $existingProductos, array $csvData): array
     {
         $existingCodigos = $existingProductos->pluck('codigo_interno')->toArray();
-        
+
         $nuevos = array_diff($csvProductos, $existingCodigos);
         $existentes = array_intersect($csvProductos, $existingCodigos);
-        
+
         // Detect duplicates within CSV data
         $codigoCounts = array_count_values($csvProductos);
-        $duplicados = array_filter($codigoCounts, function($count) {
+        $duplicados = array_filter($codigoCounts, function ($count) {
             return $count > 1;
         });
 
@@ -558,10 +608,10 @@ class CSVProcessorService
     {
         $existingNames = $existingMarcas->pluck('nombre')->map('strtolower')->toArray();
         $csvMarcasLower = array_map('strtolower', $csvMarcas);
-        
+
         $nuevas = [];
         $existentes = [];
-        
+
         foreach ($csvMarcas as $marca) {
             if (in_array(strtolower($marca), $existingNames)) {
                 $existentes[] = $marca;
@@ -569,7 +619,7 @@ class CSVProcessorService
                 $nuevas[] = $marca;
             }
         }
-        
+
         // Merge existing data with new items
         $mergedData = $existingMarcas->map(function ($marca) {
             return [
@@ -579,7 +629,7 @@ class CSVProcessorService
                 'es_nueva' => false
             ];
         })->toArray();
-        
+
         // Add new marcas
         foreach ($nuevas as $marca) {
             $mergedData[] = [
@@ -604,10 +654,10 @@ class CSVProcessorService
     private function analyzeCategorias(array $csvCategorias, Collection $existingCategorias): array
     {
         $existingNames = $existingCategorias->pluck('nombre')->map('strtolower')->toArray();
-        
+
         $nuevas = [];
         $existentes = [];
-        
+
         foreach ($csvCategorias as $categoria) {
             if (in_array(strtolower($categoria), $existingNames)) {
                 $existentes[] = $categoria;
@@ -615,7 +665,7 @@ class CSVProcessorService
                 $nuevas[] = $categoria;
             }
         }
-        
+
         // Merge existing data with new items
         $mergedData = $existingCategorias->map(function ($categoria) {
             return [
@@ -626,7 +676,7 @@ class CSVProcessorService
                 'es_nueva' => false
             ];
         })->toArray();
-        
+
         // Add new categorias
         foreach ($nuevas as $categoria) {
             $mergedData[] = [
@@ -659,12 +709,12 @@ class CSVProcessorService
                 'data' => []
             ];
         }
-        
+
         $existingNames = $existingSubcategorias->pluck('nombre')->map('strtolower')->toArray();
-        
+
         $nuevas = [];
         $existentes = [];
-        
+
         foreach ($csvSubcategorias as $subcategoria) {
             if (in_array(strtolower($subcategoria), $existingNames)) {
                 $existentes[] = $subcategoria;
@@ -672,7 +722,7 @@ class CSVProcessorService
                 $nuevas[] = $subcategoria;
             }
         }
-        
+
         // Merge existing data with new items
         $mergedData = $existingSubcategorias->map(function ($subcategoria) {
             return [
@@ -685,7 +735,7 @@ class CSVProcessorService
                 'es_nueva' => false
             ];
         })->toArray();
-        
+
         // Add new subcategorias
         foreach ($nuevas as $subcategoria) {
             $mergedData[] = [
@@ -713,10 +763,10 @@ class CSVProcessorService
     private function analyzeUnidades(array $csvUnidades, Collection $existingUnidades): array
     {
         $existingNames = $existingUnidades->pluck('nombre')->map('strtolower')->toArray();
-        
+
         $nuevas = [];
         $existentes = [];
-        
+
         foreach ($csvUnidades as $unidad) {
             if (in_array(strtolower($unidad), $existingNames)) {
                 $existentes[] = $unidad;
@@ -724,7 +774,7 @@ class CSVProcessorService
                 $nuevas[] = $unidad;
             }
         }
-        
+
         // Merge existing data with new items
         $mergedData = $existingUnidades->map(function ($unidad) {
             return [
@@ -735,7 +785,7 @@ class CSVProcessorService
                 'es_nueva' => false
             ];
         })->toArray();
-        
+
         // Add new unidades
         foreach ($nuevas as $unidad) {
             $mergedData[] = [

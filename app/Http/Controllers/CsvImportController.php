@@ -63,7 +63,7 @@ class CsvImportController extends Controller
                 'delimiter' => $this->getDelimiter($request->get('delimiter', 'comma')),
                 'encoding' => $request->get('encoding', 'UTF-8'),
                 'has_header' => $request->get('has_header', true),
-                'preview_rows' => $request->get('preview_rows', 100),
+                'preview_rows' => $request->get('preview_rows', -1),
                 'strict_validation' => false,
                 'auto_create_relations' => true
             ];
@@ -84,11 +84,11 @@ class CsvImportController extends Controller
             $audit = ImportAudit::create([
                 'job_id' => $jobId,
                 'proveedor_id' => $proveedor->id,
-                'tipo' => 'productos_csv',
+                'tipo' => 'productos',
                 'archivo' => $path,
                 'formato' => 'csv',
                 'estado' => 'preview',
-                'fase' => 'analisis_completado',
+                // 'fase' => 'analisis_completado',
                 'preview_data' => [
                     'file_info' => $processingResult['file_info'],
                     'headers' => $processingResult['headers'],
@@ -108,7 +108,7 @@ class CsvImportController extends Controller
             ]);
 
             $response = CsvUploadResponse::fromProcessorResult($audit->id, $jobId, $processingResult);
-            
+
             return $this->success($response->toArray(), 'Archivo cargado y analizado correctamente');
         } catch (Exception $e) {
             Log::error('Error en upload CSV', [
@@ -167,7 +167,7 @@ class CsvImportController extends Controller
             // Iniciar la importación
             $audit->update([
                 'estado' => 'procesando',
-                'fase' => 'importacion_iniciada',
+                // 'fase' => 'importacion_iniciada',
                 'inicio_proceso' => now()
             ]);
 
@@ -182,7 +182,7 @@ class CsvImportController extends Controller
             // Actualizar audit con resultados
             $audit->update([
                 'estado' => $importResult['success'] ? 'completado' : 'error',
-                'fase' => $importResult['success'] ? 'importacion_completada' : 'error_importacion',
+                // 'fase' => $importResult['success'] ? 'importacion_completada' : 'error_importacion',
                 'fin_proceso' => now(),
                 'nuevos' => $importResult['stats']['created'] ?? 0,
                 'actualizados' => $importResult['stats']['updated'] ?? 0,
@@ -255,16 +255,16 @@ class CsvImportController extends Controller
                 ->first();
 
             $isValid = empty($validationResult['errors']);
-            
+
             $existingProductData = $existingProduct ? [
                 'id' => $existingProduct->id,
                 'nombre' => $existingProduct->nombre,
                 'precio' => $existingProduct->precio,
                 'updated_at' => $existingProduct->updated_at
             ] : null;
-            
+
             $recommendedActions = $this->getRecommendedActions(['is_valid' => $isValid, 'errors' => $validationResult['errors']], $existingProduct);
-            
+
             $response = CsvValidateProductResponse::fromValidation(
                 $validationResult,
                 !is_null($existingProduct),
