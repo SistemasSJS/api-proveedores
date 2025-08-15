@@ -10,6 +10,7 @@ use App\Models\Producto;
 use App\Services\ProductImportValidator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Collection;
@@ -121,7 +122,8 @@ class CSVProcessorService
                 'created_at' => now()->toISOString()
             ];
 
-            $this->cachePreviewData($token, $cacheData);
+            // Usar tabla temporal en lugar de caché
+            $this->storePreviewDataInTempTable($token, $cacheData);
 
             $processingTime = round((microtime(true) - $startTime), 2);
 
@@ -452,6 +454,293 @@ class CSVProcessorService
         }
 
         return $data;
+    }
+
+    /**
+     * Crea tabla temporal y almacena los datos de vista previa para confirmación posterior
+     * Usa tablas normales con nombre único para evitar conflictos multiusuario
+     * 
+     * @param string $token Token único de identificación
+     * @param array $data Datos completos del CSV a almacenar
+     * @return void
+     */
+    private function storePreviewDataInTempTable(string $token, array $data): void
+    {
+        // Usar nombre de tabla único con timestamp para evitar conflictos
+        $tableName = "csv_import_temp_" . substr($token, 0, 16) . "_" . time();
+        
+        try {
+            // Verificar si la tabla ya existe (por seguridad adicional)
+            $tableExists = DB::select("SHOW TABLES LIKE '{$tableName}'");
+            if (!empty($tableExists)) {
+                // Si existe, agregar sufijo aleatorio
+                $tableName .= "_" . mt_rand(1000, 9999);
+            }
+            
+            // Crear tabla normal con estructura del CSV
+            DB::statement("CREATE TABLE {$tableName} (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                codigo VARCHAR(255) NULL,
+                producto VARCHAR(500) NULL,
+                descripcion TEXT NULL,
+                marca VARCHAR(255) NULL,
+                categoria VARCHAR(255) NULL,
+                subcategoria VARCHAR(255) NULL,
+                unidad_medida VARCHAR(100) NULL,
+                precio DECIMAL(12,4) NULL,
+                precio_mayoreo DECIMAL(12,4) NULL,
+                precio_menudeo DECIMAL(12,4) NULL,
+                row_index INT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_row_index (row_index),
+                INDEX idx_codigo (codigo)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            
+            // Insertar datos por lotes para mejor rendimiento
+            $insertData = [];
+            foreach ($data['full_data'] as $index => $row) {
+                $insertData[] = [
+                    'codigo' => !empty($row['codigo']) ? substr(trim($row['codigo']), 0, 255) : null,
+                    'producto' => !empty($row['producto']) ? substr(trim($row['producto']), 0, 500) : null,
+                    'descripcion' => !empty($row['descripcion']) ? trim($row['descripcion']) : null,
+                    'marca' => !empty($row['marca']) ? substr(trim($row['marca']), 0, 255) : null,
+                    'categoria' => !empty($row['categoria']) ? substr(trim($row['categoria']), 0, 255) : null,
+                    'subcategoria' => !empty($row['subcategoria']) ? substr(trim($row['subcategoria']), 0, 255) : null,
+                    'unidad_medida' => !empty($row['unidad_medida']) ? substr(trim($row['unidad_medida']), 0, 100) : null,
+                    'precio' => !empty($row['precio']) && is_numeric($row['precio']) ? (float)$row['precio'] : null,
+                    'precio_mayoreo' => !empty($row['precio_mayoreo']) && is_numeric($row['precio_mayoreo']) ? (float)$row['precio_mayoreo'] : null,
+                    'precio_menudeo' => !empty($row['precio_menudeo']) && is_numeric($row['precio_menudeo']) ? (float)$row['precio_menudeo'] : null,
+                    'row_index' => $index + 1
+                ];
+            }
+            
+            // Insertar en lotes de 500 registros para evitar timeouts
+            $chunks = array_chunk($insertData, 500);
+            foreach ($chunks as $chunk) {
+                DB::table($tableName)->insert($chunk);
+            }
+            
+            // Guardar metadata en ImportValidationCache para referencia
+            ImportValidationCache::create([
+                'token' => $token,
+                'proveedor_id' => $data['proveedor_id'],
+                'file_name' => $data['file_info']['original_name'],
+                'total_rows' => count($data['full_data']),
+                'validation_data' => [
+                    'temp_table' => $tableName,
+                    'catalogos_data' => $data['catalogos_data'],
+                    'headers' => $data['headers'],
+                    'options' => $data['options'],
+                    'file_info' => $data['file_info'],
+                    'created_at' => $data['created_at']
+                ],
+                'expires_at' => now()->addHours(2) // 2 horas para dar tiempo suficiente
+            ]);
+            
+            Log::info("Tabla temporal creada exitosamente", [
+                'token' => $token,
+                'table_name' => $tableName,
+                'total_rows' => count($data['full_data']),
+                'proveedor_id' => $data['proveedor_id']
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error("Error creando tabla temporal", [
+                'token' => $token,
+                'table_name' => $tableName ?? 'undefined',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            // Limpiar tabla si se creó pero falló después
+            if (isset($tableName)) {
+                try {
+                    DB::statement("DROP TABLE IF EXISTS {$tableName}");
+                } catch (\Exception $cleanupException) {
+                    Log::error("Error limpiando tabla después de fallo", [
+                        'table_name' => $tableName,
+                        'error' => $cleanupException->getMessage()
+                    ]);
+                }
+            }
+            
+            // Fallback al método de caché original
+            $this->cachePreviewData($token, $data);
+        }
+    }
+    
+    /**
+     * Recupera los datos de vista previa desde la tabla temporal
+     * 
+     * @param string $token Token único de identificación
+     * @return array|null Datos del preview o null si no se encuentra
+     */
+    public function getTempTablePreviewData(string $token): ?array
+    {
+        try {
+            // Buscar metadata en ImportValidationCache
+            $cached = ImportValidationCache::where('token', $token)
+                ->where('expires_at', '>', now())
+                ->first();
+                
+            if (!$cached || !isset($cached->validation_data['temp_table'])) {
+                Log::info("No se encontró metadata para el token", ['token' => $token]);
+                return null;
+            }
+            
+            $tableName = $cached->validation_data['temp_table'];
+            $metadata = $cached->validation_data;
+            
+            // Verificar si la tabla existe
+            $tableExists = DB::select("SHOW TABLES LIKE '{$tableName}'");
+            if (empty($tableExists)) {
+                Log::warning("Tabla temporal no encontrada", [
+                    'table_name' => $tableName, 
+                    'token' => $token,
+                    'proveedor_id' => $cached->proveedor_id
+                ]);
+                return null;
+            }
+            
+            // Obtener todos los datos de la tabla temporal ordenados
+            $tempData = DB::table($tableName)
+                ->orderBy('row_index')
+                ->get()
+                ->map(function ($row) {
+                    return [
+                        'codigo' => $row->codigo,
+                        'producto' => $row->producto,
+                        'descripcion' => $row->descripcion,
+                        'marca' => $row->marca,
+                        'categoria' => $row->categoria,
+                        'subcategoria' => $row->subcategoria,
+                        'unidad_medida' => $row->unidad_medida,
+                        'precio' => $row->precio,
+                        'precio_mayoreo' => $row->precio_mayoreo,
+                        'precio_menudeo' => $row->precio_menudeo
+                    ];
+                })
+                ->toArray();
+            
+            Log::info("Datos recuperados de tabla temporal", [
+                'token' => $token,
+                'table_name' => $tableName,
+                'rows_retrieved' => count($tempData)
+            ]);
+            
+            // Reconstruir la estructura completa de datos
+            return [
+                'full_data' => $tempData,
+                'catalogos_data' => $metadata['catalogos_data'] ?? [],
+                'headers' => $metadata['headers'] ?? [],
+                'options' => $metadata['options'] ?? [],
+                'proveedor_id' => $cached->proveedor_id,
+                'file_info' => $metadata['file_info'] ?? [],
+                'created_at' => $metadata['created_at'] ?? now()->toISOString()
+            ];
+            
+        } catch (\Exception $e) {
+            Log::error("Error recuperando datos de tabla temporal", [
+                'token' => $token,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            // Fallback al método de caché original
+            return $this->getCachedPreviewData($token);
+        }
+    }
+    
+    /**
+     * Elimina la tabla temporal y los datos asociados
+     * 
+     * @param string $token Token único de identificación
+     * @return bool True si se eliminó correctamente
+     */
+    public function cleanupTempTable(string $token): bool
+    {
+        try {
+            // Buscar metadata
+            $cached = ImportValidationCache::where('token', $token)->first();
+            
+            if ($cached && isset($cached->validation_data['temp_table'])) {
+                $tableName = $cached->validation_data['temp_table'];
+                
+                // Eliminar tabla si existe
+                $tableExists = DB::select("SHOW TABLES LIKE '{$tableName}'");
+                if (!empty($tableExists)) {
+                    DB::statement("DROP TABLE {$tableName}");
+                    Log::info("Tabla temporal eliminada", [
+                        'table_name' => $tableName, 
+                        'token' => $token,
+                        'proveedor_id' => $cached->proveedor_id
+                    ]);
+                }
+            }
+            
+            // Eliminar registro de ImportValidationCache
+            ImportValidationCache::where('token', $token)->delete();
+            
+            // Eliminar caché si existe
+            Cache::forget("csv_preview:{$token}");
+            
+            return true;
+            
+        } catch (\Exception $e) {
+            Log::error("Error eliminando tabla temporal", [
+                'token' => $token,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return false;
+        }
+    }
+    
+    /**
+     * Limpia tablas temporales expiradas (método para ejecutar periódicamente)
+     * 
+     * @return int Número de tablas limpiadas
+     */
+    public function cleanupExpiredTempTables(): int
+    {
+        $cleanedCount = 0;
+        
+        try {
+            // Buscar registros expirados
+            $expiredRecords = ImportValidationCache::where('expires_at', '<', now())
+                ->whereNotNull('validation_data')
+                ->get();
+            
+            foreach ($expiredRecords as $record) {
+                if (isset($record->validation_data['temp_table'])) {
+                    $tableName = $record->validation_data['temp_table'];
+                    
+                    // Verificar si la tabla existe antes de intentar eliminarla
+                    $tableExists = DB::select("SHOW TABLES LIKE '{$tableName}'");
+                    if (!empty($tableExists)) {
+                        DB::statement("DROP TABLE {$tableName}");
+                        $cleanedCount++;
+                        
+                        Log::info("Tabla temporal expirada eliminada", [
+                            'table_name' => $tableName,
+                            'token' => $record->token,
+                            'expired_at' => $record->expires_at
+                        ]);
+                    }
+                }
+                
+                // Eliminar el registro de metadata
+                $record->delete();
+            }
+            
+        } catch (\Exception $e) {
+            Log::error("Error limpiando tablas temporales expiradas", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
+        
+        return $cleanedCount;
     }
 
     /**

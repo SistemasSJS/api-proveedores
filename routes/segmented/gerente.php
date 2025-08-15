@@ -54,6 +54,7 @@ Route::prefix('proveedores')
         });
 
         /**
+         *
          * PRODUCTOS DEL PROVEEDOR
          */
         Route::prefix('{proveedor}/productos')->middleware(['proveedor.access'])->group(function () {
@@ -153,13 +154,14 @@ Route::prefix('proveedores')
 
         /**
          * REQUISICIONES DEL PROVEEDOR
+         * DELEgATE TO CONSTRUCC APP
          */
-        Route::prefix('{proveedor}/requisiciones')->middleware(['proveedor.access'])->group(function () {
-            Route::get('/', [ProveedorRequisicionController::class, 'index'])->middleware(['audit']);
-            Route::get('{requisicion}', [ProveedorRequisicionController::class, 'show'])->middleware(['audit']);
-            Route::patch('{requisicion}/estatus', [ProveedorRequisicionController::class, 'cambiarEstatus'])->middleware(['audit']);
-            Route::post('{requisicion}/cotizar', [ProveedorRequisicionController::class, 'generarCotizacion'])->middleware(['audit']);
-        });
+        // Route::prefix('{proveedor}/requisiciones')->middleware(['proveedor.access'])->group(function () {
+        //     Route::get('/', [ProveedorRequisicionController::class, 'index'])->middleware(['audit']);
+        //     Route::get('{requisicion}', [ProveedorRequisicionController::class, 'show'])->middleware(['audit']);
+        //     Route::patch('{requisicion}/estatus', [ProveedorRequisicionController::class, 'cambiarEstatus'])->middleware(['audit']);
+        //     Route::post('{requisicion}/cotizar', [ProveedorRequisicionController::class, 'generarCotizacion'])->middleware(['audit']);
+        // });
 
         /**
          * PEDIDOS DEL PROVEEDOR
@@ -206,6 +208,8 @@ Route::prefix('proveedores')
             Route::post('/upload', [CsvImportController::class, 'upload'])->middleware(['audit']);
             Route::post('/validate-producto', [CsvImportController::class, 'validateProducto'])->middleware(['audit']);
             Route::post('/confirm', [CsvImportController::class, 'confirm'])->middleware(['audit']);
+            Route::get('/results/{auditId}', [CsvImportController::class, 'getImportResults'])->middleware(['audit']);
+            Route::get('/results/{auditId}/export', [CsvImportController::class, 'export'])->middleware(['audit']);
         });
 
         /**

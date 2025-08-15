@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use App\Services\CSVProcessorService;
 use App\Services\ProductImportValidator;
+use App\Services\CsvImportExportService;
 use App\Http\Responses\CsvUploadResponse;
 use App\Http\Responses\CsvConfirmResponse;
 use App\Http\Responses\CsvValidateProductResponse;
@@ -27,10 +28,12 @@ class CsvImportController extends Controller
     use ApiResponse;
 
     protected CSVProcessorService $csvProcessor;
+    protected CsvImportExportService $exportService;
 
-    public function __construct(CSVProcessorService $csvProcessor)
+    public function __construct(CSVProcessorService $csvProcessor, CsvImportExportService $exportService)
     {
         $this->csvProcessor = $csvProcessor;
+        $this->exportService = $exportService;
     }
 
     /**
@@ -66,7 +69,7 @@ class CsvImportController extends Controller
                 'delimiter' => $this->getDelimiter($request->get('delimiter', 'comma')),
                 'encoding' => $request->get('encoding', 'UTF-8'),
                 'has_header' => $request->get('has_header', true),
-                'preview_rows' => $request->get('preview_rows', -1),
+                'preview_rows' => $request->get('preview_rows', 100),
                 'strict_validation' => false,
                 'auto_create_relations' => true
             ];
@@ -195,7 +198,17 @@ class CsvImportController extends Controller
                 'nuevos' => $importResult['stats']['created'] ?? 0,
                 'actualizados' => $importResult['stats']['updated'] ?? 0,
                 'errores' => $importResult['stats']['errors'] ?? 0,
-                'errores_detalle' => $importResult['error_details'] ?? []
+                'errores_detalle' => $importResult['error_details'] ?? [],
+                'marca_imported' => $importResult['stats']['marca_imported'],
+                'marca_errors' => $importResult['stats']['marca_errors'],
+                'marca_total' => $importResult['stats']['marca_total'],
+                'categoria_imported' => $importResult['stats']['categoria_imported'],
+                'categoria_errors' => $importResult['stats']['categoria_errors'],
+                'categoria_total' => $importResult['stats']['categoria_total'],
+                'unidad_imported' => $importResult['stats']['unidad_imported'],
+                'unidad_errors' => $importResult['stats']['unidad_errors'],
+                'unidad_total' => $importResult['stats']['unidad_total'],
+
             ]);
 
             if ($importResult['success']) {
@@ -224,6 +237,151 @@ class CsvImportController extends Controller
             ]);
 
             return $this->error('Error al confirmar la importación: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * GET /api/proveedores/{id}/csv-import/results/{auditId}
+     * Obtener resultados de una importación específica
+     */
+    public function getImportResults(Request $request, $id, $auditId)
+    {
+        try {
+            // Validar el proveedor
+            $proveedor = Proveedor::findOrFail($id);
+
+            // Buscar el registro de auditoría
+            $audit = ImportAudit::where('id', $auditId)
+                ->where('proveedor_id', $proveedor->id)
+                ->first();
+
+            if (!$audit) {
+                return $this->error('No se encontró la importación solicitada', 404);
+            }
+
+            // Formatear los resultados para el frontend
+            $results = [
+                'audit_id' => $audit->id,
+                'estado' => $audit->estado,
+                'success' => $audit->estado === 'completado',
+                'archivo' => $audit->archivo,
+                'tipo' => $audit->tipo,
+                'formato' => $audit->formato,
+                'fecha_creacion' => $audit->created_at,
+                'inicio_proceso' => $audit->inicio_proceso,
+                'fin_proceso' => $audit->fin_proceso,
+                'processing_time' => $this->calculateProcessingTime($audit),
+                'file_info' => [
+                    'name' => basename($audit->archivo ?? 'archivo.csv'),
+                    'size' => $this->getFileSize($audit->archivo)
+                ],
+                'estadisticas' => [
+                    'total_processed' => $audit->total_registros ?? 0,
+                    'created' => $audit->nuevos ?? 0,
+                    'updated' => $audit->actualizados ?? 0,
+                    'errors' => $audit->errores ?? 0,
+                    'success_rate' => $this->calculateSuccessRate($audit)
+                ],
+                'breakdown' => [
+                    'productos' => [
+                        'imported' => $audit->nuevos ?? 0,
+                        'updated' => $audit->actualizados ?? 0,
+                        'errors' => $audit->errores ?? 0,
+                        'total' => $audit->total_registros ?? 0,
+                    ],
+                    // Placeholder para otras categorías - se pueden implementar más tarde
+                    'marcas' => [
+                        'imported' => $audit->marca_imported,
+                        'errors' => $audit->marca_errors,
+                        'total' => $audit->marca_total
+                    ],
+                    'categorias' => [
+                        'imported' => $audit->categoria_imported,
+                        'errors' => $audit->categoria_errors,
+                        'total' => $audit->categoria_total
+                    ],
+                    'unidades' => [
+                        'imported' => $audit->unidades_imported,
+                        'errors' => $audit->unidades_errors,
+                        'total' => $audit->unidades_total
+                    ],
+                ],
+                'errores_detalle' => $audit->errores_detalle ?? [],
+                'advertencias_detalle' => [], // Se puede agregar en futuras versiones
+                'items_importados' => $this->getImportedItems($audit),
+                'logs' => $audit->logs ?? []
+            ];
+
+            return $this->success($results, 'Resultados de importación obtenidos correctamente');
+        } catch (Exception $e) {
+            Log::error('Error obteniendo resultados de importación', [
+                'proveedor_id' => $id,
+                'audit_id' => $auditId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return $this->error('Error al obtener los resultados de la importación: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * GET /api/proveedores/{id}/csv-import/results/{auditId}/export
+     * Exportar resultados de importación en diferentes formatos
+     */
+    public function export(Request $request, $id, $auditId)
+    {
+        try {
+            set_time_limit(5000);
+            // Validar el proveedor
+            $proveedor = Proveedor::findOrFail($id);
+
+            // Validar parámetros de entrada
+            $request->validate([
+                'format' => 'nullable|string|in:xlsx,csv,pdf',
+                'type' => 'nullable|string|in:report,data,summary'
+            ]);
+
+            // Obtener parámetros con valores por defecto
+            $format = $request->get('format', 'xlsx');
+            $type = $request->get('type', 'report');
+
+            // Buscar el registro de auditoría
+            $audit = ImportAudit::where('id', $auditId)
+                ->where('proveedor_id', $proveedor->id)
+                ->first();
+
+            if (!$audit) {
+                return $this->error('No se encontró la importación solicitada', 404);
+            }
+
+            // Verificar que la importación esté completada
+            if (!in_array($audit->estado, ['completado', 'error'])) {
+                return $this->error('La importación debe estar completada para poder exportar los resultados', 400);
+            }
+
+            // Log de la exportación
+            Log::info('Exportando resultados de importación', [
+                'audit_id' => $auditId,
+                'proveedor_id' => $id,
+                'format' => $format,
+                'type' => $type,
+                'user' => auth()->user()->id ?? 'anonymous'
+            ]);
+
+            // Usar el servicio de exportación
+            return $this->exportService->exportImportResults($audit, $format, $type);
+        } catch (Exception $e) {
+            Log::error('Error exportando resultados de importación', [
+                'proveedor_id' => $id,
+                'audit_id' => $auditId,
+                'format' => $request->get('format', 'xlsx'),
+                'type' => $request->get('type', 'report'),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return $this->error('Error al exportar los resultados: ' . $e->getMessage(), 500);
         }
     }
 
@@ -302,10 +460,49 @@ class CsvImportController extends Controller
             return $this->error('Error al validar el producto: ' . $e->getMessage(), 500);
         }
     }
+
     /**
-     * Ejecutar la importación de productos desde el CSV
+     * Ejecutar la importación de productos desde el CSV.
+     *
+     * Procesa los datos obtenidos desde la vista previa en caché, valida, registra catálogos,
+     * y realiza inserciones/actualizaciones en la base de datos en chunks.
+     *
+     * @param ImportAudit $audit   Registro de auditoría de la importación.
+     * @param array       $options Opciones adicionales de importación (ej. ['skip_duplicates' => true]).
+     *
+     * @return array{
+     *     success: bool,
+     *     stats?: array{
+     *         total_processed: int,
+     *         created: int,
+     *         updated: int,
+     *         errors: int,
+     *         skipped: int,
+     *         success_rate: float
+     *     },
+     *     processing_time?: float,
+     *     error_details?: array<int, mixed>,
+     *     error?: string
+     * }
+     *
+     * Formato de retorno:
+     * - En caso de éxito:
+     *   [
+     *     'success' => true,
+     *     'stats' => [...],
+     *     'processing_time' => (float),
+     *     'error_details' => [...]
+     *   ]
+     *
+     * - En caso de error:
+     *   [
+     *     'success' => false,
+     *     'error' => (string),
+     *     'stats' => [...],
+     *     'error_details' => [...]
+     *   ]
      */
-    private function executeImport(ImportAudit $audit, array $options): array
+    private function  executeImport(ImportAudit $audit, array $options): array
     {
         $startTime = microtime(true);
         $stats = [
@@ -319,9 +516,13 @@ class CsvImportController extends Controller
         $errorDetails = [];
 
         try {
-            // Obtener datos del cache usando el preview_token
+            // Obtener datos de la tabla temporal usando el preview_token
             $previewToken = $audit->preview_data['preview_token'] ?? null;
-            $cachedData = $this->csvProcessor->getCachedPreviewData($previewToken);
+            // Intentar primero desde tabla temporal, luego fallback a caché
+            $cachedData = $this->csvProcessor->getTempTablePreviewData($previewToken);
+            if (!$cachedData) {
+                $cachedData = $this->csvProcessor->getCachedPreviewData($previewToken);
+            }
 
             if (!$cachedData) {
                 throw new \Exception('Datos de preview expirados. Por favor, suba el archivo nuevamente.');
@@ -347,7 +548,17 @@ class CsvImportController extends Controller
                 $catalogos['categorias'][$cat] = array_values(array_unique($subs));
             }
 
-            $this->registrarCatalogos($catalogos, $proveedorId);
+            $resultadosImportacionCatalgos = $this->registrarCatalogos($catalogos, $proveedorId);
+
+            $stats['marca_imported'] = $resultadosImportacionCatalgos['marcas']['imported'];
+            $stats['marca_errors'] = $resultadosImportacionCatalgos['marcas']['errors'];
+            $stats['marca_total'] = $resultadosImportacionCatalgos['marcas']['total'];
+            $stats['categoria_imported'] = $resultadosImportacionCatalgos['categorias']['imported'];
+            $stats['categoria_errors'] = $resultadosImportacionCatalgos['categorias']['errors'];
+            $stats['categoria_total'] = $resultadosImportacionCatalgos['categorias']['total'];
+            $stats['unidad_imported'] = $resultadosImportacionCatalgos['unidades']['imported'];
+            $stats['unidad_errors'] = $resultadosImportacionCatalgos['unidades']['errors'];
+            $stats['unidad_total'] = $resultadosImportacionCatalgos['unidades']['total'];
 
             // --- 2. Preparar referencias en memoria ---
             $marcasMap = Marca::where('proveedor_id', $proveedorId)->pluck('id', 'nombre')->toArray();
@@ -463,6 +674,11 @@ class CsvImportController extends Controller
 
             $processingTime = round(microtime(true) - $startTime, 2);
 
+            // Limpiar tabla temporal después de importación exitosa
+            if ($previewToken) {
+                $this->csvProcessor->cleanupTempTable($previewToken);
+            }
+
             return [
                 'success' => true,
                 'stats' => $stats,
@@ -497,40 +713,73 @@ class CsvImportController extends Controller
      *
      * @return void
      */
-    public function registrarCatalogos(array $catalogos, int $proveedorId): void
+    public function registrarCatalogos(array $catalogos, int $proveedorId): array
     {
+        $catalogosImportResults = [
+            "marcas" => ["imported" => 0, "errors" => 0, "total" => 0],
+            "categorias" => ["imported" => 0, "errors" => 0, "total" => 0],
+            "unidades" => ["imported" => 0, "errors" => 0, "total" => 0],
+        ];
+
         // --- Registrar marcas ---
         foreach ($catalogos['marcas'] as $nombreMarca) {
-            Marca::updateOrCreate(
-                ['nombre' => $nombreMarca, 'proveedor_id' => $proveedorId],
-                ['activo' => true]
-            );
+            $catalogosImportResults['marcas']['total']++;
+            try {
+                Marca::updateOrCreate(
+                    ['nombre' => $nombreMarca, 'proveedor_id' => $proveedorId],
+                    ['activo' => true]
+                );
+                $catalogosImportResults['marcas']['imported']++;
+            } catch (\Throwable $e) {
+                $catalogosImportResults['marcas']['errors']++;
+            }
         }
 
         // --- Registrar unidades de medida ---
         foreach ($catalogos['unidades'] as $nombreUnidad) {
-            UnidadMedida::updateOrCreate(
-                ['nombre' => $nombreUnidad, 'proveedor_id' => $proveedorId],
-                ['estatus' => 'activo']
-            );
+            $catalogosImportResults['unidades']['total']++;
+            try {
+                UnidadMedida::updateOrCreate(
+                    ['nombre' => $nombreUnidad, 'proveedor_id' => $proveedorId],
+                    ['estatus' => 'activo']
+                );
+                $catalogosImportResults['unidades']['imported']++;
+            } catch (\Throwable $e) {
+                $catalogosImportResults['unidades']['errors']++;
+            }
         }
 
         // --- Registrar categorías y subcategorías ---
         foreach ($catalogos['categorias'] as $nombreCategoria => $subcategorias) {
-            // Categoria principal
-            $categoria = Categoria::updateOrCreate(
-                ['nombre' => $nombreCategoria, 'proveedor_id' => $proveedorId, 'nivel' => 1],
-                ['activo' => true]
-            );
-
-            // Subcategorías
-            foreach ($subcategorias as $nombreSubcategoria) {
-                Categoria::updateOrCreate(
-                    ['nombre' => $nombreSubcategoria, 'parent_id' => $categoria->id, 'proveedor_id' => $proveedorId, 'nivel' => 2],
+            $catalogosImportResults['categorias']['total']++;
+            try {
+                // Categoría principal
+                $categoria = Categoria::updateOrCreate(
+                    ['nombre' => $nombreCategoria, 'proveedor_id' => $proveedorId, 'nivel' => 1],
                     ['activo' => true]
                 );
+                $catalogosImportResults['categorias']['imported']++;
+
+                // Subcategorías
+                foreach ($subcategorias as $nombreSubcategoria) {
+                    $catalogosImportResults['categorias']['total']++;
+                    try {
+                        Categoria::updateOrCreate(
+                            ['nombre' => $nombreSubcategoria, 'parent_id' => $categoria->id, 'proveedor_id' => $proveedorId, 'nivel' => 2],
+                            ['activo' => true]
+                        );
+                        $catalogosImportResults['categorias']['imported']++;
+                    } catch (\Throwable $e) {
+                        $catalogosImportResults['categorias']['errors']++;
+                    }
+                }
+            } catch (\Throwable $e) {
+                $catalogosImportResults['categorias']['errors']++;
             }
         }
+
+
+        return $catalogosImportResults;
     }
 
 
@@ -602,6 +851,89 @@ class CsvImportController extends Controller
         }
 
         return $actions;
+    }
+
+    /**
+     * Calculate processing time from audit record
+     */
+    private function calculateProcessingTime(ImportAudit $audit): float
+    {
+        if ($audit->inicio_proceso && $audit->fin_proceso) {
+            return round($audit->fin_proceso->diffInSeconds($audit->inicio_proceso, true), 2);
+        }
+        return 0.0;
+    }
+
+    /**
+     * Get file size from stored file path
+     */
+    private function getFileSize(?string $filePath): int
+    {
+        if (!$filePath) {
+            return 0;
+        }
+
+        try {
+            if (Storage::disk('local')->exists($filePath)) {
+                return Storage::disk('local')->size($filePath);
+            }
+        } catch (Exception $e) {
+            Log::warning('Error getting file size', [
+                'file_path' => $filePath,
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        return 0;
+    }
+
+    /**
+     * Calculate success rate from audit statistics
+     */
+    private function calculateSuccessRate(ImportAudit $audit): float
+    {
+        $totalProcessed = $audit->total_registros ?? 0;
+        if ($totalProcessed === 0) {
+            return 0.0;
+        }
+
+        $successful = ($audit->nuevos ?? 0) + ($audit->actualizados ?? 0);
+        return round(($successful / $totalProcessed) * 100, 2);
+    }
+
+    /**
+     * Get imported items details (placeholder for now)
+     * This can be enhanced to return actual imported product details
+     */
+    private function getImportedItems(ImportAudit $audit): array
+    {
+        // For now, return a placeholder structure
+        // This could be enhanced to query actual imported products
+        $items = [];
+
+        $created = $audit->nuevos ?? 0;
+        $updated = $audit->actualizados ?? 0;
+
+        // Generate sample items structure based on stats
+        for ($i = 0; $i < min($created, 10); $i++) {
+            $items[] = [
+                'id' => "item_{$i}",
+                'name' => "Producto creado {$i}",
+                'category' => 'productos',
+                'action' => 'created'
+            ];
+        }
+
+        for ($i = 0; $i < min($updated, 10); $i++) {
+            $items[] = [
+                'id' => "updated_{$i}",
+                'name' => "Producto actualizado {$i}",
+                'category' => 'productos',
+                'action' => 'updated'
+            ];
+        }
+
+        return $items;
     }
 
     /**

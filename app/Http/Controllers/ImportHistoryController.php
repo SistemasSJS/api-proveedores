@@ -149,7 +149,6 @@ class ImportHistoryController extends Controller
             ]);
 
             return $this->success($result, 'Preview de importación generado correctamente.');
-
         } catch (\Throwable $e) {
             Log::error('Error generating import preview', [
                 'proveedor_id' => $proveedor->id,
@@ -184,8 +183,8 @@ class ImportHistoryController extends Controller
             if (!$previewData) {
                 return $this->error(
                     'Token de previsualización inválido o expirado.',
+                    ['error_type' => 'token_expired'],
                     404,
-                    ['error_type' => 'token_expired']
                 );
             }
 
@@ -193,8 +192,8 @@ class ImportHistoryController extends Controller
             if ($previewData['proveedor_id'] !== $proveedor->id) {
                 return $this->error(
                     'Token de previsualización no válido para este proveedor.',
+                    ['error_type' => 'unauthorized_token'],
                     403,
-                    ['error_type' => 'unauthorized_token']
                 );
             }
 
@@ -249,7 +248,6 @@ class ImportHistoryController extends Controller
             ]);
 
             return $this->success($responseData, $message);
-
         } catch (\Throwable $e) {
             Log::error('Error confirming import', [
                 'proveedor_id' => $proveedor->id,
@@ -260,8 +258,8 @@ class ImportHistoryController extends Controller
 
             return $this->error(
                 'Error interno del servidor al procesar la importación.',
+                ['error_detail' => config('app.debug') ? $e->getMessage() : null],
                 500,
-                ['error_detail' => config('app.debug') ? $e->getMessage() : null]
             );
         }
     }
@@ -297,7 +295,7 @@ class ImportHistoryController extends Controller
                 'available' => true,
                 'expires_at' => $importHistory->rollback_expires_at,
                 'affected_records' => count($importHistory->rollback_data['created_ids'] ?? []) +
-                                   count($importHistory->rollback_data['updated_ids'] ?? []),
+                    count($importHistory->rollback_data['updated_ids'] ?? []),
                 'can_execute' => $importHistory->rollback_expires_at > now()
             ];
         }
@@ -336,7 +334,7 @@ class ImportHistoryController extends Controller
     private function estimateProcessingTime(int $totalRows): string
     {
         $seconds = ceil($totalRows / 100); // Aproximadamente 100 registros por segundo
-        
+
         if ($seconds < 60) {
             return "{$seconds} segundos";
         } elseif ($seconds < 3600) {
@@ -355,8 +353,8 @@ class ImportHistoryController extends Controller
     private function canRollbackImport(ImportAudit $importAudit): bool
     {
         return $importAudit->supports_rollback &&
-               $importAudit->rollback_expires_at &&
-               $importAudit->rollback_expires_at > now() &&
-               !empty($importAudit->rollback_data);
+            $importAudit->rollback_expires_at &&
+            $importAudit->rollback_expires_at > now() &&
+            !empty($importAudit->rollback_data);
     }
 }
