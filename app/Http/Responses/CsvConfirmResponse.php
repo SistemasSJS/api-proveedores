@@ -4,7 +4,7 @@ namespace App\Http\Responses;
 
 /**
  * Response para el endpoint de confirmación de importación CSV
- * POST /api/proveedor/{id}/csv-import/confirm
+ * POST /api/proveedores/{id}/csv-import/confirm
  */
 class CsvConfirmResponse
 {

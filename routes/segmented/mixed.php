@@ -117,7 +117,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->name('reports.my-pedidos');
 
     // Reportes de pedidos por proveedor (compatibilidad)
-    Route::get('reports/proveedor/{proveedor}/pedidos', [ProveedorPedidoController::class, 'proveedorPedidosReport'])
+    Route::get('reports/proveedores/{proveedor}/pedidos', [ProveedorPedidoController::class, 'proveedorPedidosReport'])
         ->name('reports.proveedor-pedidos');
 
     // Análisis de tendencias (compatibilidad)

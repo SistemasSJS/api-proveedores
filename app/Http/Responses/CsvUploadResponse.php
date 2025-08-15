@@ -6,7 +6,7 @@ use Illuminate\Http\JsonResponse;
 
 /**
  * Response para el endpoint de carga CSV
- * POST /api/proveedor/{id}/csv-import
+ * POST /api/proveedores/{id}/csv-import
  */
 class CsvUploadResponse
 {

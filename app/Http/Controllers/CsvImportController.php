@@ -34,7 +34,7 @@ class CsvImportController extends Controller
     }
 
     /**
-     * POST /api/proveedor/{id}/csv-import
+     * POST /api/proveedores/{id}/csv-import
      * Subida del archivo y análisis
      */
     public function upload(Request $request, $id)
@@ -125,7 +125,7 @@ class CsvImportController extends Controller
     }
 
     /**
-     * POST /api/proveedor/{id}/csv-import/confirm
+     * POST /api/proveedores/{id}/csv-import/confirm
      * Confirmar la importación
      */
     public function confirm(Request $request, $id)
@@ -228,7 +228,7 @@ class CsvImportController extends Controller
     }
 
     /**
-     * POST /api/proveedor/{id}/csv-import/validate-producto
+     * POST /api/proveedores/{id}/csv-import/validate-producto
      * Validar un producto específico
      */
     public function validateProducto(Request $request, $id)

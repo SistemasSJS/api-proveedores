@@ -4,7 +4,7 @@ namespace App\Http\Responses;
 
 /**
  * Response para el endpoint de validación de producto CSV
- * POST /api/proveedor/{id}/csv-import/validate-producto
+ * POST /api/proveedores/{id}/csv-import/validate-producto
  */
 class CsvValidateProductResponse
 {
