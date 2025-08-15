@@ -15,6 +15,9 @@ use App\Services\ProductImportValidator;
 use App\Http\Responses\CsvUploadResponse;
 use App\Http\Responses\CsvConfirmResponse;
 use App\Http\Responses\CsvValidateProductResponse;
+use App\Models\Categoria;
+use App\Models\Marca;
+use App\Models\UnidadMedida;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Exception;
@@ -46,7 +49,7 @@ class CsvImportController extends Controller
                 'delimiter' => 'nullable|string',
                 'encoding' => 'nullable|string|in:UTF-8,ISO-8859-1,Windows-1252',
                 'has_header' => 'nullable|boolean',
-                'preview_rows' => 'nullable|integer|min:10|max:500',
+                'preview_rows' => 'nullable|integer|min:-1|max:500',
             ], [
                 'file.required' => 'El archivo es obligatorio.',
                 'file.file' => 'Debe ser un archivo válido.',
@@ -141,6 +144,13 @@ class CsvImportController extends Controller
                 'import_options.create_missing_relations' => 'nullable|boolean',
             ]);
 
+            // Extraer valores en variables
+            $auditId = $request->input('audit_id');
+            $previewToken = $request->input('preview_token');
+            $skipDuplicates = $request->input('import_options.skip_duplicates', false);
+            $updateExisting = $request->input('import_options.update_existing', false);
+            $createMissingRelations = $request->input('import_options.create_missing_relations', false);
+
             // Buscar el audit
             $audit = ImportAudit::where('id', $request->audit_id)
                 ->where('proveedor_id', $proveedor->id)
@@ -159,15 +169,14 @@ class CsvImportController extends Controller
 
             // Configurar opciones de importación
             $importOptions = array_merge([
-                'skip_duplicates' => true,
-                'update_existing' => true,
-                'create_missing_relations' => true,
+                'skip_duplicates' => $skipDuplicates,
+                'update_existing' => $updateExisting,
+                'create_missing_relations' => $createMissingRelations,
             ], $request->get('import_options', []));
 
             // Iniciar la importación
             $audit->update([
                 'estado' => 'procesando',
-                // 'fase' => 'importacion_iniciada',
                 'inicio_proceso' => now()
             ]);
 
@@ -182,7 +191,6 @@ class CsvImportController extends Controller
             // Actualizar audit con resultados
             $audit->update([
                 'estado' => $importResult['success'] ? 'completado' : 'error',
-                // 'fase' => $importResult['success'] ? 'importacion_completada' : 'error_importacion',
                 'fin_proceso' => now(),
                 'nuevos' => $importResult['stats']['created'] ?? 0,
                 'actualizados' => $importResult['stats']['updated'] ?? 0,
@@ -202,7 +210,11 @@ class CsvImportController extends Controller
                 ], 'error');
 
                 $response = CsvConfirmResponse::error($audit->id, $importResult['stats'], $importResult['error_details']);
-                return $this->error('Error durante la importación: ' . $importResult['error'], 500, $response->toArray());
+                return $this->error(
+                    'Error durante la importación: ' . $importResult['error'],
+                    $response->toArray(),
+                    500
+                );
             }
         } catch (Exception $e) {
             Log::error('Error en confirm CSV import', [
@@ -227,17 +239,19 @@ class CsvImportController extends Controller
 
             // Validar datos de entrada
             $request->validate([
-                'producto' => 'required|array',
-                'producto.codigo' => 'required|string|max:255',
-                'producto.nombre' => 'required|string|max:255',
-                'producto.precio' => 'nullable|numeric|min:0',
-                'producto.descripcion' => 'nullable|string|max:1000',
-                'producto.modelo' => 'nullable|string|max:255',
-                'producto.marca' => 'nullable|string|max:255',
-                'producto.categoria' => 'nullable|string|max:255',
-                'producto.subcategoria' => 'nullable|string|max:255',
-                'producto.unidad_medida' => 'nullable|string|max:100',
-                'strict_validation' => 'nullable|boolean'
+                'producto'                  => 'required|array',
+                'producto.codigo'           => 'required|string|max:255',
+                'producto.producto'         => 'required|string|max:255',
+                'producto.descripcion'      => 'nullable|string|max:1000',
+                'producto.modelo'           => 'nullable|string|max:255',
+                'producto.marca'            => 'nullable|string|max:255',
+                'producto.categoria'        => 'nullable|string|max:255',
+                'producto.subcategoria'     => 'nullable|string|max:255',
+                'producto.unidad_medida'    => 'nullable|string|max:100',
+                'producto.precio'           => 'nullable|numeric|min:0',
+                'producto.precio_mayoreo'   => 'nullable|numeric|min:0',
+                'producto.precio_menudeo'   => 'nullable|numeric|min:0',
+                'strict_validation'         => 'nullable|boolean'
             ]);
 
             $productoData = $request->get('producto');
@@ -275,7 +289,7 @@ class CsvImportController extends Controller
             if ($isValid) {
                 return $this->success($response->toArray(), 'Producto validado correctamente');
             } else {
-                return $this->error('Producto no válido', 422, $response->toArray());
+                return $this->success($response->toArray(), 'Producto no válido');
             }
         } catch (Exception $e) {
             Log::error('Error en validateProducto', [
@@ -288,7 +302,6 @@ class CsvImportController extends Controller
             return $this->error('Error al validar el producto: ' . $e->getMessage(), 500);
         }
     }
-
     /**
      * Ejecutar la importación de productos desde el CSV
      */
@@ -307,70 +320,125 @@ class CsvImportController extends Controller
 
         try {
             // Obtener datos del cache usando el preview_token
-            $previewToken = $audit->preview_data['preview_token'];
+            $previewToken = $audit->preview_data['preview_token'] ?? null;
             $cachedData = $this->csvProcessor->getCachedPreviewData($previewToken);
 
             if (!$cachedData) {
-                throw new Exception('Datos de preview expirados. Por favor, suba el archivo nuevamente.');
+                throw new \Exception('Datos de preview expirados. Por favor, suba el archivo nuevamente.');
             }
 
             $productsData = $cachedData['full_data'];
             $proveedorId = $audit->proveedor_id;
 
-            // Crear validator para este proveedor
-            $validator = new ProductImportValidator($proveedorId);
+            // --- 1. Extraer y registrar catálogos ---
+            $catalogos = [
+                'marcas' => collect($productsData)->pluck('marca')->filter()->unique()->values()->toArray(),
+                'unidades' => collect($productsData)->pluck('unidad_medida')->filter()->unique()->values()->toArray(),
+                'categorias' => []
+            ];
 
-            // Procesar en lotes para mejor performance
+            foreach ($productsData as $p) {
+                if (!empty($p['categoria']) && !empty($p['subcategoria'])) {
+                    $catalogos['categorias'][$p['categoria']][] = $p['subcategoria'];
+                }
+            }
+
+            foreach ($catalogos['categorias'] as $cat => $subs) {
+                $catalogos['categorias'][$cat] = array_values(array_unique($subs));
+            }
+
+            $this->registrarCatalogos($catalogos, $proveedorId);
+
+            // --- 2. Preparar referencias en memoria ---
+            $marcasMap = Marca::where('proveedor_id', $proveedorId)->pluck('id', 'nombre')->toArray();
+            $unidadesMap = UnidadMedida::where('proveedor_id', $proveedorId)->pluck('id', 'nombre')->toArray();
+
+            $categoriasMap = Categoria::where('proveedor_id', $proveedorId)
+                ->get()
+                ->groupBy('nivel')
+                ->map(fn($items) => $items->keyBy('nombre'));
+
+            foreach ($productsData as &$p) {
+                $p['marca_id'] = $marcasMap[$p['marca']] ?? null;
+                $p['unidad_medida_id'] = $unidadesMap[$p['unidad_medida']] ?? null;
+
+                if (!empty($p['categoria'])) {
+                    $cat = $categoriasMap[1][$p['categoria']] ?? null;
+                    $sub = null;
+                    if ($cat && !empty($p['subcategoria'])) {
+                        $sub = $categoriasMap[2]->where('parent_id', $cat->id)->firstWhere('nombre', $p['subcategoria']);
+                    }
+                    $p['categoria_id'] = $cat->id ?? null;
+                    $p['subcategoria_id'] = $sub->id ?? null;
+                }
+            }
+            unset($p); // romper referencia
+
+            // --- 3. Procesar productos por chunks ---
             $chunkSize = 100;
             $chunks = array_chunk($productsData, $chunkSize);
 
             foreach ($chunks as $chunkIndex => $chunk) {
                 DB::beginTransaction();
                 try {
+                    $upsertData = [];
                     foreach ($chunk as $productData) {
                         $stats['total_processed']++;
 
-                        try {
-                            // Validar producto
-                            $validationResult = $validator->validateRow($productData, $stats['total_processed']);
-                            $isValid = empty($validationResult['errors']);
+                        // Validación
+                        $validator = new ProductImportValidator($proveedorId);
+                        $validationResult = $validator->validateRow($productData, $stats['total_processed']);
+                        $isValid = empty($validationResult['errors']);
 
-                            if (!$isValid && !$options['skip_duplicates']) {
-                                $stats['errors']++;
-                                $errorDetails[] = [
-                                    'producto' => $productData,
-                                    'errores' => $validationResult['errors'],
-                                    'tipo_error' => 'validacion'
-                                ];
-                                continue;
-                            }
-
-                            // Buscar producto existente
-                            $existingProduct = Producto::where('codigo_interno', $productData['codigo'] ?? '')
-                                ->where('proveedor_id', $proveedorId)
-                                ->first();
-
-                            if ($existingProduct) {
-                                if ($options['update_existing']) {
-                                    // Actualizar producto existente
-                                    $this->updateProduct($existingProduct, $productData, $proveedorId);
-                                    $stats['updated']++;
-                                } else {
-                                    $stats['skipped']++;
-                                }
-                            } else {
-                                // Crear nuevo producto
-                                $this->createProduct($productData, $proveedorId, $options['create_missing_relations']);
-                                $stats['created']++;
-                            }
-                        } catch (Exception $e) {
+                        if (!$isValid && empty($options['skip_duplicates'])) {
                             $stats['errors']++;
                             $errorDetails[] = [
                                 'producto' => $productData,
-                                'error' => $e->getMessage(),
-                                'tipo_error' => 'procesamiento'
+                                'errores' => $validationResult['errors'],
+                                'tipo_error' => 'validacion'
                             ];
+                            continue;
                         }
+
+                        // Preparar datos para upsert
+                        $upsertData[] = [
+                            'codigo_interno' => $productData['codigo'],
+                            'nombre' => $productData['producto'],
+                            'descripcion' => $productData['descripcion'] ?? null,
+                            'modelo' => $productData['modelo'] ?? null,
+                            'marca_id' => $productData['marca_id'],
+                            'categoria_id' => $productData['categoria_id'],
+                            'subcategoria_id' => $productData['subcategoria_id'],
+                            'unidad_medida_id' => $productData['unidad_medida_id'],
+                            'precio_base' => $productData['precio'] ?? 0,
+                            'precio_mayoreo' => $productData['precio_mayoreo'] ?? 0,
+                            'precio_publico' => $productData['precio_menudeo'] ?? 0,
+                            'proveedor_id' => $proveedorId,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+
+                    if (!empty($upsertData)) {
+                        Producto::upsert(
+                            $upsertData,
+                            ['codigo_interno', 'proveedor_id'],
+                            [
+                                'nombre',
+                                'descripcion',
+                                'modelo',
+                                'marca_id',
+                                'categoria_id',
+                                'subcategoria_id',
+                                'unidad_medida_id',
+                                'precio_base',
+                                'precio_mayoreo',
+                                'precio_publico',
+                                'updated_at'
+                            ]
+                        );
+
+                        $stats['created'] += count($upsertData); // aproximado
                     }
 
                     DB::commit();
@@ -378,9 +446,13 @@ class CsvImportController extends Controller
                     // Actualizar progreso
                     $progress = min(100, (($chunkIndex + 1) / count($chunks)) * 100);
                     $audit->update(['progreso' => $progress]);
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     DB::rollBack();
-                    throw $e;
+                    $stats['errors'] += count($chunk);
+                    $errorDetails[] = [
+                        'error' => $e->getMessage(),
+                        'tipo_error' => 'chunk'
+                    ];
                 }
             }
 
@@ -397,7 +469,7 @@ class CsvImportController extends Controller
                 'processing_time' => $processingTime,
                 'error_details' => $errorDetails
             ];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
@@ -406,6 +478,61 @@ class CsvImportController extends Controller
             ];
         }
     }
+
+
+    /**
+     * Registra los catálogos de marcas, unidades y categorías/subcategorías en la base de datos.
+     *
+     * @param array $catalogos
+     *     Estructura esperada:
+     *     [
+     *         'marcas' => ['Marca1', 'Marca2', ...],
+     *         'unidades' => ['kg', 'm', 'l', ...],
+     *         'categorias' => [
+     *             'Categoria1' => ['Subcategoria1', 'Subcategoria2', ...],
+     *             'Categoria2' => ['SubcategoriaA', 'SubcategoriaB', ...],
+     *         ],
+     *     ]
+     * @param int $proveedorId ID del proveedor al que se asociarán los registros
+     *
+     * @return void
+     */
+    public function registrarCatalogos(array $catalogos, int $proveedorId): void
+    {
+        // --- Registrar marcas ---
+        foreach ($catalogos['marcas'] as $nombreMarca) {
+            Marca::updateOrCreate(
+                ['nombre' => $nombreMarca, 'proveedor_id' => $proveedorId],
+                ['activo' => true]
+            );
+        }
+
+        // --- Registrar unidades de medida ---
+        foreach ($catalogos['unidades'] as $nombreUnidad) {
+            UnidadMedida::updateOrCreate(
+                ['nombre' => $nombreUnidad, 'proveedor_id' => $proveedorId],
+                ['estatus' => 'activo']
+            );
+        }
+
+        // --- Registrar categorías y subcategorías ---
+        foreach ($catalogos['categorias'] as $nombreCategoria => $subcategorias) {
+            // Categoria principal
+            $categoria = Categoria::updateOrCreate(
+                ['nombre' => $nombreCategoria, 'proveedor_id' => $proveedorId, 'nivel' => 1],
+                ['activo' => true]
+            );
+
+            // Subcategorías
+            foreach ($subcategorias as $nombreSubcategoria) {
+                Categoria::updateOrCreate(
+                    ['nombre' => $nombreSubcategoria, 'parent_id' => $categoria->id, 'proveedor_id' => $proveedorId, 'nivel' => 2],
+                    ['activo' => true]
+                );
+            }
+        }
+    }
+
 
     /**
      * Crear un nuevo producto

@@ -1,0 +1,1001 @@
+codigo,producto,descripcion,marca,categoria,subcategoria,unidad_medida,precio,precio_mayoreo,precio_menudeo
+FLP-00001,Columnas Ternium Modelo 1,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Caja,7054.32,6159.74,8492.37
+FLP-00002,Vigas ArcelorMittal Modelo 2,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,Kg,5996.19,4908.3,6684.58
+FLP-00003,PTR AHMSA Modelo 3,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,PTR,Metro,2428.38,1855.61,2675.78
+FLP-00004,Galvanizadas Ternium Modelo 4,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Galvanizadas,Caja,1238.08,1108.01,1420.68
+FLP-00005,Columnas ArcelorMittal Modelo 5,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,m2,4818.5,3905.89,5824.96
+FLP-00006,Galvanizadas Altos Hornos Modelo 6,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Litro,7225.73,6121.03,8026.82
+FLP-00007,Acanaladas Nucor Modelo 7,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Acanaladas,Caja,3324.24,2519.91,3953.67
+FLP-00008,PTR Ternium Modelo 8,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Litro,7563.71,6483.62,8180.26
+FLP-00009,Galvanizadas Altos Hornos Modelo 9,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Kg,4197.14,3764.68,4795.6
+FLP-00010,PTR ArcelorMittal Modelo 10,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,Metro,1606.83,1278.02,1848.15
+FLP-00011,Vigas Ternium Modelo 11,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Vigas,Barra,882.42,702.98,1054.84
+FLP-00012,Galvanizadas AHMSA Modelo 12,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Galvanizadas,Metro,3005.85,2636.02,3259.48
+FLP-00013,Canales Ternium Modelo 13,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Canales,Litro,5220.22,4512.37,5949.33
+FLP-00014,Negras Nucor Modelo 14,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Negras,Metro,880.17,749.27,1024.16
+FLP-00015,PTR Ternium Modelo 15,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Galón,5004.76,4342.34,6181.41
+FLP-00016,Acanaladas Ternium Modelo 16,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,Galón,1742.05,1306.7,2071.73
+FLP-00017,Galvanizadas AHMSA Modelo 17,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Galvanizadas,m2,444.16,381.86,500.1
+FLP-00018,Columnas Nucor Modelo 18,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,m3,2240.46,1786.0,2584.4
+FLP-00019,Soleras Altos Hornos Modelo 19,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Saco,3916.88,3404.16,4160.83
+FLP-00020,Vigas AHMSA Modelo 20,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Vigas,Pieza,2566.25,1949.89,2952.16
+FLP-00021,Vigas AHMSA Modelo 21,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Vigas,Pieza,6677.15,5954.41,8011.79
+FLP-00022,Vigas AHMSA Modelo 22,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Vigas,m2,2986.42,2609.14,3652.57
+FLP-00023,Vigas Nucor Modelo 23,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Vigas,Metro,4364.74,3306.54,5093.75
+FLP-00024,Ángulos Altos Hornos Modelo 24,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,Litro,1917.05,1637.52,2178.73
+FLP-00025,Galvanizadas Nucor Modelo 25,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Galvanizadas,Galón,6281.79,4953.16,7355.02
+FLP-00026,Canales Nucor Modelo 26,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Canales,m2,2493.3,2198.21,3031.59
+FLP-00027,Negras Altos Hornos Modelo 27,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,Litro,5684.02,5091.56,7008.83
+FLP-00028,Ángulos ArcelorMittal Modelo 28,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,m3,5260.54,3981.96,5662.8
+FLP-00029,PTR Ternium Modelo 29,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Metro,3812.57,3402.03,4044.63
+FLP-00030,Negras Nucor Modelo 30,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Negras,Kg,941.26,798.44,1086.3
+FLP-00031,Soleras AHMSA Modelo 31,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Caja,6548.82,5761.15,7109.9
+FLP-00032,Vigas Altos Hornos Modelo 32,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,Litro,7778.85,6212.18,8998.83
+FLP-00033,Acanaladas Ternium Modelo 33,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,Kg,615.15,476.33,751.64
+FLP-00034,Acanaladas Ternium Modelo 34,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,Barra,445.69,367.15,472.01
+FLP-00035,Ángulos Nucor Modelo 35,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Ángulos,Metro,3412.76,3015.36,3744.98
+FLP-00036,Canales AHMSA Modelo 36,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,Kg,2080.41,1757.51,2365.53
+FLP-00037,Vigas ArcelorMittal Modelo 37,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,Caja,1565.37,1203.78,1703.92
+FLP-00038,Canales ArcelorMittal Modelo 38,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,Kg,785.6,692.84,926.03
+FLP-00039,Vigas Altos Hornos Modelo 39,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,m2,7196.91,6381.97,7618.89
+FLP-00040,Galvanizadas Altos Hornos Modelo 40,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,m3,577.87,503.06,632.75
+FLP-00041,Negras Altos Hornos Modelo 41,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,Metro,558.29,459.17,646.01
+FLP-00042,PTR ArcelorMittal Modelo 42,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,m3,2905.69,2571.71,3324.81
+FLP-00043,Canales ArcelorMittal Modelo 43,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,m2,5922.4,5232.82,7270.15
+FLP-00044,Ángulos ArcelorMittal Modelo 44,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,Saco,6131.72,5167.44,7195.13
+FLP-00045,Columnas Ternium Modelo 45,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Saco,7165.83,5664.57,7585.51
+FLP-00046,Vigas Ternium Modelo 46,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Vigas,Saco,921.95,811.56,1097.62
+FLP-00047,Columnas ArcelorMittal Modelo 47,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Kg,2839.17,2406.15,3281.65
+FLP-00048,Canales Ternium Modelo 48,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Canales,m3,642.33,571.39,762.08
+FLP-00049,Acanaladas ArcelorMittal Modelo 49,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Acanaladas,Galón,4948.41,3805.01,5510.43
+FLP-00050,Soleras AHMSA Modelo 50,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Saco,113.01,97.49,131.92
+FLP-00051,Vigas Altos Hornos Modelo 51,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,Kg,6428.47,5161.06,7676.05
+FLP-00052,Negras Nucor Modelo 52,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Negras,Pieza,2057.53,1547.62,2550.09
+FLP-00053,Galvanizadas ArcelorMittal Modelo 53,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Galvanizadas,m3,1748.21,1415.22,1951.31
+FLP-00054,Soleras Nucor Modelo 54,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Metro,6346.56,5149.59,7874.79
+FLP-00055,Soleras AHMSA Modelo 55,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Metro,4953.66,3935.69,5583.12
+FLP-00056,Vigas Altos Hornos Modelo 56,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,Metro,2405.16,2005.57,2528.9
+FLP-00057,Canales ArcelorMittal Modelo 57,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,Kg,3642.17,2909.61,4240.75
+FLP-00058,Ángulos Ternium Modelo 58,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,Kg,3163.74,2761.4,3438.65
+FLP-00059,Acanaladas ArcelorMittal Modelo 59,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Acanaladas,Galón,5085.76,4542.52,5429.64
+FLP-00060,Canales AHMSA Modelo 60,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,Pieza,4665.95,4061.3,4904.11
+FLP-00061,Ángulos AHMSA Modelo 61,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Saco,3655.95,3019.75,4109.13
+FLP-00062,Galvanizadas Nucor Modelo 62,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Galvanizadas,Saco,3682.57,3137.03,4391.91
+FLP-00063,Ángulos Altos Hornos Modelo 63,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,Metro,1538.62,1165.22,1841.4
+FLP-00064,Negras AHMSA Modelo 64,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Negras,Galón,4022.25,3225.74,4707.16
+FLP-00065,Acanaladas Ternium Modelo 65,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,Saco,7273.67,5529.68,7816.95
+FLP-00066,Acanaladas Ternium Modelo 66,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,Litro,80.25,71.12,84.66
+FLP-00067,PTR ArcelorMittal Modelo 67,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,Barra,6421.8,5437.77,7837.36
+FLP-00068,PTR ArcelorMittal Modelo 68,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,m2,3407.31,2926.13,3808.66
+FLP-00069,Acanaladas Nucor Modelo 69,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Acanaladas,m2,6378.07,5013.43,7156.76
+FLP-00070,Negras ArcelorMittal Modelo 70,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,m2,7838.0,5906.22,8623.48
+FLP-00071,Canales Ternium Modelo 71,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Canales,Pieza,6151.35,4863.84,7297.18
+FLP-00072,Negras Altos Hornos Modelo 72,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,Litro,2816.43,2424.12,3209.64
+FLP-00073,Canales Altos Hornos Modelo 73,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Canales,Metro,861.92,733.88,1012.39
+FLP-00074,Columnas Altos Hornos Modelo 74,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Columnas,Barra,2216.5,1873.99,2708.12
+FLP-00075,Galvanizadas Nucor Modelo 75,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Galvanizadas,m3,246.29,202.42,281.59
+FLP-00076,Vigas AHMSA Modelo 76,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Vigas,Pieza,5062.57,4320.75,6150.93
+FLP-00077,Galvanizadas ArcelorMittal Modelo 77,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Galvanizadas,Caja,2108.02,1830.12,2283.09
+FLP-00078,Soleras Nucor Modelo 78,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,m3,7073.07,5997.1,7477.01
+FLP-00079,PTR Nucor Modelo 79,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,m3,6085.57,5194.11,6480.73
+FLP-00080,Negras Nucor Modelo 80,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Negras,Caja,854.05,701.78,1033.54
+FLP-00081,Ángulos Ternium Modelo 81,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,Metro,278.32,218.46,328.64
+FLP-00082,Columnas ArcelorMittal Modelo 82,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Saco,4920.93,3995.23,5632.25
+FLP-00083,Columnas AHMSA Modelo 83,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,Kg,1877.97,1553.87,2328.63
+FLP-00084,PTR Ternium Modelo 84,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Metro,5372.81,4783.76,6415.51
+FLP-00085,Ángulos Nucor Modelo 85,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Ángulos,Litro,1606.99,1227.51,1768.9
+FLP-00086,Galvanizadas Nucor Modelo 86,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Galvanizadas,Caja,2145.08,1864.3,2637.75
+FLP-00087,Soleras Ternium Modelo 87,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Soleras,m3,4333.01,3350.77,5383.94
+FLP-00088,Vigas ArcelorMittal Modelo 88,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,Caja,4409.66,3940.91,4717.41
+FLP-00089,Ángulos Ternium Modelo 89,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,m3,7413.53,6601.74,8959.65
+FLP-00090,Soleras Ternium Modelo 90,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Soleras,Pieza,1401.14,1206.35,1530.09
+FLP-00091,Acanaladas Ternium Modelo 91,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,Metro,2552.28,2126.85,3019.34
+FLP-00092,Soleras Ternium Modelo 92,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Soleras,Barra,2470.21,1943.5,3063.87
+FLP-00093,PTR Ternium Modelo 93,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,m2,5144.02,4199.04,6177.45
+FLP-00094,Acanaladas ArcelorMittal Modelo 94,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Acanaladas,Litro,7013.72,6034.58,8455.48
+FLP-00095,Vigas Nucor Modelo 95,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Vigas,Caja,1274.37,1061.74,1466.36
+FLP-00096,PTR Altos Hornos Modelo 96,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,Galón,183.78,153.6,226.71
+FLP-00097,Galvanizadas ArcelorMittal Modelo 97,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Galvanizadas,Saco,2995.65,2404.96,3353.49
+FLP-00098,PTR Nucor Modelo 98,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Barra,5558.71,4333.13,6811.53
+FLP-00099,Soleras AHMSA Modelo 99,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Kg,5186.45,4555.29,5999.76
+FLP-00100,Vigas AHMSA Modelo 100,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Vigas,Metro,3190.36,2857.65,3534.54
+FLP-00101,Vigas Altos Hornos Modelo 101,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,Barra,518.65,393.14,548.98
+FLP-00102,Columnas ArcelorMittal Modelo 102,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Litro,1005.29,826.48,1180.22
+FLP-00103,Columnas Nucor Modelo 103,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,Litro,4430.5,3554.19,4986.18
+FLP-00104,Columnas ArcelorMittal Modelo 104,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Saco,5416.66,4138.0,5730.83
+FLP-00105,Soleras Altos Hornos Modelo 105,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Saco,1148.11,985.49,1238.25
+FLP-00106,PTR Ternium Modelo 106,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Kg,4238.52,3621.14,4838.61
+FLP-00107,Vigas Nucor Modelo 107,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Vigas,Kg,3394.62,3047.95,3834.05
+FLP-00108,Columnas Ternium Modelo 108,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Galón,5344.66,4221.0,6376.1
+FLP-00109,Negras ArcelorMittal Modelo 109,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Galón,4572.81,3539.03,5460.96
+FLP-00110,Ángulos ArcelorMittal Modelo 110,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,Galón,2633.67,2136.77,3099.26
+FLP-00111,Columnas Altos Hornos Modelo 111,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Columnas,m3,883.06,706.83,992.01
+FLP-00112,Columnas Nucor Modelo 112,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,Metro,4255.96,3469.47,4840.27
+FLP-00113,PTR Altos Hornos Modelo 113,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,Caja,2863.42,2481.85,3335.05
+FLP-00114,Vigas AHMSA Modelo 114,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Vigas,Pieza,6711.75,5233.43,7658.84
+FLP-00115,Canales Ternium Modelo 115,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Canales,Pieza,747.78,614.09,921.1
+FLP-00116,Galvanizadas ArcelorMittal Modelo 116,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Galvanizadas,m3,3775.55,3295.66,4406.63
+FLP-00117,Vigas ArcelorMittal Modelo 117,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,Saco,4809.36,4093.17,5829.24
+FLP-00118,Ángulos Nucor Modelo 118,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Ángulos,Kg,1314.77,1126.68,1458.66
+FLP-00119,Acanaladas Nucor Modelo 119,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Acanaladas,Caja,6157.72,5286.35,7595.58
+FLP-00120,Vigas Ternium Modelo 120,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Vigas,m2,6546.32,5635.8,7297.68
+FLP-00121,Negras ArcelorMittal Modelo 121,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Pieza,4045.72,3596.48,4378.74
+FLP-00122,Columnas ArcelorMittal Modelo 122,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,m3,6536.73,5055.53,7911.28
+FLP-00123,Columnas Ternium Modelo 123,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Caja,3332.76,2690.33,3566.09
+FLP-00124,Soleras ArcelorMittal Modelo 124,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,Pieza,706.13,592.26,864.14
+FLP-00125,Acanaladas Altos Hornos Modelo 125,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Acanaladas,Kg,2725.29,2076.26,3265.42
+FLP-00126,Acanaladas ArcelorMittal Modelo 126,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Acanaladas,Galón,2116.89,1587.71,2487.42
+FLP-00127,Canales Altos Hornos Modelo 127,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Canales,Galón,2067.61,1627.17,2230.88
+FLP-00128,Soleras ArcelorMittal Modelo 128,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,Kg,3852.33,3297.63,4277.11
+FLP-00129,Canales Ternium Modelo 129,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Canales,Litro,2237.05,1677.97,2443.16
+FLP-00130,Soleras Ternium Modelo 130,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Soleras,Saco,5465.7,4657.53,6258.73
+FLP-00131,Ángulos ArcelorMittal Modelo 131,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,Kg,6165.15,5299.67,6793.24
+FLP-00132,Columnas ArcelorMittal Modelo 132,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Barra,7148.55,6157.27,7622.38
+FLP-00133,Columnas ArcelorMittal Modelo 133,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Kg,7208.93,6408.99,8512.97
+FLP-00134,Acanaladas Altos Hornos Modelo 134,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Acanaladas,Caja,83.66,63.35,92.01
+FLP-00135,Galvanizadas Nucor Modelo 135,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Galvanizadas,Litro,1560.68,1236.58,1691.54
+FLP-00136,Galvanizadas AHMSA Modelo 136,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Galvanizadas,Saco,5761.87,4637.81,6325.01
+FLP-00137,Acanaladas Nucor Modelo 137,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Acanaladas,Pieza,6766.52,5241.38,7988.01
+FLP-00138,Ángulos ArcelorMittal Modelo 138,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,m2,6586.22,5714.85,6945.67
+FLP-00139,Negras AHMSA Modelo 139,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Negras,Galón,2598.9,2210.25,2776.16
+FLP-00140,Soleras Altos Hornos Modelo 140,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Metro,4883.52,3859.93,5443.94
+FLP-00141,Columnas AHMSA Modelo 141,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,Saco,1375.26,1064.28,1672.89
+FLP-00142,Soleras AHMSA Modelo 142,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Kg,7499.75,6154.68,8840.79
+FLP-00143,Vigas ArcelorMittal Modelo 143,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,Pieza,6635.09,5312.15,7774.57
+FLP-00144,Acanaladas AHMSA Modelo 144,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,m3,511.75,404.77,540.67
+FLP-00145,Vigas Altos Hornos Modelo 145,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,Metro,1737.16,1358.89,1975.91
+FLP-00146,Soleras Nucor Modelo 146,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Metro,2748.69,2229.41,3263.04
+FLP-00147,Galvanizadas AHMSA Modelo 147,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Galvanizadas,Galón,3543.82,2902.22,3749.09
+FLP-00148,Soleras Nucor Modelo 148,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Metro,348.14,284.87,399.14
+FLP-00149,Galvanizadas Altos Hornos Modelo 149,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,m3,6013.94,5110.09,7016.77
+FLP-00150,PTR Ternium Modelo 150,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Kg,1706.2,1339.0,1851.31
+FLP-00151,Ángulos AHMSA Modelo 151,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Galón,3434.2,2819.49,4120.21
+FLP-00152,Ángulos Altos Hornos Modelo 152,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,m2,1140.76,942.24,1301.68
+FLP-00153,Columnas Altos Hornos Modelo 153,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Columnas,Galón,7214.52,6207.65,8083.71
+FLP-00154,Columnas Ternium Modelo 154,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Saco,5130.92,4117.55,6133.32
+FLP-00155,Galvanizadas Ternium Modelo 155,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Galvanizadas,Kg,348.28,294.66,410.12
+FLP-00156,Galvanizadas AHMSA Modelo 156,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Galvanizadas,Pieza,6699.99,5452.93,7792.0
+FLP-00157,PTR Ternium Modelo 157,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Barra,4292.78,3718.51,4591.18
+FLP-00158,PTR Ternium Modelo 158,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Caja,3438.68,2832.95,4167.06
+FLP-00159,Acanaladas AHMSA Modelo 159,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Litro,2596.57,1985.05,2874.02
+FLP-00160,Acanaladas AHMSA Modelo 160,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Caja,3262.82,2681.23,4052.38
+FLP-00161,Vigas Nucor Modelo 161,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Vigas,Litro,3547.64,2936.51,4409.87
+FLP-00162,Acanaladas Altos Hornos Modelo 162,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Acanaladas,m3,7131.94,6168.98,8252.6
+FLP-00163,PTR Nucor Modelo 163,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Barra,7983.02,7009.12,8969.77
+FLP-00164,Vigas ArcelorMittal Modelo 164,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,m2,1314.67,1063.82,1636.61
+FLP-00165,Galvanizadas Altos Hornos Modelo 165,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Galón,5030.37,3884.61,5493.43
+FLP-00166,PTR ArcelorMittal Modelo 166,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,Pieza,980.25,838.87,1176.27
+FLP-00167,Galvanizadas Altos Hornos Modelo 167,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Metro,415.35,371.31,478.12
+FLP-00168,PTR Ternium Modelo 168,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Pieza,7145.08,6206.51,8744.97
+FLP-00169,Ángulos Altos Hornos Modelo 169,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,Saco,1750.67,1345.89,1968.58
+FLP-00170,Acanaladas Altos Hornos Modelo 170,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Acanaladas,Kg,7949.49,6183.88,8663.54
+FLP-00171,Negras Altos Hornos Modelo 171,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,Barra,1978.59,1558.07,2197.04
+FLP-00172,PTR ArcelorMittal Modelo 172,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,Galón,3445.18,2712.9,3874.42
+FLP-00173,Soleras Nucor Modelo 173,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Caja,2440.46,2172.53,2829.03
+FLP-00174,Ángulos ArcelorMittal Modelo 174,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,Galón,1717.53,1485.95,1822.69
+FLP-00175,Negras ArcelorMittal Modelo 175,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Caja,5097.44,3971.05,6313.31
+FLP-00176,Columnas ArcelorMittal Modelo 176,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Barra,3691.06,2888.43,4252.23
+FLP-00177,Soleras ArcelorMittal Modelo 177,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,Pieza,2291.47,1799.77,2588.05
+FLP-00178,Galvanizadas AHMSA Modelo 178,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Galvanizadas,Barra,451.64,370.76,478.19
+FLP-00179,Columnas ArcelorMittal Modelo 179,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Litro,2994.31,2360.82,3364.91
+FLP-00180,Soleras Nucor Modelo 180,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Galón,2994.49,2659.83,3207.53
+FLP-00181,Acanaladas Altos Hornos Modelo 181,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Acanaladas,Litro,2656.48,2269.68,3239.26
+FLP-00182,Galvanizadas AHMSA Modelo 182,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Galvanizadas,m2,3953.77,3526.79,4164.26
+FLP-00183,Ángulos Altos Hornos Modelo 183,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,Metro,4931.45,4218.79,5825.01
+FLP-00184,Negras Altos Hornos Modelo 184,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,Pieza,1761.86,1423.32,1927.38
+FLP-00185,Columnas AHMSA Modelo 185,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,Metro,1478.48,1326.89,1662.27
+FLP-00186,Columnas Nucor Modelo 186,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,Kg,7345.94,6530.19,9104.73
+FLP-00187,Galvanizadas ArcelorMittal Modelo 187,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Galvanizadas,m3,6932.79,5775.89,7539.2
+FLP-00188,Columnas Nucor Modelo 188,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,Galón,5706.25,4330.85,6164.34
+FLP-00189,Ángulos ArcelorMittal Modelo 189,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,Barra,2690.72,2303.61,3274.4
+FLP-00190,Soleras AHMSA Modelo 190,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Litro,3016.36,2400.68,3170.45
+FLP-00191,Vigas Nucor Modelo 191,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Vigas,Saco,5161.66,4205.37,6193.61
+FLP-00192,PTR AHMSA Modelo 192,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,PTR,m3,5320.68,3992.61,5980.5
+FLP-00193,Columnas Altos Hornos Modelo 193,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Columnas,m3,1804.17,1619.27,2016.84
+FLP-00194,Galvanizadas ArcelorMittal Modelo 194,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Galvanizadas,m2,5331.49,4012.26,6259.6
+FLP-00195,PTR Ternium Modelo 195,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Litro,3055.26,2298.49,3770.6
+FLP-00196,Negras Nucor Modelo 196,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Negras,Metro,2357.73,1969.58,2476.13
+FLP-00197,Soleras Ternium Modelo 197,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Soleras,Galón,4220.08,3742.77,5143.2
+FLP-00198,Acanaladas Altos Hornos Modelo 198,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Acanaladas,Caja,3835.16,3281.36,4597.53
+FLP-00199,PTR AHMSA Modelo 199,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,PTR,m2,6521.47,5303.14,7080.91
+FLP-00200,Canales Nucor Modelo 200,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Canales,Kg,7049.45,5606.2,7623.99
+FLP-00201,Galvanizadas Ternium Modelo 201,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Galvanizadas,Barra,5701.46,4745.74,7099.68
+FLP-00202,PTR Nucor Modelo 202,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Pieza,97.88,78.51,104.87
+FLP-00203,Soleras ArcelorMittal Modelo 203,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,Litro,6089.53,5137.43,7153.43
+FLP-00204,Canales Nucor Modelo 204,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Canales,Galón,437.43,357.24,541.51
+FLP-00205,Acanaladas Ternium Modelo 205,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,Metro,5754.52,4923.83,6578.37
+FLP-00206,Vigas AHMSA Modelo 206,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Vigas,Kg,3702.31,3080.85,3914.65
+FLP-00207,Acanaladas AHMSA Modelo 207,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,m3,5753.19,4804.53,7040.15
+FLP-00208,Negras Ternium Modelo 208,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Negras,Caja,905.52,798.99,1130.31
+FLP-00209,Negras Ternium Modelo 209,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Negras,Pieza,4362.56,3599.1,5361.46
+FLP-00210,Galvanizadas Nucor Modelo 210,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Galvanizadas,Galón,7667.37,6394.29,8363.44
+FLP-00211,Vigas Altos Hornos Modelo 211,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,m3,3012.13,2334.67,3368.67
+FLP-00212,Soleras Altos Hornos Modelo 212,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Saco,5414.11,4246.58,6659.8
+FLP-00213,Galvanizadas Ternium Modelo 213,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Galvanizadas,Litro,4493.26,3938.85,5104.33
+FLP-00214,Soleras ArcelorMittal Modelo 214,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,Saco,577.85,456.78,703.2
+FLP-00215,Acanaladas Ternium Modelo 215,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,Galón,4610.4,3759.32,5703.4
+FLP-00216,Columnas Ternium Modelo 216,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Caja,7064.99,5350.98,8395.09
+FLP-00217,Galvanizadas ArcelorMittal Modelo 217,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Galvanizadas,Litro,1663.89,1443.75,1795.96
+FLP-00218,Soleras Ternium Modelo 218,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Soleras,m2,1439.03,1128.75,1670.27
+FLP-00219,Columnas Altos Hornos Modelo 219,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Columnas,m2,5317.65,4521.29,5597.77
+FLP-00220,Galvanizadas Altos Hornos Modelo 220,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Litro,833.58,737.57,1002.25
+FLP-00221,Ángulos Ternium Modelo 221,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,Metro,3162.95,2794.81,3608.18
+FLP-00222,Canales ArcelorMittal Modelo 222,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,m3,6720.83,5750.14,7505.72
+FLP-00223,PTR AHMSA Modelo 223,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,PTR,Litro,1883.27,1675.11,2150.33
+FLP-00224,Acanaladas AHMSA Modelo 224,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,m2,226.53,194.1,258.34
+FLP-00225,Acanaladas Altos Hornos Modelo 225,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Acanaladas,Pieza,7958.98,6235.51,8407.69
+FLP-00226,Negras Nucor Modelo 226,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Negras,Barra,1633.37,1413.77,1847.45
+FLP-00227,Columnas Nucor Modelo 227,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,m2,3357.98,2960.5,3824.08
+FLP-00228,Ángulos ArcelorMittal Modelo 228,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,Caja,7836.66,6849.87,9064.03
+FLP-00229,Ángulos Ternium Modelo 229,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,Galón,6926.78,6083.1,8319.65
+FLP-00230,Ángulos ArcelorMittal Modelo 230,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,Metro,7949.4,7061.17,8550.43
+FLP-00231,Canales Nucor Modelo 231,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Canales,Saco,449.3,370.27,521.46
+FLP-00232,Galvanizadas Altos Hornos Modelo 232,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,m2,3962.23,3350.03,4537.62
+FLP-00233,Ángulos Ternium Modelo 233,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,Barra,4613.26,3773.42,5648.24
+FLP-00234,PTR AHMSA Modelo 234,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,PTR,Galón,5167.8,4255.79,6277.07
+FLP-00235,Acanaladas Nucor Modelo 235,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Acanaladas,m3,7421.86,6173.59,8773.62
+FLP-00236,PTR Nucor Modelo 236,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Kg,5037.73,3894.6,6210.4
+FLP-00237,Soleras ArcelorMittal Modelo 237,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,Caja,3333.61,2653.4,4076.82
+FLP-00238,Negras ArcelorMittal Modelo 238,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,m3,3529.89,3156.2,3752.79
+FLP-00239,Ángulos Altos Hornos Modelo 239,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,m3,6474.78,5359.73,7702.86
+FLP-00240,PTR Ternium Modelo 240,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Saco,1817.88,1418.88,1967.57
+FLP-00241,Vigas Nucor Modelo 241,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Vigas,Saco,1395.58,1215.12,1671.2
+FLP-00242,Columnas Nucor Modelo 242,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,Galón,1498.01,1281.6,1679.12
+FLP-00243,Vigas Ternium Modelo 243,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Vigas,Litro,4405.49,3421.07,4666.01
+FLP-00244,Columnas Nucor Modelo 244,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,Saco,2520.25,2150.01,2762.02
+FLP-00245,Ángulos Altos Hornos Modelo 245,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,Kg,663.57,525.91,769.68
+FLP-00246,Soleras AHMSA Modelo 246,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Litro,1183.59,1039.0,1328.29
+FLP-00247,Galvanizadas AHMSA Modelo 247,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Galvanizadas,Barra,3177.9,2624.17,3596.76
+FLP-00248,Galvanizadas AHMSA Modelo 248,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Galvanizadas,Galón,1506.88,1186.12,1627.75
+FLP-00249,Canales ArcelorMittal Modelo 249,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,Caja,2448.81,2079.64,2955.45
+FLP-00250,Ángulos Ternium Modelo 250,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,Barra,6068.94,5069.38,7063.14
+FLP-00251,PTR Ternium Modelo 251,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Litro,3780.19,2888.21,3988.97
+FLP-00252,Columnas ArcelorMittal Modelo 252,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Galón,513.27,397.38,600.18
+FLP-00253,Columnas AHMSA Modelo 253,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,Litro,5462.69,4655.23,6811.96
+FLP-00254,Soleras ArcelorMittal Modelo 254,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,Caja,7446.71,6243.29,8607.31
+FLP-00255,Soleras Altos Hornos Modelo 255,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Pieza,2142.05,1615.57,2475.81
+FLP-00256,Galvanizadas ArcelorMittal Modelo 256,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Galvanizadas,Pieza,378.27,316.18,445.64
+FLP-00257,PTR Altos Hornos Modelo 257,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,m2,2141.13,1640.23,2424.93
+FLP-00258,Columnas AHMSA Modelo 258,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,m3,6556.94,5703.15,7188.24
+FLP-00259,Negras ArcelorMittal Modelo 259,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Metro,901.97,799.96,967.67
+FLP-00260,Negras ArcelorMittal Modelo 260,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Caja,667.26,542.96,811.69
+FLP-00261,PTR ArcelorMittal Modelo 261,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,Barra,5337.96,4777.56,5623.07
+FLP-00262,Columnas AHMSA Modelo 262,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,Caja,7021.32,5574.48,7611.93
+FLP-00263,Negras Nucor Modelo 263,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Negras,Pieza,7308.73,6318.7,8149.55
+FLP-00264,Columnas AHMSA Modelo 264,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,Caja,3634.04,3254.27,4071.8
+FLP-00265,Galvanizadas Altos Hornos Modelo 265,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Galón,4582.81,3518.92,4849.32
+FLP-00266,Galvanizadas Ternium Modelo 266,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Galvanizadas,Litro,6693.07,5336.92,8139.31
+FLP-00267,PTR Ternium Modelo 267,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Metro,3388.08,2697.41,3754.0
+FLP-00268,Ángulos Ternium Modelo 268,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,m2,7546.94,6028.37,8823.44
+FLP-00269,Negras Ternium Modelo 269,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Negras,m2,4324.63,3783.03,4908.48
+FLP-00270,Canales ArcelorMittal Modelo 270,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,m2,2290.96,1797.67,2554.16
+FLP-00271,Galvanizadas ArcelorMittal Modelo 271,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Galvanizadas,Barra,7965.09,6802.88,8979.84
+FLP-00272,Canales AHMSA Modelo 272,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,Kg,2658.25,1997.61,3271.11
+FLP-00273,PTR AHMSA Modelo 273,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,PTR,Barra,1654.45,1354.67,1885.04
+FLP-00274,Vigas Ternium Modelo 274,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Vigas,Metro,3487.65,2715.63,3884.66
+FLP-00275,Columnas Altos Hornos Modelo 275,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Columnas,Galón,1515.83,1312.94,1840.27
+FLP-00276,Soleras Altos Hornos Modelo 276,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Caja,5289.12,4416.89,6301.39
+FLP-00277,Acanaladas AHMSA Modelo 277,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Pieza,5145.83,3954.82,5622.2
+FLP-00278,Galvanizadas Nucor Modelo 278,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Galvanizadas,Caja,7307.74,6432.24,8235.15
+FLP-00279,PTR ArcelorMittal Modelo 279,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,Litro,7975.72,6074.41,9725.11
+FLP-00280,Soleras Nucor Modelo 280,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Kg,6140.98,5300.39,7065.96
+FLP-00281,Canales Ternium Modelo 281,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Canales,m3,7540.88,5698.5,8325.53
+FLP-00282,Soleras Nucor Modelo 282,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Pieza,2311.7,1911.37,2685.41
+FLP-00283,Canales Altos Hornos Modelo 283,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Canales,Galón,795.96,701.43,959.29
+FLP-00284,PTR ArcelorMittal Modelo 284,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,Litro,200.49,174.34,244.08
+FLP-00285,Ángulos Nucor Modelo 285,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Ángulos,Barra,5216.77,4627.09,5850.11
+FLP-00286,PTR ArcelorMittal Modelo 286,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,Barra,7693.42,6380.88,8200.13
+FLP-00287,PTR Altos Hornos Modelo 287,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,m3,2473.42,1954.07,2708.02
+FLP-00288,Canales AHMSA Modelo 288,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,m3,5056.43,3963.39,5950.81
+FLP-00289,Acanaladas ArcelorMittal Modelo 289,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Acanaladas,Caja,1468.57,1120.07,1581.25
+FLP-00290,Galvanizadas Altos Hornos Modelo 290,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Litro,3769.08,3275.75,4390.41
+FLP-00291,Columnas ArcelorMittal Modelo 291,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Pieza,5289.43,4047.34,6392.94
+FLP-00292,Negras AHMSA Modelo 292,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Negras,Caja,4322.29,3553.27,4992.13
+FLP-00293,PTR Nucor Modelo 293,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,m3,3611.63,2735.45,4388.27
+FLP-00294,Vigas Nucor Modelo 294,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Vigas,Metro,4451.83,3865.78,5530.44
+FLP-00295,Canales AHMSA Modelo 295,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,Saco,6908.04,6098.77,7793.3
+FLP-00296,Ángulos AHMSA Modelo 296,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Pieza,5834.82,4602.85,6983.49
+FLP-00297,Soleras Ternium Modelo 297,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Soleras,m3,1379.27,1041.16,1494.49
+FLP-00298,Soleras AHMSA Modelo 298,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Metro,3559.96,2846.99,3978.45
+FLP-00299,Ángulos Altos Hornos Modelo 299,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,Kg,5131.04,4570.64,5604.09
+FLP-00300,Acanaladas Altos Hornos Modelo 300,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Acanaladas,Litro,2618.62,2176.79,2789.69
+FLP-00301,Ángulos Nucor Modelo 301,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Ángulos,m3,7299.81,5502.75,8098.84
+FLP-00302,Canales Nucor Modelo 302,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Canales,m3,5086.98,3893.61,5795.2
+FLP-00303,Ángulos Nucor Modelo 303,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Ángulos,m2,7900.09,6192.62,9385.86
+FLP-00304,Ángulos Altos Hornos Modelo 304,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,Kg,180.36,146.15,206.04
+FLP-00305,Soleras Altos Hornos Modelo 305,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Barra,1365.48,1194.48,1619.81
+FLP-00306,Canales AHMSA Modelo 306,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,Metro,2412.55,1834.97,2883.08
+FLP-00307,Acanaladas AHMSA Modelo 307,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Saco,3792.11,2977.97,4161.52
+FLP-00308,Acanaladas ArcelorMittal Modelo 308,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Acanaladas,Galón,3262.63,2923.24,3829.61
+FLP-00309,Canales AHMSA Modelo 309,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,Kg,6829.28,5352.47,8091.41
+FLP-00310,Canales ArcelorMittal Modelo 310,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,Litro,539.09,440.79,592.9
+FLP-00311,Soleras ArcelorMittal Modelo 311,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,m2,311.36,276.75,357.99
+FLP-00312,Vigas ArcelorMittal Modelo 312,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,Galón,1908.95,1567.24,2104.15
+FLP-00313,Columnas AHMSA Modelo 313,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,Barra,3701.58,2791.71,4442.81
+FLP-00314,Soleras Nucor Modelo 314,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Metro,7260.96,6250.07,8966.44
+FLP-00315,PTR Ternium Modelo 315,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Pieza,3173.76,2412.57,3773.77
+FLP-00316,Acanaladas AHMSA Modelo 316,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,m2,687.86,583.69,736.34
+FLP-00317,Canales ArcelorMittal Modelo 317,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,Kg,962.4,748.12,1048.22
+FLP-00318,Canales Ternium Modelo 318,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Canales,m2,5272.27,3961.05,5722.66
+FLP-00319,Negras ArcelorMittal Modelo 319,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,m2,3982.78,3551.81,4776.23
+FLP-00320,Vigas ArcelorMittal Modelo 320,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,Galón,6185.43,5457.38,6994.61
+FLP-00321,Soleras AHMSA Modelo 321,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Kg,1728.79,1553.93,1969.13
+FLP-00322,Columnas ArcelorMittal Modelo 322,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Pieza,4990.01,4173.12,6113.27
+FLP-00323,PTR ArcelorMittal Modelo 323,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,Caja,1100.91,828.8,1285.83
+FLP-00324,Soleras Altos Hornos Modelo 324,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Litro,1808.11,1574.54,1950.29
+FLP-00325,Columnas Altos Hornos Modelo 325,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Columnas,Metro,5164.19,4021.64,6158.02
+FLP-00326,PTR Nucor Modelo 326,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Galón,4517.82,3633.06,5611.96
+FLP-00327,Canales AHMSA Modelo 327,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,m2,7796.04,5882.27,9700.99
+FLP-00328,Acanaladas Ternium Modelo 328,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,m3,1416.79,1231.6,1559.57
+FLP-00329,Ángulos ArcelorMittal Modelo 329,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,Kg,620.21,544.71,739.92
+FLP-00330,Soleras Altos Hornos Modelo 330,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Caja,6366.39,5160.26,7320.71
+FLP-00331,Columnas Nucor Modelo 331,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,Barra,2842.9,2425.57,3096.06
+FLP-00332,Vigas Altos Hornos Modelo 332,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,Barra,3227.19,2477.87,3669.87
+FLP-00333,Canales ArcelorMittal Modelo 333,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,Barra,7492.14,5626.43,8436.6
+FLP-00334,PTR AHMSA Modelo 334,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,PTR,Galón,4122.98,3505.75,4367.48
+FLP-00335,Canales Nucor Modelo 335,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Canales,Pieza,4703.59,3932.41,5614.99
+FLP-00336,Columnas Nucor Modelo 336,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,Pieza,4087.7,3206.01,4669.14
+FLP-00337,Vigas ArcelorMittal Modelo 337,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,Caja,7184.07,5770.08,8019.89
+FLP-00338,Negras AHMSA Modelo 338,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Negras,Kg,4172.41,3399.48,4858.15
+FLP-00339,Vigas Ternium Modelo 339,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Vigas,Caja,3355.07,2616.71,4149.21
+FLP-00340,Columnas ArcelorMittal Modelo 340,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Pieza,387.25,337.75,417.47
+FLP-00341,PTR ArcelorMittal Modelo 341,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,Galón,80.86,65.93,96.13
+FLP-00342,PTR Ternium Modelo 342,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Pieza,2494.06,2216.16,2993.3
+FLP-00343,Columnas AHMSA Modelo 343,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,Saco,693.97,585.13,839.87
+FLP-00344,Soleras Ternium Modelo 344,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Soleras,Litro,2536.76,2260.62,2969.29
+FLP-00345,Columnas Ternium Modelo 345,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,m2,916.71,820.09,1067.13
+FLP-00346,Columnas AHMSA Modelo 346,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,m3,621.73,467.18,765.76
+FLP-00347,Acanaladas Ternium Modelo 347,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,Saco,4540.68,3746.2,5421.47
+FLP-00348,Soleras Ternium Modelo 348,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Soleras,Barra,6089.76,5155.79,6616.84
+FLP-00349,Galvanizadas Altos Hornos Modelo 349,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Kg,5338.51,4500.64,5793.7
+FLP-00350,Canales AHMSA Modelo 350,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,m2,3718.09,2899.03,4264.18
+FLP-00351,PTR ArcelorMittal Modelo 351,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,Kg,2902.36,2379.02,3214.07
+FLP-00352,Soleras Nucor Modelo 352,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Barra,7986.1,6443.9,8561.87
+FLP-00353,Ángulos Ternium Modelo 353,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,Metro,2847.97,2435.06,3183.98
+FLP-00354,Ángulos AHMSA Modelo 354,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Barra,4642.13,3608.89,5671.75
+FLP-00355,Acanaladas Nucor Modelo 355,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Acanaladas,Litro,6554.57,4941.77,7533.76
+FLP-00356,Ángulos AHMSA Modelo 356,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Metro,423.99,381.41,479.34
+FLP-00357,Ángulos Ternium Modelo 357,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,m2,3071.47,2413.16,3410.0
+FLP-00358,Galvanizadas Nucor Modelo 358,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Galvanizadas,Pieza,7178.55,5441.55,8907.49
+FLP-00359,Soleras Ternium Modelo 359,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Soleras,Barra,3825.39,3029.2,4102.07
+FLP-00360,Columnas Nucor Modelo 360,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,Litro,4962.36,4168.84,5882.78
+FLP-00361,Acanaladas Nucor Modelo 361,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Acanaladas,Galón,7404.65,6363.84,8437.45
+FLP-00362,Ángulos Altos Hornos Modelo 362,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,m3,687.02,584.71,852.21
+FLP-00363,Soleras Altos Hornos Modelo 363,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Caja,1961.01,1493.74,2194.82
+FLP-00364,Vigas ArcelorMittal Modelo 364,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,m3,876.0,702.52,999.91
+FLP-00365,Negras Nucor Modelo 365,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Negras,Caja,7243.64,5934.49,7790.94
+FLP-00366,Vigas Nucor Modelo 366,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Vigas,Pieza,4672.27,3742.8,5721.76
+FLP-00367,PTR Ternium Modelo 367,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Barra,5152.47,4470.43,5885.81
+FLP-00368,Negras Nucor Modelo 368,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Negras,m2,7741.7,6730.6,9674.46
+FLP-00369,Soleras Ternium Modelo 369,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Soleras,Pieza,5683.28,4613.73,6709.05
+FLP-00370,Soleras Ternium Modelo 370,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Soleras,Caja,668.21,502.57,817.19
+FLP-00371,Ángulos ArcelorMittal Modelo 371,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,Metro,4397.02,3330.65,5292.79
+FLP-00372,Ángulos AHMSA Modelo 372,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Saco,6396.3,5720.7,6927.44
+FLP-00373,Canales ArcelorMittal Modelo 373,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,Caja,6003.48,4909.92,7136.84
+FLP-00374,Galvanizadas ArcelorMittal Modelo 374,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Galvanizadas,Pieza,6953.96,5842.17,8402.14
+FLP-00375,PTR ArcelorMittal Modelo 375,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,Metro,3228.19,2696.43,3954.05
+FLP-00376,PTR ArcelorMittal Modelo 376,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,Pieza,4838.81,4192.41,5179.86
+FLP-00377,Galvanizadas Altos Hornos Modelo 377,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Kg,4846.7,4265.39,5455.2
+FLP-00378,Galvanizadas Nucor Modelo 378,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Galvanizadas,Litro,7652.8,6206.52,8783.2
+FLP-00379,PTR Nucor Modelo 379,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Saco,6975.4,6181.03,7607.29
+FLP-00380,PTR Altos Hornos Modelo 380,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,Galón,4426.59,3853.77,4789.01
+FLP-00381,Acanaladas AHMSA Modelo 381,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Saco,6968.26,5344.32,7428.87
+FLP-00382,Canales AHMSA Modelo 382,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,Saco,7009.54,5504.66,7934.71
+FLP-00383,Negras Nucor Modelo 383,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Negras,Galón,5335.79,4637.83,6585.53
+FLP-00384,Columnas Ternium Modelo 384,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Saco,697.76,590.8,862.14
+FLP-00385,Vigas ArcelorMittal Modelo 385,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,m2,2225.36,1755.6,2392.55
+FLP-00386,Columnas Ternium Modelo 386,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,m2,1146.78,969.54,1213.32
+FLP-00387,PTR AHMSA Modelo 387,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,PTR,Caja,1747.71,1445.42,2105.93
+FLP-00388,Ángulos Altos Hornos Modelo 388,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,Litro,1665.14,1469.65,1801.17
+FLP-00389,Galvanizadas Altos Hornos Modelo 389,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Saco,3621.93,2877.84,4241.2
+FLP-00390,Negras Ternium Modelo 390,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Negras,Metro,5093.5,4583.53,5411.61
+FLP-00391,Acanaladas Altos Hornos Modelo 391,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Acanaladas,Galón,2688.33,2372.33,3176.97
+FLP-00392,Soleras Nucor Modelo 392,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Barra,2087.82,1643.78,2292.49
+FLP-00393,Columnas Altos Hornos Modelo 393,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Columnas,Litro,4672.85,3624.64,5520.58
+FLP-00394,Acanaladas AHMSA Modelo 394,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Barra,1179.94,1007.74,1473.87
+FLP-00395,PTR AHMSA Modelo 395,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,PTR,m2,6305.59,5039.59,6975.7
+FLP-00396,Acanaladas AHMSA Modelo 396,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Litro,3111.8,2393.62,3862.8
+FLP-00397,Negras Ternium Modelo 397,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Negras,Barra,4629.77,3774.13,5380.21
+FLP-00398,Negras Altos Hornos Modelo 398,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,m2,6007.43,4698.58,6366.84
+FLP-00399,Acanaladas Altos Hornos Modelo 399,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Acanaladas,Kg,5933.35,5287.66,6321.92
+FLP-00400,Canales ArcelorMittal Modelo 400,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,Kg,4444.49,3861.63,5169.37
+FLP-00401,Ángulos Ternium Modelo 401,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,Barra,2921.03,2301.45,3232.29
+FLP-00402,Acanaladas Altos Hornos Modelo 402,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Acanaladas,Saco,5224.35,4003.14,5609.0
+FLP-00403,PTR ArcelorMittal Modelo 403,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,Litro,7783.14,6327.22,9603.16
+FLP-00404,Vigas AHMSA Modelo 404,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Vigas,Galón,3125.69,2652.66,3891.23
+FLP-00405,Soleras ArcelorMittal Modelo 405,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,Caja,7025.3,5358.44,8209.33
+FLP-00406,Acanaladas Altos Hornos Modelo 406,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Acanaladas,Caja,1182.53,1016.0,1416.39
+FLP-00407,Galvanizadas Nucor Modelo 407,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Galvanizadas,Saco,1279.01,1133.19,1423.63
+FLP-00408,Galvanizadas Altos Hornos Modelo 408,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Saco,2127.52,1742.88,2472.48
+FLP-00409,Negras Ternium Modelo 409,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Negras,Caja,4364.28,3282.4,4771.05
+FLP-00410,Vigas Ternium Modelo 410,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Vigas,Litro,6591.86,5264.98,7990.71
+FLP-00411,Canales ArcelorMittal Modelo 411,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,m2,7833.93,6566.37,9614.17
+FLP-00412,Soleras Nucor Modelo 412,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Metro,4757.68,3943.13,5886.47
+FLP-00413,Columnas Nucor Modelo 413,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,Metro,2649.87,2374.86,3059.55
+FLP-00414,Negras ArcelorMittal Modelo 414,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Saco,3471.91,2837.62,3978.98
+FLP-00415,Vigas Nucor Modelo 415,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Vigas,m2,6712.29,5274.89,8158.85
+FLP-00416,PTR Nucor Modelo 416,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Galón,2609.75,2277.15,3111.22
+FLP-00417,Columnas Altos Hornos Modelo 417,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Columnas,m3,895.03,707.55,952.3
+FLP-00418,Canales Altos Hornos Modelo 418,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Canales,Saco,3279.89,2610.58,3510.0
+FLP-00419,PTR Altos Hornos Modelo 419,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,m2,5697.41,4703.97,6754.48
+FLP-00420,Acanaladas ArcelorMittal Modelo 420,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Acanaladas,Galón,718.58,557.16,894.4
+FLP-00421,PTR ArcelorMittal Modelo 421,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,Galón,5409.66,4416.79,6597.9
+FLP-00422,Negras AHMSA Modelo 422,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Negras,Kg,3822.58,3085.29,4251.06
+FLP-00423,Columnas ArcelorMittal Modelo 423,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Kg,1596.67,1394.71,1978.86
+FLP-00424,Acanaladas Ternium Modelo 424,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,Kg,5772.9,4773.25,6837.86
+FLP-00425,Galvanizadas Ternium Modelo 425,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Galvanizadas,m3,7657.37,6830.69,8752.21
+FLP-00426,Galvanizadas Altos Hornos Modelo 426,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Saco,4789.05,3955.95,5091.09
+FLP-00427,PTR Nucor Modelo 427,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Caja,6097.59,5219.8,7364.1
+FLP-00428,Columnas Ternium Modelo 428,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Barra,2234.62,1728.53,2690.05
+FLP-00429,PTR Ternium Modelo 429,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,m3,3836.29,3311.05,4151.06
+FLP-00430,Ángulos ArcelorMittal Modelo 430,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,Saco,2946.71,2329.85,3365.22
+FLP-00431,Columnas Ternium Modelo 431,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Kg,7245.56,5603.03,8666.28
+FLP-00432,Ángulos ArcelorMittal Modelo 432,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,Pieza,6996.06,6080.81,8560.21
+FLP-00433,Ángulos ArcelorMittal Modelo 433,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,Barra,5502.51,4367.53,6223.12
+FLP-00434,Acanaladas ArcelorMittal Modelo 434,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Acanaladas,Litro,7659.84,6470.79,9178.27
+FLP-00435,Canales Nucor Modelo 435,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Canales,m3,3592.1,2800.22,4446.7
+FLP-00436,Vigas Ternium Modelo 436,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Vigas,Galón,6210.95,4740.5,7439.56
+FLP-00437,Ángulos ArcelorMittal Modelo 437,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,m2,2500.14,2230.51,2925.01
+FLP-00438,Negras Altos Hornos Modelo 438,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,Barra,1825.84,1615.68,2100.02
+FLP-00439,Soleras ArcelorMittal Modelo 439,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,Galón,3028.8,2724.79,3357.58
+FLP-00440,Acanaladas AHMSA Modelo 440,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Pieza,3986.05,3034.56,4879.28
+FLP-00441,Galvanizadas Altos Hornos Modelo 441,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Metro,411.39,365.05,508.98
+FLP-00442,PTR Altos Hornos Modelo 442,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,Barra,4424.99,3547.0,5087.79
+FLP-00443,Columnas AHMSA Modelo 443,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,Metro,1284.87,1008.44,1588.77
+FLP-00444,Vigas ArcelorMittal Modelo 444,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,Barra,2321.29,1924.62,2488.9
+FLP-00445,PTR AHMSA Modelo 445,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,PTR,Kg,1797.38,1608.34,1916.3
+FLP-00446,Vigas Altos Hornos Modelo 446,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,Metro,447.74,360.24,549.86
+FLP-00447,Acanaladas ArcelorMittal Modelo 447,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Acanaladas,m2,7689.78,5980.6,9373.62
+FLP-00448,Canales ArcelorMittal Modelo 448,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,Saco,5094.65,3830.75,6279.4
+FLP-00449,Soleras AHMSA Modelo 449,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,m2,4172.97,3571.98,5197.44
+FLP-00450,Canales Ternium Modelo 450,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Canales,Metro,4144.84,3204.33,4588.67
+FLP-00451,Canales Altos Hornos Modelo 451,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Canales,Litro,1446.59,1231.47,1711.52
+FLP-00452,Galvanizadas Altos Hornos Modelo 452,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Kg,766.14,582.61,819.94
+FLP-00453,Soleras Altos Hornos Modelo 453,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Litro,3115.47,2754.46,3783.21
+FLP-00454,Columnas Ternium Modelo 454,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Kg,7102.89,5907.78,7571.2
+FLP-00455,Galvanizadas Nucor Modelo 455,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Galvanizadas,Barra,2249.94,1838.46,2519.73
+FLP-00456,Negras Altos Hornos Modelo 456,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,Barra,5433.56,4843.75,6175.18
+FLP-00457,PTR Altos Hornos Modelo 457,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,Galón,1590.29,1424.01,1974.73
+FLP-00458,Acanaladas Altos Hornos Modelo 458,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Acanaladas,Galón,950.72,775.79,1141.47
+FLP-00459,Acanaladas AHMSA Modelo 459,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Saco,7738.83,6575.07,8206.98
+FLP-00460,Ángulos AHMSA Modelo 460,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Litro,7752.57,5924.93,9260.31
+FLP-00461,Negras Nucor Modelo 461,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Negras,Litro,2902.46,2346.64,3159.38
+FLP-00462,Galvanizadas Altos Hornos Modelo 462,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Barra,6514.18,5073.24,7036.62
+FLP-00463,PTR AHMSA Modelo 463,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,PTR,m3,1040.88,872.47,1169.51
+FLP-00464,Canales Ternium Modelo 464,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Canales,Barra,1340.25,1178.62,1436.93
+FLP-00465,Vigas Altos Hornos Modelo 465,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,Litro,133.65,115.5,143.93
+FLP-00466,Soleras AHMSA Modelo 466,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Caja,5485.41,4766.47,5985.69
+FLP-00467,Ángulos AHMSA Modelo 467,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Litro,2309.01,1773.62,2804.33
+FLP-00468,Columnas Ternium Modelo 468,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Saco,2581.8,1960.79,2745.84
+FLP-00469,Soleras Nucor Modelo 469,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,m3,7988.78,6625.29,9111.45
+FLP-00470,Negras AHMSA Modelo 470,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Negras,Kg,5798.43,5024.9,7226.97
+FLP-00471,Ángulos AHMSA Modelo 471,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Caja,6031.77,4950.0,6370.33
+FLP-00472,Acanaladas AHMSA Modelo 472,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Pieza,6921.74,5288.54,8591.23
+FLP-00473,Canales AHMSA Modelo 473,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,Pieza,4193.84,3469.63,5204.55
+FLP-00474,Ángulos AHMSA Modelo 474,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Barra,6481.35,5760.55,7698.05
+FLP-00475,Acanaladas ArcelorMittal Modelo 475,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Acanaladas,Kg,3924.65,3465.04,4160.93
+FLP-00476,Soleras Altos Hornos Modelo 476,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,m2,7665.29,5903.66,8806.8
+FLP-00477,Soleras Altos Hornos Modelo 477,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Barra,4000.8,3073.49,4341.4
+FLP-00478,Vigas ArcelorMittal Modelo 478,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,Galón,4173.01,3160.16,4983.91
+FLP-00479,Ángulos AHMSA Modelo 479,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Kg,1673.75,1496.77,1831.57
+FLP-00480,Canales Nucor Modelo 480,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Canales,Metro,4161.5,3159.55,4695.03
+FLP-00481,Columnas Ternium Modelo 481,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Litro,116.19,89.69,126.42
+FLP-00482,Galvanizadas ArcelorMittal Modelo 482,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Galvanizadas,Caja,1637.62,1409.16,2000.38
+FLP-00483,Ángulos Ternium Modelo 483,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,m3,4838.51,4120.69,5584.63
+FLP-00484,Ángulos AHMSA Modelo 484,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Metro,1477.07,1247.06,1595.31
+FLP-00485,Soleras Altos Hornos Modelo 485,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,m2,6444.49,5528.47,8036.34
+FLP-00486,Vigas Altos Hornos Modelo 486,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,Saco,590.29,456.04,653.5
+FLP-00487,PTR Ternium Modelo 487,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,m2,1489.45,1295.25,1846.74
+FLP-00488,Soleras Nucor Modelo 488,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Barra,6530.48,5028.1,7995.42
+FLP-00489,Negras ArcelorMittal Modelo 489,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Kg,2932.76,2563.18,3291.83
+FLP-00490,Ángulos AHMSA Modelo 490,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Pieza,3764.47,2993.57,4215.48
+FLP-00491,Columnas Nucor Modelo 491,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,m3,174.87,133.72,215.33
+FLP-00492,Negras Nucor Modelo 492,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Negras,m2,669.08,515.71,782.75
+FLP-00493,Negras Altos Hornos Modelo 493,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,m2,7885.01,6558.5,8721.45
+FLP-00494,Negras ArcelorMittal Modelo 494,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Kg,762.63,620.71,942.14
+FLP-00495,PTR Nucor Modelo 495,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Kg,4123.06,3187.08,4775.86
+FLP-00496,Galvanizadas Altos Hornos Modelo 496,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Galón,3010.65,2448.59,3514.98
+FLP-00497,PTR ArcelorMittal Modelo 497,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,Pieza,2909.42,2255.13,3206.81
+FLP-00498,Ángulos AHMSA Modelo 498,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,m2,4623.26,3696.21,5606.52
+FLP-00499,Vigas Altos Hornos Modelo 499,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,Caja,6907.27,5913.65,7262.94
+FLP-00500,Negras ArcelorMittal Modelo 500,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,m3,4400.43,3487.3,4937.56
+FLP-00501,Ángulos Ternium Modelo 501,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,Barra,4495.32,3749.09,4785.75
+FLP-00502,Ángulos AHMSA Modelo 502,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,m2,267.46,225.52,332.9
+FLP-00503,PTR Ternium Modelo 503,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Metro,6004.36,4697.85,7178.41
+FLP-00504,Ángulos AHMSA Modelo 504,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Barra,7656.87,6863.25,9378.92
+FLP-00505,PTR Nucor Modelo 505,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,m3,2290.97,1899.42,2476.24
+FLP-00506,Soleras ArcelorMittal Modelo 506,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,Galón,1859.27,1662.09,1973.47
+FLP-00507,Negras ArcelorMittal Modelo 507,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Kg,308.24,236.72,377.47
+FLP-00508,Acanaladas Altos Hornos Modelo 508,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Acanaladas,Litro,7502.19,6173.02,8171.17
+FLP-00509,PTR Nucor Modelo 509,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Litro,482.45,365.53,570.57
+FLP-00510,Vigas Altos Hornos Modelo 510,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,Pieza,7465.1,5603.49,9171.62
+FLP-00511,Soleras AHMSA Modelo 511,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Galón,7912.27,7018.02,9343.26
+FLP-00512,Columnas Nucor Modelo 512,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,Pieza,2231.41,1793.32,2578.03
+FLP-00513,PTR Ternium Modelo 513,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,m2,5039.62,4284.22,6017.47
+FLP-00514,Canales Altos Hornos Modelo 514,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Canales,Galón,215.17,190.09,266.06
+FLP-00515,Ángulos Ternium Modelo 515,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,Kg,2097.73,1658.33,2276.53
+FLP-00516,Soleras ArcelorMittal Modelo 516,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,Caja,1977.16,1620.47,2089.67
+FLP-00517,Negras Altos Hornos Modelo 517,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,m2,6513.78,5796.96,7899.03
+FLP-00518,Galvanizadas Altos Hornos Modelo 518,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,m3,5702.74,4604.08,6155.35
+FLP-00519,Soleras Altos Hornos Modelo 519,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Pieza,4279.53,3468.24,5071.8
+FLP-00520,Columnas Ternium Modelo 520,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Caja,443.5,368.1,511.4
+FLP-00521,Canales AHMSA Modelo 521,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,Galón,2614.88,2052.88,3089.51
+FLP-00522,Galvanizadas Altos Hornos Modelo 522,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Metro,5823.0,5098.1,6337.93
+FLP-00523,Columnas Altos Hornos Modelo 523,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Columnas,Saco,6000.42,5273.81,7495.79
+FLP-00524,Soleras AHMSA Modelo 524,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Galón,1966.49,1544.05,2422.74
+FLP-00525,Columnas Ternium Modelo 525,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Galón,3067.16,2633.09,3612.5
+FLP-00526,Ángulos Nucor Modelo 526,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Ángulos,Litro,3760.6,3066.82,4548.9
+FLP-00527,Canales ArcelorMittal Modelo 527,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,Barra,4931.12,3957.37,5283.86
+FLP-00528,Soleras Altos Hornos Modelo 528,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,m3,7249.92,6169.71,8358.35
+FLP-00529,Galvanizadas Altos Hornos Modelo 529,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Metro,1706.6,1358.64,1825.5
+FLP-00530,Soleras ArcelorMittal Modelo 530,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,Caja,6077.8,5040.45,7098.9
+FLP-00531,Galvanizadas Nucor Modelo 531,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Galvanizadas,Pieza,6153.1,5497.0,6637.64
+FLP-00532,Ángulos Nucor Modelo 532,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Ángulos,Metro,5424.84,4525.94,6347.1
+FLP-00533,Negras AHMSA Modelo 533,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Negras,Caja,7629.62,5853.75,9062.31
+FLP-00534,Negras Ternium Modelo 534,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Negras,m3,6677.87,5594.4,8339.4
+FLP-00535,Acanaladas Nucor Modelo 535,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Acanaladas,m2,7235.84,5659.94,7907.42
+FLP-00536,Galvanizadas Altos Hornos Modelo 536,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Barra,4743.48,4028.34,5394.35
+FLP-00537,Canales ArcelorMittal Modelo 537,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,Pieza,1179.45,1035.6,1256.62
+FLP-00538,PTR Nucor Modelo 538,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Litro,6768.48,5642.07,8228.74
+FLP-00539,Acanaladas AHMSA Modelo 539,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,m3,1534.06,1335.95,1686.98
+FLP-00540,PTR AHMSA Modelo 540,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,PTR,Pieza,4881.69,3987.62,5464.29
+FLP-00541,Ángulos ArcelorMittal Modelo 541,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,Pieza,84.06,73.92,88.46
+FLP-00542,Negras ArcelorMittal Modelo 542,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Kg,6698.76,5217.39,7436.22
+FLP-00543,Galvanizadas Nucor Modelo 543,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Galvanizadas,m3,1538.7,1267.86,1758.66
+FLP-00544,Soleras AHMSA Modelo 544,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Saco,7505.29,6560.02,9254.69
+FLP-00545,Vigas Nucor Modelo 545,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Vigas,Pieza,5968.32,4827.76,6870.51
+FLP-00546,Galvanizadas Altos Hornos Modelo 546,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,m3,4453.44,3782.63,5155.66
+FLP-00547,Galvanizadas Nucor Modelo 547,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Galvanizadas,Litro,3504.72,2778.52,4302.47
+FLP-00548,Negras ArcelorMittal Modelo 548,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Litro,5752.5,4892.19,6086.61
+FLP-00549,Columnas ArcelorMittal Modelo 549,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Barra,6454.37,5311.6,7910.49
+FLP-00550,Canales Nucor Modelo 550,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Canales,Barra,1531.95,1149.17,1865.61
+FLP-00551,Soleras Nucor Modelo 551,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Pieza,7028.27,5745.17,8109.64
+FLP-00552,Ángulos AHMSA Modelo 552,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Litro,5980.82,4565.75,6621.83
+FLP-00553,Canales AHMSA Modelo 553,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,Caja,1376.67,1236.6,1572.51
+FLP-00554,Canales Altos Hornos Modelo 554,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Canales,Saco,5408.82,4326.44,5808.2
+FLP-00555,Columnas Altos Hornos Modelo 555,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Columnas,Galón,5059.7,4455.15,5964.1
+FLP-00556,Negras Altos Hornos Modelo 556,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,Metro,7889.66,6847.07,8396.58
+FLP-00557,PTR Ternium Modelo 557,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Kg,5975.58,5308.32,6434.35
+FLP-00558,Acanaladas ArcelorMittal Modelo 558,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Acanaladas,m2,4370.68,3767.47,4879.26
+FLP-00559,Negras Altos Hornos Modelo 559,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,Litro,2559.73,1928.24,2689.57
+FLP-00560,Columnas Ternium Modelo 560,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Saco,7105.55,6188.97,8702.96
+FLP-00561,Soleras AHMSA Modelo 561,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Saco,994.14,860.39,1150.71
+FLP-00562,Ángulos Altos Hornos Modelo 562,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,Pieza,5840.94,4896.02,6608.36
+FLP-00563,Vigas ArcelorMittal Modelo 563,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,m3,5185.53,4192.02,5623.43
+FLP-00564,Vigas ArcelorMittal Modelo 564,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,Kg,7888.16,6466.01,9066.9
+FLP-00565,Negras Ternium Modelo 565,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Negras,Litro,3101.08,2329.95,3735.27
+FLP-00566,Columnas AHMSA Modelo 566,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,Litro,3738.96,3029.01,4145.7
+FLP-00567,Columnas AHMSA Modelo 567,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,Saco,3735.03,2925.19,3950.63
+FLP-00568,Columnas Ternium Modelo 568,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Barra,2899.32,2345.29,3474.9
+FLP-00569,Vigas ArcelorMittal Modelo 569,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,Metro,5512.16,4638.54,6837.76
+FLP-00570,Acanaladas Ternium Modelo 570,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,m3,2502.57,2202.14,3090.47
+FLP-00571,Acanaladas Ternium Modelo 571,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,m2,4932.55,4164.01,5753.64
+FLP-00572,PTR Nucor Modelo 572,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,m2,5738.8,4881.32,6680.32
+FLP-00573,Vigas ArcelorMittal Modelo 573,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,Caja,4030.25,3344.19,4322.7
+FLP-00574,Ángulos Nucor Modelo 574,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Ángulos,Kg,2007.09,1752.15,2230.9
+FLP-00575,Ángulos Altos Hornos Modelo 575,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,Kg,262.44,219.17,314.76
+FLP-00576,Columnas AHMSA Modelo 576,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,Saco,1543.68,1249.55,1821.4
+FLP-00577,Canales ArcelorMittal Modelo 577,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,Litro,2539.65,2248.74,2989.19
+FLP-00578,PTR AHMSA Modelo 578,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,PTR,Litro,3300.79,2574.11,3733.21
+FLP-00579,Soleras Ternium Modelo 579,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Soleras,Pieza,2931.94,2419.48,3102.95
+FLP-00580,Acanaladas Nucor Modelo 580,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Acanaladas,Galón,6263.27,5431.04,6617.22
+FLP-00581,Canales Ternium Modelo 581,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Canales,Barra,6936.57,5708.05,8376.49
+FLP-00582,Ángulos Altos Hornos Modelo 582,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,Caja,6484.45,5738.84,7557.47
+FLP-00583,Galvanizadas Altos Hornos Modelo 583,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Saco,4343.18,3658.24,4975.25
+FLP-00584,Soleras AHMSA Modelo 584,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,m3,3106.4,2368.02,3328.38
+FLP-00585,Soleras Altos Hornos Modelo 585,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Kg,5483.43,4651.33,6809.7
+FLP-00586,Acanaladas Altos Hornos Modelo 586,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Acanaladas,Caja,2481.01,1864.15,2798.31
+FLP-00587,Columnas ArcelorMittal Modelo 587,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Barra,4136.71,3422.65,5069.59
+FLP-00588,Galvanizadas Altos Hornos Modelo 588,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Galón,1069.07,941.74,1279.73
+FLP-00589,Columnas ArcelorMittal Modelo 589,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Litro,4268.2,3379.09,4682.17
+FLP-00590,PTR Altos Hornos Modelo 590,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,Barra,7943.62,6666.48,9711.4
+FLP-00591,Ángulos Altos Hornos Modelo 591,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,m2,4428.53,3789.46,4785.4
+FLP-00592,PTR Altos Hornos Modelo 592,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,Metro,64.15,50.85,75.92
+FLP-00593,Canales Ternium Modelo 593,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Canales,Caja,3746.18,3345.74,4075.9
+FLP-00594,Columnas Ternium Modelo 594,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Galón,7699.62,6878.74,9511.75
+FLP-00595,Columnas Ternium Modelo 595,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Pieza,6380.74,5286.09,6775.05
+FLP-00596,Vigas Nucor Modelo 596,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Vigas,Pieza,3850.91,3351.96,4267.26
+FLP-00597,Ángulos Nucor Modelo 597,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Ángulos,m2,7742.95,6515.19,9504.27
+FLP-00598,Canales ArcelorMittal Modelo 598,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,Kg,1908.87,1639.43,2288.63
+FLP-00599,Canales ArcelorMittal Modelo 599,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,Metro,7527.74,6143.04,8855.96
+FLP-00600,PTR AHMSA Modelo 600,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,PTR,Saco,2535.61,2172.48,2791.33
+FLP-00601,Soleras AHMSA Modelo 601,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Litro,1381.62,1085.89,1679.87
+FLP-00602,Negras ArcelorMittal Modelo 602,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Saco,6531.99,4987.59,7233.86
+FLP-00603,PTR Ternium Modelo 603,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,m2,1315.44,1156.4,1394.2
+FLP-00604,PTR ArcelorMittal Modelo 604,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,Saco,7645.12,6063.41,8578.2
+FLP-00605,Soleras Altos Hornos Modelo 605,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Metro,2030.36,1723.98,2283.02
+FLP-00606,Acanaladas AHMSA Modelo 606,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Caja,7360.44,5770.36,8000.75
+FLP-00607,Canales Ternium Modelo 607,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Canales,Barra,5909.97,4683.47,6556.98
+FLP-00608,Columnas Altos Hornos Modelo 608,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Columnas,m2,2097.47,1678.0,2526.97
+FLP-00609,Canales ArcelorMittal Modelo 609,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,Litro,6678.07,5600.14,8148.11
+FLP-00610,Soleras AHMSA Modelo 610,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,m3,1756.87,1499.51,1917.18
+FLP-00611,Vigas Ternium Modelo 611,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Vigas,Saco,7412.09,6163.62,8639.73
+FLP-00612,Ángulos Altos Hornos Modelo 612,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,Barra,125.98,112.55,143.88
+FLP-00613,Canales AHMSA Modelo 613,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,Saco,7525.4,6034.92,8722.5
+FLP-00614,Soleras Nucor Modelo 614,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Saco,829.34,691.97,1003.53
+FLP-00615,Soleras ArcelorMittal Modelo 615,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,Pieza,2284.92,1785.48,2626.95
+FLP-00616,PTR Nucor Modelo 616,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Pieza,4734.78,3989.41,5329.78
+FLP-00617,PTR Nucor Modelo 617,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Galón,4558.58,3474.91,5487.42
+FLP-00618,Acanaladas ArcelorMittal Modelo 618,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Acanaladas,Kg,3796.35,3349.29,4562.39
+FLP-00619,Vigas ArcelorMittal Modelo 619,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,Metro,2999.86,2550.86,3406.17
+FLP-00620,Soleras Altos Hornos Modelo 620,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Kg,3997.52,3065.71,4618.32
+FLP-00621,Ángulos Nucor Modelo 621,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Ángulos,Kg,7871.88,6275.15,9359.51
+FLP-00622,Galvanizadas AHMSA Modelo 622,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Galvanizadas,Pieza,4555.61,3416.9,5655.76
+FLP-00623,Acanaladas Altos Hornos Modelo 623,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Acanaladas,Metro,4265.9,3335.76,4794.61
+FLP-00624,Canales Nucor Modelo 624,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Canales,m2,6467.98,4919.06,7672.45
+FLP-00625,Negras AHMSA Modelo 625,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Negras,Barra,2544.44,2180.44,3117.6
+FLP-00626,Soleras Altos Hornos Modelo 626,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Saco,2187.69,1806.46,2601.4
+FLP-00627,Negras Altos Hornos Modelo 627,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,Metro,274.33,220.25,290.54
+FLP-00628,Canales AHMSA Modelo 628,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,Galón,445.47,387.17,517.62
+FLP-00629,Columnas Altos Hornos Modelo 629,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Columnas,Litro,3652.28,2784.35,3989.16
+FLP-00630,Negras AHMSA Modelo 630,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Negras,m2,2130.49,1702.18,2526.03
+FLP-00631,Vigas Altos Hornos Modelo 631,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,Metro,3662.02,3119.36,4215.78
+FLP-00632,Canales Ternium Modelo 632,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Canales,Caja,7979.96,6755.24,9119.36
+FLP-00633,Negras ArcelorMittal Modelo 633,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Pieza,5669.63,4917.81,6196.65
+FLP-00634,Negras Altos Hornos Modelo 634,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,Barra,4855.8,3904.64,5544.77
+FLP-00635,Galvanizadas Altos Hornos Modelo 635,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Litro,663.07,562.69,713.56
+FLP-00636,Ángulos AHMSA Modelo 636,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,m3,3246.04,2719.88,3523.81
+FLP-00637,Negras AHMSA Modelo 637,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Negras,m3,2759.84,2109.84,3298.55
+FLP-00638,Vigas AHMSA Modelo 638,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Vigas,m3,1702.09,1504.61,2046.41
+FLP-00639,Canales Altos Hornos Modelo 639,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Canales,m3,7024.64,6236.81,7743.69
+FLP-00640,Acanaladas ArcelorMittal Modelo 640,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Acanaladas,Litro,2736.26,2299.21,3118.06
+FLP-00641,PTR Nucor Modelo 641,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Litro,2714.36,2088.41,2890.01
+FLP-00642,Soleras AHMSA Modelo 642,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Litro,1301.91,1052.34,1478.1
+FLP-00643,Vigas Nucor Modelo 643,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Vigas,Pieza,6808.78,5824.16,7726.88
+FLP-00644,Vigas ArcelorMittal Modelo 644,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,Kg,6269.5,5091.28,7454.7
+FLP-00645,Galvanizadas AHMSA Modelo 645,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Galvanizadas,m2,5331.51,4510.5,6288.55
+FLP-00646,Soleras Ternium Modelo 646,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Soleras,Pieza,3561.4,3073.89,3948.28
+FLP-00647,Ángulos Ternium Modelo 647,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,Caja,5221.58,4343.04,5982.68
+FLP-00648,Ángulos Ternium Modelo 648,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,m3,7739.3,5821.01,8509.02
+FLP-00649,Negras AHMSA Modelo 649,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Negras,Pieza,573.94,474.58,690.97
+FLP-00650,Canales ArcelorMittal Modelo 650,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,Litro,6263.32,5494.46,7030.46
+FLP-00651,Canales Altos Hornos Modelo 651,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Canales,m2,4446.5,3715.96,5156.55
+FLP-00652,Columnas AHMSA Modelo 652,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,Saco,1295.65,1123.37,1558.81
+FLP-00653,Ángulos ArcelorMittal Modelo 653,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,Saco,6239.43,4803.91,7142.54
+FLP-00654,Negras Altos Hornos Modelo 654,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,m2,5837.45,4668.05,7051.45
+FLP-00655,Canales AHMSA Modelo 655,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,Kg,6769.28,5953.41,7190.16
+FLP-00656,Soleras ArcelorMittal Modelo 656,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,Caja,7614.6,6000.16,8885.48
+FLP-00657,Negras Altos Hornos Modelo 657,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,Caja,3215.31,2870.66,3987.13
+FLP-00658,Columnas Ternium Modelo 658,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Caja,4213.83,3444.18,4693.71
+FLP-00659,Vigas Nucor Modelo 659,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Vigas,Saco,1162.76,891.12,1300.33
+FLP-00660,PTR Nucor Modelo 660,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Kg,451.38,346.55,541.05
+FLP-00661,Columnas Ternium Modelo 661,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Kg,1840.71,1575.06,2280.68
+FLP-00662,Galvanizadas Altos Hornos Modelo 662,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Saco,4589.25,3784.91,5091.92
+FLP-00663,Vigas Altos Hornos Modelo 663,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,Saco,4002.39,3232.05,4647.68
+FLP-00664,Galvanizadas Ternium Modelo 664,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Galvanizadas,Caja,3641.5,2752.84,4307.49
+FLP-00665,Ángulos Nucor Modelo 665,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Ángulos,m2,1472.96,1109.07,1602.89
+FLP-00666,Vigas AHMSA Modelo 666,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Vigas,m2,7678.88,6494.16,9545.53
+FLP-00667,Negras Altos Hornos Modelo 667,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,m3,3734.42,3259.16,4239.12
+FLP-00668,Soleras Altos Hornos Modelo 668,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Litro,1276.51,1037.81,1486.67
+FLP-00669,Canales ArcelorMittal Modelo 669,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,Galón,5015.2,3777.0,6032.19
+FLP-00670,Negras Ternium Modelo 670,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Negras,Kg,5708.54,4749.82,6992.29
+FLP-00671,Galvanizadas Ternium Modelo 671,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Galvanizadas,Caja,4126.83,3176.59,4514.73
+FLP-00672,Galvanizadas Altos Hornos Modelo 672,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Litro,2952.5,2516.25,3514.97
+FLP-00673,Canales Altos Hornos Modelo 673,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Canales,m3,315.34,245.83,383.52
+FLP-00674,Canales ArcelorMittal Modelo 674,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,Kg,7672.9,5797.79,8860.64
+FLP-00675,Soleras ArcelorMittal Modelo 675,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,Barra,5505.65,4551.55,5923.84
+FLP-00676,Negras ArcelorMittal Modelo 676,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Saco,7776.9,6642.74,9303.28
+FLP-00677,Soleras Altos Hornos Modelo 677,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,m2,4761.97,3854.87,5705.47
+FLP-00678,Soleras ArcelorMittal Modelo 678,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,m3,7745.9,6382.44,9158.35
+FLP-00679,Acanaladas Ternium Modelo 679,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,Saco,6421.11,5285.06,6830.05
+FLP-00680,PTR Altos Hornos Modelo 680,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,Galón,487.68,409.65,520.81
+FLP-00681,Ángulos AHMSA Modelo 681,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Galón,5827.98,4897.62,6483.84
+FLP-00682,Negras ArcelorMittal Modelo 682,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Caja,5218.97,4584.0,5499.9
+FLP-00683,Negras Nucor Modelo 683,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Negras,m3,4292.99,3513.02,5252.38
+FLP-00684,Vigas Nucor Modelo 684,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Vigas,Caja,3753.18,3095.07,4284.64
+FLP-00685,PTR Altos Hornos Modelo 685,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,Saco,6734.17,5578.22,7229.55
+FLP-00686,Negras AHMSA Modelo 686,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Negras,Barra,6308.77,5080.14,7575.75
+FLP-00687,PTR ArcelorMittal Modelo 687,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,Caja,5812.77,5056.73,6547.59
+FLP-00688,Negras ArcelorMittal Modelo 688,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Barra,5825.03,4397.98,6817.24
+FLP-00689,Columnas ArcelorMittal Modelo 689,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,m3,4716.04,3933.74,5746.17
+FLP-00690,Columnas Ternium Modelo 690,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Pieza,1336.04,1086.26,1638.18
+FLP-00691,Galvanizadas AHMSA Modelo 691,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Galvanizadas,Kg,3706.34,3219.31,4519.2
+FLP-00692,Ángulos Altos Hornos Modelo 692,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,Pieza,5695.22,4875.09,6515.46
+FLP-00693,Ángulos Altos Hornos Modelo 693,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,Saco,1550.07,1352.17,1901.43
+FLP-00694,Canales Nucor Modelo 694,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Canales,Galón,3001.08,2675.58,3567.33
+FLP-00695,PTR Altos Hornos Modelo 695,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,m3,3374.76,2796.58,4110.2
+FLP-00696,Vigas Ternium Modelo 696,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Vigas,Kg,4306.46,3799.99,4611.64
+FLP-00697,Soleras ArcelorMittal Modelo 697,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,Pieza,4538.28,3436.34,5442.96
+FLP-00698,Negras ArcelorMittal Modelo 698,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Metro,3218.68,2606.3,3953.6
+FLP-00699,Vigas AHMSA Modelo 699,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Vigas,Pieza,1434.83,1121.96,1775.79
+FLP-00700,PTR Altos Hornos Modelo 700,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,Caja,6706.76,5932.85,7897.68
+FLP-00701,Columnas Nucor Modelo 701,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,Galón,4902.43,4028.53,5790.19
+FLP-00702,Canales Ternium Modelo 702,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Canales,m2,5095.41,4231.0,6046.65
+FLP-00703,PTR AHMSA Modelo 703,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,PTR,m2,5353.34,4469.74,5778.47
+FLP-00704,Canales AHMSA Modelo 704,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,m3,7046.33,6201.4,8477.93
+FLP-00705,Soleras Altos Hornos Modelo 705,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Galón,4633.46,3663.17,5054.49
+FLP-00706,Canales Nucor Modelo 706,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Canales,Galón,4419.51,3452.14,5264.13
+FLP-00707,Acanaladas Nucor Modelo 707,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Acanaladas,m2,7392.47,5986.83,9220.41
+FLP-00708,Canales AHMSA Modelo 708,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,Kg,3304.15,2821.19,3944.34
+FLP-00709,Negras Ternium Modelo 709,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Negras,Kg,5717.48,5047.7,6641.48
+FLP-00710,Galvanizadas Ternium Modelo 710,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Galvanizadas,m2,4777.37,3648.78,5369.45
+FLP-00711,Acanaladas AHMSA Modelo 711,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Metro,7729.55,6631.22,8776.32
+FLP-00712,Negras Ternium Modelo 712,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Negras,Litro,3611.26,3197.72,4435.24
+FLP-00713,Acanaladas Ternium Modelo 713,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,Kg,2621.28,2156.34,2764.19
+FLP-00714,Acanaladas Ternium Modelo 714,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,Pieza,690.81,528.02,847.16
+FLP-00715,Columnas AHMSA Modelo 715,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,m3,4353.57,3296.15,5012.74
+FLP-00716,Ángulos Nucor Modelo 716,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Ángulos,m3,2379.9,1843.05,2735.66
+FLP-00717,Acanaladas Ternium Modelo 717,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,Litro,7056.72,5612.79,7901.33
+FLP-00718,Acanaladas Nucor Modelo 718,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Acanaladas,Kg,3846.46,3041.06,4236.49
+FLP-00719,Canales AHMSA Modelo 719,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,Pieza,2448.23,2167.12,2669.28
+FLP-00720,Negras Nucor Modelo 720,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Negras,Galón,1478.81,1241.11,1805.45
+FLP-00721,Columnas Altos Hornos Modelo 721,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Columnas,m3,3827.88,3213.65,4529.37
+FLP-00722,Galvanizadas AHMSA Modelo 722,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Galvanizadas,Litro,2609.03,2012.12,2904.64
+FLP-00723,PTR Nucor Modelo 723,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,m2,702.67,589.5,869.36
+FLP-00724,Ángulos Ternium Modelo 724,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,Pieza,5830.66,4562.48,6856.85
+FLP-00725,Negras ArcelorMittal Modelo 725,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Pieza,5083.92,4315.02,6136.03
+FLP-00726,Columnas Ternium Modelo 726,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,m2,3370.08,2693.39,3600.53
+FLP-00727,Acanaladas Ternium Modelo 727,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,Litro,4216.3,3760.59,4480.97
+FLP-00728,Negras ArcelorMittal Modelo 728,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,m3,3375.65,2913.48,3662.21
+FLP-00729,Acanaladas ArcelorMittal Modelo 729,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Acanaladas,Barra,1986.53,1640.01,2240.94
+FLP-00730,Vigas ArcelorMittal Modelo 730,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,Kg,6799.17,5438.89,8233.07
+FLP-00731,Galvanizadas Ternium Modelo 731,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Galvanizadas,m3,4968.18,4267.12,5582.63
+FLP-00732,Soleras Altos Hornos Modelo 732,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Kg,1998.61,1711.57,2122.81
+FLP-00733,Ángulos AHMSA Modelo 733,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Galón,5454.94,4395.79,6210.44
+FLP-00734,PTR Nucor Modelo 734,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Galón,7946.5,6753.78,9351.96
+FLP-00735,Canales Nucor Modelo 735,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Canales,Kg,3642.01,3111.9,3863.57
+FLP-00736,PTR Altos Hornos Modelo 736,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,Caja,6760.4,5437.72,8430.49
+FLP-00737,Negras ArcelorMittal Modelo 737,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Kg,7235.61,6348.96,8538.9
+FLP-00738,Soleras Altos Hornos Modelo 738,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Caja,1894.6,1423.58,2160.8
+FLP-00739,Vigas Nucor Modelo 739,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Vigas,Metro,3326.64,2782.2,4149.36
+FLP-00740,Columnas AHMSA Modelo 740,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,Galón,6156.94,4871.53,7077.68
+FLP-00741,Soleras Nucor Modelo 741,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Metro,3491.95,3080.52,4278.72
+FLP-00742,Columnas ArcelorMittal Modelo 742,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Galón,7288.24,6174.56,7741.32
+FLP-00743,Ángulos ArcelorMittal Modelo 743,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,m3,5584.06,4720.81,6765.97
+FLP-00744,Acanaladas ArcelorMittal Modelo 744,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Acanaladas,Saco,7518.97,6013.98,8476.92
+FLP-00745,Negras Altos Hornos Modelo 745,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,Metro,6194.82,4944.52,7115.69
+FLP-00746,Canales AHMSA Modelo 746,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,Kg,5958.04,5188.29,7231.99
+FLP-00747,Vigas Altos Hornos Modelo 747,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,Litro,6504.89,5498.35,7130.87
+FLP-00748,Vigas AHMSA Modelo 748,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Vigas,Galón,7565.56,6147.5,8826.79
+FLP-00749,Canales Nucor Modelo 749,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Canales,Metro,6399.89,5420.7,7725.98
+FLP-00750,Negras Ternium Modelo 750,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Negras,m2,5011.49,4434.48,5434.31
+FLP-00751,Canales AHMSA Modelo 751,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,m3,5139.82,4075.2,5510.96
+FLP-00752,Soleras ArcelorMittal Modelo 752,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,m2,2629.03,2056.15,2770.87
+FLP-00753,Negras ArcelorMittal Modelo 753,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Saco,4450.3,3947.11,5048.73
+FLP-00754,Vigas ArcelorMittal Modelo 754,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,Galón,5843.94,4441.09,6351.19
+FLP-00755,Vigas ArcelorMittal Modelo 755,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,Galón,4706.02,3663.74,5795.79
+FLP-00756,Ángulos Nucor Modelo 756,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Ángulos,Litro,7934.14,7110.4,9631.43
+FLP-00757,Soleras ArcelorMittal Modelo 757,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,Galón,682.7,556.29,788.67
+FLP-00758,Ángulos Altos Hornos Modelo 758,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,Pieza,468.39,401.84,580.07
+FLP-00759,Canales AHMSA Modelo 759,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,Galón,566.46,442.56,660.61
+FLP-00760,Ángulos AHMSA Modelo 760,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Metro,6086.66,5411.48,6415.58
+FLP-00761,PTR AHMSA Modelo 761,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,PTR,Kg,86.81,74.52,101.61
+FLP-00762,Soleras Ternium Modelo 762,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Soleras,Caja,6997.49,5285.36,7860.43
+FLP-00763,Negras Nucor Modelo 763,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Negras,m2,3932.37,3190.41,4175.6
+FLP-00764,Galvanizadas Altos Hornos Modelo 764,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Metro,3995.36,3157.61,4683.03
+FLP-00765,Negras Altos Hornos Modelo 765,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,m2,4402.35,3480.23,5359.25
+FLP-00766,Canales Nucor Modelo 766,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Canales,Caja,175.44,148.96,191.65
+FLP-00767,Galvanizadas Nucor Modelo 767,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Galvanizadas,Metro,3096.01,2393.56,3697.1
+FLP-00768,Ángulos AHMSA Modelo 768,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Litro,5857.95,5204.98,6983.87
+FLP-00769,PTR Nucor Modelo 769,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Barra,502.32,407.57,531.81
+FLP-00770,Canales Altos Hornos Modelo 770,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Canales,m2,7108.47,6192.85,7518.74
+FLP-00771,Soleras ArcelorMittal Modelo 771,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,Litro,7375.37,6027.17,7925.89
+FLP-00772,Galvanizadas AHMSA Modelo 772,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Galvanizadas,Pieza,3100.72,2345.71,3320.69
+FLP-00773,Ángulos Ternium Modelo 773,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,m2,7298.07,5695.9,7950.43
+FLP-00774,Galvanizadas Nucor Modelo 774,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Galvanizadas,Saco,7629.23,6101.83,8193.37
+FLP-00775,Acanaladas Nucor Modelo 775,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Acanaladas,Metro,4717.4,4187.99,5237.41
+FLP-00776,Soleras ArcelorMittal Modelo 776,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,Barra,3806.13,3059.23,4385.9
+FLP-00777,Negras AHMSA Modelo 777,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Negras,Pieza,1080.92,880.45,1292.41
+FLP-00778,PTR Nucor Modelo 778,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,m3,127.31,104.02,143.72
+FLP-00779,PTR Nucor Modelo 779,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Barra,796.91,682.33,868.54
+FLP-00780,Acanaladas Nucor Modelo 780,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Acanaladas,Galón,2333.35,1859.23,2498.0
+FLP-00781,Soleras Altos Hornos Modelo 781,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Litro,3785.19,3046.33,4461.9
+FLP-00782,Columnas Ternium Modelo 782,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,m2,4205.11,3714.26,4960.33
+FLP-00783,Acanaladas Ternium Modelo 783,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,Saco,888.01,705.3,1045.67
+FLP-00784,Vigas AHMSA Modelo 784,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Vigas,Saco,1882.04,1676.96,2094.0
+FLP-00785,Ángulos ArcelorMittal Modelo 785,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,Kg,7033.98,5651.02,8074.45
+FLP-00786,PTR Ternium Modelo 786,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Metro,4519.52,3564.35,5027.43
+FLP-00787,PTR Nucor Modelo 787,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Galón,7279.93,6340.04,7987.67
+FLP-00788,Galvanizadas AHMSA Modelo 788,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Galvanizadas,Metro,3578.2,2887.13,4222.32
+FLP-00789,Negras ArcelorMittal Modelo 789,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,m2,886.04,769.8,1075.23
+FLP-00790,Canales ArcelorMittal Modelo 790,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,Kg,3159.37,2491.28,3857.76
+FLP-00791,Soleras AHMSA Modelo 791,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Kg,1392.78,1184.05,1657.49
+FLP-00792,Acanaladas ArcelorMittal Modelo 792,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Acanaladas,Pieza,4975.02,3919.4,5730.91
+FLP-00793,Negras Nucor Modelo 793,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Negras,Litro,7028.33,5298.41,8686.64
+FLP-00794,Soleras Nucor Modelo 794,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,m2,7396.18,6623.09,7827.8
+FLP-00795,Galvanizadas Ternium Modelo 795,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Galvanizadas,Saco,1059.45,943.61,1245.94
+FLP-00796,Columnas Ternium Modelo 796,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Caja,2212.25,1922.24,2570.44
+FLP-00797,Negras Ternium Modelo 797,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Negras,Saco,6122.89,4937.61,6729.1
+FLP-00798,Galvanizadas ArcelorMittal Modelo 798,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Galvanizadas,Caja,5145.01,4482.49,5601.89
+FLP-00799,Soleras Ternium Modelo 799,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Soleras,Barra,7071.35,5425.37,8277.54
+FLP-00800,PTR Ternium Modelo 800,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Caja,2948.14,2374.78,3613.37
+FLP-00801,Soleras Nucor Modelo 801,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Pieza,2825.42,2519.05,3317.6
+FLP-00802,Vigas Ternium Modelo 802,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Vigas,Kg,240.36,186.71,294.58
+FLP-00803,Soleras Nucor Modelo 803,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Metro,4492.53,3729.14,4731.49
+FLP-00804,Vigas AHMSA Modelo 804,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Vigas,Saco,173.01,129.99,187.5
+FLP-00805,Columnas Altos Hornos Modelo 805,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Columnas,Pieza,5895.65,4715.67,7243.0
+FLP-00806,Columnas ArcelorMittal Modelo 806,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Litro,3620.97,2919.83,4116.93
+FLP-00807,Negras AHMSA Modelo 807,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Negras,Kg,3624.4,3146.66,4205.32
+FLP-00808,Columnas Ternium Modelo 808,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Caja,5152.82,3980.23,6210.66
+FLP-00809,Ángulos AHMSA Modelo 809,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Kg,1160.29,919.01,1422.53
+FLP-00810,Vigas Altos Hornos Modelo 810,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,Caja,1044.64,787.51,1164.09
+FLP-00811,Vigas Nucor Modelo 811,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Vigas,m3,1726.0,1303.06,2028.55
+FLP-00812,PTR Nucor Modelo 812,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,m3,2924.79,2202.77,3325.05
+FLP-00813,Canales Nucor Modelo 813,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Canales,Pieza,910.1,793.26,992.33
+FLP-00814,Acanaladas AHMSA Modelo 814,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Galón,1821.83,1434.83,2163.11
+FLP-00815,Soleras Nucor Modelo 815,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Barra,5945.27,4812.48,6766.84
+FLP-00816,Galvanizadas ArcelorMittal Modelo 816,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Galvanizadas,Saco,5550.63,4740.28,6721.07
+FLP-00817,Vigas Altos Hornos Modelo 817,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,m3,755.55,663.96,925.16
+FLP-00818,Columnas AHMSA Modelo 818,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,m2,5264.73,4284.91,6389.78
+FLP-00819,Galvanizadas Altos Hornos Modelo 819,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Metro,3714.26,2851.03,4203.52
+FLP-00820,Canales Altos Hornos Modelo 820,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Canales,Kg,5327.26,4006.47,6340.63
+FLP-00821,Columnas Nucor Modelo 821,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,Galón,4279.59,3651.96,4801.28
+FLP-00822,Columnas Nucor Modelo 822,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,m3,6670.25,5350.84,7276.77
+FLP-00823,Ángulos Altos Hornos Modelo 823,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,Caja,7416.24,6621.14,8509.48
+FLP-00824,Columnas AHMSA Modelo 824,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,Galón,3647.8,3066.3,3967.37
+FLP-00825,Columnas Altos Hornos Modelo 825,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Columnas,m2,3975.09,3200.6,4470.98
+FLP-00826,Vigas Ternium Modelo 826,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Vigas,Metro,3393.0,2884.74,3825.45
+FLP-00827,Vigas Ternium Modelo 827,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Vigas,Saco,3662.24,2878.07,3850.02
+FLP-00828,Galvanizadas AHMSA Modelo 828,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Galvanizadas,Metro,5325.98,4429.06,6609.99
+FLP-00829,Galvanizadas Ternium Modelo 829,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Galvanizadas,Litro,2202.24,1969.17,2675.97
+FLP-00830,Ángulos Altos Hornos Modelo 830,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,Barra,3928.48,3438.31,4482.83
+FLP-00831,PTR Ternium Modelo 831,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Caja,5584.61,4958.08,5994.29
+FLP-00832,Negras Nucor Modelo 832,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Negras,Litro,5607.64,4849.2,5909.95
+FLP-00833,Vigas Ternium Modelo 833,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Vigas,Saco,6460.72,5100.93,7837.39
+FLP-00834,Acanaladas Nucor Modelo 834,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Acanaladas,Kg,5605.08,4612.11,6093.09
+FLP-00835,Negras Nucor Modelo 835,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Negras,Barra,5407.89,4534.39,6611.04
+FLP-00836,Ángulos AHMSA Modelo 836,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Barra,5041.61,4057.84,5470.96
+FLP-00837,Soleras Nucor Modelo 837,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Caja,6699.81,5818.4,7049.57
+FLP-00838,Canales Altos Hornos Modelo 838,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Canales,Galón,2439.29,2091.37,2686.86
+FLP-00839,Ángulos Ternium Modelo 839,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,m2,2674.6,2114.05,2867.64
+FLP-00840,Canales Nucor Modelo 840,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Canales,Barra,3030.83,2426.73,3552.67
+FLP-00841,Galvanizadas Altos Hornos Modelo 841,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Saco,2985.32,2624.58,3513.88
+FLP-00842,Ángulos Nucor Modelo 842,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Ángulos,m2,2272.62,2031.78,2465.87
+FLP-00843,Columnas Nucor Modelo 843,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,Metro,5981.65,5048.03,7242.6
+FLP-00844,Vigas Altos Hornos Modelo 844,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,m3,794.44,627.74,896.22
+FLP-00845,PTR Ternium Modelo 845,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,m3,5613.71,4229.75,6702.92
+FLP-00846,Negras ArcelorMittal Modelo 846,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Litro,7242.54,6358.0,7905.12
+FLP-00847,Negras AHMSA Modelo 847,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Negras,Caja,1923.31,1536.77,2300.09
+FLP-00848,Columnas Nucor Modelo 848,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,Pieza,4776.51,3629.4,5753.25
+FLP-00849,Acanaladas AHMSA Modelo 849,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Barra,2221.96,1972.45,2659.19
+FLP-00850,Columnas Nucor Modelo 850,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,Galón,3180.55,2642.78,3447.68
+FLP-00851,Soleras Altos Hornos Modelo 851,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Pieza,1947.1,1645.4,2292.88
+FLP-00852,Ángulos Nucor Modelo 852,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Ángulos,Galón,3798.86,3364.72,4275.41
+FLP-00853,Columnas ArcelorMittal Modelo 853,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Pieza,6322.02,4921.61,7132.13
+FLP-00854,Ángulos AHMSA Modelo 854,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Caja,6608.79,4978.7,8084.05
+FLP-00855,Columnas AHMSA Modelo 855,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,Kg,3591.54,2873.32,3780.49
+FLP-00856,Ángulos Altos Hornos Modelo 856,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,Barra,1834.02,1581.48,2019.68
+FLP-00857,Negras Nucor Modelo 857,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Negras,m3,2912.4,2289.0,3208.15
+FLP-00858,PTR Altos Hornos Modelo 858,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,Galón,1417.82,1088.67,1576.72
+FLP-00859,PTR Altos Hornos Modelo 859,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,m3,3272.16,2559.29,3757.8
+FLP-00860,Acanaladas Altos Hornos Modelo 860,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Acanaladas,Barra,4417.25,3398.92,5444.02
+FLP-00861,Soleras Ternium Modelo 861,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Soleras,Saco,5181.82,4412.95,5710.94
+FLP-00862,Columnas AHMSA Modelo 862,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,m2,4765.99,4004.7,5905.22
+FLP-00863,Columnas ArcelorMittal Modelo 863,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Metro,101.94,91.72,110.74
+FLP-00864,Ángulos AHMSA Modelo 864,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,m3,2829.15,2521.16,3170.97
+FLP-00865,Galvanizadas ArcelorMittal Modelo 865,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Galvanizadas,Barra,1514.33,1310.39,1822.59
+FLP-00866,Canales Altos Hornos Modelo 866,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Canales,Metro,6998.08,5761.1,8232.77
+FLP-00867,Ángulos ArcelorMittal Modelo 867,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,Caja,6194.68,4712.81,6699.07
+FLP-00868,PTR Nucor Modelo 868,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Metro,1848.77,1524.33,2126.9
+FLP-00869,PTR Altos Hornos Modelo 869,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,Pieza,4604.48,3557.26,5643.24
+FLP-00870,Galvanizadas Ternium Modelo 870,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Galvanizadas,m3,6648.12,5338.27,7774.02
+FLP-00871,Galvanizadas Altos Hornos Modelo 871,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Metro,5147.44,3947.12,6190.85
+FLP-00872,Soleras Nucor Modelo 872,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Metro,6055.48,4926.18,6522.57
+FLP-00873,Negras Altos Hornos Modelo 873,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,Caja,1623.41,1269.69,1753.54
+FLP-00874,Vigas ArcelorMittal Modelo 874,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,Saco,7455.74,6005.79,8358.41
+FLP-00875,Columnas Altos Hornos Modelo 875,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Columnas,Saco,3663.62,2776.29,4105.5
+FLP-00876,Ángulos AHMSA Modelo 876,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Pieza,3723.11,2860.53,4092.76
+FLP-00877,Soleras Nucor Modelo 877,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Galón,6533.16,4900.02,7808.05
+FLP-00878,Vigas Altos Hornos Modelo 878,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,Kg,2583.87,2282.53,3076.89
+FLP-00879,Negras ArcelorMittal Modelo 879,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Kg,1268.98,1129.75,1400.19
+FLP-00880,Canales AHMSA Modelo 880,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Canales,Pieza,5898.04,4678.12,7141.38
+FLP-00881,Soleras AHMSA Modelo 881,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Galón,7516.38,6414.31,7913.42
+FLP-00882,Soleras Altos Hornos Modelo 882,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Soleras,Litro,5591.22,4419.29,6617.05
+FLP-00883,PTR AHMSA Modelo 883,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,PTR,Barra,6715.51,5650.28,8004.16
+FLP-00884,Negras Nucor Modelo 884,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Negras,Caja,884.52,788.92,974.34
+FLP-00885,Canales Altos Hornos Modelo 885,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Canales,Saco,1721.08,1419.48,1963.85
+FLP-00886,Acanaladas AHMSA Modelo 886,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Litro,6197.65,4780.1,7575.82
+FLP-00887,Columnas AHMSA Modelo 887,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Columnas,Litro,916.23,754.79,966.68
+FLP-00888,Acanaladas Nucor Modelo 888,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Acanaladas,Saco,7726.0,6904.43,8744.85
+FLP-00889,Galvanizadas Altos Hornos Modelo 889,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Litro,3461.38,3086.62,4319.5
+FLP-00890,Acanaladas Altos Hornos Modelo 890,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Acanaladas,Caja,3166.56,2496.82,3667.35
+FLP-00891,Vigas ArcelorMittal Modelo 891,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,Litro,7813.12,6977.84,9027.83
+FLP-00892,PTR Altos Hornos Modelo 892,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,m2,4399.73,3406.07,4621.71
+FLP-00893,PTR ArcelorMittal Modelo 893,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,Saco,6505.15,5314.06,7162.89
+FLP-00894,PTR Nucor Modelo 894,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Kg,6940.85,5680.23,8196.52
+FLP-00895,Negras AHMSA Modelo 895,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Negras,Barra,4373.87,3767.02,5028.59
+FLP-00896,Columnas ArcelorMittal Modelo 896,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Pieza,1070.45,877.58,1273.83
+FLP-00897,Acanaladas AHMSA Modelo 897,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Galón,6291.4,4777.23,6862.02
+FLP-00898,Negras Ternium Modelo 898,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Negras,Metro,909.47,698.49,986.77
+FLP-00899,Galvanizadas AHMSA Modelo 899,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Galvanizadas,Kg,4805.89,4207.89,5418.14
+FLP-00900,Negras Altos Hornos Modelo 900,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,Caja,627.79,548.89,775.02
+FLP-00901,PTR AHMSA Modelo 901,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,PTR,Litro,4485.27,3462.98,5447.08
+FLP-00902,Ángulos ArcelorMittal Modelo 902,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,m2,6531.82,4947.94,6945.6
+FLP-00903,Canales Altos Hornos Modelo 903,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Canales,Caja,2150.53,1773.25,2363.3
+FLP-00904,Negras Altos Hornos Modelo 904,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,Metro,4648.04,3709.37,5573.53
+FLP-00905,Columnas ArcelorMittal Modelo 905,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Columnas,Litro,1994.35,1676.5,2275.08
+FLP-00906,Acanaladas Ternium Modelo 906,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,Pieza,5402.33,4404.94,6043.18
+FLP-00907,Acanaladas AHMSA Modelo 907,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Caja,4510.55,3714.19,4757.68
+FLP-00908,Ángulos AHMSA Modelo 908,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Caja,4301.23,3349.86,4819.97
+FLP-00909,Acanaladas AHMSA Modelo 909,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Litro,6002.93,5247.63,6697.47
+FLP-00910,PTR Altos Hornos Modelo 910,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,Kg,5339.02,4469.84,5716.1
+FLP-00911,Negras ArcelorMittal Modelo 911,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,m2,773.91,652.78,946.44
+FLP-00912,Acanaladas AHMSA Modelo 912,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Metro,6489.74,5568.69,6814.65
+FLP-00913,Vigas Ternium Modelo 913,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Vigas,Galón,804.56,654.07,870.76
+FLP-00914,Soleras AHMSA Modelo 914,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Kg,853.85,690.99,991.83
+FLP-00915,Vigas Altos Hornos Modelo 915,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,Kg,4827.43,4291.08,5229.09
+FLP-00916,Negras Altos Hornos Modelo 916,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,Caja,871.11,737.6,979.67
+FLP-00917,Vigas Ternium Modelo 917,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Vigas,Caja,4870.45,3961.24,5702.62
+FLP-00918,Columnas Altos Hornos Modelo 918,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Columnas,m3,4769.81,3736.07,5741.59
+FLP-00919,Acanaladas AHMSA Modelo 919,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Barra,6819.79,5585.2,8322.62
+FLP-00920,Columnas Nucor Modelo 920,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,m2,5266.94,4375.93,6312.75
+FLP-00921,Galvanizadas AHMSA Modelo 921,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Galvanizadas,Saco,3721.25,3323.93,4458.03
+FLP-00922,Acanaladas Altos Hornos Modelo 922,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Acanaladas,Caja,6026.66,5111.46,7176.23
+FLP-00923,Negras AHMSA Modelo 923,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Negras,Barra,2175.97,1800.47,2330.63
+FLP-00924,Ángulos Nucor Modelo 924,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Ángulos,Kg,2649.18,2145.63,3023.46
+FLP-00925,PTR Ternium Modelo 925,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Metro,2701.84,2368.35,3061.54
+FLP-00926,Soleras Nucor Modelo 926,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Saco,4815.88,4282.93,5760.9
+FLP-00927,Columnas Altos Hornos Modelo 927,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Columnas,Pieza,5108.3,4023.24,5421.85
+FLP-00928,PTR AHMSA Modelo 928,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,PTR,Caja,184.31,143.0,228.14
+FLP-00929,Soleras AHMSA Modelo 929,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Caja,115.72,94.59,144.29
+FLP-00930,Acanaladas ArcelorMittal Modelo 930,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Acanaladas,m2,763.84,572.88,889.34
+FLP-00931,Acanaladas Ternium Modelo 931,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,Litro,7529.7,5703.39,7988.31
+FLP-00932,Vigas ArcelorMittal Modelo 932,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Vigas,Litro,3248.48,2679.84,3911.68
+FLP-00933,Soleras AHMSA Modelo 933,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Caja,4908.27,4330.39,5561.01
+FLP-00934,Negras Altos Hornos Modelo 934,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Negras,Caja,4106.94,3633.47,4394.91
+FLP-00935,Columnas Nucor Modelo 935,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,m3,3348.08,2668.24,4127.26
+FLP-00936,Vigas Ternium Modelo 936,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Vigas,Kg,2545.07,2063.09,3100.29
+FLP-00937,Vigas Nucor Modelo 937,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Vigas,m3,6725.5,5802.11,7412.58
+FLP-00938,Ángulos Altos Hornos Modelo 938,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,Kg,3150.7,2574.31,3393.62
+FLP-00939,PTR ArcelorMittal Modelo 939,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,PTR,Litro,5160.32,4454.3,6107.27
+FLP-00940,Vigas Altos Hornos Modelo 940,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,Metro,3302.81,2615.91,3937.36
+FLP-00941,Columnas Ternium Modelo 941,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Pieza,1769.57,1544.44,2006.53
+FLP-00942,PTR Altos Hornos Modelo 942,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,m2,671.75,562.74,823.03
+FLP-00943,Columnas Ternium Modelo 943,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,m3,5702.19,4650.89,6204.54
+FLP-00944,Canales Altos Hornos Modelo 944,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Canales,Caja,667.45,513.35,735.46
+FLP-00945,Canales Altos Hornos Modelo 945,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Canales,m2,7984.86,6577.34,9515.0
+FLP-00946,Acanaladas Nucor Modelo 946,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Acanaladas,Litro,983.51,798.78,1073.34
+FLP-00947,Galvanizadas Altos Hornos Modelo 947,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Barra,1042.37,886.08,1263.37
+FLP-00948,Ángulos AHMSA Modelo 948,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Galón,1285.4,1066.57,1509.33
+FLP-00949,PTR Nucor Modelo 949,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Caja,4704.63,3831.44,5681.03
+FLP-00950,Acanaladas Ternium Modelo 950,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Acanaladas,Pieza,7938.17,6168.43,9484.22
+FLP-00951,Canales Altos Hornos Modelo 951,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Canales,Metro,2136.7,1618.59,2305.25
+FLP-00952,Vigas Ternium Modelo 952,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Vigas,Saco,1238.62,1090.7,1418.55
+FLP-00953,Columnas Altos Hornos Modelo 953,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Columnas,m3,7707.95,6772.11,8729.48
+FLP-00954,Negras ArcelorMittal Modelo 954,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,m3,1908.97,1533.11,2381.18
+FLP-00955,Ángulos Nucor Modelo 955,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Ángulos,m3,6324.05,5133.74,7530.03
+FLP-00956,PTR AHMSA Modelo 956,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,PTR,Caja,3220.8,2567.29,3463.98
+FLP-00957,Acanaladas ArcelorMittal Modelo 957,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Acanaladas,Galón,5165.33,4115.29,6025.99
+FLP-00958,Vigas Altos Hornos Modelo 958,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,Metro,2290.11,1738.07,2438.65
+FLP-00959,Negras Ternium Modelo 959,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Negras,Galón,2584.3,2246.35,3085.79
+FLP-00960,Columnas Ternium Modelo 960,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Columnas,Pieza,7534.47,6776.91,8727.02
+FLP-00961,Galvanizadas Nucor Modelo 961,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Galvanizadas,Barra,5984.61,4695.03,6886.8
+FLP-00962,Negras Ternium Modelo 962,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Negras,Galón,1649.07,1277.95,2026.71
+FLP-00963,Ángulos AHMSA Modelo 963,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Kg,4140.49,3374.75,4669.45
+FLP-00964,Galvanizadas Nucor Modelo 964,Producto de alta calidad de la marca Nucor para uso en láminas,Nucor,Láminas,Galvanizadas,Litro,1682.01,1396.7,1883.64
+FLP-00965,Soleras Ternium Modelo 965,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,Soleras,Barra,1608.34,1228.87,1820.33
+FLP-00966,Ángulos ArcelorMittal Modelo 966,Producto de alta calidad de la marca ArcelorMittal para uso en acero estructural,ArcelorMittal,Acero Estructural,Ángulos,Barra,6801.93,5573.57,7318.27
+FLP-00967,PTR Ternium Modelo 967,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,m3,5907.43,4459.07,6723.26
+FLP-00968,Negras ArcelorMittal Modelo 968,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Negras,Galón,3842.6,3113.1,4731.15
+FLP-00969,PTR Ternium Modelo 969,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Pieza,2816.57,2321.24,2963.57
+FLP-00970,Ángulos Altos Hornos Modelo 970,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,Barra,3017.57,2276.14,3590.7
+FLP-00971,Canales Altos Hornos Modelo 971,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,Canales,Barra,3059.52,2453.74,3333.89
+FLP-00972,Ángulos Ternium Modelo 972,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,Galón,6159.4,5099.07,7105.14
+FLP-00973,Galvanizadas ArcelorMittal Modelo 973,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Galvanizadas,Kg,6382.32,5668.44,7020.17
+FLP-00974,Acanaladas AHMSA Modelo 974,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Barra,5566.72,4537.33,6047.28
+FLP-00975,PTR Altos Hornos Modelo 975,Producto de alta calidad de la marca Altos Hornos para uso en perfiles,Altos Hornos,Perfiles,PTR,Galón,4914.12,4182.4,5765.78
+FLP-00976,Soleras AHMSA Modelo 976,Producto de alta calidad de la marca AHMSA para uso en perfiles,AHMSA,Perfiles,Soleras,Saco,3416.27,2908.56,4229.9
+FLP-00977,Columnas Altos Hornos Modelo 977,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Columnas,m2,3715.34,3210.92,4488.83
+FLP-00978,Ángulos Ternium Modelo 978,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,Pieza,2269.09,1869.88,2528.44
+FLP-00979,Vigas Altos Hornos Modelo 979,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,m2,7290.1,5832.92,8513.03
+FLP-00980,Negras Ternium Modelo 980,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Negras,Barra,4268.75,3607.29,5230.39
+FLP-00981,Vigas Altos Hornos Modelo 981,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Vigas,Barra,7482.15,5843.98,9147.48
+FLP-00982,Columnas Nucor Modelo 982,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Columnas,Caja,2940.23,2468.14,3293.29
+FLP-00983,Ángulos AHMSA Modelo 983,Producto de alta calidad de la marca AHMSA para uso en acero estructural,AHMSA,Acero Estructural,Ángulos,Litro,4944.09,4340.85,5841.94
+FLP-00984,Acanaladas AHMSA Modelo 984,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Galón,7204.08,5768.47,8404.57
+FLP-00985,Soleras Nucor Modelo 985,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,m3,3701.79,2786.96,3890.74
+FLP-00986,Soleras Nucor Modelo 986,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,Soleras,Caja,1138.51,947.05,1393.49
+FLP-00987,Vigas Nucor Modelo 987,Producto de alta calidad de la marca Nucor para uso en acero estructural,Nucor,Acero Estructural,Vigas,Metro,226.58,181.54,277.59
+FLP-00988,Acanaladas AHMSA Modelo 988,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Acanaladas,Saco,7783.27,6561.71,9173.71
+FLP-00989,Acanaladas ArcelorMittal Modelo 989,Producto de alta calidad de la marca ArcelorMittal para uso en láminas,ArcelorMittal,Láminas,Acanaladas,m3,6979.33,6017.24,7687.78
+FLP-00990,Ángulos Altos Hornos Modelo 990,Producto de alta calidad de la marca Altos Hornos para uso en acero estructural,Altos Hornos,Acero Estructural,Ángulos,Caja,2326.07,1885.73,2474.41
+FLP-00991,Ángulos Ternium Modelo 991,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Ángulos,Caja,2694.97,2039.25,3106.62
+FLP-00992,Galvanizadas Altos Hornos Modelo 992,Producto de alta calidad de la marca Altos Hornos para uso en láminas,Altos Hornos,Láminas,Galvanizadas,Barra,2260.95,1871.51,2651.24
+FLP-00993,PTR Ternium Modelo 993,Producto de alta calidad de la marca Ternium para uso en perfiles,Ternium,Perfiles,PTR,Litro,4553.9,3597.92,5657.25
+FLP-00994,Canales ArcelorMittal Modelo 994,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Canales,Barra,2680.87,2140.22,3071.84
+FLP-00995,Vigas Ternium Modelo 995,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Vigas,Saco,6973.64,5794.53,7371.04
+FLP-00996,Negras Ternium Modelo 996,Producto de alta calidad de la marca Ternium para uso en láminas,Ternium,Láminas,Negras,m3,1658.71,1401.44,1763.28
+FLP-00997,Vigas Ternium Modelo 997,Producto de alta calidad de la marca Ternium para uso en acero estructural,Ternium,Acero Estructural,Vigas,Kg,3972.73,3251.93,4431.49
+FLP-00998,Galvanizadas AHMSA Modelo 998,Producto de alta calidad de la marca AHMSA para uso en láminas,AHMSA,Láminas,Galvanizadas,Kg,5194.41,4117.36,5676.83
+FLP-00999,Soleras ArcelorMittal Modelo 999,Producto de alta calidad de la marca ArcelorMittal para uso en perfiles,ArcelorMittal,Perfiles,Soleras,Caja,306.24,238.89,362.13
+FLP-01000,PTR Nucor Modelo 1000,Producto de alta calidad de la marca Nucor para uso en perfiles,Nucor,Perfiles,PTR,Galón,4225.84,3789.0,4745.85

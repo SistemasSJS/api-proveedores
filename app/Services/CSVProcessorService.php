@@ -87,10 +87,11 @@ class CSVProcessorService
 
             // Obtener datos de vista previa (filas limitadas)
             // si es -1, la vista previa no limita la cantidad de registros
-            if ($options['preview_rows'] >= 0) {
+            if ($options['preview_rows'] > 0) {
                 $previewData = array_slice($csvData['data'], 0, $options['preview_rows']);
             } else {
-                $previewData = $csvData;
+                // When preview_rows is -1 or 0, return all data
+                $previewData = $csvData['data'];
             }
 
             // Validar datos de la vista previa
@@ -102,9 +103,13 @@ class CSVProcessorService
             // Generar análisis del desglose de catálogo
             $catalogBreakdown = $this->generateCatalogBreakdown($csvData['data'], $proveedorId);
 
+            // Generar diccionario de catalogos con nopmbres uncicos
+            $catalogosData = $this->getArrayCatalogos($csvData['data'], $proveedorId);
+
             // Cachear los datos completos para confirmación posterior
             $cacheData = [
                 'full_data' => $csvData['data'],
+                'catalogos_data' => $catalogosData,
                 'headers' => $csvData['headers'] ?? [],
                 'options' => $options,
                 'proveedor_id' => $proveedorId,
@@ -466,6 +471,33 @@ class CSVProcessorService
     }
 
     /**
+     * Genera los catálogos únicos de marcas, unidades y categorías/subcategorías a partir de los datos CSV.
+     *
+     * @param array $csvData      Datos del CSV en formato de array asociativo.
+     * @param int   $proveedorId  ID del proveedor asociado (puede usarse para filtrar o registrar).
+     *
+     * @return array<string, array>
+     *     Estructura de retorno:
+     *     [
+     *         'marcas' => ['Marca1', 'Marca2', ...],
+     *         'unidades' => ['kg', 'm', 'l', ...],
+     *         'categorias' => [
+     *             'Categoria1' => ['Subcategoria1', 'Subcategoria2', ...],
+     *             'Categoria2' => ['SubcategoriaA', 'SubcategoriaB', ...],
+     *             ...
+     *         ],
+     *     ]
+     */
+    public function getArrayCatalogos(array $csvData): array
+    {
+        return [
+            'marcas' => $this->extractUniqueValues($csvData, 'marcas'),
+            'unidades' => $this->extractUniqueValues($csvData, 'unidades'),
+            'categorias' => $this->extractUniqueCategories($csvData, 'categoria', 'subcategoria'),
+        ];
+    }
+
+    /**
      * Genera un desglose detallado del catálogo con análisis de existentes vs nuevos
      *
      * @param array $csvData Datos de las filas del CSV
@@ -545,8 +577,6 @@ class CSVProcessorService
      */
     private function getExistingSubcategorias(int $proveedorId): Collection
     {
-
-
         return Categoria::where('proveedor_id', $proveedorId)
             ->where('activo', true)
             ->whereNotNull('parent_id') // Solo subcategorías
@@ -803,5 +833,42 @@ class CSVProcessorService
             'existentes' => count($existentes),
             'data' => $mergedData
         ];
+    }
+
+
+    /******************************************* */
+    /******************************************* */
+    /******************************************* */
+
+
+    /**
+     * Extrae un arreglo asociativo de categorías con sus subcategorías únicas a partir de un dataset.
+     *
+     * @param array  $csvData          Datos del CSV en formato array asociativo.
+     * @param string $categoryField    Nombre del campo que representa la categoría.
+     * @param string $subcategoryField Nombre del campo que representa la subcategoría.
+     *
+     * @return array<string, array<string>>
+     *     Estructura de retorno:
+     *     [
+     *         "Categoria1" => ["Subcategoria1", "Subcategoria2", ...],
+     *         "Categoria2" => ["SubcategoriaA", "SubcategoriaB", ...],
+     *         ...
+     *     ]
+     */
+    private function extractUniqueCategories(array $csvData, string $categoryField, string $subcategoryField): array
+    {
+        return collect($csvData)
+            ->filter(fn($row) => !empty(trim($row[$categoryField] ?? '')) && !empty(trim($row[$subcategoryField] ?? '')))
+            ->groupBy(fn($row) => trim($row[$categoryField]))
+            ->map(
+                fn($items) => $items
+                    ->pluck($subcategoryField)
+                    ->map('trim')
+                    ->unique()
+                    ->values()
+                    ->toArray()
+            )
+            ->toArray();
     }
 }

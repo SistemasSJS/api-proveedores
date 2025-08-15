@@ -1,0 +1,51 @@
+codigo,producto,descripcion,marca,categoria,subcategoria,unidad_medida,precio,precio_mayoreo,precio_menudeo
+FLP-00001,Canales ArcelorMittal Modelo 1,Producto de prueba número 1,ArcelorMittal,Perfiles,Canales,Kg,5902.0,4860.38,7246.39
+FLP-00002,Producto con precio negativo 2,Producto de prueba número 2,Altos Hornos,Acero Estructural,Ángulos,Litro,-113.26672051725771,-99.74344403629415,-15.808145739380894
+FLP-00003,,Producto de prueba número 3,Altos Hornos,Láminas,Negras,Metro,5979.14,5087.18,7174.83
+FLP-00004,,Producto de prueba número 4,Altos Hornos,Acero Estructural,Columnas,Metro,7779.78,5964.58,8849.22
+FLP-00005,Galvanizadas ArcelorMittal Modelo 5,Producto de prueba número 5,ArcelorMittal,Láminas,Galvanizadas,m2,5385.31,4582.59,6129.23
+FLP-00006,Producto con precio inválido 6,Producto de prueba número 6,Nucor,Láminas,Acanaladas,Metro,precio_invalido,no_numerico,abc123
+FLP-00007,Producto con precio negativo 7,Producto de prueba número 7,ArcelorMittal,Láminas,Acanaladas,m3,-238.61273722136764,-77.88192258863768,-78.9445408096751
+FLP-00001,Producto duplicado 8,Producto de prueba número 8,Nucor,Láminas,Galvanizadas,Kg,3352.9,2553.37,3966.51
+FLP-00009,Producto con precio inválido 9,Producto de prueba número 9,AHMSA,Acero Estructural,Vigas,Kg,precio_invalido,no_numerico,abc123
+FLP-00010,Acanaladas Altos Hornos Modelo 10,Producto de prueba número 10,Altos Hornos,Láminas,Acanaladas,Litro,6990.1,5400.18,7714.1
+FLP-00001,Producto duplicado 11,Producto de prueba número 11,AHMSA,Láminas,Negras,Pieza,674.68,591.24,802.75
+FLP-00012,Producto con precio inválido 12,Producto de prueba número 12,Nucor,Acero Estructural,Vigas,Litro,precio_invalido,no_numerico,abc123
+FLP-00001,Producto duplicado 13,Producto de prueba número 13,Ternium,Láminas,Acanaladas,Saco,4586.37,3532.43,5577.59
+FLP-00001,Producto duplicado 14,Producto de prueba número 14,Altos Hornos,Perfiles,Canales,Galón,4826.41,4300.76,5165.45
+FLP-00015,,Producto de prueba número 15,Nucor,Láminas,Negras,Kg,6864.03,5969.19,7441.01
+,Producto sin código 16,Producto de prueba número 16,AHMSA,Láminas,Acanaladas,Saco,7523.72,6084.6,8151.06
+FLP-00017,Producto con precio inválido 17,Producto de prueba número 17,ArcelorMittal,Acero Estructural,Ángulos,Barra,precio_invalido,no_numerico,abc123
+FLP-00018,Acanaladas Ternium Modelo 18,Producto de prueba número 18,Ternium,Láminas,Acanaladas,m2,3515.48,3142.56,3858.37
+FLP-00019,Producto con precio negativo 19,Producto de prueba número 19,Nucor,Acero Estructural,Vigas,Barra,-214.11332176589247,-208.49205048116013,-24.650908675158462
+FLP-00020,Producto con precio inválido 20,Producto de prueba número 20,Ternium,Acero Estructural,Ángulos,Caja,precio_invalido,no_numerico,abc123
+FLP-00021,,Producto de prueba número 21,ArcelorMittal,Acero Estructural,Columnas,Metro,932.83,757.05,1096.17
+FLP-00001,Producto duplicado 22,Producto de prueba número 22,Ternium,Acero Estructural,Columnas,Barra,7051.03,5724.08,7469.77
+FLP-00023,Producto con precio negativo 23,Producto de prueba número 23,Nucor,Acero Estructural,Ángulos,Caja,-181.17660037989614,-243.84650330356996,-10.875955990019484
+FLP-00024,PTR Ternium Modelo 24,Producto de prueba número 24,Ternium,Perfiles,PTR,m3,3376.99,3030.15,4186.53
+FLP-00025,,Producto de prueba número 25,Altos Hornos,Acero Estructural,Vigas,Barra,6450.27,5724.15,7875.81
+FLP-00026,Producto con precio inválido 26,Producto de prueba número 26,ArcelorMittal,Perfiles,PTR,Galón,precio_invalido,no_numerico,abc123
+FLP-00027,Producto con precio negativo 27,Producto de prueba número 27,ArcelorMittal,Perfiles,Canales,m2,-144.18436251659685,-65.46594434306567,-64.8485296068875
+FLP-00028,Producto con precio negativo 28,Producto de prueba número 28,Ternium,Perfiles,Soleras,Metro,-246.48456411838035,-99.01040064744281,-60.87275593746468
+FLP-00029,,Producto de prueba número 29,Nucor,Láminas,Acanaladas,Metro,2374.57,1813.53,2838.38
+,Producto sin código 30,Producto de prueba número 30,ArcelorMittal,Perfiles,Soleras,Galón,2237.52,2010.45,2575.61
+FLP-00031,Producto con precio inválido 31,Producto de prueba número 31,Altos Hornos,Perfiles,Canales,m3,precio_invalido,no_numerico,abc123
+FLP-00032,,Producto de prueba número 32,AHMSA,Láminas,Negras,Caja,1528.43,1189.69,1611.09
+,Producto sin código 33,Producto de prueba número 33,Ternium,Láminas,Negras,Barra,86.04,76.44,93.61
+FLP-00034,PTR Nucor Modelo 34,Producto de prueba número 34,Nucor,Perfiles,PTR,Caja,5835.51,4634.88,6201.35
+FLP-00035,,Producto de prueba número 35,Nucor,Perfiles,Canales,Kg,5379.14,4057.26,6474.42
+FLP-00036,Acanaladas ArcelorMittal Modelo 36,Producto de prueba número 36,ArcelorMittal,Láminas,Acanaladas,Galón,7896.76,7031.23,9338.13
+FLP-00037,Negras ArcelorMittal Modelo 37,Producto de prueba número 37,ArcelorMittal,Láminas,Negras,Saco,6619.78,5351.13,7668.05
+FLP-00038,,Producto de prueba número 38,AHMSA,Láminas,Acanaladas,Litro,661.34,511.52,712.97
+,Producto sin código 39,Producto de prueba número 39,Altos Hornos,Láminas,Galvanizadas,m3,7819.7,7022.73,9669.88
+FLP-00040,Producto con precio negativo 40,Producto de prueba número 40,ArcelorMittal,Perfiles,Canales,Pieza,-338.1542152026976,-127.04626078545891,-66.99069556076127
+FLP-00041,Producto con precio negativo 41,Producto de prueba número 41,ArcelorMittal,Acero Estructural,Vigas,Metro,-442.22695930830577,-62.01519643529457,-70.54413685522957
+,Producto sin código 42,Producto de prueba número 42,AHMSA,Perfiles,Soleras,Caja,87.42,67.3,101.84
+FLP-00001,Producto duplicado 43,Producto de prueba número 43,ArcelorMittal,Acero Estructural,Ángulos,Barra,6816.08,5584.63,7875.94
+FLP-00001,Producto duplicado 44,Producto de prueba número 44,AHMSA,Acero Estructural,Vigas,m3,5575.33,4660.0,6087.42
+FLP-00045,,Producto de prueba número 45,ArcelorMittal,Láminas,Negras,Kg,6212.1,5301.19,6627.68
+FLP-00046,Producto con precio inválido 46,Producto de prueba número 46,Altos Hornos,Láminas,Negras,Barra,precio_invalido,no_numerico,abc123
+FLP-00001,Producto duplicado 47,Producto de prueba número 47,Nucor,Láminas,Acanaladas,Pieza,405.85,313.08,443.44
+FLP-00001,Producto duplicado 48,Producto de prueba número 48,Altos Hornos,Láminas,Galvanizadas,Metro,7543.78,5811.36,8208.15
+,Producto sin código 49,Producto de prueba número 49,Altos Hornos,Acero Estructural,Vigas,Barra,5625.97,4994.21,6747.96
+FLP-00050,Producto con precio negativo 50,Producto de prueba número 50,ArcelorMittal,Perfiles,Canales,Barra,-448.9238388041517,-194.77389137218478,-37.57059746866817

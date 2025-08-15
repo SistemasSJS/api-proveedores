@@ -1,0 +1,101 @@
+codigo,producto,descripcion,marca,categoria,subcategoria,unidad_medida,precio,precio_mayoreo,precio_menudeo
+FER-00001,Lijadoras Makita Modelo 1,Producto de alta calidad de la marca Makita para uso en herramientas eléctricas,Makita,Herramientas Eléctricas,Lijadoras,Galón,1355.79,1110.21,1532.59
+FER-00002,Taladros Bosch Modelo 2,Producto de alta calidad de la marca Bosch para uso en herramientas eléctricas,Bosch,Herramientas Eléctricas,Taladros,m3,5020.51,3953.95,5807.31
+FER-00003,Amoladoras DeWalt Modelo 3,Producto de alta calidad de la marca DeWalt para uso en herramientas eléctricas,DeWalt,Herramientas Eléctricas,Amoladoras,Metro,1120.86,955.32,1367.92
+FER-00004,Bisagras Stanley Modelo 4,Producto de alta calidad de la marca Stanley para uso en ferretería,Stanley,Ferretería,Bisagras,Galón,6891.76,6135.98,7934.03
+FER-00005,Taladros Stanley Modelo 5,Producto de alta calidad de la marca Stanley para uso en herramientas eléctricas,Stanley,Herramientas Eléctricas,Taladros,Kg,1735.36,1319.31,2135.57
+FER-00006,Amoladoras Makita Modelo 6,Producto de alta calidad de la marca Makita para uso en herramientas eléctricas,Makita,Herramientas Eléctricas,Amoladoras,m2,628.43,472.63,761.05
+FER-00007,Llaves DeWalt Modelo 7,Producto de alta calidad de la marca DeWalt para uso en herramientas manuales,DeWalt,Herramientas Manuales,Llaves,Kg,2669.45,2317.01,3091.86
+FER-00008,Taladros Black & Decker Modelo 8,Producto de alta calidad de la marca Black & Decker para uso en herramientas eléctricas,Black & Decker,Herramientas Eléctricas,Taladros,Caja,7332.45,6040.97,7918.02
+FER-00009,Llaves Bosch Modelo 9,Producto de alta calidad de la marca Bosch para uso en herramientas manuales,Bosch,Herramientas Manuales,Llaves,m2,1368.55,1226.96,1604.0
+FER-00010,Martillos Makita Modelo 10,Producto de alta calidad de la marca Makita para uso en herramientas manuales,Makita,Herramientas Manuales,Martillos,Pieza,1244.38,1093.18,1534.43
+FER-00011,Bisagras Black & Decker Modelo 11,Producto de alta calidad de la marca Black & Decker para uso en ferretería,Black & Decker,Ferretería,Bisagras,Barra,7928.65,6668.39,8547.81
+FER-00012,Martillos Stanley Modelo 12,Producto de alta calidad de la marca Stanley para uso en herramientas manuales,Stanley,Herramientas Manuales,Martillos,Barra,5264.21,4233.4,5638.64
+FER-00013,Desarmadores Black & Decker Modelo 13,Producto de alta calidad de la marca Black & Decker para uso en herramientas manuales,Black & Decker,Herramientas Manuales,Desarmadores,Kg,2412.32,1914.56,2819.47
+FER-00014,Tornillos Makita Modelo 14,Producto de alta calidad de la marca Makita para uso en ferretería,Makita,Ferretería,Tornillos,Saco,4707.18,3623.02,5755.32
+FER-00015,Llaves Black & Decker Modelo 15,Producto de alta calidad de la marca Black & Decker para uso en herramientas manuales,Black & Decker,Herramientas Manuales,Llaves,Barra,5821.68,4713.51,6995.82
+FER-00016,Tornillos Black & Decker Modelo 16,Producto de alta calidad de la marca Black & Decker para uso en ferretería,Black & Decker,Ferretería,Tornillos,Galón,3029.08,2645.31,3356.58
+FER-00017,Sierras Black & Decker Modelo 17,Producto de alta calidad de la marca Black & Decker para uso en herramientas eléctricas,Black & Decker,Herramientas Eléctricas,Sierras,Saco,4615.54,3784.42,5246.43
+FER-00018,Desarmadores Stanley Modelo 18,Producto de alta calidad de la marca Stanley para uso en herramientas manuales,Stanley,Herramientas Manuales,Desarmadores,Barra,261.54,216.38,310.06
+FER-00019,Bisagras Bosch Modelo 19,Producto de alta calidad de la marca Bosch para uso en ferretería,Bosch,Ferretería,Bisagras,Saco,4016.47,3506.08,4961.24
+FER-00020,Lijadoras DeWalt Modelo 20,Producto de alta calidad de la marca DeWalt para uso en herramientas eléctricas,DeWalt,Herramientas Eléctricas,Lijadoras,m3,5568.44,4743.28,6751.0
+FER-00021,Clavos Stanley Modelo 21,Producto de alta calidad de la marca Stanley para uso en ferretería,Stanley,Ferretería,Clavos,m2,2387.73,1978.84,2765.46
+FER-00022,Llaves Stanley Modelo 22,Producto de alta calidad de la marca Stanley para uso en herramientas manuales,Stanley,Herramientas Manuales,Llaves,Litro,6266.59,5478.35,7617.43
+FER-00023,Bisagras Makita Modelo 23,Producto de alta calidad de la marca Makita para uso en ferretería,Makita,Ferretería,Bisagras,Saco,7298.49,5565.34,7880.52
+FER-00024,Llaves Makita Modelo 24,Producto de alta calidad de la marca Makita para uso en herramientas manuales,Makita,Herramientas Manuales,Llaves,Metro,2874.66,2334.1,3447.4
+FER-00025,Desarmadores Makita Modelo 25,Producto de alta calidad de la marca Makita para uso en herramientas manuales,Makita,Herramientas Manuales,Desarmadores,Saco,4447.9,3455.9,4935.45
+FER-00026,Clavos Stanley Modelo 26,Producto de alta calidad de la marca Stanley para uso en ferretería,Stanley,Ferretería,Clavos,Pieza,5497.87,4688.57,6569.61
+FER-00027,Sierras Makita Modelo 27,Producto de alta calidad de la marca Makita para uso en herramientas eléctricas,Makita,Herramientas Eléctricas,Sierras,Saco,6394.62,5191.66,7331.26
+FER-00028,Llaves Makita Modelo 28,Producto de alta calidad de la marca Makita para uso en herramientas manuales,Makita,Herramientas Manuales,Llaves,Metro,2998.15,2428.45,3250.5
+FER-00029,Desarmadores Bosch Modelo 29,Producto de alta calidad de la marca Bosch para uso en herramientas manuales,Bosch,Herramientas Manuales,Desarmadores,Pieza,5653.87,4877.78,6609.48
+FER-00030,Sierras DeWalt Modelo 30,Producto de alta calidad de la marca DeWalt para uso en herramientas eléctricas,DeWalt,Herramientas Eléctricas,Sierras,m3,2970.68,2357.55,3144.59
+FER-00031,Amoladoras Black & Decker Modelo 31,Producto de alta calidad de la marca Black & Decker para uso en herramientas eléctricas,Black & Decker,Herramientas Eléctricas,Amoladoras,Metro,3090.66,2591.4,3460.24
+FER-00032,Taladros DeWalt Modelo 32,Producto de alta calidad de la marca DeWalt para uso en herramientas eléctricas,DeWalt,Herramientas Eléctricas,Taladros,m3,6019.08,5118.42,7014.87
+FER-00033,Lijadoras Black & Decker Modelo 33,Producto de alta calidad de la marca Black & Decker para uso en herramientas eléctricas,Black & Decker,Herramientas Eléctricas,Lijadoras,m2,7405.35,6038.99,9111.7
+FER-00034,Tornillos Bosch Modelo 34,Producto de alta calidad de la marca Bosch para uso en ferretería,Bosch,Ferretería,Tornillos,Litro,6736.89,5316.33,8175.74
+FER-00035,Tornillos Black & Decker Modelo 35,Producto de alta calidad de la marca Black & Decker para uso en ferretería,Black & Decker,Ferretería,Tornillos,m2,1565.33,1360.95,1792.43
+FER-00036,Taladros Bosch Modelo 36,Producto de alta calidad de la marca Bosch para uso en herramientas eléctricas,Bosch,Herramientas Eléctricas,Taladros,Barra,6962.79,6060.0,8285.43
+FER-00037,Lijadoras Black & Decker Modelo 37,Producto de alta calidad de la marca Black & Decker para uso en herramientas eléctricas,Black & Decker,Herramientas Eléctricas,Lijadoras,m2,2245.14,1942.46,2783.96
+FER-00038,Amoladoras Bosch Modelo 38,Producto de alta calidad de la marca Bosch para uso en herramientas eléctricas,Bosch,Herramientas Eléctricas,Amoladoras,m3,1130.41,883.2,1289.25
+FER-00039,Martillos Makita Modelo 39,Producto de alta calidad de la marca Makita para uso en herramientas manuales,Makita,Herramientas Manuales,Martillos,Saco,555.72,499.45,666.51
+FER-00040,Lijadoras Bosch Modelo 40,Producto de alta calidad de la marca Bosch para uso en herramientas eléctricas,Bosch,Herramientas Eléctricas,Lijadoras,Saco,5012.16,3808.08,5837.82
+FER-00041,Llaves Makita Modelo 41,Producto de alta calidad de la marca Makita para uso en herramientas manuales,Makita,Herramientas Manuales,Llaves,Caja,7950.03,6584.46,8900.37
+FER-00042,Martillos Bosch Modelo 42,Producto de alta calidad de la marca Bosch para uso en herramientas manuales,Bosch,Herramientas Manuales,Martillos,Pieza,4567.21,3882.19,5036.3
+FER-00043,Taladros Makita Modelo 43,Producto de alta calidad de la marca Makita para uso en herramientas eléctricas,Makita,Herramientas Eléctricas,Taladros,Saco,2584.42,2062.53,2805.69
+FER-00044,Llaves Black & Decker Modelo 44,Producto de alta calidad de la marca Black & Decker para uso en herramientas manuales,Black & Decker,Herramientas Manuales,Llaves,Galón,886.1,706.77,1010.82
+FER-00045,Lijadoras Black & Decker Modelo 45,Producto de alta calidad de la marca Black & Decker para uso en herramientas eléctricas,Black & Decker,Herramientas Eléctricas,Lijadoras,Caja,4403.87,3773.87,5000.65
+FER-00046,Desarmadores Stanley Modelo 46,Producto de alta calidad de la marca Stanley para uso en herramientas manuales,Stanley,Herramientas Manuales,Desarmadores,Pieza,6408.96,5526.41,7927.42
+FER-00047,Llaves Makita Modelo 47,Producto de alta calidad de la marca Makita para uso en herramientas manuales,Makita,Herramientas Manuales,Llaves,Caja,1973.85,1575.75,2285.46
+FER-00048,Tornillos Stanley Modelo 48,Producto de alta calidad de la marca Stanley para uso en ferretería,Stanley,Ferretería,Tornillos,Barra,4038.47,3263.9,4356.39
+FER-00049,Taladros Black & Decker Modelo 49,Producto de alta calidad de la marca Black & Decker para uso en herramientas eléctricas,Black & Decker,Herramientas Eléctricas,Taladros,Pieza,5706.27,4797.08,7130.48
+FER-00050,Taladros Makita Modelo 50,Producto de alta calidad de la marca Makita para uso en herramientas eléctricas,Makita,Herramientas Eléctricas,Taladros,m2,1904.5,1457.77,2188.32
+FER-00051,Martillos Stanley Modelo 51,Producto de alta calidad de la marca Stanley para uso en herramientas manuales,Stanley,Herramientas Manuales,Martillos,Galón,3242.55,2646.82,3641.2
+FER-00052,Sierras Black & Decker Modelo 52,Producto de alta calidad de la marca Black & Decker para uso en herramientas eléctricas,Black & Decker,Herramientas Eléctricas,Sierras,Litro,2802.35,2310.58,3332.49
+FER-00053,Lijadoras Stanley Modelo 53,Producto de alta calidad de la marca Stanley para uso en herramientas eléctricas,Stanley,Herramientas Eléctricas,Lijadoras,Saco,3582.9,3180.45,4009.98
+FER-00054,Martillos Stanley Modelo 54,Producto de alta calidad de la marca Stanley para uso en herramientas manuales,Stanley,Herramientas Manuales,Martillos,Galón,4121.41,3541.86,4595.44
+FER-00055,Desarmadores Stanley Modelo 55,Producto de alta calidad de la marca Stanley para uso en herramientas manuales,Stanley,Herramientas Manuales,Desarmadores,m3,7981.16,5996.5,9472.25
+FER-00056,Sierras Black & Decker Modelo 56,Producto de alta calidad de la marca Black & Decker para uso en herramientas eléctricas,Black & Decker,Herramientas Eléctricas,Sierras,Kg,4312.09,3245.39,4928.66
+FER-00057,Amoladoras Stanley Modelo 57,Producto de alta calidad de la marca Stanley para uso en herramientas eléctricas,Stanley,Herramientas Eléctricas,Amoladoras,Metro,2672.97,2282.37,2842.93
+FER-00058,Clavos Bosch Modelo 58,Producto de alta calidad de la marca Bosch para uso en ferretería,Bosch,Ferretería,Clavos,Litro,6136.67,5016.68,7511.54
+FER-00059,Tornillos Bosch Modelo 59,Producto de alta calidad de la marca Bosch para uso en ferretería,Bosch,Ferretería,Tornillos,Pieza,7541.85,6607.65,9287.4
+FER-00060,Llaves Black & Decker Modelo 60,Producto de alta calidad de la marca Black & Decker para uso en herramientas manuales,Black & Decker,Herramientas Manuales,Llaves,Saco,3346.94,2554.85,3946.64
+FER-00061,Desarmadores DeWalt Modelo 61,Producto de alta calidad de la marca DeWalt para uso en herramientas manuales,DeWalt,Herramientas Manuales,Desarmadores,Metro,4135.68,3459.89,4761.39
+FER-00062,Llaves Makita Modelo 62,Producto de alta calidad de la marca Makita para uso en herramientas manuales,Makita,Herramientas Manuales,Llaves,Kg,5956.35,4999.07,6697.38
+FER-00063,Martillos Black & Decker Modelo 63,Producto de alta calidad de la marca Black & Decker para uso en herramientas manuales,Black & Decker,Herramientas Manuales,Martillos,m2,3908.91,3270.94,4301.91
+FER-00064,Martillos Makita Modelo 64,Producto de alta calidad de la marca Makita para uso en herramientas manuales,Makita,Herramientas Manuales,Martillos,Kg,3486.4,2921.2,4343.25
+FER-00065,Clavos Black & Decker Modelo 65,Producto de alta calidad de la marca Black & Decker para uso en ferretería,Black & Decker,Ferretería,Clavos,Caja,6561.58,5772.57,7176.58
+FER-00066,Taladros Makita Modelo 66,Producto de alta calidad de la marca Makita para uso en herramientas eléctricas,Makita,Herramientas Eléctricas,Taladros,Caja,1325.71,1076.52,1548.06
+FER-00067,Tornillos Stanley Modelo 67,Producto de alta calidad de la marca Stanley para uso en ferretería,Stanley,Ferretería,Tornillos,Barra,501.39,402.68,527.01
+FER-00068,Clavos Bosch Modelo 68,Producto de alta calidad de la marca Bosch para uso en ferretería,Bosch,Ferretería,Clavos,Pieza,896.18,716.59,1028.24
+FER-00069,Clavos Stanley Modelo 69,Producto de alta calidad de la marca Stanley para uso en ferretería,Stanley,Ferretería,Clavos,Saco,4421.27,3445.16,5234.57
+FER-00070,Lijadoras DeWalt Modelo 70,Producto de alta calidad de la marca DeWalt para uso en herramientas eléctricas,DeWalt,Herramientas Eléctricas,Lijadoras,m3,4586.48,3690.91,5722.62
+FER-00071,Lijadoras Black & Decker Modelo 71,Producto de alta calidad de la marca Black & Decker para uso en herramientas eléctricas,Black & Decker,Herramientas Eléctricas,Lijadoras,m2,3519.14,2901.95,4112.32
+FER-00072,Desarmadores Stanley Modelo 72,Producto de alta calidad de la marca Stanley para uso en herramientas manuales,Stanley,Herramientas Manuales,Desarmadores,Galón,534.14,430.33,646.04
+FER-00073,Tornillos Black & Decker Modelo 73,Producto de alta calidad de la marca Black & Decker para uso en ferretería,Black & Decker,Ferretería,Tornillos,Galón,7159.19,5591.47,8651.47
+FER-00074,Martillos Black & Decker Modelo 74,Producto de alta calidad de la marca Black & Decker para uso en herramientas manuales,Black & Decker,Herramientas Manuales,Martillos,Kg,4209.84,3367.22,4857.67
+FER-00075,Clavos Makita Modelo 75,Producto de alta calidad de la marca Makita para uso en ferretería,Makita,Ferretería,Clavos,Barra,917.77,720.31,1056.41
+FER-00076,Amoladoras DeWalt Modelo 76,Producto de alta calidad de la marca DeWalt para uso en herramientas eléctricas,DeWalt,Herramientas Eléctricas,Amoladoras,m2,4056.91,3358.04,4272.83
+FER-00077,Martillos Black & Decker Modelo 77,Producto de alta calidad de la marca Black & Decker para uso en herramientas manuales,Black & Decker,Herramientas Manuales,Martillos,Litro,7237.23,5553.56,7749.63
+FER-00078,Desarmadores Bosch Modelo 78,Producto de alta calidad de la marca Bosch para uso en herramientas manuales,Bosch,Herramientas Manuales,Desarmadores,Metro,5327.52,4685.7,6193.98
+FER-00079,Sierras Black & Decker Modelo 79,Producto de alta calidad de la marca Black & Decker para uso en herramientas eléctricas,Black & Decker,Herramientas Eléctricas,Sierras,Galón,121.33,96.96,146.99
+FER-00080,Llaves Makita Modelo 80,Producto de alta calidad de la marca Makita para uso en herramientas manuales,Makita,Herramientas Manuales,Llaves,Caja,4736.75,4019.49,5894.65
+FER-00081,Desarmadores Stanley Modelo 81,Producto de alta calidad de la marca Stanley para uso en herramientas manuales,Stanley,Herramientas Manuales,Desarmadores,Galón,6143.87,5101.99,7122.18
+FER-00082,Martillos DeWalt Modelo 82,Producto de alta calidad de la marca DeWalt para uso en herramientas manuales,DeWalt,Herramientas Manuales,Martillos,m2,1572.3,1390.42,1902.9
+FER-00083,Desarmadores Black & Decker Modelo 83,Producto de alta calidad de la marca Black & Decker para uso en herramientas manuales,Black & Decker,Herramientas Manuales,Desarmadores,m2,7136.22,6416.7,7764.33
+FER-00084,Amoladoras Stanley Modelo 84,Producto de alta calidad de la marca Stanley para uso en herramientas eléctricas,Stanley,Herramientas Eléctricas,Amoladoras,Metro,4206.53,3560.47,4956.12
+FER-00085,Clavos DeWalt Modelo 85,Producto de alta calidad de la marca DeWalt para uso en ferretería,DeWalt,Ferretería,Clavos,Metro,5761.5,4429.96,7167.66
+FER-00086,Tornillos Stanley Modelo 86,Producto de alta calidad de la marca Stanley para uso en ferretería,Stanley,Ferretería,Tornillos,m2,538.73,475.47,641.79
+FER-00087,Sierras Stanley Modelo 87,Producto de alta calidad de la marca Stanley para uso en herramientas eléctricas,Stanley,Herramientas Eléctricas,Sierras,Litro,7350.8,5845.34,8150.32
+FER-00088,Martillos Black & Decker Modelo 88,Producto de alta calidad de la marca Black & Decker para uso en herramientas manuales,Black & Decker,Herramientas Manuales,Martillos,Litro,5510.12,4301.55,6429.4
+FER-00089,Clavos Bosch Modelo 89,Producto de alta calidad de la marca Bosch para uso en ferretería,Bosch,Ferretería,Clavos,Saco,7371.53,5702.59,7884.71
+FER-00090,Lijadoras Bosch Modelo 90,Producto de alta calidad de la marca Bosch para uso en herramientas eléctricas,Bosch,Herramientas Eléctricas,Lijadoras,Saco,4462.6,3540.02,5247.79
+FER-00091,Tornillos Stanley Modelo 91,Producto de alta calidad de la marca Stanley para uso en ferretería,Stanley,Ferretería,Tornillos,m3,3780.46,3073.33,4153.44
+FER-00092,Martillos Stanley Modelo 92,Producto de alta calidad de la marca Stanley para uso en herramientas manuales,Stanley,Herramientas Manuales,Martillos,m2,5769.22,4633.12,6323.21
+FER-00093,Lijadoras Makita Modelo 93,Producto de alta calidad de la marca Makita para uso en herramientas eléctricas,Makita,Herramientas Eléctricas,Lijadoras,Kg,781.9,659.71,901.46
+FER-00094,Llaves Bosch Modelo 94,Producto de alta calidad de la marca Bosch para uso en herramientas manuales,Bosch,Herramientas Manuales,Llaves,Pieza,6962.69,5288.5,7440.74
+FER-00095,Tornillos Stanley Modelo 95,Producto de alta calidad de la marca Stanley para uso en ferretería,Stanley,Ferretería,Tornillos,Kg,4641.29,3581.71,5076.82
+FER-00096,Tornillos Bosch Modelo 96,Producto de alta calidad de la marca Bosch para uso en ferretería,Bosch,Ferretería,Tornillos,Metro,5701.57,4607.5,6710.79
+FER-00097,Tornillos Black & Decker Modelo 97,Producto de alta calidad de la marca Black & Decker para uso en ferretería,Black & Decker,Ferretería,Tornillos,Pieza,3690.76,2867.91,4600.37
+FER-00098,Amoladoras Makita Modelo 98,Producto de alta calidad de la marca Makita para uso en herramientas eléctricas,Makita,Herramientas Eléctricas,Amoladoras,Caja,5108.28,4592.94,5926.4
+FER-00099,Llaves Black & Decker Modelo 99,Producto de alta calidad de la marca Black & Decker para uso en herramientas manuales,Black & Decker,Herramientas Manuales,Llaves,Saco,5889.83,4997.88,6352.19
+FER-00100,Taladros Makita Modelo 100,Producto de alta calidad de la marca Makita para uso en herramientas eléctricas,Makita,Herramientas Eléctricas,Taladros,Litro,3404.43,2942.12,3854.2

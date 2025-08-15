@@ -1,0 +1,51 @@
+codigo,producto,descripcion,marca,categoria,subcategoria,unidad_medida,precio,precio_mayoreo,precio_menudeo
+FER-00001,Producto duplicado 1,Producto de prueba número 1,DeWalt,Herramientas Eléctricas,Lijadoras,Metro,5554.55,4269.46,6858.83
+FER-00002,Producto con precio inválido 2,Producto de prueba número 2,Stanley,Herramientas Eléctricas,Lijadoras,m3,precio_invalido,no_numerico,abc123
+,Producto sin código 3,Producto de prueba número 3,Stanley,Herramientas Manuales,Martillos,m3,895.36,703.65,1048.81
+FER-00004,Producto con precio negativo 4,Producto de prueba número 4,DeWalt,Herramientas Eléctricas,Amoladoras,Pieza,-132.9032636378445,-96.27329953409672,-13.90962759988622
+FER-00001,Producto duplicado 5,Producto de prueba número 5,Bosch,Herramientas Manuales,Llaves,Galón,4507.01,3734.1,5436.22
+FER-00006,Sierras DeWalt Modelo 6,Producto de prueba número 6,DeWalt,Herramientas Eléctricas,Sierras,Pieza,6320.57,5055.16,7716.43
+FER-00001,Producto duplicado 7,Producto de prueba número 7,Stanley,Herramientas Eléctricas,Lijadoras,Pieza,3544.11,2781.86,4096.59
+FER-00008,Producto con precio negativo 8,Producto de prueba número 8,DeWalt,Herramientas Manuales,Martillos,Pieza,-485.8338234214432,-74.88054554771412,-89.77243171356307
+FER-00009,Martillos DeWalt Modelo 9,Producto de prueba número 9,DeWalt,Herramientas Manuales,Martillos,m2,7194.4,5444.05,8880.16
+FER-00010,Tornillos Black & Decker Modelo 10,Producto de prueba número 10,Black & Decker,Ferretería,Tornillos,Pieza,5606.24,4586.98,6120.07
+FER-00011,Producto con precio inválido 11,Producto de prueba número 11,Stanley,Herramientas Eléctricas,Taladros,Saco,precio_invalido,no_numerico,abc123
+,Producto sin código 12,Producto de prueba número 12,Stanley,Herramientas Eléctricas,Sierras,m3,6334.94,4924.46,7016.62
+FER-00001,Producto duplicado 13,Producto de prueba número 13,Bosch,Herramientas Eléctricas,Taladros,m2,4117.65,3562.51,4949.3
+,Producto sin código 14,Producto de prueba número 14,Bosch,Ferretería,Tornillos,Barra,6278.15,5378.89,7134.33
+,Producto sin código 15,Producto de prueba número 15,Makita,Herramientas Manuales,Llaves,Galón,3686.79,3307.22,4074.1
+FER-00016,,Producto de prueba número 16,Makita,Herramientas Eléctricas,Taladros,m3,3126.97,2530.23,3885.21
+FER-00017,Producto con precio inválido 17,Producto de prueba número 17,Makita,Herramientas Eléctricas,Taladros,Kg,precio_invalido,no_numerico,abc123
+,Producto sin código 18,Producto de prueba número 18,Makita,Herramientas Manuales,Desarmadores,Galón,5963.84,4838.96,6895.92
+FER-00019,Tornillos Stanley Modelo 19,Producto de prueba número 19,Stanley,Ferretería,Tornillos,Metro,6627.07,5102.88,8265.42
+,Producto sin código 20,Producto de prueba número 20,Makita,Ferretería,Clavos,Galón,5254.97,4169.4,6404.8
+FER-00021,,Producto de prueba número 21,Makita,Herramientas Manuales,Desarmadores,Caja,3253.21,2809.13,3906.19
+FER-00022,Producto con precio negativo 22,Producto de prueba número 22,Makita,Ferretería,Clavos,Pieza,-335.3134018371093,-225.56792344063484,-80.66453851503428
+FER-00023,Producto con precio negativo 23,Producto de prueba número 23,DeWalt,Herramientas Eléctricas,Amoladoras,Kg,-194.96804242688907,-179.88641109179167,-46.56872622689646
+FER-00024,,Producto de prueba número 24,Stanley,Herramientas Manuales,Desarmadores,m2,4333.22,3838.76,5065.01
+FER-00025,Producto con precio inválido 25,Producto de prueba número 25,Bosch,Herramientas Manuales,Llaves,Litro,precio_invalido,no_numerico,abc123
+FER-00026,,Producto de prueba número 26,Stanley,Herramientas Manuales,Martillos,Galón,6655.53,5738.34,7669.95
+FER-00027,Martillos Black & Decker Modelo 27,Producto de prueba número 27,Black & Decker,Herramientas Manuales,Martillos,Metro,3731.34,2946.16,4037.6
+FER-00001,Producto duplicado 28,Producto de prueba número 28,DeWalt,Ferretería,Clavos,m2,6995.69,5637.16,7801.81
+FER-00029,,Producto de prueba número 29,Bosch,Herramientas Eléctricas,Taladros,Pieza,2161.06,1886.94,2283.46
+FER-00030,Bisagras Stanley Modelo 30,Producto de prueba número 30,Stanley,Ferretería,Bisagras,m2,7531.92,6488.99,8759.8
+FER-00001,Producto duplicado 31,Producto de prueba número 31,DeWalt,Herramientas Manuales,Llaves,Pieza,6532.15,5336.23,7282.56
+FER-00032,Producto con precio inválido 32,Producto de prueba número 32,Bosch,Herramientas Eléctricas,Lijadoras,Saco,precio_invalido,no_numerico,abc123
+FER-00033,,Producto de prueba número 33,Bosch,Herramientas Eléctricas,Taladros,Saco,1361.22,1034.16,1533.37
+FER-00034,Producto con precio negativo 34,Producto de prueba número 34,Makita,Herramientas Manuales,Llaves,Litro,-425.81006426142073,-79.71468119728885,-42.76349103338304
+FER-00035,Producto con precio inválido 35,Producto de prueba número 35,Bosch,Herramientas Eléctricas,Amoladoras,m2,precio_invalido,no_numerico,abc123
+,Producto sin código 36,Producto de prueba número 36,Bosch,Ferretería,Clavos,Barra,4968.96,4038.63,5806.58
+FER-00037,Producto con precio negativo 37,Producto de prueba número 37,DeWalt,Herramientas Eléctricas,Sierras,Pieza,-100.36988895373321,-175.5462393842726,-60.89285777222621
+FER-00038,Llaves DeWalt Modelo 38,Producto de prueba número 38,DeWalt,Herramientas Manuales,Llaves,Litro,413.9,321.64,471.26
+FER-00001,Producto duplicado 39,Producto de prueba número 39,Makita,Ferretería,Bisagras,m3,703.04,590.41,772.93
+FER-00040,,Producto de prueba número 40,Black & Decker,Herramientas Manuales,Martillos,Galón,664.62,597.13,780.71
+,Producto sin código 41,Producto de prueba número 41,Stanley,Ferretería,Bisagras,Galón,1839.72,1477.94,1997.1
+,Producto sin código 42,Producto de prueba número 42,Makita,Herramientas Manuales,Martillos,Barra,5611.61,4398.18,6526.62
+,Producto sin código 43,Producto de prueba número 43,Stanley,Herramientas Eléctricas,Amoladoras,Metro,3807.17,3045.6,4194.2
+FER-00001,Producto duplicado 44,Producto de prueba número 44,Bosch,Herramientas Manuales,Llaves,Galón,6528.69,5266.97,8087.86
+FER-00045,Amoladoras Stanley Modelo 45,Producto de prueba número 45,Stanley,Herramientas Eléctricas,Amoladoras,Kg,1188.06,1067.57,1264.27
+,Producto sin código 46,Producto de prueba número 46,Stanley,Herramientas Manuales,Martillos,Metro,3474.73,2906.76,4233.85
+,Producto sin código 47,Producto de prueba número 47,DeWalt,Herramientas Eléctricas,Lijadoras,Litro,4835.85,3833.49,5744.14
+,Producto sin código 48,Producto de prueba número 48,Black & Decker,Herramientas Manuales,Desarmadores,Galón,6293.57,5575.66,7488.16
+FER-00049,,Producto de prueba número 49,DeWalt,Herramientas Eléctricas,Lijadoras,Barra,5788.35,4524.61,7196.18
+FER-00050,,Producto de prueba número 50,Black & Decker,Herramientas Manuales,Martillos,Metro,6205.36,5289.93,7605.05

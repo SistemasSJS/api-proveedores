@@ -1,0 +1,51 @@
+codigo,producto,descripcion,marca,categoria,subcategoria,unidad_medida,precio,precio_mayoreo,precio_menudeo
+MAP-00001,Producto con precio inválido 1,Producto de prueba número 1,DeAcero,Agregados,Arena,Galón,precio_invalido,no_numerico,abc123
+MAP-00002,,Producto de prueba número 2,Holcim,Agregados,Arena,Litro,3781.67,3048.32,4689.09
+,Producto sin código 3,Producto de prueba número 3,Cemex,Agregados,Arena,Barra,2086.72,1758.53,2425.07
+MAP-00004,Producto con precio negativo 4,Producto de prueba número 4,Holcim,Agregados,Grava,Litro,-404.08284423271226,-144.25063116977987,-72.85947679288763
+MAP-00001,Producto duplicado 5,Producto de prueba número 5,DeAcero,Materiales Básicos,Blocks,Pieza,373.08,305.38,396.96
+,Producto sin código 6,Producto de prueba número 6,Cemex,Agregados,Arena,Barra,5489.26,4456.8,6798.84
+MAP-00007,Producto con precio inválido 7,Producto de prueba número 7,Cruz Azul,Materiales Básicos,Varillas,Saco,precio_invalido,no_numerico,abc123
+,Producto sin código 8,Producto de prueba número 8,Ternium,Acabados,Pisos,Saco,7977.15,6705.54,8646.39
+MAP-00009,Pisos Cruz Azul Modelo 9,Producto de prueba número 9,Cruz Azul,Acabados,Pisos,Barra,384.42,313.47,423.43
+MAP-00001,Producto duplicado 10,Producto de prueba número 10,Cemex,Materiales Básicos,Varillas,m2,7481.26,6147.99,8237.91
+MAP-00011,,Producto de prueba número 11,Ternium,Agregados,Tepetate,Kg,4843.43,4221.86,5479.38
+,Producto sin código 12,Producto de prueba número 12,Ternium,Agregados,Tepetate,Pieza,5061.81,4049.09,5962.02
+MAP-00013,,Producto de prueba número 13,DeAcero,Materiales Básicos,Varillas,Caja,5229.03,4431.04,6052.18
+MAP-00014,Producto con precio inválido 14,Producto de prueba número 14,Holcim,Acabados,Pisos,Metro,precio_invalido,no_numerico,abc123
+MAP-00001,Producto duplicado 15,Producto de prueba número 15,Holcim,Materiales Básicos,Blocks,Caja,7364.92,6226.95,8224.54
+MAP-00001,Producto duplicado 16,Producto de prueba número 16,Cruz Azul,Agregados,Tepetate,Metro,5261.46,4394.1,5567.17
+,Producto sin código 17,Producto de prueba número 17,DeAcero,Agregados,Tepetate,Metro,2133.32,1728.88,2244.24
+MAP-00018,Producto con precio inválido 18,Producto de prueba número 18,Holcim,Acabados,Azulejos,Kg,precio_invalido,no_numerico,abc123
+MAP-00019,Pintura Cemex Modelo 19,Producto de prueba número 19,Cemex,Acabados,Pintura,Saco,4837.15,3890.41,5490.61
+MAP-00020,Producto con precio negativo 20,Producto de prueba número 20,Cruz Azul,Agregados,Tepetate,Galón,-171.58271895409695,-48.84386461174917,-19.98221947757329
+MAP-00021,Producto con precio inválido 21,Producto de prueba número 21,Cruz Azul,Acabados,Azulejos,Galón,precio_invalido,no_numerico,abc123
+MAP-00022,Producto con precio negativo 22,Producto de prueba número 22,Holcim,Materiales Básicos,Varillas,Litro,-157.5300818754012,-77.57344615087703,-91.46121850845161
+MAP-00023,Blocks DeAcero Modelo 23,Producto de prueba número 23,DeAcero,Materiales Básicos,Blocks,Litro,3183.05,2402.07,3736.22
+MAP-00024,Grava Cruz Azul Modelo 24,Producto de prueba número 24,Cruz Azul,Agregados,Grava,Caja,736.88,617.03,855.9
+MAP-00025,Producto con precio inválido 25,Producto de prueba número 25,DeAcero,Agregados,Arena,Litro,precio_invalido,no_numerico,abc123
+MAP-00026,Producto con precio inválido 26,Producto de prueba número 26,Holcim,Agregados,Tepetate,Metro,precio_invalido,no_numerico,abc123
+MAP-00027,Producto con precio inválido 27,Producto de prueba número 27,DeAcero,Acabados,Pintura,Galón,precio_invalido,no_numerico,abc123
+,Producto sin código 28,Producto de prueba número 28,DeAcero,Acabados,Pintura,Litro,731.88,578.54,797.65
+MAP-00001,Producto duplicado 29,Producto de prueba número 29,Cemex,Agregados,Grava,Galón,1539.06,1292.3,1654.01
+MAP-00030,Producto con precio inválido 30,Producto de prueba número 30,Cemex,Materiales Básicos,Varillas,m3,precio_invalido,no_numerico,abc123
+,Producto sin código 31,Producto de prueba número 31,Ternium,Agregados,Arena,Litro,6811.31,5784.66,8464.24
+MAP-00001,Producto duplicado 32,Producto de prueba número 32,DeAcero,Acabados,Azulejos,Pieza,3992.2,3215.42,4562.24
+MAP-00001,Producto duplicado 33,Producto de prueba número 33,Cemex,Materiales Básicos,Blocks,Galón,4072.68,3298.06,4968.26
+MAP-00034,Producto con precio inválido 34,Producto de prueba número 34,Holcim,Materiales Básicos,Varillas,Kg,precio_invalido,no_numerico,abc123
+MAP-00035,Producto con precio inválido 35,Producto de prueba número 35,DeAcero,Materiales Básicos,Varillas,Barra,precio_invalido,no_numerico,abc123
+MAP-00001,Producto duplicado 36,Producto de prueba número 36,Holcim,Acabados,Pisos,Saco,4524.43,3712.36,5135.13
+MAP-00037,Producto con precio inválido 37,Producto de prueba número 37,DeAcero,Materiales Básicos,Cementos,m2,precio_invalido,no_numerico,abc123
+MAP-00001,Producto duplicado 38,Producto de prueba número 38,Cruz Azul,Acabados,Pintura,Galón,6170.25,5079.08,7011.0
+MAP-00001,Producto duplicado 39,Producto de prueba número 39,Ternium,Agregados,Arena,Kg,3306.9,2961.1,3497.72
+MAP-00040,Azulejos Cemex Modelo 40,Producto de prueba número 40,Cemex,Acabados,Azulejos,Pieza,7684.45,6883.16,9425.23
+MAP-00041,,Producto de prueba número 41,Ternium,Acabados,Pisos,m3,478.71,393.52,593.8
+,Producto sin código 42,Producto de prueba número 42,Cruz Azul,Materiales Básicos,Varillas,m3,5653.69,4255.3,6725.05
+MAP-00001,Producto duplicado 43,Producto de prueba número 43,Holcim,Materiales Básicos,Cementos,Pieza,4796.57,4163.85,5114.16
+MAP-00044,Producto con precio inválido 44,Producto de prueba número 44,Cemex,Agregados,Tepetate,m2,precio_invalido,no_numerico,abc123
+MAP-00045,Producto con precio negativo 45,Producto de prueba número 45,DeAcero,Acabados,Azulejos,m3,-142.7379290483969,-96.0050993392374,-59.14143388437411
+,Producto sin código 46,Producto de prueba número 46,Cemex,Acabados,Azulejos,Litro,4298.77,3259.78,5252.06
+MAP-00001,Producto duplicado 47,Producto de prueba número 47,Cruz Azul,Materiales Básicos,Blocks,m3,1349.36,1209.58,1549.84
+,Producto sin código 48,Producto de prueba número 48,Cemex,Agregados,Tepetate,Pieza,605.64,497.6,732.22
+MAP-00049,Blocks Holcim Modelo 49,Producto de prueba número 49,Holcim,Materiales Básicos,Blocks,Kg,5273.34,4231.01,6053.89
+MAP-00001,Producto duplicado 50,Producto de prueba número 50,Holcim,Materiales Básicos,Varillas,Saco,3664.92,2940.55,4279.05

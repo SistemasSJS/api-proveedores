@@ -18,7 +18,7 @@ trait ApiResponse
         ], $code, [], JSON_UNESCAPED_UNICODE);
     }
 
-    protected function error(string $message = 'Ha ocurrido un error.', $errors = null, int $code = 400): JsonResponse
+    protected function error(string $message = 'Ha ocurrido un error.', $errors = null, int $code = 400, $data = null): JsonResponse
     {
         return response()->json([
             'status' => 'ERROR',

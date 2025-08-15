@@ -13,7 +13,7 @@ class ProductoFactory extends Factory
     public function definition()
     {
         return [
-            'sku' => $this->faker->unique()->ean8(),
+            'codigo' => $this->faker->unique()->ean8(),
             'nombre' => $this->faker->words(3, true),
             'descripcion' => $this->faker->paragraph(),
             'precio_base' => $this->faker->randomFloat(2, 10, 1000),

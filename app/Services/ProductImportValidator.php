@@ -46,7 +46,7 @@ class ProductImportValidator
 
     /**
      * Validate a single row
-     * 
+     *
      *
      * @param array $row
      * @param int $rowIndex (1-based)
