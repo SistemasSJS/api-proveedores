@@ -90,6 +90,7 @@ class CsvImportController extends Controller
             $jobId = Str::uuid()->toString();
             $audit = ImportAudit::create([
                 'job_id' => $jobId,
+                'ooptions_read_csv' => $options,
                 'proveedor_id' => $proveedor->id,
                 'tipo' => 'productos',
                 'archivo' => $path,
@@ -215,12 +216,12 @@ class CsvImportController extends Controller
                     'estado' => 'error',
                     'fin_proceso' => now(),
                 ]);
-                
+
                 $audit->appendLog('Error al confirmar importación', [
                     'error' => $e->getMessage()
                 ], 'error');
             }
-            
+
             Log::error('Error en confirm CSV import', [
                 'proveedor_id' => $id,
                 'error' => $e->getMessage(),
@@ -1022,7 +1023,7 @@ class CsvImportController extends Controller
         // Roughly 100-150 records per second depending on complexity
         $secondsPerRecord = 0.01; // 100 records per second baseline
         $estimatedSeconds = $totalRecords * $secondsPerRecord;
-        
+
         if ($estimatedSeconds < 60) {
             return round($estimatedSeconds) . ' segundos';
         } elseif ($estimatedSeconds < 3600) {
@@ -1042,7 +1043,7 @@ class CsvImportController extends Controller
     {
         $totalRecords = $audit->total_registros ?? 0;
         $progress = $audit->progreso ?? 0;
-        
+
         return round(($progress / 100) * $totalRecords);
     }
 
@@ -1054,19 +1055,19 @@ class CsvImportController extends Controller
         if (!$audit->inicio_proceso || $audit->progreso <= 0) {
             return null;
         }
-        
+
         $elapsedSeconds = now()->diffInSeconds($audit->inicio_proceso);
         $progress = $audit->progreso;
-        
+
         if ($progress >= 100) {
             return '0 segundos';
         }
-        
+
         // Calculate rate and remaining time
         $rate = $progress / $elapsedSeconds; // progress per second
         $remainingProgress = 100 - $progress;
         $remainingSeconds = $remainingProgress / $rate;
-        
+
         if ($remainingSeconds < 60) {
             return round($remainingSeconds) . ' segundos';
         } elseif ($remainingSeconds < 3600) {
@@ -1083,7 +1084,7 @@ class CsvImportController extends Controller
     {
         $estado = $audit->estado;
         $progreso = $audit->progreso ?? 0;
-        
+
         switch ($estado) {
             case 'preview':
                 return 'Análisis completado';
@@ -1113,7 +1114,7 @@ class CsvImportController extends Controller
     {
         $errorsCount = $audit->errores ?? 0;
         $errorDetails = $audit->errores_detalle ?? [];
-        
+
         if ($errorsCount === 0) {
             return [
                 'total' => 0,
@@ -1121,14 +1122,14 @@ class CsvImportController extends Controller
                 'recent' => []
             ];
         }
-        
+
         // Group errors by type
         $errorTypes = [];
         foreach ($errorDetails as $error) {
             $type = $error['tipo_error'] ?? 'general';
             $errorTypes[$type] = ($errorTypes[$type] ?? 0) + 1;
         }
-        
+
         return [
             'total' => $errorsCount,
             'types' => $errorTypes,

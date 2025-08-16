@@ -71,9 +71,10 @@ class CSVImportJob implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(CSVProcessorService $csvProcessor, ProductImportValidator $validator): void
+    public function handle(CSVProcessorService $csvProcessor): void
     {
         $this->startTime = microtime(true);
+        $validator = new ProductImportValidator($this->importAudit->proveedor_id);
 
         Log::info('Starting CSV import job', [
             'audit_id' => $this->importAudit->id,
@@ -82,8 +83,6 @@ class CSVImportJob implements ShouldQueue
         ]);
 
         try {
-            DB::beginTransaction();
-
             // Initialize processing state
             $this->initializeProcessing();
 
@@ -93,34 +92,57 @@ class CSVImportJob implements ShouldQueue
                 throw new Exception('Preview token not found in audit data');
             }
 
-            $tempTableData = $csvProcessor->getTempTablePreviewData($previewToken);
-            if (!$tempTableData || !isset($tempTableData['full_data'])) {
-                throw new Exception('Temporary table data not found or expired');
+            // Definir opciones por defecto para lectura del CSV
+            $defaultOptions = [
+                'delimiter' => ',',
+                'encoding' => 'UTF-8',
+                'has_header' => true,
+                'preview_rows' => -1,
+                'strict_validation' => false,
+                'auto_create_relations' => true
+            ];
+
+            // Obtener opciones del audit o usar las por defecto
+            $readOptions = $this->importAudit->options_read_csv ?? [];
+            $readOptions = array_merge($defaultOptions, $readOptions);
+
+            // $tempTableData = $csvProcessor->getTempTablePreviewData($previewToken);
+            $tempTableData = $csvProcessor->getFullDataFromCSV($this->importAudit->archivo, $readOptions);
+            if (!$tempTableData || !isset($tempTableData)) {
+                throw new Exception('Not data in CSV.as');
             }
 
-            $csvData = $tempTableData['full_data'];
+            $csvData = $tempTableData;
             $this->processingStats['total_registros'] = count($csvData);
-
-            $this->logProcessingStep('Datos recuperados de tabla temporal', [
+            $this->logProcessingStep('Datos recuperados de CSV file', [
                 'total_registros' => $this->processingStats['total_registros'],
                 'preview_token' => $previewToken
             ]);
+            $chunks = array_chunk($csvData, 1000); // bloques de 1000 filas
 
-            // Process in stages
-            $this->processCatalogs($csvData, $validator);
-            $this->processProducts($csvData, $validator);
 
-            // Final cleanup and statistics
-            $this->finalizeProcessing($csvProcessor, $previewToken);
 
-            DB::commit();
+            // Process in stages within a transaction
+            foreach ($chunks as $index => $chuck) {
+                $this->logProcessingStep("Procesando Chuc # {$index}", [
+                    'total_registros' => count($chuck),
+                    'preview_token' => $previewToken
+                ]);
+                DB::transaction(function () use ($chuck, $validator, $csvProcessor, $previewToken) {
+                    // Process in stages
+                    $this->processCatalogs($chuck, $validator);
+                    $this->processProducts($chuck, $validator);
+
+                    // Final cleanup and statistics
+                    $this->finalizeProcessing($csvProcessor, $previewToken);
+                });
+            }
 
             $this->logProcessingStep('Importación completada exitosamente', [
                 'estadisticas' => $this->processingStats,
                 'tiempo_total' => round(microtime(true) - $this->startTime, 2) . ' segundos'
             ]);
         } catch (Exception $e) {
-            DB::rollback();
             $this->handleJobFailure($e);
             throw $e;
         }

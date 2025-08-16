@@ -10,6 +10,7 @@ class ImportAudit extends BaseModel
   protected $fillable = [
     'job_id',
     'proveedor_id',
+    'options_read_csv',
     'tipo',
     'archivo',
     'formato',
@@ -34,6 +35,7 @@ class ImportAudit extends BaseModel
   ];
 
   protected $casts = [
+    'options_read_csv' => 'array',
     'preview_data' => 'array',
     'errores_detalle' => 'array',
     'logs' => 'array',
@@ -55,8 +57,16 @@ class ImportAudit extends BaseModel
   public static function getFilters(): array
   {
     return [
-      'search', 'tipo', 'estado', 'formato', 'date_from', 'date_to',
-      'fase', 'has_errors', 'min_registros', 'max_registros'
+      'search',
+      'tipo',
+      'estado',
+      'formato',
+      'date_from',
+      'date_to',
+      'fase',
+      'has_errors',
+      'min_registros',
+      'max_registros'
     ];
   }
 
@@ -69,9 +79,9 @@ class ImportAudit extends BaseModel
       ->when($filters['search'] ?? null, function ($query, $search) {
         $query->where(function ($query) use ($search) {
           $query->where('archivo', 'like', "%{$search}%")
-                ->orWhere('job_id', 'like', "%{$search}%")
-                ->orWhere('tipo', 'like', "%{$search}%")
-                ->orWhereJsonContains('logs', ['message' => $search]);
+            ->orWhere('job_id', 'like', "%{$search}%")
+            ->orWhere('tipo', 'like', "%{$search}%")
+            ->orWhereJsonContains('logs', ['message' => $search]);
         });
       })
       ->when($filters['tipo'] ?? null, function ($query, $tipo) {
@@ -118,21 +128,21 @@ class ImportAudit extends BaseModel
   public function appendLog(string $message, array $context = [], string $level = 'info'): self
   {
     $logs = $this->logs ?? [];
-    
+
     $logEntry = [
       'timestamp' => now()->toISOString(),
       'level' => $level,
       'message' => $message,
     ];
-    
+
     if (!empty($context)) {
       $logEntry['context'] = $context;
     }
-    
+
     $logs[] = $logEntry;
-    
+
     $this->logs = $logs;
-    
+
     return $this;
   }
 
@@ -143,10 +153,10 @@ class ImportAudit extends BaseModel
   {
     $errorDetails = $this->errores_detalle ?? [];
     $errorTypes = [];
-    
+
     foreach ($errorDetails as $error) {
       $type = $error['error_type'] ?? 'Unknown';
-      
+
       if (!isset($errorTypes[$type])) {
         $errorTypes[$type] = [
           'type' => $type,
@@ -155,9 +165,9 @@ class ImportAudit extends BaseModel
           'examples' => []
         ];
       }
-      
+
       $errorTypes[$type]['count']++;
-      
+
       // Agregar ejemplo si no existe
       if (count($errorTypes[$type]['examples']) < 3) {
         $errorTypes[$type]['examples'][] = [
@@ -166,7 +176,7 @@ class ImportAudit extends BaseModel
         ];
       }
     }
-    
+
     // Calcular porcentajes
     $totalErrors = count($errorDetails);
     if ($totalErrors > 0) {
@@ -174,7 +184,7 @@ class ImportAudit extends BaseModel
         $errorType['percentage'] = round(($errorType['count'] / $totalErrors) * 100, 2);
       }
     }
-    
+
     return array_values($errorTypes);
   }
 
@@ -186,7 +196,7 @@ class ImportAudit extends BaseModel
     $totalRecords = $this->total_registros ?? 0;
     $processingTime = $this->processing_time ?? 0;
     $memoryUsage = $this->memory_usage ?? 0;
-    
+
     $metrics = [
       'total_records' => $totalRecords,
       'processing_time_seconds' => $processingTime,
@@ -195,18 +205,18 @@ class ImportAudit extends BaseModel
       'memory_per_record_kb' => 0,
       'efficiency_score' => 0
     ];
-    
+
     if ($processingTime > 0 && $totalRecords > 0) {
       $metrics['records_per_second'] = round($totalRecords / $processingTime, 2);
       $metrics['memory_per_record_kb'] = round(($memoryUsage * 1024) / $totalRecords, 2);
-      
+
       // Calcular score de eficiencia (más alto es mejor)
       // Basado en registros por segundo y uso eficiente de memoria
       $rpsScore = min(100, ($metrics['records_per_second'] / 100) * 50); // Max 50 puntos
       $memoryScore = max(0, 50 - ($metrics['memory_per_record_kb'] / 10)); // Max 50 puntos
       $metrics['efficiency_score'] = round($rpsScore + $memoryScore, 1);
     }
-    
+
     return $metrics;
   }
 
@@ -219,10 +229,10 @@ class ImportAudit extends BaseModel
     $nuevos = $this->nuevos ?? 0;
     $actualizados = $this->actualizados ?? 0;
     $errores = $this->errores ?? 0;
-    
+
     $successful = $nuevos + $actualizados;
     $successRate = $total > 0 ? round(($successful / $total) * 100, 2) : 0;
-    
+
     return [
       'total_records' => $total,
       'successful_records' => $successful,
@@ -243,19 +253,19 @@ class ImportAudit extends BaseModel
   public function getStructuredLogs(string $level = null, int $limit = null): array
   {
     $logs = $this->logs ?? [];
-    
+
     // Filtrar por nivel si se especifica
     if ($level) {
-      $logs = array_filter($logs, function($log) use ($level) {
+      $logs = array_filter($logs, function ($log) use ($level) {
         return ($log['level'] ?? 'info') === $level;
       });
     }
-    
+
     // Aplicar límite si se especifica
     if ($limit && count($logs) > $limit) {
       $logs = array_slice($logs, -$limit);
     }
-    
+
     return array_values($logs);
   }
 
@@ -265,14 +275,14 @@ class ImportAudit extends BaseModel
   public function hasCriticalErrors(): bool
   {
     $errorTypes = $this->error_types ?? [];
-    
+
     $criticalTypes = [
       'ErrorException',
       'SQLException',
       'OutOfMemoryError',
       'TimeoutException'
     ];
-    
+
     return !empty(array_intersect($criticalTypes, $errorTypes));
   }
 }

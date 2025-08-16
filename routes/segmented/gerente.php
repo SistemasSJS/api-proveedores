@@ -208,6 +208,7 @@ Route::prefix('proveedores')
             Route::post('/upload', [CsvImportController::class, 'upload'])->middleware(['audit']);
             Route::post('/validate-producto', [CsvImportController::class, 'validateProducto'])->middleware(['audit']);
             Route::post('/confirm', [CsvImportController::class, 'confirm'])->middleware(['audit']);
+            Route::get('/status/{auditId}', [CsvImportController::class, 'getImportStatus'])->middleware(['audit']);
             Route::get('/results/{auditId}', [CsvImportController::class, 'getImportResults'])->middleware(['audit']);
             Route::get('/results/{auditId}/export', [CsvImportController::class, 'export'])->middleware(['audit']);
         });
