@@ -616,17 +616,14 @@ class CsvImportController extends Controller
                             'codigo_interno' => $productData['codigo'],
                             'nombre' => $productData['producto'],
                             'descripcion' => $productData['descripcion'] ?? null,
-                            'modelo' => $productData['modelo'] ?? null,
                             'marca_id' => $productData['marca_id'],
                             'categoria_id' => $productData['categoria_id'],
-                            'subcategoria_id' => $productData['subcategoria_id'],
+                            // 'subcategoria_id' => $productData['subcategoria_id'],
                             'unidad_medida_id' => $productData['unidad_medida_id'],
                             'precio_base' => $productData['precio'] ?? 0,
                             'precio_mayoreo' => $productData['precio_mayoreo'] ?? 0,
                             'precio_publico' => $productData['precio_menudeo'] ?? 0,
                             'proveedor_id' => $proveedorId,
-                            'created_at' => now(),
-                            'updated_at' => now(),
                         ];
                     }
 
@@ -637,15 +634,14 @@ class CsvImportController extends Controller
                             [
                                 'nombre',
                                 'descripcion',
-                                'modelo',
+                                // 'modelo',
                                 'marca_id',
                                 'categoria_id',
-                                'subcategoria_id',
+                                // 'subcategoria_id',
                                 'unidad_medida_id',
                                 'precio_base',
                                 'precio_mayoreo',
                                 'precio_publico',
-                                'updated_at'
                             ]
                         );
 

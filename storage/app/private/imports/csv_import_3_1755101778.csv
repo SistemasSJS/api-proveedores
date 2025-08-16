@@ -1,9 +1,0 @@
-codigo,producto,descripcion,marca,categoria,subcategoria,modelo,unidad_medida,precio,precio_mayoreo,precio_menudeo
-LIV-TAL-001,Taladro Black & Decker 550W,Taladro percutor 550W con maletín,BLACK & DECKER,HERRAMIENTAS,HERRAMIENTAS_ELECTRICAS,LIV-TAL-001,Pieza,899.00,809.10,988.90
-LIV-SIE-001,Sierra Circular Skil 1400W,"Sierra circular 7.25"" 1400W con disco",SKIL,HERRAMIENTAS,HERRAMIENTAS_ELECTRICAS,LIV-SIE-001,Pieza,1699.00,1529.10,1868.90
-LIV-ESM-001,Esmeriladora Bosch 850W,"Esmeriladora angular 4.5"" 850W",BOSCH,HERRAMIENTAS,HERRAMIENTAS_ELECTRICAS,LIV-ESM-001,Pieza,1299.00,1169.10,1428.90
-LIV-CAL-001,Caladora Black & Decker 420W,Caladora 420W con hojas incluidas,BLACK & DECKER,HERRAMIENTAS,HERRAMIENTAS_ELECTRICAS,LIV-CAL-001,Pieza,799.00,719.10,878.90
-LIV-TAL-002,Taladro Inalámbrico DeWalt 12V,Taladro inalámbrico 12V con batería,DEWALT,HERRAMIENTAS,HERRAMIENTAS_ELECTRICAS,LIV-TAL-002,Pieza,2299.00,2069.10,2528.90
-LIV-KIT-001,Kit Herramientas Stanley 65 Pzs,Kit herramientas básicas 65 piezas,STANLEY,HERRAMIENTAS,HERRAMIENTAS_MANUALES,LIV-KIT-001,Pieza,1199.00,1079.10,1318.90
-LIV-JUE-001,Juego Llaves Mixtas Truper 14 Pzs,Juego llaves mixtas 8-22mm cromo vanadio,TRUPER,HERRAMIENTAS,HERRAMIENTAS_MANUALES,LIV-JUE-001,Pieza,599.00,539.10,658.90
-LIV-MAR-001,Martillo Stanley 20oz FiberG,Martillo garra 20oz mango fibra vidrio,STANLEY,HERRAMIENTAS,HERRAMIENTAS_MANUALES,LIV-MAR-001,Pieza,399.00,359.10,438.90

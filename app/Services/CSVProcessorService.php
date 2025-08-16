@@ -124,6 +124,7 @@ class CSVProcessorService
 
             // Usar tabla temporal en lugar de caché
             $this->storePreviewDataInTempTable($token, $cacheData);
+            // $this->cachePreviewData($token, $cacheData);
 
             $processingTime = round((microtime(true) - $startTime), 2);
 
