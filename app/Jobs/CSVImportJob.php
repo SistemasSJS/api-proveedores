@@ -1,0 +1,635 @@
+<?php
+
+namespace App\Jobs;
+
+use App\Models\ImportAudit;
+use App\Models\Marca;
+use App\Models\Categoria;
+use App\Models\UnidadMedida;
+use App\Models\Producto;
+use App\Services\CSVProcessorService;
+use App\Services\ProductImportValidator;
+use Illuminate\Bus\Queueable as BusQueueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
+use Exception;
+
+class CSVImportJob implements ShouldQueue
+{
+    use BusQueueable, Dispatchable, InteractsWithQueue, SerializesModels;
+
+    protected ImportAudit $importAudit;
+    protected array $options;
+
+    // Job configuration
+    public int $timeout = 1800; // 30 minutes
+    public int $tries = 3;
+    public array $backoff = [60, 180, 300]; // Exponential backoff
+
+    // Processing state
+    protected array $processingStats = [
+        'total_registros' => 0,
+        'productos_nuevos' => 0,
+        'productos_actualizados' => 0,
+        'productos_error' => 0,
+        'marcas_nuevas' => 0,
+        'marcas_existentes' => 0,
+        'categorias_nuevas' => 0,
+        'categorias_existentes' => 0,
+        'unidades_nuevas' => 0,
+        'unidades_existentes' => 0,
+    ];
+
+    protected array $errorDetails = [];
+    protected array $catalogMappings = [
+        'marcas' => [],
+        'categorias' => [],
+        'unidades' => [],
+    ];
+
+    protected float $startTime;
+
+    /**
+     * Create a new job instance.
+     */
+    public function __construct(ImportAudit $importAudit, array $options = [])
+    {
+        $this->importAudit = $importAudit;
+        $this->options = array_merge([
+            'chunk_size' => 500,
+            'skip_duplicates' => false,
+            'update_existing' => true,
+            'create_missing_relations' => true,
+        ], $options);
+    }
+
+    /**
+     * Execute the job.
+     */
+    public function handle(CSVProcessorService $csvProcessor, ProductImportValidator $validator): void
+    {
+        $this->startTime = microtime(true);
+
+        Log::info('Starting CSV import job', [
+            'audit_id' => $this->importAudit->id,
+            'proveedor_id' => $this->importAudit->proveedor_id,
+            'options' => $this->options
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Initialize processing state
+            $this->initializeProcessing();
+
+            // Get temporary table data
+            $previewToken = $this->importAudit->preview_data['preview_token'] ?? null;
+            if (!$previewToken) {
+                throw new Exception('Preview token not found in audit data');
+            }
+
+            $tempTableData = $csvProcessor->getTempTablePreviewData($previewToken);
+            if (!$tempTableData || !isset($tempTableData['full_data'])) {
+                throw new Exception('Temporary table data not found or expired');
+            }
+
+            $csvData = $tempTableData['full_data'];
+            $this->processingStats['total_registros'] = count($csvData);
+
+            $this->logProcessingStep('Datos recuperados de tabla temporal', [
+                'total_registros' => $this->processingStats['total_registros'],
+                'preview_token' => $previewToken
+            ]);
+
+            // Process in stages
+            $this->processCatalogs($csvData, $validator);
+            $this->processProducts($csvData, $validator);
+
+            // Final cleanup and statistics
+            $this->finalizeProcessing($csvProcessor, $previewToken);
+
+            DB::commit();
+
+            $this->logProcessingStep('Importación completada exitosamente', [
+                'estadisticas' => $this->processingStats,
+                'tiempo_total' => round(microtime(true) - $this->startTime, 2) . ' segundos'
+            ]);
+        } catch (Exception $e) {
+            DB::rollback();
+            $this->handleJobFailure($e);
+            throw $e;
+        }
+    }
+
+    /**
+     * Initialize processing state
+     */
+    protected function initializeProcessing(): void
+    {
+        $this->updateAuditState('procesando', 0);
+
+        $this->importAudit->update([
+            'inicio_proceso' => now(),
+            'progreso' => 0,
+        ]);
+
+        $this->logProcessingStep('Iniciando proceso de importación', [
+            'opciones' => $this->options
+        ]);
+    }
+
+    /**
+     * Process all catalog data (brands, categories, units)
+     */
+    protected function processCatalogs(array $csvData, ProductImportValidator $validator): void
+    {
+        $this->logProcessingStep('Iniciando procesamiento de catálogos');
+
+        // Extract unique catalog data
+        $catalogData = $this->extractCatalogData($csvData);
+
+        // Process each catalog type
+        $this->processBrands($catalogData['marcas']);
+        $this->updateProgress(10);
+
+        $this->processCategories($catalogData['categorias']);
+        $this->updateProgress(20);
+
+        $this->processUnits($catalogData['unidades']);
+        $this->updateProgress(30);
+
+        $this->logProcessingStep('Catálogos procesados', [
+            'marcas' => count($this->catalogMappings['marcas']),
+            'categorias' => count($this->catalogMappings['categorias']),
+            'unidades' => count($this->catalogMappings['unidades'])
+        ]);
+    }
+
+    /**
+     * Extract unique catalog data from CSV
+     */
+    protected function extractCatalogData(array $csvData): array
+    {
+        $catalogs = [
+            'marcas' => [],
+            'unidades' => [],
+            'categorias' => []
+        ];
+
+        foreach ($csvData as $row) {
+            // Extract brands
+            if (!empty($row['marca']) && !in_array($row['marca'], $catalogs['marcas'])) {
+                $catalogs['marcas'][] = trim($row['marca']);
+            }
+
+            // Extract units
+            if (!empty($row['unidad_medida']) && !in_array($row['unidad_medida'], $catalogs['unidades'])) {
+                $catalogs['unidades'][] = trim($row['unidad_medida']);
+            }
+
+            // Extract categories with hierarchy
+            if (!empty($row['categoria'])) {
+                $categoria = trim($row['categoria']);
+                $subcategoria = !empty($row['subcategoria']) ? trim($row['subcategoria']) : null;
+
+                if (!isset($catalogs['categorias'][$categoria])) {
+                    $catalogs['categorias'][$categoria] = [];
+                }
+
+                if ($subcategoria && !in_array($subcategoria, $catalogs['categorias'][$categoria])) {
+                    $catalogs['categorias'][$categoria][] = $subcategoria;
+                }
+            }
+        }
+
+        return $catalogs;
+    }
+
+    /**
+     * Process brands
+     */
+    protected function processBrands(array $brands): void
+    {
+        $this->logProcessingStep('Procesando marcas', ['total' => count($brands)]);
+
+        foreach ($brands as $brandName) {
+            try {
+                $marca = Marca::firstOrCreate(
+                    [
+                        'nombre' => $brandName,
+                        'proveedor_id' => $this->importAudit->proveedor_id
+                    ],
+                    [
+                        'activo' => true,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]
+                );
+
+                $this->catalogMappings['marcas'][$brandName] = $marca->id;
+
+                if ($marca->wasRecentlyCreated) {
+                    $this->processingStats['marcas_nuevas']++;
+                } else {
+                    $this->processingStats['marcas_existentes']++;
+                }
+            } catch (Exception $e) {
+                Log::warning('Error procesando marca', [
+                    'marca' => $brandName,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Process categories with hierarchy
+     */
+    protected function processCategories(array $categories): void
+    {
+        $this->logProcessingStep('Procesando categorías', ['total' => count($categories)]);
+
+        foreach ($categories as $categoriaName => $subcategorias) {
+            try {
+                // Create main category
+                $categoria = Categoria::firstOrCreate(
+                    [
+                        'nombre' => $categoriaName,
+                        'proveedor_id' => $this->importAudit->proveedor_id,
+                        'nivel' => 1,
+                        'parent_id' => null
+                    ],
+                    [
+                        'activo' => true,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]
+                );
+
+                $this->catalogMappings['categorias'][$categoriaName] = $categoria->id;
+
+                if ($categoria->wasRecentlyCreated) {
+                    $this->processingStats['categorias_nuevas']++;
+                } else {
+                    $this->processingStats['categorias_existentes']++;
+                }
+
+                // Create subcategories
+                foreach ($subcategorias as $subcategoriaName) {
+                    $subcategoria = Categoria::firstOrCreate(
+                        [
+                            'nombre' => $subcategoriaName,
+                            'parent_id' => $categoria->id,
+                            'proveedor_id' => $this->importAudit->proveedor_id,
+                            'nivel' => 2
+                        ],
+                        [
+                            'activo' => true,
+                            'created_at' => now(),
+                            'updated_at' => now()
+                        ]
+                    );
+
+                    $this->catalogMappings['categorias'][$subcategoriaName] = $subcategoria->id;
+
+                    if ($subcategoria->wasRecentlyCreated) {
+                        $this->processingStats['categorias_nuevas']++;
+                    } else {
+                        $this->processingStats['categorias_existentes']++;
+                    }
+                }
+            } catch (Exception $e) {
+                Log::warning('Error procesando categoría', [
+                    'categoria' => $categoriaName,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Process units
+     */
+    protected function processUnits(array $units): void
+    {
+        $this->logProcessingStep('Procesando unidades de medida', ['total' => count($units)]);
+
+        foreach ($units as $unitName) {
+            try {
+                $unidad = UnidadMedida::firstOrCreate(
+                    [
+                        'nombre' => $unitName,
+                        'proveedor_id' => $this->importAudit->proveedor_id
+                    ],
+                    [
+                        'estatus' => 'activo',
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]
+                );
+
+                $this->catalogMappings['unidades'][$unitName] = $unidad->id;
+
+                if ($unidad->wasRecentlyCreated) {
+                    $this->processingStats['unidades_nuevas']++;
+                } else {
+                    $this->processingStats['unidades_existentes']++;
+                }
+            } catch (Exception $e) {
+                Log::warning('Error procesando unidad', [
+                    'unidad' => $unitName,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Process products in chunks
+     */
+    protected function processProducts(array $csvData, ProductImportValidator $validator): void
+    {
+        $this->logProcessingStep('Iniciando procesamiento de productos');
+
+        $chunkSize = $this->options['chunk_size'];
+        $totalProducts = count($csvData);
+        $processedCount = 0;
+
+        // Process products in chunks
+        $chunks = array_chunk($csvData, $chunkSize);
+        $totalChunks = count($chunks);
+
+        foreach ($chunks as $chunkIndex => $chunk) {
+            try {
+                $this->processProductChunk($chunk, $validator, $processedCount);
+                $processedCount += count($chunk);
+
+                // Update progress (30% to 95%)
+                $progressPercentage = 30 + (($processedCount / $totalProducts) * 65);
+                $this->updateProgress(min(95, $progressPercentage));
+
+                $this->logProcessingStep(
+                    "Chunk procesado " . ($chunkIndex + 1) . "/{$totalChunks}",
+                    [
+                        'productos_procesados' => $processedCount,
+                        'total_productos'      => $totalProducts,
+                    ]
+                );
+            } catch (Exception $e) {
+                Log::error('Error procesando chunk de productos', [
+                    'chunk_index' => $chunkIndex,
+                    'chunk_size' => count($chunk),
+                    'error' => $e->getMessage()
+                ]);
+
+                // Continue with next chunk
+                $this->processingStats['productos_error'] += count($chunk);
+                continue;
+            }
+        }
+    }
+
+    /**
+     * Process a chunk of products
+     */
+    protected function processProductChunk(array $productChunk, ProductImportValidator $validator, int $baseRowNumber): void
+    {
+        foreach ($productChunk as $index => $productData) {
+            $rowNumber = $baseRowNumber + $index + 1;
+
+            try {
+                // Validate product data
+                $validationResult = $validator->validateRow($productData, $rowNumber);
+
+                if (!empty($validationResult['errors'])) {
+                    $this->recordProductError($rowNumber, $productData, $validationResult['errors']);
+                    continue;
+                }
+
+                // Process single product
+                $this->processSingleProduct($productData, $rowNumber);
+            } catch (Exception $e) {
+                $this->recordProductError($rowNumber, $productData, [$e->getMessage()]);
+                Log::warning('Error procesando producto individual', [
+                    'row' => $rowNumber,
+                    'codigo' => $productData['codigo'] ?? 'N/A',
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Process a single product
+     */
+    protected function processSingleProduct(array $productData, int $rowNumber): void
+    {
+        // Map relationships
+        $marcaId = $this->catalogMappings['marcas'][$productData['marca']] ?? null;
+        $categoriaId = null;
+        $subcategoriaId = null;
+
+        if (!empty($productData['categoria'])) {
+            $categoriaId = $this->catalogMappings['categorias'][$productData['categoria']] ?? null;
+            if (!empty($productData['subcategoria'])) {
+                $subcategoriaId = $this->catalogMappings['categorias'][$productData['subcategoria']] ?? null;
+            }
+        }
+
+        $unidadId = $this->catalogMappings['unidades'][$productData['unidad_medida']] ?? null;
+
+        // Prepare product data
+        $productAttributes = [
+            'codigo_interno' => $productData['codigo'],
+            'proveedor_id' => $this->importAudit->proveedor_id,
+        ];
+
+        $productValues = [
+            'nombre' => $productData['producto'],
+            'descripcion' => $productData['descripcion'] ?? null,
+            'marca_id' => $marcaId,
+            'categoria_id' => $categoriaId,
+            'unidad_medida_id' => $unidadId,
+            'precio_base' => $this->parsePrice($productData['precio'] ?? 0),
+            'precio_mayoreo' => $this->parsePrice($productData['precio_mayoreo'] ?? 0),
+            'precio_publico' => $this->parsePrice($productData['precio_menudeo'] ?? 0),
+            'activo' => true,
+            'updated_at' => now()
+        ];
+
+        // Create or update product
+        if ($this->options['update_existing']) {
+            $producto = Producto::updateOrCreate(
+                $productAttributes,
+                array_merge($productValues, ['created_at' => now()])
+            );
+
+            if ($producto->wasRecentlyCreated) {
+                $this->processingStats['productos_nuevos']++;
+            } else {
+                $this->processingStats['productos_actualizados']++;
+            }
+        } else {
+            // Only create if doesn't exist
+            $existing = Producto::where($productAttributes)->first();
+            if (!$existing) {
+                Producto::create(array_merge($productAttributes, $productValues, ['created_at' => now()]));
+                $this->processingStats['productos_nuevos']++;
+            } else {
+                if (!$this->options['skip_duplicates']) {
+                    $this->recordProductError($rowNumber, $productData, ['Producto ya existe y update_existing está desactivado']);
+                }
+            }
+        }
+    }
+
+    /**
+     * Parse price value
+     */
+    protected function parsePrice($price): float
+    {
+        if (is_numeric($price)) {
+            return (float) $price;
+        }
+
+        // Clean price string and convert
+        $cleanPrice = preg_replace('/[^0-9.]/', '', (string) $price);
+        return $cleanPrice ? (float) $cleanPrice : 0.0;
+    }
+
+    /**
+     * Record product processing error
+     */
+    protected function recordProductError(int $rowNumber, array $productData, array $errors): void
+    {
+        $this->processingStats['productos_error']++;
+
+        $this->errorDetails[] = [
+            'row' => $rowNumber,
+            'producto' => $productData['codigo'] ?? 'N/A',
+            'nombre' => $productData['producto'] ?? 'N/A',
+            'errores' => $errors,
+            'tipo_error' => 'validacion',
+            'timestamp' => now()->toISOString()
+        ];
+    }
+
+    /**
+     * Finalize processing and cleanup
+     */
+    protected function finalizeProcessing(CSVProcessorService $csvProcessor, string $previewToken): void
+    {
+        // Update final statistics
+        $this->updateAuditState('completado', 100);
+
+        $processingTime = round(microtime(true) - $this->startTime, 2);
+
+        $this->importAudit->update([
+            'fin_proceso' => now(),
+            'nuevos' => $this->processingStats['productos_nuevos'],
+            'actualizados' => $this->processingStats['productos_actualizados'],
+            'errores' => $this->processingStats['productos_error'],
+            'errores_detalle' => $this->errorDetails,
+            'processing_time' => $processingTime,
+            'memory_usage' => round(memory_get_peak_usage(true) / 1024 / 1024, 2),
+            // Catalog statistics
+            'marca_imported' => $this->processingStats['marcas_nuevas'],
+            'marca_errors' => 0, // We don't track catalog errors separately for now
+            'marca_total' => $this->processingStats['marcas_nuevas'] + $this->processingStats['marcas_existentes'],
+            'categoria_imported' => $this->processingStats['categorias_nuevas'],
+            'categoria_errors' => 0,
+            'categoria_total' => $this->processingStats['categorias_nuevas'] + $this->processingStats['categorias_existentes'],
+            'unidad_imported' => $this->processingStats['unidades_nuevas'],
+            'unidad_errors' => 0,
+            'unidad_total' => $this->processingStats['unidades_nuevas'] + $this->processingStats['unidades_existentes'],
+        ]);
+
+        // Cleanup temporary data
+        $this->cleanupTemporaryData($csvProcessor, $previewToken);
+    }
+
+    /**
+     * Cleanup temporary tables and cache
+     */
+    protected function cleanupTemporaryData(CSVProcessorService $csvProcessor, string $previewToken): void
+    {
+        try {
+            $csvProcessor->cleanupTempTable($previewToken);
+            $this->logProcessingStep('Datos temporales limpiados exitosamente');
+        } catch (Exception $e) {
+            Log::warning('Error limpiando datos temporales', [
+                'preview_token' => $previewToken,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Update audit state and progress
+     */
+    protected function updateAuditState(string $estado, ?float $progreso = null): void
+    {
+        $updateData = ['estado' => $estado];
+
+        if ($progreso !== null) {
+            $updateData['progreso'] = $progreso;
+        }
+
+        $this->importAudit->update($updateData);
+    }
+
+    /**
+     * Update progress percentage
+     */
+    protected function updateProgress(float $percentage): void
+    {
+        $this->importAudit->update([
+            'progreso' => min(100, max(0, $percentage))
+        ]);
+    }
+
+    /**
+     * Log processing step
+     */
+    protected function logProcessingStep(string $message, array $context = []): void
+    {
+        $this->importAudit->appendLog($message, $context);
+        $this->importAudit->save();
+    }
+
+    /**
+     * Handle job failure
+     */
+    protected function handleJobFailure(Exception $e): void
+    {
+        Log::error('CSV Import Job failed', [
+            'audit_id' => $this->importAudit->id,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'processing_stats' => $this->processingStats
+        ]);
+
+        $this->updateAuditState('error', $this->importAudit->progreso);
+
+        $this->importAudit->update([
+            'fin_proceso' => now(),
+            'errores_detalle' => array_merge($this->errorDetails, [[
+                'error' => 'Job failure: ' . $e->getMessage(),
+                'tipo_error' => 'sistema',
+                'timestamp' => now()->toISOString()
+            ]]),
+            'processing_time' => round(microtime(true) - $this->startTime, 2),
+            'memory_usage' => round(memory_get_peak_usage(true) / 1024 / 1024, 2),
+        ]);
+
+        $this->logProcessingStep('Error crítico en importación', [
+            'error' => $e->getMessage(),
+            'estadisticas_parciales' => $this->processingStats
+        ], 'error');
+    }
+}

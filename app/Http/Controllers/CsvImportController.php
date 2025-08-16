@@ -19,6 +19,7 @@ use App\Http\Responses\CsvValidateProductResponse;
 use App\Models\Categoria;
 use App\Models\Marca;
 use App\Models\UnidadMedida;
+use App\Jobs\CSVImportJob;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Exception;
@@ -171,65 +172,55 @@ class CsvImportController extends Controller
             }
 
             // Configurar opciones de importación
-            $importOptions = array_merge([
+            $importOptions = [
                 'skip_duplicates' => $skipDuplicates,
                 'update_existing' => $updateExisting,
                 'create_missing_relations' => $createMissingRelations,
-            ], $request->get('import_options', []));
+                'chunk_size' => $request->input('import_options.chunk_size', 500),
+            ];
 
-            // Iniciar la importación
+            // Actualizar estado a confirmado antes de despachar el job
             $audit->update([
-                'estado' => 'procesando',
-                'inicio_proceso' => now()
+                'estado' => 'confirmado',
+                'progreso' => 0,
             ]);
 
-            $audit->appendLog('Importación confirmada e iniciada', [
+            $audit->appendLog('Importación confirmada, iniciando procesamiento asíncrono', [
                 'options' => $importOptions,
                 'preview_token' => $request->preview_token
             ]);
 
-            // Ejecutar la importación de forma síncrona para este endpoint
-            $importResult = $this->executeImport($audit, $importOptions);
+            // Despachar job de importación asíncrono
+            CSVImportJob::dispatch($audit, $importOptions)
+                ->onQueue('imports')
+                ->delay(now()->addSeconds(2)); // Small delay to allow response to return
 
-            // Actualizar audit con resultados
-            $audit->update([
-                'estado' => $importResult['success'] ? 'completado' : 'error',
-                'fin_proceso' => now(),
-                'nuevos' => $importResult['stats']['created'] ?? 0,
-                'actualizados' => $importResult['stats']['updated'] ?? 0,
-                'errores' => $importResult['stats']['errors'] ?? 0,
-                'errores_detalle' => $importResult['error_details'] ?? [],
-                'marca_imported' => $importResult['stats']['marca_imported'],
-                'marca_errors' => $importResult['stats']['marca_errors'],
-                'marca_total' => $importResult['stats']['marca_total'],
-                'categoria_imported' => $importResult['stats']['categoria_imported'],
-                'categoria_errors' => $importResult['stats']['categoria_errors'],
-                'categoria_total' => $importResult['stats']['categoria_total'],
-                'unidad_imported' => $importResult['stats']['unidad_imported'],
-                'unidad_errors' => $importResult['stats']['unidad_errors'],
-                'unidad_total' => $importResult['stats']['unidad_total'],
+            // Crear respuesta inmediata
+            $response = [
+                'success' => true,
+                'audit_id' => $audit->id,
+                'job_id' => $audit->job_id,
+                'estado' => 'confirmado',
+                'message' => 'Proceso de importación iniciado',
+                'estimated_time' => $this->estimateProcessingTime($audit->total_registros ?? 0),
+                'progress_endpoint' => "/api/proveedores/{$proveedor->id}/csv-import/status/{$audit->id}",
+                'results_endpoint' => "/api/proveedores/{$proveedor->id}/csv-import/results/{$audit->id}",
+            ];
 
-            ]);
-
-            if ($importResult['success']) {
-                $audit->appendLog('Importación completada exitosamente', $importResult['stats']);
-
-                $response = CsvConfirmResponse::success($audit->id, $importResult['stats']);
-                return $this->success($response->toArray(), 'Importación completada exitosamente');
-            } else {
-                $audit->appendLog('Importación falló', [
-                    'error' => $importResult['error'],
-                    'stats' => $importResult['stats']
-                ], 'error');
-
-                $response = CsvConfirmResponse::error($audit->id, $importResult['stats'], $importResult['error_details']);
-                return $this->error(
-                    'Error durante la importación: ' . $importResult['error'],
-                    $response->toArray(),
-                    500
-                );
-            }
+            return $this->success($response, 'Importación iniciada exitosamente. Puede consultar el progreso usando el endpoint proporcionado.');
         } catch (Exception $e) {
+            // En caso de error, actualizar el audit
+            if (isset($audit)) {
+                $audit->update([
+                    'estado' => 'error',
+                    'fin_proceso' => now(),
+                ]);
+                
+                $audit->appendLog('Error al confirmar importación', [
+                    'error' => $e->getMessage()
+                ], 'error');
+            }
+            
             Log::error('Error en confirm CSV import', [
                 'proveedor_id' => $id,
                 'error' => $e->getMessage(),
@@ -237,6 +228,55 @@ class CsvImportController extends Controller
             ]);
 
             return $this->error('Error al confirmar la importación: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * GET /api/proveedores/{id}/csv-import/status/{auditId}
+     * Obtener estado y progreso de una importación
+     */
+    public function getImportStatus(Request $request, $id, $auditId)
+    {
+        try {
+            // Validar el proveedor
+            $proveedor = Proveedor::findOrFail($id);
+
+            // Buscar el registro de auditoría
+            $audit = ImportAudit::where('id', $auditId)
+                ->where('proveedor_id', $proveedor->id)
+                ->first();
+
+            if (!$audit) {
+                return $this->error('No se encontró la importación solicitada', 404);
+            }
+
+            // Formatear el estado para el frontend
+            $status = [
+                'audit_id' => $audit->id,
+                'estado' => $audit->estado,
+                'progreso' => $audit->progreso ?? 0,
+                'inicio_proceso' => $audit->inicio_proceso,
+                'fin_proceso' => $audit->fin_proceso,
+                'total_registros' => $audit->total_registros ?? 0,
+                'procesados' => $this->calculateProcessedRecords($audit),
+                'estimated_remaining' => $this->estimateRemainingTime($audit),
+                'current_phase' => $this->getCurrentProcessingPhase($audit),
+                'logs' => array_slice($audit->logs ?? [], -3), // Last 3 log entries
+                'can_cancel' => in_array($audit->estado, ['confirmado', 'procesando']),
+                'has_errors' => ($audit->errores ?? 0) > 0,
+                'error_summary' => $this->getErrorSummary($audit),
+            ];
+
+            return $this->success($status, 'Estado de importación obtenido correctamente');
+        } catch (Exception $e) {
+            Log::error('Error obteniendo estado de importación', [
+                'proveedor_id' => $id,
+                'audit_id' => $auditId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return $this->error('Error al obtener el estado de la importación: ' . $e->getMessage(), 500);
         }
     }
 
@@ -972,5 +1012,127 @@ class CsvImportController extends Controller
                 ]);
                 return ',';
         }
+    }
+
+    /**
+     * Estimate processing time based on total records
+     */
+    private function estimateProcessingTime(int $totalRecords): string
+    {
+        // Roughly 100-150 records per second depending on complexity
+        $secondsPerRecord = 0.01; // 100 records per second baseline
+        $estimatedSeconds = $totalRecords * $secondsPerRecord;
+        
+        if ($estimatedSeconds < 60) {
+            return round($estimatedSeconds) . ' segundos';
+        } elseif ($estimatedSeconds < 3600) {
+            $minutes = round($estimatedSeconds / 60);
+            return $minutes . ' minutos';
+        } else {
+            $hours = floor($estimatedSeconds / 3600);
+            $minutes = round(($estimatedSeconds % 3600) / 60);
+            return $hours . 'h ' . $minutes . 'm';
+        }
+    }
+
+    /**
+     * Calculate processed records based on progress
+     */
+    private function calculateProcessedRecords(ImportAudit $audit): int
+    {
+        $totalRecords = $audit->total_registros ?? 0;
+        $progress = $audit->progreso ?? 0;
+        
+        return round(($progress / 100) * $totalRecords);
+    }
+
+    /**
+     * Estimate remaining time based on current progress
+     */
+    private function estimateRemainingTime(ImportAudit $audit): ?string
+    {
+        if (!$audit->inicio_proceso || $audit->progreso <= 0) {
+            return null;
+        }
+        
+        $elapsedSeconds = now()->diffInSeconds($audit->inicio_proceso);
+        $progress = $audit->progreso;
+        
+        if ($progress >= 100) {
+            return '0 segundos';
+        }
+        
+        // Calculate rate and remaining time
+        $rate = $progress / $elapsedSeconds; // progress per second
+        $remainingProgress = 100 - $progress;
+        $remainingSeconds = $remainingProgress / $rate;
+        
+        if ($remainingSeconds < 60) {
+            return round($remainingSeconds) . ' segundos';
+        } elseif ($remainingSeconds < 3600) {
+            return round($remainingSeconds / 60) . ' minutos';
+        } else {
+            return round($remainingSeconds / 3600, 1) . ' horas';
+        }
+    }
+
+    /**
+     * Get current processing phase based on progress and logs
+     */
+    private function getCurrentProcessingPhase(ImportAudit $audit): string
+    {
+        $estado = $audit->estado;
+        $progreso = $audit->progreso ?? 0;
+        
+        switch ($estado) {
+            case 'preview':
+                return 'Análisis completado';
+            case 'confirmado':
+                return 'Iniciando procesamiento';
+            case 'procesando':
+                if ($progreso < 30) {
+                    return 'Procesando catálogos';
+                } elseif ($progreso < 95) {
+                    return 'Importando productos';
+                } else {
+                    return 'Finalizando importación';
+                }
+            case 'completado':
+                return 'Importación completada';
+            case 'error':
+                return 'Error en importación';
+            default:
+                return 'Estado desconocido';
+        }
+    }
+
+    /**
+     * Get error summary for status display
+     */
+    private function getErrorSummary(ImportAudit $audit): array
+    {
+        $errorsCount = $audit->errores ?? 0;
+        $errorDetails = $audit->errores_detalle ?? [];
+        
+        if ($errorsCount === 0) {
+            return [
+                'total' => 0,
+                'types' => [],
+                'recent' => []
+            ];
+        }
+        
+        // Group errors by type
+        $errorTypes = [];
+        foreach ($errorDetails as $error) {
+            $type = $error['tipo_error'] ?? 'general';
+            $errorTypes[$type] = ($errorTypes[$type] ?? 0) + 1;
+        }
+        
+        return [
+            'total' => $errorsCount,
+            'types' => $errorTypes,
+            'recent' => array_slice($errorDetails, -3) // Last 3 errors
+        ];
     }
 }
