@@ -72,14 +72,14 @@ class CSVProcessorService
             'has_header' => true,
             'preview_rows' => 100,
             'strict_validation' => false,
-            'auto_create_relations' => true,
+            'auto_create_relations' => false,
             'chunk_size' => 500 // Tamaño de chunk para procesamiento
         ], $options);
 
         try {
             // Crear validador para este proveedor
             $validator = new ProductImportValidator($proveedorId);
-            
+
             // Variables para procesamiento incremental
             $headers = [];
             $previewData = [];
@@ -94,27 +94,27 @@ class CSVProcessorService
             $correctRecords = 0;
             $errorRecords = 0;
             $warningRecords = 0;
-            
+
             // Crear tabla temporal para almacenar datos completos
             $tableName = $this->createTempTable($token);
-            
+
             // Buffer para inserción por lotes
             $insertBuffer = [];
             $bufferSize = 0;
-            
+
             // Procesar archivo usando generador (memoria eficiente)
             foreach ($this->parseCSVGenerator($csvFile, $options) as $rowIndex => $row) {
                 // Capturar headers en la primera iteración
                 if ($rowIndex === 0 && $options['has_header']) {
                     $headers = array_keys($row);
                 }
-                
+
                 $totalRows++;
-                
+
                 // Añadir a vista previa si está dentro del límite
                 if (count($previewData) < $options['preview_rows']) {
                     $previewData[] = $row;
-                    
+
                     // Validar fila para preview
                     $rowValidation = $validator->validateRow($row, $rowIndex + 1);
                     if (!empty($rowValidation['errors'])) {
@@ -137,7 +137,7 @@ class CSVProcessorService
                         $correctRecords++;
                     }
                 }
-                
+
                 // Extraer catálogos únicos (sin almacenar todos los datos)
                 if (!empty($row['marca']) && !in_array($row['marca'], $catalogos['marcas'])) {
                     $catalogos['marcas'][] = trim($row['marca']);
@@ -157,35 +157,35 @@ class CSVProcessorService
                         }
                     }
                 }
-                
+
                 // Preparar datos para inserción en tabla temporal
                 $insertBuffer[] = $this->prepareRowForTempTable($row, $rowIndex + 1);
                 $bufferSize++;
-                
+
                 // Insertar en lotes cuando el buffer alcance el tamaño del chunk
                 if ($bufferSize >= $options['chunk_size']) {
                     $this->insertChunkToTempTable($tableName, $insertBuffer);
                     $insertBuffer = [];
                     $bufferSize = 0;
-                    
+
                     // Liberar memoria periódicamente
                     if ($totalRows % 2000 === 0) {
                         gc_collect_cycles();
                     }
                 }
             }
-            
+
             // Insertar cualquier dato restante en el buffer
             if (!empty($insertBuffer)) {
                 $this->insertChunkToTempTable($tableName, $insertBuffer);
             }
-            
+
             // Validar encabezados
             $headerValidation = [];
             if ($options['has_header'] && !empty($headers)) {
                 $headerValidation = $validator->validateHeaders($headers);
             }
-            
+
             // Crear resumen de validación
             $validationSummary = [
                 'total_records' => min($totalRows, $options['preview_rows']),
@@ -194,17 +194,17 @@ class CSVProcessorService
                 'error_records' => $errorRecords,
                 'errors_by_type' => []
             ];
-            
+
             // Generar métricas de calidad basadas en el preview
             $qualityMetrics = $this->generateQualityMetricsFromSummary($validationSummary, $totalRows);
-            
+
             // Generar análisis del catálogo (usando datos ya extraídos)
             $catalogBreakdown = $this->generateCatalogBreakdownFromExtracted(
-                $catalogos, 
-                $proveedorId, 
+                $catalogos,
+                $proveedorId,
                 $totalRows
             );
-            
+
             // Guardar metadata en ImportValidationCache
             ImportValidationCache::create([
                 'token' => $token,
@@ -225,13 +225,13 @@ class CSVProcessorService
                 ],
                 'expires_at' => now()->addHours(2)
             ]);
-            
+
             $processingTime = round((microtime(true) - $startTime), 2);
-            
+
             // Limpiar memoria antes de retornar
             unset($insertBuffer);
             gc_collect_cycles();
-            
+
             return [
                 'success' => true,
                 'preview_token' => $token,
@@ -266,7 +266,7 @@ class CSVProcessorService
                 'proveedor_id' => $proveedorId,
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             // Limpiar tabla temporal si se creó
             if (isset($tableName)) {
                 try {
@@ -275,7 +275,7 @@ class CSVProcessorService
                     Log::warning('No se pudo limpiar tabla temporal', ['table' => $tableName]);
                 }
             }
-            
+
             return [
                 'success' => false,
                 'error' => 'Error procesando el archivo CSV: ' . $e->getMessage(),
@@ -1360,7 +1360,7 @@ class CSVProcessorService
             )
             ->toArray();
     }
-    
+
     /**
      * Crea una tabla temporal para almacenar los datos del CSV
      *
@@ -1371,14 +1371,14 @@ class CSVProcessorService
     private function createTempTable(string $token): string
     {
         $tableName = "csv_import_temp_" . substr($token, 0, 16) . "_" . time();
-        
+
         try {
             // Verificar si existe y generar nombre único si es necesario
             $tableExists = DB::select("SHOW TABLES LIKE '{$tableName}'");
             if (!empty($tableExists)) {
                 $tableName .= "_" . mt_rand(1000, 9999);
             }
-            
+
             // Crear tabla temporal con estructura optimizada
             DB::statement("CREATE TABLE {$tableName} (
                 id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -1400,9 +1400,9 @@ class CSVProcessorService
                 INDEX idx_marca (marca),
                 INDEX idx_categoria (categoria)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-            
+
             Log::info("Tabla temporal creada", ['table_name' => $tableName]);
-            
+
             return $tableName;
         } catch (\Exception $e) {
             Log::error("Error creando tabla temporal", [
@@ -1412,7 +1412,7 @@ class CSVProcessorService
             throw new \Exception("No se pudo crear la tabla temporal: " . $e->getMessage());
         }
     }
-    
+
     /**
      * Prepara una fila del CSV para inserción en la tabla temporal
      *
@@ -1437,7 +1437,7 @@ class CSVProcessorService
             'row_index' => $rowIndex
         ];
     }
-    
+
     /**
      * Inserta un chunk de datos en la tabla temporal
      *
@@ -1461,7 +1461,7 @@ class CSVProcessorService
             throw $e;
         }
     }
-    
+
     /**
      * Genera métricas de calidad basadas en el resumen de validación
      *
@@ -1472,26 +1472,26 @@ class CSVProcessorService
     private function generateQualityMetricsFromSummary(array $validationSummary, int $totalRows): array
     {
         $previewRecords = $validationSummary['total_records'];
-        
+
         if ($previewRecords === 0) {
             return ['can_proceed' => false, 'quality_score' => 0];
         }
-        
+
         $successRate = ($validationSummary['correct_records'] / $previewRecords) * 100;
         $warningRate = ($validationSummary['warning_records'] / $previewRecords) * 100;
         $errorRate = ($validationSummary['error_records'] / $previewRecords) * 100;
-        
+
         $qualityScore = 0;
         if ($successRate >= 90) $qualityScore += 50;
         elseif ($successRate >= 70) $qualityScore += 30;
         elseif ($successRate >= 50) $qualityScore += 15;
-        
+
         if ($warningRate <= 20) $qualityScore += 25;
         elseif ($warningRate <= 40) $qualityScore += 15;
-        
+
         if ($errorRate <= 10) $qualityScore += 25;
         elseif ($errorRate <= 30) $qualityScore += 10;
-        
+
         return [
             'quality_score' => round($qualityScore, 1),
             'success_rate' => round($successRate, 2),
@@ -1503,7 +1503,7 @@ class CSVProcessorService
             'error_distribution' => $validationSummary['errors_by_type'] ?? []
         ];
     }
-    
+
     /**
      * Genera el desglose del catálogo desde datos ya extraídos
      *
@@ -1518,14 +1518,14 @@ class CSVProcessorService
         $existingMarcas = $this->getExistingMarcas($proveedorId);
         $existingCategorias = $this->getExistingCategorias($proveedorId);
         $existingUnidades = $this->getExistingUnidades($proveedorId);
-        
+
         // Analizar marcas
         $marcasAnalysis = $this->analyzeMarcas($catalogos['marcas'], $existingMarcas);
-        
+
         // Analizar categorías (solo nombres principales)
         $categoriasNames = array_keys($catalogos['categorias']);
         $categoriasAnalysis = $this->analyzeCategorias($categoriasNames, $existingCategorias);
-        
+
         // Analizar subcategorías (todas las subcategorías)
         $allSubcategorias = [];
         foreach ($catalogos['categorias'] as $subcats) {
@@ -1534,10 +1534,10 @@ class CSVProcessorService
         $allSubcategorias = array_unique($allSubcategorias);
         $existingSubcategorias = $this->getExistingSubcategorias($proveedorId);
         $subcategoriasAnalysis = $this->analyzeSubcategorias($allSubcategorias, $existingSubcategorias);
-        
+
         // Analizar unidades
         $unidadesAnalysis = $this->analyzeUnidades($catalogos['unidades'], $existingUnidades);
-        
+
         // Estimar productos (basado en el total de filas)
         $productosAnalysis = [
             'total' => $totalRows,
@@ -1546,7 +1546,7 @@ class CSVProcessorService
             'duplicados' => 0,
             'duplicados_detail' => []
         ];
-        
+
         return [
             'productos' => $productosAnalysis,
             'marcas' => $marcasAnalysis,
@@ -1555,7 +1555,7 @@ class CSVProcessorService
             'unidades' => $unidadesAnalysis
         ];
     }
-    
+
     /**
      * Obtiene un generador para leer datos desde un archivo CSV
      * Útil para el Job cuando necesite procesar el archivo completo
@@ -1569,7 +1569,7 @@ class CSVProcessorService
         // Reutilizar el generador existente
         return $this->parseCSVGenerator($filePath, $options);
     }
-    
+
     /**
      * Obtiene datos de la tabla temporal con paginación
      *

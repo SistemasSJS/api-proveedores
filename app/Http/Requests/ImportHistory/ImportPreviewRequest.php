@@ -51,7 +51,7 @@ class ImportPreviewRequest extends FormRequest
                 'nullable'
             ],
             'auto_create_relations' => [
-                'boolean', 
+                'boolean',
                 'nullable'
             ]
         ];
@@ -101,7 +101,7 @@ class ImportPreviewRequest extends FormRequest
             'has_header' => true,
             'preview_rows' => 100,
             'strict_validation' => false,
-            'auto_create_relations' => true,
+            'auto_create_relations' => false,
         ];
     }
 
@@ -112,7 +112,7 @@ class ImportPreviewRequest extends FormRequest
     {
         $validated = $this->validated();
         $defaults = $this->getDefaults();
-        
+
         return array_merge($defaults, $validated);
     }
 }

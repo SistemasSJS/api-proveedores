@@ -61,7 +61,7 @@ class ImportConfirmRequest extends FormRequest
                 'min:1'
             ],
             'exclude_rows' => [
-                'array', 
+                'array',
                 'nullable'
             ],
             'exclude_rows.*' => [
@@ -115,7 +115,7 @@ class ImportConfirmRequest extends FormRequest
             'chunk_size' => 100,
             'process_async' => true,
             'strict_validation' => false,
-            'auto_create_relations' => true,
+            'auto_create_relations' => false,
             'stop_on_error' => false
         ];
     }
@@ -127,7 +127,7 @@ class ImportConfirmRequest extends FormRequest
     {
         $validated = $this->validated();
         $defaults = $this->getDefaults();
-        
+
         return array_merge($defaults, $validated);
     }
 
@@ -137,7 +137,7 @@ class ImportConfirmRequest extends FormRequest
     public function getImportConfiguration(): array
     {
         $data = $this->getValidatedWithDefaults();
-        
+
         return [
             'import_mode' => $data['import_mode'],
             'chunk_size' => $data['chunk_size'],

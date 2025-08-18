@@ -72,7 +72,7 @@ class CsvImportController extends Controller
                 'has_header' => $request->get('has_header', true),
                 'preview_rows' => $request->get('preview_rows', 100),
                 'strict_validation' => true,
-                'auto_create_relations' => true
+                'auto_create_relations' => false
             ];
 
             // Procesar archivo CSV y generar preview
