@@ -71,7 +71,7 @@ class CsvImportController extends Controller
                 'encoding' => $request->get('encoding', 'UTF-8'),
                 'has_header' => $request->get('has_header', true),
                 'preview_rows' => $request->get('preview_rows', 100),
-                'strict_validation' => false,
+                'strict_validation' => true,
                 'auto_create_relations' => true
             ];
 
@@ -157,9 +157,9 @@ class CsvImportController extends Controller
             $createMissingRelations = $request->input('import_options.create_missing_relations', false);
 
             // Buscar el audit
-            $audit = ImportAudit::where('id', $request->audit_id)
+            $audit = ImportAudit::where('id', $auditId)
                 ->where('proveedor_id', $proveedor->id)
-                ->where('estado', 'preview')
+                // ->where('estado', 'preview')
                 ->first();
 
             if (!$audit) {
@@ -259,11 +259,12 @@ class CsvImportController extends Controller
                 'inicio_proceso' => $audit->inicio_proceso,
                 'fin_proceso' => $audit->fin_proceso,
                 'total_registros' => $audit->total_registros ?? 0,
-                'procesados' => $this->calculateProcessedRecords($audit),
+                'procesados' => $audit->numero_registros_procesados,
                 'estimated_remaining' => $this->estimateRemainingTime($audit),
-                'current_phase' => $this->getCurrentProcessingPhase($audit),
-                'logs' => array_slice($audit->logs ?? [], -3), // Last 3 log entries
-                'can_cancel' => in_array($audit->estado, ['confirmado', 'procesando']),
+                'current_phase' => $audit->estado,
+                // 'current_phase' => $this->getCurrentProcessingPhase($audit),
+                // 'logs' => array_slice($audit->logs ?? [], -3), // Last 3 log entries
+                // 'can_cancel' => in_array($audit->estado, ['confirmado', 'procesando']),
                 'has_errors' => ($audit->errores ?? 0) > 0,
                 'error_summary' => $this->getErrorSummary($audit),
             ];

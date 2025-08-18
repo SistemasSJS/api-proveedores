@@ -69,7 +69,8 @@ class CSVProcessorService
             'delimiter' => ',',
             'encoding' => 'UTF-8',
             'has_header' => true,
-            'preview_rows' => -1,
+            // 'preview_rows' => -1,
+            'preview_rows' => 100,
             'strict_validation' => false,
             'auto_create_relations' => true
         ], $options);
@@ -124,7 +125,7 @@ class CSVProcessorService
             ];
 
             // Usar tabla temporal en lugar de caché
-            $this->storePreviewDataInTempTable($token, $cacheData);
+            // $this->storePreviewDataInTempTable($token, $cacheData);
             // $this->cachePreviewData($token, $cacheData);
 
             $processingTime = round((microtime(true) - $startTime), 2);

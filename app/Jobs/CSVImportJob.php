@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Exception;
+use Ramsey\Uuid\Type\Integer;
 
 class CSVImportJob implements ShouldQueue
 {
@@ -97,8 +98,8 @@ class CSVImportJob implements ShouldQueue
                 'delimiter' => ',',
                 'encoding' => 'UTF-8',
                 'has_header' => true,
-                'preview_rows' => -1,
-                'strict_validation' => false,
+                'preview_rows' => 100,
+                'strict_validation' => true,
                 'auto_create_relations' => true
             ];
 
@@ -131,6 +132,7 @@ class CSVImportJob implements ShouldQueue
                 DB::transaction(function () use ($chuck, $validator, $csvProcessor, $previewToken) {
                     // Process in stages
                     $this->processCatalogs($chuck, $validator);
+
                     $this->processProducts($chuck, $validator);
 
                     // Final cleanup and statistics
@@ -177,13 +179,13 @@ class CSVImportJob implements ShouldQueue
 
         // Process each catalog type
         $this->processBrands($catalogData['marcas']);
-        $this->updateProgress(10);
+        // $this->updateProgress(10);
 
         $this->processCategories($catalogData['categorias']);
-        $this->updateProgress(20);
+        // $this->updateProgress(20);
 
         $this->processUnits($catalogData['unidades']);
-        $this->updateProgress(30);
+        // $this->updateProgress(30);
 
         $this->logProcessingStep('Catálogos procesados', [
             'marcas' => count($this->catalogMappings['marcas']),
@@ -380,7 +382,7 @@ class CSVImportJob implements ShouldQueue
 
         $chunkSize = $this->options['chunk_size'];
         $totalProducts = count($csvData);
-        $processedCount = 0;
+        $processedCount = $this->importAudit->numero_registros_procesados;
 
         // Process products in chunks
         $chunks = array_chunk($csvData, $chunkSize);
@@ -393,7 +395,7 @@ class CSVImportJob implements ShouldQueue
 
                 // Update progress (30% to 95%)
                 $progressPercentage = 30 + (($processedCount / $totalProducts) * 65);
-                $this->updateProgress(min(95, $progressPercentage));
+                $this->updateProgress(min(95, $progressPercentage), $processedCount);
 
                 $this->logProcessingStep(
                     "Chunk procesado " . ($chunkIndex + 1) . "/{$totalChunks}",
@@ -608,10 +610,11 @@ class CSVImportJob implements ShouldQueue
     /**
      * Update progress percentage
      */
-    protected function updateProgress(float $percentage): void
+    protected function updateProgress(float $percentage, int $count_registros_procesados): void
     {
         $this->importAudit->update([
-            'progreso' => min(100, max(0, $percentage))
+            'progreso' => min(100, max(0, $percentage)),
+            'numero_registros_procesados' => $count_registros_procesados,
         ]);
     }
 
