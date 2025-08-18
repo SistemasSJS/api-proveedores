@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+use function PHPSTORM_META\map;
+
 class ImportAudit extends BaseModel
 {
 
@@ -31,7 +33,17 @@ class ImportAudit extends BaseModel
     'fin_proceso',
     'error_types',
     'processing_time',
-    'memory_usage'
+    'memory_usage',
+    'numero_registros_procesados',
+    'marca_imported',
+    'marca_errors',
+    'marca_total',
+    'categoria_imported',
+    'categoria_errors',
+    'categoria_total',
+    'unidad_imported',
+    'unidad_errors',
+    'unidad_total',
   ];
 
   protected $casts = [

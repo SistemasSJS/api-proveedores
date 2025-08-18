@@ -265,8 +265,8 @@ class CsvImportController extends Controller
                 // 'current_phase' => $this->getCurrentProcessingPhase($audit),
                 // 'logs' => array_slice($audit->logs ?? [], -3), // Last 3 log entries
                 // 'can_cancel' => in_array($audit->estado, ['confirmado', 'procesando']),
-                'has_errors' => ($audit->errores ?? 0) > 0,
-                'error_summary' => $this->getErrorSummary($audit),
+                // 'has_errors' => ($audit->errores ?? 0) > 0,
+                // 'error_summary' => $this->getErrorSummary($audit),
             ];
 
             return $this->success($status, 'Estado de importación obtenido correctamente');
@@ -343,15 +343,15 @@ class CsvImportController extends Controller
                         'total' => $audit->categoria_total
                     ],
                     'unidades' => [
-                        'imported' => $audit->unidades_imported,
-                        'errors' => $audit->unidades_errors,
-                        'total' => $audit->unidades_total
+                        'imported' => $audit->unidad_imported,
+                        'errors' => $audit->unidad_errors,
+                        'total' => $audit->unidad_total
                     ],
                 ],
                 'errores_detalle' => $audit->errores_detalle ?? [],
-                'advertencias_detalle' => [], // Se puede agregar en futuras versiones
-                'items_importados' => $this->getImportedItems($audit),
-                'logs' => $audit->logs ?? []
+                // 'advertencias_detalle' => [], // Se puede agregar en futuras versiones
+                // 'items_importados' => $this->getImportedItems($audit),
+                // 'logs' => $audit->logs ?? []
             ];
 
             return $this->success($results, 'Resultados de importación obtenidos correctamente');

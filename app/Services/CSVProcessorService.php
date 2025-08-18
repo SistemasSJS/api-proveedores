@@ -36,6 +36,7 @@ class CSVProcessorService
 
     /**
      * Procesa un archivo CSV generando una vista previa y validaciones.
+     * Optimizado para usar poca memoria con archivos grandes.
      *
      * @param UploadedFile $csvFile Archivo CSV subido.
      * @param int $proveedorId ID del proveedor para contexto.
@@ -69,86 +70,187 @@ class CSVProcessorService
             'delimiter' => ',',
             'encoding' => 'UTF-8',
             'has_header' => true,
-            // 'preview_rows' => -1,
             'preview_rows' => 100,
             'strict_validation' => false,
-            'auto_create_relations' => true
+            'auto_create_relations' => true,
+            'chunk_size' => 500 // Tamaño de chunk para procesamiento
         ], $options);
 
         try {
             // Crear validador para este proveedor
             $validator = new ProductImportValidator($proveedorId);
-
-            // Parsear archivo CSV
-            $csvData = $this->parseCSV($csvFile, $options);
-
-            // Validar encabezados si existen
-            $headerValidation = [];
-            if ($options['has_header'] && !empty($csvData['headers'])) {
-                $headerValidation = $validator->validateHeaders($csvData['headers']);
-            }
-
-            // Obtener datos de vista previa (filas limitadas)
-            // si es -1, la vista previa no limita la cantidad de registros
-            if ($options['preview_rows'] > 0) {
-                $previewData = array_slice($csvData['data'], 0, $options['preview_rows']);
-            } else {
-                // When preview_rows is -1 or 0, return all data
-                $previewData = $csvData['data'];
-            }
-
-            // Validar datos de la vista previa
-            $validationResults = $this->validateBatch($previewData, $validator);
-
-            // Generar métricas de calidad
-            $qualityMetrics = $this->generateQualityMetrics($validationResults, $csvData);
-
-            // Generar análisis del desglose de catálogo
-            $catalogBreakdown = $this->generateCatalogBreakdown($csvData['data'], $proveedorId);
-
-            // Generar diccionario de catalogos con nopmbres uncicos
-            $catalogosData = $this->getArrayCatalogos($csvData['data'], $proveedorId);
-
-            // Cachear los datos completos para confirmación posterior
-            $cacheData = [
-                'full_data' => $csvData['data'],
-                'catalogos_data' => $catalogosData,
-                'headers' => $csvData['headers'] ?? [],
-                'options' => $options,
-                'proveedor_id' => $proveedorId,
-                'file_info' => [
-                    'original_name' => $csvFile->getClientOriginalName(),
-                    'size' => $csvFile->getSize(),
-                    'mime_type' => $csvFile->getMimeType()
-                ],
-                'created_at' => now()->toISOString()
+            
+            // Variables para procesamiento incremental
+            $headers = [];
+            $previewData = [];
+            $totalRows = 0;
+            $catalogos = [
+                'marcas' => [],
+                'categorias' => [],
+                'unidades' => []
             ];
-
-            // Usar tabla temporal en lugar de caché
-            // $this->storePreviewDataInTempTable($token, $cacheData);
-            // $this->cachePreviewData($token, $cacheData);
-
+            $validationErrors = [];
+            $validationWarnings = [];
+            $correctRecords = 0;
+            $errorRecords = 0;
+            $warningRecords = 0;
+            
+            // Crear tabla temporal para almacenar datos completos
+            $tableName = $this->createTempTable($token);
+            
+            // Buffer para inserción por lotes
+            $insertBuffer = [];
+            $bufferSize = 0;
+            
+            // Procesar archivo usando generador (memoria eficiente)
+            foreach ($this->parseCSVGenerator($csvFile, $options) as $rowIndex => $row) {
+                // Capturar headers en la primera iteración
+                if ($rowIndex === 0 && $options['has_header']) {
+                    $headers = array_keys($row);
+                }
+                
+                $totalRows++;
+                
+                // Añadir a vista previa si está dentro del límite
+                if (count($previewData) < $options['preview_rows']) {
+                    $previewData[] = $row;
+                    
+                    // Validar fila para preview
+                    $rowValidation = $validator->validateRow($row, $rowIndex + 1);
+                    if (!empty($rowValidation['errors'])) {
+                        $errorRecords++;
+                        if (count($validationErrors) < 20) { // Limitar errores almacenados
+                            $validationErrors[] = [
+                                'row' => $rowIndex + 1,
+                                'errors' => $rowValidation['errors']
+                            ];
+                        }
+                    } elseif (!empty($rowValidation['warnings'])) {
+                        $warningRecords++;
+                        if (count($validationWarnings) < 20) {
+                            $validationWarnings[] = [
+                                'row' => $rowIndex + 1,
+                                'warnings' => $rowValidation['warnings']
+                            ];
+                        }
+                    } else {
+                        $correctRecords++;
+                    }
+                }
+                
+                // Extraer catálogos únicos (sin almacenar todos los datos)
+                if (!empty($row['marca']) && !in_array($row['marca'], $catalogos['marcas'])) {
+                    $catalogos['marcas'][] = trim($row['marca']);
+                }
+                if (!empty($row['unidad_medida']) && !in_array($row['unidad_medida'], $catalogos['unidades'])) {
+                    $catalogos['unidades'][] = trim($row['unidad_medida']);
+                }
+                if (!empty($row['categoria'])) {
+                    $cat = trim($row['categoria']);
+                    if (!isset($catalogos['categorias'][$cat])) {
+                        $catalogos['categorias'][$cat] = [];
+                    }
+                    if (!empty($row['subcategoria'])) {
+                        $subcat = trim($row['subcategoria']);
+                        if (!in_array($subcat, $catalogos['categorias'][$cat])) {
+                            $catalogos['categorias'][$cat][] = $subcat;
+                        }
+                    }
+                }
+                
+                // Preparar datos para inserción en tabla temporal
+                $insertBuffer[] = $this->prepareRowForTempTable($row, $rowIndex + 1);
+                $bufferSize++;
+                
+                // Insertar en lotes cuando el buffer alcance el tamaño del chunk
+                if ($bufferSize >= $options['chunk_size']) {
+                    $this->insertChunkToTempTable($tableName, $insertBuffer);
+                    $insertBuffer = [];
+                    $bufferSize = 0;
+                    
+                    // Liberar memoria periódicamente
+                    if ($totalRows % 2000 === 0) {
+                        gc_collect_cycles();
+                    }
+                }
+            }
+            
+            // Insertar cualquier dato restante en el buffer
+            if (!empty($insertBuffer)) {
+                $this->insertChunkToTempTable($tableName, $insertBuffer);
+            }
+            
+            // Validar encabezados
+            $headerValidation = [];
+            if ($options['has_header'] && !empty($headers)) {
+                $headerValidation = $validator->validateHeaders($headers);
+            }
+            
+            // Crear resumen de validación
+            $validationSummary = [
+                'total_records' => min($totalRows, $options['preview_rows']),
+                'correct_records' => $correctRecords,
+                'warning_records' => $warningRecords,
+                'error_records' => $errorRecords,
+                'errors_by_type' => []
+            ];
+            
+            // Generar métricas de calidad basadas en el preview
+            $qualityMetrics = $this->generateQualityMetricsFromSummary($validationSummary, $totalRows);
+            
+            // Generar análisis del catálogo (usando datos ya extraídos)
+            $catalogBreakdown = $this->generateCatalogBreakdownFromExtracted(
+                $catalogos, 
+                $proveedorId, 
+                $totalRows
+            );
+            
+            // Guardar metadata en ImportValidationCache
+            ImportValidationCache::create([
+                'token' => $token,
+                'proveedor_id' => $proveedorId,
+                'file_name' => $csvFile->getClientOriginalName(),
+                'total_rows' => $totalRows,
+                'validation_data' => [
+                    'temp_table' => $tableName,
+                    'catalogos_data' => $catalogos,
+                    'headers' => $headers,
+                    'options' => $options,
+                    'file_info' => [
+                        'original_name' => $csvFile->getClientOriginalName(),
+                        'size' => $csvFile->getSize(),
+                        'mime_type' => $csvFile->getMimeType()
+                    ],
+                    'created_at' => now()->toISOString()
+                ],
+                'expires_at' => now()->addHours(2)
+            ]);
+            
             $processingTime = round((microtime(true) - $startTime), 2);
-
+            
+            // Limpiar memoria antes de retornar
+            unset($insertBuffer);
+            gc_collect_cycles();
+            
             return [
                 'success' => true,
                 'preview_token' => $token,
                 'file_info' => [
                     'name' => $csvFile->getClientOriginalName(),
                     'size' => $csvFile->getSize(),
-                    'total_rows' => count($csvData['data']),
+                    'total_rows' => $totalRows,
                     'preview_rows' => count($previewData),
                     'encoding' => $options['encoding'],
                     'delimiter' => $options['delimiter']
                 ],
                 'headers' => [
-                    'detected' => $csvData['headers'] ?? [],
+                    'detected' => $headers,
                     'validation' => $headerValidation,
-                    'mapping_suggestions' => $this->generateHeaderMappingSuggestions($csvData['headers'] ?? [], $validator)
+                    'mapping_suggestions' => $this->generateHeaderMappingSuggestions($headers, $validator)
                 ],
-                'preview_data' => $previewData, // Solo primeras 10 para el frontend
-                'validation_summary' => $validationResults['summary'],
-                'validation_details' => $validationResults['validation_results'], // Primeros 20 errores
+                'preview_data' => $previewData,
+                'validation_summary' => $validationSummary,
+                'validation_details' => array_merge($validationErrors, $validationWarnings),
                 'quality_metrics' => $qualityMetrics,
                 'processing_info' => [
                     'processing_time' => $processingTime,
@@ -164,7 +266,16 @@ class CSVProcessorService
                 'proveedor_id' => $proveedorId,
                 'trace' => $e->getTraceAsString()
             ]);
-
+            
+            // Limpiar tabla temporal si se creó
+            if (isset($tableName)) {
+                try {
+                    DB::statement("DROP TABLE IF EXISTS {$tableName}");
+                } catch (\Exception $cleanupException) {
+                    Log::warning('No se pudo limpiar tabla temporal', ['table' => $tableName]);
+                }
+            }
+            
             return [
                 'success' => false,
                 'error' => 'Error procesando el archivo CSV: ' . $e->getMessage(),
@@ -174,9 +285,6 @@ class CSVProcessorService
     }
 
 
-    /**
-     * TODO: Com
-     */
     /**
      * Obtiene todos los datos del CSV apoyándose en parseCSV().
      *
@@ -205,6 +313,7 @@ class CSVProcessorService
 
     /**
      * Parsea un CSV según las opciones dadas.
+     * NOTA: Este método carga todo el archivo en memoria. Para archivos grandes usar parseCSVGenerator.
      *
      * @param UploadedFile $file
      * @param array $options
@@ -213,54 +322,116 @@ class CSVProcessorService
      */
     private function parseCSV(UploadedFile $file, array $options): array
     {
-        $delimiter = $options['delimiter'];
-        $encoding = $options['encoding'];
-        $hasHeader = $options['has_header'];
-
-        // Leer contenido del archivo
-        $content = file_get_contents($file->getRealPath());
-
-        // Convertir la codificación si es necesario
-        if ($encoding !== 'UTF-8') {
-            $content = mb_convert_encoding($content, 'UTF-8', $encoding);
-        }
-
-        // Separar en líneas
-        $lines = array_filter(array_map('trim', explode("\n", $content)));
-
-        if (empty($lines)) {
-            throw new \Exception('El archivo CSV está vacío');
-        }
-
         $data = [];
         $headers = [];
+        $totalRows = 0;
+        $isFirstRow = true;
 
-        foreach ($lines as $index => $line) {
-            // Parsear línea del CSV
-            $row = str_getcsv($line, $delimiter);
-
-            if ($index === 0 && $hasHeader) {
-                $headers = array_map('trim', $row);
-                continue;
+        // Usar el generador para leer el archivo
+        foreach ($this->parseCSVGenerator($file, $options) as $row) {
+            if ($isFirstRow && $options['has_header']) {
+                $headers = array_keys($row);
+                $isFirstRow = false;
             }
+            $data[] = $row;
+            $totalRows++;
+        }
 
-            // Convertir la fila a array asociativo si hay encabezados
-            if (!empty($headers)) {
-                $associativeRow = [];
-                foreach ($headers as $headerIndex => $header) {
-                    $associativeRow[$header] = isset($row[$headerIndex]) ? trim($row[$headerIndex]) : '';
-                }
-                $data[] = $associativeRow;
-            } else {
-                $data[] = array_map('trim', $row);
-            }
+        if ($totalRows === 0) {
+            throw new \Exception('El archivo CSV está vacío');
         }
 
         return [
             'headers' => $headers,
             'data' => $data,
-            'total_rows' => count($data)
+            'total_rows' => $totalRows
         ];
+    }
+
+    /**
+     * Generador para leer archivo CSV línea por línea sin cargar todo en memoria.
+     *
+     * @param UploadedFile|string $file Archivo o ruta del archivo
+     * @param array $options Opciones de procesamiento
+     * @return \Generator
+     * @throws \Exception
+     */
+    public function parseCSVGenerator($file, array $options): \Generator
+    {
+        $delimiter = $options['delimiter'] ?? ',';
+        $encoding = $options['encoding'] ?? 'UTF-8';
+        $hasHeader = $options['has_header'] ?? true;
+        $skipEmptyRows = $options['skip_empty_rows'] ?? true;
+
+        // Obtener la ruta real del archivo
+        if ($file instanceof UploadedFile) {
+            $filePath = $file->getRealPath();
+        } else {
+            $filePath = Storage::path($file);
+        }
+
+        // Abrir archivo para lectura
+        $handle = fopen($filePath, 'r');
+        if (!$handle) {
+            throw new \Exception('No se pudo abrir el archivo CSV');
+        }
+
+        try {
+            $headers = [];
+            $rowNumber = 0;
+            $isFirstRow = true;
+
+            // Detectar BOM y omitirlo si existe
+            $bom = fread($handle, 3);
+            if ($bom !== "\xEF\xBB\xBF") {
+                // No es BOM UTF-8, regresar al inicio
+                rewind($handle);
+            }
+
+            while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
+                $rowNumber++;
+
+                // Omitir filas vacías si está configurado
+                if ($skipEmptyRows && empty(array_filter($row))) {
+                    continue;
+                }
+
+                // Convertir encoding si es necesario
+                if ($encoding !== 'UTF-8') {
+                    $row = array_map(function ($value) use ($encoding) {
+                        return mb_convert_encoding($value, 'UTF-8', $encoding);
+                    }, $row);
+                }
+
+                // Limpiar espacios en blanco
+                $row = array_map('trim', $row);
+
+                // Procesar headers
+                if ($isFirstRow && $hasHeader) {
+                    $headers = $row;
+                    $isFirstRow = false;
+                    continue;
+                }
+
+                // Convertir a array asociativo si hay headers
+                if (!empty($headers)) {
+                    $associativeRow = [];
+                    foreach ($headers as $index => $header) {
+                        $associativeRow[$header] = isset($row[$index]) ? $row[$index] : '';
+                    }
+                    yield $associativeRow;
+                } else {
+                    yield $row;
+                }
+
+                // Liberar memoria periódicamente
+                if ($rowNumber % 1000 === 0) {
+                    gc_collect_cycles();
+                }
+            }
+        } finally {
+            fclose($handle);
+        }
     }
 
     /**
@@ -1188,5 +1359,257 @@ class CSVProcessorService
                     ->toArray()
             )
             ->toArray();
+    }
+    
+    /**
+     * Crea una tabla temporal para almacenar los datos del CSV
+     *
+     * @param string $token Token único para identificar la tabla
+     * @return string Nombre de la tabla creada
+     * @throws \Exception Si no se puede crear la tabla
+     */
+    private function createTempTable(string $token): string
+    {
+        $tableName = "csv_import_temp_" . substr($token, 0, 16) . "_" . time();
+        
+        try {
+            // Verificar si existe y generar nombre único si es necesario
+            $tableExists = DB::select("SHOW TABLES LIKE '{$tableName}'");
+            if (!empty($tableExists)) {
+                $tableName .= "_" . mt_rand(1000, 9999);
+            }
+            
+            // Crear tabla temporal con estructura optimizada
+            DB::statement("CREATE TABLE {$tableName} (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                codigo VARCHAR(255) NULL,
+                producto VARCHAR(500) NULL,
+                descripcion TEXT NULL,
+                marca VARCHAR(255) NULL,
+                categoria VARCHAR(255) NULL,
+                subcategoria VARCHAR(255) NULL,
+                unidad_medida VARCHAR(100) NULL,
+                precio DECIMAL(12,4) NULL,
+                precio_mayoreo DECIMAL(12,4) NULL,
+                precio_menudeo DECIMAL(12,4) NULL,
+                modelo VARCHAR(255) NULL,
+                row_index INT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_row_index (row_index),
+                INDEX idx_codigo (codigo),
+                INDEX idx_marca (marca),
+                INDEX idx_categoria (categoria)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            
+            Log::info("Tabla temporal creada", ['table_name' => $tableName]);
+            
+            return $tableName;
+        } catch (\Exception $e) {
+            Log::error("Error creando tabla temporal", [
+                'table_name' => $tableName ?? 'undefined',
+                'error' => $e->getMessage()
+            ]);
+            throw new \Exception("No se pudo crear la tabla temporal: " . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Prepara una fila del CSV para inserción en la tabla temporal
+     *
+     * @param array $row Datos de la fila
+     * @param int $rowIndex Índice de la fila
+     * @return array Datos preparados para inserción
+     */
+    private function prepareRowForTempTable(array $row, int $rowIndex): array
+    {
+        return [
+            'codigo' => !empty($row['codigo']) ? substr(trim($row['codigo']), 0, 255) : null,
+            'producto' => !empty($row['producto']) ? substr(trim($row['producto']), 0, 500) : null,
+            'descripcion' => !empty($row['descripcion']) ? trim($row['descripcion']) : null,
+            'marca' => !empty($row['marca']) ? substr(trim($row['marca']), 0, 255) : null,
+            'categoria' => !empty($row['categoria']) ? substr(trim($row['categoria']), 0, 255) : null,
+            'subcategoria' => !empty($row['subcategoria']) ? substr(trim($row['subcategoria']), 0, 255) : null,
+            'unidad_medida' => !empty($row['unidad_medida']) ? substr(trim($row['unidad_medida']), 0, 100) : null,
+            'precio' => !empty($row['precio']) && is_numeric($row['precio']) ? (float)$row['precio'] : null,
+            'precio_mayoreo' => !empty($row['precio_mayoreo']) && is_numeric($row['precio_mayoreo']) ? (float)$row['precio_mayoreo'] : null,
+            'precio_menudeo' => !empty($row['precio_menudeo']) && is_numeric($row['precio_menudeo']) ? (float)$row['precio_menudeo'] : null,
+            'modelo' => !empty($row['modelo']) ? substr(trim($row['modelo']), 0, 255) : null,
+            'row_index' => $rowIndex
+        ];
+    }
+    
+    /**
+     * Inserta un chunk de datos en la tabla temporal
+     *
+     * @param string $tableName Nombre de la tabla
+     * @param array $chunk Datos a insertar
+     * @return void
+     */
+    private function insertChunkToTempTable(string $tableName, array $chunk): void
+    {
+        try {
+            DB::beginTransaction();
+            DB::table($tableName)->insert($chunk);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Error insertando chunk en tabla temporal", [
+                'table_name' => $tableName,
+                'chunk_size' => count($chunk),
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+    
+    /**
+     * Genera métricas de calidad basadas en el resumen de validación
+     *
+     * @param array $validationSummary Resumen de validación
+     * @param int $totalRows Total de filas en el archivo
+     * @return array Métricas de calidad
+     */
+    private function generateQualityMetricsFromSummary(array $validationSummary, int $totalRows): array
+    {
+        $previewRecords = $validationSummary['total_records'];
+        
+        if ($previewRecords === 0) {
+            return ['can_proceed' => false, 'quality_score' => 0];
+        }
+        
+        $successRate = ($validationSummary['correct_records'] / $previewRecords) * 100;
+        $warningRate = ($validationSummary['warning_records'] / $previewRecords) * 100;
+        $errorRate = ($validationSummary['error_records'] / $previewRecords) * 100;
+        
+        $qualityScore = 0;
+        if ($successRate >= 90) $qualityScore += 50;
+        elseif ($successRate >= 70) $qualityScore += 30;
+        elseif ($successRate >= 50) $qualityScore += 15;
+        
+        if ($warningRate <= 20) $qualityScore += 25;
+        elseif ($warningRate <= 40) $qualityScore += 15;
+        
+        if ($errorRate <= 10) $qualityScore += 25;
+        elseif ($errorRate <= 30) $qualityScore += 10;
+        
+        return [
+            'quality_score' => round($qualityScore, 1),
+            'success_rate' => round($successRate, 2),
+            'warning_rate' => round($warningRate, 2),
+            'error_rate' => round($errorRate, 2),
+            'can_proceed' => $errorRate <= 50,
+            'recommendation' => $this->getQualityRecommendation($qualityScore, $errorRate),
+            'estimated_processing_time' => $this->estimateProcessingTime($totalRows),
+            'error_distribution' => $validationSummary['errors_by_type'] ?? []
+        ];
+    }
+    
+    /**
+     * Genera el desglose del catálogo desde datos ya extraídos
+     *
+     * @param array $catalogos Catálogos extraídos del CSV
+     * @param int $proveedorId ID del proveedor
+     * @param int $totalRows Total de filas procesadas
+     * @return array Desglose del catálogo
+     */
+    private function generateCatalogBreakdownFromExtracted(array $catalogos, int $proveedorId, int $totalRows): array
+    {
+        // Obtener catálogos existentes desde la base de datos
+        $existingMarcas = $this->getExistingMarcas($proveedorId);
+        $existingCategorias = $this->getExistingCategorias($proveedorId);
+        $existingUnidades = $this->getExistingUnidades($proveedorId);
+        
+        // Analizar marcas
+        $marcasAnalysis = $this->analyzeMarcas($catalogos['marcas'], $existingMarcas);
+        
+        // Analizar categorías (solo nombres principales)
+        $categoriasNames = array_keys($catalogos['categorias']);
+        $categoriasAnalysis = $this->analyzeCategorias($categoriasNames, $existingCategorias);
+        
+        // Analizar subcategorías (todas las subcategorías)
+        $allSubcategorias = [];
+        foreach ($catalogos['categorias'] as $subcats) {
+            $allSubcategorias = array_merge($allSubcategorias, $subcats);
+        }
+        $allSubcategorias = array_unique($allSubcategorias);
+        $existingSubcategorias = $this->getExistingSubcategorias($proveedorId);
+        $subcategoriasAnalysis = $this->analyzeSubcategorias($allSubcategorias, $existingSubcategorias);
+        
+        // Analizar unidades
+        $unidadesAnalysis = $this->analyzeUnidades($catalogos['unidades'], $existingUnidades);
+        
+        // Estimar productos (basado en el total de filas)
+        $productosAnalysis = [
+            'total' => $totalRows,
+            'nuevos' => 0, // Se determinará durante la importación real
+            'existentes' => 0,
+            'duplicados' => 0,
+            'duplicados_detail' => []
+        ];
+        
+        return [
+            'productos' => $productosAnalysis,
+            'marcas' => $marcasAnalysis,
+            'categorias' => $categoriasAnalysis,
+            'subcategorias' => $subcategoriasAnalysis,
+            'unidades' => $unidadesAnalysis
+        ];
+    }
+    
+    /**
+     * Obtiene un generador para leer datos desde un archivo CSV
+     * Útil para el Job cuando necesite procesar el archivo completo
+     *
+     * @param string $filePath Ruta del archivo
+     * @param array $options Opciones de procesamiento
+     * @return \Generator
+     */
+    public function getCSVDataGenerator(string $filePath, array $options): \Generator
+    {
+        // Reutilizar el generador existente
+        return $this->parseCSVGenerator($filePath, $options);
+    }
+    
+    /**
+     * Obtiene datos de la tabla temporal con paginación
+     *
+     * @param string $tableName Nombre de la tabla
+     * @param int $limit Límite de registros
+     * @param int $offset Desplazamiento
+     * @return array
+     */
+    public function getTempTableDataPaginated(string $tableName, int $limit = 1000, int $offset = 0): array
+    {
+        try {
+            return DB::table($tableName)
+                ->orderBy('row_index')
+                ->limit($limit)
+                ->offset($offset)
+                ->get()
+                ->map(function ($row) {
+                    return [
+                        'codigo' => $row->codigo,
+                        'producto' => $row->producto,
+                        'descripcion' => $row->descripcion,
+                        'marca' => $row->marca,
+                        'categoria' => $row->categoria,
+                        'subcategoria' => $row->subcategoria,
+                        'unidad_medida' => $row->unidad_medida,
+                        'precio' => $row->precio,
+                        'precio_mayoreo' => $row->precio_mayoreo,
+                        'precio_menudeo' => $row->precio_menudeo,
+                        'modelo' => $row->modelo
+                    ];
+                })
+                ->toArray();
+        } catch (\Exception $e) {
+            Log::error("Error obteniendo datos paginados de tabla temporal", [
+                'table_name' => $tableName,
+                'limit' => $limit,
+                'offset' => $offset,
+                'error' => $e->getMessage()
+            ]);
+            return [];
+        }
     }
 }

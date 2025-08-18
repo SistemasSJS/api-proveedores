@@ -87,62 +87,84 @@ class CSVImportJob implements ShouldQueue
             // Initialize processing state
             $this->initializeProcessing();
 
-            // Get temporary table data
+            // Get preview token and validate
             $previewToken = $this->importAudit->preview_data['preview_token'] ?? null;
             if (!$previewToken) {
                 throw new Exception('Preview token not found in audit data');
             }
 
-            // Definir opciones por defecto para lectura del CSV
-            $defaultOptions = [
-                'delimiter' => ',',
-                'encoding' => 'UTF-8',
-                'has_header' => true,
-                'preview_rows' => 100,
-                'strict_validation' => true,
-                'auto_create_relations' => true
-            ];
+            // Obtener metadata desde la tabla temporal
+            $cached = \App\Models\ImportValidationCache::where('token', $previewToken)
+                ->where('expires_at', '>', now())
+                ->first();
 
-            // Obtener opciones del audit o usar las por defecto
-            $readOptions = $this->importAudit->options_read_csv ?? [];
-            $readOptions = array_merge($defaultOptions, $readOptions);
-
-            // $tempTableData = $csvProcessor->getTempTablePreviewData($previewToken);
-            $tempTableData = $csvProcessor->getFullDataFromCSV($this->importAudit->archivo, $readOptions);
-            if (!$tempTableData || !isset($tempTableData)) {
-                throw new Exception('Not data in CSV.as');
+            if (!$cached || !isset($cached->validation_data['temp_table'])) {
+                throw new Exception('Datos de preview expirados o no encontrados');
             }
 
-            $csvData = $tempTableData;
-            $this->processingStats['total_registros'] = count($csvData);
-            $this->logProcessingStep('Datos recuperados de CSV file', [
-                'total_registros' => $this->processingStats['total_registros'],
+            $tableName = $cached->validation_data['temp_table'];
+            $catalogosData = $cached->validation_data['catalogos_data'] ?? [];
+
+            // Obtener total de registros de la tabla temporal
+            $totalRegistros = DB::table($tableName)->count();
+            $this->processingStats['total_registros'] = $totalRegistros;
+
+            $this->logProcessingStep('Iniciando procesamiento desde tabla temporal', [
+                'total_registros' => $totalRegistros,
+                'tabla' => $tableName,
                 'preview_token' => $previewToken
             ]);
-            $chunks = array_chunk($csvData, 1000); // bloques de 1000 filas
 
+            // Procesar catálogos primero (usando datos ya extraídos en preview)
+            $this->processCatalogsFromExtracted($catalogosData);
+            $this->updateProgress(15, 0); // 15% después de catálogos
 
+            // Procesar productos en chunks desde la tabla temporal
+            $chunkSize = 200; // Chunks más pequeños para mejor control de memoria
+            $offset = 0;
+            $processedCount = $this->importAudit->numero_registros_procesados;
 
-            // Process in stages within a transaction
-            foreach ($chunks as $index => $chuck) {
-                $this->logProcessingStep("Procesando Chuc # {$index}", [
-                    'total_registros' => count($chuck),
-                    'preview_token' => $previewToken
-                ]);
-                DB::transaction(function () use ($chuck, $validator, $csvProcessor, $previewToken) {
-                    // Process in stages
-                    $this->processCatalogs($chuck, $validator);
+            while ($offset < $totalRegistros) {
+                // Obtener chunk desde tabla temporal
+                $chunk = $csvProcessor->getTempTableDataPaginated($tableName, $chunkSize, $offset);
 
-                    $this->processProducts($chuck, $validator);
+                if (empty($chunk)) {
+                    break;
+                }
 
-                    // Final cleanup and statistics
-                    $this->finalizeProcessing($csvProcessor, $previewToken);
+                // Procesar chunk de productos
+                DB::transaction(function () use ($chunk, $validator, &$processedCount) {
+                    $this->processProductChunk($chunk, $validator, $processedCount);
                 });
+
+                $processedCount += count($chunk);
+                $offset += $chunkSize;
+
+                // Actualizar progreso basado en registros procesados
+                $progressPercentage = 15 + (($processedCount / $totalRegistros) * 80); // 15-95%
+                $this->updateProgress(min(95, $progressPercentage), $processedCount);
+
+                // Liberar memoria después de cada chunk
+                unset($chunk);
+                gc_collect_cycles();
+
+                // Log cada 10 chunks
+                if (($offset / $chunkSize) % 10 === 0) {
+                    $this->logProcessingStep('Progreso de importación', [
+                        'procesados' => $processedCount,
+                        'total' => $totalRegistros,
+                        'porcentaje' => round(($processedCount / $totalRegistros) * 100, 2) . '%'
+                    ]);
+                }
             }
+
+            // Finalizar procesamiento
+            $this->finalizeProcessing($csvProcessor, $previewToken);
 
             $this->logProcessingStep('Importación completada exitosamente', [
                 'estadisticas' => $this->processingStats,
-                'tiempo_total' => round(microtime(true) - $this->startTime, 2) . ' segundos'
+                'tiempo_total' => round(microtime(true) - $this->startTime, 2) . ' segundos',
+                'registros_procesados' => $processedCount
             ]);
         } catch (Exception $e) {
             $this->handleJobFailure($e);
@@ -612,10 +634,13 @@ class CSVImportJob implements ShouldQueue
      */
     protected function updateProgress(float $percentage, int $count_registros_procesados): void
     {
+        $this->importAudit->progreso =  min(100, max(0, $percentage));
+        $this->importAudit->numero_registros_procesados = $count_registros_procesados;
         $this->importAudit->update([
             'progreso' => min(100, max(0, $percentage)),
             'numero_registros_procesados' => $count_registros_procesados,
         ]);
+        $this->importAudit->save();
     }
 
     /**
@@ -656,5 +681,49 @@ class CSVImportJob implements ShouldQueue
             'error' => $e->getMessage(),
             'estadisticas_parciales' => $this->processingStats
         ], 'error');
+    }
+
+    /**
+     * Procesa catálogos desde datos ya extraídos en el preview
+     * Más eficiente en memoria ya que no necesita volver a procesar todo el CSV
+     *
+     * @param array $catalogosData Datos de catálogos extraídos en preview
+     * @return void
+     */
+    protected function processCatalogsFromExtracted(array $catalogosData): void
+    {
+        $this->logProcessingStep('Iniciando procesamiento de catálogos desde datos extraídos');
+
+        // Procesar marcas
+        if (isset($catalogosData['marcas']) && !empty($catalogosData['marcas'])) {
+            $this->processBrands($catalogosData['marcas']);
+        }
+
+        // Procesar categorías con jerarquía
+        if (isset($catalogosData['categorias']) && !empty($catalogosData['categorias'])) {
+            $this->processCategories($catalogosData['categorias']);
+        }
+
+        // Procesar unidades
+        if (isset($catalogosData['unidades']) && !empty($catalogosData['unidades'])) {
+            $this->processUnits($catalogosData['unidades']);
+        }
+
+        $this->logProcessingStep('Catálogos procesados exitosamente', [
+            'marcas_procesadas' => count($this->catalogMappings['marcas']),
+            'categorias_procesadas' => count($this->catalogMappings['categorias']),
+            'unidades_procesadas' => count($this->catalogMappings['unidades']),
+            'estadisticas' => [
+                'marcas_nuevas' => $this->processingStats['marcas_nuevas'],
+                'marcas_existentes' => $this->processingStats['marcas_existentes'],
+                'categorias_nuevas' => $this->processingStats['categorias_nuevas'],
+                'categorias_existentes' => $this->processingStats['categorias_existentes'],
+                'unidades_nuevas' => $this->processingStats['unidades_nuevas'],
+                'unidades_existentes' => $this->processingStats['unidades_existentes']
+            ]
+        ]);
+
+        // Liberar memoria después de procesar catálogos
+        gc_collect_cycles();
     }
 }
