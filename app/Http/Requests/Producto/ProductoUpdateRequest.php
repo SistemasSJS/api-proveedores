@@ -23,10 +23,9 @@ class ProductoUpdateRequest extends FormRequest
             'descripcion' => ['sometimes', 'required', 'string', 'max:255'],
             'codigo_interno' => ['sometimes', 'required', 'string', 'max:50'],
             'proveedor_id' => ['sometimes', 'required', 'integer', 'exists:proveedores,id'],
-            // Aquí se espera un arreglo de categorías
-            // 'categorias' => ['sometimes', 'array', 'min:1'],
-            // 'categorias.*' => ['integer', 'exists:categorias,id'],
-
+            'precio_base' => ['sometimes', 'integer'],
+            'precio_mayoreo' => ['sometimes', 'integer'],
+            'precio_publico' => ['sometimes', 'integer'],
             'unidad_medida_id' => ['sometimes', 'required', 'integer', 'exists:unidad_medidas,id'],
             'categoria_id' => [
                 'required',
@@ -48,25 +47,25 @@ class ProductoUpdateRequest extends FormRequest
                     }
                 }
             ],
-            'linea_id' => [
-                'required',
-                'integer',
-                'exists:lineas,id',
-                function ($attribute, $value, $fail) use ($proveedorId) {
-                    $marcaId = $this->input('marca_id');
+            // 'linea_id' => [
+            //     'required',
+            //     'integer',
+            //     'exists:lineas,id',
+            //     function ($attribute, $value, $fail) use ($proveedorId) {
+            //         $marcaId = $this->input('marca_id');
 
-                    // Validar que la línea pertenezca al proveedor
-                    if (!Linea::where('id', $value)->where('proveedor_id', $proveedorId)->exists()) {
-                        $fail('La línea seleccionada no pertenece a este proveedor.');
-                        return;
-                    }
+            //         // Validar que la línea pertenezca al proveedor
+            //         if (!Linea::where('id', $value)->where('proveedor_id', $proveedorId)->exists()) {
+            //             $fail('La línea seleccionada no pertenece a este proveedor.');
+            //             return;
+            //         }
 
-                    // Validar que la línea esté relacionada con la marca seleccionada
-                    if ($marcaId && !Linea::where('id', $value)->where('marca_id', $marcaId)->exists()) {
-                        $fail('La línea seleccionada no pertenece a la marca especificada.');
-                    }
-                }
-            ],
+            //         // Validar que la línea esté relacionada con la marca seleccionada
+            //         if ($marcaId && !Linea::where('id', $value)->where('marca_id', $marcaId)->exists()) {
+            //             $fail('La línea seleccionada no pertenece a la marca especificada.');
+            //         }
+            //     }
+            // ],
         ];
     }
 
