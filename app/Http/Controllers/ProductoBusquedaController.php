@@ -131,7 +131,7 @@ class ProductoBusquedaController extends Controller
                 return [
                     'id' => $producto->id,
                     'texto' => $producto->nombre . ' (' . $producto->sku . ')',
-                    'precio' => $producto->precio_base,
+                    'precio_base' => $producto->precio_base,
                 ];
             });
 

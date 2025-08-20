@@ -170,14 +170,9 @@ Artisan::command('productos:update-prices {--proveedor-id=} {--factor=1.0} {--ti
                             $updateData['precio_base'] = $producto->precio_base * $factor;
                         }
                         break;
-                    case 'lista':
-                        if ($producto->precio_de_lista) {
-                            $updateData['precio_de_lista'] = $producto->precio_de_lista * $factor;
-                        }
-                        break;
                     case 'publico':
-                        if ($producto->precio_publico) {
-                            $updateData['precio_publico'] = $producto->precio_publico * $factor;
+                        if ($producto->precio_menudeo) {
+                            $updateData['precio_menudeo'] = $producto->precio_menudeo * $factor;
                         }
                         break;
                     case 'mayoreo':
@@ -188,14 +183,8 @@ Artisan::command('productos:update-prices {--proveedor-id=} {--factor=1.0} {--ti
                     case 'todos':
                     default:
                         if ($producto->precio_base) $updateData['precio_base'] = $producto->precio_base * $factor;
-                        if ($producto->precio_de_lista) $updateData['precio_de_lista'] = $producto->precio_de_lista * $factor;
-                        if ($producto->precio_publico) $updateData['precio_publico'] = $producto->precio_publico * $factor;
+                        if ($producto->precio_menudeo) $updateData['precio_menudeo'] = $producto->precio_menudeo * $factor;
                         if ($producto->precio_mayoreo) $updateData['precio_mayoreo'] = $producto->precio_mayoreo * $factor;
-                        if ($producto->precio_con_IVA) $updateData['precio_con_IVA'] = $producto->precio_con_IVA * $factor;
-                        if ($producto->precio_sin_IVA) $updateData['precio_sin_IVA'] = $producto->precio_sin_IVA * $factor;
-                        if ($producto->precio_promocional) $updateData['precio_promocional'] = $producto->precio_promocional * $factor;
-                        if ($producto->precio_distribuidor) $updateData['precio_distribuidor'] = $producto->precio_distribuidor * $factor;
-                        if ($producto->precio_especial) $updateData['precio_especial'] = $producto->precio_especial * $factor;
                         break;
                 }
 

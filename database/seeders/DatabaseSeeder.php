@@ -28,9 +28,8 @@ class DatabaseSeeder extends Seeder
                 LineaSeeder::class,
                 ProductoSeeder::class,
                 AccesoRapidoSeeder::class,
-                RequisicionesSeeder::class,
-                CotizacionesSeeder::class,
-                PedidosSeeder::class,
+                // CotizacionesSeeder::class,
+                // PedidosSeeder::class,
             ]);
         }
 

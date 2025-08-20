@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+
 use App\Http\Requests\Pedido\PedidoStoreRequest;
 use App\Http\Requests\Pedido\PedidoUpdateRequest;
 use App\Http\Resources\PedidoResource;

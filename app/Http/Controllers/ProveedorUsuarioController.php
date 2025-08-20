@@ -18,6 +18,7 @@ use App\Exceptions\Api\Auth\UnauthorizedException;
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Exceptions\Api\Custom\MainUserDuplicateException;
 use App\Exceptions\Api\Custom\NotFoundRelationException;
+
 use Illuminate\Support\Facades\Storage;
 
 class ProveedorUsuarioController extends Controller
@@ -38,7 +39,8 @@ class ProveedorUsuarioController extends Controller
             ->with(User::eagerLodable())
             ->filter($filters)
             ->orderBy($sortBy, $order)
-            ->paginate(10);
+            ->paginate($perPage);
+
         $users = UserResource::collection($usersPaginate)->resolve();
         return $this->paginated(
             $usersPaginate->setCollection(collect($users)),

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
+
 use App\Http\Requests\Sucursal\SucursalStoreRequest;
 use App\Http\Requests\Sucursal\SucursalUpdateRequest;
 use App\Http\Resources\SucursalResource;

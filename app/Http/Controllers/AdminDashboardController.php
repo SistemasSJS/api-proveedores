@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRoleEnumerate;
-use App\Http\Controllers\Controller;
+
 use App\Models\User;
 use App\Models\Proveedor;
 use App\Models\Producto;

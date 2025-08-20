@@ -42,7 +42,7 @@ class ProveedorImportProductoRequest extends FormRequest
       'productos.*.subcategoria' => ['nullable', 'string', 'max:255'],
       'productos.*.modelo' => ['nullable', 'string', 'max:255'],
       'productos.*.unidad_medida' => ['nullable', 'string', 'max:255'],
-      'productos.*.precio' => ['nullable', 'numeric', 'min:0'],
+      'productos.*.precio_base' => ['nullable', 'numeric', 'min:0'],
       'productos.*.precio_mayoreo' => ['nullable', 'numeric', 'min:0'],
       'productos.*.precio_menudeo' => ['nullable', 'numeric', 'min:0'],
     ];

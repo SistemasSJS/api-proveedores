@@ -19,7 +19,7 @@ class CsvImportService
     private FileParserService $fileParserService;
     private ProductImportValidator $validator;
     private int $proveedorId;
-    
+
     public function __construct(FileParserService $fileParserService, int $proveedorId)
     {
         $this->fileParserService = $fileParserService;
@@ -38,7 +38,7 @@ class CsvImportService
         try {
             // Parse the CSV file
             $rows = $this->fileParserService->parseFile($file);
-            
+
             if (empty($rows)) {
                 return [
                     'success' => false,
@@ -48,7 +48,7 @@ class CsvImportService
             }
 
             $headers = array_keys($rows[0]);
-            
+
             // Validate headers
             $headerValidation = $this->validator->validateHeaders($headers);
             if (!empty($headerValidation['errors'])) {
@@ -62,12 +62,12 @@ class CsvImportService
 
             // Extract unique data from all rows
             $analysis = $this->extractUniqueData($rows);
-            
+
             // Count valid rows
             $totalRows = count($rows);
             $validRows = 0;
             $errors = [];
-            
+
             foreach ($rows as $index => $row) {
                 $validation = $this->validator->validateRow($row, $index + 1);
                 if (empty($validation['errors'])) {
@@ -94,14 +94,13 @@ class CsvImportService
                     'headers' => $headers
                 ]
             ];
-            
         } catch (\Exception $e) {
             Log::error('Error analyzing CSV file', [
                 'proveedor_id' => $this->proveedorId,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return [
                 'success' => false,
                 'error' => 'Error al analizar el archivo CSV: ' . $e->getMessage(),
@@ -164,14 +163,13 @@ class CsvImportService
                     ]
                 ]
             ];
-            
         } catch (\Exception $e) {
             Log::error('Error merging CSV analysis', [
                 'proveedor_id' => $this->proveedorId,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return [
                 'success' => false,
                 'error' => 'Error al comparar datos del CSV con datos existentes: ' . $e->getMessage(),
@@ -190,7 +188,7 @@ class CsvImportService
     {
         try {
             $rows = $this->fileParserService->parseFile($file);
-            
+
             if (empty($rows)) {
                 return [
                     'success' => false,
@@ -207,10 +205,10 @@ class CsvImportService
             foreach ($rows as $index => $row) {
                 $rowNumber = $index + 1;
                 $codigo = trim($row['codigo'] ?? '');
-                
+
                 // Validate the row
                 $validation = $this->validator->validateRow($row, $rowNumber);
-                
+
                 if (!empty($validation['errors'])) {
                     $errores[] = [
                         'fila' => $rowNumber,
@@ -268,14 +266,13 @@ class CsvImportService
                     ]
                 ]
             ];
-            
         } catch (\Exception $e) {
             Log::error('Error validating products', [
                 'proveedor_id' => $this->proveedorId,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return [
                 'success' => false,
                 'error' => 'Error al validar productos: ' . $e->getMessage(),
@@ -294,11 +291,11 @@ class CsvImportService
     public function executeImport($file, array $options = []): array
     {
         DB::beginTransaction();
-        
+
         try {
             $proveedor = Proveedor::findOrFail($this->proveedorId);
             $rows = $this->fileParserService->parseFile($file);
-            
+
             // Create import audit
             $importAudit = ImportAudit::create([
                 'proveedor_id' => $this->proveedorId,
@@ -319,7 +316,7 @@ class CsvImportService
 
             // Process the import
             $result = $this->processImport($rows, $proveedor, $importAudit, $options);
-            
+
             // Update audit with results
             $importAudit->update([
                 'estado' => EstadoImportacion::COMPLETADO->value,
@@ -350,10 +347,9 @@ class CsvImportService
                     ]
                 ]
             ];
-            
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             if (isset($importAudit)) {
                 $importAudit->update([
                     'estado' => EstadoImportacion::ERROR->value,
@@ -372,7 +368,7 @@ class CsvImportService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return [
                 'success' => false,
                 'error' => 'Error al ejecutar la importación: ' . $e->getMessage(),
@@ -475,12 +471,13 @@ class CsvImportService
         // Pre-load existing data to optimize performance
         $existingMarcas = Marca::where('proveedor_id', $this->proveedorId)->pluck('id', 'nombre');
         $existingCategorias = Categoria::where('proveedor_id', $this->proveedorId)->whereNull('parent_id')->pluck('id', 'nombre');
+        $existingSubCategorias = Categoria::where('proveedor_id', $this->proveedorId)->whereNotNull('parent_id')->pluck('id', 'nombre');
         $existingUnidades = UnidadMedida::where('proveedor_id', $this->proveedorId)->pluck('id', 'descripcion');
 
         foreach (array_chunk($rows, $chunkSize) as $chunk) {
             $currentChunk++;
             $progreso = ($currentChunk / $totalChunks) * 100;
-            
+
             $importAudit->update(['progreso' => $progreso]);
             $importAudit->appendLog("Procesando lote {$currentChunk} de {$totalChunks}", [
                 'registros_en_lote' => count($chunk),
@@ -492,6 +489,7 @@ class CsvImportService
                     // Create required entities first
                     $marcaId = $this->getOrCreateMarca($row['marca'] ?? '', $proveedor, $existingMarcas, $estadisticas);
                     $categoriaId = $this->getOrCreateCategoria($row['categoria'] ?? '', $proveedor, $existingCategorias, $estadisticas);
+                    $subCategoriaId = $this->getOrCreateCategoria($row['subcategoria'] ?? '', $proveedor, $existingCategorias, $estadisticas);
                     $unidadId = $this->getOrCreateUnidadMedida($row['unidad_medida'] ?? '', $proveedor, $existingUnidades, $estadisticas);
 
                     // Create or update product
@@ -505,9 +503,10 @@ class CsvImportService
                             'descripcion' => $row['descripcion'] ?? null,
                             'precio_base' => is_numeric($row['precio'] ?? 0) ? (float) $row['precio'] : 0,
                             'precio_mayoreo' => is_numeric($row['precio_mayoreo'] ?? 0) ? (float) $row['precio_mayoreo'] : null,
-                            'precio_publico' => is_numeric($row['precio_menudeo'] ?? 0) ? (float) $row['precio_menudeo'] : null,
+                            'precio_menudeo' => is_numeric($row['precio_menudeo'] ?? 0) ? (float) $row['precio_menudeo'] : null,
                             'marca_id' => $marcaId,
                             'categoria_id' => $categoriaId,
+                            'subcategoria_id' => $categoriaId,
                             'unidad_medida_id' => $unidadId,
                             'activo' => true,
                         ]
@@ -518,7 +517,6 @@ class CsvImportService
                     } else {
                         $estadisticas['productos_actualizados']++;
                     }
-
                 } catch (\Exception $e) {
                     $estadisticas['errores']++;
                     $errores_detalle[] = [

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\EstadoGeneral;
+
 use App\Http\Requests\Categoria\CategoriaStoreRequest;
 use App\Http\Resources\CategoriaAcordeonResource;
 use App\Http\Resources\CategoriaResource;

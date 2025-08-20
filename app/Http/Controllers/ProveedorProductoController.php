@@ -3,23 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
+
 use App\Http\Requests\Producto\ProductoStoreRequest;
 use App\Http\Requests\Producto\ProductoUpdateLogoRequest;
 use App\Http\Requests\Producto\ProductoUpdateRequest;
 use App\Http\Requests\ProveedorImportProducto\ProveedorImportProductoRequest;
-use App\Http\Requests\ProveedorImportProducto\ProductoBulkStoreJsonRequest;
-use App\Http\Requests\ProveedorImportProducto\ProductoBulkStoreRequest;
 use App\Models\Proveedor;
 use App\Http\Resources\ProductoResource;
-use App\Models\Categoria;
-use App\Models\Marca;
 use App\Models\Producto;
-use App\Models\UnidadMedida;
 use Illuminate\Http\Request;
 use App\Traits\ApiResponse;
 use App\Services\ImportService;
 use App\Services\ImportProcessorService;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ProveedorProductoController extends Controller
@@ -78,7 +73,7 @@ class ProveedorProductoController extends Controller
         //     return $this->error('El producto no pertenece a este proveedor.', 403);
         // }
 
-        // ✅ Validar los datos del request
+        // ✅ Validar los datos del request,
         $data = $request->validated();
         $data['proveedor_id'] = $proveedor->id;
 
@@ -117,90 +112,4 @@ class ProveedorProductoController extends Controller
         $producto->delete();
         return $this->success(message: "Producto eliminado correctamente.");
     }
-
-
-    /***********************************************************************/
-    /************************BULK INSERT ***********************************/
-    /***********************************************************************/
-
-
-    public function bulkStore(ProveedorImportProductoRequest $request, Proveedor $proveedor)
-    {
-        // Delegamos al servicio de importación para mantener consistencia
-        return $this->importService->processImport($request, $proveedor);
-    }
-
-    public function validateProductosByCodigo(Request $request, Proveedor $proveedor)
-    {
-        $codigos = $request->input('codigos', []);
-
-        if (!is_array($codigos) || empty($codigos)) {
-            return $this->error('Debe enviar un array de códigos de producto.', 422);
-        }
-
-        // Buscar productos que coincidan con los códigos y el proveedor
-        $productos = Producto::where('proveedor_id', $proveedor->id)
-            ->whereIn('codigo', $codigos)
-            ->get(['id', 'codigo', 'nombre']);
-
-        // Obtener códigos encontrados
-        $codigosEncontrados = $productos->pluck('codigo')->toArray();
-
-        // Determinar los códigos que no existen
-        $codigosNoEncontrados = array_values(array_diff($codigos, $codigosEncontrados));
-
-        return $this->success([
-            'encontrados' => $productos,
-            'no_encontrados' => $codigosNoEncontrados,
-        ]);
-    }
-
-    /***********************************************************************/
-    /***********************************************************************/
-    /***********************************************************************/
-    /***********************************************************************/
-    /***********************************************************************/
-    /***********************************************************************/
-    /***********************************************************************/
-    /***********************************************************************/
-    /***********************************************************************/
-    /***********************************************************************/
-    /***********************************************************************/
-
-    /**
-     * Crear entrada de auditoría para importación
-     */
-    // private function createImportAudit(Proveedor $proveedor, array $productosData, string $tipo = 'bulk'): \App\Models\ImportAudit
-    // {
-    //     return \App\Models\ImportAudit::create([
-    //         'proveedor_id' => $proveedor->id,
-    //         'tipo' => $tipo,
-    //         'formato' => 'json',
-    //         'estado' => 'processing',
-    //         'fase' => 'processing',
-    //         'total_registros' => count($productosData),
-    //         'progreso' => 0,
-    //         'inicio_proceso' => now(),
-    //     ]);
-    // }
-
-    // /**
-    //  * Manejar error de importación
-    //  */
-    // private function handleImportError(\App\Models\ImportAudit $importAudit, \Throwable $e): void
-    // {
-    //     $importAudit->update([
-    //         'estado' => 'failed',
-    //         'fase' => 'completed',
-    //         'fin_proceso' => now(),
-    //     ]);
-
-    //     $importAudit->appendLog('Error durante la importación', [
-    //         'error' => $e->getMessage(),
-    //         'file' => $e->getFile(),
-    //         'line' => $e->getLine()
-    //     ]);
-
-    //     $importAudit->save();
-    // }
 }

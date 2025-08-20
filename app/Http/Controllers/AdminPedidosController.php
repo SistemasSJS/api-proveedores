@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+
 use App\Models\Pedido;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class AdminPedidosController extends Controller
 {
@@ -502,7 +503,7 @@ class AdminPedidosController extends Controller
             ]);
         } catch (\Exception $e) {
             // Log de error pero no interrumpir el flujo principal
-            \Log::error('Error al registrar auditoría: ' . $e->getMessage());
+            Log::error('Error al registrar auditoría: ' . $e->getMessage());
         }
     }
 }

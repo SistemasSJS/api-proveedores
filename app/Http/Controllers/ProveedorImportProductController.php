@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Models\Marca;
 use App\Models\Categoria;
 use App\Models\UnidadMedida;
@@ -138,7 +139,7 @@ class ProveedorImportProductController extends Controller
                 'nombre' => $item['producto'],
                 'descripcion' => $item['descripcion'] ?? null,
                 'modelo' => $item['modelo'] ?? null,
-                'precio' => $item['precio'],
+                'precio_base' => $item['precio_base'],
                 'precio_mayoreo' => $item['precio_mayoreo'] ?? null,
                 'precio_menuedeo' => $item['precio_menuedeo'] ?? null,
                 'marca_id' => $marcasExistentes[$item['marca']] ?? null,
@@ -301,7 +302,7 @@ class ProveedorImportProductController extends Controller
             'nombre' => $item['producto'],
             'descripcion' => $item['descripcion'] ?? null,
             'modelo' => $item['modelo'] ?? null,
-            'precio' => $item['precio'],
+            'precio_base' => $item['precio_base'],
             'precio_mayoreo' => $item['precio_mayoreo'] ?? null,
             'precio_menuedeo' => $item['precio_menuedeo'] ?? null,
             'marca_id' => $marca?->id,
@@ -545,7 +546,7 @@ class ProveedorImportProductController extends Controller
   //           'nombre' => $item['producto'],
   //           'descripcion' => $item['descripcion'] ?? null,
   //           'modelo' => $item['modelo'] ?? null,
-  //           'precio' => $item['precio'],
+  //           'precio_base' => $item['precio_base'],
   //           'precio_mayoreo' => $item['precio_mayoreo'] ?? null,
   //           'precio_menuedeo' => $item['precio_menuedeo'] ?? null,
   //           'marca_id' => $marca?->id,

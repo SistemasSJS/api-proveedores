@@ -19,9 +19,16 @@ class ProductoStoreRequest extends FormRequest
         $proveedorId = $this->route('proveedor')->id ?? $this->input('proveedor_id');
 
         return [
-            'codigo_interno' => ['required', 'string', 'max:50'],
             'nombre' => ['required', 'string', 'max:100'],
             'descripcion' => ['required', 'string', 'max:255'],
+            'codigo_interno' => ['required', 'string', 'max:50'],
+            'proveedor_id' => ['sometimes', 'required', 'integer', 'exists:proveedores,id'],
+
+            // precios
+            'precio_base' => ['sometimes', 'numeric'],
+            'precio_mayoreo' => ['sometimes', 'numeric'],
+            'precio_menudeo' => ['sometimes', 'numeric'],
+
             'unidad_medida_id' => ['required', 'integer', 'exists:unidad_medidas,id'],
 
             'categoria_id' => [
@@ -40,7 +47,7 @@ class ProductoStoreRequest extends FormRequest
                     }
                 }
             ],
-            'sub_categoria_id' => [
+            'subcategoria_id' => [
                 'required',
                 'integer',
                 'exists:categorias,id',
@@ -56,13 +63,6 @@ class ProductoStoreRequest extends FormRequest
 
                     if (!$padre || $padre->id != $categoriaId) {
                         return $fail('La subcategoría no pertenece a la categoría padre especificada.');
-                    }
-
-                    // Validar jerarquía coherente
-                    if (($subcategoria->nivel === 1 && $padre->nivel !== 0) ||
-                        ($subcategoria->nivel === 2 && $padre->nivel !== 1)
-                    ) {
-                        return $fail('La jerarquía entre categoría y subcategoría es incorrecta.');
                     }
                 }
             ],
@@ -83,32 +83,32 @@ class ProductoStoreRequest extends FormRequest
     public function messages(): array
     {
         return [
+            // Campos obligatorios
             'nombre.required' => 'El nombre es obligatorio.',
             'descripcion.required' => 'La descripción es obligatoria.',
-
             'codigo_interno.required' => 'El código interno es obligatorio.',
-
             'proveedor_id.required' => 'El proveedor es obligatorio.',
-            'proveedor_id.exists' => 'El proveedor seleccionado no es válido.',
-
             'unidad_medida_id.required' => 'La unidad de medida es obligatoria.',
-            'unidad_medida_id.exists' => 'La unidad de medida seleccionada no es válida.',
-
-
-            'categorias.required' => 'Las categorías son obligatorias.',
-            'categorias.array' => 'Las categorías deben enviarse como un arreglo.',
-            'categorias.min' => 'Debe seleccionar al menos una categoría.',
-            'categorias.*.integer' => 'Cada categoría debe ser un identificador válido.',
-            'categorias.*.exists' => 'Una o más categorías seleccionadas no son válidas.',
-
+            'categoria_id.required' => 'La categoría padre es obligatoria.',
+            'sub_categoria_id.required' => 'La subcategoría es obligatoria.',
             'marca_id.required' => 'La marca es obligatoria.',
+
+            // Existencia en base de datos
+            'proveedor_id.exists' => 'El proveedor seleccionado no es válido.',
+            'unidad_medida_id.exists' => 'La unidad de medida seleccionada no es válida.',
+            'categoria_id.exists' => 'La categoría seleccionada no es válida.',
+            'sub_categoria_id.exists' => 'La subcategoría seleccionada no es válida.',
             'marca_id.exists' => 'La marca seleccionada no es válida.',
-            'linea_id.required' => 'La línea es obligatoria.',
-            'linea_id.exists' => 'La línea seleccionada no es válida.',
 
+            // Mensajes para validaciones personalizadas
+            'categoria_id.categoria_proveedor' => 'La categoría padre no pertenece al proveedor o no está en el nivel 0.',
+            'sub_categoria_id.subcategoria_padre' => 'La subcategoría no pertenece a la categoría padre especificada o la jerarquía es incorrecta.',
+            'marca_id.marca_proveedor' => 'La marca seleccionada no pertenece a este proveedor.',
 
-            'marca_id.exists' => 'La marca seleccionada no es válida o no pertenece a este proveedor.',
-            'linea_id.exists' => 'La línea seleccionada no es válida, no pertenece a este proveedor o no está relacionada con la marca.',
+            // Precios (opcional, si quieres mensajes específicos)
+            'precio_base.numeric' => 'El precio base debe ser un número.',
+            'precio_mayoreo.numeric' => 'El precio de mayoreo debe ser un número.',
+            'precio_menudeo.numeric' => 'El precio de menudeo debe ser un número.',
         ];
     }
 }

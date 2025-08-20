@@ -83,7 +83,7 @@
                             [
                                 'nombre' => $producto['nombre_producto'],
                                 'descripcion' => $producto['descripcion'],
-                                'precio' => $producto['precio'],
+                                'precio_base' => $producto['precio_base'],
                                 'stock' => $producto['cantidad_disponible'],
                                 'activo' => $producto['activo'] === 'true',
                                 'marca_id' => $marca->id,
@@ -143,7 +143,7 @@
                         [
                             'nombre' => $row['nombre_producto'],
                             'descripcion' => $row['descripcion'],
-                            'precio' => $row['precio'],
+                            'precio_base' => $row['precio_base'],
                             'cantidad_disponible' => $row['cantidad_disponible'],
                             'activo' => $row['activo'],
                             'proveedor_id' => $proveedor->id,

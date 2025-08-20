@@ -2,14 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Proveedor;
-use App\Models\Requisicion;
-use App\Models\User;
 use App\Services\DashboardService;
 use App\Services\ReporteService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {

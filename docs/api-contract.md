@@ -314,14 +314,8 @@ This document outlines the API contract for the product import system that suppo
 - `nombre_categoria_nivel_2`: Category level 2 (string)
 - `nombre_categoria_nivel_3`: Category level 3 (string)
 - `precio_base`: Base price (decimal)
-- `precio_de_lista`: List price (decimal)
-- `precio_público`: Public price (decimal)
+- `precio_menudeo`: Public price (decimal)
 - `precio_mayoreo`: Wholesale price (decimal)
-- `precio_con_IVA`: Price with tax (decimal)
-- `precio_sin_IVA`: Price without tax (decimal)
-- `precio_promocional`: Promotional price (decimal)
-- `precio_distribuidor`: Distributor price (decimal)
-- `precio_especial`: Special price (decimal)
 
 ### Acceptable MIME Types:
 - `text/csv`

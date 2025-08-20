@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Models\Proveedor;
 use App\Services\ReporteService;
 use Illuminate\Http\Request;

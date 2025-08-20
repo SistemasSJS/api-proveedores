@@ -21,26 +21,22 @@ class Producto extends BaseModel
      */
     protected $fillable = [
         'sku',
+        'imagen_principal', // aun no se incluyen imgs
+        //campos de importacion
         'codigo_interno',
-        'modelo',
+        'proveedor_id',
         'nombre',
         'descripcion',
-        'imagen_principal',
+        'marca_id',
+        'categoria_id',
+        'subcategoria_id',
+        'precio_base',
+        'precio_mayoreo',
+        'precio_menudeo',
+        // otros campos
+        'modelo',
         'activo',
         'stock',
-        'precio_base',
-        'precio_de_lista',
-        'precio_publico',
-        'precio_mayoreo',
-        'precio_con_IVA',
-        'precio_sin_IVA',
-        'precio_promocional',
-        'precio_distribuidor',
-        'precio_especial',
-        'proveedor_id',
-        'categoria_id',
-        'marca_id',
-        'linea_id',
         'destacado',
         'principal',
         'estatus',
@@ -67,23 +63,16 @@ class Producto extends BaseModel
         'subcategoria_id' => 'SubCategoriaId',
         'proveedor_id' => 'proveedorId',
         'marca_id' => 'marcaId',
-        'linea_id' => 'lineaId',
     ];
 
     protected $casts = [
         'tags' => 'array',
         'precio_base' => 'float',
-        'precio_de_lista' => 'float',
-        'precio_publico' => 'float',
         'precio_mayoreo' => 'float',
-        'precio_con_IVA' => 'float',
-        'precio_sin_IVA' => 'float',
-        'precio_promocional' => 'float',
-        'precio_distribuidor' => 'float',
-        'precio_especial' => 'float',
-        'activo' => 'boolean',
+        'precio_menudeo' => 'float',
         'principal' => 'boolean',
         'destacado' => 'boolean',
+        'activo' => 'boolean',
     ];
 
 
@@ -205,12 +194,6 @@ class Producto extends BaseModel
         return $query->whereIn('marca_id', $ids);
     }
 
-    public function filterByLineaId($query, $value)
-    {
-        $ids = explode(',', $value);
-        if (empty($ids)) return $query;
-        return $query->whereIn('linea_id', $ids);
-    }
 
     /*****************************************
      * Filtros STR
