@@ -90,10 +90,10 @@ Route::middleware('auth:sanctum')->group(function () {
     /**
      * GESTIÓN DE REQUISICIONES
      */
-    Route::prefix('requisiciones')->group(function () {
-        Route::get('/', [RequisicionController::class, 'index'])->middleware(['audit']);
-        Route::post('/', [RequisicionController::class, 'store'])->middleware(['audit']);
-        Route::get('{requisicion}', [RequisicionController::class, 'show'])->middleware(['audit']);
-        Route::patch('{requisicion}/cancelar', [RequisicionController::class, 'cancelar'])->middleware(['audit']);
-    });
+    // Route::prefix('requisiciones')->group(function () {
+    //     Route::get('/', [RequisicionController::class, 'index'])->middleware(['audit']);
+    //     Route::post('/', [RequisicionController::class, 'store'])->middleware(['audit']);
+    //     Route::get('{requisicion}', [RequisicionController::class, 'show'])->middleware(['audit']);
+    //     Route::patch('{requisicion}/cancelar', [RequisicionController::class, 'cancelar'])->middleware(['audit']);
+    // });
 });

@@ -28,6 +28,9 @@
 | Es importante mantener este orden para evitar conflictos
 */
 
+// 0. Rutas públicas (Para la app de construcc-nominas)
+require __DIR__ . '/construcc-nominas.php';
+
 // 1. Rutas públicas (sin autenticación)
 require __DIR__ . '/public.php';
 

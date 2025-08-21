@@ -2,26 +2,23 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class CategoriaAcordeonResource extends JsonResource
 {
-  public function toArray($request)
+  /**
+   * Transform the resource into an array.
+   *
+   * @return array<string, mixed>
+   */
+  public function toArray(Request $request): array
   {
     return [
-      'id'          => (string) $this->id,
-      'nombre'      => $this->nombre,
-      'selected'    => false, // Valor por defecto para UI
-      'subcategorias' => $this->whenLoaded('children', function () {
-        return $this->children->map(function ($subcategoria) {
-          return [
-            'id'         => (string) $subcategoria->id,
-            'nombre'     => $subcategoria->nombre,
-            'selected'   => false, // Valor por defecto para UI
-            'categoriaId' => (string) $this->id,
-          ];
-        });
-      }),
+      'id'     => (string) $this->id,
+      'nombre' => $this->nombre,
+      'count'  => $this->productos_count ?? 0,
+      'childs' => CategoriaAcordeonResource::collection($this->whenLoaded('children')),
     ];
   }
 }

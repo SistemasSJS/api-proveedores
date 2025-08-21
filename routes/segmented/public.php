@@ -42,7 +42,6 @@ Route::get('productos', [ProductoController::class, 'index'])->middleware(['audi
 Route::get('imagenes', [ProductoImagenController::class, 'index'])->middleware(['audit']);
 Route::get('unidades-medida', [UnidadMedidaController::class, 'index'])->middleware(['audit']);
 Route::get('categorias', [CategoriaController::class, 'index'])->middleware(['audit']);
-Route::get('lineas', [LineaController::class, 'index'])->middleware(['audit']);
 Route::get('marcas', [MarcaController::class, 'index'])->middleware(['audit']);
 Route::get('tipos-empresa', [TipoEmpresaController::class, 'index'])->middleware(['audit']);
 

@@ -42,6 +42,7 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
         Route::put('proveedores/{proveedor}', [ProveedorController::class, 'update'])->middleware('audit');
         Route::patch('proveedores/{proveedor}', [ProveedorController::class, 'update'])->middleware('audit');
         Route::delete('proveedores/{proveedor}', [ProveedorController::class, 'destroy'])->middleware('audit');
+        Route::get('proveedores/{proveedor}/productos', [ProveedorController::class, 'destroy'])->middleware('audit');
 
         // Sucursales
         Route::get('sucursales', [SucursalController::class, 'index']);
@@ -83,14 +84,6 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
         Route::put('categorias/{categoria}', [CategoriaController::class, 'update'])->middleware('audit');
         Route::patch('categorias/{categoria}', [CategoriaController::class, 'update'])->middleware('audit');
         Route::delete('categorias/{categoria}', [CategoriaController::class, 'destroy'])->middleware('audit');
-
-        // Líneas
-        Route::get('lineas', [LineaController::class, 'index']);
-        Route::post('lineas', [LineaController::class, 'store'])->middleware('audit');
-        Route::get('lineas/{linea}', [LineaController::class, 'show']);
-        Route::put('lineas/{linea}', [LineaController::class, 'update'])->middleware('audit');
-        Route::patch('lineas/{linea}', [LineaController::class, 'update'])->middleware('audit');
-        Route::delete('lineas/{linea}', [LineaController::class, 'destroy'])->middleware('audit');
 
         // Marcas
         Route::get('marcas', [MarcaController::class, 'index']);

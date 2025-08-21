@@ -24,7 +24,7 @@ class ProveedorCategoriaController extends Controller
             ->where('estatus', EstadoGeneral::ACTIVO->value)
             ->paginate(10000);
 
-        $categorias =    CategoriaAcordeonResource::collection($data)->resolve();
+        $categorias =    CategoriaResource::collection($data)->resolve();
         return $this->paginated($data->setCollection(collect($categorias)));
     }
 
@@ -38,6 +38,7 @@ class ProveedorCategoriaController extends Controller
             ->paginate();
         return $this->paginated($data);
     }
+
 
     public function index_sub_categorias(Request $request, Proveedor $proveedor, $categoriaId)
     {
@@ -106,5 +107,23 @@ class ProveedorCategoriaController extends Controller
         $categoria->delete();
 
         return $this->success(null, 204);
+    }
+
+    public function categoriasConSubcatCountProductos(Request $request, Proveedor $proveedor)
+    {
+        $categorias = Categoria::with([
+            'children' => function ($query) {
+                $query->withCount('productos');
+            }
+        ])
+            ->withCount('productos')
+            ->whereNull('parent_id')
+            ->where('proveedor_id', $proveedor->id)
+            ->get();
+
+        return $this->success(
+            CategoriaAcordeonResource::collection($categorias),
+            "Listado de categorías con subcategorías con contador de productos."
+        );
     }
 }

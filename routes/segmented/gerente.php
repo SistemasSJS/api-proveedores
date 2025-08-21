@@ -73,6 +73,7 @@ Route::prefix('proveedores')
             Route::get('/', [ProveedorCategoriaController::class, 'index'])->middleware(['audit']);
             Route::post('/', [ProveedorCategoriaController::class, 'store'])->middleware(['audit']);
             Route::get('/all', [ProveedorCategoriaController::class, 'all'])->middleware(['audit']);
+            Route::get('/all/count-products', [ProveedorCategoriaController::class, 'categoriasConSubcatCountProductos']);
 
             Route::middleware(['proveedor.categoria', 'audit'])->group(function () {
                 Route::get('{categoria}', [ProveedorCategoriaController::class, 'show']);
