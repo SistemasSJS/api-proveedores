@@ -98,7 +98,6 @@ class Proveedor extends BaseModel
             'unidades',
             'categorias',
             'marcas',
-            'lineas',
             'sucursales',
             'productos',
         ];
@@ -165,10 +164,6 @@ class Proveedor extends BaseModel
     public function marcas()
     {
         return $this->hasMany(Marca::class);
-    }
-    public function lineas()
-    {
-        return $this->hasMany(Linea::class);
     }
     public function unidades()
     {
@@ -282,11 +277,6 @@ class Proveedor extends BaseModel
     public function sucursales(): HasMany
     {
         return $this->hasMany(Sucursal::class);
-    }
-
-    public function requisiciones(): HasMany
-    {
-        return $this->hasMany(Requisicion::class);
     }
 
     public function sucursalesActivas(): HasMany

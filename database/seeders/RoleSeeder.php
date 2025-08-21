@@ -13,6 +13,38 @@ class RoleSeeder extends Seeder
     {
         $roles = [
             [
+                'nombre' => 'CONSTRUCC_APP',
+                'descripcion' => 'Acceso de solo lectura a todo el módulo Construcc: proveedores, productos, catálogos, reportes y configuración',
+                'permissions' => [
+                    // Proveedores
+                    'construcc.proveedores.index',
+                    'construcc.proveedores.buscar',
+                    'construcc.proveedores.productos',
+                    'construcc.proveedores.productos.buscar',
+
+                    // Productos
+                    'construcc.productos.buscar',
+                    'construcc.productos.filtros',
+                    'construcc.productos.sugerencias',
+
+                    // Catálogos
+                    'construcc.catalogos.marcas',
+                    'construcc.catalogos.categorias',
+                    'construcc.catalogos.lineas',
+                    'construcc.catalogos.unidades',
+                    'construcc.catalogos.completos',
+
+                    // Reportes
+                    'construcc.reportes.estadisticas',
+                    'construcc.reportes.resumen',
+
+                    // Configuración
+                    'construcc.config.filtros',
+                    'construcc.config.ordenamiento',
+                ]
+            ],
+
+            [
                 'nombre' => 'ADMINISTRADOR',
                 'descripcion' => 'Acceso total al sistema, configuración y administración general',
                 'permissions' => [
@@ -28,10 +60,10 @@ class RoleSeeder extends Seeder
                     'productos.read',
                     'productos.update',
                     'productos.delete',
-                    'requisiciones.create',
-                    'requisiciones.read',
-                    'requisiciones.update',
-                    'requisiciones.delete',
+                    // 'requisiciones.create',
+                    // 'requisiciones.read',
+                    // 'requisiciones.update',
+                    // 'requisiciones.delete',
                     'dashboard.admin'
                 ]
             ],
@@ -50,8 +82,8 @@ class RoleSeeder extends Seeder
                     'proveedor.sucursales.read',
                     'proveedor.sucursales.update',
                     'proveedor.sucursales.delete',
-                    'proveedor.requisiciones.read',
-                    'proveedor.requisiciones.update',
+                    // 'proveedor.requisiciones.read',
+                    // 'proveedor.requisiciones.update',
                     'proveedor.cotizaciones.create',
                     'proveedor.cotizaciones.read',
                     'dashboard.proveedor'
@@ -65,8 +97,8 @@ class RoleSeeder extends Seeder
                     'proveedor.productos.update',
                     'proveedor.sucursales.read',
                     'proveedor.sucursales.update',
-                    'proveedor.requisiciones.read',
-                    'proveedor.requisiciones.update',
+                    // 'proveedor.requisiciones.read',
+                    // 'proveedor.requisiciones.update',
                     'dashboard.proveedor'
                 ]
             ],
@@ -75,8 +107,8 @@ class RoleSeeder extends Seeder
                 'descripcion' => 'Acceso para gestionar requisiciones, clientes y ventas',
                 'permissions' => [
                     'proveedor.productos.read',
-                    'proveedor.requisiciones.read',
-                    'proveedor.requisiciones.update',
+                    // 'proveedor.requisiciones.read',
+                    // 'proveedor.requisiciones.update',
                     'proveedor.cotizaciones.create',
                     'proveedor.cotizaciones.read',
                     'dashboard.proveedor'
@@ -87,7 +119,7 @@ class RoleSeeder extends Seeder
                 'descripcion' => 'Permisos limitados, apoyo en tareas específicas',
                 'permissions' => [
                     'proveedor.productos.read',
-                    'proveedor.requisiciones.read'
+                    // 'proveedor.requisiciones.read'
                 ]
             ],
             [
@@ -95,9 +127,9 @@ class RoleSeeder extends Seeder
                 'descripcion' => 'Usuario final que puede realizar requisiciones',
                 'permissions' => [
                     'productos.search',
-                    'requisiciones.create',
-                    'requisiciones.read',
-                    'requisiciones.update',
+                    // 'requisiciones.create',
+                    // 'requisiciones.read',
+                    // 'requisiciones.update',
                     'dashboard.cliente'
                 ]
             ]

@@ -12,4 +12,5 @@ enum UserRoleEnumerate: string
     case AUXILIAR = 'AUXILIAR';
     case USUARIO = 'USUARIO';
     case CLIENTE = 'CLIENTE';
+    case CONSTUCC_APP = 'CONSTRUCC_APP';
 }
