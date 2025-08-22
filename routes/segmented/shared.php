@@ -6,12 +6,10 @@ use App\Http\Controllers\TiendaController;
 use App\Http\Controllers\ProductoBusquedaController;
 use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\LineaController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProductoImagenController;
 use App\Http\Controllers\ProveedorController;
-use App\Http\Controllers\RequisicionController;
 use App\Http\Controllers\SucursalController;
 use App\Http\Controllers\TipoEmpresaController;
 use App\Http\Controllers\UnidadMedidaController;
@@ -29,7 +27,7 @@ Route::middleware('auth:sanctum')->group(function () {
      * TIENDA ONLINE
      */
     Route::prefix('tienda')->group(function () {
-        
+
         /**
          * CATALOGOS PARA LOS FILTROS
          */
@@ -39,7 +37,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('imagenes', [ProductoImagenController::class, 'index'])->middleware(['audit']);
         Route::get('unidades-medida', [UnidadMedidaController::class, 'index'])->middleware(['audit']);
         Route::get('categorias', [CategoriaController::class, 'index'])->middleware(['audit']);
-        Route::get('lineas', [LineaController::class, 'index'])->middleware(['audit']);
         Route::get('marcas', [MarcaController::class, 'index'])->middleware(['audit']);
         Route::get('tipos-empresa', [TipoEmpresaController::class, 'index'])->middleware(['audit']);
 

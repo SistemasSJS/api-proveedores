@@ -41,6 +41,12 @@ class Categoria extends BaseModel
         return $this->hasMany(Producto::class);
     }
 
+    // Productos directos de esta subcategoría (cuando es hijo)
+    public function productosSubcategoria()
+    {
+        return $this->hasMany(Producto::class, 'subcategoria_id');
+    }
+    
     // Scope para filtrar por proveedor
     public function scopeDelProveedor($query, $proveedorId)
     {

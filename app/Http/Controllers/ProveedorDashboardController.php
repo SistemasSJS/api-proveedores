@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Enums\EstadoGeneral;
-
-use App\Http\Resources\RequisicionResource;
 use App\Models\Proveedor;
 use Illuminate\Support\Facades\Request;
 
@@ -27,15 +25,8 @@ class ProveedorDashboardController extends Controller
 
         ];
 
-        $requisiciones_recientes = $proveedor->requisiciones()
-            ->with(['usuario', 'detalles'])
-            ->latest()
-            ->limit(5)
-            ->get();
-
         return $this->success([
             'stats' => $stats,
-            'requisiciones_recientes' => RequisicionResource::collection($requisiciones_recientes),
         ]);
     }
 }

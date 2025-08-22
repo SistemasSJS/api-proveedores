@@ -112,11 +112,19 @@ class ProveedorCategoriaController extends Controller
     public function categoriasConSubcatCountProductos(Request $request, Proveedor $proveedor)
     {
         $categorias = Categoria::with([
-            'children' => function ($query) {
-                $query->withCount('productos');
+            'children' => function ($query) use ($proveedor) {
+                $query->withCount([
+                    'productosSubcategoria as productos_count' => function ($q) use ($proveedor) {
+                        $q->where('productos.proveedor_id', $proveedor->id);
+                    }
+                ]);
             }
         ])
-            ->withCount('productos')
+            ->withCount([
+                'productos as productos_count' => function ($q) use ($proveedor) {
+                    $q->where('productos.proveedor_id', $proveedor->id);
+                }
+            ])
             ->whereNull('parent_id')
             ->where('proveedor_id', $proveedor->id)
             ->get();
