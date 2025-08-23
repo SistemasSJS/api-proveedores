@@ -70,4 +70,16 @@ Route::middleware('auth:sanctum')->group(function () {
      */
     Route::get('dashboard/stats', [DashboardController::class, 'getStats'])->middleware(['audit']);
 
+    /**
+     * DEVICE TOKENS - PUSH NOTIFICATIONS
+     * Gestión de tokens FCM para notificaciones push
+     */
+    Route::prefix('device-tokens')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\DeviceTokenController::class, 'index'])->middleware(['audit']);
+        Route::post('/', [\App\Http\Controllers\Api\DeviceTokenController::class, 'store'])->middleware(['audit']);
+        Route::delete('{tokenId}/deactivate', [\App\Http\Controllers\Api\DeviceTokenController::class, 'deactivate'])->middleware(['audit']);
+        Route::delete('cleanup', [\App\Http\Controllers\Api\DeviceTokenController::class, 'cleanup'])->middleware(['audit']);
+        Route::post('test-notification', [\App\Http\Controllers\Api\DeviceTokenController::class, 'testNotification'])->middleware(['audit']);
+    });
+
 });

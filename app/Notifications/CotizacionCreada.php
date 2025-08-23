@@ -47,7 +47,26 @@ class CotizacionCreada extends Notification implements ShouldQueue
             $channels[] = 'broadcast';
         }
         
+        // Agregar FCM si el usuario tiene tokens activos
+        if ($this->shouldSendFcmNotification($notifiable)) {
+            $channels[] = 'fcm';
+        }
+        
         return $channels;
+    }
+    
+    /**
+     * Verificar si se debe enviar notificación FCM
+     */
+    private function shouldSendFcmNotification(object $notifiable): bool
+    {
+        // Verificar que FCM esté configurado
+        if (!config('services.fcm.server_key')) {
+            return false;
+        }
+        
+        // Verificar que el usuario tenga tokens activos
+        return $notifiable->activeDeviceTokens()->exists();
     }
 
     /**
@@ -94,6 +113,49 @@ class CotizacionCreada extends Notification implements ShouldQueue
         ]);
     }
 
+    /**
+     * Get the FCM representation of the notification.
+     */
+    public function toFcm(object $notifiable): array
+    {
+        $title = '🏗️ Nueva Cotización #' . $this->cotizacion->id;
+        $body = 'Se ha creado una nueva cotización desde ' . ucfirst($this->moduloOrigen) . 
+                '. Total: $' . number_format($this->cotizacion->total, 2);
+        
+        return [
+            'notification' => [
+                'title' => $title,
+                'body' => $body,
+                'icon' => '/assets/icon/favicon.png',
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK'
+            ],
+            'data' => [
+                // Datos compatibles con NotificationService del frontend
+                'type' => 'cotizacion',
+                'entityId' => (string) $this->cotizacion->id,
+                'proveedorId' => (string) ($this->cotizacion->proveedor_id ?? ''),
+                'action' => 'view',
+                'title' => $title,
+                'body' => $body,
+                'moduloOrigen' => $this->moduloOrigen,
+                'url' => '/admin/cotizaciones/' . $this->cotizacion->id,
+                'timestamp' => now()->toISOString(),
+                // Datos adicionales para el frontend
+                'cotizacion' => json_encode([
+                    'id' => $this->cotizacion->id,
+                    'fecha_cotizacion' => $this->cotizacion->fecha_cotizacion->format('Y-m-d'),
+                    'fecha_vencimiento' => $this->cotizacion->fecha_vencimiento->format('Y-m-d'),
+                    'total' => $this->cotizacion->total,
+                    'productos_count' => $this->cotizacion->detalles->count(),
+                ]),
+                'solicitante' => json_encode([
+                    'name' => $this->solicitante->name,
+                    'email' => $this->solicitante->email,
+                ])
+            ]
+        ];
+    }
+    
     /**
      * Get the array representation of the notification.
      *

@@ -1,0 +1,28 @@
+{
+  "_comment": "REEMPLAZA ESTE ARCHIVO CON EL google-services.json REAL DESDE FIREBASE CONSOLE",
+  "_instructions": [
+    "1. Ve a: https://console.firebase.google.com/project/app-proveedores-notificacion",
+    "2. Project Settings → General → Your apps",
+    "3. Si no tienes app Android: Add app → Android",
+    "4. Package name: com.construcc.proveedores",
+    "5. Descargar google-services.json",
+    "6. Reemplazar este archivo con el descargado",
+    "7. Renombrar a: google-services.json (sin .placeholder)"
+  ],
+  "project_info": {
+    "project_number": "989092385974",
+    "project_id": "app-proveedores-notificacion",
+    "storage_bucket": "app-proveedores-notificacion.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "PLACEHOLDER_ANDROID_APP_ID",
+        "android_client_info": {
+          "package_name": "com.construcc.proveedores"
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

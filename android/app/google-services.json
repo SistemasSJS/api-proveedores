@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "989092385974",
+    "project_id": "app-proveedores-notificacion",
+    "storage_bucket": "app-proveedores-notificacion.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:989092385974:android:5f064956114a1c03904217",
+        "android_client_info": {
+          "package_name": "com.construcc.proveedores"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDM0Wgbw25Nmo4XF1ObfByeQrMRE5VKrS8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

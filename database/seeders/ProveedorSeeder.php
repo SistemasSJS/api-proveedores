@@ -18,8 +18,7 @@ class ProveedorSeeder extends Seeder
 
             // === PROVEEDOR 1: Fierro y Lámina ===
             $user1 = User::factory()->proveedor()->create([
-                // 'email' => 'proveedor@fierroylaminadigital.com',
-                'email' => 'sistemas_sjs@hotmail.com',
+                'email' => 'proveedor@fierroylaminadigital.com',
                 'name' => 'Fierro y Lamina',
                 'foto_perfil_url' => $default_foto_url,
             ]);
@@ -95,7 +94,8 @@ class ProveedorSeeder extends Seeder
             ]);
             // === PROVEEDOR 3: Ejemplo ficticio ===
             $user3 = User::factory()->proveedor()->create([
-                'email' => 'proveedor@elgrangero.com',
+                // 'email' => 'proveedor@elgrangero.com',
+                'email' => 'sistemas_sjs@hotmail.com',
                 'name' => 'El Gran Gero',
                 'foto_perfil_url' => $default_foto_url,
             ]);
