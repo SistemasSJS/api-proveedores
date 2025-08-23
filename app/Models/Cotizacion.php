@@ -15,7 +15,6 @@ class Cotizacion extends BaseModel
     protected $table = 'cotizaciones';
 
     protected $fillable = [
-        'requisicion_id',
         'fecha_cotizacion',
         'fecha_vencimiento',
         'total',
