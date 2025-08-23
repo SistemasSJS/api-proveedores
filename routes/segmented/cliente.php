@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PedidoController;
-use App\Http\Controllers\RequisicionController;
 use App\Http\Controllers\ClienteDashboardController;
 use App\Enums\UserRoleEnumerate;
 

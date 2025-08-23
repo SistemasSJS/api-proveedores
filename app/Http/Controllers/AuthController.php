@@ -183,6 +183,31 @@ class AuthController extends Controller
         ], 'Login exitoso.', 200);
     }
 
+    public function refresh(Request $request)
+    {
+        if (!$request->user()) {
+            throw new UnauthorizedException("No autorizado o sesión no válida");
+        }
+
+        $user = $request->user();
+        
+        // Revocar el token actual
+        $request->user()->currentAccessToken()->delete();
+        
+        // Crear un nuevo token
+        $newToken = $user->createToken('API Token')->plainTextToken;
+        
+        // Cargar relaciones necesarias
+        $user->load(User::eagerLodable());
+        $proveedor = $user->proveedorPrincipal();
+
+        return $this->success([
+            'user' => new UserAuthenticateResource($user),
+            'token' => $newToken,
+            'proveedor' => $proveedor
+        ], 'Token renovado exitosamente', 200);
+    }
+
     public function logout(Request $request)
     {
         if (!$request->user()) {

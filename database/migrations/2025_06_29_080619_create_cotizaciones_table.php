@@ -7,19 +7,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-  public function up()
+    public function up()
     {
         Schema::create('cotizaciones', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('requisicion_id')->constrained('requisiciones')->OnDelete('cascade');
             $table->timestamp('fecha_cotizacion');
             $table->date('fecha_vencimiento');
             $table->decimal('total', 12, 2);
             $table->text('observaciones')->nullable();
             $table->enum('estatus', EstadoProceso::values())->default(EstadoProceso::PENDIENTE->value);
             $table->timestamps();
-            
-            $table->index(['requisicion_id']);
+
             $table->index(['fecha_vencimiento']);
         });
     }

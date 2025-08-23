@@ -203,18 +203,4 @@ class User extends Authenticatable
             ->value('tipo_relacion');
     }
 
-    public function requisiciones(): HasMany
-    {
-        return $this->hasMany(Requisicion::class, 'usuario_id');
-    }
-
-    public function notificaciones(): HasMany
-    {
-        return $this->hasMany(Notificacion::class, 'usuario_id');
-    }
-
-    public function notificacionesNoLeidas(): HasMany
-    {
-        return $this->hasMany(Notificacion::class, 'usuario_id')->where('leida', false);
-    }
 }

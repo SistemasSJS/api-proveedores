@@ -25,7 +25,6 @@ class DatabaseSeeder extends Seeder
                 UnidadMedidaSeeder::class,
                 CategoriaSeeder::class,
                 MarcaSeeder::class,
-                LineaSeeder::class,
                 ProductoSeeder::class,
                 AccesoRapidoSeeder::class,
                 // CotizacionesSeeder::class,
@@ -42,7 +41,6 @@ class DatabaseSeeder extends Seeder
         // UnidadMedida::factory()->count(5)->create();
         // Categoria::factory()->count(5)->create();
         // Marca::factory()->count(5)->create();
-        // Linea::factory()->count(5)->create();
         // Producto::factory()->count(1000)->create();
     }
 }

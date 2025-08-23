@@ -25,6 +25,7 @@ Route::prefix('auth')->group(function () {
      */
     Route::middleware('auth:sanctum')->group(function () {    
         Route::get('me', [AuthController::class, 'me']);
+        Route::post('refresh', [AuthController::class, 'refresh']);
         Route::post('update-img-perfil', [AuthController::class, 'update_foto_perfil']);
         Route::get('logout', [AuthController::class, 'logout']);
         

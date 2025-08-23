@@ -51,8 +51,7 @@ require __DIR__ . '/mixed.php';
 // 6. Rutas con middleware especializados
 require __DIR__ . '/middleware.php';
 
-// 7. Rutas de notificaciones especializadas
-require __DIR__ . '/notifications.php';
+// 7. Rutas de notificaciones especializadas (ELIMINADO)
 
 // 8. Rutas de compatibilidad (mantienen comportamiento existente)
 require __DIR__ . '/compatibility.php';

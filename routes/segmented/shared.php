@@ -4,7 +4,6 @@ use App\Http\Controllers\CategoriaController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TiendaController;
 use App\Http\Controllers\ProductoBusquedaController;
-use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\ProductoController;
@@ -65,32 +64,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('{producto}/disponibilidad', [ProductoBusquedaController::class, 'verificarDisponibilidad'])->middleware(['audit']);
     });
 
-    /**
-     * NOTIFICACIONES
-     */
-    Route::prefix('notificaciones')->group(function () {
-        Route::get('/', [NotificacionController::class, 'index'])->middleware(['audit']);
-        Route::patch('{notificacion}/leer', [NotificacionController::class, 'marcarComoLeida'])->middleware(['audit']);
-        Route::patch('marcar-todas-leidas', [NotificacionController::class, 'marcarTodasComoLeidas'])->middleware(['audit']);
-        Route::delete('{notificacion}', [NotificacionController::class, 'destroy'])->middleware(['audit']);
-    });
 
     /**
      * DASHBOARD BÁSICO
      */
     Route::get('dashboard/stats', [DashboardController::class, 'getStats'])->middleware(['audit']);
 
-    /**
-     * REQUISICIONES
-     */
-
-    /**
-     * GESTIÓN DE REQUISICIONES
-     */
-    // Route::prefix('requisiciones')->group(function () {
-    //     Route::get('/', [RequisicionController::class, 'index'])->middleware(['audit']);
-    //     Route::post('/', [RequisicionController::class, 'store'])->middleware(['audit']);
-    //     Route::get('{requisicion}', [RequisicionController::class, 'show'])->middleware(['audit']);
-    //     Route::patch('{requisicion}/cancelar', [RequisicionController::class, 'cancelar'])->middleware(['audit']);
-    // });
 });

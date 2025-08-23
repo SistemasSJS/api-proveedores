@@ -42,13 +42,11 @@ class CreateProductosTable extends Migration
             // FK
             $table->foreignId('proveedor_id')->index()->constrained('proveedores')->restrictOnDelete();
             $table->foreignId('marca_id')->nullable()->constrained('marcas')->nullOnDelete();
-            $table->foreignId('linea_id')->nullable()->constrained('lineas')->nullOnDelete();
             $table->foreignId('unidad_medida_id')->nullable()->constrained('unidad_medidas')->nullOnDelete();
             $table->foreignId('categoria_id')->nullable()->constrained('categorias')->onDelete('set null');
 
             $table->unique(['sku', 'proveedor_id'], 'uk_sku_proveedor');
             $table->index(['proveedor_id', 'categoria_id'], 'idx_proveedor_categoria');
-            $table->index(['marca_id', 'linea_id'], 'idx_marca_linea');
         });
     }
 

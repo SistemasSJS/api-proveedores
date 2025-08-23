@@ -8,7 +8,6 @@ use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProductoImagenController;
 use App\Http\Controllers\UnidadMedidaController;
 use App\Http\Controllers\CategoriaController;
-use App\Http\Controllers\LineaController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\TipoEmpresaController;
 use App\Http\Controllers\PedidoController;
@@ -175,7 +174,6 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
 //     Route::apiResource('imagenes', ProductoImagenController::class)->middleware(['audit'])->except(['index']);
 //     Route::apiResource('unidades-medida', UnidadMedidaController::class)->middleware(['audit'])->except(['index']);
 //     Route::apiResource('categorias', CategoriaController::class)->middleware(['audit'])->except(['index']);
-//     Route::apiResource('lineas', LineaController::class)->middleware(['audit'])->except(['index']);
 //     Route::apiResource('marcas', MarcaController::class)->middleware(['audit'])->except(['index']);
 //     Route::apiResource('tipos-empresa', TipoEmpresaController::class)->middleware(['audit'])->except(['index']);
 

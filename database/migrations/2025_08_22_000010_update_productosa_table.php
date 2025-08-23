@@ -23,9 +23,6 @@ return new class extends Migration
                 'precio_especial',
             ]);
 
-            // 2. Eliminar linea_id
-            $table->dropForeign(['linea_id']);
-            $table->dropColumn('linea_id');
 
             // 3. Agregar precio_menudeo
             $table->decimal('precio_menudeo', 10, 2)->nullable()->after('precio_mayoreo');
@@ -46,10 +43,6 @@ return new class extends Migration
             $table->decimal('precio_promocional', 10, 2)->nullable();
             $table->decimal('precio_distribuidor', 10, 2)->nullable();
             $table->decimal('precio_especial', 10, 2)->nullable();
-
-            // Restaurar linea_id
-            $table->foreignId('linea_id')->nullable()->constrained('lineas')->nullOnDelete();
-
             // Eliminar precio_menudeo
             $table->dropColumn('precio_menudeo');
         });

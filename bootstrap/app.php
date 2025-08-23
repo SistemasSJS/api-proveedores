@@ -9,7 +9,6 @@ use App\Http\Middleware\LogIncomingRequests;
 use App\Http\Middleware\RoleMiddleware;
 use App\Http\Middleware\EnsureProveedorOwnership;
 use App\Http\Middleware\EnsureProveedorProductAccess;
-use App\Http\Middleware\EnsureRequisicionAccess;
 use App\Http\Middleware\EnsureSucursalBelongsToProveedor;
 use App\Http\Middleware\EnsureUnidadMedidaBelongsToProveedor;
 use App\Http\Middleware\ValidateApiAccess;
@@ -44,7 +43,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'proveedor.access' => EnsureProveedorOwnership::class,
             'proveedor.producto.access' => EnsureProveedorProductAccess::class,
             'proveedor.role' => ValidateProveedorRole::class,
-            'requisicion.access' => EnsureRequisicionAccess::class,
             'api.access' => ValidateApiAccess::class,
             'audit' => LogApiActions::class,
             'proveedor.full' => [

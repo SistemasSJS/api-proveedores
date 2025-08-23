@@ -45,7 +45,7 @@ class Producto extends BaseModel
     /**
      * The relations to eager load on every query.
      */
-    protected $with = ['proveedor', 'categoria', 'subcategoria', 'marca', 'linea', 'especificaciones', 'imagenes'];
+    protected $with = ['proveedor', 'categoria', 'subcategoria', 'marca', 'especificaciones', 'imagenes'];
 
     /**
      * Filtros disponibles para aplicar dinámicamente en consultas.
@@ -113,11 +113,6 @@ class Producto extends BaseModel
         return $this->belongsTo(Marca::class);
     }
 
-    public function linea(): BelongsTo
-    {
-        return $this->belongsTo(Linea::class);
-    }
-
     public function categoria(): BelongsTo
     {
         return $this->belongsTo(Categoria::class);
@@ -143,11 +138,6 @@ class Producto extends BaseModel
         return $this->belongsToMany(Sucursal::class)
             ->withPivot('stock_local', 'precio_local', 'activo')
             ->withTimestamps();
-    }
-
-    public function requisicionDetalles(): HasMany
-    {
-        return $this->hasMany(RequisicionDetalle::class);
     }
 
     public function getStockEnSucursal($sucursalId)

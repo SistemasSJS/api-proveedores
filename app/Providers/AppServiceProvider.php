@@ -3,25 +3,18 @@
 namespace App\Providers;
 
 use App\Exceptions\Handler;
-use App\Models\Notificacion;
 use App\Models\Producto;
 use App\Models\Proveedor;
-use App\Models\Requisicion;
 use App\Models\Sucursal;
 use App\Observers\ProductoObserver;
-use App\Observers\RequisicionObserver;
-use App\Policies\NotificacionPolicy;
 use App\Policies\ProductoPolicy;
 use App\Policies\ProveedorPolicy;
-use App\Policies\RequisicionPolicy;
 use App\Policies\SucursalPolicy;
 use App\Services\AuditService;
 use App\Services\DashboardService;
 use App\Services\FileParserService;
-use App\Services\NotificacionService;
 use App\Services\ProductoSearchService;
 use App\Services\ReporteService;
-use App\Services\RequisicionService;
 use App\Services\SucursalService;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\ServiceProvider;
@@ -35,9 +28,7 @@ class AppServiceProvider extends ServiceProvider
      * 
      */
     protected $policies = [
-        Requisicion::class => RequisicionPolicy::class,
         Sucursal::class => SucursalPolicy::class,
-        Notificacion::class => NotificacionPolicy::class,
         // Producto::class => ProductoPolicy::class,
         // Proveedor::class => ProveedorPolicy::class,
     ];
@@ -50,10 +41,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(ExceptionHandler::class, Handler::class);
 
         // Servicios que se INYECTAN en controladores
-        $this->app->singleton(RequisicionService::class, function ($app) {
-            return new RequisicionService();
-        });
-
         $this->app->singleton(SucursalService::class, function ($app) {
             return new SucursalService();
         });
@@ -77,7 +64,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Registrar Observers
-        Requisicion::observe(RequisicionObserver::class);
         Producto::observe(ProductoObserver::class);
 
         // Configurar timezone si es necesario
