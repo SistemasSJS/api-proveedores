@@ -10,11 +10,8 @@ use App\Http\Controllers\ProveedorMarcaController;
 use App\Http\Controllers\ProveedorSucursalController;
 use App\Http\Controllers\SucursalProductoController;
 use App\Http\Controllers\ProveedorPedidoController;
-use App\Http\Controllers\ProductoImportController;
 use App\Http\Controllers\ProveedorReporteController;
 use App\Http\Controllers\ProveedorDashboardController;
-use App\Http\Controllers\ImportHistoryController;
-use App\Http\Controllers\ImportStatsController;
 use App\Http\Controllers\ProveedorUnidadMedidaController;
 use App\Http\Controllers\CsvImportController;
 
@@ -153,20 +150,6 @@ Route::prefix('proveedores')
         });
 
         /**
-         * FIXME: Aun no se implemeta la tabla de historico de impoertanciones
-         * HISTORIAL DE IMPORTACIONES
-         */
-        // Route::prefix('{proveedor}/import-history')->middleware(['proveedor.access'])->group(function () {
-        //     Route::get('/', [ImportHistoryController::class, 'index'])->middleware(['audit']);
-        //     Route::post('/', [ImportHistoryController::class, 'store'])->middleware(['audit']);
-        //     Route::get('/statistics', [ImportStatsController::class, 'dashboard'])->middleware(['audit']);
-        //     Route::get('{importHistory}', [ImportHistoryController::class, 'show'])->middleware(['audit']);
-        //     Route::get('{importHistory}/detailed', [ImportHistoryController::class, 'showDetailed'])->middleware(['audit']);
-        //     Route::patch('{importHistory}', [ImportHistoryController::class, 'update'])->middleware(['audit']);
-        //     Route::delete('{importHistory}', [ImportHistoryController::class, 'destroy'])->middleware(['audit']);
-        // });
-
-        /**
          * CSV IMPORT ROUTES
          */
         Route::prefix('{proveedor}/csv-import')->middleware(['proveedor.access'])->group(function () {
@@ -176,19 +159,6 @@ Route::prefix('proveedores')
             Route::get('/status/{auditId}', [CsvImportController::class, 'getImportStatus'])->middleware(['audit']);
             Route::get('/results/{auditId}', [CsvImportController::class, 'getImportResults'])->middleware(['audit']);
             Route::get('/results/{auditId}/export', [CsvImportController::class, 'export'])->middleware(['audit']);
-        });
-
-        /**
-         * REPORTES DEL PROVEEDOR
-         */
-        Route::prefix('{proveedor}/reportes')->middleware(['proveedor.access', 'proveedor.role:GERENTE'])->group(function () {
-            Route::get('ventas', [ProveedorReporteController::class, 'ventas'])->middleware(['audit']);
-            Route::get('productos-populares', [ProveedorReporteController::class, 'productosPopulares'])->middleware(['audit']);
-            Route::get('requisiciones-mensuales', [ProveedorReporteController::class, 'requisicionesMensuales'])->middleware(['audit']);
-            Route::get('inventario-sucursales', [ProveedorReporteController::class, 'inventarioSucursales'])->middleware(['audit']);
-            Route::get('rendimiento-categorias', [ProveedorReporteController::class, 'rendimientoCategorias'])->middleware(['audit']);
-            Route::get('clientes-activos', [ProveedorReporteController::class, 'clientesActivos'])->middleware(['audit']);
-            Route::post('exportar', [ProveedorReporteController::class, 'exportar'])->middleware(['audit']);
         });
 
         /**
