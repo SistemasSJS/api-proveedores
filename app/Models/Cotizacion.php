@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -15,6 +14,7 @@ class Cotizacion extends BaseModel
     protected $table = 'cotizaciones';
 
     protected $fillable = [
+        'proveedor_id',
         'fecha_cotizacion',
         'fecha_vencimiento',
         'total',
@@ -27,9 +27,9 @@ class Cotizacion extends BaseModel
         'total' => 'decimal:2',
     ];
 
-    public function requisicion(): BelongsTo
+    public function proveedor(): BelongsTo
     {
-        return $this->belongsTo(Requisicion::class);
+        return $this->belongsTo(Proveedor::class);
     }
 
     public function detalles(): HasMany

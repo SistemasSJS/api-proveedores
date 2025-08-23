@@ -11,6 +11,7 @@ return new class extends Migration
     {
         Schema::create('cotizaciones', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
             $table->timestamp('fecha_cotizacion');
             $table->date('fecha_vencimiento');
             $table->decimal('total', 12, 2);
@@ -19,6 +20,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['fecha_vencimiento']);
+            $table->unique(['proveedor_id', 'id']);
         });
     }
 

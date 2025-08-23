@@ -2,6 +2,7 @@
 
 use App\Enums\UserRoleEnumerate;
 use App\Http\Controllers\ConstruccController;
+use App\Http\Controllers\ConstruccCotizacionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -134,6 +135,22 @@ Route::prefix('construcc')
             Route::get('opciones-ordenamiento', [ConstruccController::class, 'opcionesOrdenamiento'])
                 ->middleware(['audit'])
                 ->name('ordenamiento');
+        });
+
+        /*
+    |--------------------------------------------------------------------------
+    | COTIZACIONES - CRUD Completo
+    |--------------------------------------------------------------------------
+    | Gestión de cotizaciones con sus detalles
+    */
+        Route::prefix('cotizaciones')->group(function () {
+            Route::get('/', [ConstruccCotizacionController::class, 'index'])->middleware(['audit']);
+            Route::post('/', [ConstruccCotizacionController::class, 'store'])->middleware(['audit']);
+            Route::middleware(['audit'])->group(function () {
+                Route::get('{cotizacion}', [ConstruccCotizacionController::class, 'show']);
+                Route::patch('{cotizacion}', [ConstruccCotizacionController::class, 'update']);
+                Route::delete('{cotizacion}', [ConstruccCotizacionController::class, 'destroy']);
+            });
         });
     });
 

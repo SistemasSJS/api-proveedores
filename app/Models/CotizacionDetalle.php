@@ -14,6 +14,7 @@ class CotizacionDetalle extends BaseModel
     protected $table = 'cotizacion_detalles';
 
     protected $fillable = [
+        'proveedor_id',
         'cotizacion_id',
         'producto_id',
         'cantidad_cotizada',
@@ -35,14 +36,8 @@ class CotizacionDetalle extends BaseModel
         return $this->belongsTo(Producto::class);
     }
 
-
     public function cotizacion(): BelongsTo
     {
         return $this->belongsTo(Cotizacion::class);
-    }
-
-    public function requisicionDetalle(): BelongsTo
-    {
-        return $this->belongsTo(RequisicionDetalle::class);
     }
 }
