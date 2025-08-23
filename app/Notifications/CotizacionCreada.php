@@ -1,0 +1,136 @@
+<?php
+
+namespace App\Notifications;
+
+use App\Models\Cotizacion;
+use App\Models\User;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Messages\BroadcastMessage;
+use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\URL;
+
+/**
+ * Notificación enviada al proveedor cuando se crea una nueva cotización
+ * desde el módulo de construcción
+ */
+class CotizacionCreada extends Notification implements ShouldQueue
+{
+    use Queueable;
+
+    protected Cotizacion $cotizacion;
+    protected User $solicitante;
+    protected string $moduloOrigen;
+
+    /**
+     * Create a new notification instance.
+     */
+    public function __construct(Cotizacion $cotizacion, User $solicitante, string $moduloOrigen = 'construccion')
+    {
+        $this->cotizacion = $cotizacion;
+        $this->solicitante = $solicitante;
+        $this->moduloOrigen = $moduloOrigen;
+    }
+
+    /**
+     * Get the notification's delivery channels.
+     *
+     * @return array<int, string>
+     */
+    public function via(object $notifiable): array
+    {
+        $channels = ['mail', 'database'];
+        
+        // Agregar broadcasting si está configurado
+        if (config('broadcasting.default') !== 'null') {
+            $channels[] = 'broadcast';
+        }
+        
+        return $channels;
+    }
+
+    /**
+     * Get the mail representation of the notification.
+     */
+    public function toMail(object $notifiable): MailMessage
+    {
+        $urlCotizacion = URL::to('/admin/cotizaciones/' . $this->cotizacion->id);
+        
+        return (new MailMessage)
+            ->subject('Nueva Cotización Solicitada - #' . $this->cotizacion->id)
+            ->view('emails.cotizacion-creada', [
+                'notifiable' => $notifiable,
+                'cotizacion' => $this->cotizacion,
+                'solicitante' => $this->solicitante,
+                'moduloOrigen' => $this->moduloOrigen,
+                'urlCotizacion' => $urlCotizacion,
+            ]);
+    }
+
+    /**
+     * Get the broadcastable representation of the notification.
+     */
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        return new BroadcastMessage([
+            'tipo' => 'cotizacion_creada',
+            'titulo' => 'Nueva Cotización',
+            'mensaje' => 'Se ha creado una nueva cotización #' . $this->cotizacion->id,
+            'cotizacion' => [
+                'id' => $this->cotizacion->id,
+                'fecha_cotizacion' => $this->cotizacion->fecha_cotizacion->format('Y-m-d'),
+                'fecha_vencimiento' => $this->cotizacion->fecha_vencimiento->format('Y-m-d'),
+                'total' => $this->cotizacion->total,
+                'productos_count' => $this->cotizacion->detalles->count(),
+            ],
+            'solicitante' => [
+                'name' => $this->solicitante->name,
+                'email' => $this->solicitante->email,
+            ],
+            'modulo_origen' => $this->moduloOrigen,
+            'timestamp' => now()->toISOString(),
+            'url' => URL::to('/admin/cotizaciones/' . $this->cotizacion->id),
+        ]);
+    }
+
+    /**
+     * Get the array representation of the notification.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(object $notifiable): array
+    {
+        return [
+            'tipo' => 'cotizacion_creada',
+            'titulo' => 'Nueva Cotización #' . $this->cotizacion->id,
+            'mensaje' => 'Se ha creado una nueva cotización desde ' . ucfirst($this->moduloOrigen),
+            'cotizacion_id' => $this->cotizacion->id,
+            'proveedor_id' => $this->cotizacion->proveedor_id,
+            'fecha_cotizacion' => $this->cotizacion->fecha_cotizacion->format('Y-m-d'),
+            'fecha_vencimiento' => $this->cotizacion->fecha_vencimiento->format('Y-m-d'),
+            'total' => $this->cotizacion->total,
+            'productos_count' => $this->cotizacion->detalles->count(),
+            'solicitante' => [
+                'id' => $this->solicitante->id,
+                'name' => $this->solicitante->name,
+                'email' => $this->solicitante->email,
+            ],
+            'modulo_origen' => $this->moduloOrigen,
+            'url' => '/admin/cotizaciones/' . $this->cotizacion->id,
+            'created_at' => now()->toISOString(),
+        ];
+    }
+
+    /**
+     * Determine which queues should be used for each notification channel.
+     */
+    public function viaQueues(): array
+    {
+        return [
+            'mail' => 'notifications',
+            'database' => 'default',
+            'broadcast' => 'broadcast',
+        ];
+    }
+}

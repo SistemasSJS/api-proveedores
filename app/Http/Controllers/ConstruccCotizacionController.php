@@ -4,9 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Cotizacion;
 use App\Models\CotizacionDetalle;
+use App\Models\Proveedor;
+use App\Notifications\CotizacionCreada;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -120,6 +124,9 @@ class ConstruccCotizacionController extends Controller
 
             // Cargar las relaciones para la respuesta
             $cotizacion->load(['proveedor:id,nombre_comercial,rfc', 'detalles.producto:id,nombre']);
+
+            // Enviar notificaciones a los usuarios del proveedor
+            $this->enviarNotificacionesCotizacionCreada($cotizacion);
 
             return $this->success($cotizacion, 'Cotización creada exitosamente.', 201);
         } catch (\Exception $e) {
@@ -262,6 +269,89 @@ class ConstruccCotizacionController extends Controller
                     'observaciones' => $detalle['observaciones'],
                 ]);
             }
+        }
+    }
+
+    /**
+     * Envía notificaciones a los usuarios del proveedor cuando se crea una cotización
+     *
+     * @param Cotizacion $cotizacion
+     * @return void
+     */
+    private function enviarNotificacionesCotizacionCreada(Cotizacion $cotizacion): void
+    {
+        try {
+            // Obtener el usuario que está creando la cotización
+            $solicitante = Auth::user();
+            
+            if (!$solicitante) {
+                Log::warning('No se pudo identificar el usuario que creó la cotización', [
+                    'cotizacion_id' => $cotizacion->id
+                ]);
+                return;
+            }
+
+            // Obtener el proveedor con sus usuarios activos
+            $proveedor = Proveedor::with('usuariosActivos')
+                ->find($cotizacion->proveedor_id);
+
+            if (!$proveedor) {
+                Log::error('Proveedor no encontrado para enviar notificaciones', [
+                    'proveedor_id' => $cotizacion->proveedor_id,
+                    'cotizacion_id' => $cotizacion->id
+                ]);
+                return;
+            }
+
+            // Obtener todos los usuarios activos del proveedor
+            $usuariosProveedor = $proveedor->usuariosActivos()->get();
+
+            if ($usuariosProveedor->isEmpty()) {
+                Log::warning('No hay usuarios activos para notificar en el proveedor', [
+                    'proveedor_id' => $proveedor->id,
+                    'cotizacion_id' => $cotizacion->id
+                ]);
+                return;
+            }
+
+            // Enviar notificación a cada usuario del proveedor
+            foreach ($usuariosProveedor as $usuario) {
+                try {
+                    $usuario->notify(new CotizacionCreada(
+                        $cotizacion,
+                        $solicitante,
+                        'construccion'
+                    ));
+
+                    Log::info('Notificación de cotización enviada', [
+                        'cotizacion_id' => $cotizacion->id,
+                        'usuario_id' => $usuario->id,
+                        'usuario_email' => $usuario->email,
+                        'proveedor_id' => $proveedor->id
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Error al enviar notificación individual', [
+                        'error' => $e->getMessage(),
+                        'cotizacion_id' => $cotizacion->id,
+                        'usuario_id' => $usuario->id,
+                        'usuario_email' => $usuario->email
+                    ]);
+                }
+            }
+
+            Log::info('Proceso de notificaciones completado', [
+                'cotizacion_id' => $cotizacion->id,
+                'proveedor_id' => $proveedor->id,
+                'usuarios_notificados' => $usuariosProveedor->count(),
+                'solicitante_id' => $solicitante->id
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error general en el envío de notificaciones de cotización', [
+                'error' => $e->getMessage(),
+                'cotizacion_id' => $cotizacion->id,
+                'stack_trace' => $e->getTraceAsString()
+            ]);
         }
     }
 }
