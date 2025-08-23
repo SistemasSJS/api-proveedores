@@ -16,9 +16,11 @@ class MarcaResource extends JsonResource
     {
         return [
             'id'         => $this->id,
-            'nombre'     => $this->nombre,
             'logo'       => asset('storage/' . $this->logo),
-            // 'estatus'    => $this->estatus,
+            'nombre'     => $this->nombre,
+            'descripcion'     => $this->descripcion,
+            'productos_count' => $this->productos_count, // 👈 aquí lo expones
+            'estatus'    => $this->estatus,
             // 'created_at' => $this->created_at?->toDateTimeString(),
             // 'updated_at' => $this->updated_at?->toDateTimeString(),
         ];
