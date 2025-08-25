@@ -109,7 +109,7 @@ class ProveedorCategoriaController extends Controller
         return $this->success(null, 204);
     }
 
-    public function categoriasConSubcatCountProductos(Request $request, Proveedor $proveedor)
+    public function proveedoresConCategoriasConSubcatCountProductos(Request $request, Proveedor $proveedor)
     {
         $categorias = Categoria::with([
             'children' => function ($query) use ($proveedor) {

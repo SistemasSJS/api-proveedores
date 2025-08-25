@@ -11,8 +11,8 @@ use App\Http\Resources\ProveedorResource;
 use App\Http\Requests\Proveedor\ProveedorUpdateRequest;
 use App\Http\Requests\Proveedor\ProveedorUpdateLogoRequest;
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
-
 use App\Http\Resources\UserResource;
+use App\Http\Resources\Admin\AdminProveedorAcordeonResource;
 
 class ProveedorController extends Controller
 {
@@ -120,4 +120,27 @@ class ProveedorController extends Controller
     //         'token' => $token,
     //     ], 'Registro completado', 201);
     // }
+
+
+    public function proveedoresConCategoriasConSubcatCountProductos(Request $request)
+    {
+        $proveedores = Proveedor::with([
+            'categorias' => function ($query) {
+                $query->whereNull('parent_id') // solo categorías raíz
+                    ->with([
+                        'children' => function ($subquery) {
+                            $subquery->withCount('productos');
+                        }
+                    ])
+                    ->withCount('productos');
+            }
+        ])
+            ->withCount('productos') // total de productos por proveedor
+            ->get();
+
+        return $this->success(
+            AdminProveedorAcordeonResource::collection($proveedores),
+            "Listado de proveedores con sus categorías, subcategorías y contador de productos."
+        );
+    }
 }

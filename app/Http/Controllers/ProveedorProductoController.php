@@ -7,28 +7,19 @@ use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Http\Requests\Producto\ProductoStoreRequest;
 use App\Http\Requests\Producto\ProductoUpdateLogoRequest;
 use App\Http\Requests\Producto\ProductoUpdateRequest;
-use App\Http\Requests\ProveedorImportProducto\ProveedorImportProductoRequest;
 use App\Models\Proveedor;
 use App\Http\Resources\ProductoResource;
 use App\Models\Producto;
 use Illuminate\Http\Request;
 use App\Traits\ApiResponse;
-use App\Services\ImportService;
-use App\Services\ImportProcessorService;
 use Illuminate\Support\Facades\Storage;
 
 class ProveedorProductoController extends Controller
 {
     use ApiResponse;
 
-    protected ImportService $importService;
-    protected ImportProcessorService $importProcessorService;
 
-    public function __construct(ImportService $importService, ImportProcessorService $importProcessorService)
-    {
-        $this->importService = $importService;
-        $this->importProcessorService = $importProcessorService;
-    }
+    public function __construct() {}
 
     public function index(Request $request, Proveedor $proveedor)
     {

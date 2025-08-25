@@ -48,11 +48,11 @@ class UserSeeder extends Seeder
                 'name' => 'Desarrollador (JSSR)',
                 'role_id' => $idRolAdmin,
             ],
-            // [
-            //     'email' => 'sistemas_sjs@hotmail.com',
-            //     'name' => 'Auxiliar de desarrollo (GMB)',
-            //     'role_id' => $idRolAdmin,
-            // ]
+            [
+                'email' => 'sistemas_sjs@hotmail.com',
+                'name' => 'Auxiliar de desarrollo (GMB)',
+                'role_id' => $idRolAdmin,
+            ]
         ];
 
         foreach ($adminUsers as $user) {

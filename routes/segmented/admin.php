@@ -42,6 +42,7 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
         Route::patch('proveedores/{proveedor}', [ProveedorController::class, 'update'])->middleware('audit');
         Route::delete('proveedores/{proveedor}', [ProveedorController::class, 'destroy'])->middleware('audit');
         Route::get('proveedores/{proveedor}/productos', [ProveedorController::class, 'destroy'])->middleware('audit');
+        Route::get('proveedores/all/count-categorias', [ProveedorController::class, 'proveedoresConCategoriasConSubcatCountProductos'])->middleware('audit');
 
         // Sucursales
         Route::get('sucursales', [SucursalController::class, 'index']);
