@@ -28,12 +28,12 @@ class ProductoFilters
     };
   }
 
-  public static function sku(): Filter
+  public static function codigo(): Filter
   {
     return new class implements Filter {
       public function __invoke(Builder $query, $value, string $property)
       {
-        $query->where('sku', 'like', '%' . $value . '%');
+        $query->where('codigo_interno', 'like', '%' . $value . '%');
       }
     };
   }

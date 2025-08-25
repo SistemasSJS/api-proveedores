@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Models\Cotizacion;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Messages\BroadcastMessage;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\URL;
  * Notificación enviada al proveedor cuando se crea una nueva cotización
  * desde el módulo de construcción
  */
-class CotizacionCreada extends Notification implements ShouldQueue
+class CotizacionCreada extends Notification implements ShouldBroadcast
 {
     use Queueable;
 
@@ -40,13 +41,13 @@ class CotizacionCreada extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        $channels = ['mail', 'database'];
-        
+        $channels = ['mail', 'broadcast', 'database'];
+
         // Agregar broadcasting si está configurado
         if (config('broadcasting.default') !== 'null') {
             $channels[] = 'broadcast';
         }
-        
+
         return $channels;
     }
 
@@ -56,7 +57,7 @@ class CotizacionCreada extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $urlCotizacion = URL::to('/admin/cotizaciones/' . $this->cotizacion->id);
-        
+
         return (new MailMessage)
             ->subject('Nueva Cotización Solicitada - #' . $this->cotizacion->id)
             ->view('emails.cotizacion-creada', [

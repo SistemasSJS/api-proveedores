@@ -10,9 +10,9 @@ use App\Traits\ApiResponse;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
-use App\Services\CSVProcessorService;
-use App\Services\ProductImportValidator;
-use App\Services\CsvImportExportService;
+use App\Services\CSVImport\CSVProcessorService;
+use App\Services\CSVImport\CSVImportProductValidator;
+use App\Services\CSVImport\CSVImportExportService;
 use App\Http\Responses\CsvUploadResponse;
 use App\Http\Responses\CsvConfirmResponse;
 use App\Http\Responses\CsvValidateProductResponse;
@@ -29,9 +29,9 @@ class CsvImportController extends Controller
     use ApiResponse;
 
     protected CSVProcessorService $csvProcessor;
-    protected CsvImportExportService $exportService;
+    protected CSVImportExportService $exportService;
 
-    public function __construct(CSVProcessorService $csvProcessor, CsvImportExportService $exportService)
+    public function __construct(CSVProcessorService $csvProcessor, CSVImportExportService $exportService)
     {
         $this->csvProcessor = $csvProcessor;
         $this->exportService = $exportService;
@@ -458,7 +458,7 @@ class CsvImportController extends Controller
             $strictValidation = $request->get('strict_validation', false);
 
             // Crear validator para este proveedor
-            $validator = new ProductImportValidator($proveedor->id);
+            $validator = new CSVImportProductValidator($proveedor->id);
 
             // Validar el producto usando el servicio de validación
             $validationResult = $validator->validateRow($productoData, 1);
@@ -639,7 +639,7 @@ class CsvImportController extends Controller
                         $stats['total_processed']++;
 
                         // Validación
-                        $validator = new ProductImportValidator($proveedorId);
+                        $validator = new CSVImportProductValidator($proveedorId);
                         $validationResult = $validator->validateRow($productData, $stats['total_processed']);
                         $isValid = empty($validationResult['errors']);
 

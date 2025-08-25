@@ -12,7 +12,7 @@ use App\Policies\ProveedorPolicy;
 use App\Policies\SucursalPolicy;
 use App\Services\AuditService;
 use App\Services\DashboardService;
-use App\Services\FileParserService;
+use App\Services\FileParser\FileParserService;
 use App\Services\ProductoSearchService;
 use App\Services\ReporteService;
 use App\Services\SucursalService;

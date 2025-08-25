@@ -69,5 +69,4 @@ Route::middleware('auth:sanctum')->group(function () {
      * DASHBOARD BÁSICO
      */
     Route::get('dashboard/stats', [DashboardController::class, 'getStats'])->middleware(['audit']);
-
 });
