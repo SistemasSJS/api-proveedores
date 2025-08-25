@@ -89,7 +89,7 @@ class ReporteService
           $q->where('created_at', '>=', $fechaInicio);
         });
       }])
-      ->with(['marca', 'linea', 'categoria'])
+      ->with(['marca', 'categoria'])
       ->having('veces_solicitado', '>', 0)
       ->orderBy('veces_solicitado', 'desc')
       ->limit($limite)
@@ -102,7 +102,6 @@ class ReporteService
         'nombre' => $producto->nombre,
         'descripcion' => $producto->descripcion,
         'marca' => $producto->marca?->nombre,
-        'linea' => $producto->linea?->nombre,
         'categoria' => $producto->categoria?->nombre,
         'precio_base' => (float) $producto->precio_base,
         'stock_actual' => (int) $producto->stock,
@@ -477,7 +476,6 @@ class ReporteService
         $producto['sku'],
         $producto['nombre'],
         $producto['marca'],
-        $producto['linea'],
         $producto['categoria'],
         $producto['precio_base'],
         $producto['stock_actual'],

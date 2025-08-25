@@ -93,7 +93,7 @@ Route::prefix('proveedores')
                 Route::patch('{marca}', [ProveedorMarcaController::class, 'update']);
                 Route::delete('{marca}', [ProveedorMarcaController::class, 'destroy']);
                 Route::post('{marca}/logo', [ProveedorMarcaController::class, 'updateLogo']);
-                Route::get('{marca}/lineas', [ProveedorMarcaController::class, 'index_lineas_por_marca']);
+                // Route::get('{marca}/lineas', [ProveedorMarcaController::class, 'index_lineas_por_marca']);
             });
         });
 

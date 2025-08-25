@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Producto;
 use App\Models\Marca;
-use App\Models\Linea;
 use App\Models\Categoria;
 use App\Models\UnidadMedida;
 
@@ -33,7 +32,6 @@ class ProductImportValidator
     private int $proveedorId;
     private array $existingCodigos = [];
     private array $existingMarcas = [];
-    private array $existingLineas = [];
     private array $existingCategorias = [];
     private array $existingSubcat = [];
     private array $existingUnidadMedidas = [];
@@ -144,10 +142,7 @@ class ProductImportValidator
             ->pluck('nombre')
             ->toArray();
 
-        // Load existing lineas
-        $this->existingLineas = Linea::where('proveedor_id', $this->proveedorId)
-            ->pluck('nombre')
-            ->toArray();
+     
 
         // Load existing categorias
         $this->existingCategorias = Categoria::where('proveedor_id', $this->proveedorId)

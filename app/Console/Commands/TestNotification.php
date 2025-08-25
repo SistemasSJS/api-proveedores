@@ -13,7 +13,7 @@ class TestNotification extends Command
      *
      * @var string
      */
-    protected $signature = 'notification:test {userId=3} {--message=} {--type=}';
+    protected $signature = 'notification:test {userId=13} {--message=} {--type=}';
 
     /**
      * The console command description.

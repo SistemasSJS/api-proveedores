@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Producto;
 
 use App\Models\Categoria;
-use App\Models\Linea;
 use App\Models\Marca;
 use Illuminate\Foundation\Http\FormRequest;
 

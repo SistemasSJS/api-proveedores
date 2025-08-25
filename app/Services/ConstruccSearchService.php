@@ -6,7 +6,6 @@ use App\Models\Producto;
 use App\Models\Proveedor;
 use App\Models\Categoria;
 use App\Models\Marca;
-use App\Models\Linea;
 use App\Models\UnidadMedida;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -21,7 +20,7 @@ class ConstruccSearchService
      */
     public function buscarProveedores(array $filtros): LengthAwarePaginator
     {
-        $query = Proveedor::with(['categorias', 'marcas', 'lineas', 'unidades'])
+        $query = Proveedor::with(['categorias', 'marcas', 'unidades'])
             ->where('estatus', 'activo');
 
         // Búsqueda por texto en múltiples campos
@@ -90,7 +89,7 @@ class ConstruccSearchService
      */
     public function buscarProductos(array $filtros): LengthAwarePaginator
     {
-        $query = Producto::with(['proveedor', 'marca', 'linea', 'categoria', 'subcategoria', 'unidad_medida'])
+        $query = Producto::with(['proveedor', 'marca', 'categoria', 'subcategoria', 'unidad_medida'])
             ->where('activo', true);
 
         // Búsqueda por texto
@@ -158,7 +157,7 @@ class ConstruccSearchService
      */
     public function obtenerProductosProveedor(int $proveedorId, array $filtros): LengthAwarePaginator
     {
-        $query = Producto::with(['marca', 'linea', 'categoria', 'subcategoria', 'unidad_medida'])
+        $query = Producto::with(['marca', 'categoria', 'subcategoria', 'unidad_medida'])
             ->where('proveedor_id', $proveedorId)
             ->where('activo', true);
 
@@ -266,7 +265,6 @@ class ConstruccSearchService
             'catalogos' => [
                 'categorias' => $proveedor->categorias()->count(),
                 'marcas' => $proveedor->marcas()->count(),
-                'lineas' => $proveedor->lineas()->count(),
                 'unidades' => $proveedor->unidades()->count(),
             ],
             'precios' => [
@@ -309,13 +307,6 @@ class ConstruccSearchService
             $marcas = $this->parseMultipleIds($filtros['marca_id']);
             $query->whereIn('marca_id', $marcas);
         }
-
-        // Filtro por líneas múltiples
-        if (!empty($filtros['linea_id'])) {
-            $lineas = $this->parseMultipleIds($filtros['linea_id']);
-            $query->whereIn('linea_id', $lineas);
-        }
-
         // Filtro por unidades de medida múltiples
         if (!empty($filtros['unidad_medida_id'])) {
             $unidades = $this->parseMultipleIds($filtros['unidad_medida_id']);
