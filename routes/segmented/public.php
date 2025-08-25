@@ -20,11 +20,34 @@ use App\Http\Controllers\PedidoController;
 | Estas rutas no requieren autenticación
 */
 
+use App\Models\User;
+use App\Notifications\PushNotification;
+
 Route::get('status', function () {
+    // Buscar el usuario con ID 3
+    $user = User::find(13);
+
+    if (!$user) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Usuario no encontrado',
+        ], 404);
+    }
+
+    // Crear la notificación
+    $notification = new PushNotification(
+        'Título de prueba',
+        'Este es un mensaje de prueba',
+        'info',
+        ['extra' => 'datos opcionales']
+    );
+
+    // Enviar la notificación
+    $user->notify($notification);
+
     return response()->json([
         'status' => 'ok',
-        'message' => 'API funcionando correctamente',
-        'timestamp' => now(),
+        'message' => 'Notificación enviada al usuario 3',
     ]);
 });
 

@@ -73,7 +73,7 @@ return [
             'app_id' => env('WEBSOCKET_APP_ID', 'app-id'),
             'options' => [
                 'host' => env('WEBSOCKET_HOST', '127.0.0.1'),
-                'port' => env('WEBSOCKET_PORT', 6001),
+                'port' => env('WEBSOCKET_PORT', 80),
                 'scheme' => 'http',
                 'encrypted' => false,
                 'useTLS' => false,

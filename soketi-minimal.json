@@ -1,0 +1,15 @@
+{
+  "debug": true,
+  "port": 80,
+  "appManager": {
+    "apps": [
+      {
+        "id": "2041542",
+        "key": "054109b74e56a9b3893f",
+        "secret": "56903bfe04ef9c08b755",
+        "enableClientMessages": true,
+        "enabled": true
+      }
+    ]
+  }
+}
