@@ -44,9 +44,9 @@ class CotizacionCreada extends Notification implements ShouldBroadcast
         $channels = ['mail', 'broadcast', 'database'];
 
         // Agregar broadcasting si está configurado
-        if (config('broadcasting.default') !== 'null') {
-            $channels[] = 'broadcast';
-        }
+        // if (config('broadcasting.default') !== 'null') {
+        //     $channels[] = 'broadcast';
+        // }
 
         return $channels;
     }
