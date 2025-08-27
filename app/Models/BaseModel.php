@@ -37,6 +37,7 @@ abstract class BaseModel extends Model
         }
         return $query;
     }
+    
     /**
      * Obtener los filtros definidos en la clase.
      *
@@ -44,6 +45,6 @@ abstract class BaseModel extends Model
      */
     public static function getFilters(): array
     {
-        return array_keys(static::$filters);
+        return array_keys(self::$filters);
     }
 }

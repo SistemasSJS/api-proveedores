@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\NotificationController;
 
 // Rutas de autenticación de broadcasting
 Broadcast::routes(['middleware' => ['auth:sanctum']]);
