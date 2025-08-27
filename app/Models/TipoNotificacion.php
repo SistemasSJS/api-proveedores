@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Notifications\Notification;
 
 /**
  * Modelo para gestionar los tipos de notificaciones
@@ -77,7 +76,7 @@ class TipoNotificacion extends Model
     public function getCanalesToUseAttribute(): array
     {
         $canales = $this->canales ?? [];
-
+        
         // Database es obligatorio
         if (!in_array('database', $canales)) {
             $canales[] = 'database';
@@ -104,7 +103,7 @@ class TipoNotificacion extends Model
         }
 
         $url = $this->url_base;
-
+        
         if ($entityId) {
             $url = rtrim($url, '/') . '/' . $entityId;
         }
