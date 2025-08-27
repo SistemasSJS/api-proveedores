@@ -646,8 +646,24 @@ class CSVImportJob implements ShouldQueue
     /**
      * Log processing step
      */
-    protected function logProcessingStep(string $message, array $context = []): void
+    protected function logProcessingStep(string $message, array $context = [], string $level = 'info'): void
     {
+        // Log to specific queue channel
+        Log::channel('queue')->{$level}($message, array_merge([
+            'audit_id' => $this->importAudit->id,
+            'proveedor_id' => $this->importAudit->proveedor_id,
+            'job_class' => static::class,
+        ], $context));
+        
+        // Also log to imports channel for business logic tracking
+        Log::channel('imports')->{$level}($message, array_merge([
+            'audit_id' => $this->importAudit->id,
+            'archivo' => $this->importAudit->nombre_archivo,
+            'estado' => $this->importAudit->estado,
+            'progreso' => $this->importAudit->progreso,
+        ], $context));
+        
+        // Keep existing audit log functionality
         $this->importAudit->appendLog($message, $context);
         $this->importAudit->save();
     }

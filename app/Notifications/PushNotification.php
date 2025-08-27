@@ -2,9 +2,12 @@
 
 namespace App\Notifications;
 
+use App\Models\TipoNotificacion;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class PushNotification extends Notification implements ShouldBroadcast
 {
@@ -14,6 +17,7 @@ class PushNotification extends Notification implements ShouldBroadcast
     public $message;
     public $type;
     public $data;
+    protected ?TipoNotificacion $tipoNotificacion = null;
 
     /**
      * Create a new notification instance.
@@ -24,6 +28,28 @@ class PushNotification extends Notification implements ShouldBroadcast
         $this->message = $message;
         $this->type = $type;
         $this->data = $data;
+        
+        // Cargar el tipo de notificación por defecto para PushNotification
+        $this->loadTipoNotificacion();
+    }
+    
+    /**
+     * Cargar el tipo de notificación MENSAJE_GENERAL como tipo por defecto
+     */
+    protected function loadTipoNotificacion(): void
+    {
+        // Cache del tipo de notificación por 1 hora
+        $cacheKey = "tipo_notificacion_MENSAJE_GENERAL";
+        
+        $this->tipoNotificacion = Cache::remember($cacheKey, 3600, function () {
+            return TipoNotificacion::where('codigo', 'MENSAJE_GENERAL')
+                ->where('estatus', true)
+                ->first();
+        });
+
+        if (!$this->tipoNotificacion) {
+            Log::warning('Tipo de notificación MENSAJE_GENERAL no encontrado o inactivo');
+        }
     }
 
     /**
@@ -43,8 +69,11 @@ class PushNotification extends Notification implements ShouldBroadcast
     {
         return [
             'id' => $this->id,
-            'title' => $this->title,
+            'tipo_notificacion_id' => $this->tipoNotificacion?->id,
+            'titulo' => $this->title,
             'mensaje' => $this->message,
+            'icono' => $this->tipoNotificacion?->icono ?? 'notifications-outline',
+            'color' => $this->tipoNotificacion?->color ?? 'primary',
             'type' => $this->type,
             'data' => $this->data,
             'timestamp' => now()->toIsoString(),
@@ -68,8 +97,11 @@ class PushNotification extends Notification implements ShouldBroadcast
     public function toArray(object $notifiable): array
     {
         return [
-            'title' => $this->title,
+            'tipo_notificacion_id' => $this->tipoNotificacion?->id,
+            'titulo' => $this->title,
             'mensaje' => $this->message,
+            'icono' => $this->tipoNotificacion?->icono ?? 'notifications-outline',
+            'color' => $this->tipoNotificacion?->color ?? 'primary',
             'type' => $this->type,
             'data' => $this->data,
             'timestamp' => now()->toIsoString()

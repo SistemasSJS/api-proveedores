@@ -12,10 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('notifications', function (Blueprint $table) {
+
             $table->uuid('id')->primary();
+            $table->string('type');
 
             // Relación con el tipo de notificación
             $table->foreignId('tipo_notificacion_id')
+                ->nullable()
                 ->constrained('tipos_notificacion')
                 ->cascadeOnDelete();
 

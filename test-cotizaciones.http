@@ -4,7 +4,7 @@
 
 # Variables globales - AJUSTA ESTOS VALORES SEGÚN TU CONFIGURACIÓN
 @baseUrl = http://localhost:8080/api
-@token = 4|fXBnch5se6X2fykPG2nf7ABncNEwDspqQQpsnZ166f3dd89f
+@token = 3|iD4Z0q9Rf6xcIxO0SplmFpZr12SMy4lI62CJavth6b7dc65b
 @proveedorId = 3
 @productoId = 41
 @cotizacionId = 1
@@ -67,13 +67,6 @@ Content-Type: application/json
   "fecha_vencimiento": "2025-02-25",
   "observaciones": "Cotización de prueba desde REST Client",
   "detalles": [
-    {
-      "producto_id": 1,
-      "cantidad_cotizada": 10,
-      "precio_unitario": 150.50,
-      "tiempo_entrega_dias": 5,
-      "observaciones": "Primera línea de prueba"
-    },
     {
       "producto_id": 42,
       "cantidad_cotizada": 5,

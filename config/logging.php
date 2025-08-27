@@ -50,5 +50,21 @@ return [
             'level' => 'info',
             'replace_placeholders' => true,
         ],
+
+        'queue' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/queue/queue.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => 14,
+            'replace_placeholders' => true,
+        ],
+
+        'imports' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/imports/imports.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
     ],
 ];
