@@ -4,9 +4,9 @@ namespace App\Services\CSVImport;
 
 use App\Models\ImportAudit;
 use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Exception;
 
 class CSVImportExportService
@@ -16,10 +16,10 @@ class CSVImportExportService
      *
      * @param ImportAudit $audit
      * @param string $format Formato: xlsx, csv, pdf
-     * @param string $type Tipo: report, data, summary
-     * @return Response
+     * @param string $type Tipo: report, data, summary, errors
+     * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function exportImportResults(ImportAudit $audit, string $format = 'xlsx', string $type = 'report'): Response
+    public function exportImportResults(ImportAudit $audit, string $format = 'xlsx', string $type = 'report'): \Symfony\Component\HttpFoundation\Response
     {
         try {
             // Validar formato
@@ -29,7 +29,7 @@ class CSVImportExportService
             }
 
             // Validar tipo
-            $validTypes = ['report', 'data', 'summary'];
+            $validTypes = ['report', 'data', 'summary', 'errors'];
             if (!in_array($type, $validTypes)) {
                 throw new Exception("Tipo de exportación no soportado: {$type}");
             }
@@ -84,6 +84,8 @@ class CSVImportExportService
                 return $this->prepareDetailedData($audit, $baseData);
             case 'summary':
                 return $this->prepareSummaryData($audit, $baseData);
+            case 'errors':
+                return $this->prepareErrorsData($audit, $baseData);
             default:
                 return $baseData;
         }
@@ -156,130 +158,141 @@ class CSVImportExportService
     }
 
     /**
-     * Exportar a Excel
+     * Preparar datos específicamente para errores
      */
-    private function exportToExcel(array $data, ImportAudit $audit, string $type): Response
+    private function prepareErrorsData(ImportAudit $audit, array $baseData): array
     {
-        $filename = $this->generateFilename($audit, $type, 'xlsx');
+        $erroresDetalle = $audit->errores_detalle ?? [];
+        $registrosConError = [];
 
-        // Usar Excel::create para versión 1.1.5
-        return Excel::create($filename, function ($excel) use ($data, $type) {
-            $excel->sheet('Resumen', function ($sheet) use ($data, $type) {
-                $this->populateSheet($sheet, $data, $type);
-            });
-        })->export('xlsx');
+        // Procesar los errores detallados para crear una estructura tabular
+        if (is_array($erroresDetalle) || is_object($erroresDetalle)) {
+            foreach ($erroresDetalle as $index => $error) {
+                if (is_array($error)) {
+                    $registrosConError[] = [
+                        'fila' => $error['fila'] ?? $index + 1,
+                        'codigo_producto' => $error['codigo'] ?? $error['codigo_producto'] ?? 'N/A',
+                        'nombre_producto' => $error['nombre'] ?? $error['producto'] ?? 'N/A',
+                        'categoria' => $error['categoria'] ?? 'N/A',
+                        'marca' => $error['marca'] ?? 'N/A',
+                        'unidad' => $error['unidad'] ?? $error['unidad_medida'] ?? 'N/A',
+                        'precio' => $error['precio'] ?? 'N/A',
+                        'error_tipo' => $error['tipo_error'] ?? $error['error_type'] ?? 'Validation Error',
+                        'error_mensaje' => $error['mensaje'] ?? $error['message'] ?? $error['error'] ?? 'Error no especificado',
+                        'campos_afectados' => is_array($error['campos'] ?? null) ? implode(', ', $error['campos']) : ($error['campo'] ?? 'N/A'),
+                        'datos_originales' => isset($error['data']) ? json_encode($error['data']) : 'N/A',
+                        'timestamp' => $error['timestamp'] ?? $error['created_at'] ?? now()->toISOString()
+                    ];
+                } else {
+                    // Si el error es un string simple
+                    $registrosConError[] = [
+                        'fila' => $index + 1,
+                        'codigo_producto' => 'N/A',
+                        'nombre_producto' => 'N/A',
+                        'categoria' => 'N/A',
+                        'marca' => 'N/A',
+                        'unidad' => 'N/A',
+                        'precio' => 'N/A',
+                        'error_tipo' => 'General Error',
+                        'error_mensaje' => (string) $error,
+                        'campos_afectados' => 'N/A',
+                        'datos_originales' => 'N/A',
+                        'timestamp' => now()->toISOString()
+                    ];
+                }
+            }
+        }
+
+        return array_merge($baseData, [
+            'total_errores' => count($registrosConError),
+            'estadisticas_errores' => [
+                'validation_errors' => count(array_filter($registrosConError, fn($r) => $r['error_tipo'] === 'Validation Error')),
+                'general_errors' => count(array_filter($registrosConError, fn($r) => $r['error_tipo'] === 'General Error')),
+                'database_errors' => count(array_filter($registrosConError, fn($r) => str_contains(strtolower($r['error_tipo']), 'database'))),
+            ],
+            'registros_errores' => $registrosConError,
+            'columnas_export' => [
+                'fila',
+                'codigo_producto',
+                'nombre_producto',
+                'categoria',
+                'marca',
+                'unidad',
+                'precio',
+                'error_tipo',
+                'error_mensaje',
+                'campos_afectados',
+                'datos_originales',
+                'timestamp'
+            ]
+        ]);
     }
 
     /**
-     * Exportar a CSV
+     * Exportar a Excel (usando CSV como base)
      */
-    private function exportToCsv(array $data, ImportAudit $audit, string $type): Response
+    private function exportToExcel(array $data, ImportAudit $audit, string $type): StreamedResponse
     {
-        $filename = $this->generateFilename($audit, $type, 'csv');
-
-        return Excel::create($filename, function ($excel) use ($data, $type) {
-            $excel->sheet('Datos', function ($sheet) use ($data, $type) {
-                $this->populateSheet($sheet, $data, $type);
-            });
-        })->export('csv');
+        // Para Excel, usaremos CSV con extensión .xlsx para compatibilidad
+        return $this->exportToCsv($data, $audit, $type, 'xlsx');
     }
 
     /**
-     * Exportar a PDF (placeholder - requiere implementación adicional)
+     * Exportar a CSV usando funcionalidad nativa de PHP
      */
-    private function exportToPdf(array $data, ImportAudit $audit, string $type): Response
+    private function exportToCsv(array $data, ImportAudit $audit, string $type, string $extension = 'csv'): StreamedResponse
+    {
+        $filename = $this->generateFilename($audit, $type, $extension);
+
+        return new StreamedResponse(function () use ($data, $type) {
+            $handle = fopen('php://output', 'w');
+
+            // Agregar BOM para UTF-8 (para que Excel abra correctamente caracteres especiales)
+            fwrite($handle, "\xEF\xBB\xBF");
+
+            // Generar contenido según el tipo
+            $this->generateCsvContent($handle, $data, $type);
+
+            fclose($handle);
+        }, 200, [
+            'Content-Type' => $extension === 'xlsx' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0'
+        ]);
+    }
+
+    /**
+     * Exportar a PDF (usando CSV como base)
+     */
+    private function exportToPdf(array $data, ImportAudit $audit, string $type): StreamedResponse
     {
         // Por ahora, devolver CSV hasta implementar PDF específico
-        return $this->exportToCsv($data, $audit, $type);
+        return $this->exportToCsv($data, $audit, $type, 'pdf');
     }
 
     /**
-     * Poblar hoja de Excel con datos
+     * Generar contenido CSV según el tipo de reporte
      */
-    private function populateSheet($sheet, array $data, string $type): void
+    private function generateCsvContent($handle, array $data, string $type): void
     {
         switch ($type) {
             case 'report':
-                $this->populateReportSheet($sheet, $data);
+                $this->generateReportCsv($handle, $data);
                 break;
             case 'summary':
-                $this->populateSummarySheet($sheet, $data);
+                $this->generateSummaryCsv($handle, $data);
+                break;
+            case 'errors':
+                $this->generateErrorsCsv($handle, $data);
                 break;
             default:
-                $this->populateBasicSheet($sheet, $data);
+                $this->generateBasicCsv($handle, $data);
                 break;
         }
     }
 
-    /**
-     * Poblar hoja de reporte completo
-     */
-    private function populateReportSheet($sheet, array $data): void
-    {
-        $sheet->row(1, ['Reporte de Importación CSV']);
-        $sheet->row(2, []);
-
-        $row = 3;
-        $sheet->row($row++, ['ID Audit:', $data['audit_id']]);
-        $sheet->row($row++, ['Proveedor ID:', $data['proveedor_id']]);
-        $sheet->row($row++, ['Estado:', $data['estado']]);
-        $sheet->row($row++, ['Archivo:', basename($data['archivo'] ?? 'N/A')]);
-        $sheet->row($row++, ['Tiempo procesamiento:', ($data['processing_time'] ?? 0) . 's']);
-
-        $row++;
-        $sheet->row($row++, ['Estadísticas:']);
-
-        $stats = $data['estadisticas'] ?? [];
-        $sheet->row($row++, ['Total procesados:', $stats['total_procesados'] ?? 0]);
-        $sheet->row($row++, ['Nuevos:', $stats['nuevos'] ?? 0]);
-        $sheet->row($row++, ['Actualizados:', $stats['actualizados'] ?? 0]);
-        $sheet->row($row++, ['Errores:', $stats['errores'] ?? 0]);
-        $sheet->row($row++, ['Tasa de éxito (%):', $stats['tasa_exito'] ?? 0]);
-
-        $breakdown = $data['breakdown_catalogos'] ?? [];
-        if (!empty($breakdown)) {
-            $row++;
-            $sheet->row($row++, ['Catálogos:']);
-            foreach ($breakdown as $catalogo => $info) {
-                $sheet->row($row++, [ucfirst($catalogo) . ' importadas:', $info['importadas'] ?? 0]);
-                $sheet->row($row++, [ucfirst($catalogo) . ' errores:', $info['errores'] ?? 0]);
-            }
-        }
-    }
-
-    /**
-     * Poblar hoja de resumen
-     */
-    private function populateSummarySheet($sheet, array $data): void
-    {
-        $sheet->row(1, ['Resumen de Importación']);
-        $sheet->row(2, []);
-
-        $resumen = $data['resumen'] ?? [];
-        $sheet->row(3, ['Audit ID:', $data['audit_id']]);
-        $sheet->row(4, ['Total registros:', $resumen['total_registros'] ?? 0]);
-        $sheet->row(5, ['Exitosos:', $resumen['exitosos'] ?? 0]);
-        $sheet->row(6, ['Errores:', $resumen['errores'] ?? 0]);
-        $sheet->row(7, ['Tasa de éxito (%):', $resumen['tasa_exito'] ?? 0]);
-        $sheet->row(8, ['Duración:', $resumen['duracion'] ?? 'N/A']);
-        $sheet->row(9, ['Estado:', $data['estado']]);
-    }
-
-    /**
-     * Poblar hoja básica
-     */
-    private function populateBasicSheet($sheet, array $data): void
-    {
-        $sheet->row(1, ['Datos de Importación']);
-        $sheet->row(2, []);
-
-        $row = 3;
-        foreach ($data as $key => $value) {
-            if (!is_array($value)) {
-                $sheet->row($row++, [$key, $value]);
-            }
-        }
-    }
 
     /**
      * Generar nombre de archivo
@@ -333,5 +346,150 @@ class CSVImportExportService
 
         $successful = ($audit->nuevos ?? 0) + ($audit->actualizados ?? 0);
         return round(($successful / $total) * 100, 2);
+    }
+
+    /**
+     * Generar CSV para reporte completo
+     */
+    private function generateReportCsv($handle, array $data): void
+    {
+        // Título
+        fputcsv($handle, ['Reporte de Importación CSV']);
+        fputcsv($handle, []);
+
+        // Información básica
+        fputcsv($handle, ['ID Audit:', $data['audit_id']]);
+        fputcsv($handle, ['Proveedor ID:', $data['proveedor_id']]);
+        fputcsv($handle, ['Estado:', $data['estado']]);
+        fputcsv($handle, ['Archivo:', basename($data['archivo'] ?? 'N/A')]);
+        fputcsv($handle, ['Tiempo procesamiento:', ($data['processing_time'] ?? 0) . 's']);
+        fputcsv($handle, []);
+
+        // Estadísticas
+        fputcsv($handle, ['Estadísticas:']);
+        $stats = $data['estadisticas'] ?? [];
+        fputcsv($handle, ['Total procesados:', $stats['total_procesados'] ?? 0]);
+        fputcsv($handle, ['Nuevos:', $stats['nuevos'] ?? 0]);
+        fputcsv($handle, ['Actualizados:', $stats['actualizados'] ?? 0]);
+        fputcsv($handle, ['Errores:', $stats['errores'] ?? 0]);
+        fputcsv($handle, ['Tasa de éxito (%):', $stats['tasa_exito'] ?? 0]);
+        fputcsv($handle, []);
+
+        // Breakdown por catálogos
+        $breakdown = $data['breakdown_catalogos'] ?? [];
+        if (!empty($breakdown)) {
+            fputcsv($handle, ['Catálogos:']);
+            foreach ($breakdown as $catalogo => $info) {
+                fputcsv($handle, [ucfirst($catalogo) . ' importadas:', $info['importadas'] ?? 0]);
+                fputcsv($handle, [ucfirst($catalogo) . ' errores:', $info['errores'] ?? 0]);
+            }
+        }
+    }
+
+    /**
+     * Generar CSV para resumen
+     */
+    private function generateSummaryCsv($handle, array $data): void
+    {
+        // Título
+        fputcsv($handle, ['Resumen de Importación']);
+        fputcsv($handle, []);
+
+        // Información de resumen
+        $resumen = $data['resumen'] ?? [];
+        fputcsv($handle, ['Audit ID:', $data['audit_id']]);
+        fputcsv($handle, ['Total registros:', $resumen['total_registros'] ?? 0]);
+        fputcsv($handle, ['Exitosos:', $resumen['exitosos'] ?? 0]);
+        fputcsv($handle, ['Errores:', $resumen['errores'] ?? 0]);
+        fputcsv($handle, ['Tasa de éxito (%):', $resumen['tasa_exito'] ?? 0]);
+        fputcsv($handle, ['Duración:', $resumen['duracion'] ?? 'N/A']);
+        fputcsv($handle, ['Estado:', $data['estado']]);
+    }
+
+    /**
+     * Generar CSV para errores en formato tabular
+     */
+    private function generateErrorsCsv($handle, array $data): void
+    {
+        // Título e información del encabezado
+        fputcsv($handle, ['Registros con Errores - Importación CSV']);
+        fputcsv($handle, ['Audit ID: ' . $data['audit_id'] . ' | Proveedor: ' . $data['proveedor_id'] . ' | Total Errores: ' . ($data['total_errores'] ?? 0)]);
+        fputcsv($handle, []);
+
+        // Estadísticas de errores
+        if (!empty($data['estadisticas_errores'])) {
+            $stats = $data['estadisticas_errores'];
+            fputcsv($handle, ['Resumen de Errores:']);
+            fputcsv($handle, ['Errores de Validación:', $stats['validation_errors'] ?? 0]);
+            fputcsv($handle, ['Errores Generales:', $stats['general_errors'] ?? 0]);
+            fputcsv($handle, ['Errores de Base de Datos:', $stats['database_errors'] ?? 0]);
+            fputcsv($handle, []);
+        }
+
+        // Encabezados de la tabla de errores
+        $headers = [
+            'Fila',
+            'Código Producto',
+            'Nombre Producto',
+            'Categoría',
+            'Marca',
+            'Unidad',
+            'Precio',
+            'Tipo Error',
+            'Mensaje Error',
+            'Campos Afectados',
+            'Datos Originales',
+            'Timestamp'
+        ];
+
+        fputcsv($handle, $headers);
+
+        // Datos de errores
+        $registrosErrores = $data['registros_errores'] ?? [];
+
+        foreach ($registrosErrores as $error) {
+            fputcsv($handle, [
+                $error['fila'] ?? 'N/A',
+                $error['codigo_producto'] ?? 'N/A',
+                $error['nombre_producto'] ?? 'N/A',
+                $error['categoria'] ?? 'N/A',
+                $error['marca'] ?? 'N/A',
+                $error['unidad'] ?? 'N/A',
+                $error['precio'] ?? 'N/A',
+                $error['error_tipo'] ?? 'N/A',
+                $error['error_mensaje'] ?? 'N/A',
+                $error['campos_afectados'] ?? 'N/A',
+                $error['datos_originales'] ?? 'N/A',
+                $error['timestamp'] ?? 'N/A'
+            ]);
+        }
+
+        // Si no hay errores registrados, mostrar mensaje
+        if (empty($registrosErrores)) {
+            fputcsv($handle, ['No se encontraron registros con errores detallados.']);
+        }
+
+        // Información adicional al final
+        fputcsv($handle, []);
+        fputcsv($handle, ['Información Adicional:']);
+        fputcsv($handle, ['Archivo Procesado:', basename($data['archivo'] ?? 'N/A')]);
+        fputcsv($handle, ['Tiempo de Procesamiento:', ($data['processing_time'] ?? 0) . 's']);
+        fputcsv($handle, ['Estado del Proceso:', $data['estado'] ?? 'N/A']);
+        fputcsv($handle, ['Fecha de Generación:', now()->format('Y-m-d H:i:s')]);
+    }
+
+    /**
+     * Generar CSV básico
+     */
+    private function generateBasicCsv($handle, array $data): void
+    {
+        fputcsv($handle, ['Datos de Importación']);
+        fputcsv($handle, []);
+
+        foreach ($data as $key => $value) {
+            if (!is_array($value)) {
+                fputcsv($handle, [$key, $value]);
+            }
+        }
     }
 }

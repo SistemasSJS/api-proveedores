@@ -4,7 +4,7 @@
 
 # Variables globales - AJUSTA ESTOS VALORES SEGÚN TU CONFIGURACIÓN
 @baseUrl = http://localhost:8080/api
-@token = 8|5jqJhRGAD8x2D0ferbiOxmtDGcunKNqNwxxPCseXc3a13382
+@token = 2|yzDDKAtg0cWxPpujO7jkZnmdQ5wUyBeZyZYxhL9Ca3e7051f
 @proveedorId = 3
 @productoId = 41
 @cotizacionId = 1

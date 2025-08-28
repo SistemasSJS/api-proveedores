@@ -381,7 +381,7 @@ class CsvImportController extends Controller
             // Validar parámetros de entrada
             $request->validate([
                 'format' => 'nullable|string|in:xlsx,csv,pdf',
-                'type' => 'nullable|string|in:report,data,summary'
+                'type' => 'nullable|string|in:report,data,summary,errors'
             ]);
 
             // Obtener parámetros con valores por defecto

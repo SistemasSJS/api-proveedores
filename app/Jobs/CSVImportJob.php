@@ -9,7 +9,7 @@ use App\Models\UnidadMedida;
 use App\Models\Producto;
 use App\Services\CSVImport\CSVProcessorService;
 use App\Services\CSVImport\CSVImportProductValidator;
-use Illuminate\Bus\Queueable as BusQueueable;
+use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -22,7 +22,7 @@ use Ramsey\Uuid\Type\Integer;
 
 class CSVImportJob implements ShouldQueue
 {
-    use BusQueueable, Dispatchable, InteractsWithQueue, SerializesModels;
+    use Queueable, Dispatchable, InteractsWithQueue, SerializesModels;
 
     protected ImportAudit $importAudit;
     protected array $options;
@@ -654,7 +654,7 @@ class CSVImportJob implements ShouldQueue
             'proveedor_id' => $this->importAudit->proveedor_id,
             'job_class' => static::class,
         ], $context));
-        
+
         // Also log to imports channel for business logic tracking
         Log::channel('imports')->{$level}($message, array_merge([
             'audit_id' => $this->importAudit->id,
@@ -662,7 +662,7 @@ class CSVImportJob implements ShouldQueue
             'estado' => $this->importAudit->estado,
             'progreso' => $this->importAudit->progreso,
         ], $context));
-        
+
         // Keep existing audit log functionality
         $this->importAudit->appendLog($message, $context);
         $this->importAudit->save();
