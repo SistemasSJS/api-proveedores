@@ -80,6 +80,7 @@ class ProveedorProductoResource extends JsonResource
             // Metadatos
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'estatus' => $this->estatus,
         ];
     }
 }
