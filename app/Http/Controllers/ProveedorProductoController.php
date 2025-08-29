@@ -8,7 +8,7 @@ use App\Http\Requests\Producto\ProductoStoreRequest;
 use App\Http\Requests\Producto\ProductoUpdateLogoRequest;
 use App\Http\Requests\Producto\ProductoUpdateRequest;
 use App\Models\Proveedor;
-use App\Http\Resources\ProductoResource;
+use App\Http\Resources\ProveedorProductoResource;
 use App\Models\Producto;
 use Illuminate\Http\Request;
 use App\Traits\ApiResponse;
@@ -23,30 +23,28 @@ class ProveedorProductoController extends Controller
 
     public function index(Request $request, Proveedor $proveedor)
     {
-        /**
-         * NOTE: para los filtros se debe revisar el metodo getFilters() 
-         * y verifiacar  que exiata el scope para el filtro   
-         *  - categoria_id
-         *  - marca_id
-         *  
-         * Para este caso seria asi: ?categoria_id=3,7&marca_id=1
-         */
+        // Filtros dinámicos
         $filters = $request->only(Producto::getFilters());
 
         $sortBy = $request->input('sort_by', 'nombre');
         $order = $request->input('order', 'asc');
         $perPage = $request->input('per_page', 10);
 
-        $paginator = Producto::query()
+        $query = Producto::query()
+            ->with(Producto::eagerLodable()) // carga relaciones para evitar N+1
             ->filter($filters)
             ->where('proveedor_id', $proveedor->id)
-            ->orderBy($sortBy, $order)
-            ->paginate($perPage);
+            ->orderBy($sortBy, $order);
 
-        return $this->paginated($paginator);
-        // $data = ProductoResource::collection($paginator)->resolve();
-        // return $paginator->setCollection(collect($data)));
+        $paginator = $query->paginate($perPage);
+
+        // Transformación con Resource
+        $data = ProveedorProductoResource::collection($paginator)->resolve();
+
+        // Devuelve paginado con colección transformada
+        return $this->paginated($paginator->setCollection(collect($data)));
     }
+
 
     public function show(Request $request, Proveedor $proveedor, $productoId)
     {
@@ -54,7 +52,7 @@ class ProveedorProductoController extends Controller
         if ($producto->proveedor_id !== $proveedor->id) {
             throw new ResourceNotFoundException("Producto no relacionado al proveedor.");
         }
-        return $this->success(new ProductoResource($producto));
+        return $this->success(new ProveedorProductoResource($producto));
     }
 
     public function store(ProductoStoreRequest $request, Proveedor $proveedor)
@@ -70,14 +68,14 @@ class ProveedorProductoController extends Controller
 
         $producto = Producto::create($data);
 
-        return $this->success(new ProductoResource($producto));
+        return $this->success(new ProveedorProductoResource($producto));
     }
 
     public function update(ProductoUpdateRequest  $request, Proveedor $proveedor, $productoId)
     {
         $producto = Producto::findOrFail($productoId);
         $producto->update($request->validated());
-        return $this->success(new ProductoResource(($producto->fresh(Producto::eagerLodable()))));
+        return $this->success(new ProveedorProductoResource(($producto->fresh(Producto::eagerLodable()))));
     }
 
     public function updateLogo(ProductoUpdateLogoRequest $request, Proveedor $proveedor, $productoId)
@@ -93,7 +91,7 @@ class ProveedorProductoController extends Controller
         $path = $file->storeAs('uploads', $filename, 'public');
 
         $producto->update(['imagen_principal' => $path]);
-        return $this->success(new ProductoResource($producto->fresh(Producto::eagerLodable())));
+        return $this->success(new ProveedorProductoResource($producto->fresh(Producto::eagerLodable())));
     }
 
     public function destroy(Request $request, Proveedor $proveedor, $productoId)
