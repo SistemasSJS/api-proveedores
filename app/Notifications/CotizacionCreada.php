@@ -74,25 +74,7 @@ class CotizacionCreada extends Notification implements ShouldBroadcast
      */
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
-        return new BroadcastMessage([
-            'tipo' => 'cotizacion_creada',
-            'titulo' => 'Nueva Cotización',
-            'mensaje' => 'Se ha creado una nueva cotización #' . $this->cotizacion->id,
-            'cotizacion' => [
-                'id' => $this->cotizacion->id,
-                'fecha_cotizacion' => $this->cotizacion->fecha_cotizacion->format('Y-m-d'),
-                'fecha_vencimiento' => $this->cotizacion->fecha_vencimiento->format('Y-m-d'),
-                'total' => $this->cotizacion->total,
-                'productos_count' => $this->cotizacion->detalles->count(),
-            ],
-            'solicitante' => [
-                'name' => $this->solicitante->name,
-                'email' => $this->solicitante->email,
-            ],
-            'modulo_origen' => $this->moduloOrigen,
-            'timestamp' => now()->toISOString(),
-            'url' => URL::to('/admin/cotizaciones/' . $this->cotizacion->id),
-        ]);
+        return new BroadcastMessage($this->getPayloadCotizacion());
     }
 
     /**
@@ -102,25 +84,7 @@ class CotizacionCreada extends Notification implements ShouldBroadcast
      */
     public function toArray(object $notifiable): array
     {
-        return [
-            'tipo' => 'cotizacion_creada',
-            'titulo' => 'Nueva Cotización #' . $this->cotizacion->id,
-            'mensaje' => 'Se ha creado una nueva cotización desde ' . ucfirst($this->moduloOrigen),
-            'cotizacion_id' => $this->cotizacion->id,
-            'proveedor_id' => $this->cotizacion->proveedor_id,
-            'fecha_cotizacion' => $this->cotizacion->fecha_cotizacion->format('Y-m-d'),
-            'fecha_vencimiento' => $this->cotizacion->fecha_vencimiento->format('Y-m-d'),
-            'total' => $this->cotizacion->total,
-            'productos_count' => $this->cotizacion->detalles->count(),
-            'solicitante' => [
-                'id' => $this->solicitante->id,
-                'name' => $this->solicitante->name,
-                'email' => $this->solicitante->email,
-            ],
-            'modulo_origen' => $this->moduloOrigen,
-            'url' => '/admin/cotizaciones/' . $this->cotizacion->id,
-            'created_at' => now()->toISOString(),
-        ];
+        return $this->getPayloadCotizacion();
     }
 
     /**
@@ -132,6 +96,32 @@ class CotizacionCreada extends Notification implements ShouldBroadcast
             'mail' => 'notifications',
             'database' => 'default',
             'broadcast' => 'broadcast',
+        ];
+    }
+
+
+    private function getPayloadCotizacion()
+    {
+        return [
+            'tipo' => 'Cotizaciones',
+            'titulo' => 'Nueva Cotización',
+            'mensaje' => 'Se ha creado una nueva cotización #' . $this->cotizacion->id,
+            'icono' => '',
+            'data' => [
+                'id' => $this->cotizacion->id,
+                'productos_count' => $this->cotizacion->detalles->count(),
+                'total' => $this->cotizacion->total,
+                'fecha_creacion' => $this->cotizacion->fecha_cotizacion->format('Y-m-d'),
+                'fecha_vencimiento' => $this->cotizacion->fecha_vencimiento->format('Y-m-d'),
+                'solicitante' => [
+                    'name' => $this->solicitante->name,
+                    'email' => $this->solicitante->email,
+                ],
+            ],
+            // 'url' => URL::to(config('services.frontend.url') . '/pages/proveedor/cotizacion/' . $this->cotizacion->id . '/view'),
+            'url' => URL::to('/pages/proveedor/cotizacion/' . $this->cotizacion->id . '/view'),
+            'modulo_origen' => $this->moduloOrigen,
+            'timestamp' => now()->toISOString(),
         ];
     }
 }
