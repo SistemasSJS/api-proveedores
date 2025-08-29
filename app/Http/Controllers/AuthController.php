@@ -16,6 +16,7 @@ use App\Mail\CompletaRegistroProveedorMail;
 use App\Http\Requests\Auth\AuthRegisterRequest;
 use App\Http\Resources\UserAuthenticateResource;
 use App\Http\Requests\Auth\AuthRegisterCompleteRequest;
+use App\Http\Requests\Auth\AuthUpdateCredentialsRequest;
 use App\Http\Requests\Auth\AuthUpdateFotoPerfilRequest;
 use App\Http\Requests\Proveedor\ProveedorRegisterRequest;
 use App\Http\Requests\Proveedor\ProveedorRegisterCompleteRequest;
@@ -23,6 +24,7 @@ use App\Http\Requests\Proveedor\ProveedorRegisterCompleteRequest;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+
 
 class AuthController extends Controller
 {
@@ -190,13 +192,13 @@ class AuthController extends Controller
         }
 
         $user = $request->user();
-        
+
         // Revocar el token actual
         $request->user()->currentAccessToken()->delete();
-        
+
         // Crear un nuevo token
         $newToken = $user->createToken('API Token')->plainTextToken;
-        
+
         // Cargar relaciones necesarias
         $user->load(User::eagerLodable());
         $proveedor = $user->proveedorPrincipal();
@@ -223,5 +225,26 @@ class AuthController extends Controller
             'Sesión cerrada correctamente',
             200
         );
+    }
+
+
+    public function updateUser(AuthUpdateCredentialsRequest $request)
+    {
+        $user = $request->user();
+        $validated = $request->validated();
+
+        if (isset($validated['nombre'])) {
+            $user->name = $validated['nombre'];
+        }
+
+        if (isset($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        }
+
+        $user->save();
+
+        return $this->success([
+            'user' => new UserAuthenticateResource($user)
+        ], 'Usuario actualizado correctamente.');
     }
 }

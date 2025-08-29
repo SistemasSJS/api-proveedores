@@ -9,9 +9,10 @@ use App\Http\Controllers\AuthController;
 |--------------------------------------------------------------------------
 | Estas rutas requieren autenticación con Sanctum
 */
+
 Route::prefix('auth')->group(function () {
-    
-    
+
+
     /**
      * AUTENTICACION Y REGISTRO
      */
@@ -23,12 +24,11 @@ Route::prefix('auth')->group(function () {
     /**
      * PERFIL Y GESTIÓN DE CUENTA
      */
-    Route::middleware('auth:sanctum')->group(function () {    
+    Route::middleware('auth:sanctum')->group(function () {
         Route::get('me', [AuthController::class, 'me']);
         Route::post('refresh', [AuthController::class, 'refresh']);
         Route::post('update-img-perfil', [AuthController::class, 'update_foto_perfil']);
+        Route::put('update-usuario', [AuthController::class, 'updateUser']);
         Route::get('logout', [AuthController::class, 'logout']);
-        
     });
-
 });

@@ -27,6 +27,8 @@ class Proveedor extends BaseModel
 
         'rfc',
         'tipo_persona',
+        'regimen_fiscal_clave',
+        'regimen_fiscal_nombre',
         'direccion_fiscal',
         'estado',
         'municipio',

@@ -500,6 +500,7 @@ class CSVImportJob implements ShouldQueue
             'descripcion' => $productData['descripcion'] ?? null,
             'marca_id' => $marcaId,
             'categoria_id' => $categoriaId,
+            'subcategoria_id' => $subcategoriaId,
             'unidad_medida_id' => $unidadId,
             'precio_base' => $this->parsePrice($productData['precio_base'] ?? 0),
             'precio_mayoreo' => $this->parsePrice($productData['precio_mayoreo'] ?? 0),

@@ -60,37 +60,50 @@ class ProveedorUpdateRequest extends FormRequest
     {
         return [
             // 'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048',],
-            'nombre_comercial' => ['nullable', 'string', 'max:255'],
+            //usuario
+            // 'email' => ['nullable', 'email', 'max:255'],
+
+            // GENERALES
             'pagina_web' => ['nullable', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255'],
+            'nombre_comercial' => ['nullable', 'string', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:15'],
-            'tipo_persona' => ['nullable', 'string', 'in:Física,Moral'],
-            'nombre_propietario' => ['nullable', 'string', 'max:255'],
-            'nombre_de_quien_registra' => ['nullable', 'string', 'max:255'],
-            'razon_social' => ['nullable', 'string', 'max:255'],
-            'tipos_empresa_id' => ['nullable', 'integer', 'exists:tipos_empresa,id,estatus,activo'],
-            'tipos_empresa_otro' => ['nullable', 'string', 'max:60'],
-            'descripcion_giro_empresa' => ['nullable', 'string', 'max:255'],
             'direccion_empresa' => ['nullable', 'string', 'max:255'],
+            'descripcion_giro_empresa' => ['nullable', 'string', 'max:255'],
+            // 
+            'nombre_propietario' => ['nullable', 'string', 'max:255'], // este no se m
+            'nombre_de_quien_registra' => ['nullable', 'string', 'max:255'], // este no se manda 
+
+            // FISCALES
+            // new campos
+            'razon_social' => ['nullable', 'string', 'max:255'],
+            'rfc' => ['nullable', 'string', 'max:13'],
+            'regimen_fiscal_clave' => ['nullable', 'string', 'max:10'],
+            'regimen_fiscal_nombre' => ['nullable', 'string', 'max:255'],
+            'direccion_fiscal' => ['nullable', 'string', 'max:255'],
             'estado' => ['nullable', 'string', 'max:255'],
+            'ciudad' => ['nullable', 'string', 'max:255'],
             'municipio' => ['nullable', 'string', 'max:255'],
             'codigo_postal' => ['nullable', 'string', 'max:10'],
-            'direccion_fiscal' => ['nullable', 'string', 'max:255'],
+
+            // sin formularios
             'contacto_nombre' => ['nullable', 'string', 'max:150'],
             'contacto_cargo' => ['nullable', 'string', 'max:60'],
             'contacto_telefono' => ['nullable', 'string', 'max:15'],
             'contacto_correo' => ['nullable', 'email', 'max:60'],
-            'estatus' => ['nullable', new Enum(EstadoUsuario::class)],
+            // 'estatus' => ['nullable', new Enum(EstadoUsuario::class)],
+
         ];
     }
 
     public function messages()
     {
         return [
+            // Logo
             'logo.image' => 'El archivo debe ser una imagen válida.',
             'logo.mimes' => 'La imagen debe estar en formato JPG o PNG.',
             'logo.max' => 'La imagen no debe pesar más de 2MB.',
 
+            // Generales
             'nombre_propietario.string' => 'El nombre del propietario debe ser una cadena de texto.',
             'nombre_propietario.max' => 'El nombre del propietario no debe exceder los 255 caracteres.',
 
@@ -100,8 +113,20 @@ class ProveedorUpdateRequest extends FormRequest
             'nombre_comercial.string' => 'El nombre comercial debe ser una cadena de texto.',
             'nombre_comercial.max' => 'El nombre comercial no debe exceder los 255 caracteres.',
 
+            // Fiscales
             'razon_social.string' => 'La razón social debe ser una cadena de texto.',
             'razon_social.max' => 'La razón social no debe exceder los 255 caracteres.',
+
+            'rfc.string' => 'El RFC debe ser una cadena de texto.',
+            'rfc.max' => 'El RFC no debe exceder los 13 caracteres.',
+
+            'regimen_fiscal_clave.string' => 'La clave del régimen fiscal debe ser una cadena de texto.',
+            'regimen_fiscal_clave.max' => 'La clave del régimen fiscal no debe exceder los 10 caracteres.',
+
+            'regimen_fiscal_nombre.string' => 'El nombre del régimen fiscal debe ser una cadena de texto.',
+            'regimen_fiscal_nombre.max' => 'El nombre del régimen fiscal no debe exceder los 255 caracteres.',
+
+            'tipo_persona.in' => 'El tipo de persona debe ser Física o Moral.',
 
             'tipos_empresa_id.integer' => 'El tipo de empresa debe ser un número entero.',
             'tipos_empresa_id.exists' => 'El tipo de empresa seleccionado no es válido o está inactivo.',
@@ -137,6 +162,7 @@ class ProveedorUpdateRequest extends FormRequest
             'direccion_fiscal.string' => 'La dirección fiscal debe ser una cadena de texto.',
             'direccion_fiscal.max' => 'La dirección fiscal no debe exceder los 255 caracteres.',
 
+            // Contacto
             'contacto_nombre.string' => 'El nombre del contacto debe ser una cadena de texto.',
             'contacto_nombre.max' => 'El nombre del contacto no debe exceder los 150 caracteres.',
 
@@ -149,6 +175,7 @@ class ProveedorUpdateRequest extends FormRequest
             'contacto_correo.email' => 'El correo electrónico del contacto debe tener un formato válido.',
             'contacto_correo.max' => 'El correo electrónico del contacto no debe exceder los 60 caracteres.',
 
+            // Estatus
             'estatus' => 'El estatus seleccionado no es válido.',
             'estatus.enum' => 'El estatus debe ser uno de los valores permitidos: ' . implode(', ', EstadoUsuario::values()),
         ];
