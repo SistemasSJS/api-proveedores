@@ -10,10 +10,10 @@ use App\Http\Controllers\ProveedorMarcaController;
 use App\Http\Controllers\ProveedorSucursalController;
 use App\Http\Controllers\SucursalProductoController;
 use App\Http\Controllers\ProveedorPedidoController;
-use App\Http\Controllers\ProveedorReporteController;
 use App\Http\Controllers\ProveedorDashboardController;
 use App\Http\Controllers\ProveedorUnidadMedidaController;
 use App\Http\Controllers\CsvImportController;
+use App\Http\Controllers\ProveedorCuentaBancariaController;
 
 /**
  * GESTIÓN DE PROVEEDORES
@@ -33,6 +33,19 @@ Route::prefix('proveedores')
 
         // Consultas especiales
         Route::get('user/{id}', [ProveedorController::class, 'getProveedorByUserId'])->middleware(['audit']);
+
+        /**
+         * CUENTAS BANCARIAS
+         */
+        Route::prefix('{proveedor}/cuentas-bancarias')->middleware(['proveedor.access'])->group(function () {
+            Route::get('/', [ProveedorCuentaBancariaController::class, 'index'])->middleware(['api.access', 'audit']);
+            Route::post('/', [ProveedorCuentaBancariaController::class, 'store'])->middleware(['api.access', 'audit']);
+            Route::middleware(['api.access', 'proveedor.cuenta', 'audit'])->group(function () {
+                Route::get('{cuenta}', [ProveedorCuentaBancariaController::class, 'show']);
+                Route::patch('{cuenta}', [ProveedorCuentaBancariaController::class, 'update']);
+                Route::delete('{cuenta}', [ProveedorCuentaBancariaController::class, 'destroy']);
+            });
+        });
 
         /**
          * USUARIOS DEL PROVEEDOR

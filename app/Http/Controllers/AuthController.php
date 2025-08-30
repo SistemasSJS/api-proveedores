@@ -227,24 +227,32 @@ class AuthController extends Controller
         );
     }
 
-
-    public function updateUser(AuthUpdateCredentialsRequest $request)
+    public function updateUser(Request $request)
     {
         $user = $request->user();
-        $validated = $request->validated();
 
-        if (isset($validated['nombre'])) {
-            $user->name = $validated['nombre'];
+        if ($request->filled('nombre')) {
+            $user->name = $request->input('nombre');
         }
 
-        if (isset($validated['password'])) {
-            $user->password = Hash::make($validated['password']);
+        if ($request->filled('password')) {
+            $user->password = \Hash::make($request->input('password'));
         }
 
         $user->save();
 
+        // Regenerar el token
+        $request->user()->currentAccessToken()->delete();
+        $newToken = $user->createToken('API Token')->plainTextToken;
+
+        // Cargar relaciones necesarias
+        $user->load(User::eagerLodable());
+        $proveedor = $user->proveedorPrincipal();
+
         return $this->success([
-            'user' => new UserAuthenticateResource($user)
-        ], 'Usuario actualizado correctamente.');
+            'user' => new UserAuthenticateResource($user),
+            'token' => $newToken,
+            'proveedor' => $proveedor,
+        ], 'Token renovado exitosamente', 200);
     }
 }

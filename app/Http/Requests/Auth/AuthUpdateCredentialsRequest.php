@@ -16,7 +16,7 @@ class AuthUpdateCredentialsRequest extends FormRequest
     return [
       'nombre' => ['nullable', 'string', 'max:255'],
       'current_password' => ['required_with:new_password', 'string', 'min:6'],
-      'new_password' => ['nullable', 'string', 'min:6', 'confirmed'],
+      'new_password' => ['required', 'string', 'min:6', 'confirmed'],
       // 'confirmed' automáticamente valida que exista 'new_password_confirmation'
     ];
   }
