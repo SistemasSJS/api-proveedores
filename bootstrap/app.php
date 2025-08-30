@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureCategoriaBelongsToProveedor;
 use App\Http\Middleware\EnsureMarcaBelongsToProveedor;
 use App\Http\Middleware\EnsureProductoBelongsToProveedor;
+use App\Http\Middleware\EnsureProveedorCuentaBancariaAccess;
 use App\Http\Middleware\EnsureUserBelongsToProveedor;
 use App\Http\Middleware\LogApiActions;
 use App\Http\Middleware\LogIncomingRequests;
@@ -41,6 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'proveedor.marca' => EnsureMarcaBelongsToProveedor::class,
             'proveedor.unidad' => EnsureUnidadMedidaBelongsToProveedor::class,
             'proveedor.sucursal' => EnsureSucursalBelongsToProveedor::class,
+            'proveedor.cuenta' => EnsureProveedorCuentaBancariaAccess::class,
             'proveedor.access' => EnsureProveedorOwnership::class,
             'proveedor.producto.access' => EnsureProveedorProductAccess::class,
             'proveedor.role' => ValidateProveedorRole::class,

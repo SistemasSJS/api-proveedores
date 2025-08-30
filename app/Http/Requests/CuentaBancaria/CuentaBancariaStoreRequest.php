@@ -4,7 +4,7 @@ namespace App\Http\Requests\CuentaBancaria  ;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CuentaBancariaRequest extends FormRequest
+class CuentaBancariaStoreRequest extends FormRequest
 {
   public function authorize(): bool
   {
@@ -26,7 +26,7 @@ class CuentaBancariaRequest extends FormRequest
       'alias' => ['required', 'string', 'min:3', 'max:50'],
       'titular_cuenta' => ['required', 'string', 'min:2', 'max:100'],
       'banco_clave' => ['required', 'string', 'min:3', 'max:10'],
-      'banc_nombre' => ['required', 'string', 'min:3', 'max:50'],
+      'banco_nombre' => ['required', 'string', 'min:3', 'max:50'],
       'tipo_cuenta' => ['required', 'in:clabe,tarjeta,cuenta'],
       'campo_dependiente' => $rulesCampo,
       'referencia' => ['nullable', 'string', 'max:50'],
@@ -48,9 +48,9 @@ class CuentaBancariaRequest extends FormRequest
       'banco_clave.min' => 'La clave del banco debe tener al menos :min caracteres.',
       'banco_clave.max' => 'La clave del banco no puede exceder :max caracteres.',
 
-      'banc_nombre.required' => 'El nombre del banco es obligatorio.',
-      'banc_nombre.min' => 'El nombre del banco debe tener al menos :min caracteres.',
-      'banc_nombre.max' => 'El nombre del banco no puede exceder :max caracteres.',
+      'banco_nombre.required' => 'El nombre del banco es obligatorio.',
+      'banco_nombre.min' => 'El nombre del banco debe tener al menos :min caracteres.',
+      'banco_nombre.max' => 'El nombre del banco no puede exceder :max caracteres.',
 
       'tipo_cuenta.required' => 'El tipo de cuenta es obligatorio.',
       'tipo_cuenta.in' => 'El tipo de cuenta debe ser CLABE, tarjeta o cuenta.',

@@ -12,7 +12,7 @@ return new class extends Migration {
             $table->foreignId('proveedor_id')->index()->constrained('proveedores')->restrictOnDelete();
             $table->string('alias', 50);
             $table->string('banco_clave', 10);
-            $table->string('banc_nombre', 50);
+            $table->string('banco_nombre', 50);
             $table->enum('tipo_cuenta', ['clabe', 'tarjeta', 'cuenta']);
             $table->string('campo_dependiente', 20); // CLABE/tarjeta/cuenta
             $table->string('titular_cuenta', 100);

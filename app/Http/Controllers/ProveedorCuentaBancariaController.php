@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CuentaBancaria\CuentaBancariaRequest;
+use App\Http\Requests\CuentaBancaria\CuentaBancariaStoreRequest;
 use App\Http\Requests\CuentaBancaria\UpdateCuentaBancariaRequest;
 use App\Http\Resources\CuentaBancaria\CuentaBancariaResource;
 use App\Models\CuentaBancaria;
@@ -23,7 +23,7 @@ class ProveedorCuentaBancariaController extends Controller
     $fields = CuentaBancaria::getFilters();
     $filters = $request->only($fields);
 
-    $sortBy = $request->input('sort_by', 'nombre'); // Default sort by 'nombre_comercial'
+    $sortBy = $request->input('sort_by', 'alias'); // Default sort by 'nombre_comercial'
     $order =  $request->input('order', 'asc');
     $perPage = $request->input('per_page', 10);
 
@@ -41,7 +41,7 @@ class ProveedorCuentaBancariaController extends Controller
    */
   public function show(Proveedor $proveedor, CuentaBancaria $cuenta)
   {
-    return $this->successResource(
+    return $this->success(
       new CuentaBancariaResource($cuenta),
       'Cuenta bancaria obtenida correctamente'
     );
@@ -50,10 +50,10 @@ class ProveedorCuentaBancariaController extends Controller
   /**
    * Crea una nueva cuenta bancaria del proveedor
    */
-  public function store(CuentaBancariaRequest $request, Proveedor $proveedor)
+  public function store(CuentaBancariaStoreRequest $request, Proveedor $proveedor)
   {
     $cuenta = $proveedor->cuentasBancarias()->create($request->validated());
-    return $this->successResource(
+    return $this->success(
       new CuentaBancariaResource($cuenta),
       'Cuenta bancaria creada exitosamente',
       201
@@ -88,6 +88,6 @@ class ProveedorCuentaBancariaController extends Controller
   public function destroy(Proveedor $proveedor, CuentaBancaria $cuenta)
   {
     $cuenta->delete();
-    return $this->successMessage('Cuenta bancaria eliminada exitosamente');
+    return $this->success('Cuenta bancaria eliminada exitosamente');
   }
 }

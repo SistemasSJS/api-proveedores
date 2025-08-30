@@ -26,7 +26,7 @@ class UpdateCuentaBancariaRequest extends FormRequest
       'alias' => ['sometimes', 'required', 'string', 'min:3', 'max:50'],
       'titular_cuenta' => ['sometimes', 'required', 'string', 'min:2', 'max:100'],
       'banco_clave' => ['sometimes', 'required', 'string', 'min:3', 'max:10'],
-      'banc_nombre' => ['sometimes', 'required', 'string', 'min:3', 'max:50'],
+      'banco_nombre' => ['sometimes', 'required', 'string', 'min:3', 'max:50'],
       'tipo_cuenta' => ['sometimes', 'required', 'in:clabe,tarjeta,cuenta'],
       'campo_dependiente' => $rulesCampo,
       'referencia' => ['sometimes', 'nullable', 'string', 'max:50'],
@@ -48,9 +48,9 @@ class UpdateCuentaBancariaRequest extends FormRequest
       'banco_clave.min' => 'La clave del banco debe tener al menos :min caracteres.',
       'banco_clave.max' => 'La clave del banco no puede exceder :max caracteres.',
 
-      'banc_nombre.required' => 'El nombre del banco es obligatorio.',
-      'banc_nombre.min' => 'El nombre del banco debe tener al menos :min caracteres.',
-      'banc_nombre.max' => 'El nombre del banco no puede exceder :max caracteres.',
+      'banco_nombre.required' => 'El nombre del banco es obligatorio.',
+      'banco_nombre.min' => 'El nombre del banco debe tener al menos :min caracteres.',
+      'banco_nombre.max' => 'El nombre del banco no puede exceder :max caracteres.',
 
       'tipo_cuenta.required' => 'El tipo de cuenta es obligatorio.',
       'tipo_cuenta.in' => 'El tipo de cuenta debe ser CLABE, tarjeta o cuenta.',

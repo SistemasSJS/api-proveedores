@@ -51,8 +51,8 @@ Route::prefix('proveedores')
          * USUARIOS DEL PROVEEDOR
          */
         Route::prefix('{proveedor}/users')->middleware(['proveedor.access'])->group(function () {
-            Route::get('/', [ProveedorUsuarioController::class, 'index'])->middleware(['api.access', 'audit']);
-            Route::post('/', [ProveedorUsuarioController::class, 'store'])->middleware(['api.access', 'audit']);
+            Route::get('/', [ProveedorUsuarioController::class, 'index'])->middleware(['audit']);
+            Route::post('/', [ProveedorUsuarioController::class, 'store'])->middleware(['audit']);
             Route::middleware(['api.access', 'proveedor.user', 'audit'])->group(function () {
                 Route::get('{user}', [ProveedorUsuarioController::class, 'show']);
                 Route::patch('{user}', [ProveedorUsuarioController::class, 'update']);

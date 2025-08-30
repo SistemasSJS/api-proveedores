@@ -12,7 +12,7 @@ class CuentaBancariaResource extends JsonResource
       'id' => $this->id,
       'alias' => $this->alias,
       'banco_clave' => $this->banco_clave,
-      'banc_nombre' => $this->banc_nombre,
+      'banco_nombre' => $this->banco_nombre,
       'tipo_cuenta' => $this->tipo_cuenta,
       'campo_dependiente' => $this->campo_dependiente,
       'titular_cuenta' => $this->titular_cuenta,
