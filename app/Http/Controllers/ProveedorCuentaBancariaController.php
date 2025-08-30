@@ -52,13 +52,20 @@ class ProveedorCuentaBancariaController extends Controller
    */
   public function store(CuentaBancariaStoreRequest $request, Proveedor $proveedor)
   {
+    // Si se marca como preferida, desmarcamos las demás
+    if ($request->filled('preferida') && $request->preferida) {
+      $proveedor->cuentasBancarias()->update(['preferida' => false]);
+    }
+
     $cuenta = $proveedor->cuentasBancarias()->create($request->validated());
+
     return $this->success(
       new CuentaBancariaResource($cuenta),
       'Cuenta bancaria creada exitosamente',
       201
     );
   }
+
 
   /**
    * Actualiza una cuenta bancaria del proveedor
@@ -68,11 +75,17 @@ class ProveedorCuentaBancariaController extends Controller
     CuentaBancaria $cuenta,
     UpdateCuentaBancariaRequest $request
   ): JsonResponse {
-    if ($cuenta->proveedor_id !== $proveedor->id) { // Verificar que la cuenta pertenezca al proveedor
+    if ($cuenta->proveedor_id !== $proveedor->id) {
       return $this->error('La cuenta bancaria no pertenece al proveedor.', 403);
     }
 
-    // Solo actualizar los campos enviados en el request
+    // Si se marca como preferida, desmarcamos las demás
+    if ($request->filled('preferida') && $request->preferida) {
+      $proveedor->cuentasBancarias()
+        ->where('id', '!=', $cuenta->id)
+        ->update(['preferida' => false]);
+    }
+
     $cuenta->fill($request->validated());
     $cuenta->save();
 

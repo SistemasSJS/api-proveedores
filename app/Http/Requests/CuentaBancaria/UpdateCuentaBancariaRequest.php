@@ -8,7 +8,7 @@ class UpdateCuentaBancariaRequest extends FormRequest
 {
   public function authorize(): bool
   {
-    return true; // O agregar lógica de permisos
+    return true;
   }
 
   public function rules(): array
@@ -18,7 +18,7 @@ class UpdateCuentaBancariaRequest extends FormRequest
     $rulesCampo = match ($tipo) {
       'clabe' => ['sometimes', 'required', 'string', 'size:18'],
       'tarjeta' => ['sometimes', 'required', 'string', 'size:16'],
-      'cuenta' => ['sometimes', 'required', 'string', 'min:10', 'max:10'],
+      'cuenta' => ['sometimes', 'required', 'string', 'size:10'],
       default => ['sometimes', 'required', 'string'],
     };
 
@@ -30,6 +30,7 @@ class UpdateCuentaBancariaRequest extends FormRequest
       'tipo_cuenta' => ['sometimes', 'required', 'in:clabe,tarjeta,cuenta'],
       'campo_dependiente' => $rulesCampo,
       'referencia' => ['sometimes', 'nullable', 'string', 'max:50'],
+      'preferida' => ['sometimes', 'boolean'],
     ];
   }
 

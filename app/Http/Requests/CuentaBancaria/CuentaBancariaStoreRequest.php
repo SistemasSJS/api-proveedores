@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\CuentaBancaria  ;
+namespace App\Http\Requests\CuentaBancaria;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -8,17 +8,17 @@ class CuentaBancariaStoreRequest extends FormRequest
 {
   public function authorize(): bool
   {
-    return true; // O agregar lógica de permisos
+    return true; // Aquí puedes agregar lógica de permisos si lo deseas
   }
 
   public function rules(): array
   {
-    $tipo = $this->input('tipo_cuenta', 'clabe');
+    $tipo = $this->input('tipo_cuenta');
 
     $rulesCampo = match ($tipo) {
       'clabe' => ['required', 'string', 'size:18'],
       'tarjeta' => ['required', 'string', 'size:16'],
-      'cuenta' => ['required', 'string', 'min:10', 'max:10'],
+      'cuenta' => ['required', 'string', 'size:10'],
       default => ['required', 'string'],
     };
 
@@ -30,6 +30,9 @@ class CuentaBancariaStoreRequest extends FormRequest
       'tipo_cuenta' => ['required', 'in:clabe,tarjeta,cuenta'],
       'campo_dependiente' => $rulesCampo,
       'referencia' => ['nullable', 'string', 'max:50'],
+      'sucursal' => ['nullable', 'string', 'max:191'],
+      'swift' => ['nullable', 'string', 'max:191'],
+      'preferida' => ['sometimes', 'boolean'],
     ];
   }
 

@@ -18,6 +18,9 @@ class CuentaBancariaResource extends JsonResource
       'titular_cuenta' => $this->titular_cuenta,
       'referencia' => $this->referencia,
       'proveedor_id' => $this->proveedor_id,
+      'sucursal' => $this->sucursal,
+      'swift' => $this->swift,
+      'preferida' => $this->preferida,
     ];
   }
 }

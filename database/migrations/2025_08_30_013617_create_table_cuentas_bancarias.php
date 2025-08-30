@@ -17,6 +17,9 @@ return new class extends Migration {
             $table->string('campo_dependiente', 20); // CLABE/tarjeta/cuenta
             $table->string('titular_cuenta', 100);
             $table->string('referencia', 50)->nullable();
+            $table->string('sucursal')->nullable();
+            $table->string('swift')->nullable();
+            $table->boolean('preferida')->default(false);
             $table->timestamps();
         });
     }
