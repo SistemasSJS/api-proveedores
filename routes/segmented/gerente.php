@@ -2,17 +2,18 @@
 
 use App\Enums\UserRoleEnumerate;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CsvImportController;
 use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\SolicitudPagoController;
+use App\Http\Controllers\ProveedorMarcaController;
+use App\Http\Controllers\ProveedorPedidoController;
 use App\Http\Controllers\ProveedorUsuarioController;
+use App\Http\Controllers\SucursalProductoController;
+use App\Http\Controllers\ProveedorSucursalController;
 use App\Http\Controllers\ProveedorProductoController;
 use App\Http\Controllers\ProveedorCategoriaController;
-use App\Http\Controllers\ProveedorMarcaController;
-use App\Http\Controllers\ProveedorSucursalController;
-use App\Http\Controllers\SucursalProductoController;
-use App\Http\Controllers\ProveedorPedidoController;
 use App\Http\Controllers\ProveedorDashboardController;
 use App\Http\Controllers\ProveedorUnidadMedidaController;
-use App\Http\Controllers\CsvImportController;
 use App\Http\Controllers\ProveedorCuentaBancariaController;
 
 /**
@@ -181,4 +182,34 @@ Route::prefix('proveedores')
             ->middleware(['proveedor.access', 'audit']);
 
         // Route::get('imports/products/template', [ProductoImportController::class, 'downloadTemplate']);
+
+
+
+        /**
+         * GESTION DE SP POR PROVEEDOR
+         */
+        Route::prefix('{proveedor}/solicitudes-pago')->middleware(['proveedor.access'])->group(function () {
+
+            // Listados
+            Route::get('/', [SolicitudPagoController::class, 'index']);        // Paginado
+            Route::get('/all', [SolicitudPagoController::class, 'uindex']);    // Sin paginación
+
+            // Crear solicitud
+            Route::post('/', [SolicitudPagoController::class, 'store']);
+
+            // Operaciones sobre una solicitud específica
+            Route::get('/{solicitudPago}', [SolicitudPagoController::class, 'show']);       // Detalle
+            Route::put('/{solicitudPago}', [SolicitudPagoController::class, 'update']);     // Actualizar
+            Route::delete('/{solicitudPago}', [SolicitudPagoController::class, 'destroy']); // Eliminar
+
+            // Subir comprobante
+            Route::post('/{solicitudPago}/subir-comprobante', [SolicitudPagoController::class, 'subirComprobantePago']);
+
+            // Descargar comprobante (solo usuarios autorizados)
+            Route::get('/{solicitudPago}/descargar-comprobante', [SolicitudPagoController::class, 'descargarComprobante']);
+
+            // Cambiar estado
+            Route::post('/{solicitudPago}/confirmar-pago', [SolicitudPagoController::class, 'confirmarPagoSP']);
+            Route::post('/{solicitudPago}/procesando', [SolicitudPagoController::class, 'procesando']);
+        });
     });
