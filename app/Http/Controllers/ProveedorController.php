@@ -61,7 +61,6 @@ class ProveedorController extends Controller
         return $this->success(new ProveedorResource($proveedor->load(Proveedor::eagerLodable())));
     }
 
-
     public function index(Request $request)
     {
         $filters = $request->only(Proveedor::getFilters());
@@ -96,8 +95,6 @@ class ProveedorController extends Controller
         return $this->success(new ProveedorResource($proveedor), 'Proveedor actualizado con éxito.', 200);
     }
 
-
-
     public function destroy($id)
     {
         $proveedor = Proveedor::find($id);
@@ -107,20 +104,6 @@ class ProveedorController extends Controller
         $proveedor->update([['estatus' => 'baja']]);
         return $this->success(null, 204);
     }
-
-    // public function test(Request $request)
-    // {
-    //     $user = User::findOrFail(1);
-    //     $proveedor = Proveedor::findOrFail(1);
-    //     $token = $user->createToken('auth_token')->plainTextToken;
-
-    //     return $this->success([
-    //         'user' => new UserAuthenticateResource($user->load(User::eagerLodable())),
-    //         'proveedor' => $proveedor->load(Proveedor::eagerLodable()),
-    //         'token' => $token,
-    //     ], 'Registro completado', 201);
-    // }
-
 
     public function proveedoresConCategoriasConSubcatCountProductos(Request $request)
     {

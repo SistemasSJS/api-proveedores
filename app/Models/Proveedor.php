@@ -23,6 +23,7 @@ class Proveedor extends BaseModel
         'tipo_persona',
         'regimen_fiscal_clave',
         'regimen_fiscal_nombre',
+        'constancia_fiscal',
         'direccion_fiscal',
         'estado',
         'municipio',

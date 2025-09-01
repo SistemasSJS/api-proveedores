@@ -16,6 +16,11 @@ return new class extends Migration {
             if (!Schema::hasColumn('proveedores', 'tipo_persona')) {
                 $table->string('tipo_persona')->nullable()->after('logo');
             }
+
+            // constancia_fiscal si no existe
+            if (!Schema::hasColumn('proveedores', 'constancia_fiscal')) {
+                $table->string('constancia_fiscal')->nullable()->after('regimen_fiscal_nombre');
+            }
         });
     }
 
@@ -27,6 +32,10 @@ return new class extends Migration {
 
             if (Schema::hasColumn('proveedores', 'tipo_persona')) {
                 $table->dropColumn('tipo_persona');
+            }
+
+            if (Schema::hasColumn('proveedores', 'constancia_fiscal')) {
+                $table->dropColumn('constancia_fiscal');
             }
         });
     }
