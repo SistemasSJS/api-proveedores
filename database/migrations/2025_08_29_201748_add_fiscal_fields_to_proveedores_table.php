@@ -21,6 +21,11 @@ return new class extends Migration {
             if (!Schema::hasColumn('proveedores', 'constancia_fiscal')) {
                 $table->string('constancia_fiscal')->nullable()->after('regimen_fiscal_nombre');
             }
+
+            // 
+            if (!Schema::hasColumn('proveedores', 'constancia_fiscal')) {
+                $table->string('constancia_fiscal')->nullable()->after('regimen_fiscal_nombre');
+            }
         });
     }
 

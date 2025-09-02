@@ -28,13 +28,12 @@ use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
-
     public function register(AuthRegisterRequest $request)
     {
         $validatedData = $request->validated();
         $token = Str::random(60);
         Cache::put("registro_user_construcc{$token}", $validatedData, 60 * 24 * 365);
-        $url = config('services.frontend.url') . "/auth/registro/completar?is_user_construcc=true&token={$token}";
+        $url = config('services.frontend.url') . "/gen-pass?is_user_construcc=true&token={$token}";
         Mail::to($validatedData['email'])->send(new CompletaRegistroUsuarioMail($url));
 
 
@@ -81,7 +80,7 @@ class AuthController extends Controller
 
         Cache::put("registro_proveedor_{$token}", $proveedor->id, 60 * 60 * 24 * 7 * 360); // 1 año
 
-        $url = config('services.frontend.url') . "/auth/registro/completar?token={$token}";
+        $url = config('services.frontend.url') . "/gen-pass?token={$token}";
         Mail::to($proveedor->email)->send(new CompletaRegistroProveedorMail($url));
 
         return $this->success([
@@ -108,7 +107,6 @@ class AuthController extends Controller
                 'role_id' => $idRoleProveedor,
             ]);
 
-            // $user->proveedores()->attach($proveedor->id, ['is_main' => true]);
             $user->proveedores()->attach($proveedor->id, [
                 'tipo_relacion' => 'PRINCIPAL',
                 'activo' => true,
@@ -121,13 +119,30 @@ class AuthController extends Controller
             $user->save();
         }
 
+        /**
+         * Crear sucursal matriz por defecto si el proveedor aún no tiene ninguna.
+         */
+        if (!$proveedor->sucursales()->exists()) {
+            $proveedor->sucursales()->create([
+                'nombre'          => 'Matriz',
+                'direccion'       => $proveedor->direccion ?? 'Dirección pendiente',
+                'telefono'        => $proveedor->telefono ?? '0000000000',
+                'email'           => $proveedor->email,
+                'encargado'       => $proveedor->nombre_comercial,
+                'activa'          => true,
+                'coordenadas_lat' => null,
+                'coordenadas_lng' => null,
+                'estatus'         => 'activo',
+            ]);
+        }
+
         Cache::forget("registro_proveedor_{$request->token}");
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return $this->success([
-            'user' => new UserAuthenticateResource($user->load(User::eagerLodable())),
+            'user'      => new UserAuthenticateResource($user->load(User::eagerLodable())),
             'proveedor' => new ProveedorResource($proveedor->load(Proveedor::eagerLodable())),
-            'token' => $token,
+            'token'     => $token,
         ], 'Registro completado', 201);
     }
 
@@ -236,7 +251,7 @@ class AuthController extends Controller
         }
 
         if ($request->filled('password')) {
-            $user->password = \Hash::make($request->input('password'));
+            $user->password = Hash::make($request->input('password'));
         }
 
         $user->save();
