@@ -167,6 +167,7 @@ Route::prefix('proveedores')
          */
         Route::prefix('{proveedor}/dashboard')->middleware(['proveedor.access'])->group(function () {
             Route::get('/stats', [ProveedorDashboardController::class, 'getStats'])->middleware(['audit']);
+            Route::get('/cotizaciones', [ProveedorDashboardController::class, 'cotizacionesDashboard'])->middleware(['audit']);
         });
 
         // Route::get('imports/products/template', [ProductoImportController::class, 'downloadTemplate']);

@@ -3,13 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Enums\EstadoGeneral;
-use App\Http\Resources\ProveedorDashboard\ProveedorDashboardCotizacion;
+use App\Http\Resources\ProveedorDashboard\ProveedorDashboardCotizacionResource;
 use App\Models\Cotizacion;
 use App\Models\Proveedor;
-use Illuminate\Support\Facades\Request;
+use App\Traits\ApiResponse;
+use Illuminate\Http\Request;
+
 
 class ProveedorDashboardController extends Controller
 {
+    use ApiResponse;
+
     public function getStats(Request $request, Proveedor $proveedor)
     {
         $stats = [
@@ -33,7 +37,7 @@ class ProveedorDashboardController extends Controller
     }
 
 
-    public function cotizaciones_dashboard(Request $request, $proveedor)
+    public function cotizacionesDashboard(Request $request, Proveedor $proveedor)
     {
         $fields = Cotizacion::getFilters();
         $filters = $request->only($fields);
@@ -42,14 +46,15 @@ class ProveedorDashboardController extends Controller
         $order = $request->input('order', 'desc');
         $perPage = $request->input('per_page', 10);
 
-        $originalPaginator = Cotizacion::query()
-            ->where('proveedor_id', $proveedor)
+        $query = Cotizacion::query()
             ->filter($filters)
-            ->orderBy($sortBy, $order)
-            ->paginate($perPage);
+            ->where('proveedor_id', $proveedor)
+            ->orderBy($sortBy, $order);
 
-        return $this->paginated(
-            $originalPaginator->setCollection(ProveedorDashboardCotizacion::collection($originalPaginator->getCollection()))
-        );
+        $paginator = $query->paginate($perPage);
+
+        // Transformación con Resource
+        $data = ProveedorDashboardCotizacionResource::collection($paginator)->resolve();
+        return $this->paginated($paginator->setCollection(collect($data)));
     }
 }

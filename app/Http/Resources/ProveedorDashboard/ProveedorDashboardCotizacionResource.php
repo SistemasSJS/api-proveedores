@@ -4,7 +4,7 @@ namespace App\Http\Resources\ProveedorDashboard;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ProveedorDashboardCotizacion extends JsonResource
+class ProveedorDashboardCotizacionResource extends JsonResource
 {
   /**
    * Transform the resource into an array.
