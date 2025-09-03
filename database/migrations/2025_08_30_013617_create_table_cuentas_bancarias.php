@@ -9,17 +9,26 @@ return new class extends Migration {
     {
         Schema::create('cuentas_bancarias', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('proveedor_id')->index()->constrained('proveedores')->restrictOnDelete();
+
+            // Relación con proveedor
+            $table->foreignId('proveedor_id')->nullable()->index()->constrained('proveedores')->restrictOnDelete();
+            // Datos de la cuenta
             $table->string('alias', 50);
             $table->string('banco_clave', 10);
             $table->string('banco_nombre', 50);
+            // Tipo de cuenta
             $table->enum('tipo_cuenta', ['clabe', 'tarjeta', 'cuenta']);
-            $table->string('campo_dependiente', 20); // CLABE/tarjeta/cuenta
+            $table->string('campo_dependiente', 20);
+            // Titular y referencias
             $table->string('titular_cuenta', 100);
             $table->string('referencia', 50)->nullable();
             $table->string('sucursal')->nullable();
             $table->string('swift')->nullable();
+            // Preferida
             $table->boolean('preferida')->default(false);
+            // Nueva columna: moneda
+            $table->string('moneda', 10)->default('MXN');
+            // Timestamps
             $table->timestamps();
         });
     }

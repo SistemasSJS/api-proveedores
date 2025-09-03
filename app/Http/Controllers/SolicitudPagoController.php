@@ -5,17 +5,15 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SolicitudPago\CrearSolicitudPagoRequest;
 use App\Http\Requests\SolicitudPago\ActualizarEstadoPagadoRequest;
 use App\Http\Requests\SolicitudPago\ActualizarEstadoProcesandoRequest;
-use App\Http\Resources\SolicitudPagoResource;
+use App\Http\Resources\SolicitudPago\SolicitudPagoResource;
 use App\Models\SolicitudPago;
 use App\Models\Proveedor;
 use Illuminate\Http\Request;
-use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 
 class SolicitudPagoController extends Controller
 {
-  use ApiResponse;
 
   /**
    * Listado con paginación, filtrando por proveedor
@@ -61,15 +59,44 @@ class SolicitudPagoController extends Controller
     );
   }
 
-  /**
-   * Crear nueva solicitud de pago para un proveedor
-   */
+
   public function store(CrearSolicitudPagoRequest $request, Proveedor $proveedor): JsonResponse
   {
-    $solicitud = SolicitudPago::create(array_merge(
-      $request->validated(),
-      ['proveedor_id' => $proveedor->id]
-    ));
+    // Validar que existan los archivos
+    $facturaPdf = $request->file('factura_pdf');
+    $facturaXml = $request->file('factura_xml');
+
+    if (!$facturaPdf || !$facturaXml) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Los archivos PDF y XML son obligatorios.'
+      ], 422);
+    }
+
+    // Subir archivos
+    $rutaPdf = $facturaPdf->store('facturas/pdf', 'private');
+    $rutaXml = $facturaXml->store('facturas/xml', 'private');
+
+    // Generar folio
+    $lastFolio = SolicitudPago::where('proveedor_id', $proveedor->id)
+      ->orderBy('id', 'desc')
+      ->value('numero_folio_solicitud');
+    $lastNumber = $lastFolio ? (int) substr($lastFolio, 2) : 0;
+    $nextNumber = $lastNumber + 1;
+    $numeroFolio = 'SP' . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+
+    // Crear solicitud
+    $solicitud = SolicitudPago::create([
+      'proveedor_id' => $proveedor->id,
+      'numero_folio_solicitud' => $numeroFolio,
+      'descripcion_concepto' => $request->descripcion_concepto,
+      'ruta_archivo_factura_pdf' => $rutaPdf,
+      'ruta_archivo_factura_xml' => $rutaXml,
+      'estado_solicitud' => 'pendiente',
+      'fecha_registro_pendiente' => now(),
+      'ruta_archivo_comprobante_pago' => null,
+      'sucursal_id' => null,
+    ]);
 
     return $this->success(
       new SolicitudPagoResource($solicitud->load('proveedor')),
@@ -102,15 +129,15 @@ class SolicitudPagoController extends Controller
     }
 
     $request->validate([
-      'comprobante' => 'required|file|mimes:pdf,jpg,png|max:5120',
+      'comprobante' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
     ]);
 
     $file = $request->file('comprobante');
     $path = $file->store('comprobantes', 'private');
 
     $solicitudPago->update([
-      'comprobante_pago' => $path,
-      'estado' => 'con_comprobante',
+      'ruta_archivo_comprobante_pago' => $path,
+      'estado_solicitud' => 'con_comprobante',
     ]);
 
     return $this->success(
@@ -129,12 +156,15 @@ class SolicitudPagoController extends Controller
       return $this->error('Solicitud no pertenece a este proveedor', 403);
     }
 
-    if (!$solicitudPago->comprobante_pago || !Storage::disk('private')->exists($solicitudPago->comprobante_pago)) {
+    if (
+      !$solicitudPago->ruta_archivo_comprobante_pago ||
+      !Storage::disk('private')->exists($solicitudPago->ruta_archivo_comprobante_pago)
+    ) {
       return $this->error('Comprobante no disponible', 404);
     }
 
     return response()->download(
-      Storage::disk('private')->path($solicitudPago->comprobante_pago)
+      Storage::disk('private')->path($solicitudPago->ruta_archivo_comprobante_pago)
     );
   }
 
@@ -147,7 +177,7 @@ class SolicitudPagoController extends Controller
       return $this->error('Solicitud no pertenece a este proveedor', 403);
     }
 
-    $solicitudPago->update(['estado' => 'pagado']);
+    $solicitudPago->update(['estado_solicitud' => 'pagado']);
 
     return $this->success(
       new SolicitudPagoResource($solicitudPago->load('proveedor')),
@@ -164,7 +194,7 @@ class SolicitudPagoController extends Controller
       return $this->error('Solicitud no pertenece a este proveedor', 403);
     }
 
-    $solicitudPago->update(['estado' => 'procesando']);
+    $solicitudPago->update(['estado_solicitud' => 'procesando']);
 
     return $this->success(
       new SolicitudPagoResource($solicitudPago->load('proveedor')),

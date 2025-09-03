@@ -10,14 +10,8 @@ class SolicitudPago extends BaseModel
 {
     use HasFactory, Filterable;
 
-    /**
-     * Nombre de la tabla
-     */
     protected $table = 'solicitudes_pago';
 
-    /**
-     * Campos asignables masivamente
-     */
     protected $fillable = [
         'numero_folio_solicitud',
         'descripcion_concepto',
@@ -25,34 +19,29 @@ class SolicitudPago extends BaseModel
         'ruta_archivo_factura_pdf',
         'estado_solicitud',
         'ruta_archivo_comprobante_pago',
-        'id_proveedor',
+        'proveedor_id',
+        'sucursal_id',
         'fecha_registro_pendiente',
         'fecha_inicio_procesamiento',
         'fecha_confirmacion_pago',
     ];
 
-    /**
-     * Filtros disponibles
-     */
     protected static $filters = [
         'numero_folio_solicitud'   => 'NumeroFolioSolicitud',
         'descripcion_concepto'     => 'DescripcionConcepto',
         'estado_solicitud'         => 'EstadoSolicitud',
-        'id_proveedor'             => 'ProveedorId',
+        'proveedor_id'             => 'ProveedorId',
         'fecha_registro_pendiente' => 'FechaRegistroPendiente',
         'fecha_inicio_procesamiento' => 'FechaInicioProcesamiento',
         'fecha_confirmacion_pago'  => 'FechaConfirmacionPago',
     ];
 
-    /**
-     * Casts de atributos
-     */
     protected $casts = [
-        'fecha_registro_pendiente'  => 'datetime',
+        'fecha_registro_pendiente'   => 'datetime',
         'fecha_inicio_procesamiento' => 'datetime',
-        'fecha_confirmacion_pago'   => 'datetime',
-        'created_at'                => 'datetime',
-        'updated_at'                => 'datetime',
+        'fecha_confirmacion_pago'    => 'datetime',
+        'created_at'                 => 'datetime',
+        'updated_at'                 => 'datetime',
     ];
 
     /** ----------------
@@ -60,7 +49,12 @@ class SolicitudPago extends BaseModel
      * ----------------- */
     public function proveedor(): BelongsTo
     {
-        return $this->belongsTo(Proveedor::class, 'id_proveedor');
+        return $this->belongsTo(Proveedor::class, 'proveedor_id');
+    }
+
+    public function sucursal(): BelongsTo
+    {
+        return $this->belongsTo(Sucursal::class, 'sucursal_id');
     }
 
     /** ----------------
@@ -83,7 +77,7 @@ class SolicitudPago extends BaseModel
 
     public function filterByProveedorId($query, $value)
     {
-        return $query->whereIn('id_proveedor', explode(',', $value));
+        return $query->whereIn('proveedor_id', explode(',', $value));
     }
 
     public function filterByFechaRegistroPendiente($query, $value)

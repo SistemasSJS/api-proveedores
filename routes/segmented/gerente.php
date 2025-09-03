@@ -191,25 +191,25 @@ Route::prefix('proveedores')
         Route::prefix('{proveedor}/solicitudes-pago')->middleware(['proveedor.access'])->group(function () {
 
             // Listados
-            Route::get('/', [SolicitudPagoController::class, 'index']);        // Paginado
-            Route::get('/all', [SolicitudPagoController::class, 'uindex']);    // Sin paginación
+            Route::get('/', [SolicitudPagoController::class, 'index'])->middleware(['audit']);        // Paginado
+            Route::get('/all', [SolicitudPagoController::class, 'uindex'])->middleware(['audit']);    // Sin paginación
 
             // Crear solicitud
-            Route::post('/', [SolicitudPagoController::class, 'store']);
+            Route::post('/', [SolicitudPagoController::class, 'store'])->middleware(['audit']);
 
             // Operaciones sobre una solicitud específica
-            Route::get('/{solicitudPago}', [SolicitudPagoController::class, 'show']);       // Detalle
-            Route::put('/{solicitudPago}', [SolicitudPagoController::class, 'update']);     // Actualizar
-            Route::delete('/{solicitudPago}', [SolicitudPagoController::class, 'destroy']); // Eliminar
+            Route::get('/{solicitudPago}', [SolicitudPagoController::class, 'show'])->middleware(['audit']);       // Detalle
+            Route::put('/{solicitudPago}', [SolicitudPagoController::class, 'update'])->middleware(['audit']);     // Actualizar
+            Route::delete('/{solicitudPago}', [SolicitudPagoController::class, 'destroy'])->middleware(['audit']); // Eliminar
 
             // Subir comprobante
-            Route::post('/{solicitudPago}/subir-comprobante', [SolicitudPagoController::class, 'subirComprobantePago']);
+            Route::post('/{solicitudPago}/subir-comprobante', [SolicitudPagoController::class, 'subirComprobantePago'])->middleware(['audit']);
 
             // Descargar comprobante (solo usuarios autorizados)
-            Route::get('/{solicitudPago}/descargar-comprobante', [SolicitudPagoController::class, 'descargarComprobante']);
+            Route::get('/{solicitudPago}/descargar-comprobante', [SolicitudPagoController::class, 'descargarComprobante'])->middleware(['audit']);
 
             // Cambiar estado
-            Route::post('/{solicitudPago}/confirmar-pago', [SolicitudPagoController::class, 'confirmarPagoSP']);
-            Route::post('/{solicitudPago}/procesando', [SolicitudPagoController::class, 'procesando']);
+            Route::post('/{solicitudPago}/confirmar-pago', [SolicitudPagoController::class, 'confirmarPagoSP'])->middleware(['audit']);
+            Route::post('/{solicitudPago}/procesando', [SolicitudPagoController::class, 'procesando'])->middleware(['audit']);
         });
     });
