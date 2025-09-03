@@ -149,19 +149,6 @@ Route::prefix('proveedores')
             });
         });
 
-        /**
-         * PEDIDOS DEL PROVEEDOR
-         */
-        Route::prefix('{proveedor}/pedidos')->middleware(['proveedor.access'])->group(function () {
-            Route::get('dashboard', [ProveedorPedidoController::class, 'dashboard'])->middleware(['audit'])->name('gerente.proveedor.pedidos.dashboard');
-            Route::get('/', [ProveedorPedidoController::class, 'index'])->middleware(['audit'])->name('gerente.proveedor.pedidos.index');
-            Route::get('{pedido}', [ProveedorPedidoController::class, 'show'])->middleware(['audit'])->name('gerente.proveedor.pedidos.show');
-            Route::patch('{pedido}/status', [ProveedorPedidoController::class, 'updateStatus'])->middleware(['audit'])->name('gerente.proveedor.pedidos.update-status');
-            Route::patch('{pedido}/prepare-shipment', [ProveedorPedidoController::class, 'prepareShipment'])->middleware(['audit'])->name('gerente.proveedor.pedidos.prepare-shipment');
-            Route::patch('{pedido}/confirm-delivery', [ProveedorPedidoController::class, 'confirmDelivery'])->middleware(['audit'])->name('gerente.proveedor.pedidos.confirm-delivery');
-            Route::patch('{pedido}/reject', [ProveedorPedidoController::class, 'rechazar'])->middleware(['audit'])->name('gerente.proveedor.pedidos.reject');
-            Route::post('export', [ProveedorPedidoController::class, 'exportar'])->middleware(['audit'])->name('gerente.proveedor.pedidos.export');
-        });
 
         /**
          * CSV IMPORT ROUTES
@@ -178,8 +165,9 @@ Route::prefix('proveedores')
         /**
          * DASHBOARD PROVEEDOR
          */
-        Route::get('{proveedor}/dashboard/stats', [ProveedorDashboardController::class, 'getStats'])
-            ->middleware(['proveedor.access', 'audit']);
+        Route::prefix('{proveedor}/dashboard')->middleware(['proveedor.access'])->group(function () {
+            Route::get('/stats', [ProveedorDashboardController::class, 'getStats'])->middleware(['audit']);
+        });
 
         // Route::get('imports/products/template', [ProductoImportController::class, 'downloadTemplate']);
 
@@ -212,4 +200,18 @@ Route::prefix('proveedores')
             Route::post('/{solicitudPago}/confirmar-pago', [SolicitudPagoController::class, 'confirmarPagoSP'])->middleware(['audit']);
             Route::post('/{solicitudPago}/procesando', [SolicitudPagoController::class, 'procesando'])->middleware(['audit']);
         });
+
+        /**
+         * PEDIDOS DEL PROVEEDOR
+         */
+        // Route::prefix('{proveedor}/pedidos')->middleware(['proveedor.access'])->group(function () {
+        //     Route::get('dashboard', [ProveedorPedidoController::class, 'dashboard'])->middleware(['audit'])->name('gerente.proveedor.pedidos.dashboard');
+        //     Route::get('/', [ProveedorPedidoController::class, 'index'])->middleware(['audit'])->name('gerente.proveedor.pedidos.index');
+        //     Route::get('{pedido}', [ProveedorPedidoController::class, 'show'])->middleware(['audit'])->name('gerente.proveedor.pedidos.show');
+        //     Route::patch('{pedido}/status', [ProveedorPedidoController::class, 'updateStatus'])->middleware(['audit'])->name('gerente.proveedor.pedidos.update-status');
+        //     Route::patch('{pedido}/prepare-shipment', [ProveedorPedidoController::class, 'prepareShipment'])->middleware(['audit'])->name('gerente.proveedor.pedidos.prepare-shipment');
+        //     Route::patch('{pedido}/confirm-delivery', [ProveedorPedidoController::class, 'confirmDelivery'])->middleware(['audit'])->name('gerente.proveedor.pedidos.confirm-delivery');
+        //     Route::patch('{pedido}/reject', [ProveedorPedidoController::class, 'rechazar'])->middleware(['audit'])->name('gerente.proveedor.pedidos.reject');
+        //     Route::post('export', [ProveedorPedidoController::class, 'exportar'])->middleware(['audit'])->name('gerente.proveedor.pedidos.export');
+        // });
     });

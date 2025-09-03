@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\EstadoGeneral;
+use App\Http\Resources\ProveedorDashboard\ProveedorDashboardCotizacion;
+use App\Models\Cotizacion;
 use App\Models\Proveedor;
 use Illuminate\Support\Facades\Request;
 
@@ -28,5 +30,26 @@ class ProveedorDashboardController extends Controller
         return $this->success([
             'stats' => $stats,
         ]);
+    }
+
+
+    public function cotizaciones_dashboard(Request $request, $proveedor)
+    {
+        $fields = Cotizacion::getFilters();
+        $filters = $request->only($fields);
+
+        $sortBy = $request->input('sort_by', 'fecha_cotizacion');
+        $order = $request->input('order', 'desc');
+        $perPage = $request->input('per_page', 10);
+
+        $originalPaginator = Cotizacion::query()
+            ->where('proveedor_id', $proveedor)
+            ->filter($filters)
+            ->orderBy($sortBy, $order)
+            ->paginate($perPage);
+
+        return $this->paginated(
+            $originalPaginator->setCollection(ProveedorDashboardCotizacion::collection($originalPaginator->getCollection()))
+        );
     }
 }
