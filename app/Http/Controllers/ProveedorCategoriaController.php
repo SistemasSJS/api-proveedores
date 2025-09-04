@@ -30,13 +30,23 @@ class ProveedorCategoriaController extends Controller
 
     public function index(Request $request, Proveedor $proveedor)
     {
-        $filters = $request->only(['nombre', 'estatus']);
-        $data = Categoria::with(['children'])
+        $filters = $request->only(Categoria::getFilters());
+
+        $sortBy = $request->input('sort_by', 'nombre');
+        $order = $request->input('order', 'asc');
+        $perPage = $request->input('per_page', 10);
+
+        $query = Categoria::query()
+            ->with(['children'])
             ->whereNull('parent_id')
             ->filter($filters)
             ->where('proveedor_id', $proveedor->id)
-            ->paginate();
-        return $this->paginated($data);
+            ->orderBy($sortBy, $order);
+
+        $paginator = $query->paginate($perPage);
+
+        $data = CategoriaResource::collection(($paginator))->resolve();
+        return $this->paginated($paginator->setCollection(collect($data)));
     }
 
 
@@ -100,11 +110,14 @@ class ProveedorCategoriaController extends Controller
         return $this->success($categoria);
     }
 
-
     public function destroy(Request $request, Proveedor $proveedor, $categoriaId)
     {
+        // Buscar la categoría
         $categoria = Categoria::findOrFail($categoriaId);
-        $categoria->delete();
+
+        // Actualizar el estado en lugar de eliminar
+        $categoria->estatus = EstadoGeneral::INACTIVO->value;
+        $categoria->save();
 
         return $this->success(null, 204);
     }
