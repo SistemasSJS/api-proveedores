@@ -21,6 +21,7 @@ class Cotizacion extends BaseModel
         'fecha_vencimiento',
         'total',
         'observaciones',
+        'estatus',
     ];
 
     protected $casts = [
