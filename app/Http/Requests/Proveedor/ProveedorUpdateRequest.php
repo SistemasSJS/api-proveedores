@@ -74,16 +74,19 @@ class ProveedorUpdateRequest extends FormRequest
             'nombre_de_quien_registra' => ['nullable', 'string', 'max:255'], // este no se manda 
 
             // FISCALES
-            // new campos
-            'razon_social' => ['nullable', 'string', 'max:255'],
-            'rfc' => ['nullable', 'string', 'max:13'],
-            'regimen_fiscal_clave' => ['nullable', 'string', 'max:10'],
-            'regimen_fiscal_nombre' => ['nullable', 'string', 'max:255'],
-            'direccion_fiscal' => ['nullable', 'string', 'max:255'],
-            'estado' => ['nullable', 'string', 'max:255'],
-            'ciudad' => ['nullable', 'string', 'max:255'],
-            'municipio' => ['nullable', 'string', 'max:255'],
-            'codigo_postal' => ['nullable', 'string', 'max:10'],
+            'razon_social' => ['required', 'string', 'min:3', 'max:255'],
+            'rfc' => ['required', 'string', 'regex:/^[A-ZÑ&]{3,4}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])[A-Z0-9]{2}[0-9A]$/'],
+            'regimen_fiscal_clave' => ['required', 'string', 'max:10'],
+            'regimen_fiscal_nombre' => ['required', 'string', 'max:255'],
+            // Campos de dirección fiscal
+            'calle' => ['required', 'string', 'max:255'],
+            'numero_exterior' => ['required', 'string', 'max:20'],
+            'numero_interior' => ['nullable', 'string', 'max:20'],
+            'colonia' => ['required', 'string', 'max:255'],
+            'estado' => ['required', 'string', 'max:255'],
+            'ciudad' => ['required', 'string', 'max:255'],
+            'codigo_postal' => ['required', 'string', 'regex:/^[0-9]{5}$/'],
+            'pais' => ['required', 'string', 'max:255'],
 
             // sin formularios
             'contacto_nombre' => ['nullable', 'string', 'max:150'],
@@ -159,8 +162,36 @@ class ProveedorUpdateRequest extends FormRequest
             'codigo_postal.string' => 'El código postal debe ser una cadena de texto.',
             'codigo_postal.max' => 'El código postal no debe exceder los 10 caracteres.',
 
-            'direccion_fiscal.string' => 'La dirección fiscal debe ser una cadena de texto.',
-            'direccion_fiscal.max' => 'La dirección fiscal no debe exceder los 255 caracteres.',
+            'calle.required' => 'La calle es obligatoria.',
+            'calle.string' => 'La calle debe ser una cadena de texto.',
+            'calle.max' => 'La calle no debe exceder los 255 caracteres.',
+
+            'numero_exterior.required' => 'El número exterior es obligatorio.',
+            'numero_exterior.string' => 'El número exterior debe ser una cadena de texto.',
+            'numero_exterior.max' => 'El número exterior no debe exceder los 20 caracteres.',
+
+            'numero_interior.string' => 'El número interior debe ser una cadena de texto.',
+            'numero_interior.max' => 'El número interior no debe exceder los 20 caracteres.',
+
+            'colonia.required' => 'La colonia es obligatoria.',
+            'colonia.string' => 'La colonia debe ser una cadena de texto.',
+            'colonia.max' => 'La colonia no debe exceder los 255 caracteres.',
+
+            'ciudad.required' => 'La ciudad es obligatoria.',
+            'ciudad.string' => 'La ciudad debe ser una cadena de texto.',
+            'ciudad.max' => 'La ciudad no debe exceder los 255 caracteres.',
+
+            'estado.required' => 'El estado es obligatorio.',
+            'estado.string' => 'El estado debe ser una cadena de texto.',
+            'estado.max' => 'El estado no debe exceder los 255 caracteres.',
+
+            'codigo_postal.required' => 'El código postal es obligatorio.',
+            'codigo_postal.string' => 'El código postal debe ser una cadena de texto.',
+            'codigo_postal.regex' => 'El código postal debe contener exactamente 5 dígitos.',
+
+            'pais.required' => 'El país es obligatorio.',
+            'pais.string' => 'El país debe ser una cadena de texto.',
+            'pais.max' => 'El país no debe exceder los 255 caracteres.',
 
             // Contacto
             'contacto_nombre.string' => 'El nombre del contacto debe ser una cadena de texto.',

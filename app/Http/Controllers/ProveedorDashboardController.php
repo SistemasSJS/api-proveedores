@@ -67,21 +67,35 @@ class ProveedorDashboardController extends Controller
         $sortBy = $request->input('sort_by', 'fecha_cotizacion');
         $order = $request->input('order', 'desc');
 
-        $cotizaciones = Cotizacion::query()
+        // Separar el filtro de estatus de los demás filtros
+        $statusFilter = $filters['estatus'] ?? null;
+        unset($filters['estatus']);
+
+        // Query base solo con filtros de fecha y otros (sin estatus)
+        $baseQuery = Cotizacion::query()
             ->filter($filters)
-            ->where('proveedor_id', $proveedor->id)
+            ->where('proveedor_id', $proveedor->id);
+
+        // Query para la lista de cotizaciones (incluye filtro de estatus)
+        $listQuery = (clone $baseQuery);
+        if ($statusFilter) {
+            $listQuery->where('estatus', $statusFilter);
+        }
+
+        // Obtener cotizaciones para la lista
+        $cotizaciones = $listQuery
             ->orderBy($sortBy, $order)
             ->get();
 
-        // Contar por estatus
+        // Contar por estatus (sin aplicar filtro de estatus)
         $estatusCounts = collect(EstadoCotizacion::values())
             ->mapWithKeys(fn($estatus) => [
-                $estatus => Cotizacion::where('estatus', $estatus)->count()
+                $estatus => (clone $baseQuery)->where('estatus', $estatus)->count()
             ])
             ->toArray();
 
-        // Contar todas las cotizaciones
-        $estatusCounts['todas'] = $cotizaciones->count();
+        // Contar total de cotizaciones (sin filtro de estatus)
+        $estatusCounts['todas'] = $baseQuery->count();
 
         $data = [
             'cotizaciones' => ProveedorDashboardCotizacionResource::collection($cotizaciones)->resolve(),
