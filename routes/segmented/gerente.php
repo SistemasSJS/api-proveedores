@@ -48,6 +48,12 @@ Route::prefix('proveedores')
             });
         });
 
+        Route::prefix('{proveedor}/constancia-fiscal')->middleware(['proveedor.access'])->group(function () {
+            Route::post('/', [ProveedorController::class, 'updateConstanciaFiscal'])->middleware(['audit']);
+            Route::get('/preview', [ProveedorController::class, 'previewConstanciaFiscal'])->middleware(['audit']);
+            Route::get('/download', [ProveedorController::class, 'downloadConstanciaFiscal'])->middleware(['audit']);
+        });
+
         /**
          * USUARIOS DEL PROVEEDOR
          */
