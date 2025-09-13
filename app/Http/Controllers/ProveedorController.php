@@ -198,13 +198,13 @@ class ProveedorController extends Controller
         $file = $request->file('constancia_fiscal');
 
         // Borrar constancia anterior si existe
-        if ($proveedor->constancia_fiscal && Storage::disk('public')->exists($proveedor->constancia_fiscal)) {
-            Storage::disk('public')->delete($proveedor->constancia_fiscal);
+        if ($proveedor->constancia_fiscal && Storage::disk('private')->exists($proveedor->constancia_fiscal)) {
+            Storage::disk('private')->delete($proveedor->constancia_fiscal);
         }
 
-        // Guardar nueva constancia
+        // Guardar nueva constancia en private
         $filename = 'constancia_' . $proveedor->id . '_' . time() . '.pdf';
-        $path = $file->storeAs("uploads/constancias", $filename, 'public');
+        $path = $file->storeAs("constancias", $filename, 'private');
 
         $proveedor->update(['constancia_fiscal' => $path]);
 
@@ -228,13 +228,13 @@ class ProveedorController extends Controller
             ], Response::HTTP_FORBIDDEN);
         }
 
-        if (!$proveedor->constancia_fiscal || !Storage::disk('public')->exists($proveedor->constancia_fiscal)) {
+        if (!$proveedor->constancia_fiscal || !Storage::disk('private')->exists($proveedor->constancia_fiscal)) {
             return response()->json([
                 'message' => 'La constancia fiscal no está disponible.'
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $path = Storage::disk('public')->path($proveedor->constancia_fiscal);
+        $path = Storage::disk('private')->path($proveedor->constancia_fiscal);
 
         // Mostrar inline en navegador (preview)
         return response()->file($path, [
