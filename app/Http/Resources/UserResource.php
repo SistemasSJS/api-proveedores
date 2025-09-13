@@ -36,7 +36,7 @@ class UserResource extends JsonResource
         return [
             'id'                => $this->id,
             'name'              => $this->name,
-            'foto_perfil_url'   => asset('storage/' . $this->foto_perfil_url),
+            'foto_perfil_url'   => $this->foto_perfil_url,
             'email'             => $this->email,
             'role_id'           => $this->whenLoaded('role', fn() => $this->role_id),
             'status'            => $this->whenLoaded('role', fn() => $this->status),

@@ -157,11 +157,13 @@ class AuthController extends Controller
         $user->foto_perfil_url = $url;
         $user->save();
 
-        return $this->success(
-            ['path' => $url],
-            'Foto de perfil actualizada con éxito',
-            201
-        );
+        Cache::forget("registro_proveedor_{$request->token}");
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return $this->success([
+            'user'      => new UserAuthenticateResource($user->load(User::eagerLodable())),
+            'token'     => $token,
+        ], 'Registro completado', 201);
     }
 
     public function login(Request $request)
