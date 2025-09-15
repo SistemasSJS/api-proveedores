@@ -47,7 +47,6 @@ class AuthController extends Controller
         );
     }
 
-
     public function register_completar(AuthRegisterCompleteRequest $request)
     {
         $data = Cache::get("registro_user_construcc{$request->token}");
@@ -157,7 +156,6 @@ class AuthController extends Controller
         $user->foto_perfil_url = $url;
         $user->save();
 
-        Cache::forget("registro_proveedor_{$request->token}");
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return $this->success([
