@@ -8,6 +8,7 @@ use App\Http\Requests\SolicitudPago\ActualizarEstadoProcesandoRequest;
 use App\Http\Resources\SolicitudPago\SolicitudPagoResource;
 use App\Models\SolicitudPago;
 use App\Models\Proveedor;
+use App\Models\EmpresaConstrucc;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
@@ -26,7 +27,7 @@ class SolicitudPagoController extends Controller
     $perPage = $request->input('per_page', 10);
 
     $query = SolicitudPago::query()
-      ->with(['proveedor'])
+      ->with(['proveedor', 'empresaConstrucc'])
       ->where('proveedor_id', $proveedor->id)
       ->filter($filters)
       ->orderBy($sortBy, $order);
@@ -48,7 +49,7 @@ class SolicitudPagoController extends Controller
     $order   = $request->input('order', 'desc');
 
     $items = SolicitudPago::query()
-      ->with(['proveedor'])
+      ->with(['proveedor', 'empresaConstrucc'])
       ->where('proveedor_id', $proveedor->id)
       ->filter($filters)
       ->orderBy($sortBy, $order)
@@ -85,6 +86,21 @@ class SolicitudPagoController extends Controller
     $nextNumber = $lastNumber + 1;
     $numeroFolio = 'SP' . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
 
+    // Buscar o crear empresa de construcción si se proporciona
+    $empresaConstructId = null;
+    if ($request->filled('empresa') && !$request->filled('empresa_construcc_id')) {
+      // Buscar empresa existente por nombre
+      $empresaExistente = EmpresaConstrucc::where('nombre', $request->empresa)
+        ->orWhere('razon_social', $request->empresa)
+        ->first();
+
+      if ($empresaExistente) {
+        $empresaConstructId = $empresaExistente->id;
+      }
+    } else if ($request->filled('empresa_construcc_id')) {
+      $empresaConstructId = $request->empresa_construcc_id;
+    }
+
     // Crear solicitud
     $solicitud = SolicitudPago::create([
       'proveedor_id' => $proveedor->id,
@@ -92,6 +108,9 @@ class SolicitudPagoController extends Controller
       'descripcion_concepto' => $request->descripcion_concepto,
       'ruta_archivo_factura_pdf' => $rutaPdf,
       'ruta_archivo_factura_xml' => $rutaXml,
+      'empresa_construcc_id' => $empresaConstructId,
+      'residente' => $request->residente,
+      'cotizacion_id' => $request->cotizacion_id,
       'estado_solicitud' => 'pendiente',
       'fecha_registro_pendiente' => now(),
       'ruta_archivo_comprobante_pago' => null,
@@ -99,7 +118,7 @@ class SolicitudPagoController extends Controller
     ]);
 
     return $this->success(
-      new SolicitudPagoResource($solicitud->load('proveedor')),
+      new SolicitudPagoResource($solicitud->load(['proveedor', 'empresaConstrucc'])),
       'Solicitud de pago creada correctamente.',
       201
     );
@@ -115,7 +134,7 @@ class SolicitudPagoController extends Controller
     }
 
     return $this->success(
-      new SolicitudPagoResource($solicitudPago->load('proveedor'))
+      new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc']))
     );
   }
 
@@ -141,7 +160,7 @@ class SolicitudPagoController extends Controller
     ]);
 
     return $this->success(
-      new SolicitudPagoResource($solicitudPago->load('proveedor')),
+      new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc'])),
       'Comprobante de pago subido correctamente.',
       200
     );
@@ -180,7 +199,7 @@ class SolicitudPagoController extends Controller
     $solicitudPago->update(['estado_solicitud' => 'pagado']);
 
     return $this->success(
-      new SolicitudPagoResource($solicitudPago->load('proveedor')),
+      new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc'])),
       'Pago de la solicitud confirmado correctamente.'
     );
   }
@@ -197,7 +216,7 @@ class SolicitudPagoController extends Controller
     $solicitudPago->update(['estado_solicitud' => 'procesando']);
 
     return $this->success(
-      new SolicitudPagoResource($solicitudPago->load('proveedor')),
+      new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc'])),
       'Solicitud de pago actualizada a procesando.'
     );
   }
@@ -214,7 +233,7 @@ class SolicitudPagoController extends Controller
     $solicitudPago->update($request->validated());
 
     return $this->success(
-      new SolicitudPagoResource($solicitudPago->load('proveedor')),
+      new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc'])),
       'Solicitud de pago actualizada correctamente.'
     );
   }
@@ -231,5 +250,38 @@ class SolicitudPagoController extends Controller
     $solicitudPago->delete();
 
     return $this->success(null, 'Solicitud de pago eliminada correctamente.');
+  }
+
+  /**
+   * Obtener empresas de construcción para búsqueda
+   */
+  public function empresasConstructoras(Request $request): JsonResponse
+  {
+    $search = $request->input('search', '');
+    $limit = $request->input('limit', 20);
+
+    $query = EmpresaConstrucc::activo();
+
+    if ($search) {
+      $query->where(function ($q) use ($search) {
+        $q->where('nombre', 'LIKE', "%{$search}%")
+          ->orWhere('razon_social', 'LIKE', "%{$search}%")
+          ->orWhere('rfc', 'LIKE', "%{$search}%");
+      });
+    }
+
+    $empresas = $query->limit($limit)->get();
+
+    return $this->success(
+      $empresas->map(function ($empresa) {
+        return [
+          'id' => $empresa->id,
+          'nombre' => $empresa->nombre,
+          'rfc' => $empresa->rfc,
+          'razon_social' => $empresa->razon_social,
+          'representante_legal' => $empresa->representante_legal,
+        ];
+      })
+    );
   }
 }
