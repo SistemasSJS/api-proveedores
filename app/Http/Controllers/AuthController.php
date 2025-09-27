@@ -20,7 +20,7 @@ use App\Http\Requests\Auth\AuthUpdateCredentialsRequest;
 use App\Http\Requests\Auth\AuthUpdateFotoPerfilRequest;
 use App\Http\Requests\Proveedor\ProveedorRegisterRequest;
 use App\Http\Requests\Proveedor\ProveedorRegisterCompleteRequest;
-
+use App\Http\Requests\Proveedor\ProveedorRegistroBasicoRequest;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -167,7 +167,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => ['required', 'email'],
+            'email' => ['required',],// 'email'],
             'password' => ['required'],
         ]);
 
@@ -269,5 +269,55 @@ class AuthController extends Controller
             'token' => $newToken,
             'proveedor' => $proveedor,
         ], 'Token renovado exitosamente', 200);
+    }
+    /**
+     * Registrar un nuevo proveedor (versión básica sin usuario asociado)
+     * @param ProveedorRegistroBasicoRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function register_proveedor_basico_sp(ProveedorRegistroBasicoRequest $request)
+    {
+        // Crear proveedor con campos booleanos según tipo de proveedor
+        $proveedor = Proveedor::create([
+            ...$request->validated(),
+            'is_proveedor_sp' => true,
+            'is_proveedor_catalogo' => false,
+            'cambiar_pass_default' => true,
+            'perfil_empresa_completo' => false,
+        ]);
+
+        // Obtener rol de gerente
+        $idRoleProveedor = Role::where('nombre', UserRoleEnumerate::GERENTE->value)->first()->id;
+
+        // Contraseña por defecto si no se envía
+        // $password = $request->password ?? substr($request->rfc, -6);
+
+        // Email ficticio si no se proporciona
+        // $email = $request->email ?? $request->rfc . '@proveedor.local';
+
+        // Crear usuario usando RFC como nombre de usuario
+        $user = User::create([
+            'name' => $request->rfc,       // RFC como nombre de usuario
+            'email' => $request->rfc,             // Email real o ficticio
+            'password' => Hash::make($request->rfc), // RFC como contraseña por defecto 
+            'role_id' => $idRoleProveedor,
+        ]);
+
+        // Relacionar usuario con proveedor
+        $user->proveedores()->attach($proveedor->id, [
+            'tipo_relacion' => 'PRINCIPAL',
+            'activo' => true,
+            'fecha_asignacion' => now(),
+            'observaciones' => 'Usuario principal del proveedor',
+        ]);
+
+        // Crear token de autenticación
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return $this->success([
+            'user' => new UserAuthenticateResource($user),
+            'token' => $token,
+            'proveedor' => $proveedor,
+        ], 'Proveedor registrado exitosamente', 200);
     }
 }

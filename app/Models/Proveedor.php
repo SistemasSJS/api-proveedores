@@ -47,10 +47,18 @@ class Proveedor extends BaseModel
         'calificacion',
         'categoria',
         'ciudad',
+        'is_proveedor_sp',
+        'is_proveedor_catalogo',
+        'cambiar_pass_default',
+        'perfil_empresa_completo',
     ];
 
     protected $casts = [
         'fecha_registro' => 'datetime',
+        'is_proveedor_sp' => 'boolean',
+        'is_proveedor_catalogo' => 'boolean',
+        'cambiar_pass_default' => 'boolean',
+        'perfil_empresa_completo' => 'boolean',
     ];
 
     protected static $filters = [

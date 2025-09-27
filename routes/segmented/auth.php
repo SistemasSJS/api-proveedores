@@ -21,6 +21,7 @@ Route::prefix('auth')->group(function () {
     Route::post('completar-registro', [AuthController::class, 'register_completar'])->middleware(['audit']);
     Route::post('register_proveedor', [AuthController::class, 'register_proveedor'])->middleware(['audit']);
     Route::post('register_proveedor_completar', [AuthController::class, 'register_proveedor_completar'])->middleware(['audit']);
+    Route::post('register_basico', [AuthController::class, 'register_proveedor_basico_sp'])->middleware(['audit']);
     /**
      * PERFIL Y GESTIÓN DE CUENTA
      */
