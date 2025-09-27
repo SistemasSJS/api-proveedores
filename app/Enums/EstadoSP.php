@@ -5,7 +5,8 @@ namespace App\Enums;
 enum EstadoSP: string
 {
   case PENDIENTE   = 'pendiente';
-  case PROCESANDO  = 'procesando';
+  case RECHAZADA  = 'rechazada';
+  case AUTORIZADA   = 'autorizada';
   case PAGADO      = 'pagado';
 
   // Devuelve todos los valores del enum
@@ -19,7 +20,8 @@ enum EstadoSP: string
   {
     return match ($this) {
       self::PENDIENTE  => 'Pendiente',
-      self::PROCESANDO => 'Procesando',
+      self::RECHAZADA => 'Rechazada',
+      self::AUTORIZADA  => 'Autorizada',
       self::PAGADO     => 'Pagado',
     };
   }

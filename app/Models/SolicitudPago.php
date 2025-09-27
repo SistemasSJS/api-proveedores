@@ -27,32 +27,47 @@ class SolicitudPago extends BaseModel
         'fecha_registro_pendiente',
         'fecha_inicio_procesamiento',
         'fecha_confirmacion_pago',
+        'fecha_con_comprobante',
+        'fecha_rechazado',
+        'fecha_aprobado',
+        'motivo_rechazo',
     ];
 
     protected static $filters = [
-        'numero_folio_solicitud'        => 'NumeroFolioSolicitud',
-        'descripcion_concepto'          => 'DescripcionConcepto',
-        'estado_solicitud'              => 'EstadoSolicitud',
-        'proveedor_id'                  => 'ProveedorId',
-        'empresa_construcc_id'          => 'EmpresaConstructId',
-        'residente'                     => 'Residente',
-        'cotizacion_id'                 => 'CotizacionId',
-        'fecha_registro_pendiente'      => 'FechaRegistroPendiente',
-        'fecha_registro_pendiente_desde' => 'FechaRegistroPendienteDesde',
-        'fecha_registro_pendiente_hasta' => 'FechaRegistroPendienteHasta',
-        'fecha_inicio_procesamiento'    => 'FechaInicioProcesamiento',
+        'numero_folio_solicitud'          => 'NumeroFolioSolicitud',
+        'descripcion_concepto'            => 'DescripcionConcepto',
+        'estado_solicitud'                => 'EstadoSolicitud',
+        'proveedor_id'                    => 'ProveedorId',
+        'empresa_construcc_id'            => 'EmpresaConstruccId',
+        'residente'                       => 'Residente',
+        'cotizacion_id'                   => 'CotizacionId',
+        'fecha_registro_pendiente'        => 'FechaRegistroPendiente',
+        'fecha_registro_pendiente_desde'  => 'FechaRegistroPendienteDesde',
+        'fecha_registro_pendiente_hasta'  => 'FechaRegistroPendienteHasta',
+        'fecha_inicio_procesamiento'      => 'FechaInicioProcesamiento',
         'fecha_inicio_procesamiento_desde' => 'FechaInicioProcesamientoDesde',
         'fecha_inicio_procesamiento_hasta' => 'FechaInicioProcesamientoHasta',
-        'fecha_confirmacion_pago'       => 'FechaConfirmacionPago',
-        'fecha_confirmacion_pago_desde' => 'FechaConfirmacionPagoDesde',
-        'fecha_confirmacion_pago_hasta' => 'FechaConfirmacionPagoHasta',
+        'fecha_confirmacion_pago'         => 'FechaConfirmacionPago',
+        'fecha_confirmacion_pago_desde'   => 'FechaConfirmacionPagoDesde',
+        'fecha_confirmacion_pago_hasta'   => 'FechaConfirmacionPagoHasta',
+        'fecha_con_comprobante'           => 'FechaConComprobante',
+        'fecha_con_comprobante_desde'     => 'FechaConComprobanteDesde',
+        'fecha_con_comprobante_hasta'     => 'FechaConComprobanteHasta',
+        'fecha_rechazado'                 => 'FechaRechazado',
+        'fecha_rechazado_desde'           => 'FechaRechazadoDesde',
+        'fecha_rechazado_hasta'           => 'FechaRechazadoHasta',
+        'fecha_aprobado'                  => 'FechaAprobado',
+        'fecha_aprobado_desde'            => 'FechaAprobadoDesde',
+        'fecha_aprobado_hasta'            => 'FechaAprobadoHasta',
     ];
-
 
     protected $casts = [
         'fecha_registro_pendiente'   => 'datetime',
         'fecha_inicio_procesamiento' => 'datetime',
         'fecha_confirmacion_pago'    => 'datetime',
+        'fecha_con_comprobante'      => 'datetime',
+        'fecha_rechazado'            => 'datetime',
+        'fecha_aprobado'             => 'datetime',
         'created_at'                 => 'datetime',
         'updated_at'                 => 'datetime',
     ];
@@ -113,7 +128,7 @@ class SolicitudPago extends BaseModel
         return $query->whereDate('fecha_confirmacion_pago', $value);
     }
 
-    public function filterByEmpresaConstructId($query, $value)
+    public function filterByEmpresaConstruccId($query, $value)
     {
         return $query->whereIn('empresa_construcc_id', explode(',', $value));
     }
@@ -159,5 +174,50 @@ class SolicitudPago extends BaseModel
     public function filterByFechaConfirmacionPagoHasta($query, $value)
     {
         return $query->whereDate('fecha_confirmacion_pago', '<=', $value);
+    }
+
+    public function filterByFechaConComprobante($query, $value)
+    {
+        return $query->whereDate('fecha_con_comprobante', $value);
+    }
+
+    public function filterByFechaConComprobanteDesde($query, $value)
+    {
+        return $query->whereDate('fecha_con_comprobante', '>=', $value);
+    }
+
+    public function filterByFechaConComprobanteHasta($query, $value)
+    {
+        return $query->whereDate('fecha_con_comprobante', '<=', $value);
+    }
+
+    public function filterByFechaRechazado($query, $value)
+    {
+        return $query->whereDate('fecha_rechazado', $value);
+    }
+
+    public function filterByFechaRechazadoDesde($query, $value)
+    {
+        return $query->whereDate('fecha_rechazado', '>=', $value);
+    }
+
+    public function filterByFechaRechazadoHasta($query, $value)
+    {
+        return $query->whereDate('fecha_rechazado', '<=', $value);
+    }
+
+    public function filterByFechaAprobado($query, $value)
+    {
+        return $query->whereDate('fecha_aprobado', $value);
+    }
+
+    public function filterByFechaAprobadoDesde($query, $value)
+    {
+        return $query->whereDate('fecha_aprobado', '>=', $value);
+    }
+
+    public function filterByFechaAprobadoHasta($query, $value)
+    {
+        return $query->whereDate('fecha_aprobado', '<=', $value);
     }
 }

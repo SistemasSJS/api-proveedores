@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SolicitudPago\CrearSolicitudPagoRequest;
-use App\Http\Requests\SolicitudPago\ActualizarEstadoPagadoRequest;
-use App\Http\Requests\SolicitudPago\ActualizarEstadoProcesandoRequest;
 use App\Http\Resources\SolicitudPago\SolicitudPagoResource;
 use App\Models\SolicitudPago;
 use App\Models\Proveedor;
@@ -13,9 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 
-class SolicitudPagoController extends Controller
+class ProveedorSolicitudPagoController extends Controller
 {
-
   /**
    * Listado con paginación, filtrando por proveedor
    */
@@ -60,10 +57,11 @@ class SolicitudPagoController extends Controller
     );
   }
 
-
+  /**
+   * Crear nueva solicitud
+   */
   public function store(CrearSolicitudPagoRequest $request, Proveedor $proveedor): JsonResponse
   {
-    // Validar que existan los archivos
     $facturaPdf = $request->file('factura_pdf');
     $facturaXml = $request->file('factura_xml');
 
@@ -74,7 +72,6 @@ class SolicitudPagoController extends Controller
       ], 422);
     }
 
-    // Subir archivos
     $rutaPdf = $facturaPdf->store('facturas/pdf', 'private');
     $rutaXml = $facturaXml->store('facturas/xml', 'private');
 
@@ -86,22 +83,8 @@ class SolicitudPagoController extends Controller
     $nextNumber = $lastNumber + 1;
     $numeroFolio = 'SP' . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
 
-    // Buscar o crear empresa de construcción si se proporciona
-    $empresaConstructId = null;
-    if ($request->filled('empresa') && !$request->filled('empresa_construcc_id')) {
-      // Buscar empresa existente por nombre
-      $empresaExistente = EmpresaConstrucc::where('nombre', $request->empresa)
-        ->orWhere('razon_social', $request->empresa)
-        ->first();
+    $empresaConstructId = $request->empresa_construcc_id;
 
-      if ($empresaExistente) {
-        $empresaConstructId = $empresaExistente->id;
-      }
-    } else if ($request->filled('empresa_construcc_id')) {
-      $empresaConstructId = $request->empresa_construcc_id;
-    }
-
-    // Crear solicitud
     $solicitud = SolicitudPago::create([
       'proveedor_id' => $proveedor->id,
       'numero_folio_solicitud' => $numeroFolio,
@@ -113,8 +96,6 @@ class SolicitudPagoController extends Controller
       'cotizacion_id' => $request->cotizacion_id,
       'estado_solicitud' => 'pendiente',
       'fecha_registro_pendiente' => now(),
-      'ruta_archivo_comprobante_pago' => null,
-      'sucursal_id' => null,
     ]);
 
     return $this->success(
@@ -125,7 +106,7 @@ class SolicitudPagoController extends Controller
   }
 
   /**
-   * Mostrar detalle de una solicitud de pago
+   * Mostrar detalle
    */
   public function show(Proveedor $proveedor, SolicitudPago $solicitudPago): JsonResponse
   {
@@ -139,7 +120,7 @@ class SolicitudPagoController extends Controller
   }
 
   /**
-   * Subir comprobante de pago en almacenamiento privado
+   * Subir comprobante (solo guarda el archivo, no cambia estado)
    */
   public function subirComprobantePago(Request $request, Proveedor $proveedor, SolicitudPago $solicitudPago): JsonResponse
   {
@@ -156,18 +137,17 @@ class SolicitudPagoController extends Controller
 
     $solicitudPago->update([
       'ruta_archivo_comprobante_pago' => $path,
-      'estado_solicitud' => 'con_comprobante',
+      'fecha_con_comprobante' => now(),
     ]);
 
     return $this->success(
       new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc'])),
-      'Comprobante de pago subido correctamente.',
-      200
+      'Comprobante de pago subido correctamente.'
     );
   }
 
   /**
-   * Descargar comprobante de pago (solo autorizado)
+   * Descargar comprobante
    */
   public function descargarComprobante(Proveedor $proveedor, SolicitudPago $solicitudPago)
   {
@@ -188,58 +168,72 @@ class SolicitudPagoController extends Controller
   }
 
   /**
-   * Confirmar pago (estado pagado)
+   * Autorizar
    */
-  public function confirmarPagoSP(ActualizarEstadoPagadoRequest $request, Proveedor $proveedor, SolicitudPago $solicitudPago): JsonResponse
+  public function autorizar(Request $request, Proveedor $proveedor, SolicitudPago $solicitudPago): JsonResponse
   {
     if ($solicitudPago->proveedor_id !== $proveedor->id) {
       return $this->error('Solicitud no pertenece a este proveedor', 403);
     }
 
-    $solicitudPago->update(['estado_solicitud' => 'pagado']);
+    $solicitudPago->update([
+      'estado_solicitud' => 'autorizada',
+      'fecha_aprobado' => now(),
+    ]);
 
     return $this->success(
       new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc'])),
-      'Pago de la solicitud confirmado correctamente.'
+      'Solicitud autorizada correctamente.'
     );
   }
 
   /**
-   * Actualizar a procesando
+   * Rechazar
    */
-  public function procesando(ActualizarEstadoProcesandoRequest $request, Proveedor $proveedor, SolicitudPago $solicitudPago): JsonResponse
+  public function rechazar(Request $request, Proveedor $proveedor, SolicitudPago $solicitudPago): JsonResponse
   {
     if ($solicitudPago->proveedor_id !== $proveedor->id) {
       return $this->error('Solicitud no pertenece a este proveedor', 403);
     }
 
-    $solicitudPago->update(['estado_solicitud' => 'procesando']);
+    $request->validate([
+      'motivo_rechazo' => 'required|string|max:500',
+    ]);
+
+    $solicitudPago->update([
+      'estado_solicitud' => 'rechazada',
+      'fecha_rechazado' => now(),
+      'motivo_rechazo' => $request->motivo_rechazo,
+    ]);
 
     return $this->success(
       new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc'])),
-      'Solicitud de pago actualizada a procesando.'
+      'Solicitud rechazada correctamente.'
     );
   }
 
   /**
-   * Actualizar datos de la solicitud
+   * Confirmar pago
    */
-  public function update(CrearSolicitudPagoRequest $request, Proveedor $proveedor, SolicitudPago $solicitudPago): JsonResponse
+  public function confirmarPago(Request $request, Proveedor $proveedor, SolicitudPago $solicitudPago): JsonResponse
   {
     if ($solicitudPago->proveedor_id !== $proveedor->id) {
       return $this->error('Solicitud no pertenece a este proveedor', 403);
     }
 
-    $solicitudPago->update($request->validated());
+    $solicitudPago->update([
+      'estado_solicitud' => 'pagada',
+      'fecha_confirmacion_pago' => now(),
+    ]);
 
     return $this->success(
       new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc'])),
-      'Solicitud de pago actualizada correctamente.'
+      'Pago confirmado correctamente.'
     );
   }
 
   /**
-   * Eliminar solicitud
+   * Eliminar
    */
   public function destroy(Proveedor $proveedor, SolicitudPago $solicitudPago): JsonResponse
   {
@@ -253,7 +247,7 @@ class SolicitudPagoController extends Controller
   }
 
   /**
-   * Obtener empresas de construcción para búsqueda
+   * Empresas de construcción
    */
   public function empresasConstructoras(Request $request): JsonResponse
   {

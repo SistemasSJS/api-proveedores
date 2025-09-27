@@ -3,6 +3,7 @@
 use App\Enums\UserRoleEnumerate;
 use App\Http\Controllers\ConstruccController;
 use App\Http\Controllers\ConstruccCotizacionController;
+use App\Http\Controllers\SPConstruccController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -152,9 +153,36 @@ Route::prefix('construcc')
                 Route::delete('{cotizacion}', [ConstruccCotizacionController::class, 'destroy']);
             });
         });
-    });
 
-/*
+        /** 
+         *--------------------------------------------------------------------------
+         * SOLICITUDES DE PAGO - CRUD Completo
+         *--------------------------------------------------------------------------
+         * Gestión de solicitudes de pago con cambios de estatus y fechas
+         */
+        Route::prefix('solicitudes-pago')->name('solicitudes-pago.')->group(function () {
+
+            // Listado y detalle (solo lectura en ConstruccApp)
+            Route::get('/', [SPConstruccController::class, 'index'])->middleware(['audit'])->name('index');
+            Route::get('{solicitudPago}', [SPConstruccController::class, 'show'])->middleware(['audit'])->name('show');
+
+            // Gestión de archivos
+            Route::post('{solicitudPago}/comprobante', [SPConstruccController::class, 'subirComprobantePago'])->middleware(['audit'])->name('subir-comprobante');
+            Route::get('{solicitudPago}/comprobante/download', [SPConstruccController::class, 'descargarComprobante'])->middleware(['audit'])->name('descargar-comprobante');
+            Route::get('{solicitudPago}/factura-pdf/download', [SPConstruccController::class, 'descargarFacturaPdf'])->middleware(['audit'])->name('descargar-factura-pdf');
+            Route::get('{solicitudPago}/factura-xml/download', [SPConstruccController::class, 'descargarFacturaXml'])->middleware(['audit'])->name('descargar-factura-xml');
+
+            // Cambios de estatus válidos
+            Route::patch('{solicitudPago}/autorizar', [SPConstruccController::class, 'autorizar'])->middleware(['audit'])->name('autorizar');
+            Route::patch('{solicitudPago}/rechazar', [SPConstruccController::class, 'rechazar'])->middleware(['audit'])->name('rechazar');
+            Route::patch('{solicitudPago}/confirmar-pago', [SPConstruccController::class, 'confirmarPago'])->middleware(['audit'])->name('confirmar-pago');
+
+            // Endpoints auxiliares
+            Route::get('empresas-constructoras/search', [SPConstruccController::class, 'empresasConstructoras'])->middleware(['audit'])->name('empresas-search');
+            Route::get('estadisticas', [SPConstruccController::class, 'estadisticas'])->middleware(['audit'])->name('estadisticas');
+        });
+
+        /*
 |--------------------------------------------------------------------------
 | NOTAS DE IMPLEMENTACIÓN
 |--------------------------------------------------------------------------
@@ -184,3 +212,4 @@ Route::prefix('construcc')
 |    - Todas las rutas registran actividad
 |    - Incluye usuario, acción y parámetros
 */
+    });

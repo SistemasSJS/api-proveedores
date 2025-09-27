@@ -4,7 +4,7 @@ use App\Enums\UserRoleEnumerate;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CsvImportController;
 use App\Http\Controllers\ProveedorController;
-use App\Http\Controllers\SolicitudPagoController;
+use App\Http\Controllers\ProveedorSolicitudPagoController;
 use App\Http\Controllers\ProveedorMarcaController;
 use App\Http\Controllers\ProveedorPedidoController;
 use App\Http\Controllers\ProveedorUsuarioController;
@@ -187,29 +187,29 @@ Route::prefix('proveedores')
         Route::prefix('{proveedor}/solicitudes-pago')->middleware(['proveedor.access'])->group(function () {
 
             // Listados
-            Route::get('/', [SolicitudPagoController::class, 'index'])->middleware(['audit']);        // Paginado
-            Route::get('/all', [SolicitudPagoController::class, 'uindex'])->middleware(['audit']);    // Sin paginación
-            
+            Route::get('/', [ProveedorSolicitudPagoController::class, 'index'])->middleware(['audit']);        // Paginado
+            Route::get('/all', [ProveedorSolicitudPagoController::class, 'uindex'])->middleware(['audit']);    // Sin paginación
+
             // Empresas de construcción para búsqueda
-            Route::get('/empresas-constructoras', [SolicitudPagoController::class, 'empresasConstructoras'])->middleware(['audit']);
+            Route::get('/empresas-constructoras', [ProveedorSolicitudPagoController::class, 'empresasConstructoras'])->middleware(['audit']);
 
             // Crear solicitud
-            Route::post('/', [SolicitudPagoController::class, 'store'])->middleware(['audit']);
+            Route::post('/', [ProveedorSolicitudPagoController::class, 'store'])->middleware(['audit']);
 
             // Operaciones sobre una solicitud específica
-            Route::get('/{solicitudPago}', [SolicitudPagoController::class, 'show'])->middleware(['audit']);       // Detalle
-            Route::put('/{solicitudPago}', [SolicitudPagoController::class, 'update'])->middleware(['audit']);     // Actualizar
-            Route::delete('/{solicitudPago}', [SolicitudPagoController::class, 'destroy'])->middleware(['audit']); // Eliminar
+            Route::get('/{solicitudPago}', [ProveedorSolicitudPagoController::class, 'show'])->middleware(['audit']);       // Detalle
+            Route::put('/{solicitudPago}', [ProveedorSolicitudPagoController::class, 'update'])->middleware(['audit']);     // Actualizar
+            Route::delete('/{solicitudPago}', [ProveedorSolicitudPagoController::class, 'destroy'])->middleware(['audit']); // Eliminar
 
             // Subir comprobante
-            Route::post('/{solicitudPago}/subir-comprobante', [SolicitudPagoController::class, 'subirComprobantePago'])->middleware(['audit']);
+            Route::post('/{solicitudPago}/subir-comprobante', [ProveedorSolicitudPagoController::class, 'subirComprobantePago'])->middleware(['audit']);
 
             // Descargar comprobante (solo usuarios autorizados)
-            Route::get('/{solicitudPago}/descargar-comprobante', [SolicitudPagoController::class, 'descargarComprobante'])->middleware(['audit']);
+            Route::get('/{solicitudPago}/descargar-comprobante', [ProveedorSolicitudPagoController::class, 'descargarComprobante'])->middleware(['audit']);
 
             // Cambiar estado
-            Route::post('/{solicitudPago}/confirmar-pago', [SolicitudPagoController::class, 'confirmarPagoSP'])->middleware(['audit']);
-            Route::post('/{solicitudPago}/procesando', [SolicitudPagoController::class, 'procesando'])->middleware(['audit']);
+            Route::post('/{solicitudPago}/confirmar-pago', [ProveedorSolicitudPagoController::class, 'confirmarPagoSP'])->middleware(['audit']);
+            Route::post('/{solicitudPago}/procesando', [ProveedorSolicitudPagoController::class, 'procesando'])->middleware(['audit']);
         });
 
         /**
@@ -235,7 +235,7 @@ Route::prefix('empresas-constructoras')
     ->group(function () {
         // Búsqueda de empresas para formularios
         Route::get('/search', [EmpresaConstruccController::class, 'search'])->middleware(['audit']);
-        
+
         // CRUD completo
         Route::get('/', [EmpresaConstruccController::class, 'index'])->middleware(['audit']);
         Route::post('/', [EmpresaConstruccController::class, 'store'])->middleware(['audit']);
