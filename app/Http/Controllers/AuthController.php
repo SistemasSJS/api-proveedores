@@ -167,7 +167,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => ['required',],// 'email'],
+            'email' => ['required',], // 'email'],
             'password' => ['required'],
         ]);
 
@@ -196,7 +196,7 @@ class AuthController extends Controller
         return $this->success([
             'user' => new UserAuthenticateResource($user),
             'token' => null,
-            'proveedor' => $proveedor
+            'proveedor' => new ProveedorResource($proveedor)
         ], 'Login exitoso.', 200);
     }
 
@@ -221,7 +221,7 @@ class AuthController extends Controller
         return $this->success([
             'user' => new UserAuthenticateResource($user),
             'token' => $newToken,
-            'proveedor' => $proveedor
+            'proveedor' => new ProveedorResource($proveedor)
         ], 'Token renovado exitosamente', 200);
     }
 
@@ -267,7 +267,7 @@ class AuthController extends Controller
         return $this->success([
             'user' => new UserAuthenticateResource($user),
             'token' => $newToken,
-            'proveedor' => $proveedor,
+            'proveedor' => new ProveedorResource($proveedor)
         ], 'Token renovado exitosamente', 200);
     }
     /**

@@ -14,7 +14,7 @@ Route::prefix('auth')->group(function () {
 
 
     /**
-     * AUTENTICACION Y REGISTRO
+     * AUTENTICACION Y REGISTROG
      */
     Route::post('login', [AuthController::class, 'login'])->middleware(['audit']);
     Route::post('register', [AuthController::class, 'register'])->middleware(['audit']);
