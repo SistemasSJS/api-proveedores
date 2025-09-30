@@ -10,9 +10,9 @@ use App\Traits\ApiResponse;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
-use App\Services\CSVProcessorService;
-use App\Services\ProductImportValidator;
-use App\Services\CsvImportExportService;
+use App\Services\CSVImport\CSVProcessorService;
+use App\Services\CSVImport\CSVImportProductValidator;
+use App\Services\CSVImport\CSVImportExportService;
 use App\Http\Responses\CsvUploadResponse;
 use App\Http\Responses\CsvConfirmResponse;
 use App\Http\Responses\CsvValidateProductResponse;
@@ -29,9 +29,9 @@ class CsvImportController extends Controller
     use ApiResponse;
 
     protected CSVProcessorService $csvProcessor;
-    protected CsvImportExportService $exportService;
+    protected CSVImportExportService $exportService;
 
-    public function __construct(CSVProcessorService $csvProcessor, CsvImportExportService $exportService)
+    public function __construct(CSVProcessorService $csvProcessor, CSVImportExportService $exportService)
     {
         $this->csvProcessor = $csvProcessor;
         $this->exportService = $exportService;
@@ -448,7 +448,7 @@ class CsvImportController extends Controller
                 'producto.categoria'        => 'nullable|string|max:255',
                 'producto.subcategoria'     => 'nullable|string|max:255',
                 'producto.unidad_medida'    => 'nullable|string|max:100',
-                'producto.precio'           => 'nullable|numeric|min:0',
+                'producto.precio_base'            => 'nullable|numeric|min:0',
                 'producto.precio_mayoreo'   => 'nullable|numeric|min:0',
                 'producto.precio_menudeo'   => 'nullable|numeric|min:0',
                 'strict_validation'         => 'nullable|boolean'
@@ -458,7 +458,7 @@ class CsvImportController extends Controller
             $strictValidation = $request->get('strict_validation', false);
 
             // Crear validator para este proveedor
-            $validator = new ProductImportValidator($proveedor->id);
+            $validator = new CSVImportProductValidator($proveedor->id);
 
             // Validar el producto usando el servicio de validación
             $validationResult = $validator->validateRow($productoData, 1);
@@ -473,7 +473,7 @@ class CsvImportController extends Controller
             $existingProductData = $existingProduct ? [
                 'id' => $existingProduct->id,
                 'nombre' => $existingProduct->nombre,
-                'precio' => $existingProduct->precio,
+                'precio_base' => $existingProduct->precio,
                 'updated_at' => $existingProduct->updated_at
             ] : null;
 
@@ -639,7 +639,7 @@ class CsvImportController extends Controller
                         $stats['total_processed']++;
 
                         // Validación
-                        $validator = new ProductImportValidator($proveedorId);
+                        $validator = new CSVImportProductValidator($proveedorId);
                         $validationResult = $validator->validateRow($productData, $stats['total_processed']);
                         $isValid = empty($validationResult['errors']);
 
@@ -660,11 +660,11 @@ class CsvImportController extends Controller
                             'descripcion' => $productData['descripcion'] ?? null,
                             'marca_id' => $productData['marca_id'],
                             'categoria_id' => $productData['categoria_id'],
-                            // 'subcategoria_id' => $productData['subcategoria_id'],
+                            'subcategoria_id' => $productData['subcategoria_id'],
                             'unidad_medida_id' => $productData['unidad_medida_id'],
-                            'precio_base' => $productData['precio'] ?? 0,
+                            'precio_base' => $productData['precio_base'] ?? 0,
                             'precio_mayoreo' => $productData['precio_mayoreo'] ?? 0,
-                            'precio_publico' => $productData['precio_menudeo'] ?? 0,
+                            'precio_menudeo' => $productData['precio_menudeo'] ?? 0,
                             'proveedor_id' => $proveedorId,
                         ];
                     }
@@ -679,11 +679,11 @@ class CsvImportController extends Controller
                                 // 'modelo',
                                 'marca_id',
                                 'categoria_id',
-                                // 'subcategoria_id',
+                                'subcategoria_id',
                                 'unidad_medida_id',
                                 'precio_base',
                                 'precio_mayoreo',
-                                'precio_publico',
+                                'precio_menudeo',
                             ]
                         );
 
@@ -818,43 +818,6 @@ class CsvImportController extends Controller
 
 
         return $catalogosImportResults;
-    }
-
-
-    /**
-     * Crear un nuevo producto
-     */
-    private function createProduct(array $productData, int $proveedorId, bool $createRelations = true): Producto
-    {
-        // Implementar lógica de creación de producto
-        // Similar al ProveedorImportProductController pero adaptado para CSV
-
-        $producto = Producto::create([
-            'codigo_interno' => $productData['codigo'] ?? '',
-            'nombre' => $productData['nombre'] ?? '',
-            'descripcion' => $productData['descripcion'] ?? null,
-            'modelo' => $productData['modelo'] ?? null,
-            'precio' => $productData['precio'] ?? 0,
-            'proveedor_id' => $proveedorId,
-            // Agregar más campos según sea necesario
-        ]);
-
-        return $producto;
-    }
-
-    /**
-     * Actualizar producto existente
-     */
-    private function updateProduct(Producto $producto, array $productData, int $proveedorId): void
-    {
-        $updateData = [
-            'nombre' => $productData['nombre'] ?? $producto->nombre,
-            'descripcion' => $productData['descripcion'] ?? $producto->descripcion,
-            'modelo' => $productData['modelo'] ?? $producto->modelo,
-            'precio' => $productData['precio'] ?? $producto->precio,
-        ];
-
-        $producto->update(array_filter($updateData));
     }
 
     /**

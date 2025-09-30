@@ -14,6 +14,8 @@ class UserSeeder extends Seeder
     {
         $default_foto_url = 'uploads/default.png';
 
+        $idRolConstruccApp = Role::where('nombre', UserRoleEnumerate::CONSTUCC_APP->value)->first()?->id;
+        // 
         $idRolAdmin = Role::where('nombre', UserRoleEnumerate::ADMINISTRADOR->value)->first()?->id;
         $idRolSuperAdmin = Role::where('nombre', UserRoleEnumerate::ADMINISTRADOR->value)->first()?->id;
         $idRolCliente = Role::where('nombre', UserRoleEnumerate::CLIENTE->value)->first()?->id;
@@ -22,9 +24,15 @@ class UserSeeder extends Seeder
             $this->command->error('Uno o más roles no fueron encontrados. Seeder abortado.');
             return;
         }
+        $ususarioConstrucc = [
+            'email' => 'constucc@constucc.com.mx',
+            'name' => 'Construcc App',
+            'role_id' => $idRolConstruccApp,
+        ];
 
         // 🛡️ Siempre se crean (producción y debug)
         $adminUsers = [
+            $ususarioConstrucc,
             [
                 'email' => 'juliocsv@sjs.com.mx',
                 'name' => 'Superadmin (JCSV)',

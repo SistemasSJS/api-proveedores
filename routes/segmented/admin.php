@@ -8,7 +8,6 @@ use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProductoImagenController;
 use App\Http\Controllers\UnidadMedidaController;
 use App\Http\Controllers\CategoriaController;
-use App\Http\Controllers\LineaController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\TipoEmpresaController;
 use App\Http\Controllers\PedidoController;
@@ -42,6 +41,8 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
         Route::put('proveedores/{proveedor}', [ProveedorController::class, 'update'])->middleware('audit');
         Route::patch('proveedores/{proveedor}', [ProveedorController::class, 'update'])->middleware('audit');
         Route::delete('proveedores/{proveedor}', [ProveedorController::class, 'destroy'])->middleware('audit');
+        Route::get('proveedores/{proveedor}/productos', [ProveedorController::class, 'destroy'])->middleware('audit');
+        Route::get('proveedores/all/count-categorias', [ProveedorController::class, 'proveedoresConCategoriasConSubcatCountProductos'])->middleware('audit');
 
         // Sucursales
         Route::get('sucursales', [SucursalController::class, 'index']);
@@ -83,14 +84,6 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
         Route::put('categorias/{categoria}', [CategoriaController::class, 'update'])->middleware('audit');
         Route::patch('categorias/{categoria}', [CategoriaController::class, 'update'])->middleware('audit');
         Route::delete('categorias/{categoria}', [CategoriaController::class, 'destroy'])->middleware('audit');
-
-        // Líneas
-        Route::get('lineas', [LineaController::class, 'index']);
-        Route::post('lineas', [LineaController::class, 'store'])->middleware('audit');
-        Route::get('lineas/{linea}', [LineaController::class, 'show']);
-        Route::put('lineas/{linea}', [LineaController::class, 'update'])->middleware('audit');
-        Route::patch('lineas/{linea}', [LineaController::class, 'update'])->middleware('audit');
-        Route::delete('lineas/{linea}', [LineaController::class, 'destroy'])->middleware('audit');
 
         // Marcas
         Route::get('marcas', [MarcaController::class, 'index']);
@@ -165,31 +158,30 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
     });
 });
 
-// /**
-//  * RUTAS GLOBALES ADMINISTRATIVAS (COMPATIBILIDAD)
-//  * Mantienen el comportamiento existente
-//  */
-// Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->value])->group(function () {
+/**
+ * RUTAS GLOBALES ADMINISTRATIVAS (COMPATIBILIDAD)
+ * Mantienen el comportamiento existente
+ */
+Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->value])->group(function () {
 
-//     // Resumen de catálogos (compatibilidad)
-//     Route::get('catalogos-resumen', [AdminHomeControler::class, 'getCatalogosCountItems'])->middleware(['audit']);
+    // Resumen de catálogos (compatibilidad)
+    Route::get('catalogos-resumen', [AdminHomeControler::class, 'getCatalogosCountItems'])->middleware(['audit']);
 
-//     // API Resources (compatibilidad)
-//     Route::apiResource('users', UserController::class)->middleware(['audit']);
-//     Route::apiResource('proveedores', ProveedorController::class)->middleware(['audit'])->except(['index']);
-//     Route::apiResource('sucursales', SucursalController::class)->middleware(['audit'])->except(['index']);
-//     Route::apiResource('productos', ProductoController::class)->middleware(['audit'])->except(['index']);
-//     Route::apiResource('imagenes', ProductoImagenController::class)->middleware(['audit'])->except(['index']);
-//     Route::apiResource('unidades-medida', UnidadMedidaController::class)->middleware(['audit'])->except(['index']);
-//     Route::apiResource('categorias', CategoriaController::class)->middleware(['audit'])->except(['index']);
-//     Route::apiResource('lineas', LineaController::class)->middleware(['audit'])->except(['index']);
-//     Route::apiResource('marcas', MarcaController::class)->middleware(['audit'])->except(['index']);
-//     Route::apiResource('tipos-empresa', TipoEmpresaController::class)->middleware(['audit'])->except(['index']);
+    // API Resources (compatibilidad)
+    Route::apiResource('users', UserController::class)->middleware(['audit']);
+    Route::apiResource('proveedores', ProveedorController::class)->middleware(['audit'])->except(['index']);
+    Route::apiResource('sucursales', SucursalController::class)->middleware(['audit'])->except(['index']);
+    Route::apiResource('productos', ProductoController::class)->middleware(['audit'])->except(['index']);
+    Route::apiResource('imagenes', ProductoImagenController::class)->middleware(['audit'])->except(['index']);
+    Route::apiResource('unidades-medida', UnidadMedidaController::class)->middleware(['audit'])->except(['index']);
+    Route::apiResource('categorias', CategoriaController::class)->middleware(['audit'])->except(['index']);
+    Route::apiResource('marcas', MarcaController::class)->middleware(['audit'])->except(['index']);
+    Route::apiResource('tipos-empresa', TipoEmpresaController::class)->middleware(['audit'])->except(['index']);
 
-//     // Dashboard stats (compatibilidad)
-//     Route::get('dashboard/admin/stats-completas', [AdminDashboardController::class, 'getStatsCompletas']);
-//     Route::get('dashboard/admin/metricas-rendimiento', [AdminDashboardController::class, 'getMetricasRendimiento']);
-// });
+    // Dashboard stats (compatibilidad)
+    Route::get('dashboard/admin/stats-completas', [AdminDashboardController::class, 'getStatsCompletas']);
+    Route::get('dashboard/admin/metricas-rendimiento', [AdminDashboardController::class, 'getMetricasRendimiento']);
+});
 
 // /**
 //  * RUTAS ADMINISTRATIVAS DE PEDIDOS (COMPATIBILIDAD)

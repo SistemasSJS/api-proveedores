@@ -16,7 +16,6 @@ return new class extends Migration
             $table->id();
 
             // Relaciones
-            $table->foreignId('requisicion_id')->constrained('requisiciones')->onDelete('cascade');
             $table->foreignId('cotizacion_id')->constrained('cotizaciones')->onDelete('cascade');
 
             // Información del pedido
@@ -46,7 +45,6 @@ return new class extends Migration
             $table->timestamps();
 
             // Índices
-            $table->index(['requisicion_id']);
             $table->index(['cotizacion_id']);
             $table->index(['estatus']);
             $table->index(['fecha_confirmacion']);

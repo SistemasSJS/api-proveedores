@@ -28,6 +28,9 @@
 | Es importante mantener este orden para evitar conflictos
 */
 
+// 0.1. Módulo de construcción (con autenticación API token)
+require __DIR__ . '/construcc.php';
+
 // 1. Rutas públicas (sin autenticación)
 require __DIR__ . '/public.php';
 
@@ -48,7 +51,7 @@ require __DIR__ . '/mixed.php';
 // 6. Rutas con middleware especializados
 require __DIR__ . '/middleware.php';
 
-// 7. Rutas de notificaciones especializadas
+// 7. Rutas de notificaciones especializadas (ELIMINADO)
 require __DIR__ . '/notifications.php';
 
 // 8. Rutas de compatibilidad (mantienen comportamiento existente)

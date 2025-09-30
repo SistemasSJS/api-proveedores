@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Enums\EstadoGeneral;
 use App\Models\Categoria;
-use App\Models\Linea;
 use App\Models\Marca;
 use App\Models\Proveedor;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -13,21 +13,19 @@ class ProductoFactory extends Factory
     public function definition()
     {
         return [
+            'imagen_principal' => null,
             'codigo' => $this->faker->unique()->ean8(),
+            'proveedor_id' => Proveedor::factory(),
             'nombre' => $this->faker->words(3, true),
             'descripcion' => $this->faker->paragraph(),
-            'precio_base' => $this->faker->randomFloat(2, 10, 1000),
-            'imagen_principal' => null,
-            'proveedor_id' => Proveedor::factory(),
-            'categoria_id' => Categoria::factory(),
             'marca_id' => Marca::factory(),
-            'linea_id' => Linea::factory(),
-
-            'activo' => true,
+            'categoria_id' => Categoria::factory(),
+            'precio_base' => $this->faker->randomFloat(2, 10, 1000),
+            'precio_mayoreo' => $this->faker->randomFloat(2, 10, 1000),
+            'precio_menudeo' => $this->faker->randomFloat(2, 10, 1000),
             'stock' => $this->faker->numberBetween(0, 100),
             'destacado' => $this->faker->boolean(20),
-            'peso_kg' => $this->faker->randomFloat(3, 0.1, 50),
-            'dimensiones' => $this->faker->regexify('\d{1,2}x\d{1,2}x\d{1,2} cm'),
+            'estatus' => EstadoGeneral::ACTIVO->value,
         ];
     }
 
@@ -64,14 +62,14 @@ class ProductoFactory extends Factory
     public function precioAlto(): static
     {
         return $this->state(fn(array $attributes) => [
-            'precio' => $this->faker->randomFloat(2, 1000, 5000),
+            'precio_base' => $this->faker->randomFloat(2, 1000, 5000),
         ]);
     }
 
     public function precioBajo(): static
     {
         return $this->state(fn(array $attributes) => [
-            'precio' => $this->faker->randomFloat(2, 10, 200),
+            'precio_base' => $this->faker->randomFloat(2, 10, 200),
         ]);
     }
 }

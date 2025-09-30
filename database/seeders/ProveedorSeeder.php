@@ -46,6 +46,10 @@ class ProveedorSeeder extends Seeder
                 'contacto_correo' => 'carlos.ramirez@fierroylaminadigital.mx',
                 'principal' => true,
                 'calificacion' => round(mt_rand(30, 50) / 10, 2),
+                'is_proveedor_sp' => true,
+                'is_proveedor_catalogo' => false,
+                'cambiar_pass_default' => true,
+                'perfil_empresa_completo' => true,
             ]);
             // $user1->proveedores()->attach($proveedor1->id, ['is_main' => true]);
             $user1->proveedores()->attach($proveedor1->id, [
@@ -84,6 +88,10 @@ class ProveedorSeeder extends Seeder
                 'contacto_correo' => 'fernando.perez@truper.com',
                 'principal' => true,
                 'calificacion' => round(mt_rand(30, 50) / 10, 2),
+                'is_proveedor_sp' => false,
+                'is_proveedor_catalogo' => true,
+                'cambiar_pass_default' => true,
+                'perfil_empresa_completo' => true,
             ]);
             // $user2->proveedores()->attach($proveedor2->id, ['is_main' => true]);
             $user2->proveedores()->attach($proveedor2->id, [
@@ -94,7 +102,8 @@ class ProveedorSeeder extends Seeder
             ]);
             // === PROVEEDOR 3: Ejemplo ficticio ===
             $user3 = User::factory()->proveedor()->create([
-                'email' => 'proveedor@elgrangero.com',
+                // 'email' => 'proveedor@elgrangero.com',
+                'email' => 'sistemas_sjs@hotmail.com',
                 'name' => 'El Gran Gero',
                 'foto_perfil_url' => $default_foto_url,
             ]);
@@ -122,6 +131,10 @@ class ProveedorSeeder extends Seeder
                 'contacto_correo' => 'veronica@elgrangero.com',
                 'principal' => true,
                 'calificacion' => round(mt_rand(30, 50) / 10, 2),
+                'is_proveedor_sp' => true,
+                'is_proveedor_catalogo' => false,
+                'cambiar_pass_default' => true,
+                'perfil_empresa_completo' => true,
             ]);
             // $user3->proveedores()->attach($proveedor3->id, ['is_main' => true]);
             $user3->proveedores()->attach($proveedor3->id, [

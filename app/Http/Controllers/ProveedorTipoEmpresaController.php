@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Http\Resources\TipoEmpresaResource;
 use App\Models\Proveedor;
 use App\Models\TipoEmpresa;

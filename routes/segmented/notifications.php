@@ -1,31 +1,20 @@
 <?php
 
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PedidoController;
-use App\Http\Controllers\NotificacionController;
+use App\Http\Controllers\Api\NotificationController;
 
-/*
-|--------------------------------------------------------------------------
-| RUTAS DE NOTIFICACIONES Y SERVICIOS ESPECIALIZADOS
-|--------------------------------------------------------------------------
-| Estas rutas manejan notificaciones y otros servicios específicos
-*/
+// Rutas de autenticación de broadcasting
+Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
-Route::middleware('auth:sanctum')->group(function () {
-
-    /**
-     * NOTIFICACIONES ESPECIALIZADAS DE PEDIDOS
-     */
-    Route::prefix('notifications')->group(function () {
-        // Marcar notificación como leída
-        Route::patch('pedidos/{pedido}/mark-read', [PedidoController::class, 'markNotificationRead'])
-            ->middleware(['audit'])
-            ->name('notifications.pedidos.mark-read');
-
-        // Configurar alertas de pedidos
-        Route::post('pedidos/alerts', [PedidoController::class, 'configureAlerts'])
-            ->middleware(['audit'])
-            ->name('notifications.pedidos.configure-alerts');
-    });
-
+// Rutas de notificaciones
+Route::middleware(['auth:sanctum'])->group(function () {
+  Route::prefix('notifications')->group(function () {
+    Route::get('/', [NotificationController::class, 'getNotifications'])->middleware(['audit']);
+    Route::post('/test', [NotificationController::class, 'sendTest'])->middleware(['audit']);
+    Route::post('/send', [NotificationController::class, 'sendToCurrentUser'])->middleware(['audit']);
+    Route::post('/send/{userId}', [NotificationController::class, 'sendToUser'])->middleware(['audit']);
+    Route::patch('/{notificationId}/read', [NotificationController::class, 'markAsRead'])->middleware(['audit']);
+    Route::patch('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->middleware(['audit']);
+  });
 });

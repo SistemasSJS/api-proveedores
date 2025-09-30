@@ -3,64 +3,48 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
+
 use App\Http\Requests\Producto\ProductoStoreRequest;
 use App\Http\Requests\Producto\ProductoUpdateLogoRequest;
 use App\Http\Requests\Producto\ProductoUpdateRequest;
-use App\Http\Requests\ProveedorImportProducto\ProveedorImportProductoRequest;
-use App\Http\Requests\ProveedorImportProducto\ProductoBulkStoreJsonRequest;
-use App\Http\Requests\ProveedorImportProducto\ProductoBulkStoreRequest;
 use App\Models\Proveedor;
-use App\Http\Resources\ProductoResource;
-use App\Models\Categoria;
-use App\Models\Marca;
+use App\Http\Resources\ProveedorProductoResource;
 use App\Models\Producto;
-use App\Models\UnidadMedida;
 use Illuminate\Http\Request;
 use App\Traits\ApiResponse;
-use App\Services\ImportService;
-use App\Services\ImportProcessorService;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ProveedorProductoController extends Controller
 {
     use ApiResponse;
 
-    protected ImportService $importService;
-    protected ImportProcessorService $importProcessorService;
 
-    public function __construct(ImportService $importService, ImportProcessorService $importProcessorService)
-    {
-        $this->importService = $importService;
-        $this->importProcessorService = $importProcessorService;
-    }
+    public function __construct() {}
 
     public function index(Request $request, Proveedor $proveedor)
     {
-        /**
-         * NOTE: para los filtros se debe revisar el metodo getFilters() 
-         * y verifiacar  que exiata el scope para el filtro   
-         *  - categoria_id
-         *  - marca_id
-         *  
-         * Para este caso seria asi: ?categoria_id=3,7&marca_id=1
-         */
+        // Filtros dinámicos
         $filters = $request->only(Producto::getFilters());
 
         $sortBy = $request->input('sort_by', 'nombre');
         $order = $request->input('order', 'asc');
         $perPage = $request->input('per_page', 10);
 
-        $paginator = Producto::query()
+        $query = Producto::query()
+            ->with(Producto::eagerLodable()) // carga relaciones para evitar N+1
             ->filter($filters)
             ->where('proveedor_id', $proveedor->id)
-            ->orderBy($sortBy, $order)
-            ->paginate($perPage);
+            ->orderBy($sortBy, $order);
 
-        return $this->paginated($paginator);
-        // $data = ProductoResource::collection($paginator)->resolve();
-        // return $paginator->setCollection(collect($data)));
+        $paginator = $query->paginate($perPage);
+
+        // Transformación con Resource
+        $data = ProveedorProductoResource::collection($paginator)->resolve();
+
+        // Devuelve paginado con colección transformada
+        return $this->paginated($paginator->setCollection(collect($data)));
     }
+
 
     public function show(Request $request, Proveedor $proveedor, $productoId)
     {
@@ -68,7 +52,7 @@ class ProveedorProductoController extends Controller
         if ($producto->proveedor_id !== $proveedor->id) {
             throw new ResourceNotFoundException("Producto no relacionado al proveedor.");
         }
-        return $this->success(new ProductoResource($producto));
+        return $this->success(new ProveedorProductoResource($producto));
     }
 
     public function store(ProductoStoreRequest $request, Proveedor $proveedor)
@@ -78,20 +62,20 @@ class ProveedorProductoController extends Controller
         //     return $this->error('El producto no pertenece a este proveedor.', 403);
         // }
 
-        // ✅ Validar los datos del request
+        // ✅ Validar los datos del request,
         $data = $request->validated();
         $data['proveedor_id'] = $proveedor->id;
 
         $producto = Producto::create($data);
 
-        return $this->success(new ProductoResource($producto));
+        return $this->success(new ProveedorProductoResource($producto));
     }
 
     public function update(ProductoUpdateRequest  $request, Proveedor $proveedor, $productoId)
     {
         $producto = Producto::findOrFail($productoId);
         $producto->update($request->validated());
-        return $this->success(new ProductoResource(($producto->fresh(Producto::eagerLodable()))));
+        return $this->success(new ProveedorProductoResource(($producto->fresh(Producto::eagerLodable()))));
     }
 
     public function updateLogo(ProductoUpdateLogoRequest $request, Proveedor $proveedor, $productoId)
@@ -107,7 +91,7 @@ class ProveedorProductoController extends Controller
         $path = $file->storeAs('uploads', $filename, 'public');
 
         $producto->update(['imagen_principal' => $path]);
-        return $this->success(new ProductoResource($producto->fresh(Producto::eagerLodable())));
+        return $this->success(new ProveedorProductoResource($producto->fresh(Producto::eagerLodable())));
     }
 
     public function destroy(Request $request, Proveedor $proveedor, $productoId)
@@ -117,90 +101,4 @@ class ProveedorProductoController extends Controller
         $producto->delete();
         return $this->success(message: "Producto eliminado correctamente.");
     }
-
-
-    /***********************************************************************/
-    /************************BULK INSERT ***********************************/
-    /***********************************************************************/
-
-
-    public function bulkStore(ProveedorImportProductoRequest $request, Proveedor $proveedor)
-    {
-        // Delegamos al servicio de importación para mantener consistencia
-        return $this->importService->processImport($request, $proveedor);
-    }
-
-    public function validateProductosByCodigo(Request $request, Proveedor $proveedor)
-    {
-        $codigos = $request->input('codigos', []);
-
-        if (!is_array($codigos) || empty($codigos)) {
-            return $this->error('Debe enviar un array de códigos de producto.', 422);
-        }
-
-        // Buscar productos que coincidan con los códigos y el proveedor
-        $productos = Producto::where('proveedor_id', $proveedor->id)
-            ->whereIn('codigo', $codigos)
-            ->get(['id', 'codigo', 'nombre']);
-
-        // Obtener códigos encontrados
-        $codigosEncontrados = $productos->pluck('codigo')->toArray();
-
-        // Determinar los códigos que no existen
-        $codigosNoEncontrados = array_values(array_diff($codigos, $codigosEncontrados));
-
-        return $this->success([
-            'encontrados' => $productos,
-            'no_encontrados' => $codigosNoEncontrados,
-        ]);
-    }
-
-    /***********************************************************************/
-    /***********************************************************************/
-    /***********************************************************************/
-    /***********************************************************************/
-    /***********************************************************************/
-    /***********************************************************************/
-    /***********************************************************************/
-    /***********************************************************************/
-    /***********************************************************************/
-    /***********************************************************************/
-    /***********************************************************************/
-
-    /**
-     * Crear entrada de auditoría para importación
-     */
-    // private function createImportAudit(Proveedor $proveedor, array $productosData, string $tipo = 'bulk'): \App\Models\ImportAudit
-    // {
-    //     return \App\Models\ImportAudit::create([
-    //         'proveedor_id' => $proveedor->id,
-    //         'tipo' => $tipo,
-    //         'formato' => 'json',
-    //         'estado' => 'processing',
-    //         'fase' => 'processing',
-    //         'total_registros' => count($productosData),
-    //         'progreso' => 0,
-    //         'inicio_proceso' => now(),
-    //     ]);
-    // }
-
-    // /**
-    //  * Manejar error de importación
-    //  */
-    // private function handleImportError(\App\Models\ImportAudit $importAudit, \Throwable $e): void
-    // {
-    //     $importAudit->update([
-    //         'estado' => 'failed',
-    //         'fase' => 'completed',
-    //         'fin_proceso' => now(),
-    //     ]);
-
-    //     $importAudit->appendLog('Error durante la importación', [
-    //         'error' => $e->getMessage(),
-    //         'file' => $e->getFile(),
-    //         'line' => $e->getLine()
-    //     ]);
-
-    //     $importAudit->save();
-    // }
 }

@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Producto;
 
 use App\Models\Categoria;
-use App\Models\Linea;
 use App\Models\Marca;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -23,21 +22,42 @@ class ProductoUpdateRequest extends FormRequest
             'descripcion' => ['sometimes', 'required', 'string', 'max:255'],
             'codigo_interno' => ['sometimes', 'required', 'string', 'max:50'],
             'proveedor_id' => ['sometimes', 'required', 'integer', 'exists:proveedores,id'],
-            // Aquí se espera un arreglo de categorías
-            // 'categorias' => ['sometimes', 'array', 'min:1'],
-            // 'categorias.*' => ['integer', 'exists:categorias,id'],
+
+            // precios
+            'precio_base' => ['sometimes', 'numeric'],
+            'precio_mayoreo' => ['sometimes', 'numeric'],
+            'precio_menudeo' => ['sometimes', 'numeric'],
 
             'unidad_medida_id' => ['sometimes', 'required', 'integer', 'exists:unidad_medidas,id'],
+
+            // categoría principal
             'categoria_id' => [
                 'required',
                 'integer',
                 'exists:categorias,id',
                 function ($attribute, $value, $fail) use ($proveedorId) {
                     if (!Categoria::where('id', $value)->where('proveedor_id', $proveedorId)->exists()) {
-                        $fail('La categoria seleccionada no pertenece a este proveedor.');
+                        $fail('La categoría seleccionada no pertenece a este proveedor.');
                     }
                 }
             ],
+
+            // subcategoría (debe ser hija)
+            'subcategoria_id' => [
+                'nullable',
+                'integer',
+                'exists:categorias,id',
+                function ($attribute, $value, $fail) use ($proveedorId) {
+                    if (!Categoria::where('id', $value)
+                        ->where('proveedor_id', $proveedorId)
+                        ->whereNotNull('parent_id')
+                        ->exists()) {
+                        $fail('La subcategoría seleccionada no es válida o no pertenece a una categoría padre.');
+                    }
+                }
+            ],
+
+            // marca
             'marca_id' => [
                 'required',
                 'integer',
@@ -45,25 +65,6 @@ class ProductoUpdateRequest extends FormRequest
                 function ($attribute, $value, $fail) use ($proveedorId) {
                     if (!Marca::where('id', $value)->where('proveedor_id', $proveedorId)->exists()) {
                         $fail('La marca seleccionada no pertenece a este proveedor.');
-                    }
-                }
-            ],
-            'linea_id' => [
-                'required',
-                'integer',
-                'exists:lineas,id',
-                function ($attribute, $value, $fail) use ($proveedorId) {
-                    $marcaId = $this->input('marca_id');
-
-                    // Validar que la línea pertenezca al proveedor
-                    if (!Linea::where('id', $value)->where('proveedor_id', $proveedorId)->exists()) {
-                        $fail('La línea seleccionada no pertenece a este proveedor.');
-                        return;
-                    }
-
-                    // Validar que la línea esté relacionada con la marca seleccionada
-                    if ($marcaId && !Linea::where('id', $value)->where('marca_id', $marcaId)->exists()) {
-                        $fail('La línea seleccionada no pertenece a la marca especificada.');
                     }
                 }
             ],
@@ -76,20 +77,22 @@ class ProductoUpdateRequest extends FormRequest
             'nombre.required' => 'El nombre es obligatorio.',
             'descripcion.required' => 'La descripción es obligatoria.',
             'codigo_interno.required' => 'El código interno es obligatorio.',
+
             'proveedor_id.required' => 'El proveedor es obligatorio.',
             'proveedor_id.exists' => 'El proveedor seleccionado no es válido.',
+
             'unidad_medida_id.required' => 'La unidad de medida es obligatoria.',
             'unidad_medida_id.exists' => 'La unidad de medida seleccionada no es válida.',
 
-            'categorias.array' => 'Las categorías deben enviarse como un arreglo.',
-            'categorias.min' => 'Debe seleccionar al menos una categoría.',
-            'categorias.*.integer' => 'Cada categoría debe ser un identificador válido.',
-            'categorias.*.exists' => 'Una o más categorías seleccionadas no son válidas.',
+            'categoria_id.required' => 'La categoría es obligatoria.',
+            'categoria_id.exists' => 'La categoría seleccionada no es válida.',
+
+            'subcategoria_id.integer' => 'La subcategoría debe ser un identificador válido.',
+            'subcategoria_id.exists' => 'La subcategoría seleccionada no es válida.',
+            'subcategoria_id.required' => 'La subcategoría es obligatoria cuando aplique.',
 
             'marca_id.required' => 'La marca es obligatoria.',
             'marca_id.exists' => 'La marca seleccionada no es válida.',
-            'linea_id.required' => 'La línea es obligatoria.',
-            'linea_id.exists' => 'La línea seleccionada no es válida.',
         ];
     }
 }

@@ -10,7 +10,6 @@ use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProductoImagenController;
 use App\Http\Controllers\UnidadMedidaController;
 use App\Http\Controllers\CategoriaController;
-use App\Http\Controllers\LineaController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\PedidoController;
 
@@ -21,11 +20,34 @@ use App\Http\Controllers\PedidoController;
 | Estas rutas no requieren autenticación
 */
 
+use App\Models\User;
+use App\Notifications\PushNotification;
+
 Route::get('status', function () {
+    // Buscar el usuario con ID 3
+    $user = User::find(13);
+
+    if (!$user) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Usuario no encontrado',
+        ], 404);
+    }
+
+    // Crear la notificación
+    $notification = new PushNotification(
+        'Título de prueba',
+        'Este es un mensaje de prueba',
+        'info',
+        ['extra' => 'datos opcionales']
+    );
+
+    // Enviar la notificación
+    $user->notify($notification);
+
     return response()->json([
         'status' => 'ok',
-        'message' => 'API funcionando correctamente',
-        'timestamp' => now(),
+        'message' => 'Notificación enviada al usuario 3',
     ]);
 });
 
@@ -42,7 +64,6 @@ Route::get('productos', [ProductoController::class, 'index'])->middleware(['audi
 Route::get('imagenes', [ProductoImagenController::class, 'index'])->middleware(['audit']);
 Route::get('unidades-medida', [UnidadMedidaController::class, 'index'])->middleware(['audit']);
 Route::get('categorias', [CategoriaController::class, 'index'])->middleware(['audit']);
-Route::get('lineas', [LineaController::class, 'index'])->middleware(['audit']);
 Route::get('marcas', [MarcaController::class, 'index'])->middleware(['audit']);
 Route::get('tipos-empresa', [TipoEmpresaController::class, 'index'])->middleware(['audit']);
 

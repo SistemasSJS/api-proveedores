@@ -227,6 +227,8 @@ trait AutoSwaggerSchema
     private static function generateDescription($field)
     {
         $descriptions = [
+            'sku' => 'Código SKU único',
+            'codigo_interno' => 'Código interno del sistema',
             'nombre' => 'Nombre del registro',
             'descripcion' => 'Descripción detallada',
             'email' => 'Dirección de correo electrónico',
@@ -236,10 +238,8 @@ trait AutoSwaggerSchema
             'visible' => 'Visibilidad del elemento',
             'stock' => 'Cantidad en inventario',
             'precio_base' => 'Precio base del producto',
-            'precio_de_lista' => 'Precio de lista',
-            'precio_publico' => 'Precio público',
-            'sku' => 'Código SKU único',
-            'codigo_interno' => 'Código interno del sistema',
+            'precio_menudeo' => 'Precio menudeo',
+            'precio_mayoreo' => 'Precio mayoreo',
             'created_at' => 'Fecha de creación',
             'updated_at' => 'Fecha de última actualización',
             'proveedor_id' => 'ID del proveedor asociado',

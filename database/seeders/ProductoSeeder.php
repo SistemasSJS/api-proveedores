@@ -385,17 +385,9 @@ class ProductoSeeder extends Seeder
                         $subCategoria = $categoriaPadre->children->random();
                     }
 
-                    // Validar que haya marcas y líneas para evitar error en random()
-                    // if ($marcas->isEmpty() || $lineas->isEmpty()) {
-                    //     // Log o continue si no hay marcas o líneas
-                    //     continue;
-                    // }
-
-                    $marca_random = null;
                     $linea_random = null;
                     if (!$marcas->isEmpty()) {
                         $marca_random = $marcas->random()->id;
-                        $linea_random = Linea::where('marca_id', $marca_random)->get()->random()->id;
                     }
 
                     $esDestacado = (bool)random_int(0, 1);
@@ -409,19 +401,16 @@ class ProductoSeeder extends Seeder
                         [
                             'nombre' => $productoData['nombre'],
                             'descripcion' => $productoData['descripcion'],
-                            'categoria_id' => $categoriaPadre ? $categoriaPadre->id :  null,
-                            'subcategoria_id' => $subCategoria ? $subCategoria->id :  null,
-                            'linea_id' => $linea_random,
                             'marca_id' => $marca_random,
                             'unidad_medida_id' => $unidad ? $unidad->id : $unidadMedidas->random()->id,
-                            'activo' => $esDestacado ? true : (bool)random_int(0, 1),
-                            'destacado' => $esDestacado,
+                            'categoria_id' => $categoriaPadre ? $categoriaPadre->id :  null,
+                            'subcategoria_id' => $subCategoria ? $subCategoria->id :  null,
                             'principal' => $esPrincipal,
                             'stock' => $esDestacado ? random_int(10, 100) : random_int(0, 200),
+                            'destacado' => $esDestacado,
+                            'activo' => $esDestacado ? true : (bool)random_int(0, 1),
                         ]
                     );
-                    // $categorias = Categoria::whereIn('nombre', [$categoria_nombre])->get();
-                    // $producto->categorias()->sync($categorias->pluck('id'));
                 }
             }
         }

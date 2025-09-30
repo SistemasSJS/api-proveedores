@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
-use App\Http\Resources\TiendaAccesoRapidoResource;
-use App\Http\Resources\TiendaProductoDestacadoResource;
-use App\Http\Resources\TiendaProductoResource;
-use App\Http\Resources\TiendaProveedorResource;
+use App\Http\Resources\Tienda\TiendaAccesoRapidoResource;
+use App\Http\Resources\Tienda\TiendaProductoDestacadoResource;
+use App\Http\Resources\Tienda\TiendaProductoResource;
+use App\Http\Resources\Tienda\TiendaProveedorResource;
 use App\Models\Proveedor;
 use App\Models\Producto;
 use App\Models\AccesoRapido;
@@ -89,13 +89,6 @@ class TiendaController extends Controller
             $query->where('proveedor_id', $request->get('proveedor_id'));
         }
 
-        if ($request->has('precio_min')) {
-            $query->where('precio', '>=', $request->get('precio_min'));
-        }
-
-        if ($request->has('precio_max')) {
-            $query->where('precio', '<=', $request->get('precio_max'));
-        }
 
         if ($request->has('disponible') && $request->get('disponible') == true) {
             $query->where('stock', '>', 0);
@@ -141,11 +134,11 @@ class TiendaController extends Controller
         }
 
         if ($request->has('precio_min')) {
-            $query->where('precio', '>=', $request->get('precio_min'));
+            $query->where('precio_base', '>=', $request->get('precio_min'));
         }
 
         if ($request->has('precio_max')) {
-            $query->where('precio', '<=', $request->get('precio_max'));
+            $query->where('precio_base', '<=', $request->get('precio_max'));
         }
 
         if ($request->has('disponible') && $request->get('disponible') == true) {
@@ -182,7 +175,7 @@ class TiendaController extends Controller
             }
         }])
             ->with(['proveedor:id,nombre,logo'])
-            ->select('id', 'nombre', 'descripcion', 'precio', 'imagen', 'stock', 'categoria', 'proveedor_id')
+            ->select('id', 'nombre', 'descripcion', 'precio_base', 'imagen', 'stock', 'categoria', 'proveedor_id')
             ->orderBy('total_pedidos', 'desc')
             ->limit($limit)
             ->get();
@@ -215,11 +208,11 @@ class TiendaController extends Controller
         }
 
         if ($request->has('precio_min')) {
-            $query->where('precio', '>=', $request->get('precio_min'));
+            $query->where('precio_base', '>=', $request->get('precio_min'));
         }
 
         if ($request->has('precio_max')) {
-            $query->where('precio', '<=', $request->get('precio_max'));
+            $query->where('precio_base', '<=', $request->get('precio_max'));
         }
 
         if ($request->has('disponible') && $request->get('disponible') == true) {

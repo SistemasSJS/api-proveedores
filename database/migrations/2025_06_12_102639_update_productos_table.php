@@ -43,11 +43,6 @@ return new class extends Migration
                 $table->foreignId('marca_id')->nullable()->constrained('marcas');
             }
 
-            if (!Schema::hasColumn('productos', 'linea_id')) {
-                $table->foreignId('linea_id')->nullable()->constrained('lineas');
-            }
-
-            // Campos adicionales
             if (!Schema::hasColumn('productos', 'activo')) {
                 $table->boolean('activo')->default(true);
             }
@@ -64,7 +59,6 @@ return new class extends Migration
             $table->dropForeign(['proveedor_id']);
             $table->dropForeign(['categoria_id']);
             $table->dropForeign(['marca_id']);
-            $table->dropForeign(['linea_id']);
             $table->dropColumn([
                 'sku',
                 'nombre',
@@ -74,7 +68,6 @@ return new class extends Migration
                 'proveedor_id',
                 'categoria_id',
                 'marca_id',
-                'linea_id',
                 'activo',
                 'stock',
                 'peso_kg',

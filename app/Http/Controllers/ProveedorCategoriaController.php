@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\EstadoGeneral;
+
 use App\Http\Requests\Categoria\CategoriaStoreRequest;
 use App\Http\Resources\CategoriaAcordeonResource;
 use App\Http\Resources\CategoriaResource;
@@ -23,20 +24,31 @@ class ProveedorCategoriaController extends Controller
             ->where('estatus', EstadoGeneral::ACTIVO->value)
             ->paginate(10000);
 
-        $categorias =    CategoriaAcordeonResource::collection($data)->resolve();
+        $categorias =    CategoriaResource::collection($data)->resolve();
         return $this->paginated($data->setCollection(collect($categorias)));
     }
 
     public function index(Request $request, Proveedor $proveedor)
     {
-        $filters = $request->only(['nombre', 'estatus']);
-        $data = Categoria::with(['children'])
+        $filters = $request->only(Categoria::getFilters());
+
+        $sortBy = $request->input('sort_by', 'nombre');
+        $order = $request->input('order', 'asc');
+        $perPage = $request->input('per_page', 10);
+
+        $query = Categoria::query()
+            ->with(['children'])
             ->whereNull('parent_id')
             ->filter($filters)
             ->where('proveedor_id', $proveedor->id)
-            ->paginate();
-        return $this->paginated($data);
+            ->orderBy($sortBy, $order);
+
+        $paginator = $query->paginate($perPage);
+
+        $data = CategoriaResource::collection(($paginator))->resolve();
+        return $this->paginated($paginator->setCollection(collect($data)));
     }
+
 
     public function index_sub_categorias(Request $request, Proveedor $proveedor, $categoriaId)
     {
@@ -98,12 +110,41 @@ class ProveedorCategoriaController extends Controller
         return $this->success($categoria);
     }
 
-
     public function destroy(Request $request, Proveedor $proveedor, $categoriaId)
     {
+        // Buscar la categoría
         $categoria = Categoria::findOrFail($categoriaId);
-        $categoria->delete();
+
+        // Actualizar el estado en lugar de eliminar
+        $categoria->estatus = EstadoGeneral::INACTIVO->value;
+        $categoria->save();
 
         return $this->success(null, 204);
+    }
+
+    public function categoriasConSubcatCountProductos(Request $request, Proveedor $proveedor)
+    {
+        $categorias = Categoria::with([
+            'children' => function ($query) use ($proveedor) {
+                $query->withCount([
+                    'productosSubcategoria as productos_count' => function ($q) use ($proveedor) {
+                        $q->where('productos.proveedor_id', $proveedor->id);
+                    }
+                ]);
+            }
+        ])
+            ->withCount([
+                'productos as productos_count' => function ($q) use ($proveedor) {
+                    $q->where('productos.proveedor_id', $proveedor->id);
+                }
+            ])
+            ->whereNull('parent_id')
+            ->where('proveedor_id', $proveedor->id)
+            ->get();
+
+        return $this->success(
+            CategoriaAcordeonResource::collection($categorias),
+            "Listado de categorías con subcategorías con contador de productos."
+        );
     }
 }

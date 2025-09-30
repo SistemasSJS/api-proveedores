@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\EstadoGeneral;
-use App\Http\Resources\MarcaLineasResource;
+
 use App\Http\Resources\MarcaResource;
 use App\Models\Marca;
 use App\Models\Proveedor;
@@ -15,12 +15,13 @@ class ProveedorMarcaController extends Controller
 
     public function all(Request $request, Proveedor $proveedor)
     {
-        // Obtener todas las categorías activas para el proveedor con las subcategorías (hijas)
         $data = Marca::where('proveedor_id', $proveedor->id)
             ->where('estatus', EstadoGeneral::ACTIVO->value)
+            ->withCount('productos') // 👈 esto agrega la columna productos_count
             ->paginate(10000);
 
-        $marcas =   MarcaResource::collection($data)->resolve();
+        $marcas = MarcaResource::collection($data)->resolve();
+
         return $this->paginated($data->setCollection(collect($marcas)));
     }
 
@@ -29,9 +30,10 @@ class ProveedorMarcaController extends Controller
         $filters = $request->only(Marca::getFilters());
         $originalPaginator = Marca::filter($filters)
             ->where('proveedor_id', $proveedor->id)
+            ->withCount('productos') // 👈 esto agrega la columna productos_count
             ->paginate();
 
-        $data = MarcaLineasResource::collection($originalPaginator)->resolve();
+        $data = MarcaResource::collection($originalPaginator)->resolve();
         return $this->paginated($originalPaginator->setCollection(collect($data)));
     }
 

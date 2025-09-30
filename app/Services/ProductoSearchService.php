@@ -13,7 +13,7 @@ class ProductoSearchService
    */
   public function buscar(array $filtros): LengthAwarePaginator
   {
-    $query = Producto::with(['proveedor', 'marca', 'linea', 'categoria'])
+    $query = Producto::with(['proveedor', 'marca', 'categoria'])
       ->where('activo', true);
 
     // Búsqueda por texto
@@ -37,10 +37,6 @@ class ProductoSearchService
 
     if (!empty($filtros['marca_id'])) {
       $query->where('marca_id', $filtros['marca_id']);
-    }
-
-    if (!empty($filtros['linea_id'])) {
-      $query->where('linea_id', $filtros['linea_id']);
     }
 
     // Rango de precios
@@ -79,7 +75,7 @@ class ProductoSearchService
           ->orWhere('sku', 'like', "%{$termino}%")
           ->orWhere('descripcion', 'like', "%{$termino}%");
       })
-      ->with(['marca', 'linea', 'categoria'])
+      ->with(['marca', 'categoria'])
       ->limit(20)
       ->get();
 
@@ -92,7 +88,6 @@ class ProductoSearchService
         'precio_base' => $producto->precio_base,
         'stock' => $producto->stock,
         'marca' => $producto->marca?->nombre,
-        'linea' => $producto->linea?->nombre,
         'categoria' => $producto->categoria?->nombre,
         'imagen_principal' => $producto->imagen_principal,
       ];

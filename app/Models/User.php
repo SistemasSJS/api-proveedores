@@ -203,18 +203,48 @@ class User extends Authenticatable
             ->value('tipo_relacion');
     }
 
-    public function requisiciones(): HasMany
+    /**
+     * Relación con los tokens de dispositivos FCM
+     *
+     * @return HasMany<UserDeviceToken> Colección de tokens de dispositivos del usuario
+     */
+    public function deviceTokens(): HasMany
     {
-        return $this->hasMany(Requisicion::class, 'usuario_id');
+        return $this->hasMany(UserDeviceToken::class);
     }
 
-    public function notificaciones(): HasMany
+    /**
+     * Obtiene tokens de dispositivos activos
+     *
+     * @return HasMany<UserDeviceToken> Tokens activos del usuario
+     */
+    public function activeDeviceTokens(): HasMany
     {
-        return $this->hasMany(Notificacion::class, 'usuario_id');
+        return $this->deviceTokens()->active();
     }
 
-    public function notificacionesNoLeidas(): HasMany
+    /**
+     * Obtiene tokens activos por plataforma
+     *
+     * @param string $platform 'ios', 'android', 'web'
+     * @return HasMany<UserDeviceToken> Tokens activos de la plataforma especificada
+     */
+    public function deviceTokensByPlatform(string $platform): HasMany
     {
-        return $this->hasMany(Notificacion::class, 'usuario_id')->where('leida', false);
+        return $this->activeDeviceTokens()->byPlatform($platform);
     }
+
+    /**
+     * Obtiene todos los tokens activos para envío de push notifications
+     *
+     * @return array Array de strings con los tokens FCM
+     */
+    public function getFcmTokensAttribute(): array
+    {
+        return $this->activeDeviceTokens()
+            ->recentlyUsed(30) // Solo tokens usados en los últimos 30 días
+            ->pluck('token')
+            ->toArray();
+    }
+
 }
