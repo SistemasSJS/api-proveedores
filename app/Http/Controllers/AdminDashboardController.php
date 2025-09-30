@@ -9,7 +9,6 @@ use App\Models\Proveedor;
 use App\Models\Producto;
 use App\Models\Categoria;
 use App\Models\Marca;
-use App\Models\Linea;
 use App\Models\Sucursal;
 use App\Models\UnidadMedida;
 use App\Models\TipoEmpresa;
@@ -104,7 +103,6 @@ class AdminDashboardController extends Controller
             'categorias' => Categoria::count(),
             'marcas' => Marca::count(),
             'sucursales' => Sucursal::count(),
-            'lineas' => Linea::count(),
             'unidadesMedida' => UnidadMedida::count(),
             'tiposEmpresa' => TipoEmpresa::count(),
         ];

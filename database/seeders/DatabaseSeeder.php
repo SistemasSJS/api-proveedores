@@ -27,7 +27,7 @@ class DatabaseSeeder extends Seeder
                 MarcaSeeder::class,
                 ProductoSeeder::class,
                 AccesoRapidoSeeder::class,
-                // CotizacionesSeeder::class,
+                CotizacionesSeeder::class,
                 // PedidosSeeder::class,
             ]);
         }

@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Enums\EstadoGeneral;
 use App\Models\Categoria;
-use App\Models\Linea;
 use App\Models\Marca;
 use App\Models\Proveedor;
 use Illuminate\Database\Eloquent\Factories\Factory;

@@ -19,10 +19,12 @@ class UserAuthenticateResource extends JsonResource
             'id'                => $this->id,
             'name'              => $this->name,
             'email'             => $this->email,
-
-            'foto_perfil_url' => asset('storage' . $this->foto_perfil_url),
-
-            'role'              => new RoleResource($this->whenLoaded('role')),
+            'foto_perfil_url'   => $this->foto_perfil_url
+                ? (preg_match('/^https?:\/\//', $this->foto_perfil_url)
+                    ? $this->foto_perfil_url
+                    : asset('storage/' . $this->foto_perfil_url))
+                : null,
+                                        'role'              => new RoleResource($this->whenLoaded('role')),
             'estado'            => $this->estado,
             'created_at'        => $this->created_at,
             'updated_at'        => $this->updated_at,

@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureCategoriaBelongsToProveedor;
 use App\Http\Middleware\EnsureMarcaBelongsToProveedor;
 use App\Http\Middleware\EnsureProductoBelongsToProveedor;
+use App\Http\Middleware\EnsureProveedorCuentaBancariaAccess;
 use App\Http\Middleware\EnsureUserBelongsToProveedor;
 use App\Http\Middleware\LogApiActions;
 use App\Http\Middleware\LogIncomingRequests;
@@ -20,6 +21,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         api: __DIR__ . '/../routes/api.php',
+        channels: __DIR__ . '/../routes/channels.php',
         commands: __DIR__ . '/../routes/console.php',
     )
     ->withMiddleware(function (Middleware $middleware) {
@@ -40,6 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'proveedor.marca' => EnsureMarcaBelongsToProveedor::class,
             'proveedor.unidad' => EnsureUnidadMedidaBelongsToProveedor::class,
             'proveedor.sucursal' => EnsureSucursalBelongsToProveedor::class,
+            'proveedor.cuenta' => EnsureProveedorCuentaBancariaAccess::class,
             'proveedor.access' => EnsureProveedorOwnership::class,
             'proveedor.producto.access' => EnsureProveedorProductAccess::class,
             'proveedor.role' => ValidateProveedorRole::class,

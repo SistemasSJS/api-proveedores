@@ -29,7 +29,7 @@ trait Filterable
             Log::debug("Aplicando método: $method");
 
             if (method_exists($this, $method)) {
-                $this->$method($query, $value);
+                $query = $this->$method($query, $value); // 👈 importante
             } else {
                 Log::warning("Método $method no existe en " . static::class);
             }
@@ -40,7 +40,6 @@ trait Filterable
 
     /**
      * Devuelve las claves disponibles para aplicar filtros dinámicos.
-     * Estas deben coincidir con las claves esperadas en el request.
      *
      * @return array
      */

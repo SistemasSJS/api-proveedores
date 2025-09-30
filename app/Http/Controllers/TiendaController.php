@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
-use App\Http\Resources\TiendaAccesoRapidoResource;
-use App\Http\Resources\TiendaProductoDestacadoResource;
-use App\Http\Resources\TiendaProductoResource;
-use App\Http\Resources\TiendaProveedorResource;
+use App\Http\Resources\Tienda\TiendaAccesoRapidoResource;
+use App\Http\Resources\Tienda\TiendaProductoDestacadoResource;
+use App\Http\Resources\Tienda\TiendaProductoResource;
+use App\Http\Resources\Tienda\TiendaProveedorResource;
 use App\Models\Proveedor;
 use App\Models\Producto;
 use App\Models\AccesoRapido;

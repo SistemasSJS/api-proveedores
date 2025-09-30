@@ -7,8 +7,8 @@ use App\Models\Marca;
 use App\Models\Categoria;
 use App\Models\UnidadMedida;
 use App\Models\Producto;
-use App\Services\CSVProcessorService;
-use App\Services\ProductImportValidator;
+use App\Services\CSVImport\CSVProcessorService;
+use App\Services\CSVImport\CSVImportProductValidator;
 use Illuminate\Bus\Queueable as BusQueueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -75,7 +75,7 @@ class CSVImportJob implements ShouldQueue
     public function handle(CSVProcessorService $csvProcessor): void
     {
         $this->startTime = microtime(true);
-        $validator = new ProductImportValidator($this->importAudit->proveedor_id);
+        $validator = new CSVImportProductValidator($this->importAudit->proveedor_id);
 
         Log::info('Starting CSV import job', [
             'audit_id' => $this->importAudit->id,
@@ -192,7 +192,7 @@ class CSVImportJob implements ShouldQueue
     /**
      * Process all catalog data (brands, categories, units)
      */
-    protected function processCatalogs(array $csvData, ProductImportValidator $validator): void
+    protected function processCatalogs(array $csvData, CSVImportProductValidator $validator): void
     {
         $this->logProcessingStep('Iniciando procesamiento de catálogos');
 
@@ -398,7 +398,7 @@ class CSVImportJob implements ShouldQueue
     /**
      * Process products in chunks
      */
-    protected function processProducts(array $csvData, ProductImportValidator $validator): void
+    protected function processProducts(array $csvData, CSVImportProductValidator $validator): void
     {
         $this->logProcessingStep('Iniciando procesamiento de productos');
 
@@ -443,7 +443,7 @@ class CSVImportJob implements ShouldQueue
     /**
      * Process a chunk of products
      */
-    protected function processProductChunk(array $productChunk, ProductImportValidator $validator, int $baseRowNumber): void
+    protected function processProductChunk(array $productChunk, CSVImportProductValidator $validator, int $baseRowNumber): void
     {
         foreach ($productChunk as $index => $productData) {
             $rowNumber = $baseRowNumber + $index + 1;
@@ -500,6 +500,7 @@ class CSVImportJob implements ShouldQueue
             'descripcion' => $productData['descripcion'] ?? null,
             'marca_id' => $marcaId,
             'categoria_id' => $categoriaId,
+            'subcategoria_id' => $subcategoriaId,
             'unidad_medida_id' => $unidadId,
             'precio_base' => $this->parsePrice($productData['precio_base'] ?? 0),
             'precio_mayoreo' => $this->parsePrice($productData['precio_mayoreo'] ?? 0),
