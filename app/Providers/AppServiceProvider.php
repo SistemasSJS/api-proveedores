@@ -4,15 +4,10 @@ namespace App\Providers;
 
 use App\Exceptions\Handler;
 use App\Models\Producto;
-use App\Models\Proveedor;
 use App\Models\Sucursal;
 use App\Observers\ProductoObserver;
-use App\Policies\ProductoPolicy;
-use App\Policies\ProveedorPolicy;
 use App\Policies\SucursalPolicy;
-use App\Services\AuditService;
 use App\Services\DashboardService;
-use App\Services\FileParser\FileParserService;
 use App\Services\ProductoSearchService;
 use App\Services\ReporteService;
 use App\Services\SucursalService;
@@ -20,6 +15,7 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Sanctum\PersonalAccessToken;
 use Laravel\Sanctum\Sanctum;
+use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,8 +25,6 @@ class AppServiceProvider extends ServiceProvider
      */
     protected $policies = [
         Sucursal::class => SucursalPolicy::class,
-        // Producto::class => ProductoPolicy::class,
-        // Proveedor::class => ProveedorPolicy::class,
     ];
 
     /**
@@ -40,7 +34,6 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(ExceptionHandler::class, Handler::class);
 
-        // Servicios que se INYECTAN en controladores
         $this->app->singleton(SucursalService::class, function ($app) {
             return new SucursalService();
         });
@@ -63,6 +56,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Schema::defaultStringLength(191);
         // Registrar Observers
         Producto::observe(ProductoObserver::class);
 
