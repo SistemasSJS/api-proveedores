@@ -24,6 +24,7 @@ class UserSeeder extends Seeder
             $this->command->error('Uno o más roles no fueron encontrados. Seeder abortado.');
             return;
         }
+
         $ususarioConstrucc = [
             'email' => 'constucc@constucc.com.mx',
             'name' => 'Construcc App',
