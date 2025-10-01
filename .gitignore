@@ -176,7 +176,7 @@ storage/logs/laravel.log
 storage/logs/requests.log
 
 # Laravel
-# /storage
+/storage
 /vendor
 /public/build
 /.env

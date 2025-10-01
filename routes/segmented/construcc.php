@@ -4,6 +4,7 @@ use App\Enums\UserRoleEnumerate;
 use App\Http\Controllers\ConstruccController;
 use App\Http\Controllers\ConstruccCotizacionController;
 use App\Http\Controllers\SPConstruccController;
+use App\Http\Middleware\CheckApiKey;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,8 +25,9 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::prefix('construcc')
-    ->middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::CONSTUCC_APP->value])
-    ->name('construcc.')
+    // ->middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::CONSTUCC_APP->value])
+    ->middleware(CheckApiKey::class)
+    // ->name('construcc.')
     ->group(function () {
 
         /*

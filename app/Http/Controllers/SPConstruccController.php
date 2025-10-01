@@ -27,9 +27,9 @@ class SPConstruccController extends Controller
             ->orderBy($sortBy, $order);
 
         // Aquí debería limitar por la empresa del usuario ConstruccApp
-        if ($request->user()->empresa_construcc_id) {
-            $query->where('empresa_construcc_id', $request->user()->empresa_construcc_id);
-        }
+        // if ($request->user()->empresa_construcc_id) {
+        //     $query->where('empresa_construcc_id', $request->user()->empresa_construcc_id);
+        // }
 
         $paginator = $query->paginate($perPage);
 
