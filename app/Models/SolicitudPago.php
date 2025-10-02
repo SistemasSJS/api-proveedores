@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SolicitudPago extends BaseModel
 {
     use HasFactory, Filterable;
-
+    
     protected $table = 'solicitudes_pago';
 
     protected $fillable = [
@@ -31,6 +31,18 @@ class SolicitudPago extends BaseModel
         'fecha_rechazado',
         'fecha_aprobado',
         'motivo_rechazo',
+
+        // Nuevos campos
+        'dg',
+        'dg_fecha',
+        'dt',
+        'dt_fecha',
+        'pc',
+        'pc_fecha',
+        'si',
+        'si_fecha',
+        'ro',
+        'ro_fecha',
     ];
 
     protected static $filters = [
@@ -41,6 +53,7 @@ class SolicitudPago extends BaseModel
         'empresa_construcc_id'            => 'EmpresaConstruccId',
         'residente'                       => 'Residente',
         'cotizacion_id'                   => 'CotizacionId',
+
         'fecha_registro_pendiente'        => 'FechaRegistroPendiente',
         'fecha_registro_pendiente_desde'  => 'FechaRegistroPendienteDesde',
         'fecha_registro_pendiente_hasta'  => 'FechaRegistroPendienteHasta',
@@ -59,6 +72,13 @@ class SolicitudPago extends BaseModel
         'fecha_aprobado'                  => 'FechaAprobado',
         'fecha_aprobado_desde'            => 'FechaAprobadoDesde',
         'fecha_aprobado_hasta'            => 'FechaAprobadoHasta',
+
+        // Filtros para los nuevos campos
+        'dg'                              => 'Dg',
+        'dt'                              => 'Dt',
+        'pc'                              => 'Pc',
+        'si'                              => 'Si',
+        'ro'                              => 'Ro',
     ];
 
     protected $casts = [
@@ -70,8 +90,19 @@ class SolicitudPago extends BaseModel
         'fecha_aprobado'             => 'datetime',
         'created_at'                 => 'datetime',
         'updated_at'                 => 'datetime',
-    ];
 
+        // Nuevos campos
+        'dg'        => 'boolean',
+        'dg_fecha'  => 'datetime',
+        'dt'        => 'boolean',
+        'dt_fecha'  => 'datetime',
+        'pc'        => 'boolean',
+        'pc_fecha'  => 'datetime',
+        'si'        => 'boolean',
+        'si_fecha'  => 'datetime',
+        'ro'        => 'boolean',
+        'ro_fecha'  => 'datetime',
+    ];
     /** ----------------
      * Relaciones
      * ----------------- */
@@ -88,6 +119,34 @@ class SolicitudPago extends BaseModel
     public function empresaConstrucc(): BelongsTo
     {
         return $this->belongsTo(EmpresaConstrucc::class, 'empresa_construcc_id');
+    }
+
+    /** ----------------
+     * Filtros básicos (ejemplo nuevos)
+     * ----------------- */
+    public function filterByDg($query, $value)
+    {
+        return $query->where('dg', (bool) $value);
+    }
+
+    public function filterByDt($query, $value)
+    {
+        return $query->where('dt', (bool) $value);
+    }
+
+    public function filterByPc($query, $value)
+    {
+        return $query->where('pc', (bool) $value);
+    }
+
+    public function filterBySi($query, $value)
+    {
+        return $query->where('si', (bool) $value);
+    }
+
+    public function filterByRo($query, $value)
+    {
+        return $query->where('ro', (bool) $value);
     }
 
     /** ----------------

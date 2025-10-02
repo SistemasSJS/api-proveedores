@@ -102,8 +102,7 @@ class ProveedorSeeder extends Seeder
             ]);
             // === PROVEEDOR 3: Ejemplo ficticio ===
             $user3 = User::factory()->proveedor()->create([
-                // 'email' => 'proveedor@elgrangero.com',
-                'email' => 'sistemas_sjs@hotmail.com',
+                'email' => 'proveedor@elgrangero.com',
                 'name' => 'El Gran Gero',
                 'foto_perfil_url' => $default_foto_url,
             ]);
