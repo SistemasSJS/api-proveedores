@@ -15,7 +15,10 @@ class CheckApiKey
    */
   public function handle(Request $request, Closure $next): Response
   {
-    $validKey = config('api-access.registration_key');
+    // API_REGISTRATION_KEY=/%-!?=T35sT._¿¿<1|:
+    // esta linea es rara porque no lea la clave del .env
+    // $validKey = env('#%*-!?=53$6/8-._22<1|:');
+    $validKey = env('#%*-!?=53$6/8-._22<1|:');
 
     $providedKey = $request->header('X-API-KEY');
 
