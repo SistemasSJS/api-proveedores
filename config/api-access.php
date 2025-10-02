@@ -4,6 +4,18 @@ return [
 
   /*
     |--------------------------------------------------------------------------
+    | API Registration Key
+    |--------------------------------------------------------------------------
+    |
+    | Esta clave se utiliza para validar las peticiones de registro y otras
+    | operaciones sensibles de la API. Debe definirse en el archivo .env
+    |
+    */
+
+  'registration_key' => env('API_REGISTRATION_KEY', 'default_registration_key'),
+
+  /*
+    |--------------------------------------------------------------------------
     | Configuración de Rate Limiting
     |--------------------------------------------------------------------------
     |
