@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('construcc')
     // ->middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::CONSTUCC_APP->value])
-    // ->middleware(CheckApiKey::class)
+    ->middleware(CheckApiKey::class)
     // ->name('construcc.')
     ->group(function () {
 
