@@ -10,7 +10,6 @@ class ConstruccCotizacionResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'requisicion_id' => $this->requisicion_id,
             'fecha_cotizacion' => $this->fecha_cotizacion,
             'fecha_vencimiento' => $this->fecha_vencimiento,
             'total' => $this->total,

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\EstadoSolicitud;
 use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SolicitudPago extends BaseModel
 {
     use HasFactory, Filterable;
-    
+
     protected $table = 'solicitudes_pago';
 
     protected $fillable = [
@@ -24,12 +25,12 @@ class SolicitudPago extends BaseModel
         'residente',
         'cotizacion_id',
         'sucursal_id',
-        'fecha_registro_pendiente',
-        'fecha_inicio_procesamiento',
-        'fecha_confirmacion_pago',
-        'fecha_con_comprobante',
-        'fecha_rechazado',
-        'fecha_aprobado',
+        // 'fecha_registro_pendiente',
+        // 'fecha_inicio_procesamiento',
+        // 'fecha_confirmacion_pago',
+        // 'fecha_con_comprobante',
+        // 'fecha_rechazado',
+        // 'fecha_aprobado',
         'motivo_rechazo',
 
         // Nuevos campos
@@ -91,18 +92,32 @@ class SolicitudPago extends BaseModel
         'created_at'                 => 'datetime',
         'updated_at'                 => 'datetime',
 
-        // Nuevos campos
-        'dg'        => 'boolean',
+        // Nuevos campos como enum numérico
+        'dg'        => EstadoSolicitud::class,
         'dg_fecha'  => 'datetime',
-        'dt'        => 'boolean',
+        'dt'        => EstadoSolicitud::class,
         'dt_fecha'  => 'datetime',
-        'pc'        => 'boolean',
+        'pc'        => EstadoSolicitud::class,
         'pc_fecha'  => 'datetime',
-        'si'        => 'boolean',
+        'si'        => EstadoSolicitud::class,
         'si_fecha'  => 'datetime',
-        'ro'        => 'boolean',
+        'ro'        => EstadoSolicitud::class,
         'ro_fecha'  => 'datetime',
     ];
+
+    /** ----------------
+     * Eager loading disponible
+     * ----------------- */
+    public static function eagerLodable(): array
+    {
+        return [
+            'proveedor',
+            'sucursal',
+            'empresaConstrucc',
+            'cotizacion',
+        ];
+    }
+
     /** ----------------
      * Relaciones
      * ----------------- */
@@ -121,33 +136,40 @@ class SolicitudPago extends BaseModel
         return $this->belongsTo(EmpresaConstrucc::class, 'empresa_construcc_id');
     }
 
+
+    public function cotizacion(): BelongsTo
+    {
+        return $this->belongsTo(Cotizacion::class, 'cotizacion_id')->with('detalles');
+    }
+
     /** ----------------
      * Filtros básicos (ejemplo nuevos)
      * ----------------- */
     public function filterByDg($query, $value)
     {
-        return $query->where('dg', (bool) $value);
+        return $query->where('dg', $value instanceof EstadoSolicitud ? $value->value : $value);
     }
 
     public function filterByDt($query, $value)
     {
-        return $query->where('dt', (bool) $value);
+        return $query->where('dt', $value instanceof EstadoSolicitud ? $value->value : $value);
     }
 
     public function filterByPc($query, $value)
     {
-        return $query->where('pc', (bool) $value);
+        return $query->where('pc', $value instanceof EstadoSolicitud ? $value->value : $value);
     }
 
     public function filterBySi($query, $value)
     {
-        return $query->where('si', (bool) $value);
+        return $query->where('si', $value instanceof EstadoSolicitud ? $value->value : $value);
     }
 
     public function filterByRo($query, $value)
     {
-        return $query->where('ro', (bool) $value);
+        return $query->where('ro', $value instanceof EstadoSolicitud ? $value->value : $value);
     }
+
 
     /** ----------------
      * Filtros

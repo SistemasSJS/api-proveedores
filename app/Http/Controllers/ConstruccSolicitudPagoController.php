@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Enums\EstadoSP;
+use App\Http\Resources\Construcc\ConstruccSolicitudPagoListResource;
 use App\Http\Resources\SolicitudPago\SolicitudPagoResource;
 use App\Models\SolicitudPago;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
-class SPConstruccController extends Controller
+class ConstruccSolicitudPagoController extends Controller
 {
     /**
      * Listado paginado filtrado por empresa de construcción
@@ -22,7 +23,7 @@ class SPConstruccController extends Controller
         $perPage = $request->input('per_page', 10);
 
         $query = SolicitudPago::query()
-            ->with(['proveedor', 'empresaConstrucc'])
+            ->with(SolicitudPago::eagerLodable())
             ->filter($filters)
             ->orderBy($sortBy, $order);
 
@@ -35,7 +36,7 @@ class SPConstruccController extends Controller
 
         return $this->paginated(
             $paginator->setCollection(
-                SolicitudPagoResource::collection($paginator)->collection
+                ConstruccSolicitudPagoListResource::collection($paginator)->collection
             )
         );
     }
@@ -46,7 +47,7 @@ class SPConstruccController extends Controller
     public function show(SolicitudPago $solicitudPago): JsonResponse
     {
         return $this->success(
-            new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc']))
+            new ConstruccSolicitudPagoListResource($solicitudPago->load(SolicitudPago::eagerLodable()))
         );
     }
 
@@ -61,7 +62,7 @@ class SPConstruccController extends Controller
         ]);
 
         return $this->success(
-            new SolicitudPagoResource($solicitudPago->fresh()->load(['proveedor', 'empresaConstrucc'])),
+            new ConstruccSolicitudPagoListResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
             'Solicitud autorizada correctamente.'
         );
     }
@@ -82,7 +83,7 @@ class SPConstruccController extends Controller
         ]);
 
         return $this->success(
-            new SolicitudPagoResource($solicitudPago->fresh()->load(['proveedor', 'empresaConstrucc'])),
+            new ConstruccSolicitudPagoListResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
             'Solicitud rechazada correctamente.'
         );
     }
@@ -98,7 +99,7 @@ class SPConstruccController extends Controller
         ]);
 
         return $this->success(
-            new SolicitudPagoResource($solicitudPago->fresh()->load(['proveedor', 'empresaConstrucc'])),
+            new ConstruccSolicitudPagoListResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
             'Pago confirmado correctamente.'
         );
     }
@@ -121,7 +122,7 @@ class SPConstruccController extends Controller
         ]);
 
         return $this->success(
-            new SolicitudPagoResource($solicitudPago->fresh()->load(['proveedor', 'empresaConstrucc'])),
+            new ConstruccSolicitudPagoListResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
             'Comprobante de pago subido correctamente.'
         );
     }

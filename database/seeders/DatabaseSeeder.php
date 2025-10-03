@@ -8,10 +8,13 @@ class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
+     * Configurado para Los Mochis, Sinaloa, México
      */
     public function run(): void
     {
-        // Llamar al Seeder de Roles
+        // ====================================================================
+        // SEEDERS BASE (SIEMPRE SE EJECUTAN)
+        // ====================================================================
         $this->call([
             RoleSeeder::class,
             UserSeeder::class,
@@ -19,22 +22,63 @@ class DatabaseSeeder extends Seeder
         ]);
 
         if (config('app.debug')) {
+            // ================================================================
+            // SEEDERS DE DESARROLLO Y DATOS DE PRUEBA
+            // ================================================================
+            
+            // Seeders base para catálogos y proveedores
             $this->call([
+                // Empresas constructoras (requerido para SolicitudPago)
+                EmpresaConstruccSeeder::class,
+                
+                // Proveedores originales
                 ProveedorSeeder::class,
+                
+                // Catálogos básicos
                 SucursalSeeder::class,
                 UnidadMedidaSeeder::class,
                 CategoriaSeeder::class,
                 MarcaSeeder::class,
+                
+                // Productos (requerido para CotizacionDetalle)
                 ProductoSeeder::class,
+                
+                // Acceso rápido y cotizaciones originales
                 AccesoRapidoSeeder::class,
                 CotizacionesSeeder::class,
                 // PedidosSeeder::class,
             ]);
+            
+            // ================================================================
+            // SEEDERS SP (SOLICITUDES DE PAGO) - Los Mochis, Sinaloa
+            // ================================================================
+            // IMPORTANTE: Ejecutar en este orden específico
+            
+            $this->call([
+                // 1. Proveedores SP adicionales
+                ProveedoresSPSeeder::class,
+                
+                // 2. Cotizaciones para proveedores SP
+                CotizacionesSPSeeder::class,
+                
+                // 3. Detalles de cotizaciones SP
+                CotizacionDetalleSeeder::class,
+                
+                // 4. Solicitudes de pago basadas en cotizaciones
+                SolicitudPagoSeeder::class,
+            ]);
+            
+            echo "\n";
+            echo "\u2705 Seeders ejecutados correctamente para Los Mochis, Sinaloa, México\n";
+            echo "\ud83d\udccd Zona horaria configurada: America/Mazatlan\n";
+            echo "\ud83c\udfe2 Datos de proveedores SP y solicitudes de pago generados\n";
+            echo "\n";
         }
 
-        // Llamar al Seeder de Usuarios
+        // ====================================================================
+        // SEEDERS COMENTADOS (PARA REFERENCIA)
+        // ====================================================================
         // $this->call([UserSeeder::class]);
-
 
         // TipoEmpresa::factory()->count(10)->create();
         // Proveedor::factory()->count(10)->create();

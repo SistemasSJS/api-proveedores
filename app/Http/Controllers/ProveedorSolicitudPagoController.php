@@ -23,17 +23,16 @@ class ProveedorSolicitudPagoController extends Controller
     $order   = $request->input('order', 'desc');
     $perPage = $request->input('per_page', 10);
 
-    $query = SolicitudPago::query()
-      ->with(['proveedor', 'empresaConstrucc'])
-      ->where('proveedor_id', $proveedor->id)
+    $originalPaginator = SolicitudPago::query()
+      ->with(SolicitudPago::eagerLodable())
+      // ->where('proveedor_id', $proveedor->id)
       ->filter($filters)
-      ->orderBy($sortBy, $order);
+      ->orderBy($sortBy, $order)
+      ->paginate($perPage);
 
-    $paginator = $query->paginate($perPage);
+    $data = SolicitudPagoResource::collection($originalPaginator)->resolve();
 
-    $data = SolicitudPagoResource::collection($paginator)->resolve();
-
-    return $this->paginated($paginator->setCollection(collect($data)));
+    return $this->paginated($originalPaginator->setCollection(collect($data)));
   }
 
   /**

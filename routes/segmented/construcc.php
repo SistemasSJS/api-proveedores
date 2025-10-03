@@ -3,7 +3,7 @@
 use App\Enums\UserRoleEnumerate;
 use App\Http\Controllers\ConstruccController;
 use App\Http\Controllers\ConstruccCotizacionController;
-use App\Http\Controllers\SPConstruccController;
+use App\Http\Controllers\ConstruccSolicitudPagoController;
 use App\Http\Middleware\CheckApiKey;
 use Illuminate\Support\Facades\Route;
 
@@ -165,23 +165,23 @@ Route::prefix('construcc')
         Route::prefix('solicitudes-pago')->name('solicitudes-pago.')->group(function () {
 
             // Listado y detalle (solo lectura en ConstruccApp)
-            Route::get('/', [SPConstruccController::class, 'index'])->name('index');
-            Route::get('{solicitudPago}', [SPConstruccController::class, 'show'])->name('show');
+            Route::get('/', [ConstruccSolicitudPagoController::class, 'index'])->name('index');
+            Route::get('{solicitudPago}', [ConstruccSolicitudPagoController::class, 'show'])->name('show');
 
             // Gestión de archivos
-            Route::post('{solicitudPago}/comprobante', [SPConstruccController::class, 'subirComprobantePago'])->name('subir-comprobante');
-            Route::get('{solicitudPago}/comprobante/download', [SPConstruccController::class, 'descargarComprobante'])->name('descargar-comprobante');
-            Route::get('{solicitudPago}/factura-pdf/download', [SPConstruccController::class, 'descargarFacturaPdf'])->name('descargar-factura-pdf');
-            Route::get('{solicitudPago}/factura-xml/download', [SPConstruccController::class, 'descargarFacturaXml'])->name('descargar-factura-xml');
+            Route::post('{solicitudPago}/comprobante', [ConstruccSolicitudPagoController::class, 'subirComprobantePago'])->name('subir-comprobante');
+            Route::get('{solicitudPago}/comprobante/download', [ConstruccSolicitudPagoController::class, 'descargarComprobante'])->name('descargar-comprobante');
+            Route::get('{solicitudPago}/factura-pdf/download', [ConstruccSolicitudPagoController::class, 'descargarFacturaPdf'])->name('descargar-factura-pdf');
+            Route::get('{solicitudPago}/factura-xml/download', [ConstruccSolicitudPagoController::class, 'descargarFacturaXml'])->name('descargar-factura-xml');
 
             // Cambios de estatus válidos
-            Route::patch('{solicitudPago}/autorizar', [SPConstruccController::class, 'autorizar'])->name('autorizar');
-            Route::patch('{solicitudPago}/rechazar', [SPConstruccController::class, 'rechazar'])->name('rechazar');
-            Route::patch('{solicitudPago}/confirmar-pago', [SPConstruccController::class, 'confirmarPago'])->name('confirmar-pago');
+            Route::patch('{solicitudPago}/autorizar', [ConstruccSolicitudPagoController::class, 'autorizar'])->name('autorizar');
+            Route::patch('{solicitudPago}/rechazar', [ConstruccSolicitudPagoController::class, 'rechazar'])->name('rechazar');
+            Route::patch('{solicitudPago}/confirmar-pago', [ConstruccSolicitudPagoController::class, 'confirmarPago'])->name('confirmar-pago');
 
             // Endpoints auxiliares
-            Route::get('empresas-constructoras/search', [SPConstruccController::class, 'empresasConstructoras'])->name('empresas-search');
-            Route::get('estadisticas', [SPConstruccController::class, 'estadisticas'])->name('estadisticas');
+            Route::get('empresas-constructoras/search', [ConstruccSolicitudPagoController::class, 'empresasConstructoras'])->name('empresas-search');
+            Route::get('estadisticas', [ConstruccSolicitudPagoController::class, 'estadisticas'])->name('estadisticas');
         });
 
         /**
