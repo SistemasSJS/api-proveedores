@@ -25,7 +25,7 @@ class ProveedorSolicitudPagoController extends Controller
 
     $originalPaginator = SolicitudPago::query()
       ->with(SolicitudPago::eagerLodable())
-      // ->where('proveedor_id', $proveedor->id)
+      ->where('proveedor_id', $proveedor->id)
       ->filter($filters)
       ->orderBy($sortBy, $order)
       ->paginate($perPage);

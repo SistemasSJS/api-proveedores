@@ -21,59 +21,66 @@ class DatabaseSeeder extends Seeder
             TipoEmpresaSeeder::class,
         ]);
 
-        // if (config('app.debug')) {
-        // ================================================================
-        // SEEDERS DE DESARROLLO Y DATOS DE PRUEBA
-        // ================================================================
+        if (config('app.debug')) {
+            // ================================================================
+            // SEEDERS DE DESARROLLO Y DATOS DE PRUEBA
+            // ================================================================
 
-        // Seeders base para catálogos y proveedores
-        $this->call([
-            // Empresas constructoras (requerido para SolicitudPago)
-            EmpresaConstruccSeeder::class,
+            // Seeders base para catálogos y proveedores
+            $this->call([
+                // Empresas constructoras (requerido para SolicitudPago)
+                EmpresaConstruccSeeder::class,
 
-            // Proveedores originales
-            ProveedorSeeder::class,
+                // Proveedores originales
+                ProveedorSeeder::class,
+                ProveedoresSPSeeder::class,
+                // Empresas constructoras (requerido para SolicitudPago)
+                EmpresaConstruccSeeder::class,
 
-            // Catálogos básicos
-            SucursalSeeder::class,
-            UnidadMedidaSeeder::class,
-            CategoriaSeeder::class,
-            MarcaSeeder::class,
+                // Proveedores originales
+                ProveedorSeeder::class,
+                ProveedoresSPSeeder::class,
 
-            // Productos (requerido para CotizacionDetalle)
-            ProductoSeeder::class,
+                // Catálogos básicos
+                SucursalSeeder::class,
+                UnidadMedidaSeeder::class,
+                CategoriaSeeder::class,
+                MarcaSeeder::class,
 
-            // Acceso rápido y cotizaciones originales
-            AccesoRapidoSeeder::class,
-            CotizacionesSeeder::class,
-            // PedidosSeeder::class,
-        ]);
+                // Productos (requerido para CotizacionDetalle)
+                ProductoSeeder::class,
 
-        // ================================================================
-        // SEEDERS SP (SOLICITUDES DE PAGO) - Los Mochis, Sinaloa
-        // ================================================================
-        // IMPORTANTE: Ejecutar en este orden específico
+                // Acceso rápido y cotizaciones originales
+                AccesoRapidoSeeder::class,
+                CotizacionesSeeder::class,
+                // PedidosSeeder::class,
+            ]);
 
-        $this->call([
-            // 1. Proveedores SP adicionales
-            ProveedoresSPSeeder::class,
+            // ================================================================
+            // SEEDERS SP (SOLICITUDES DE PAGO) - Los Mochis, Sinaloa
+            // ================================================================
+            // IMPORTANTE: Ejecutar en este orden específico
 
-            // 2. Cotizaciones para proveedores SP
-            CotizacionesSPSeeder::class,
+            $this->call([
+                // 1. Proveedores SP adicionales
+                ProveedoresSPSeeder::class,
 
-            // 3. Detalles de cotizaciones SP
-            CotizacionDetalleSeeder::class,
+                // 2. Cotizaciones para proveedores SP
+                CotizacionesSPSeeder::class,
 
-            // 4. Solicitudes de pago basadas en cotizaciones
-            SolicitudPagoSeeder::class,
-        ]);
+                // 3. Detalles de cotizaciones SP
+                CotizacionDetalleSeeder::class,
 
-        echo "\n";
-        echo "\u2705 Seeders ejecutados correctamente para Los Mochis, Sinaloa, México\n";
-        echo "\ud83d\udccd Zona horaria configurada: America/Mazatlan\n";
-        echo "\ud83c\udfe2 Datos de proveedores SP y solicitudes de pago generados\n";
-        echo "\n";
-        // }
+                // 4. Solicitudes de pago basadas en cotizaciones
+                SolicitudPagoSeeder::class,
+            ]);
+
+            echo "\n";
+            echo "\u2705 Seeders ejecutados correctamente para Los Mochis, Sinaloa, México\n";
+            echo "\ud83d\udccd Zona horaria configurada: America/Mazatlan\n";
+            echo "\ud83c\udfe2 Datos de proveedores SP y solicitudes de pago generados\n";
+            echo "\n";
+        }
 
         // ====================================================================
         // SEEDERS COMENTADOS (PARA REFERENCIA)

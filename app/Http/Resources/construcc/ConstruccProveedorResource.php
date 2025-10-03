@@ -46,39 +46,39 @@ class ConstruccProveedorResource extends JsonResource
                 ? (preg_match('/^https?:\/\//', $this->logo) ? $this->logo : asset('storage/' . $this->logo))
                 : null,
 
-            // Información empresarial
-            'empresa' => [
-                'tipo_persona' => $this->tipo_persona,
-                'tipos_empresa_id' => $this->tipos_empresa_id,
-                'tipos_empresa_otro' => $this->tipos_empresa_otro,
-                'descripcion_giro' => $this->descripcion_giro_empresa,
-                'nombre_propietario' => $this->nombre_propietario,
-            ],
+            // // Información empresarial
+            // 'empresa' => [
+            //     'tipo_persona' => $this->tipo_persona,
+            //     'tipos_empresa_id' => $this->tipos_empresa_id,
+            //     'tipos_empresa_otro' => $this->tipos_empresa_otro,
+            //     'descripcion_giro' => $this->descripcion_giro_empresa,
+            //     'nombre_propietario' => $this->nombre_propietario,
+            // ],
 
             // Estado y clasificación
-            'estatus' => $this->estatus,
-            'principal' => $this->principal,
-            'calificacion' => $this->calificacion,
-            'categoria' => $this->categoria,
+            // 'estatus' => $this->estatus,
+            // 'principal' => $this->principal,
+            // 'calificacion' => $this->calificacion,
+            // 'categoria' => $this->categoria,
 
             // Estadísticas (solo cuando se cargan las relaciones)
-            'estadisticas' => $this->when($this->relationLoaded('productos'), function () {
-                return [
-                    'total_productos' => $this->productos_count ?? $this->productos->count(),
-                    'productos_activos' => $this->productos->where('activo', true)->count(),
-                    'productos_con_stock' => $this->productos->where('activo', true)->where('stock', '>', 0)->count(),
-                    'productos_destacados' => $this->productos->where('activo', true)->where('destacado', true)->count(),
-                ];
-            }),
+            // 'estadisticas' => $this->when($this->relationLoaded('productos'), function () {
+            //     return [
+            //         'total_productos' => $this->productos_count ?? $this->productos->count(),
+            //         'productos_activos' => $this->productos->where('activo', true)->count(),
+            //         'productos_con_stock' => $this->productos->where('activo', true)->where('stock', '>', 0)->count(),
+            //         'productos_destacados' => $this->productos->where('activo', true)->where('destacado', true)->count(),
+            //     ];
+            // }),
 
-            // Metadatos
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            // // Metadatos
+            // 'created_at' => $this->created_at,
+            // 'updated_at' => $this->updated_at,
 
             // Relaciones expandidas cuando se soliciten específicamente
-            'categorias' => ConstruccCategoriaResource::collection($this->whenLoaded('categorias')),
-            'marcas' => ConstruccMarcaResource::collection($this->whenLoaded('marcas')),
-            'unidades' => ConstruccUnidadResource::collection($this->whenLoaded('unidades')),
+            // 'categorias' => ConstruccCategoriaResource::collection($this->whenLoaded('categorias')),
+            // 'marcas' => ConstruccMarcaResource::collection($this->whenLoaded('marcas')),
+            // 'unidades' => ConstruccUnidadResource::collection($this->whenLoaded('unidades')),
         ];
     }
 

@@ -19,9 +19,10 @@ class CrearSolicitudPagoRequest extends FormRequest
             'factura_xml'            => 'required|file|mimes:xml|max:5120',
             'proveedor_id'           => 'required|exists:proveedores,id',
             // 'empresa_construcc_id'   => 'nullable|exists:empresa_construcc,id',
-            // 'empresa'                => 'required|string|max:255',
-            // 'residente'              => 'required|string|max:255',
-            // 'cotizacion_id'          => 'nullable|integer',
+            'empresa'                => 'nullable|string|max:255',
+            'residente'              => 'nullable|string|max:255',
+            'cotizacion_id'          => 'nullable|integer',
+            'monto_total'            => 'required|numeric|min:0', // <- agregado
         ];
     }
 
@@ -45,6 +46,9 @@ class CrearSolicitudPagoRequest extends FormRequest
             'residente.required'              => 'El nombre del residente es obligatorio',
             'residente.max'                   => 'El nombre del residente no debe exceder 255 caracteres',
             'cotizacion_id.integer'           => 'El ID de cotización debe ser un número entero',
+            'monto_total.required'            => 'El monto total es obligatorio',
+            'monto_total.numeric'             => 'El monto total debe ser un número válido',
+            'monto_total.min'                 => 'El monto total no puede ser negativo',
         ];
     }
 }

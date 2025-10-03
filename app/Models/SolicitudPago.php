@@ -32,6 +32,7 @@ class SolicitudPago extends BaseModel
         // 'fecha_rechazado',
         // 'fecha_aprobado',
         'motivo_rechazo',
+        'monto_total',
 
         // Nuevos campos
         'dg',
@@ -80,6 +81,8 @@ class SolicitudPago extends BaseModel
         'pc'                              => 'Pc',
         'si'                              => 'Si',
         'ro'                              => 'Ro',
+
+        //
     ];
 
     protected $casts = [

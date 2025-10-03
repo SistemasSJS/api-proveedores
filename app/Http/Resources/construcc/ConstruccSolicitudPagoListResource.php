@@ -13,9 +13,14 @@ class ConstruccSolicitudPagoListResource extends JsonResource
             'id'                     => $this->id,
             'numero_folio_solicitud' => $this->numero_folio_solicitud,
             'descripcion_concepto'   => $this->descripcion_concepto,
-            'cotizacion' => new ConstruccCotizacionResource($this->whenLoaded('cotizacion')),
-
+            'monto_total'            => $this->monto_total,
+            'proveedor'              => new ConstruccProveedorResource($this->whenLoaded('proveedor')),
+            'cotizacion'             => new ConstruccCotizacionResource($this->whenLoaded('cotizacion')),
             // Archivos con URLs correctas
+            'url_cotizacion_pdf' => $this->ruta_archivo_factura_pdf
+                ? route('construcc.solicitudes-pago.descargar-factura-pdf', $this->id)
+                : null,
+
             'url_comprobante_pago' => $this->ruta_archivo_comprobante_pago
                 ? route('construcc.solicitudes-pago.descargar-comprobante', $this->id)
                 : null,

@@ -215,6 +215,19 @@ Route::prefix('proveedores')
         });
 
 
+
+
+        /**
+         * GESTIÓN DE EMPRESAS DE CONSTRUCCIÓN
+         */
+        Route::prefix('{proveedor}/empresas-constructoras')->middleware(['proveedor.access'])->group(function () {
+            Route::get('/search', [EmpresaConstruccController::class, 'search'])->middleware(['audit']);
+            Route::get('/', [EmpresaConstruccController::class, 'index'])->middleware(['audit']);
+            Route::post('/', [EmpresaConstruccController::class, 'store'])->middleware(['audit']);
+            Route::get('/{empresaConstrucc}', [EmpresaConstruccController::class, 'show'])->middleware(['audit']);
+            Route::put('/{empresaConstrucc}', [EmpresaConstruccController::class, 'update'])->middleware(['audit']);
+            Route::delete('/{empresaConstrucc}', [EmpresaConstruccController::class, 'destroy'])->middleware(['audit']);
+        });
         /**
          * PEDIDOS DEL PROVEEDOR
          */
@@ -228,21 +241,4 @@ Route::prefix('proveedores')
         //     Route::patch('{pedido}/reject', [ProveedorPedidoController::class, 'rechazar'])->middleware(['audit'])->name('gerente.proveedor.pedidos.reject');
         //     Route::post('export', [ProveedorPedidoController::class, 'exportar'])->middleware(['audit'])->name('gerente.proveedor.pedidos.export');
         // });
-
-
-        /**
-         * GESTIÓN DE EMPRESAS DE CONSTRUCCIÓN
-         */
-        // Route::prefix('empresas-constructoras')
-        //     ->group(function () {
-        //         // Búsqueda de empresas para formularios
-        //         Route::get('/search', [EmpresaConstruccController::class, 'search'])->middleware(['audit']);
-
-        //         // CRUD completo
-        //         Route::get('/', [EmpresaConstruccController::class, 'index'])->middleware(['audit']);
-        //         Route::post('/', [EmpresaConstruccController::class, 'store'])->middleware(['audit']);
-        //         Route::get('/{empresaConstrucc}', [EmpresaConstruccController::class, 'show'])->middleware(['audit']);
-        //         Route::put('/{empresaConstrucc}', [EmpresaConstruccController::class, 'update'])->middleware(['audit']);
-        //         Route::delete('/{empresaConstrucc}', [EmpresaConstruccController::class, 'destroy'])->middleware(['audit']);
-        //     });
     });

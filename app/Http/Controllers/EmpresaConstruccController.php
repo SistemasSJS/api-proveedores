@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\EmpresaConstrucc;
+use App\Models\Proveedor;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -11,23 +12,24 @@ class EmpresaConstruccController extends Controller
     /**
      * Buscar empresas de construcción
      */
-    public function search(Request $request): JsonResponse
+    public function search(Request $request, Proveedor $proveedor): JsonResponse
     {
         $search = $request->input('search', '');
         $limit = $request->input('limit', 20);
-        
-        $query = EmpresaConstrucc::activo();
-        
+
+        // Solo empresas asociadas al proveedor
+        $query = $proveedor->empresas()->activo();
+
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nombre', 'LIKE', "%{$search}%")
-                  ->orWhere('razon_social', 'LIKE', "%{$search}%")
-                  ->orWhere('rfc', 'LIKE', "%{$search}%");
+                    ->orWhere('razon_social', 'LIKE', "%{$search}%")
+                    ->orWhere('rfc', 'LIKE', "%{$search}%");
             });
         }
-        
+
         $empresas = $query->limit($limit)->get();
-        
+
         return $this->success(
             $empresas->map(function ($empresa) {
                 return [
@@ -45,34 +47,34 @@ class EmpresaConstruccController extends Controller
             })
         );
     }
-    
+
     /**
-     * Display a listing of the resource.
+     * Listado con paginación
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request, Proveedor $proveedor): JsonResponse
     {
         $perPage = $request->input('per_page', 15);
         $search = $request->input('search', '');
-        
-        $query = EmpresaConstrucc::activo();
-        
+
+        $query = $proveedor->empresas()->activo();
+
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nombre', 'LIKE', "%{$search}%")
-                  ->orWhere('razon_social', 'LIKE', "%{$search}%")
-                  ->orWhere('rfc', 'LIKE', "%{$search}%");
+                    ->orWhere('razon_social', 'LIKE', "%{$search}%")
+                    ->orWhere('rfc', 'LIKE', "%{$search}%");
             });
         }
-        
+
         $empresas = $query->orderBy('nombre')->paginate($perPage);
-        
+
         return $this->paginated($empresas);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Crear empresa para un proveedor
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request, Proveedor $proveedor): JsonResponse
     {
         $request->validate([
             'nombre' => 'required|string|max:255',
@@ -86,25 +88,34 @@ class EmpresaConstruccController extends Controller
             'email' => 'nullable|email|max:255',
             'representante_legal' => 'nullable|string|max:255',
         ]);
-        
-        $empresa = EmpresaConstrucc::create($request->all());
-        
+
+        $empresa = $proveedor->empresas()->create($request->all());
+
         return $this->success($empresa, 'Empresa de construcción creada correctamente', 201);
     }
 
     /**
-     * Display the specified resource.
+     * Mostrar una empresa de un proveedor
      */
-    public function show(EmpresaConstrucc $empresaConstrucc): JsonResponse
+    public function show(Proveedor $proveedor, EmpresaConstrucc $empresaConstrucc): JsonResponse
     {
+        // Opcional: verificar que la empresa pertenece al proveedor
+        if ($empresaConstrucc->proveedor_id !== $proveedor->id) {
+            return $this->error('La empresa no pertenece a este proveedor', 403);
+        }
+
         return $this->success($empresaConstrucc);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Actualizar empresa de un proveedor
      */
-    public function update(Request $request, EmpresaConstrucc $empresaConstrucc): JsonResponse
+    public function update(Request $request, Proveedor $proveedor, EmpresaConstrucc $empresaConstrucc): JsonResponse
     {
+        if ($empresaConstrucc->proveedor_id !== $proveedor->id) {
+            return $this->error('La empresa no pertenece a este proveedor', 403);
+        }
+
         $request->validate([
             'nombre' => 'required|string|max:255',
             'rfc' => 'required|string|max:13|unique:empresa_construcc,rfc,' . $empresaConstrucc->id,
@@ -118,19 +129,23 @@ class EmpresaConstruccController extends Controller
             'representante_legal' => 'nullable|string|max:255',
             'activo' => 'boolean',
         ]);
-        
+
         $empresaConstrucc->update($request->all());
-        
+
         return $this->success($empresaConstrucc, 'Empresa de construcción actualizada correctamente');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Eliminar (desactivar) empresa de un proveedor
      */
-    public function destroy(EmpresaConstrucc $empresaConstrucc): JsonResponse
+    public function destroy(Proveedor $proveedor, EmpresaConstrucc $empresaConstrucc): JsonResponse
     {
+        if ($empresaConstrucc->proveedor_id !== $proveedor->id) {
+            return $this->error('La empresa no pertenece a este proveedor', 403);
+        }
+
         $empresaConstrucc->update(['activo' => false]);
-        
+
         return $this->success(null, 'Empresa de construcción desactivada correctamente');
     }
 }
