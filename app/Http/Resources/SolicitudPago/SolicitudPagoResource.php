@@ -25,6 +25,19 @@ class SolicitudPagoResource extends JsonResource
             'ruta_archivo_factura_pdf'    => $this->ruta_archivo_factura_pdf,
             'ruta_archivo_comprobante_pago' => $this->ruta_archivo_comprobante_pago,
 
+            // Archivos con URLs correctas
+            'url_comprobante_pago' => $this->ruta_archivo_comprobante_pago
+                ? route('construcc.solicitudes-pago.descargar-comprobante', $this->id)
+                : null,
+
+            'url_factura_pdf' => $this->ruta_archivo_factura_pdf
+                ? route('construcc.solicitudes-pago.descargar-factura-pdf', $this->id)
+                : null,
+
+            'url_factura_xml' => $this->ruta_archivo_factura_xml
+                ? route('construcc.solicitudes-pago.descargar-factura-xml', $this->id)
+                : null,
+
             // Fechas principales
             'fecha_registro_pendiente'    => $this->fecha_registro_pendiente?->format('Y-m-d H:i:s'),
             'fecha_inicio_procesamiento'  => $this->fecha_inicio_procesamiento?->format('Y-m-d H:i:s'),

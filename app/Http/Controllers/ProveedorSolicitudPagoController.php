@@ -146,18 +146,51 @@ class ProveedorSolicitudPagoController extends Controller
   }
 
   /**
-   * Descargar comprobante
+   * Descargar factura PDF
    */
-  public function descargarComprobante(Proveedor $proveedor, SolicitudPago $solicitudPago)
+  public function descargarFacturaPdf(Proveedor $proveedor, SolicitudPago $solicitudPago)
   {
     if ($solicitudPago->proveedor_id !== $proveedor->id) {
       return $this->error('Solicitud no pertenece a este proveedor', 403);
     }
 
-    if (
-      !$solicitudPago->ruta_archivo_comprobante_pago ||
-      !Storage::disk('private')->exists($solicitudPago->ruta_archivo_comprobante_pago)
-    ) {
+    if (!$solicitudPago->ruta_archivo_factura_pdf || !Storage::disk('private')->exists($solicitudPago->ruta_archivo_factura_pdf)) {
+      return $this->error('Factura PDF no disponible', 404);
+    }
+
+    return response()->download(
+      Storage::disk('private')->path($solicitudPago->ruta_archivo_factura_pdf)
+    );
+  }
+
+  /**
+   * Descargar factura XML
+   */
+  public function descargarFacturaXml(Proveedor $proveedor, SolicitudPago $solicitudPago)
+  {
+    if ($solicitudPago->proveedor_id !== $proveedor->id) {
+      return $this->error('Solicitud no pertenece a este proveedor', 403);
+    }
+
+    if (!$solicitudPago->ruta_archivo_factura_xml || !Storage::disk('private')->exists($solicitudPago->ruta_archivo_factura_xml)) {
+      return $this->error('Factura XML no disponible', 404);
+    }
+
+    return response()->download(
+      Storage::disk('private')->path($solicitudPago->ruta_archivo_factura_xml)
+    );
+  }
+
+  /**
+   * Descargar comprobante de pago
+   */
+  public function descargarComprobantePago(Proveedor $proveedor, SolicitudPago $solicitudPago)
+  {
+    if ($solicitudPago->proveedor_id !== $proveedor->id) {
+      return $this->error('Solicitud no pertenece a este proveedor', 403);
+    }
+
+    if (!$solicitudPago->ruta_archivo_comprobante_pago || !Storage::disk('private')->exists($solicitudPago->ruta_archivo_comprobante_pago)) {
       return $this->error('Comprobante no disponible', 404);
     }
 
@@ -165,6 +198,7 @@ class ProveedorSolicitudPagoController extends Controller
       Storage::disk('private')->path($solicitudPago->ruta_archivo_comprobante_pago)
     );
   }
+
 
   /**
    * Autorizar

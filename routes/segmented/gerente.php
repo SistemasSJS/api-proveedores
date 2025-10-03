@@ -204,13 +204,16 @@ Route::prefix('proveedores')
             // Subir comprobante
             Route::post('/{solicitudPago}/subir-comprobante', [ProveedorSolicitudPagoController::class, 'subirComprobantePago'])->middleware(['audit']);
 
-            // Descargar comprobante (solo usuarios autorizados)
-            Route::get('/{solicitudPago}/descargar-comprobante', [ProveedorSolicitudPagoController::class, 'descargarComprobante'])->middleware(['audit']);
+            // Descargar archivos (solo usuarios autorizados)
+            Route::get('/{solicitudPago}/descargar-comprobante', [ProveedorSolicitudPagoController::class, 'descargarComprobantePago'])->middleware(['audit']);
+            Route::get('/{solicitudPago}/descargar-factura-pdf', [ProveedorSolicitudPagoController::class, 'descargarFacturaPdf'])->middleware(['audit']);
+            Route::get('/{solicitudPago}/descargar-factura-xml', [ProveedorSolicitudPagoController::class, 'descargarFacturaXml'])->middleware(['audit']);
 
             // Cambiar estado
             Route::post('/{solicitudPago}/confirmar-pago', [ProveedorSolicitudPagoController::class, 'confirmarPagoSP'])->middleware(['audit']);
             Route::post('/{solicitudPago}/procesando', [ProveedorSolicitudPagoController::class, 'procesando'])->middleware(['audit']);
         });
+
 
         /**
          * PEDIDOS DEL PROVEEDOR
