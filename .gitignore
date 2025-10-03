@@ -305,3 +305,4 @@ respaldo_*.zip
 routes/segmented/construcc.php
 docs/
 storage/logs/*
+storage/logs/audit.log
