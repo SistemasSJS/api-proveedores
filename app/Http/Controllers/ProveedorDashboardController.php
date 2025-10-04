@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\EstadoCotizacion;
 use App\Enums\EstadoGeneral;
-use App\Http\Resources\ProveedorDashboard\ProveedorDashboardCotizacionResource;
+use App\Http\Resources\Proveedor\ProveedorDashboardCotizacionResource;
 use App\Models\Cotizacion;
 use App\Models\Proveedor;
 use App\Traits\ApiResponse;

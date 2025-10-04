@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\EstadoSP;
-use App\Http\Resources\Construcc\ConstruccSolicitudPagoListResource;
+use App\Http\Resources\Construcc\ConstruccSolicitudPagoResource;
 use App\Http\Resources\SolicitudPago\SolicitudPagoResource;
 use App\Models\SolicitudPago;
 use Illuminate\Http\JsonResponse;
@@ -36,7 +36,7 @@ class ConstruccSolicitudPagoController extends Controller
 
         return $this->paginated(
             $paginator->setCollection(
-                ConstruccSolicitudPagoListResource::collection($paginator)->collection
+                ConstruccSolicitudPagoResource::collection($paginator)->collection
             )
         );
     }
@@ -47,55 +47,10 @@ class ConstruccSolicitudPagoController extends Controller
     public function show(SolicitudPago $solicitudPago): JsonResponse
     {
         return $this->success(
-            new ConstruccSolicitudPagoListResource($solicitudPago->load(SolicitudPago::eagerLodable()))
+            new ConstruccSolicitudPagoResource($solicitudPago->load(SolicitudPago::eagerLodable()))
         );
     }
 
-    /**
-     * Manejo de las validaciondes para los cambios de estado de las SP
-     * 
-     * Estastus globla: PENDIENTE, RECHAZADA, PAGADO
-     * Estastus por rol: DG, DT, CO, SI, DA, RO.
-     *  - Cada uno maneja diferentes estados y un campo de fecha para cuando se realiza la acción.
-     *  PENDIENTE: Estatus default al crear la SP por el proveedor.
-     *     - LOS ROLES [DG, DT, CO, SI] pueden autorizar la SP.
-     *     - El estatus se mantiene...
-     *  RECHAZADA: La empresa constructora puede rechazar la SP, debe proporcionar un motivo. 
-     * 
-     * 
-     * Estados por rol:  
-     *  
-     * 
-     * 
-     * 
-     * 
-     * 
-     */
-
-    /**
-     * Autorizar una solicitud.
-     * Solo es permitido si la SP está en estado PENDIENTE.
-     * Dependiendo del rol del usuario, se actualiza el campo correspondiente y se establece la fecha actual.
-     * los roles que pueden autorizar son: DG, DT, CO, SI.
-     * Manejo de las validaciondes para los cambios de estado de las SP
-     * 
-     * Estastus globla: PENDIENTE, RECHAZADA, PAGADO
-     * Estastus por rol: DG, DT, CO, SI, DA, RO.
-     *  - Cada uno maneja diferentes estados y un campo de fecha para cuando se realiza la acción.
-     *  PENDIENTE: Estatus default al crear la SP por el proveedor.
-     *     - LOS ROLES [DG, DT, CO, SI] pueden autorizar la SP.
-     *     - El estatus se mantiene...
-     *  RECHAZADA: La empresa constructora puede rechazar la SP, debe proporcionar un motivo. 
-     * 
-     * 
-     * Estados por rol:  
-     *  
-     * 
-     * 
-     * 
-     * 
-     * 
-     */
 
     /**
      * Autorizar una solicitud.
@@ -111,7 +66,7 @@ class ConstruccSolicitudPagoController extends Controller
         ]);
 
         return $this->success(
-            new ConstruccSolicitudPagoListResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
+            new ConstruccSolicitudPagoResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
             'Solicitud autorizada correctamente.'
         );
     }
@@ -132,7 +87,7 @@ class ConstruccSolicitudPagoController extends Controller
         ]);
 
         return $this->success(
-            new ConstruccSolicitudPagoListResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
+            new ConstruccSolicitudPagoResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
             'Solicitud rechazada correctamente.'
         );
     }
@@ -153,7 +108,7 @@ class ConstruccSolicitudPagoController extends Controller
         ]);
 
         return $this->success(
-            new ConstruccSolicitudPagoListResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
+            new ConstruccSolicitudPagoResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
             'Pago confirmado correctamente.'
         );
     }
@@ -176,7 +131,7 @@ class ConstruccSolicitudPagoController extends Controller
         ]);
 
         return $this->success(
-            new ConstruccSolicitudPagoListResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
+            new ConstruccSolicitudPagoResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
             'Comprobante de pago subido correctamente.'
         );
     }

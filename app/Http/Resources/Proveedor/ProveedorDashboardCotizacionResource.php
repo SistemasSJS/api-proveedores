@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources\ProveedorDashboard;
+namespace App\Http\Resources\Proveedor;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
