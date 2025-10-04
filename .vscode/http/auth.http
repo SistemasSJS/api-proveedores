@@ -1,0 +1,111 @@
+
+###
+# CONFIGURACIÓN GLOBAL PARA PRUEBAS API
+ Variables y configuración común para todos los endpoints
+##
+# @baseUrl = http://localhost:8080/api
+@baseUrl = https://apicons.ddns.net:8092/api
+@contentType = application/json
+@acceptType = application/json
+
+
+### Variables de autenticación (actualizar con tokens reales)
+@authToken = 
+@adminToken = 
+@gerenteToken = 
+@clienteToken = 
+
+
+### Variables de IDs comunes (actualizar según tu base de datos)
+@userId = 1
+@proveedorId = 1
+@productoId = 1
+@pedidoId = 1
+@categoriaId = 1
+@marcaId = 1
+@sucursalId = 1
+
+
+### Headers comunes
+@commonHeaders = Content-Type: {{contentType}}
+Accept: {{acceptType}}
+
+### Login - Obtener token de acceso
+# @name login
+POST {{baseUrl}}/auth/login
+{{commonHeaders}}
+
+{
+  "email": "proveedor@elgrangero.com",
+  "password": "password"
+}
+
+### Login - Obtener token de acceso
+# @name login
+POST {{baseUrl}}/auth/login
+{{commonHeaders}}
+
+{
+  "email": "constucc@constucc.com.mx",
+  "password": "123456"
+}
+
+
+### Extraer token del response del login
+@authToken = {{login.response.body.data.token}}
+
+
+### Obtener información del usuario autenticado
+GET {{baseUrl}}/auth/me
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+
+### Refresh token
+POST {{baseUrl}}/auth/refresh
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+
+### Logout
+POST {{baseUrl}}/auth/logout
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+
+###
+# REGISTRO DE USUARIOS (si está habilitado)
+###
+POST {{baseUrl}}/auth/register
+{{commonHeaders}}
+
+{
+  "name": "Usuario de Prueba",
+  "email": "prueba@test.com",
+  "password": "password123",
+  "password_confirmation": "password123",
+  "role_id": 3
+}
+
+
+###
+# RECUPERACIÓN DE CONTRASEÑA
+###
+POST {{baseUrl}}/auth/password/email
+{{commonHeaders}}
+
+{
+  "email": "usuario@test.com"
+}
+
+
+### Reset contraseña con token
+POST {{baseUrl}}/auth/password/reset
+{{commonHeaders}}
+
+{
+  "token": "reset-token-here",
+  "email": "usuario@test.com",
+  "password": "nueva_password",
+  "password_confirmation": "nueva_password"
+}

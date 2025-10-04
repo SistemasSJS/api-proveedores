@@ -1,0 +1,505 @@
+###
+# RUTAS ESPECÍFICAS PARA ROL: ADMINISTRADOR
+# Estas rutas solo son accesibles para usuarios con rol ADMINISTRADOR
+###
+###
+# CONFIGURACIÓN GLOBAL PARA PRUEBAS API
+# Variables y configuración común para todos los endpoints
+###
+
+@baseUrl = http://localhost:8000/api
+@contentType = application/json
+@acceptType = application/json
+
+### Variables de autenticación (actualizar con tokens reales)
+@authToken = 
+@adminToken = 
+@gerenteToken = 
+@clienteToken = 
+
+### Variables de IDs comunes (actualizar según tu base de datos)
+@userId = 1
+@proveedorId = 1
+@productoId = 1
+@pedidoId = 1
+@categoriaId = 1
+@marcaId = 1
+@sucursalId = 1
+
+### Headers comunes
+@commonHeaders = Content-Type: {{contentType}}
+Accept: {{acceptType}}
+
+
+
+###
+# GESTIÓN GENERAL DE USUARIOS
+###
+### Listar todos los usuarios
+GET {{baseUrl}}/admin/usuarios
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Crear nuevo usuario
+POST {{baseUrl}}/admin/usuarios
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "name": "Nuevo Usuario Admin",
+  "email": "nuevo@admin.com",
+  "password": "password123",
+  "role_id": 1,
+  "status": "activo"
+}
+
+### Ver usuario específico
+GET {{baseUrl}}/admin/usuarios/{{userId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Actualizar usuario
+PUT {{baseUrl}}/admin/usuarios/{{userId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "name": "Usuario Actualizado",
+  "email": "actualizado@admin.com",
+  "role_id": 2,
+  "status": "activo"
+}
+
+### Eliminar usuario
+DELETE {{baseUrl}}/admin/usuarios/{{userId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+###
+# GESTIÓN DE CATÁLOGOS MAESTROS
+###
+
+### ---- PROVEEDORES ----
+
+### Listar proveedores
+GET {{baseUrl}}/admin/catalogos/proveedores
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Crear proveedor
+POST {{baseUrl}}/admin/catalogos/proveedores
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "nombre": "Nuevo Proveedor SA",
+  "rfc": "NPR123456789",
+  "razon_social": "Nuevo Proveedor SA de CV",
+  "direccion": "Av. Comercial 123",
+  "telefono": "555-123-4567",
+  "email": "contacto@nuevoproveedor.com",
+  "activo": true
+}
+
+### Ver proveedor específico
+GET {{baseUrl}}/admin/catalogos/proveedores/{{proveedorId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Actualizar proveedor
+PUT {{baseUrl}}/admin/catalogos/proveedores/{{proveedorId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "nombre": "Proveedor Actualizado SA",
+  "telefono": "555-987-6543",
+  "activo": true
+}
+
+### Eliminar proveedor
+DELETE {{baseUrl}}/admin/catalogos/proveedores/{{proveedorId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Ver productos del proveedor
+GET {{baseUrl}}/admin/catalogos/proveedores/{{proveedorId}}/productos
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### ---- SUCURSALES ----
+
+### Listar sucursales
+GET {{baseUrl}}/admin/catalogos/sucursales
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Crear sucursal
+POST {{baseUrl}}/admin/catalogos/sucursales
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "nombre": "Sucursal Norte",
+  "proveedor_id": {{proveedorId}},
+  "direccion": "Av. Norte 456",
+  "telefono": "555-111-2222",
+  "email": "norte@proveedor.com",
+  "activo": true
+}
+
+### Ver sucursales agrupadas por proveedor
+GET {{baseUrl}}/admin/catalogos/sucursales/groupedByProveedor
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Ver sucursal específica
+GET {{baseUrl}}/admin/catalogos/sucursales/{{sucursalId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Actualizar sucursal
+PATCH {{baseUrl}}/admin/catalogos/sucursales/{{sucursalId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "nombre": "Sucursal Norte Actualizada",
+  "telefono": "555-333-4444"
+}
+
+### Eliminar sucursal
+DELETE {{baseUrl}}/admin/catalogos/sucursales/{{sucursalId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### ---- PRODUCTOS ----
+
+### Listar productos
+GET {{baseUrl}}/admin/catalogos/productos
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Crear producto
+POST {{baseUrl}}/admin/catalogos/productos
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "sku": "ADMIN-001",
+  "nombre": "Producto Admin",
+  "descripcion": "Producto creado por admin",
+  "precio_base": 200.00,
+  "precio_mayoreo": 180.00,
+  "precio_menudeo": 220.00,
+  "proveedor_id": {{proveedorId}},
+  "categoria_id": {{categoriaId}},
+  "marca_id": {{marcaId}},
+  "stock": 50,
+  "activo": true
+}
+
+### Ver producto específico
+GET {{baseUrl}}/admin/catalogos/productos/{{productoId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Actualizar producto
+PUT {{baseUrl}}/admin/catalogos/productos/{{productoId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "nombre": "Producto Admin Actualizado",
+  "precio_base": 210.00,
+  "stock": 45
+}
+
+### Eliminar producto
+DELETE {{baseUrl}}/admin/catalogos/productos/{{productoId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### ---- IMÁGENES ----
+
+### Listar imágenes
+GET {{baseUrl}}/admin/catalogos/imagenes
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Crear imagen
+POST {{baseUrl}}/admin/catalogos/imagenes
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "producto_id": {{productoId}},
+  "url": "https://example.com/imagen.jpg",
+  "nombre": "Imagen principal",
+  "es_principal": true,
+  "activo": true
+}
+
+### Ver imagen específica
+GET {{baseUrl}}/admin/catalogos/imagenes/1
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Actualizar imagen
+PATCH {{baseUrl}}/admin/catalogos/imagenes/1
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "nombre": "Imagen actualizada",
+  "es_principal": false
+}
+
+### Eliminar imagen
+DELETE {{baseUrl}}/admin/catalogos/imagenes/1
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### ---- UNIDADES DE MEDIDA ----
+
+### Listar unidades de medida
+GET {{baseUrl}}/admin/catalogos/unidades-medida
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Crear unidad de medida
+POST {{baseUrl}}/admin/catalogos/unidades-medida
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "nombre": "Metro cúbico",
+  "abreviacion": "m³",
+  "activo": true
+}
+
+### Ver unidad de medida específica
+GET {{baseUrl}}/admin/catalogos/unidades-medida/1
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Actualizar unidad de medida
+PATCH {{baseUrl}}/admin/catalogos/unidades-medida/1
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "nombre": "Metro cúbico actualizado",
+  "abreviacion": "m³"
+}
+
+### Eliminar unidad de medida
+DELETE {{baseUrl}}/admin/catalogos/unidades-medida/1
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### ---- CATEGORÍAS ----
+
+### Listar categorías
+GET {{baseUrl}}/admin/catalogos/categorias
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Crear categoría
+POST {{baseUrl}}/admin/catalogos/categorias
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "nombre": "Nueva Categoría",
+  "descripcion": "Descripción de la nueva categoría",
+  "activo": true,
+  "parent_id": null
+}
+
+### Ver categoría específica
+GET {{baseUrl}}/admin/catalogos/categorias/{{categoriaId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Actualizar categoría
+PUT {{baseUrl}}/admin/catalogos/categorias/{{categoriaId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "nombre": "Categoría Actualizada",
+  "descripcion": "Descripción actualizada"
+}
+
+### Eliminar categoría
+DELETE {{baseUrl}}/admin/catalogos/categorias/{{categoriaId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### ---- MARCAS ----
+
+### Listar marcas
+GET {{baseUrl}}/admin/catalogos/marcas
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Crear marca
+POST {{baseUrl}}/admin/catalogos/marcas
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "nombre": "Nueva Marca",
+  "descripcion": "Descripción de la nueva marca",
+  "logo": "https://example.com/logo.png",
+  "activo": true
+}
+
+### Ver marca específica
+GET {{baseUrl}}/admin/catalogos/marcas/{{marcaId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Actualizar marca
+PATCH {{baseUrl}}/admin/catalogos/marcas/{{marcaId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "nombre": "Marca Actualizada",
+  "descripcion": "Descripción actualizada"
+}
+
+### Eliminar marca
+DELETE {{baseUrl}}/admin/catalogos/marcas/{{marcaId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### ---- TIPOS DE EMPRESA ----
+
+### Listar tipos de empresa
+GET {{baseUrl}}/admin/catalogos/tipos-empresa
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Crear tipo de empresa
+POST {{baseUrl}}/admin/catalogos/tipos-empresa
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "nombre": "Cooperativa",
+  "descripcion": "Empresa cooperativa",
+  "activo": true
+}
+
+### Ver tipo de empresa específico
+GET {{baseUrl}}/admin/catalogos/tipos-empresa/1
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Actualizar tipo de empresa
+PUT {{baseUrl}}/admin/catalogos/tipos-empresa/1
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "nombre": "Cooperativa Actualizada",
+  "descripcion": "Empresa cooperativa actualizada"
+}
+
+### Eliminar tipo de empresa
+DELETE {{baseUrl}}/admin/catalogos/tipos-empresa/1
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+###
+# GESTIÓN ADMINISTRATIVA DE PEDIDOS
+###
+
+### Listar todos los pedidos (admin)
+GET {{baseUrl}}/admin/pedidos
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Estadísticas generales de pedidos
+GET {{baseUrl}}/admin/pedidos/stats
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Forzar cambio de estatus de pedido
+PATCH {{baseUrl}}/admin/pedidos/{{pedidoId}}/force-status
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "status": "entregado",
+  "motivo": "Ajuste administrativo",
+  "observaciones": "Forzado por administrador"
+}
+
+### Eliminar pedido (admin)
+DELETE {{baseUrl}}/admin/pedidos/{{pedidoId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Reportes avanzados de pedidos
+GET {{baseUrl}}/admin/pedidos/reports?tipo=ventas&fecha_inicio=2025-01-01&fecha_fin=2025-12-31
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Auditoría de pedido
+GET {{baseUrl}}/admin/pedidos/{{pedidoId}}/audit
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+###
+# DASHBOARD ADMINISTRATIVO
+###
+
+### Resumen de catálogos
+GET {{baseUrl}}/admin/dashboard/catalogos-resumen
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Estadísticas completas
+GET {{baseUrl}}/admin/dashboard/stats-completas
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Métricas de rendimiento
+GET {{baseUrl}}/admin/dashboard/metricas-rendimiento
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+###
+# INTEGRACIÓN CON SERVICIOS EXTERNOS
+###
+
+### Sincronizar con sistema de facturación
+POST {{baseUrl}}/admin/integracion/pedidos/{{pedidoId}}/sync-billing
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Generar factura automática
+POST {{baseUrl}}/admin/integracion/pedidos/{{pedidoId}}/generate-invoice
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "tipo_factura": "fiscal",
+  "metodo_pago": "transferencia"
+}
+
+### Confirmación de pago
+POST {{baseUrl}}/admin/integracion/pedidos/{{pedidoId}}/payment-confirmed
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "monto": 1500.00,
+  "fecha_pago": "2025-08-23",
+  "referencia": "PAY123456",
+  "metodo_pago": "transferencia"
+}

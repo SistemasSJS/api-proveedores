@@ -1,0 +1,65 @@
+###
+# 🔄 PRUEBA ESPECÍFICA DEL REFRESH TOKEN
+# Este archivo prueba la funcionalidad del refresh token paso a paso
+###
+
+@baseUrl = http://localhost:8000/api
+@contentType = application/json
+
+### 1. Login inicial para obtener un token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "email": "admin@test.com",
+  "password": "password"
+}
+
+### 2. Extraer el token del login
+@authToken = {{login.response.body.access_token}}
+
+### 3. Verificar que el token funciona - obtener información del usuario
+GET {{baseUrl}}/auth/me
+Content-Type: {{contentType}}
+Accept: application/json
+Authorization: Bearer {{authToken}}
+
+### 4. REFRESH TOKEN - Renovar el token actual
+# @name refresh
+POST {{baseUrl}}/auth/refresh
+Content-Type: {{contentType}}
+Accept: application/json
+Authorization: Bearer {{authToken}}
+
+### 5. Extraer el nuevo token del response del refresh
+@newToken = {{refresh.response.body.token}}
+
+### 6. Verificar que el nuevo token funciona correctamente
+GET {{baseUrl}}/auth/me
+Content-Type: {{contentType}}
+Accept: application/json
+Authorization: Bearer {{newToken}}
+
+### 7. Intentar usar el token anterior (debería fallar)
+GET {{baseUrl}}/auth/me
+Content-Type: {{contentType}}
+Accept: application/json
+Authorization: Bearer {{authToken}}
+
+### 8. Logout con el nuevo token
+POST {{baseUrl}}/auth/logout
+Content-Type: {{contentType}}
+Accept: application/json
+Authorization: Bearer {{newToken}}
+
+###
+# 🎯 RESULTADOS ESPERADOS:
+# 1. Login: Debe devolver un token válido
+# 2. GET me con token original: Debe funcionar correctamente
+# 3. Refresh: Debe devolver un nuevo token válido
+# 4. GET me con nuevo token: Debe funcionar correctamente
+# 5. GET me con token anterior: Debe fallar (401 Unauthorized)
+# 6. Logout: Debe cerrar sesión correctamente
+###

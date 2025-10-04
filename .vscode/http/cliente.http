@@ -1,0 +1,198 @@
+###
+# RUTAS ESPECÍFICAS PARA ROL: CLIENTE
+# Estas rutas solo son accesibles para usuarios con rol CLIENTE
+###
+
+###
+# GESTIÓN DE PEDIDOS (CLIENTE)
+###
+
+### Listar pedidos del cliente
+GET {{baseUrl}}/cliente/pedidos
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+### Crear nuevo pedido
+POST {{baseUrl}}/cliente/pedidos
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+{
+  "productos": [
+    {
+      "producto_id": 1,
+      "cantidad": 5,
+      "precio_unitario": 100.50
+    },
+    {
+      "producto_id": 2,
+      "cantidad": 3,
+      "precio_unitario": 250.00
+    }
+  ],
+  "observaciones": "Pedido urgente para el viernes",
+  "fecha_entrega_deseada": "2025-08-30"
+}
+
+### Ver pedido específico
+GET {{baseUrl}}/cliente/pedidos/{{pedidoId}}
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+### Actualizar status del pedido
+PATCH {{baseUrl}}/cliente/pedidos/{{pedidoId}}/status
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+{
+  "status": "confirmado",
+  "observaciones": "Pedido confirmado por el cliente"
+}
+
+### Cancelar pedido
+PATCH {{baseUrl}}/cliente/pedidos/{{pedidoId}}/cancel
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+{
+  "motivo_cancelacion": "Ya no se necesita el pedido"
+}
+
+### Duplicar pedido existente
+POST {{baseUrl}}/cliente/pedidos/{{pedidoId}}/duplicate
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+### Confirmar recepción del pedido
+PATCH {{baseUrl}}/cliente/pedidos/{{pedidoId}}/confirm-reception
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+{
+  "fecha_recepcion": "2025-08-25",
+  "observaciones_recepcion": "Pedido recibido en perfectas condiciones"
+}
+
+### Obtener estadísticas de pedidos
+GET {{baseUrl}}/cliente/pedidos/estadisticas
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+### Exportar pedidos
+POST {{baseUrl}}/cliente/pedidos/export
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+{
+  "formato": "xlsx",
+  "fecha_inicio": "2025-01-01",
+  "fecha_fin": "2025-12-31",
+  "status": ["confirmado", "entregado"]
+}
+
+### Generar PDF del pedido
+GET {{baseUrl}}/cliente/pedidos/{{pedidoId}}/pdf
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+### Descargar comprobante del pedido
+GET {{baseUrl}}/cliente/pedidos/{{pedidoId}}/receipt
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+###
+# DASHBOARD CLIENTE
+###
+
+### Estadísticas del dashboard cliente
+GET {{baseUrl}}/cliente/dashboard/stats
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+### Resumen de gastos
+GET {{baseUrl}}/cliente/dashboard/resumen-gastos
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+###
+# REPORTES CLIENTE
+###
+
+### Reporte de mis pedidos
+GET {{baseUrl}}/cliente/reportes/mis-pedidos?fecha_inicio=2025-01-01&fecha_fin=2025-12-31
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+###
+# RUTAS GLOBALES DE PEDIDOS (COMPATIBILIDAD)
+###
+
+### Listar pedidos (ruta de compatibilidad)
+GET {{baseUrl}}/pedidos
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+### Crear pedido (ruta de compatibilidad)
+POST {{baseUrl}}/pedidos
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+{
+  "productos": [
+    {
+      "producto_id": 1,
+      "cantidad": 2,
+      "precio_unitario": 150.00
+    }
+  ],
+  "observaciones": "Pedido de prueba"
+}
+
+### Ver pedido (ruta de compatibilidad)
+GET {{baseUrl}}/pedidos/{{pedidoId}}
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+### Eliminar pedido (ruta de compatibilidad)
+DELETE {{baseUrl}}/pedidos/{{pedidoId}}
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+### Actualizar status (ruta de compatibilidad)
+PATCH {{baseUrl}}/pedidos/{{pedidoId}}/status
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+{
+  "status": "en_proceso"
+}
+
+### Cancelar pedido (ruta de compatibilidad)
+PATCH {{baseUrl}}/pedidos/{{pedidoId}}/cancel
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+### Duplicar pedido (ruta de compatibilidad)
+POST {{baseUrl}}/pedidos/{{pedidoId}}/duplicate
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+### Confirmar recepción (ruta de compatibilidad)
+PATCH {{baseUrl}}/pedidos/{{pedidoId}}/confirm-reception
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+### Estadísticas (ruta de compatibilidad)
+GET {{baseUrl}}/pedidos/estadisticas
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+### Exportar (ruta de compatibilidad)
+POST {{baseUrl}}/pedidos/export
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+{
+  "formato": "pdf",
+  "incluir_detalles": true
+}

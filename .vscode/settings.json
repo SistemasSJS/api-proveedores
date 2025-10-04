@@ -1,0 +1,20 @@
+{
+	"rest-client.environmentVariables": {
+		"$shared": {
+			"contentType": "application/json",
+			"acceptType": "application/json"
+		},
+		"dev": {
+			"baseUrl": "http://localhost:8000/api",
+			"authToken": "",
+			"proveedorId": 1,
+			"productoId": 1
+		},
+		"prod": {
+			"baseUrl": "https://miapi.com/api",
+			"authToken": "",
+			"proveedorId": 100,
+			"productoId": 500
+		}
+	}
+}

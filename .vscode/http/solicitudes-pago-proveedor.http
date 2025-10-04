@@ -1,0 +1,125 @@
+###
+# ARCHIVO DE PRUEBAS HTTP 1 PROVEEDOR
+# API Solicitudes de Pago - Los Mochis, Sinaloa, México
+###
+
+# Credenciales de prueba
+# @email = "proveedor@construccionessinaloa.com"
+# @email = "proveedor@ferreteriadelpacifico.mx"
+# @email = "proveedor@transportesnoroeste.com"
+@email = "proveedor@materialesconstruccion.mx"
+@pass = "password"
+
+# Configuración general
+# @baseUrl = https://apicons.ddns.net:8092/api
+@baseUrl = http://localhost:8080/api
+@contentType = application/json
+@acceptType = application/json
+
+# Variables
+@solicitudId = 18
+@empresaId = 1
+
+###############################################################################
+# AUTENTICACIÓN (Proveedor)
+###############################################################################
+
+### Login de proveedor
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+Accept: {{acceptType}}
+
+{
+  "email": {{email}},
+  "password": {{pass}}
+}
+
+### Login de proveedor
+GET  {{baseUrl}}/auth/me
+Authorization: Bearer {{proveedorToken}}
+Accept: {{acceptType}}
+
+### Guardar el token del login en @proveedorToken manualmente:
+@proveedorToken = 1|wd3HMeCN05WIz4BUhpjhNWjbzmAR1IxeepxdVCZQ1ad38390
+@proveedorId = 4
+
+
+###############################################################################
+# RUTAS PROVEEDOR
+###############################################################################
+
+### 1. Listado de solicitudes de pago (Proveedor)
+GET {{baseUrl}}/proveedores/{{proveedorId}}/solicitudes-pago
+Authorization: Bearer {{proveedorToken}}
+Accept: {{acceptType}}
+
+### 2. Crear solicitud de pago (Proveedor) - Multipart
+POST {{baseUrl}}/proveedores/{{proveedorId}}/solicitudes-pago
+Authorization: Bearer {{proveedorToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="descripcion_concepto"
+
+Pago por servicios de construcción - Enero 2024
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="empresa_construcc_id"
+
+{{empresaId}}
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="residente"
+
+Juan Pérez López
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="cotizacion_id"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="factura_pdf"; filename="factura.pdf"
+Content-Type: application/pdf
+
+< ./tests/files/facturas/Cfdi-4539.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="factura_xml"; filename="factura.xml"
+Content-Type: application/xml
+
+< ./tests/files/facturas/Cfdi-4539.xml
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+
+### 3. Ver detalle de solicitud
+GET {{baseUrl}}/proveedores/{{proveedorId}}/solicitudes-pago/{{solicitudId}}
+Authorization: Bearer {{proveedorToken}}
+Accept: {{acceptType}}
+
+### 4. Actualizar solicitud
+PUT {{baseUrl}}/proveedores/{{proveedorId}}/solicitudes-pago/{{solicitudId}}
+Authorization: Bearer {{proveedorToken}}
+Content-Type: {{contentType}}
+
+{
+  "descripcion_concepto": "Pago actualizado",
+  "residente": "Juan Pérez López",
+  "empresa_construcc_id": {{empresaId}}
+}
+
+### 5. Subir comprobante
+POST {{baseUrl}}/proveedores/{{proveedorId}}/solicitudes-pago/{{solicitudId}}/comprobante
+Authorization: Bearer {{proveedorToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="comprobante"; filename="comprobante.pdf"
+Content-Type: application/pdf
+
+< ./tests/files/comprobante.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 6. Confirmar pago (Proveedor)
+PATCH {{baseUrl}}/proveedores/{{proveedorId}}/solicitudes-pago/{{solicitudId}}/confirmar-pago
+Authorization: Bearer {{proveedorToken}}
+Accept: {{acceptType}}
+
+### 7. Descargar comprobante
+GET {{baseUrl}}/proveedores/{{proveedorId}}/solicitudes-pago/{{solicitudId}}/comprobante/download
+Authorization: Bearer {{proveedorToken}}

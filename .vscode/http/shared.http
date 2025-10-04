@@ -1,0 +1,105 @@
+###
+# RUTAS COMPARTIDAS - Todos los roles autenticados
+# Recursos disponibles para todos los usuarios autenticados
+###
+
+###
+# TIENDA ONLINE
+###
+
+### Proveedores para filtros
+GET {{baseUrl}}/tienda/proveedores
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Sucursales para filtros
+GET {{baseUrl}}/tienda/sucursales
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Productos de la tienda
+GET {{baseUrl}}/tienda/productos
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Imágenes de productos
+GET {{baseUrl}}/tienda/imagenes
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Unidades de medida
+GET {{baseUrl}}/tienda/unidades-medida
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Categorías
+GET {{baseUrl}}/tienda/categorias
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Marcas
+GET {{baseUrl}}/tienda/marcas
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Tipos de empresa
+GET {{baseUrl}}/tienda/tipos-empresa
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+###
+# ACCESOS DIRECTOS
+###
+
+### Accesos rápidos
+GET {{baseUrl}}/tienda/accesos-rapidos
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Proveedores principales
+GET {{baseUrl}}/tienda/proveedores/principales
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Productos destacados
+GET {{baseUrl}}/tienda/productos/destacados
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Productos más pedidos
+GET {{baseUrl}}/tienda/productos/mas-pedidos
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Productos recientes
+GET {{baseUrl}}/tienda/productos/recientes
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Mostrar producto específico
+GET {{baseUrl}}/tienda/productos/{{productoId}}
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+###
+# BÚSQUEDA Y DISPONIBILIDAD DE PRODUCTOS
+###
+
+### Buscar productos
+GET {{baseUrl}}/productos/buscar?q=producto&categoria_id={{categoriaId}}&marca_id={{marcaId}}&proveedor_id={{proveedorId}}
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Verificar disponibilidad de producto
+GET {{baseUrl}}/productos/{{productoId}}/disponibilidad
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+###
+# DASHBOARD BÁSICO
+###
+
+### Obtener estadísticas básicas
+GET {{baseUrl}}/dashboard/stats
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}

@@ -146,7 +146,7 @@ config/staging.php
 atlassian-ide-plugin.xml
 
 # Visual Studio Code
-.vscode/
+# .vscode/
 *.code-workspace
 
 # Sublime Text

@@ -1,0 +1,97 @@
+###
+# ARCHIVO DE PRUEBAS HTTP - CONSTRUCC
+# API Cotizaciones - Los Mochis, Sinaloa, México
+###
+
+# @baseUrl = http://localhost:8080/api
+@baseUrl = https://apicons.ddns.net:8092/api
+@contentType = application/json
+@acceptType = application/json
+@apiKey =  /%-!?=T35sT._22<1|:
+
+### VARIABLES
+@cotizacionId = 1
+@proveedorId = 1
+
+###############################################################################
+# COTIZACIONES - CONSTRUCC
+###############################################################################
+
+### 1. Listado de cotizaciones
+GET {{baseUrl}}/construcc/cotizaciones
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 2. Ver cotización específica
+GET {{baseUrl}}/construcc/cotizaciones/{{cotizacionId}}
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 3. Crear cotización
+POST {{baseUrl}}/construcc/cotizaciones
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+
+{
+  "proveedor_id": {{proveedorId}},
+  "fecha_cotizacion": "2025-10-03",
+  "fecha_vencimiento": "2025-10-10",
+  "observaciones": "Cotización inicial para proyecto piloto",
+  "detalles": [
+    {
+      "producto_id": 1,
+      "cantidad_cotizada": 100,
+      "precio_unitario": 150.00,
+      "tiempo_entrega_dias": 7,
+      "observaciones": "Producto de alta calidad"
+    },
+    {
+      "producto_id": 2,
+      "cantidad_cotizada": 50,
+      "precio_unitario": 300.00,
+      "tiempo_entrega_dias": 10,
+      "observaciones": "Incluye instalación"
+    }
+  ]
+}
+
+### 4. Actualizar cotización
+PATCH {{baseUrl}}/construcc/cotizaciones/{{cotizacionId}}
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+
+{
+  "detalles": [
+    {
+      "producto_id": 1,
+      "cantidad_cotizada": 120,
+      "precio_unitario": 145.00
+    }
+  ],
+  "observaciones": "Ajuste por cambio en proyecto"
+}
+
+### 5. Eliminar cotización
+DELETE {{baseUrl}}/construcc/cotizaciones/{{cotizacionId}}
+X-API-KEY: {{apiKey}}
+
+### 6. Descargar PDF de cotización
+GET {{baseUrl}}/construcc/cotizaciones/{{cotizacionId}}/pdf/download
+X-API-KEY: {{apiKey}}
+
+### 7. Descargar XML de cotización
+GET {{baseUrl}}/construcc/cotizaciones/{{cotizacionId}}/xml/download
+X-API-KEY: {{apiKey}}
+
+###############################################################################
+# ENDPOINTS AUXILIARES (Cotizaciones)
+###############################################################################
+
+### 8. Buscar proveedores
+GET {{baseUrl}}/construcc/cotizaciones/proveedores/search?search=materiales&limit=10
+X-API-KEY: {{apiKey}}
+
+### 9. Estadísticas de cotizaciones
+GET {{baseUrl}}/construcc/cotizaciones/estadisticas
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}

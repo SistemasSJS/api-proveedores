@@ -1,0 +1,250 @@
+###
+# RUTAS ESPECÍFICAS PARA ROL: GERENTE (PROVEEDOR)
+# Estas rutas solo son accesibles para usuarios con rol GERENTE
+###
+
+###
+# GESTIÓN DE PEDIDOS COMO PROVEEDOR
+###
+
+### Ver todos los pedidos dirigidos al proveedor
+GET {{baseUrl}}/gerente/pedidos
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+### Ver pedido específico dirigido al proveedor
+GET {{baseUrl}}/gerente/pedidos/{{pedidoId}}
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+### Actualizar status de pedido (proveedor)
+PATCH {{baseUrl}}/gerente/pedidos/{{pedidoId}}/status
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "status": "en_preparacion",
+  "observaciones": "Iniciando preparación del pedido"
+}
+
+### Confirmar pedido
+PATCH {{baseUrl}}/gerente/pedidos/{{pedidoId}}/confirm
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "fecha_confirmacion": "2025-08-23",
+  "fecha_entrega_estimada": "2025-08-30",
+  "observaciones": "Pedido confirmado, entrega estimada"
+}
+
+### Marcar pedido como preparado
+PATCH {{baseUrl}}/gerente/pedidos/{{pedidoId}}/ready
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "observaciones": "Pedido listo para entrega"
+}
+
+### Iniciar envío del pedido
+PATCH {{baseUrl}}/gerente/pedidos/{{pedidoId}}/ship
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "transportista": "DHL Express",
+  "numero_guia": "DHL123456789",
+  "fecha_envio": "2025-08-28",
+  "observaciones_envio": "Enviado por mensajería express"
+}
+
+### Marcar como entregado
+PATCH {{baseUrl}}/gerente/pedidos/{{pedidoId}}/deliver
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "fecha_entrega": "2025-08-30T14:30:00Z",
+  "recibido_por": "Juan Pérez",
+  "observaciones_entrega": "Entregado en perfecto estado"
+}
+
+### Rechazar pedido
+PATCH {{baseUrl}}/gerente/pedidos/{{pedidoId}}/reject
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "motivo_rechazo": "Sin stock suficiente",
+  "observaciones": "No contamos con inventario para completar el pedido"
+}
+
+### Actualizar información de tracking
+PATCH {{baseUrl}}/gerente/pedidos/{{pedidoId}}/tracking
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "numero_guia": "DHL123456789",
+  "transportista": "DHL Express",
+  "ubicacion_actual": "Centro de distribución CDMX",
+  "estado_tracking": "en_transito",
+  "fecha_estimada_entrega": "2025-08-30"
+}
+
+### Generar etiqueta de envío
+GET {{baseUrl}}/gerente/pedidos/{{pedidoId}}/shipping-label
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+### Generar factura del pedido
+POST {{baseUrl}}/gerente/pedidos/{{pedidoId}}/invoice
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "datos_facturacion": {
+    "rfc": "XAXX010101000",
+    "razon_social": "Empresa Cliente SA de CV",
+    "direccion": "Calle Principal 123, Col. Centro, CDMX"
+  }
+}
+
+###
+# GESTIÓN DE PRODUCTOS (PROVEEDOR)
+###
+
+### Ver productos del proveedor
+GET {{baseUrl}}/gerente/productos
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+### Crear nuevo producto
+POST {{baseUrl}}/gerente/productos
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "sku": "PROD-001",
+  "nombre": "Producto de prueba",
+  "descripcion": "Descripción del producto de prueba",
+  "precio_base": 150.00,
+  "precio_mayoreo": 120.00,
+  "precio_menudeo": 180.00,
+  "categoria_id": 1,
+  "marca_id": 1,
+  "unidad_medida_id": 1,
+  "stock": 100,
+  "activo": true
+}
+
+### Ver producto específico del proveedor
+GET {{baseUrl}}/gerente/productos/{{productoId}}
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+### Actualizar producto del proveedor
+PUT {{baseUrl}}/gerente/productos/{{productoId}}
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "nombre": "Producto actualizado",
+  "descripcion": "Nueva descripción del producto",
+  "precio_base": 160.00,
+  "stock": 85,
+  "activo": true
+}
+
+### Eliminar producto del proveedor
+DELETE {{baseUrl}}/gerente/productos/{{productoId}}
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+### Actualizar stock del producto
+PATCH {{baseUrl}}/gerente/productos/{{productoId}}/stock
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "stock": 75,
+  "observaciones": "Ajuste de inventario"
+}
+
+### Actualizar precios del producto
+PATCH {{baseUrl}}/gerente/productos/{{productoId}}/precios
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "precio_base": 165.00,
+  "precio_mayoreo": 125.00,
+  "precio_menudeo": 185.00
+}
+
+###
+# DASHBOARD GERENTE/PROVEEDOR
+###
+
+### Estadísticas del dashboard gerente
+GET {{baseUrl}}/gerente/dashboard/stats
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+### Resumen de ventas
+GET {{baseUrl}}/gerente/dashboard/resumen-ventas
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+### Productos más vendidos
+GET {{baseUrl}}/gerente/dashboard/productos-top
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+### Alertas de stock bajo
+GET {{baseUrl}}/gerente/dashboard/alertas-stock
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+###
+# REPORTES GERENTE
+###
+
+### Reporte de ventas
+GET {{baseUrl}}/gerente/reportes/ventas?fecha_inicio=2025-01-01&fecha_fin=2025-12-31
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+### Reporte de productos
+GET {{baseUrl}}/gerente/reportes/productos
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+### Reporte de pedidos
+GET {{baseUrl}}/gerente/reportes/pedidos?status=confirmado&fecha_inicio=2025-08-01
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+###
+# CONFIGURACIÓN PROVEEDOR
+###
+
+### Ver configuración del proveedor
+GET {{baseUrl}}/gerente/configuracion
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+### Actualizar configuración del proveedor
+PUT {{baseUrl}}/gerente/configuracion
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "nombre_empresa": "Mi Empresa Proveedora SA",
+  "direccion": "Av. Industrial 456, Zona Industrial",
+  "telefono": "555-123-4567",
+  "email_contacto": "contacto@miempresa.com",
+  "dias_entrega_promedio": 5,
+  "horario_atencion": "Lunes a Viernes 8:00 - 17:00"
+}

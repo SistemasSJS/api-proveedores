@@ -1,0 +1,127 @@
+###
+# ARCHIVO DE PRUEBAS HTTP - CONSTRUCC
+# API Solicitudes de Pago - Los Mochis, Sinaloa, México
+###
+
+# @baseUrl = http://localhost:8080/api
+@baseUrl = https://apicons.ddns.net:8092/api
+@contentType = application/json
+@acceptType = application/json
+@apiKey = /%-!?=T35sT._22<1|:
+
+### VARIABLES
+@solicitudId = 1
+@rol = DG
+
+
+
+###############################################################################
+# RUTAS CONSTRUCC - SOLICITUDES DE PAGO
+###############################################################################
+
+### 1. Listado general de solicitudes de pago
+GET {{baseUrl}}/construcc/solicitudes-pago
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 2. Ver detalle de solicitud específica
+GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 3. Descargar comprobante de pago
+GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/comprobante/download
+X-API-KEY: {{apiKey}}
+
+### 4. Descargar factura PDF
+GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/factura-pdf/download
+X-API-KEY: {{apiKey}}
+
+### 5. Descargar factura XML
+GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/factura-xml/download
+X-API-KEY: {{apiKey}}
+
+### 6. Descargar cotización
+GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/cotizacion/download
+X-API-KEY: {{apiKey}}
+
+
+
+###############################################################################
+# CAMBIOS DE ESTATUS - CONSTRUCC
+###############################################################################
+
+### 7. Autorizar solicitud de pago (por rol)
+POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/autorizar
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+
+{
+  "rol": "{{rol}}"
+}
+
+### 8. Rechazar solicitud de pago
+POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/rechazar
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+
+{
+  "rol": "DT",
+  "motivo_rechazo": "El monto no corresponde con la cotización original."
+}
+
+### 9. Confirmar pago (solo DA)
+POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/confirmar-pago
+X-API-KEY: {{apiKey}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="comprobante"; filename="comprobante_pago.pdf"
+Content-Type: application/pdf
+
+< ./tests/files/comprobante_pago.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="monto_abono"
+
+50000.00
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="notas_abono"
+
+Pago parcial correspondiente a avance de obra del 50%.
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+
+
+###############################################################################
+# LISTADOS POR ROL Y ESTADO
+###############################################################################
+
+### 10. Listar solicitudes pendientes por rol (DG, DT, CO, SI, DA)
+GET {{baseUrl}}/construcc/solicitudes-pago/por-rol?rol=DT
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 11. Listar solicitudes por estado (PENDIENTE, AUTORIZADA, RECHAZADA, PAGADO)
+GET {{baseUrl}}/construcc/solicitudes-pago/por-estado?estado=AUTORIZADA
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+
+
+###############################################################################
+# DASHBOARD Y AUXILIARES
+###############################################################################
+
+### 12. Estadísticas por rol
+GET {{baseUrl}}/construcc/solicitudes-pago/estadisticas-rol?rol=DA
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 13. Buscar empresas constructoras
+GET {{baseUrl}}/construcc/solicitudes-pago/empresas-constructoras/search?search=construcciones&limit=10
+X-API-KEY: {{apiKey}}
+
+### 14. Estadísticas generales
+GET {{baseUrl}}/construcc/solicitudes-pago/estadisticas
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}

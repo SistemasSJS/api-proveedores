@@ -1,0 +1,27 @@
+###
+# CONFIGURACIÓN GLOBAL PARA PRUEBAS API
+# Variables y configuración común para todos los endpoints
+###
+
+@baseUrl = http://localhost:8000/api
+@contentType = application/json
+@acceptType = application/json
+
+### Variables de autenticación (actualizar con tokens reales)
+@authToken = 
+@adminToken = 
+@gerenteToken = 
+@clienteToken = 
+
+### Variables de IDs comunes (actualizar según tu base de datos)
+@userId = 1
+@proveedorId = 1
+@productoId = 1
+@pedidoId = 1
+@categoriaId = 1
+@marcaId = 1
+@sucursalId = 1
+
+### Headers comunes
+@commonHeaders = Content-Type: {{contentType}}
+Accept: {{acceptType}}

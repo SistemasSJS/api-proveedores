@@ -1,0 +1,1198 @@
+###
+# 🧪 API PROVEEDORES - PRUEBAS COMPLETAS
+# Archivo único con todas las rutas organizadas por secciones
+# Actualiza las variables según tu entorno antes de usar
+###
+
+###############################################################################
+# 🔧 CONFIGURACIÓN Y VARIABLES GLOBALES
+###############################################################################
+
+@baseUrl = http://localhost:8080/api
+@contentType = application/json
+@acceptType = application/json
+
+### Variables de autenticación (actualizar con tokens reales)
+@authToken = 
+@adminToken = 
+@gerenteToken = 
+@clienteToken = 
+@construccToken = 1|t1GPXQQeh1K8BYfRaELBIV2ce18sqorlUKsaR9OHfba2444d
+
+### Variables de IDs comunes (actualizar según tu base de datos)
+@userId = 1
+@proveedorId = 1
+@productoId = 1
+@pedidoId = 1
+@categoriaId = 1
+@marcaId = 1
+@sucursalId = 1
+@cotizacionId = 1
+
+### Headers comunes
+@commonHeaders = Content-Type: {{contentType}}
+Accept: {{acceptType}}
+
+###############################################################################
+# 🌐 1. RUTAS PÚBLICAS (SIN AUTENTICACIÓN)
+###############################################################################
+
+### Verificar estado de la API
+GET {{baseUrl}}/status
+{{commonHeaders}}
+
+### Obtener roles disponibles
+GET {{baseUrl}}/roles-index
+{{commonHeaders}}
+
+### Obtener tipos de empresa
+GET {{baseUrl}}/tipos-empresa-index
+{{commonHeaders}}
+
+### Obtener proveedores (público)
+GET {{baseUrl}}/proveedores
+{{commonHeaders}}
+
+### Obtener sucursales (público)
+GET {{baseUrl}}/sucursales
+{{commonHeaders}}
+
+### Obtener productos (público)
+GET {{baseUrl}}/productos
+{{commonHeaders}}
+
+### Obtener imágenes de productos
+GET {{baseUrl}}/imagenes
+{{commonHeaders}}
+
+### Obtener unidades de medida
+GET {{baseUrl}}/unidades-medida
+{{commonHeaders}}
+
+### Obtener categorías
+GET {{baseUrl}}/categorias
+{{commonHeaders}}
+
+### Obtener marcas
+GET {{baseUrl}}/marcas
+{{commonHeaders}}
+
+### Webhook tracking update (simulación)
+POST {{baseUrl}}/pedidos/1/tracking-update
+{{commonHeaders}}
+
+{
+  "status": "en_transito",
+  "tracking_number": "ABC123456",
+  "carrier": "DHL",
+  "location": "Ciudad de México",
+  "estimated_delivery": "2025-08-25"
+}
+
+### Consulta pública de estado de pedido (requiere token público)
+GET {{baseUrl}}/pedidos/{{pedidoId}}/status/public-token-here
+{{commonHeaders}}
+
+###############################################################################
+# 🔐 2. AUTENTICACIÓN
+###############################################################################
+
+### Login - Obtener token de acceso
+# @name login
+POST {{baseUrl}}/auth/login
+{{commonHeaders}}
+
+{
+  "email": "proveedor@elgrangero.com",
+  "password": "password"
+}
+
+### Extraer token del response del login
+@authToken = {{login.response.body.data.token}}
+
+### Obtener información del usuario autenticado
+GET {{baseUrl}}/auth/me
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Refresh token
+POST {{baseUrl}}/auth/refresh
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Logout
+GET {{baseUrl}}/auth/logout
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Registro de nuevo usuario
+POST {{baseUrl}}/auth/register
+{{commonHeaders}}
+
+{
+  "name": "Usuario de Prueba",
+  "email": "prueba@test.com",
+  "password": "password123",
+  "password_confirmation": "password123",
+  "role_id": 3
+}
+
+### Solicitar reset de contraseña
+POST {{baseUrl}}/auth/password/email
+{{commonHeaders}}
+
+{
+  "email": "usuario@test.com"
+}
+
+### Reset contraseña con token
+POST {{baseUrl}}/auth/password/reset
+{{commonHeaders}}
+
+{
+  "token": "reset-token-here",
+  "email": "usuario@test.com",
+  "password": "nueva_password",
+  "password_confirmation": "nueva_password"
+}
+
+###############################################################################
+# 🤝 3. RECURSOS COMPARTIDOS (TODOS LOS ROLES AUTENTICADOS)
+###############################################################################
+
+### Proveedores para filtros
+GET {{baseUrl}}/tienda/proveedores
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Sucursales para filtros
+GET {{baseUrl}}/tienda/sucursales
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Productos de la tienda
+GET {{baseUrl}}/tienda/productos
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Accesos rápidos
+GET {{baseUrl}}/tienda/accesos-rapidos
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Proveedores principales
+GET {{baseUrl}}/tienda/proveedores/principales
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Productos destacados
+GET {{baseUrl}}/tienda/productos/destacados
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Productos más pedidos
+GET {{baseUrl}}/tienda/productos/mas-pedidos
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Productos recientes
+GET {{baseUrl}}/tienda/productos/recientes
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Mostrar producto específico
+GET {{baseUrl}}/tienda/productos/{{productoId}}
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Buscar productos
+GET {{baseUrl}}/productos/buscar?q=producto&categoria_id={{categoriaId}}&marca_id={{marcaId}}&proveedor_id={{proveedorId}}
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Verificar disponibilidad de producto
+GET {{baseUrl}}/productos/{{productoId}}/disponibilidad
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Obtener estadísticas básicas
+GET {{baseUrl}}/dashboard/stats
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+###############################################################################
+# 👤 4. RUTAS CLIENTE
+###############################################################################
+
+### Listar pedidos del cliente
+GET {{baseUrl}}/cliente/pedidos
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+### Crear nuevo pedido
+POST {{baseUrl}}/cliente/pedidos
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+{
+  "productos": [
+    {
+      "producto_id": 1,
+      "cantidad": 5,
+      "precio_unitario": 100.50
+    },
+    {
+      "producto_id": 2,
+      "cantidad": 3,
+      "precio_unitario": 250.00
+    }
+  ],
+  "observaciones": "Pedido urgente para el viernes",
+  "fecha_entrega_deseada": "2025-08-30"
+}
+
+### Ver pedido específico
+GET {{baseUrl}}/cliente/pedidos/{{pedidoId}}
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+### Actualizar status del pedido
+PATCH {{baseUrl}}/cliente/pedidos/{{pedidoId}}/status
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+{
+  "status": "confirmado",
+  "observaciones": "Pedido confirmado por el cliente"
+}
+
+### Cancelar pedido
+PATCH {{baseUrl}}/cliente/pedidos/{{pedidoId}}/cancel
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+{
+  "motivo_cancelacion": "Ya no se necesita el pedido"
+}
+
+### Duplicar pedido existente
+POST {{baseUrl}}/cliente/pedidos/{{pedidoId}}/duplicate
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+### Confirmar recepción del pedido
+PATCH {{baseUrl}}/cliente/pedidos/{{pedidoId}}/confirm-reception
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+{
+  "fecha_recepcion": "2025-08-25",
+  "observaciones_recepcion": "Pedido recibido en perfectas condiciones"
+}
+
+### Obtener estadísticas de pedidos
+GET {{baseUrl}}/cliente/pedidos/estadisticas
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+### Exportar pedidos
+POST {{baseUrl}}/cliente/pedidos/export
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+{
+  "formato": "xlsx",
+  "fecha_inicio": "2025-01-01",
+  "fecha_fin": "2025-12-31",
+  "status": ["confirmado", "entregado"]
+}
+
+### Generar PDF del pedido
+GET {{baseUrl}}/cliente/pedidos/{{pedidoId}}/pdf
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+### Descargar comprobante del pedido
+GET {{baseUrl}}/cliente/pedidos/{{pedidoId}}/receipt
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+### Estadísticas del dashboard cliente
+GET {{baseUrl}}/cliente/dashboard/stats
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+### Resumen de gastos
+GET {{baseUrl}}/cliente/dashboard/resumen-gastos
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+### Reporte de mis pedidos
+GET {{baseUrl}}/cliente/reportes/mis-pedidos?fecha_inicio=2025-01-01&fecha_fin=2025-12-31
+{{commonHeaders}}
+Authorization: Bearer {{clienteToken}}
+
+###############################################################################
+# 👔 5. RUTAS GERENTE/PROVEEDOR
+###############################################################################
+
+### Ver todos los pedidos dirigidos al proveedor
+GET {{baseUrl}}/gerente/pedidos
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+### Ver pedido específico dirigido al proveedor
+GET {{baseUrl}}/gerente/pedidos/{{pedidoId}}
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+### Actualizar status de pedido (proveedor)
+PATCH {{baseUrl}}/gerente/pedidos/{{pedidoId}}/status
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "status": "en_preparacion",
+  "observaciones": "Iniciando preparación del pedido"
+}
+
+### Confirmar pedido
+PATCH {{baseUrl}}/gerente/pedidos/{{pedidoId}}/confirm
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "fecha_confirmacion": "2025-08-23",
+  "fecha_entrega_estimada": "2025-08-30",
+  "observaciones": "Pedido confirmado, entrega estimada"
+}
+
+### Marcar pedido como preparado
+PATCH {{baseUrl}}/gerente/pedidos/{{pedidoId}}/ready
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "observaciones": "Pedido listo para entrega"
+}
+
+### Iniciar envío del pedido
+PATCH {{baseUrl}}/gerente/pedidos/{{pedidoId}}/ship
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "transportista": "DHL Express",
+  "numero_guia": "DHL123456789",
+  "fecha_envio": "2025-08-28",
+  "observaciones_envio": "Enviado por mensajería express"
+}
+
+### Marcar como entregado
+PATCH {{baseUrl}}/gerente/pedidos/{{pedidoId}}/deliver
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "fecha_entrega": "2025-08-30T14:30:00Z",
+  "recibido_por": "Juan Pérez",
+  "observaciones_entrega": "Entregado en perfecto estado"
+}
+
+### Rechazar pedido
+PATCH {{baseUrl}}/gerente/pedidos/{{pedidoId}}/reject
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "motivo_rechazo": "Sin stock suficiente",
+  "observaciones": "No contamos con inventario para completar el pedido"
+}
+
+### Actualizar información de tracking
+PATCH {{baseUrl}}/gerente/pedidos/{{pedidoId}}/tracking
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "numero_guia": "DHL123456789",
+  "transportista": "DHL Express",
+  "ubicacion_actual": "Centro de distribución CDMX",
+  "estado_tracking": "en_transito",
+  "fecha_estimada_entrega": "2025-08-30"
+}
+
+### Ver productos del proveedor
+GET {{baseUrl}}/gerente/productos
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+### Crear nuevo producto
+POST {{baseUrl}}/gerente/productos
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "sku": "PROD-001",
+  "nombre": "Producto de prueba",
+  "descripcion": "Descripción del producto de prueba",
+  "precio_base": 150.00,
+  "precio_mayoreo": 120.00,
+  "precio_menudeo": 180.00,
+  "categoria_id": 1,
+  "marca_id": 1,
+  "unidad_medida_id": 1,
+  "stock": 100,
+  "activo": true
+}
+
+### Ver producto específico del proveedor
+GET {{baseUrl}}/gerente/productos/{{productoId}}
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+### Actualizar producto del proveedor
+PUT {{baseUrl}}/gerente/productos/{{productoId}}
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "nombre": "Producto actualizado",
+  "descripcion": "Nueva descripción del producto",
+  "precio_base": 160.00,
+  "stock": 85,
+  "activo": true
+}
+
+### Eliminar producto del proveedor
+DELETE {{baseUrl}}/gerente/productos/{{productoId}}
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+### Actualizar stock del producto
+PATCH {{baseUrl}}/gerente/productos/{{productoId}}/stock
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "stock": 75,
+  "observaciones": "Ajuste de inventario"
+}
+
+### Estadísticas del dashboard gerente
+GET {{baseUrl}}/gerente/dashboard/stats
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+### Resumen de ventas
+GET {{baseUrl}}/gerente/dashboard/resumen-ventas
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+### Reporte de ventas
+GET {{baseUrl}}/gerente/reportes/ventas?fecha_inicio=2025-01-01&fecha_fin=2025-12-31
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+### Ver configuración del proveedor
+GET {{baseUrl}}/gerente/configuracion
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+### Actualizar configuración del proveedor
+PUT {{baseUrl}}/gerente/configuracion
+{{commonHeaders}}
+Authorization: Bearer {{gerenteToken}}
+
+{
+  "nombre_empresa": "Mi Empresa Proveedora SA",
+  "direccion": "Av. Industrial 456, Zona Industrial",
+  "telefono": "555-123-4567",
+  "email_contacto": "contacto@miempresa.com",
+  "dias_entrega_promedio": 5,
+  "horario_atencion": "Lunes a Viernes 8:00 - 17:00"
+}
+
+###############################################################################
+# 🛡️ 6. RUTAS ADMINISTRADOR
+###############################################################################
+
+### Listar todos los usuarios
+GET {{baseUrl}}/admin/usuarios
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Crear nuevo usuario
+POST {{baseUrl}}/admin/usuarios
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "name": "Nuevo Usuario Admin",
+  "email": "nuevo@admin.com",
+  "password": "password123",
+  "role_id": 1,
+  "status": "activo"
+}
+
+### Ver usuario específico
+GET {{baseUrl}}/admin/usuarios/{{userId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Actualizar usuario
+PUT {{baseUrl}}/admin/usuarios/{{userId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "name": "Usuario Actualizado",
+  "email": "actualizado@admin.com",
+  "role_id": 2,
+  "status": "activo"
+}
+
+### Eliminar usuario
+DELETE {{baseUrl}}/admin/usuarios/{{userId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### ---- CATÁLOGOS MAESTROS ----
+
+### Listar proveedores (admin)
+GET {{baseUrl}}/admin/catalogos/proveedores
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Crear proveedor
+POST {{baseUrl}}/admin/catalogos/proveedores
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "nombre": "Nuevo Proveedor SA",
+  "rfc": "NPR123456789",
+  "razon_social": "Nuevo Proveedor SA de CV",
+  "direccion": "Av. Comercial 123",
+  "telefono": "555-123-4567",
+  "email": "contacto@nuevoproveedor.com",
+  "activo": true
+}
+
+### Ver proveedor específico
+GET {{baseUrl}}/admin/catalogos/proveedores/{{proveedorId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Actualizar proveedor
+PUT {{baseUrl}}/admin/catalogos/proveedores/{{proveedorId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "nombre": "Proveedor Actualizado SA",
+  "telefono": "555-987-6543",
+  "activo": true
+}
+
+### Eliminar proveedor
+DELETE {{baseUrl}}/admin/catalogos/proveedores/{{proveedorId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Listar sucursales (admin)
+GET {{baseUrl}}/admin/catalogos/sucursales
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Crear sucursal
+POST {{baseUrl}}/admin/catalogos/sucursales
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "nombre": "Sucursal Norte",
+  "proveedor_id": {{proveedorId}},
+  "direccion": "Av. Norte 456",
+  "telefono": "555-111-2222",
+  "email": "norte@proveedor.com",
+  "activo": true
+}
+
+### Ver sucursales agrupadas por proveedor
+GET {{baseUrl}}/admin/catalogos/sucursales/groupedByProveedor
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Listar productos (admin)
+GET {{baseUrl}}/admin/catalogos/productos
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Crear producto (admin)
+POST {{baseUrl}}/admin/catalogos/productos
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "sku": "ADMIN-001",
+  "nombre": "Producto Admin",
+  "descripcion": "Producto creado por admin",
+  "precio_base": 200.00,
+  "precio_mayoreo": 180.00,
+  "precio_menudeo": 220.00,
+  "proveedor_id": {{proveedorId}},
+  "categoria_id": {{categoriaId}},
+  "marca_id": {{marcaId}},
+  "stock": 50,
+  "activo": true
+}
+
+### Ver producto específico (admin)
+GET {{baseUrl}}/admin/catalogos/productos/{{productoId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Actualizar producto (admin)
+PUT {{baseUrl}}/admin/catalogos/productos/{{productoId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "nombre": "Producto Admin Actualizado",
+  "precio_base": 210.00,
+  "stock": 45
+}
+
+### Eliminar producto (admin)
+DELETE {{baseUrl}}/admin/catalogos/productos/{{productoId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Listar categorías (admin)
+GET {{baseUrl}}/admin/catalogos/categorias
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Crear categoría
+POST {{baseUrl}}/admin/catalogos/categorias
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "nombre": "Nueva Categoría",
+  "descripcion": "Descripción de la nueva categoría",
+  "activo": true,
+  "parent_id": null
+}
+
+### Listar marcas (admin)
+GET {{baseUrl}}/admin/catalogos/marcas
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Crear marca
+POST {{baseUrl}}/admin/catalogos/marcas
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "nombre": "Nueva Marca",
+  "descripcion": "Descripción de la nueva marca",
+  "logo": "https://example.com/logo.png",
+  "activo": true
+}
+
+### Listar unidades de medida (admin)
+GET {{baseUrl}}/admin/catalogos/unidades-medida
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Crear unidad de medida
+POST {{baseUrl}}/admin/catalogos/unidades-medida
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "nombre": "Metro cúbico",
+  "abreviacion": "m³",
+  "activo": true
+}
+
+### ---- GESTIÓN ADMINISTRATIVA DE PEDIDOS ----
+
+### Listar todos los pedidos (admin)
+GET {{baseUrl}}/admin/pedidos
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Estadísticas generales de pedidos
+GET {{baseUrl}}/admin/pedidos/stats
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Forzar cambio de estatus de pedido
+PATCH {{baseUrl}}/admin/pedidos/{{pedidoId}}/force-status
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "status": "entregado",
+  "motivo": "Ajuste administrativo",
+  "observaciones": "Forzado por administrador"
+}
+
+### Eliminar pedido (admin)
+DELETE {{baseUrl}}/admin/pedidos/{{pedidoId}}
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Reportes avanzados de pedidos
+GET {{baseUrl}}/admin/pedidos/reports?tipo=ventas&fecha_inicio=2025-01-01&fecha_fin=2025-12-31
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Auditoría de pedido
+GET {{baseUrl}}/admin/pedidos/{{pedidoId}}/audit
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### ---- DASHBOARD ADMINISTRATIVO ----
+
+### Resumen de catálogos
+GET {{baseUrl}}/admin/dashboard/catalogos-resumen
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Estadísticas completas
+GET {{baseUrl}}/admin/dashboard/stats-completas
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Métricas de rendimiento
+GET {{baseUrl}}/admin/dashboard/metricas-rendimiento
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### ---- INTEGRACIÓN CON SERVICIOS EXTERNOS ----
+
+### Sincronizar con sistema de facturación
+POST {{baseUrl}}/admin/integracion/pedidos/{{pedidoId}}/sync-billing
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+### Generar factura automática
+POST {{baseUrl}}/admin/integracion/pedidos/{{pedidoId}}/generate-invoice
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "tipo_factura": "fiscal",
+  "metodo_pago": "transferencia"
+}
+
+### Confirmación de pago
+POST {{baseUrl}}/admin/integracion/pedidos/{{pedidoId}}/payment-confirmed
+{{commonHeaders}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "monto": 1500.00,
+  "fecha_pago": "2025-08-23",
+  "referencia": "PAY123456",
+  "metodo_pago": "transferencia"
+}
+
+###############################################################################
+# 🏗️ 7. MÓDULO CONSTRUCCIÓN (API TOKEN)
+###############################################################################
+
+### Buscar productos para construcción con filtros avanzados
+POST {{baseUrl}}/construcc/productos/buscar
+{{commonHeaders}}
+X-API-TOKEN: {{construccToken}}
+
+{
+  "filtros": {
+    "categoria": "construccion",
+    "subcategoria": "herramientas",
+    "marca": "DeWalt",
+    "precio_min": 100.00,
+    "precio_max": 1000.00,
+    "disponible": true
+  },
+  "busqueda": {
+    "termino": "taladro",
+    "campos": ["nombre", "descripcion", "sku"]
+  },
+  "ordenamiento": {
+    "campo": "precio_base",
+    "direccion": "asc"
+  },
+  "paginacion": {
+    "pagina": 1,
+    "por_pagina": 20
+  }
+}
+
+### Obtener productos destacados para construcción
+GET {{baseUrl}}/construcc/productos/destacados?limit=10
+{{commonHeaders}}
+X-API-TOKEN: {{construccToken}}
+
+### Verificar disponibilidad de productos para proyecto
+POST {{baseUrl}}/construcc/productos/verificar-disponibilidad
+{{commonHeaders}}
+X-API-TOKEN: {{construccToken}}
+
+{
+  "productos": [
+    {
+      "producto_id": 1,
+      "cantidad_requerida": 50,
+      "fecha_requerida": "2025-09-15"
+    },
+    {
+      "producto_id": 2,
+      "cantidad_requerida": 25,
+      "fecha_requerida": "2025-09-15"
+    }
+  ],
+  "proyecto": {
+    "nombre": "Construcción Plaza Comercial",
+    "ubicacion": "CDMX",
+    "tipo": "comercial"
+  }
+}
+
+### ---- GESTIÓN DE COTIZACIONES CRUD ----
+
+### Listar cotizaciones con filtros
+GET {{baseUrl}}/construcc/cotizaciones?proveedor_id={{proveedorId}}&estado=vigentes&fecha_desde=2025-01-01&fecha_hasta=2025-12-31&per_page=20
+{{commonHeaders}}
+Authorization: Bearer {{construccToken}}
+
+### Crear nueva cotización
+POST {{baseUrl}}/construcc/cotizaciones
+{{commonHeaders}}
+Authorization: Bearer {{construccToken}}
+
+{
+  "proveedor_id": 3,
+  "fecha_cotizacion": "2025-08-23",
+  "fecha_vencimiento": "2025-09-23",
+  "observaciones": "Cotización para proyecto residencial",
+  "detalles": [
+    {
+      "producto_id": 40,
+      "cantidad_cotizada": 100,
+      "precio_unitario": 150.00,
+      "tiempo_entrega_dias": 15,
+      "observaciones": "Material de alta calidad"
+    },
+    {
+      "producto_id": 43,
+      "cantidad_cotizada": 50,
+      "precio_unitario": 300.00,
+      "tiempo_entrega_dias": 10,
+      "observaciones": "Instalación incluida"
+    }
+  ]
+}
+
+### Ver cotización específica
+GET {{baseUrl}}/construcc/cotizaciones/{{cotizacionId}}
+{{commonHeaders}}
+Authorization: Bearer {{construccToken}}
+
+### Actualizar cotización existente
+PATCH {{baseUrl}}/construcc/cotizaciones/{{cotizacionId}}
+{{commonHeaders}}
+Authorization: Bearer {{construccToken}}
+
+{
+  "fecha_vencimiento": "2025-10-23",
+  "observaciones": "Cotización actualizada con nueva fecha de vencimiento",
+  "detalles": [
+    {
+      "id": 1,
+      "producto_id": {{productoId}},
+      "cantidad_cotizada": 120,
+      "precio_unitario": 145.00,
+      "tiempo_entrega_dias": 12,
+      "observaciones": "Cantidad y precio actualizados"
+    },
+    {
+      "producto_id": 3,
+      "cantidad_cotizada": 25,
+      "precio_unitario": 200.00,
+      "tiempo_entrega_dias": 7,
+      "observaciones": "Nuevo producto agregado"
+    }
+  ]
+}
+
+### Eliminar cotización
+DELETE {{baseUrl}}/construcc/cotizaciones/{{cotizacionId}}
+{{commonHeaders}}
+Authorization: Bearer {{construccToken}}
+
+### ---- COTIZACIONES PARA PROYECTOS (COMPATIBILIDAD) ----
+
+### Crear cotización para proyecto de construcción (formato legacy)
+POST {{baseUrl}}/construcc/cotizaciones-proyecto
+{{commonHeaders}}
+X-API-TOKEN: {{construccToken}}
+
+{
+  "proyecto": {
+    "nombre": "Edificio Residencial Torre Norte",
+    "descripcion": "Construcción de edificio de 15 pisos",
+    "ubicacion": "CDMX, Col. Roma Norte",
+    "tipo": "residencial",
+    "fecha_inicio": "2025-10-01",
+    "fecha_fin": "2026-06-30"
+  },
+  "productos": [
+    {
+      "producto_id": 1,
+      "cantidad": 100,
+      "precio_unitario": 150.00,
+      "especificaciones": "Calidad premium"
+    },
+    {
+      "producto_id": 2,
+      "cantidad": 50,
+      "precio_unitario": 300.00,
+      "especificaciones": "Instalación incluida"
+    }
+  ],
+  "descuentos": {
+    "por_volumen": 5.0,
+    "por_cliente_frecuente": 2.0
+  },
+  "condiciones": {
+    "forma_pago": "30-60-90 dias",
+    "entrega": "Obra según cronograma",
+    "garantia": "12 meses"
+  }
+}
+
+### Ver cotización de proyecto específica
+GET {{baseUrl}}/construcc/cotizaciones-proyecto/1
+{{commonHeaders}}
+X-API-TOKEN: {{construccToken}}
+
+### Aprobar cotización de proyecto
+PATCH {{baseUrl}}/construcc/cotizaciones-proyecto/1/aprobar
+{{commonHeaders}}
+X-API-TOKEN: {{construccToken}}
+
+{
+  "aprobado_por": "Ing. Juan Pérez",
+  "fecha_aprobacion": "2025-08-25",
+  "observaciones": "Cotización aprobada para inicio inmediato"
+}
+
+### Crear pedido a partir de cotización aprobada
+POST {{baseUrl}}/construcc/pedidos/desde-cotizacion
+{{commonHeaders}}
+X-API-TOKEN: {{construccToken}}
+
+{
+  "cotizacion_id": 1,
+  "programacion_entregas": [
+    {
+      "fecha": "2025-09-15",
+      "productos": [
+        {
+          "producto_id": 1,
+          "cantidad": 50
+        }
+      ]
+    },
+    {
+      "fecha": "2025-10-15",
+      "productos": [
+        {
+          "producto_id": 1,
+          "cantidad": 50
+        },
+        {
+          "producto_id": 2,
+          "cantidad": 50
+        }
+      ]
+    }
+  ],
+  "direccion_obra": {
+    "calle": "Av. Insurgentes Sur 1234",
+    "colonia": "Del Valle",
+    "ciudad": "CDMX",
+    "cp": "03100",
+    "referencias": "Junto al metro Hospital 20 de Noviembre"
+  }
+}
+
+### Reporte de consumo por obra
+GET {{baseUrl}}/construcc/reportes/consumo-obra?obra_id=1&fecha_inicio=2025-08-01&fecha_fin=2025-08-31
+{{commonHeaders}}
+X-API-TOKEN: {{construccToken}}
+
+### Buscar proveedores especializados
+GET {{baseUrl}}/construcc/proveedores/especializados?especialidad=herramientas&ubicacion=cdmx&radio=50km
+{{commonHeaders}}
+X-API-TOKEN: {{construccToken}}
+
+###############################################################################
+# 🔄 8. RUTAS DE COMPATIBILIDAD
+###############################################################################
+
+### Listar pedidos (ruta de compatibilidad)
+GET {{baseUrl}}/pedidos
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Crear pedido (ruta de compatibilidad)
+POST {{baseUrl}}/pedidos
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+{
+  "productos": [
+    {
+      "producto_id": 1,
+      "cantidad": 2,
+      "precio_unitario": 150.00
+    }
+  ],
+  "observaciones": "Pedido de prueba"
+}
+
+### Ver pedido (ruta de compatibilidad)
+GET {{baseUrl}}/pedidos/{{pedidoId}}
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Actualizar status (ruta de compatibilidad)
+PATCH {{baseUrl}}/pedidos/{{pedidoId}}/status
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+{
+  "status": "en_proceso"
+}
+
+### Cancelar pedido (ruta de compatibilidad)
+PATCH {{baseUrl}}/pedidos/{{pedidoId}}/cancel
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Duplicar pedido (ruta de compatibilidad)
+POST {{baseUrl}}/pedidos/{{pedidoId}}/duplicate
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+### Estadísticas (ruta de compatibilidad)
+GET {{baseUrl}}/pedidos/estadisticas
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+
+# ===============================
+# Solicitudes de Pago
+# ===============================
+
+### Listar todas las solicitudes de pago
+GET {{baseUrl}}/proveedores/3/solicitudes-pago
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+### Crear nueva solicitud de pago
+POST {{baseUrl}}/proveedores/3/solicitudes-pago
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "numero_folio_solicitud": "FOLIO123",
+    "descripcion_concepto": "Pago de servicios",
+    "ruta_archivo_factura_xml": "/files/factura123.xml",
+    "ruta_archivo_factura_pdf": "/files/factura123.pdf",
+    "id_proveedor": 3,
+    "id_sucursal": 6
+}
+
+### Obtener una solicitud de pago específica
+GET {{baseUrl}}/proveedores/3/solicitudes-pago/1
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+### Actualizar estado de la solicitud
+PATCH {{baseUrl}}/proveedores/3/solicitudes-pago/1
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "estado_solicitud": "procesando"
+}
+
+### Eliminar solicitud de pago
+DELETE {{baseUrl}}/proveedores/3/solicitudes-pago/1
+Authorization: Bearer {{authToken}}
+
+
+# ===============================
+# Cuentas Bancarias
+# ===============================
+
+### Listar cuentas bancarias
+GET {{baseUrl}}/cuentas_bancarias
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+### Crear nueva cuenta bancaria
+POST {{baseUrl}}/cuentas_bancarias
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "proveedor_id": 1,
+    "alias": "Cuenta Principal",
+    "banco_clave": "001",
+    "banco_nombre": "Banco Ejemplo",
+    "tipo_cuenta": "clabe",
+    "campo_dependiente": "123456789012345678",
+    "titular_cuenta": "Juan Pérez",
+    "referencia": "Ref123",
+    "sucursal": "Sucursal Centro",
+    "swift": "ABC123",
+    "preferida": true,
+    "moneda": "MXN"
+}
+
+### Obtener cuenta bancaria específica
+GET {{baseUrl}}/cuentas_bancarias/1
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+### Actualizar cuenta bancaria
+PATCH {{baseUrl}}/cuentas_bancarias/1
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "alias": "Cuenta Actualizada"
+}
+
+### Eliminar cuenta bancaria
+DELETE {{baseUrl}}/cuentas_bancarias/1
+Authorization: Bearer {{authToken}}
+
+###
+# 🎯 INSTRUCCIONES DE USO:
+# 1. Actualiza las variables al inicio del archivo (@baseUrl, @authToken, etc.)
+# 2. Ejecuta primero el login para obtener tokens
+# 3. Copia los tokens a las variables correspondientes
+# 4. Usa las secciones según el rol que quieras probar
+# 5. Actualiza los IDs con valores reales de tu base de datos
+###

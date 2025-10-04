@@ -1,0 +1,154 @@
+@baseUrl = http://localhost:8080/api/construcc
+@token = 1|1xrDiNFeaNEzHLGovOOjJ3rPOm57jqd05vsCgtz4a837cede
+
+### 🔐 Autenticación
+# Todas las peticiones deben incluir el header con el token Sanctum
+Authorization: Bearer {{token}}
+
+#####################################################
+# 🏢 PROVEEDORES
+#####################################################
+
+### Lista paginada de proveedores
+GET {{baseUrl}}/proveedores
+?buscar=
+&estado=
+&municipio=
+&tipos_empresa_id=
+&con_productos=
+&sort_by=
+&order=asc
+&per_page=20
+&page=1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### Búsqueda avanzada de proveedores
+GET {{baseUrl}}/proveedores/buscar
+?categoria_id=
+&marca_id=
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### Productos de un proveedor (paginado)
+GET {{baseUrl}}/proveedores/1/productos
+?categoria_id=
+&marca_id=
+&linea_id=
+&destacado=
+&sort_by=nombre
+&order=asc
+# &con_stock=true
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### Búsqueda avanzada en productos de un proveedor
+GET {{baseUrl}}/proveedores/1/productos/buscar
+?buscar=
+&precio_min=
+&precio_max=
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+#####################################################
+# 🛍️ PRODUCTOS
+#####################################################
+
+### Búsqueda general de productos
+GET {{baseUrl}}/productos/buscar
+?buscar=
+&proveedor_id=
+&categoria_id=
+&subcategoria_id=
+&marca_id=
+&linea_id=
+&unidad_medida_id=
+&precio_min=
+&precio_max=
+&con_stock=true
+&destacado=
+&orden_por=
+&direccion=asc
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### Filtros disponibles para productos
+GET {{baseUrl}}/productos/filtros
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### Sugerencias para autocompletado
+GET {{baseUrl}}/productos/sugerencias
+?termino=
+&proveedor_id=
+&limite=
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+#####################################################
+# 📋 CATÁLOGOS
+#####################################################
+
+### Marcas de un proveedor
+GET {{baseUrl}}/catalogos/proveedores/1/marcas
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### Categorías de un proveedor
+GET {{baseUrl}}/catalogos/proveedores/1/categorias
+?incluir_subcategorias=
+&solo_padres=
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### Líneas de un proveedor
+GET {{baseUrl}}/catalogos/proveedores/1/lineas
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### Unidades de medida de un proveedor
+GET {{baseUrl}}/catalogos/proveedores/1/unidades
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### Todos los catálogos de un proveedor
+GET {{baseUrl}}/catalogos/proveedores/1/completos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+#####################################################
+# 📈 REPORTES Y ESTADÍSTICAS
+#####################################################
+
+### Estadísticas generales del módulo
+GET {{baseUrl}}/reportes/estadisticas
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### Resumen de un proveedor
+GET {{baseUrl}}/reportes/proveedores/1/resumen
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+#####################################################
+# ⚙️ CONFIGURACIÓN
+#####################################################
+
+### Filtros disponibles
+GET {{baseUrl}}/config/filtros-disponibles
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### Opciones de ordenamiento
+GET {{baseUrl}}/config/opciones-ordenamiento
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+#### 
+
+### Obtener productos de un proveedor con filtros
+GET http://localhost:8080/api/proveedores/3/productos?page=1&per_page=25&categoria_id=15
+Accept: application/json, text/plain, */*
+Accept-Language: es-419,es;q=0.9
+Authorization: Bearer 4|0tdKVjnNwIcURUXkld0g5p76XAGaj9J81AEwBx96ca93a46f
+Content-Type: application/json

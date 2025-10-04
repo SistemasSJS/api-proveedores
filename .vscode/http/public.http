@@ -1,0 +1,72 @@
+###
+# RUTAS PÚBLICAS - Sin autenticación requerida
+# Estas rutas no requieren token de autenticación
+###
+
+### Verificar estado de la API
+GET {{baseUrl}}/status
+{{commonHeaders}}
+
+###
+# CATÁLOGOS PÚBLICOS
+###
+
+### Obtener roles disponibles
+GET {{baseUrl}}/roles-index
+{{commonHeaders}}
+
+### Obtener tipos de empresa
+GET {{baseUrl}}/tipos-empresa-index
+{{commonHeaders}}
+
+### Obtener proveedores (público)
+GET {{baseUrl}}/proveedores
+{{commonHeaders}}
+
+### Obtener sucursales (público)
+GET {{baseUrl}}/sucursales
+{{commonHeaders}}
+
+### Obtener productos (público)
+GET {{baseUrl}}/productos
+{{commonHeaders}}
+
+### Obtener imágenes de productos
+GET {{baseUrl}}/imagenes
+{{commonHeaders}}
+
+### Obtener unidades de medida
+GET {{baseUrl}}/unidades-medida
+{{commonHeaders}}
+
+### Obtener categorías
+GET {{baseUrl}}/categorias
+{{commonHeaders}}
+
+### Obtener marcas
+GET {{baseUrl}}/marcas
+{{commonHeaders}}
+
+### Obtener tipos de empresa
+GET {{baseUrl}}/tipos-empresa
+{{commonHeaders}}
+
+###
+# WEBHOOKS Y CONSULTAS PÚBLICAS ESPECIALIZADAS
+###
+
+### Webhook tracking update (simulación)
+POST {{baseUrl}}/pedidos/1/tracking-update
+{{commonHeaders}}
+
+{
+  "status": "en_transito",
+  "tracking_number": "ABC123456",
+  "carrier": "DHL",
+  "location": "Ciudad de México",
+  "estimated_delivery": "2025-08-25"
+}
+
+### Consulta pública de estado de pedido (requiere token público)
+GET {{baseUrl}}/pedidos/{{pedidoId}}/status/public-token-here
+{{commonHeaders}}
