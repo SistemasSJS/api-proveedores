@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CsvImportController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ProveedorSolicitudPagoController;
+use App\Http\Controllers\ProveedorCotizacionController;
 use App\Http\Controllers\ProveedorMarcaController;
 use App\Http\Controllers\ProveedorPedidoController;
 use App\Http\Controllers\ProveedorUsuarioController;
@@ -176,6 +177,24 @@ Route::prefix('proveedores')
             Route::get('/stats', [ProveedorDashboardController::class, 'getStats'])->middleware(['audit']);
             Route::get('/cotizaciones', [ProveedorDashboardController::class, 'cotizacionesDashboard'])->middleware(['audit']);
         });
+        
+        /**
+         * COTIZACIONES DEL PROVEEDOR
+         */
+        Route::prefix('{proveedor}/cotizaciones')->middleware(['proveedor.access'])->group(function () {
+            // Listados
+            Route::get('/', [ProveedorCotizacionController::class, 'index'])->middleware(['audit']);        // Paginado
+            Route::get('/all', [ProveedorCotizacionController::class, 'uindex'])->middleware(['audit']);    // Sin paginación
+            
+            // CRUD
+            Route::post('/', [ProveedorCotizacionController::class, 'store'])->middleware(['audit']);
+            Route::get('/{cotizacion}', [ProveedorCotizacionController::class, 'show'])->middleware(['audit']);
+            Route::put('/{cotizacion}', [ProveedorCotizacionController::class, 'update'])->middleware(['audit']);
+            Route::delete('/{cotizacion}', [ProveedorCotizacionController::class, 'destroy'])->middleware(['audit']);
+            
+            // Descargar archivos
+            Route::get('/{cotizacion}/descargar-pdf', [ProveedorCotizacionController::class, 'descargarPdf'])->middleware(['audit']);
+        });
 
         // Route::get('imports/products/template', [ProductoImportController::class, 'downloadTemplate']);
 
@@ -208,6 +227,7 @@ Route::prefix('proveedores')
             Route::get('/{solicitudPago}/descargar-comprobante', [ProveedorSolicitudPagoController::class, 'descargarComprobantePago'])->middleware(['audit']);
             Route::get('/{solicitudPago}/descargar-factura-pdf', [ProveedorSolicitudPagoController::class, 'descargarFacturaPdf'])->middleware(['audit']);
             Route::get('/{solicitudPago}/descargar-factura-xml', [ProveedorSolicitudPagoController::class, 'descargarFacturaXml'])->middleware(['audit']);
+            Route::get('/{solicitudPago}/descargar-cotizacion', [ProveedorSolicitudPagoController::class, 'descargarCotizacion'])->middleware(['audit']);
 
             // Cambiar estado
             Route::post('/{solicitudPago}/confirmar-pago', [ProveedorSolicitudPagoController::class, 'confirmarPagoSP'])->middleware(['audit']);

@@ -23,6 +23,7 @@ class SolicitudPagoResource extends JsonResource
             // Archivos
             'ruta_archivo_factura_xml'    => $this->ruta_archivo_factura_xml,
             'ruta_archivo_factura_pdf'    => $this->ruta_archivo_factura_pdf,
+            'ruta_archivo_cotizacion'     => $this->ruta_archivo_cotizacion,
             'ruta_archivo_comprobante_pago' => $this->ruta_archivo_comprobante_pago,
 
             // Archivos con URLs correctas
@@ -36,6 +37,10 @@ class SolicitudPagoResource extends JsonResource
 
             'url_factura_xml' => $this->ruta_archivo_factura_xml
                 ? route('construcc.solicitudes-pago.descargar-factura-xml', $this->id)
+                : null,
+
+            'url_cotizacion' => $this->ruta_archivo_cotizacion
+                ? route('construcc.solicitudes-pago.descargar-cotizacion', $this->id)
                 : null,
 
             // Fechas principales
@@ -59,8 +64,19 @@ class SolicitudPagoResource extends JsonResource
             'si'                          => (bool) $this->si,
             'si_fecha'                    => $this->si_fecha?->format('Y-m-d H:i:s'),
 
+            'da'                          => (bool) $this->da,
+            'da_fecha'                    => $this->da_fecha?->format('Y-m-d H:i:s'),
+
             'ro'                          => (bool) $this->ro,
             'ro_fecha'                    => $this->ro_fecha?->format('Y-m-d H:i:s'),
+
+            // Campos de abono y pagos parciales
+            'monto_total'                 => (float) $this->monto_total,
+            'monto_abonado'               => (float) $this->monto_abonado,
+            'saldo_pendiente'             => (float) $this->saldo_pendiente,
+            'pago_completo'               => (bool) $this->pago_completo,
+            'notas_abono'                 => $this->notas_abono,
+            'porcentaje_pagado'           => $this->monto_total > 0 ? round(($this->monto_abonado / $this->monto_total) * 100, 2) : 0,
 
             // Metadatos
             'created_at'                  => $this->created_at?->format('Y-m-d H:i:s'),

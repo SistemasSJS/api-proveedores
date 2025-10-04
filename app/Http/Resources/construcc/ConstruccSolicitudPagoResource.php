@@ -17,10 +17,6 @@ class ConstruccSolicitudPagoResource extends JsonResource
             'proveedor'              => new ConstruccProveedorResource($this->whenLoaded('proveedor')),
             'cotizacion'             => new ConstruccCotizacionResource($this->whenLoaded('cotizacion')),
             // Archivos con URLs correctas
-            'url_cotizacion_pdf' => $this->ruta_archivo_factura_pdf
-                ? route('construcc.solicitudes-pago.descargar-factura-pdf', $this->id)
-                : null,
-
             'url_comprobante_pago' => $this->ruta_archivo_comprobante_pago
                 ? route('construcc.solicitudes-pago.descargar-comprobante', $this->id)
                 : null,
@@ -31,6 +27,10 @@ class ConstruccSolicitudPagoResource extends JsonResource
 
             'url_factura_xml' => $this->ruta_archivo_factura_xml
                 ? route('construcc.solicitudes-pago.descargar-factura-xml', $this->id)
+                : null,
+
+            'url_cotizacion' => $this->ruta_archivo_cotizacion
+                ? route('construcc.solicitudes-pago.descargar-cotizacion', $this->id)
                 : null,
 
             // Campos de aprobación
@@ -46,11 +46,22 @@ class ConstruccSolicitudPagoResource extends JsonResource
             'si'       => $this->si?->value,
             'si_fecha' => $this->si_fecha?->format('Y-m-d H:i:s'),
 
+            'da'       => $this->da?->value,
+            'da_fecha' => $this->da_fecha?->format('Y-m-d H:i:s'),
+
             'ro'       => $this->ro?->value,
             'ro_fecha' => $this->ro_fecha?->format('Y-m-d H:i:s'),
 
             'estado_solicitud' => $this->estado_solicitud,
             'motivo_rechazo'   => $this->motivo_rechazo,
+
+            // Campos de abono y pagos parciales
+            'monto_total'      => (float) $this->monto_total,
+            'monto_abonado'    => (float) $this->monto_abonado,
+            'saldo_pendiente'  => (float) $this->saldo_pendiente,
+            'pago_completo'    => (bool) $this->pago_completo,
+            'notas_abono'      => $this->notas_abono,
+            'porcentaje_pagado' => $this->monto_total > 0 ? round(($this->monto_abonado / $this->monto_total) * 100, 2) : 0,
 
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),

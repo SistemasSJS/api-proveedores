@@ -63,6 +63,7 @@ class ProveedorSolicitudPagoController extends Controller
   {
     $facturaPdf = $request->file('factura_pdf');
     $facturaXml = $request->file('factura_xml');
+    $cotizacionFile = $request->file('cotizacion');
 
     if (!$facturaPdf || !$facturaXml) {
       return response()->json([
@@ -73,6 +74,12 @@ class ProveedorSolicitudPagoController extends Controller
 
     $rutaPdf = $facturaPdf->store('facturas/pdf', 'private');
     $rutaXml = $facturaXml->store('facturas/xml', 'private');
+    
+    // Procesar archivo de cotización si existe
+    $rutaCotizacion = null;
+    if ($cotizacionFile) {
+      $rutaCotizacion = $cotizacionFile->store('cotizaciones', 'private');
+    }
 
     // Generar folio
     $lastFolio = SolicitudPago::where('proveedor_id', $proveedor->id)
@@ -84,18 +91,24 @@ class ProveedorSolicitudPagoController extends Controller
 
     $empresaConstructId = $request->empresa_construcc_id;
 
+    $montoTotal = $request->monto_total;
+    
     $solicitud = SolicitudPago::create([
       'proveedor_id' => $proveedor->id,
       'numero_folio_solicitud' => $numeroFolio,
       'descripcion_concepto' => $request->descripcion_concepto,
       'ruta_archivo_factura_pdf' => $rutaPdf,
       'ruta_archivo_factura_xml' => $rutaXml,
+      'ruta_archivo_cotizacion' => $rutaCotizacion,
       'empresa_construcc_id' => $empresaConstructId,
       'residente' => $request->residente,
       'cotizacion_id' => $request->cotizacion_id,
       'estado_solicitud' => 'pendiente',
       'fecha_registro_pendiente' => now(),
-      'monto_total' => $request->monto_total, // <- agregado
+      'monto_total' => $montoTotal,
+      'saldo_pendiente' => $montoTotal,
+      'monto_abonado' => 0,
+      'pago_completo' => false,
     ]);
 
     return $this->success(
@@ -197,6 +210,24 @@ class ProveedorSolicitudPagoController extends Controller
 
     return response()->download(
       Storage::disk('private')->path($solicitudPago->ruta_archivo_comprobante_pago)
+    );
+  }
+
+  /**
+   * Descargar cotización
+   */
+  public function descargarCotizacion(Proveedor $proveedor, SolicitudPago $solicitudPago)
+  {
+    if ($solicitudPago->proveedor_id !== $proveedor->id) {
+      return $this->error('Solicitud no pertenece a este proveedor', 403);
+    }
+
+    if (!$solicitudPago->ruta_archivo_cotizacion || !Storage::disk('private')->exists($solicitudPago->ruta_archivo_cotizacion)) {
+      return $this->error('Cotización no disponible', 404);
+    }
+
+    return response()->download(
+      Storage::disk('private')->path($solicitudPago->ruta_archivo_cotizacion)
     );
   }
 

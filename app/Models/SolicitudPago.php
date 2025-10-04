@@ -18,6 +18,7 @@ class SolicitudPago extends BaseModel
         'descripcion_concepto',
         'ruta_archivo_factura_xml',
         'ruta_archivo_factura_pdf',
+        'ruta_archivo_cotizacion',
         'estado_solicitud',
         'ruta_archivo_comprobante_pago',
         'proveedor_id',
@@ -33,6 +34,10 @@ class SolicitudPago extends BaseModel
         // 'fecha_aprobado',
         'motivo_rechazo',
         'monto_total',
+        'monto_abonado',
+        'saldo_pendiente',
+        'pago_completo',
+        'notas_abono',
 
         // Nuevos campos
         'dg',
@@ -43,6 +48,8 @@ class SolicitudPago extends BaseModel
         'pc_fecha',
         'si',
         'si_fecha',
+        'da',
+        'da_fecha',
         'ro',
         'ro_fecha',
     ];
@@ -80,6 +87,7 @@ class SolicitudPago extends BaseModel
         'dt'                              => 'Dt',
         'pc'                              => 'Pc',
         'si'                              => 'Si',
+        'da'                              => 'Da',
         'ro'                              => 'Ro',
 
         //
@@ -104,8 +112,16 @@ class SolicitudPago extends BaseModel
         'pc_fecha'  => 'datetime',
         'si'        => EstadoSolicitud::class,
         'si_fecha'  => 'datetime',
+        'da'        => EstadoSolicitud::class,
+        'da_fecha'  => 'datetime',
         'ro'        => EstadoSolicitud::class,
         'ro_fecha'  => 'datetime',
+        
+        // Campos de abono
+        'monto_total' => 'decimal:2',
+        'monto_abonado' => 'decimal:2',
+        'saldo_pendiente' => 'decimal:2',
+        'pago_completo' => 'boolean',
     ];
 
     /** ----------------
@@ -166,6 +182,11 @@ class SolicitudPago extends BaseModel
     public function filterBySi($query, $value)
     {
         return $query->where('si', $value instanceof EstadoSolicitud ? $value->value : $value);
+    }
+
+    public function filterByDa($query, $value)
+    {
+        return $query->where('da', $value instanceof EstadoSolicitud ? $value->value : $value);
     }
 
     public function filterByRo($query, $value)
@@ -303,5 +324,34 @@ class SolicitudPago extends BaseModel
     public function filterByFechaAprobadoHasta($query, $value)
     {
         return $query->whereDate('fecha_aprobado', '<=', $value);
+    }
+    
+    /** ----------------
+     * Métodos para manejo de pagos parciales
+     * ----------------- */
+    public function actualizarSaldos($montoAbono)
+    {
+        $nuevoMontoAbonado = $this->monto_abonado + $montoAbono;
+        $nuevoSaldoPendiente = $this->monto_total - $nuevoMontoAbonado;
+        $pagoCompleto = $nuevoSaldoPendiente <= 0;
+        
+        $this->update([
+            'monto_abonado' => $nuevoMontoAbonado,
+            'saldo_pendiente' => max(0, $nuevoSaldoPendiente),
+            'pago_completo' => $pagoCompleto
+        ]);
+        
+        return $pagoCompleto;
+    }
+    
+    public function inicializarSaldos()
+    {
+        if ($this->saldo_pendiente == 0 && $this->monto_abonado == 0) {
+            $this->update([
+                'saldo_pendiente' => $this->monto_total,
+                'monto_abonado' => 0,
+                'pago_completo' => false
+            ]);
+        }
     }
 }

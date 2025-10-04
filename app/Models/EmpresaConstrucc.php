@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EmpresaConstrucc extends Model
 {
-    use HasFactory;
+    use HasFactory, Filterable;
     
     /**
      * Nombre de la tabla
@@ -29,7 +31,21 @@ class EmpresaConstrucc extends Model
         'telefono',
         'email',
         'representante_legal',
+        'proveedor_id',
         'activo',
+    ];
+    
+    /**
+     * Filtros disponibles
+     */
+    protected static $filters = [
+        'nombre' => 'Nombre',
+        'rfc' => 'Rfc',
+        'razon_social' => 'RazonSocial',
+        'ciudad' => 'Ciudad',
+        'estado' => 'Estado',
+        'proveedor_id' => 'ProveedorId',
+        'activo' => 'Activo',
     ];
     
     /**
@@ -59,6 +75,11 @@ class EmpresaConstrucc extends Model
     /**
      * Relaciones
      */
+    public function proveedor(): BelongsTo
+    {
+        return $this->belongsTo(Proveedor::class, 'proveedor_id');
+    }
+    
     public function solicitudesPago(): HasMany
     {
         return $this->hasMany(SolicitudPago::class, 'empresa_construcc_id');
@@ -82,5 +103,43 @@ class EmpresaConstrucc extends Model
                   ->orWhere('razon_social', 'LIKE', "%{$termino}%")
                   ->orWhere('rfc', 'LIKE', "%{$termino}%");
         })->activo();
+    }
+    
+    /**
+     * Filtros
+     */
+    public function filterByNombre($query, $value)
+    {
+        return $query->where('nombre', 'like', "%$value%");
+    }
+    
+    public function filterByRfc($query, $value)
+    {
+        return $query->where('rfc', 'like', "%$value%");
+    }
+    
+    public function filterByRazonSocial($query, $value)
+    {
+        return $query->where('razon_social', 'like', "%$value%");
+    }
+    
+    public function filterByCiudad($query, $value)
+    {
+        return $query->where('ciudad', 'like', "%$value%");
+    }
+    
+    public function filterByEstado($query, $value)
+    {
+        return $query->where('estado', 'like', "%$value%");
+    }
+    
+    public function filterByProveedorId($query, $value)
+    {
+        return $query->whereIn('proveedor_id', explode(',', $value));
+    }
+    
+    public function filterByActivo($query, $value)
+    {
+        return $query->where('activo', $value);
     }
 }

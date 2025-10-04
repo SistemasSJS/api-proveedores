@@ -168,16 +168,21 @@ Route::prefix('construcc')
             Route::get('/', [ConstruccSolicitudPagoController::class, 'index'])->name('index');
             Route::get('{solicitudPago}', [ConstruccSolicitudPagoController::class, 'show'])->name('show');
 
-            // Gestión de archivos
-            Route::post('{solicitudPago}/comprobante', [ConstruccSolicitudPagoController::class, 'subirComprobantePago'])->name('subir-comprobante');
+            // Gestión de archivos - Descargas protegidas
             Route::get('{solicitudPago}/comprobante/download', [ConstruccSolicitudPagoController::class, 'descargarComprobante'])->name('descargar-comprobante');
             Route::get('{solicitudPago}/factura-pdf/download', [ConstruccSolicitudPagoController::class, 'descargarFacturaPdf'])->name('descargar-factura-pdf');
             Route::get('{solicitudPago}/factura-xml/download', [ConstruccSolicitudPagoController::class, 'descargarFacturaXml'])->name('descargar-factura-xml');
+            Route::get('{solicitudPago}/cotizacion/download', [ConstruccSolicitudPagoController::class, 'descargarCotizacion'])->name('descargar-cotizacion');
 
-            // Cambios de estatus válidos
-            Route::patch('{solicitudPago}/autorizar', [ConstruccSolicitudPagoController::class, 'autorizar'])->name('autorizar');
-            Route::patch('{solicitudPago}/rechazar', [ConstruccSolicitudPagoController::class, 'rechazar'])->name('rechazar');
-            Route::patch('{solicitudPago}/confirmar-pago', [ConstruccSolicitudPagoController::class, 'confirmarPago'])->name('confirmar-pago');
+            // Cambios de estatus con validaciones por rol
+            Route::post('{solicitudPago}/autorizar', [ConstruccSolicitudPagoController::class, 'autorizar'])->name('autorizar');
+            Route::post('{solicitudPago}/rechazar', [ConstruccSolicitudPagoController::class, 'rechazar'])->name('rechazar');
+            Route::post('{solicitudPago}/confirmar-pago', [ConstruccSolicitudPagoController::class, 'confirmarPago'])->name('confirmar-pago');
+
+            // Listados especializados por rol y estado
+            Route::get('por-rol', [ConstruccSolicitudPagoController::class, 'listarPorRol'])->name('por-rol');
+            Route::get('por-estado', [ConstruccSolicitudPagoController::class, 'listarPorEstado'])->name('por-estado');
+            Route::get('estadisticas-rol', [ConstruccSolicitudPagoController::class, 'estadisticasPorRol'])->name('estadisticas-rol');
 
             // Endpoints auxiliares
             Route::get('empresas-constructoras/search', [ConstruccSolicitudPagoController::class, 'empresasConstructoras'])->name('empresas-search');
