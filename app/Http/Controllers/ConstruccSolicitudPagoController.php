@@ -52,9 +52,58 @@ class ConstruccSolicitudPagoController extends Controller
     }
 
     /**
-     * Autorizar una solicitud
+     * Manejo de las validaciondes para los cambios de estado de las SP
+     * 
+     * Estastus globla: PENDIENTE, RECHAZADA, PAGADO
+     * Estastus por rol: DG, DT, CO, SI, DA, RO.
+     *  - Cada uno maneja diferentes estados y un campo de fecha para cuando se realiza la acción.
+     *  PENDIENTE: Estatus default al crear la SP por el proveedor.
+     *     - LOS ROLES [DG, DT, CO, SI] pueden autorizar la SP.
+     *     - El estatus se mantiene...
+     *  RECHAZADA: La empresa constructora puede rechazar la SP, debe proporcionar un motivo. 
+     * 
+     * 
+     * Estados por rol:  
+     *  
+     * 
+     * 
+     * 
+     * 
+     * 
      */
-    public function autorizar(Request $request, SolicitudPago $solicitudPago): JsonResponse
+
+    /**
+     * Autorizar una solicitud.
+     * Solo es permitido si la SP está en estado PENDIENTE.
+     * Dependiendo del rol del usuario, se actualiza el campo correspondiente y se establece la fecha actual.
+     * los roles que pueden autorizar son: DG, DT, CO, SI.
+     * Manejo de las validaciondes para los cambios de estado de las SP
+     * 
+     * Estastus globla: PENDIENTE, RECHAZADA, PAGADO
+     * Estastus por rol: DG, DT, CO, SI, DA, RO.
+     *  - Cada uno maneja diferentes estados y un campo de fecha para cuando se realiza la acción.
+     *  PENDIENTE: Estatus default al crear la SP por el proveedor.
+     *     - LOS ROLES [DG, DT, CO, SI] pueden autorizar la SP.
+     *     - El estatus se mantiene...
+     *  RECHAZADA: La empresa constructora puede rechazar la SP, debe proporcionar un motivo. 
+     * 
+     * 
+     * Estados por rol:  
+     *  
+     * 
+     * 
+     * 
+     * 
+     * 
+     */
+
+    /**
+     * Autorizar una solicitud.
+     * Solo es permitido si la SP está en estado PENDIENTE.
+     * Dependiendo del rol del usuario, se actualiza el campo correspondiente y se establece la fecha actual.
+     * los roles que pueden autorizar son: DG, DT, CO, SI.
+     */
+    public function autorizar(ConstruccSolicitudPagoAutorizarRequest $request, SolicitudPago $solicitudPago): JsonResponse
     {
         $solicitudPago->update([
             'estado_solicitud' => EstadoSP::AUTORIZADA->value,
@@ -89,7 +138,12 @@ class ConstruccSolicitudPagoController extends Controller
     }
 
     /**
-     * Confirmar pago
+     * Confirmar pago. 
+     * Solo es permitido si la SP está en estado AUTORIZADA al menos por un rol DG, DT, CO, SI.
+     * ES requerido subir el comprobante de pago.
+     * Confirmar pago. 
+     * Solo es permitido si la SP está en estado AUTORIZADA al menos por un rol DG, DT, CO, SI.
+     * ES requerido subir el comprobante de pago.
      */
     public function confirmarPago(SolicitudPago $solicitudPago): JsonResponse
     {

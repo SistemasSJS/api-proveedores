@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\SucursalController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProductoImagenController;
@@ -15,6 +14,7 @@ use App\Http\Controllers\AdminHomeControler;
 use App\Http\Controllers\AdminDashboardController;
 use App\Enums\UserRoleEnumerate;
 use App\Http\Controllers\AdminPedidosController;
+use App\Http\Controllers\AdminProveedorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,14 +35,14 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
      */
     Route::prefix('catalogos')->group(function () {
         // Proveedores
-        Route::get('proveedores', [ProveedorController::class, 'index']);
-        Route::post('proveedores', [ProveedorController::class, 'store'])->middleware('audit');
-        Route::get('proveedores/{proveedor}', [ProveedorController::class, 'show']);
-        Route::put('proveedores/{proveedor}', [ProveedorController::class, 'update'])->middleware('audit');
-        Route::patch('proveedores/{proveedor}', [ProveedorController::class, 'update'])->middleware('audit');
-        Route::delete('proveedores/{proveedor}', [ProveedorController::class, 'destroy'])->middleware('audit');
-        Route::get('proveedores/{proveedor}/productos', [ProveedorController::class, 'destroy'])->middleware('audit');
-        Route::get('proveedores/all/count-categorias', [ProveedorController::class, 'proveedoresConCategoriasConSubcatCountProductos'])->middleware('audit');
+        Route::get('proveedores', [AdminProveedorController::class, 'index']);
+        Route::post('proveedores', [AdminProveedorController::class, 'store'])->middleware('audit');
+        Route::get('proveedores/{proveedor}', [AdminProveedorController::class, 'show']);
+        Route::put('proveedores/{proveedor}', [AdminProveedorController::class, 'update'])->middleware('audit');
+        Route::patch('proveedores/{proveedor}', [AdminProveedorController::class, 'update'])->middleware('audit');
+        Route::delete('proveedores/{proveedor}', [AdminProveedorController::class, 'destroy'])->middleware('audit');
+        Route::get('proveedores/{proveedor}/productos', [AdminProveedorController::class, 'destroy'])->middleware('audit');
+        Route::get('proveedores/all/count-categorias', [AdminProveedorController::class, 'proveedoresConCategoriasConSubcatCountProductos'])->middleware('audit');
 
         // Sucursales
         Route::get('sucursales', [SucursalController::class, 'index']);
@@ -169,7 +169,7 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
 
     // API Resources (compatibilidad)
     Route::apiResource('users', UserController::class)->middleware(['audit']);
-    Route::apiResource('proveedores', ProveedorController::class)->middleware(['audit'])->except(['index']);
+    Route::apiResource('proveedores', AdminProveedorController::class)->middleware(['audit'])->except(['index']);
     Route::apiResource('sucursales', SucursalController::class)->middleware(['audit'])->except(['index']);
     Route::apiResource('productos', ProductoController::class)->middleware(['audit'])->except(['index']);
     Route::apiResource('imagenes', ProductoImagenController::class)->middleware(['audit'])->except(['index']);
