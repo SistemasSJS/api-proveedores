@@ -95,6 +95,7 @@ class ProveedorSolicitudPagoController extends Controller
       'cotizacion_id' => $request->cotizacion_id,
       'estado_solicitud' => 'pendiente',
       'fecha_registro_pendiente' => now(),
+      'monto_total' => $request->monto_total, // <- agregado
     ]);
 
     return $this->success(
