@@ -1,0 +1,31 @@
+{
+  "recommendations": [
+    // --- Angular & Ionic ---
+    "angular.ng-template",               // Angular Language Service
+    "johnpapa.angular2",                 // Angular Snippets (por John Papa)
+    "ionic.ionic",                       // Ionic Snippets
+
+    // --- Laravel & PHP ---
+    "felixfbecker.php-intellisense",     // PHP IntelliSense
+    "neilbrayfield.php-docblocker",      // Docblocks automáticos
+    "onecentlin.laravel-blade",          // Blade syntax
+    "onecentlin.laravel5-snippets",      // Snippets de Laravel
+    "ryannaddy.laravel-artisan",         // Comandos Artisan
+    "amiralizadeh9480.laravel-extra-intellisense", // IntelliSense mejorado
+
+    // --- Python ---
+    "ms-python.python",                  // Python support
+    "ms-python.vscode-pylance",          // IntelliSense para Python
+
+    // --- Utilidades útiles ---
+    "esbenp.prettier-vscode",            // Formateador de código
+    "editorconfig.editorconfig",         // Soporte para .editorconfig
+    "streetsidesoftware.code-spell-checker", // Corrector ortográfico
+    "dbaeumer.vscode-eslint",            // Linter JS/TS
+    "xabikos.javascriptsnippets",        // Snippets JS/TS
+    "gruntfuggly.todo-tree",             // Resalta TODOs y FIXMEs
+    "formulahendry.auto-rename-tag",     // Renombrado automático de etiquetas HTML
+    "formulahendry.auto-close-tag",
+    "bmewburn.vscode-intelephense-client" // Cierre automático de etiquetas
+  ]
+}
