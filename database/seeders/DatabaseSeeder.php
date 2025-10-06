@@ -28,18 +28,9 @@ class DatabaseSeeder extends Seeder
 
             // Seeders base para catálogos y proveedores
             $this->call([
-                // Empresas constructoras (requerido para SolicitudPago)
-                EmpresaConstruccSeeder::class,
-
                 // Proveedores originales
                 ProveedorSeeder::class,
-                ProveedoresSPSeeder::class,
-                // Empresas constructoras (requerido para SolicitudPago)
-                EmpresaConstruccSeeder::class,
 
-                // Proveedores originales
-                ProveedorSeeder::class,
-                ProveedoresSPSeeder::class,
 
                 // Catálogos básicos
                 SucursalSeeder::class,
@@ -62,6 +53,9 @@ class DatabaseSeeder extends Seeder
             // IMPORTANTE: Ejecutar en este orden específico
 
             $this->call([
+                // Empresas constructoras (requerido para SolicitudPago)
+                EmpresaConstruccSeeder::class,
+
                 // 1. Proveedores SP adicionales
                 ProveedoresSPSeeder::class,
 

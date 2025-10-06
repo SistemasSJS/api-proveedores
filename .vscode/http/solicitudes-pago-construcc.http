@@ -3,8 +3,8 @@
 # API Solicitudes de Pago - Los Mochis, Sinaloa, México
 ###
 
-# @baseUrl = http://localhost:8080/api
-@baseUrl = https://apicons.ddns.net:8092/api
+@baseUrl = http://localhost:8080/api
+# @baseUrl = https://apicons.ddns.net:8092/api
 @contentType = application/json
 @acceptType = application/json
 @apiKey = /%-!?=T35sT._22<1|:

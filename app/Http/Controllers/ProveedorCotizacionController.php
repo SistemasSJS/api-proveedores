@@ -45,7 +45,7 @@ class ProveedorCotizacionController extends Controller
     $order   = $request->input('order', 'desc');
 
     $items = Cotizacion::query()
-      ->with(['proveedor', 'empresaConstrucc'])
+      ->with(Cotizacion::eagerLodable())
       ->where('proveedor_id', $proveedor->id)
       ->filter($filters)
       ->orderBy($sortBy, $order)

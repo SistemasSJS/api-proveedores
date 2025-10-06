@@ -41,6 +41,17 @@ class Cotizacion extends BaseModel
         'estatus'           => 'Estatus',
     ];
 
+    /**
+     * Relaciones para cargar con 'with'
+     */
+    public static function eagerLodable(): array
+    {
+        return [
+            'proveedor',
+            'detalles',
+        ];
+    }
+
     public function filterByProveedorId($query, $value)
     {
         return $query->whereIn('proveedor_id', explode(',', $value));

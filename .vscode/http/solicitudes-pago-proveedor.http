@@ -40,7 +40,7 @@ Authorization: Bearer {{proveedorToken}}
 Accept: {{acceptType}}
 
 ### Guardar el token del login en @proveedorToken manualmente:
-@proveedorToken = 1|wd3HMeCN05WIz4BUhpjhNWjbzmAR1IxeepxdVCZQ1ad38390
+@proveedorToken = 2|yfz8W0bpUQf7O5PnGjVQKjeswdEeorauhaCDk11Z0eb0eb9b
 @proveedorId = 4
 
 
@@ -54,38 +54,19 @@ Authorization: Bearer {{proveedorToken}}
 Accept: {{acceptType}}
 
 ### 2. Crear solicitud de pago (Proveedor) - Multipart
+### Crear solicitud de pago
+
+### Crear solicitud de pago
 POST {{baseUrl}}/proveedores/{{proveedorId}}/solicitudes-pago
 Authorization: Bearer {{proveedorToken}}
-Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+Accept: application/json
 
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="descripcion_concepto"
-
-Pago por servicios de construcción - Enero 2024
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="empresa_construcc_id"
-
-{{empresaId}}
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="residente"
-
-Juan Pérez López
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="cotizacion_id"
-
-1
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="factura_pdf"; filename="factura.pdf"
-Content-Type: application/pdf
-
-< ./tests/files/facturas/Cfdi-4539.pdf
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="factura_xml"; filename="factura.xml"
-Content-Type: application/xml
-
-< ./tests/files/facturas/Cfdi-4539.xml
-------WebKitFormBoundary7MA4YWxkTrZu0gW--
-
+descripcion_concepto=Pago por servicios de construcción - Enero 2024
+empresa_construcc_id={{empresaId}}
+residente=Juan Pérez López
+cotizacion_id=1
+factura_pdf=@./tests/files/facturas/Cfdi-4539.pdf;type=application/pdf
+factura_xml=@./tests/files/facturas/Cfdi-4539.xml;type=application/xml
 
 ### 3. Ver detalle de solicitud
 GET {{baseUrl}}/proveedores/{{proveedorId}}/solicitudes-pago/{{solicitudId}}
