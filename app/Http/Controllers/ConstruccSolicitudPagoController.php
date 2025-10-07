@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Enums\EstadoSP;
 use App\Enums\EstadoSolicitud;
+use App\Http\Requests\Construcc\SolicitudPagoAutorizarRequest;
+use App\Http\Requests\Construcc\SolicitudPagoConfirmarPagoRequest;
+use App\Http\Requests\Construcc\SolicitudPagoRechazarRequest;
 use App\Http\Resources\Construcc\ConstruccSolicitudPagoResource;
 use App\Models\SolicitudPago;
 use App\Traits\ApiResponse;
@@ -13,6 +16,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Tymon\JWTAuth\Claims\JwtId;
 
+use function PHPUnit\Framework\returnSelf;
+
 class ConstruccSolicitudPagoController extends Controller
 {
     use ApiResponse;
@@ -20,12 +25,12 @@ class ConstruccSolicitudPagoController extends Controller
     /**
      * Roles que pueden autorizar solicitudes de pago
      */
-    private const ROLES_AUTORIZACION = ['DG', 'DT', 'CO', 'SI'];
+    private const ROLES_AUTORIZACION = ['DG', 'DT', 'PC', 'SI'];
 
     /**
      * Roles que pueden rechazar solicitudes
      */
-    private const ROLES_RECHAZO = ['DG', 'DT', 'CO', 'SI', 'DA'];
+    private const ROLES_RECHAZO = ['DG', 'DT', 'PC', 'SI', 'DA'];
 
     /**
      * Rol que puede confirmar pagos
@@ -73,21 +78,18 @@ class ConstruccSolicitudPagoController extends Controller
 
     /**
      * Autorizar una solicitud de pago por rol específico
-     * Roles: DG, DT, CO, SI
+     * Roles: DG, DT, PC, SI
      * 
      * Reglas:
      * - Solo se puede autorizar si la SP está PENDIENTE
      * - DG puede autorizar directamente (pasa a estado compuesto)
-     * - DT, CO, SI autorizan individualmente
-     * - Si todos los roles [DG, DT, CO, SI] autorizan, pasa a AUTORIZADA
+     * - DT, PC, SI autorizan individualmente
+     * - Si todos los roles [DG, DT, PC, SI] autorizan, pasa a AUTORIZADA
      */
-    public function autorizar(Request $request, SolicitudPago $solicitudPago): JsonResponse
+    public function autorizar(SolicitudPagoAutorizarRequest $request, SolicitudPago $solicitudPago): JsonResponse
     {
-        $request->validate([
-            'rol' => ['required', 'string', Rule::in(self::ROLES_AUTORIZACION)]
-        ]);
-
-        $rol = strtoupper($request->rol);
+        $data = $request->validated();
+        $rol = strtoupper($data['rol']);
 
         // Validar que la SP esté en estado PENDIENTE
         if ($solicitudPago->estado_solicitud !== EstadoSP::PENDIENTE->value) {
@@ -95,7 +97,7 @@ class ConstruccSolicitudPagoController extends Controller
         }
 
         // Validar que el rol no haya autorizado previamente
-        $rolField = strtolower($rol === 'CO' ? 'pc' : $rol);
+        $rolField = strtolower($rol === 'PC' ? 'pc' : $rol);
         if ($solicitudPago->$rolField === EstadoSolicitud::AUTORIZADA->value) {
             return $this->error('Este rol ya ha autorizado la solicitud.', null, 400);
         }
@@ -128,22 +130,19 @@ class ConstruccSolicitudPagoController extends Controller
      * Rechazar una solicitud de pago por rol específico
      * 
      * Reglas:
-     * - DT, CO, SI, DA solo pueden rechazar si está PENDIENTE
+     * - DT, PC, SI, DA solo pueden rechazar si está PENDIENTE
      * - DG puede rechazar en cualquier momento antes de PAGADO
      */
-    public function rechazar(Request $request, SolicitudPago $solicitudPago): JsonResponse
+    public function rechazar(SolicitudPagoRechazarRequest $request, SolicitudPago $solicitudPago): JsonResponse
     {
-        $request->validate([
-            'rol' => ['required', 'string', Rule::in(self::ROLES_RECHAZO)],
-            'motivo_rechazo' => 'required|string|max:500'
-        ]);
+        $data = $request->validated();
 
-        $rol = strtoupper($request->rol);
+        $rol = strtoupper($data['rol']);
         $estadoActual = $solicitudPago->estado_solicitud;
 
         // Validaciones según el rol
         if ($rol !== 'DG') {
-            // DT, CO, SI, DA solo pueden rechazar si está PENDIENTE
+            // DT, PC, SI, DA solo pueden rechazar si está PENDIENTE
             if ($estadoActual !== EstadoSP::PENDIENTE->value) {
                 return $this->error('Solo se pueden rechazar solicitudes en estado PENDIENTE.', null, 400);
             }
@@ -155,12 +154,12 @@ class ConstruccSolicitudPagoController extends Controller
         }
 
         // Actualizar estado y registrar quién rechazó
-        $rolField = strtolower($rol === 'CO' ? 'pc' : $rol);
+        $rolField = strtolower($rol === 'PC' ? 'pc' : $rol);
         $fechaField = $rolField . '_fecha';
 
         $solicitudPago->update([
             'estado_solicitud' => EstadoSP::RECHAZADA->value,
-            'motivo_rechazo' => $request->motivo_rechazo,
+            'motivo_rechazo' => $data['motivo_rechazo'],
             $rolField => EstadoSolicitud::RECHAZADA->value,
             $fechaField => now(),
         ]);
@@ -174,19 +173,49 @@ class ConstruccSolicitudPagoController extends Controller
     /**
      * Confirmar pago de una solicitud (completo o parcial)
      * Solo DA puede confirmar pagos y debe subir comprobante
-     * Solo es posible si la SP está AUTORIZADA
+     * Solo es posible si la SP cumple con las reglas de autorización:
+     *  - DG aprobó (tiene fuerza mayor) O al menos uno de DT/PC/SI aprobó
+     *  - No debe tener roles rechazados
+     *  - Debe estar en estado AUTORIZADA o PAGADO (pagos parciales)
+     *  - No debe estar completamente pagada
      */
-    public function confirmarPago(Request $request, SolicitudPago $solicitudPago): JsonResponse
+    public function confirmarPago(SolicitudPagoConfirmarPagoRequest $request, SolicitudPago $solicitudPago): JsonResponse
     {
-        $request->validate([
-            'comprobante' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
-            'monto_abono' => 'required|numeric|min:0.01',
-            'notas_abono' => 'nullable|string|max:500'
-        ]);
+        $data = $request->validated();
+        // 1. Verificar que tenga autorización suficiente (DG o al menos uno de DT/PC/SI)
+        // if (!$this->verificarAutorizacionDeAlmenosUno($solicitudPago)) {
+        //     return $this->error(
+        //         'La solicitud no tiene autorización suficiente. Requiere aprobación de DG o al menos uno de DT/PC/SI.',
+        //         null,
+        //         400
+        //     );
+        // }
 
-        // Validar que esté en estado AUTORIZADA o ya tenga pagos parciales
-        if (!in_array($solicitudPago->estado_solicitud, [EstadoSP::AUTORIZADA->value, EstadoSP::PAGADO->value])) {
-            return $this->error('Solo se pueden confirmar pagos de solicitudes AUTORIZADAS.', null, 400);
+        // 2. Verificar que no tenga roles rechazados
+        if ($solicitudPago->estado_solicitud === EstadoSP::RECHAZADA->value) {
+            return $this->error(
+                'No se puede confirmar el pago porque uno o más roles han rechazado la solicitud.',
+                null,
+                400
+            );
+        }
+
+        // 3. Verificar que esté en estado válido (AUTORIZADA o PAGADO con pagos parciales)
+        if (!in_array($solicitudPago->estado_solicitud, [EstadoSP::PENDIENTE->value, EstadoSP::PAGADO->value])) {
+            return $this->error(
+                'Solo se pueden confirmar pagos de solicitudes AUTORIZADAS o con pagos parciales.',
+                null,
+                400
+            );
+        }
+
+        // 4. Verificar que no esté completamente pagada
+        if ($solicitudPago->estado_solicitud === EstadoSP::PAGADO->value && $solicitudPago->pago_completo === true) {
+            return $this->error(
+                'Esta solicitud ya ha sido pagada completamente.',
+                null,
+                400
+            );
         }
 
         // Inicializar saldos si es el primer abono
@@ -194,7 +223,7 @@ class ConstruccSolicitudPagoController extends Controller
         $solicitudPago->refresh();
 
         // Validar que el monto del abono no exceda el saldo pendiente
-        $montoAbono = $request->monto_abono;
+        $montoAbono = $data['monto_pagado'];
         if ($montoAbono > $solicitudPago->saldo_pendiente) {
             return $this->error(
                 "El monto del abono ({$montoAbono}) no puede ser mayor al saldo pendiente ({$solicitudPago->saldo_pendiente}).",
@@ -307,11 +336,11 @@ class ConstruccSolicitudPagoController extends Controller
     public function listarPorRol(Request $request): JsonResponse
     {
         $request->validate([
-            'rol' => ['required', 'string', Rule::in(['DG', 'DT', 'CO', 'SI', 'DA'])]
+            'rol' => ['required', 'string', Rule::in(['DG', 'DT', 'PC', 'SI', 'DA', 'RO'])]
         ]);
 
         $rol = strtoupper($request->rol);
-        $rolField = strtolower($rol === 'CO' ? 'pc' : $rol);
+        $rolField = strtolower($rol === 'PC' ? 'pc' : $rol);
 
         $filters = $request->only(SolicitudPago::getFilters());
         $sortBy = $request->input('sort_by', 'created_at');
@@ -324,31 +353,54 @@ class ConstruccSolicitudPagoController extends Controller
         if ($rol === 'DA') {
             // DA ve las solicitudes AUTORIZADAS para confirmar pago
             // O las que ya tienen pagos parciales (estado PAGADO pero no pago_completo)
+            $query->where('estado_solicitud', '!=', EstadoSP::AUTORIZADA->value)
+                ->where(function ($q) {
+                    $q->where('dg', EstadoSolicitud::AUTORIZADA->value)
+                        ->orWhere('dt', EstadoSolicitud::AUTORIZADA->value)
+                        ->orWhere('pc', EstadoSolicitud::AUTORIZADA->value)
+                        ->orWhere('si', EstadoSolicitud::AUTORIZADA->value);
+                })
+                ->where('pago_completo', false);
+        } else if ($rol === 'RO') {
             $query->where(function ($q) {
-                $q->where('estado_solicitud', EstadoSP::AUTORIZADA->value)
-                    ->orWhere(function ($subQ) {
-                        $subQ->where('estado_solicitud', EstadoSP::PAGADO->value)
-                            ->where('pago_completo', false);
-                    });
+                $q->where('estado_solicitud', EstadoSP::PENDIENTE->value);
+                //  TODO : Filtar las que peretenencen a ese RO   
             });
-        } else {
-            // Otros roles: SP en estado PENDIENTE que no han autorizado aún
-            $query->where('estado_solicitud', EstadoSP::PENDIENTE->value)
-                ->where(function ($q) use ($rolField) {
-                    $q->where($rolField, EstadoSolicitud::PENDIENTE->value)
-                        ->orWhereNull($rolField);
-                });
-
+        } else if ($rol === 'DG') {
             // Si es DG, mostrar todas las pendientes independientemente de otros roles
-            // Si es DT, CO, SI - no mostrar las que ya autorizó DG (para evitar duplicados)
-            if ($rol !== 'DG') {
-                $query->where(function ($q) {
-                    $q->where('dg', '!=', EstadoSolicitud::AUTORIZADA->value)
-                        ->orWhereNull('dg')
-                        ->orWhere('dg', EstadoSolicitud::PENDIENTE->value);
-                });
-            }
+            // Si es DT, PC, SI - no mostrar las que ya autorizó DG (para evitar duplicados)
+            $query->where(function ($q) {
+                $q->where('dg', '!=', EstadoSolicitud::AUTORIZADA->value)
+                    ->orWhereNull('dg')
+                    ->orWhere('dg', EstadoSolicitud::PENDIENTE->value);
+            });
+        } else if ($rol === 'DT') {
+            // Si es DG, mostrar todas las pendientes independientemente de otros roles
+            // Si es DT, PC, SI - no mostrar las que ya autorizó DG (para evitar duplicados)
+            $query->where(function ($q) {
+                $q->where('dt', '!=', EstadoSolicitud::AUTORIZADA->value)
+                    ->orWhereNull('dt')
+                    ->orWhere('dt', EstadoSolicitud::PENDIENTE->value);
+            });
+        } else if ($rol === 'PC') {
+            // Si es DG, mostrar todas las pendientes independientemente de otros roles
+            // Si es DT, PC, SI - no mostrar las que ya autorizó DG (para evitar duplicados)
+            $query->where(function ($q) {
+                $q->where('pc', '!=', EstadoSolicitud::AUTORIZADA->value)
+                    ->orWhereNull('pc')
+                    ->orWhere('pc', EstadoSolicitud::PENDIENTE->value);
+            });
+        } else if ($rol === 'SI') {
+            // Si es DG, mostrar todas las pendientes independientemente de otros roles
+            // Si es DT, PC, SI - no mostrar las que ya autorizó DG (para evitar duplicados)
+            $query->where(function ($q) {
+                $q->where('si', '!=', EstadoSolicitud::AUTORIZADA->value)
+                    ->orWhereNull('si')
+                    ->orWhere('si', EstadoSolicitud::PENDIENTE->value);
+            });
         }
+
+
 
         $query->filter($filters)->orderBy($sortBy, $order);
         $paginator = $query->paginate($perPage);
@@ -400,7 +452,7 @@ class ConstruccSolicitudPagoController extends Controller
     public function estadisticasPorRol(Request $request): JsonResponse
     {
         $request->validate([
-            'rol' => ['nullable', 'string', Rule::in(['DG', 'DT', 'CO', 'SI', 'DA'])]
+            'rol' => ['nullable', 'string', Rule::in(['DG', 'DT', 'PC', 'SI', 'DA'])]
         ]);
 
         $rol = $request->rol ? strtoupper($request->rol) : null;
@@ -417,7 +469,7 @@ class ConstruccSolicitudPagoController extends Controller
         ];
 
         if ($rol) {
-            $rolField = strtolower($rol === 'CO' ? 'pc' : $rol);
+            $rolField = strtolower($rol === 'PC' ? 'pc' : $rol);
 
             if ($rol === 'DA') {
                 $stats['pendientes'] = SolicitudPago::where('estado_solicitud', EstadoSP::AUTORIZADA->value)->count();
@@ -460,5 +512,20 @@ class ConstruccSolicitudPagoController extends Controller
             $solicitudPago->dt === EstadoSolicitud::AUTORIZADA->value &&
             $solicitudPago->pc === EstadoSolicitud::AUTORIZADA->value &&
             $solicitudPago->si === EstadoSolicitud::AUTORIZADA->value;
+    }
+
+    private function verificarAutorizacionDeAlmenosUno(SolicitudPago $solicitudPago): bool
+    {
+        $autorizado = EstadoSolicitud::AUTORIZADA->value;
+
+        // DG tiene fuerza mayor - si DG autoriza, es suficiente
+        if ($solicitudPago->dg === $autorizado) {
+            return true;
+        }
+
+        // Al menos uno de DT, PC o SI debe haber autorizado
+        return ($solicitudPago->dt === $autorizado ||
+            $solicitudPago->pc === $autorizado ||
+            $solicitudPago->si === $autorizado);
     }
 }

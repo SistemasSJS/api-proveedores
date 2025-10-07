@@ -166,6 +166,14 @@ Route::prefix('construcc')
 
             // Listado y detalle (solo lectura en ConstruccApp)
             Route::get('/', [ConstruccSolicitudPagoController::class, 'index'])->name('index');
+            // Listados especializados por rol y estado
+            Route::get('por-rol', [ConstruccSolicitudPagoController::class, 'listarPorRol'])->name('por-rol');
+            Route::get('por-estado', [ConstruccSolicitudPagoController::class, 'listarPorEstado'])->name('por-estado');
+            Route::get('estadisticas-rol', [ConstruccSolicitudPagoController::class, 'estadisticasPorRol'])->name('estadisticas-rol');
+
+            // Endpoints auxiliares
+            Route::get('empresas-constructoras/search', [ConstruccSolicitudPagoController::class, 'empresasConstructoras'])->name('empresas-search');
+            Route::get('estadisticas', [ConstruccSolicitudPagoController::class, 'estadisticas'])->name('estadisticas');
             Route::get('{solicitudPago}', [ConstruccSolicitudPagoController::class, 'show'])->name('show');
 
             // Gestión de archivos - Descargas protegidas
@@ -178,15 +186,6 @@ Route::prefix('construcc')
             Route::post('{solicitudPago}/autorizar', [ConstruccSolicitudPagoController::class, 'autorizar'])->name('autorizar');
             Route::post('{solicitudPago}/rechazar', [ConstruccSolicitudPagoController::class, 'rechazar'])->name('rechazar');
             Route::post('{solicitudPago}/confirmar-pago', [ConstruccSolicitudPagoController::class, 'confirmarPago'])->name('confirmar-pago');
-
-            // Listados especializados por rol y estado
-            Route::get('por-rol', [ConstruccSolicitudPagoController::class, 'listarPorRol'])->name('por-rol');
-            Route::get('por-estado', [ConstruccSolicitudPagoController::class, 'listarPorEstado'])->name('por-estado');
-            Route::get('estadisticas-rol', [ConstruccSolicitudPagoController::class, 'estadisticasPorRol'])->name('estadisticas-rol');
-
-            // Endpoints auxiliares
-            Route::get('empresas-constructoras/search', [ConstruccSolicitudPagoController::class, 'empresasConstructoras'])->name('empresas-search');
-            Route::get('estadisticas', [ConstruccSolicitudPagoController::class, 'estadisticas'])->name('estadisticas');
         });
 
         /**
