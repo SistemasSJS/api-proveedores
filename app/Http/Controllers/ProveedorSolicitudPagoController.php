@@ -74,7 +74,7 @@ class ProveedorSolicitudPagoController extends Controller
 
     $rutaPdf = $facturaPdf->store('facturas/pdf', 'private');
     $rutaXml = $facturaXml->store('facturas/xml', 'private');
-    
+
     // Procesar archivo de cotización si existe
     $rutaCotizacion = null;
     if ($cotizacionFile) {
@@ -92,7 +92,7 @@ class ProveedorSolicitudPagoController extends Controller
     $empresaConstructId = $request->empresa_construcc_id;
 
     $montoTotal = $request->monto_total;
-    
+
     $solicitud = SolicitudPago::create([
       'proveedor_id' => $proveedor->id,
       'numero_folio_solicitud' => $numeroFolio,

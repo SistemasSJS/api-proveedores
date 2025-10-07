@@ -16,6 +16,10 @@ class ConstruccSolicitudPagoResource extends JsonResource
             'monto_total'            => $this->monto_total,
             'proveedor'              => new ConstruccProveedorResource($this->whenLoaded('proveedor')),
             'cotizacion'             => new ConstruccCotizacionResource($this->whenLoaded('cotizacion')),
+            'ruta_archivo_factura_xml'    => $this->ruta_archivo_factura_xml,
+            'ruta_archivo_factura_pdf'    => $this->ruta_archivo_factura_pdf,
+            'ruta_archivo_cotizacion'     => $this->ruta_archivo_cotizacion,
+            'ruta_archivo_comprobante_pago' => $this->ruta_archivo_comprobante_pago,
             // Archivos con URLs correctas
             'url_comprobante_pago' => $this->ruta_archivo_comprobante_pago
                 ? route('construcc.solicitudes-pago.descargar-comprobante', $this->id)

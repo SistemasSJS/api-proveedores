@@ -52,7 +52,7 @@ export interface SolicitudPago {
 	residente?: string;
 	cotizacion_id?: number;
 	sucursal_id?: number;
-	
+
 	// Fechas por estatus
 	fecha_registro_pendiente?: string;
 	fecha_inicio_procesamiento?: string;
@@ -61,11 +61,11 @@ export interface SolicitudPago {
 	fecha_confirmacion_pago?: string;
 	fecha_rechazado?: string;
 	fecha_cancelado?: string;
-	
+
 	// Motivos
 	motivo_rechazo?: string;
 	motivo_cancelacion?: string;
-	
+
 	// Relaciones
 	proveedor?: {
 		id: number;
@@ -76,7 +76,7 @@ export interface SolicitudPago {
 		telefono: string;
 		logo?: string;
 	};
-	
+
 	empresa_construcc?: {
 		id: number;
 		nombre: string;
@@ -84,22 +84,22 @@ export interface SolicitudPago {
 		rfc: string;
 		representante_legal?: string;
 	};
-	
+
 	sucursal?: {
 		id: number;
 		nombre: string;
 		direccion: string;
 		telefono?: string;
 	};
-	
+
 	created_at: string;
 	updated_at: string;
 }
 
 // Estados posibles de una solicitud de pago
-export type EstadoSolicitud = 
+export type EstadoSolicitud =
 	| 'pendiente'
-	| 'procesando' 
+	| 'procesando'
 	| 'con_comprobante'
 	| 'aprobado'
 	| 'pagado'
@@ -125,7 +125,7 @@ export interface SolicitudesPagoFilters {
 	empresa_construcc_id?: number[] | string;
 	residente?: string;
 	cotizacion_id?: number[] | string;
-	
+
 	// Filtros por fechas específicas
 	fecha_registro_pendiente?: string;
 	fecha_inicio_procesamiento?: string;
@@ -134,7 +134,7 @@ export interface SolicitudesPagoFilters {
 	fecha_confirmacion_pago?: string;
 	fecha_rechazado?: string;
 	fecha_cancelado?: string;
-	
+
 	// Filtros por rangos de fechas
 	fecha_registro_pendiente_desde?: string;
 	fecha_registro_pendiente_hasta?: string;
@@ -150,7 +150,7 @@ export interface SolicitudesPagoFilters {
 	fecha_rechazado_hasta?: string;
 	fecha_cancelado_desde?: string;
 	fecha_cancelado_hasta?: string;
-	
+
 	// Parámetros de ordenamiento y paginación
 	sort_by?: 'numero_folio_solicitud' | 'descripcion_concepto' | 'estado_solicitud' | 'created_at' | 'updated_at';
 	order?: 'asc' | 'desc';
@@ -243,11 +243,11 @@ export interface ListadoPorEstadoResponse {
 	providedIn: 'root',
 })
 export class ConstruccSolicitudesPagoApiKeyService {
-	private readonly apiUrl = environment.apiUrl || 'http://localhost:8000/api';
+	private readonly apiUrl = environment.API_URL_CONSTRUCC_PROV || 'http://localhost:8000/api';
 	private readonly baseUrl = `${this.apiUrl}/construcc/solicitudes-pago`;
-	private readonly apiKey = environment.apiKey || '';
+	private readonly apiKey = environment.TOKEN_CONSTRUCC_APP || '';
 
-	constructor(private http: HttpClient) {}
+	constructor(private http: HttpClient) { }
 
 	// ==========================================
 	// CONFIGURACIÓN DE HEADERS CON API KEY
@@ -381,7 +381,7 @@ export class ConstruccSolicitudesPagoApiKeyService {
 		return this.http
 			.get(
 				`${this.baseUrl}/${id}/comprobante/download`,
-				{ 
+				{
 					headers: this.getDownloadHeaders(),
 					responseType: 'blob'
 				}
@@ -397,7 +397,7 @@ export class ConstruccSolicitudesPagoApiKeyService {
 		return this.http
 			.get(
 				`${this.baseUrl}/${id}/factura-pdf/download`,
-				{ 
+				{
 					headers: this.getDownloadHeaders(),
 					responseType: 'blob'
 				}
@@ -413,7 +413,7 @@ export class ConstruccSolicitudesPagoApiKeyService {
 		return this.http
 			.get(
 				`${this.baseUrl}/${id}/factura-xml/download`,
-				{ 
+				{
 					headers: this.getDownloadHeaders(),
 					responseType: 'blob'
 				}
@@ -429,7 +429,7 @@ export class ConstruccSolicitudesPagoApiKeyService {
 		return this.http
 			.get(
 				`${this.baseUrl}/${id}/cotizacion/download`,
-				{ 
+				{
 					headers: this.getDownloadHeaders(),
 					responseType: 'blob'
 				}
@@ -493,7 +493,7 @@ export class ConstruccSolicitudesPagoApiKeyService {
 	 */
 	listarPorRol(params?: { rol?: string; page?: number; per_page?: number }): Observable<ListadoPorRolResponse> {
 		const httpParams = this.buildParams(params);
-		
+
 		return this.http
 			.get<ListadoPorRolResponse>(
 				`${this.baseUrl}/por-rol`,
@@ -508,7 +508,7 @@ export class ConstruccSolicitudesPagoApiKeyService {
 	 */
 	listarPorEstado(params?: { estado?: EstadoSolicitud; page?: number; per_page?: number }): Observable<ListadoPorEstadoResponse> {
 		const httpParams = this.buildParams(params);
-		
+
 		return this.http
 			.get<ListadoPorEstadoResponse>(
 				`${this.baseUrl}/por-estado`,
@@ -523,7 +523,7 @@ export class ConstruccSolicitudesPagoApiKeyService {
 	 */
 	estadisticasPorRol(params?: { rol?: string }): Observable<ApiResponse<EstadisticasSolicitudPagoRol>> {
 		const httpParams = this.buildParams(params);
-		
+
 		return this.http
 			.get<ApiResponse<EstadisticasSolicitudPagoRol>>(
 				`${this.baseUrl}/estadisticas-rol`,
@@ -537,7 +537,7 @@ export class ConstruccSolicitudesPagoApiKeyService {
 	 * GET /api/construcc/solicitudes-pago/empresas-constructoras/search
 	 */
 	buscarEmpresasConstructoras(
-		search = '', 
+		search = '',
 		limit = 20
 	): Observable<ApiResponse<EmpresaConstrucc[]>> {
 		let params = new HttpParams()
@@ -559,14 +559,14 @@ export class ConstruccSolicitudesPagoApiKeyService {
 	 * Obtiene estadísticas generales
 	 * GET /api/construcc/solicitudes-pago/estadisticas
 	 */
-	estadisticas(params?: { 
-		empresa_construcc_id?: number; 
+	estadisticas(params?: {
+		empresa_construcc_id?: number;
 		proveedor_id?: number;
 		fecha_desde?: string;
 		fecha_hasta?: string;
 	}): Observable<ApiResponse<EstadisticasSolicitudPago>> {
 		const httpParams = this.buildParams(params);
-		
+
 		return this.http
 			.get<ApiResponse<EstadisticasSolicitudPago>>(
 				`${this.baseUrl}/estadisticas`,
@@ -686,229 +686,229 @@ import { Component, OnInit } from '@angular/core';
 import { ConstruccSolicitudesPagoApiKeyService } from './construcc-solicitudes-pago-apikey.service';
 
 @Component({
-  selector: 'app-solicitudes-pago',
-  templateUrl: './solicitudes-pago.component.html'
+	selector: 'app-solicitudes-pago',
+	templateUrl: './solicitudes-pago.component.html'
 })
 export class SolicitudesPagoComponent implements OnInit {
-  solicitudes: SolicitudPago[] = [];
-  loading = false;
-  error: string | null = null;
+	solicitudes: SolicitudPago[] = [];
+	loading = false;
+	error: string | null = null;
   
-  constructor(
-    private solicitudService: ConstruccSolicitudesPagoApiKeyService
-  ) {}
+	constructor(
+		private solicitudService: ConstruccSolicitudesPagoApiKeyService
+	) {}
   
-  ngOnInit() {
-    // Verificar configuración de API Key
-    if (!this.solicitudService.isApiKeyConfigured()) {
-      this.error = 'API Key no configurada. Verifica el archivo environment.ts';
-      return;
-    }
-    
-    this.cargarSolicitudes();
-  }
+	ngOnInit() {
+		// Verificar configuración de API Key
+		if (!this.solicitudService.isApiKeyConfigured()) {
+			this.error = 'API Key no configurada. Verifica el archivo environment.ts';
+			return;
+		}
+	  
+		this.cargarSolicitudes();
+	}
   
-  // 1️⃣ CARGAR LISTADO CON FILTROS
-  cargarSolicitudes() {
-    this.loading = true;
-    this.error = null;
-    
-    this.solicitudService.index({
-      estado_solicitud: ['pendiente', 'procesando'],
-      page: 1,
-      per_page: 20,
-      sort_by: 'created_at',
-      order: 'desc'
-    }).subscribe({
-      next: (response) => {
-        this.solicitudes = response.data;
-        console.log('Total de solicitudes:', response.pagination.total);
-        this.loading = false;
-      },
-      error: (error) => {
-        this.error = error;
-        this.loading = false;
-      }
-    });
-  }
+	// 1️⃣ CARGAR LISTADO CON FILTROS
+	cargarSolicitudes() {
+		this.loading = true;
+		this.error = null;
+	  
+		this.solicitudService.index({
+			estado_solicitud: ['pendiente', 'procesando'],
+			page: 1,
+			per_page: 20,
+			sort_by: 'created_at',
+			order: 'desc'
+		}).subscribe({
+			next: (response) => {
+				this.solicitudes = response.data;
+				console.log('Total de solicitudes:', response.pagination.total);
+				this.loading = false;
+			},
+			error: (error) => {
+				this.error = error;
+				this.loading = false;
+			}
+		});
+	}
   
-  // 2️⃣ VER DETALLE DE SOLICITUD
-  verDetalle(id: number) {
-    this.solicitudService.show(id).subscribe({
-      next: (response) => {
-        console.log('Detalle de solicitud:', response.data);
-        // Navegar al detalle o mostrar en modal
-      },
-      error: (error) => console.error('Error al obtener detalle:', error)
-    });
-  }
+	// 2️⃣ VER DETALLE DE SOLICITUD
+	verDetalle(id: number) {
+		this.solicitudService.show(id).subscribe({
+			next: (response) => {
+				console.log('Detalle de solicitud:', response.data);
+				// Navegar al detalle o mostrar en modal
+			},
+			error: (error) => console.error('Error al obtener detalle:', error)
+		});
+	}
   
-  // 3️⃣ AUTORIZAR SOLICITUD
-  autorizarSolicitud(solicitud: SolicitudPago) {
-    if (!this.solicitudService.puedeCambiarEstado(solicitud.estado_solicitud, 'aprobado')) {
-      this.error = 'Esta solicitud no puede ser autorizada en su estado actual';
-      return;
-    }
-    
-    this.solicitudService.autorizar(solicitud.id, {
-      observaciones: 'Autorizado por el supervisor',
-      monto_autorizado: 50000
-    }).subscribe({
-      next: (response) => {
-        console.log('Solicitud autorizada:', response.data);
-        this.cargarSolicitudes(); // Recargar lista
-      },
-      error: (error) => this.error = error
-    });
-  }
+	// 3️⃣ AUTORIZAR SOLICITUD
+	autorizarSolicitud(solicitud: SolicitudPago) {
+		if (!this.solicitudService.puedeCambiarEstado(solicitud.estado_solicitud, 'aprobado')) {
+			this.error = 'Esta solicitud no puede ser autorizada en su estado actual';
+			return;
+		}
+	  
+		this.solicitudService.autorizar(solicitud.id, {
+			observaciones: 'Autorizado por el supervisor',
+			monto_autorizado: 50000
+		}).subscribe({
+			next: (response) => {
+				console.log('Solicitud autorizada:', response.data);
+				this.cargarSolicitudes(); // Recargar lista
+			},
+			error: (error) => this.error = error
+		});
+	}
   
-  // 4️⃣ RECHAZAR SOLICITUD
-  rechazarSolicitud(solicitud: SolicitudPago, motivo: string) {
-    this.solicitudService.rechazar(solicitud.id, {
-      motivo_rechazo: motivo,
-      observaciones: 'Rechazado por incumplimiento de requisitos'
-    }).subscribe({
-      next: (response) => {
-        console.log('Solicitud rechazada:', response.data);
-        this.cargarSolicitudes();
-      },
-      error: (error) => this.error = error
-    });
-  }
+	// 4️⃣ RECHAZAR SOLICITUD
+	rechazarSolicitud(solicitud: SolicitudPago, motivo: string) {
+		this.solicitudService.rechazar(solicitud.id, {
+			motivo_rechazo: motivo,
+			observaciones: 'Rechazado por incumplimiento de requisitos'
+		}).subscribe({
+			next: (response) => {
+				console.log('Solicitud rechazada:', response.data);
+				this.cargarSolicitudes();
+			},
+			error: (error) => this.error = error
+		});
+	}
   
-  // 5️⃣ CONFIRMAR PAGO
-  confirmarPago(solicitud: SolicitudPago) {
-    this.solicitudService.confirmarPago(solicitud.id, {
-      fecha_pago: new Date().toISOString().split('T')[0],
-      numero_transaccion: 'TRX-2024-001234',
-      observaciones: 'Pago realizado por transferencia bancaria'
-    }).subscribe({
-      next: (response) => {
-        console.log('Pago confirmado:', response.data);
-        this.cargarSolicitudes();
-      },
-      error: (error) => this.error = error
-    });
-  }
+	// 5️⃣ CONFIRMAR PAGO
+	confirmarPago(solicitud: SolicitudPago) {
+		this.solicitudService.confirmarPago(solicitud.id, {
+			fecha_pago: new Date().toISOString().split('T')[0],
+			numero_transaccion: 'TRX-2024-001234',
+			observaciones: 'Pago realizado por transferencia bancaria'
+		}).subscribe({
+			next: (response) => {
+				console.log('Pago confirmado:', response.data);
+				this.cargarSolicitudes();
+			},
+			error: (error) => this.error = error
+		});
+	}
   
-  // 6️⃣ DESCARGAR ARCHIVOS
-  descargarFacturaPDF(solicitud: SolicitudPago) {
-    this.solicitudService.descargarFacturaPdf(solicitud.id).subscribe({
-      next: (blob) => {
-        const filename = `factura-${solicitud.numero_folio_solicitud}.pdf`;
-        this.solicitudService.downloadFile(blob, filename);
-      },
-      error: (error) => console.error('Error al descargar factura:', error)
-    });
-  }
+	// 6️⃣ DESCARGAR ARCHIVOS
+	descargarFacturaPDF(solicitud: SolicitudPago) {
+		this.solicitudService.descargarFacturaPdf(solicitud.id).subscribe({
+			next: (blob) => {
+				const filename = `factura-${solicitud.numero_folio_solicitud}.pdf`;
+				this.solicitudService.downloadFile(blob, filename);
+			},
+			error: (error) => console.error('Error al descargar factura:', error)
+		});
+	}
   
-  descargarFacturaXML(solicitud: SolicitudPago) {
-    this.solicitudService.descargarFacturaXml(solicitud.id).subscribe({
-      next: (blob) => {
-        const filename = `factura-${solicitud.numero_folio_solicitud}.xml`;
-        this.solicitudService.downloadFile(blob, filename);
-      },
-      error: (error) => console.error('Error al descargar XML:', error)
-    });
-  }
+	descargarFacturaXML(solicitud: SolicitudPago) {
+		this.solicitudService.descargarFacturaXml(solicitud.id).subscribe({
+			next: (blob) => {
+				const filename = `factura-${solicitud.numero_folio_solicitud}.xml`;
+				this.solicitudService.downloadFile(blob, filename);
+			},
+			error: (error) => console.error('Error al descargar XML:', error)
+		});
+	}
   
-  descargarComprobante(solicitud: SolicitudPago) {
-    this.solicitudService.descargarComprobante(solicitud.id).subscribe({
-      next: (blob) => {
-        const filename = `comprobante-${solicitud.numero_folio_solicitud}.pdf`;
-        this.solicitudService.downloadFile(blob, filename);
-      },
-      error: (error) => console.error('Error al descargar comprobante:', error)
-    });
-  }
+	descargarComprobante(solicitud: SolicitudPago) {
+		this.solicitudService.descargarComprobante(solicitud.id).subscribe({
+			next: (blob) => {
+				const filename = `comprobante-${solicitud.numero_folio_solicitud}.pdf`;
+				this.solicitudService.downloadFile(blob, filename);
+			},
+			error: (error) => console.error('Error al descargar comprobante:', error)
+		});
+	}
   
-  // 7️⃣ OBTENER ESTADÍSTICAS PARA DASHBOARD
-  cargarEstadisticas() {
-    this.solicitudService.estadisticas({
-      fecha_desde: '2024-01-01',
-      fecha_hasta: '2024-12-31'
-    }).subscribe({
-      next: (response) => {
-        const stats = response.data;
-        console.log('Estadísticas generales:', stats);
-        
-        // Usar para gráficos
-        this.prepararGraficos(stats);
-      },
-      error: (error) => console.error('Error al obtener estadísticas:', error)
-    });
-  }
+	// 7️⃣ OBTENER ESTADÍSTICAS PARA DASHBOARD
+	cargarEstadisticas() {
+		this.solicitudService.estadisticas({
+			fecha_desde: '2024-01-01',
+			fecha_hasta: '2024-12-31'
+		}).subscribe({
+			next: (response) => {
+				const stats = response.data;
+				console.log('Estadísticas generales:', stats);
+			  
+				// Usar para gráficos
+				this.prepararGraficos(stats);
+			},
+			error: (error) => console.error('Error al obtener estadísticas:', error)
+		});
+	}
   
-  // 8️⃣ OBTENER ESTADÍSTICAS POR ROL
-  cargarEstadisticasPorRol() {
-    this.solicitudService.estadisticasPorRol({
-      rol: 'supervisor'
-    }).subscribe({
-      next: (response) => {
-        console.log('Estadísticas del rol:', response.data);
-      },
-      error: (error) => console.error('Error:', error)
-    });
-  }
+	// 8️⃣ OBTENER ESTADÍSTICAS POR ROL
+	cargarEstadisticasPorRol() {
+		this.solicitudService.estadisticasPorRol({
+			rol: 'supervisor'
+		}).subscribe({
+			next: (response) => {
+				console.log('Estadísticas del rol:', response.data);
+			},
+			error: (error) => console.error('Error:', error)
+		});
+	}
   
-  // 9️⃣ BUSCAR EMPRESAS PARA AUTOCOMPLETADO
-  buscarEmpresas(termino: string) {
-    if (termino.length < 2) return;
-    
-    this.solicitudService.buscarEmpresasConstructoras(termino, 10).subscribe({
-      next: (response) => {
-        console.log('Empresas encontradas:', response.data);
-        // Mostrar en dropdown de autocompletado
-      },
-      error: (error) => console.error('Error en búsqueda:', error)
-    });
-  }
+	// 9️⃣ BUSCAR EMPRESAS PARA AUTOCOMPLETADO
+	buscarEmpresas(termino: string) {
+		if (termino.length < 2) return;
+	  
+		this.solicitudService.buscarEmpresasConstructoras(termino, 10).subscribe({
+			next: (response) => {
+				console.log('Empresas encontradas:', response.data);
+				// Mostrar en dropdown de autocompletado
+			},
+			error: (error) => console.error('Error en búsqueda:', error)
+		});
+	}
   
-  // 🔟 LISTAR POR ESTADO ESPECÍFICO
-  filtrarPorEstado(estado: EstadoSolicitud) {
-    this.solicitudService.listarPorEstado({
-      estado: estado,
-      page: 1,
-      per_page: 20
-    }).subscribe({
-      next: (response) => {
-        console.log(`Solicitudes en estado ${estado}:`, response.data);
-        this.solicitudes = response.data.solicitudes;
-      },
-      error: (error) => this.error = error
-    });
-  }
+	// 🔟 LISTAR POR ESTADO ESPECÍFICO
+	filtrarPorEstado(estado: EstadoSolicitud) {
+		this.solicitudService.listarPorEstado({
+			estado: estado,
+			page: 1,
+			per_page: 20
+		}).subscribe({
+			next: (response) => {
+				console.log(`Solicitudes en estado ${estado}:`, response.data);
+				this.solicitudes = response.data.solicitudes;
+			},
+			error: (error) => this.error = error
+		});
+	}
   
-  // Método auxiliar para preparar datos de gráficos
-  private prepararGraficos(stats: EstadisticasSolicitudPago) {
-    // Datos para gráfico de pastel (estados)
-    const datosEstados = [
-      { name: 'Pendientes', value: stats.por_estado.pendientes },
-      { name: 'Procesando', value: stats.por_estado.procesando },
-      { name: 'Aprobadas', value: stats.por_estado.aprobadas },
-      { name: 'Pagadas', value: stats.por_estado.pagadas },
-      { name: 'Rechazadas', value: stats.por_estado.rechazadas }
-    ];
-    
-    // Datos para gráfico de barras (por mes)
-    const datosPorMes = stats.por_mes?.map(mes => ({
-      mes: mes.mes,
-      total: mes.total,
-      monto: mes.monto
-    }));
-    
-    console.log('Datos para gráficos preparados');
-  }
+	// Método auxiliar para preparar datos de gráficos
+	private prepararGraficos(stats: EstadisticasSolicitudPago) {
+		// Datos para gráfico de pastel (estados)
+		const datosEstados = [
+			{ name: 'Pendientes', value: stats.por_estado.pendientes },
+			{ name: 'Procesando', value: stats.por_estado.procesando },
+			{ name: 'Aprobadas', value: stats.por_estado.aprobadas },
+			{ name: 'Pagadas', value: stats.por_estado.pagadas },
+			{ name: 'Rechazadas', value: stats.por_estado.rechazadas }
+		];
+	  
+		// Datos para gráfico de barras (por mes)
+		const datosPorMes = stats.por_mes?.map(mes => ({
+			mes: mes.mes,
+			total: mes.total,
+			monto: mes.monto
+		}));
+	  
+		console.log('Datos para gráficos preparados');
+	}
   
-  // Método para obtener el color del estado
-  getColorEstado(estado: EstadoSolicitud): string {
-    return this.solicitudService.getEstadoColor(estado);
-  }
+	// Método para obtener el color del estado
+	getColorEstado(estado: EstadoSolicitud): string {
+		return this.solicitudService.getEstadoColor(estado);
+	}
   
-  // Método para obtener el ícono del estado
-  getIconoEstado(estado: EstadoSolicitud): string {
-    return this.solicitudService.getEstadoIcon(estado);
-  }
+	// Método para obtener el ícono del estado
+	getIconoEstado(estado: EstadoSolicitud): string {
+		return this.solicitudService.getEstadoIcon(estado);
+	}
 }
 
 */

@@ -21,12 +21,12 @@ class ConstruccSolicitudPagoController extends Controller
      * Roles que pueden autorizar solicitudes de pago
      */
     private const ROLES_AUTORIZACION = ['DG', 'DT', 'CO', 'SI'];
-    
+
     /**
      * Roles que pueden rechazar solicitudes
      */
     private const ROLES_RECHAZO = ['DG', 'DT', 'CO', 'SI', 'DA'];
-    
+
     /**
      * Rol que puede confirmar pagos
      */
@@ -111,7 +111,7 @@ class ConstruccSolicitudPagoController extends Controller
         $solicitudPago->refresh();
         // TODO: Esti esta aun en discusion si se agregar o no
         // $todosAutorizan = $this->verificarAutorizacionCompleta($solicitudPago);
-        
+
         // if ($todosAutorizan) {
         //     $solicitudPago->update([
         //         'estado_solicitud' => EstadoSP::AUTORIZADA->value,
@@ -157,7 +157,7 @@ class ConstruccSolicitudPagoController extends Controller
         // Actualizar estado y registrar quién rechazó
         $rolField = strtolower($rol === 'CO' ? 'pc' : $rol);
         $fechaField = $rolField . '_fecha';
-        
+
         $solicitudPago->update([
             'estado_solicitud' => EstadoSP::RECHAZADA->value,
             'motivo_rechazo' => $request->motivo_rechazo,
@@ -198,7 +198,7 @@ class ConstruccSolicitudPagoController extends Controller
         if ($montoAbono > $solicitudPago->saldo_pendiente) {
             return $this->error(
                 "El monto del abono ({$montoAbono}) no puede ser mayor al saldo pendiente ({$solicitudPago->saldo_pendiente}).",
-                null, 
+                null,
                 400
             );
         }
@@ -208,11 +208,11 @@ class ConstruccSolicitudPagoController extends Controller
 
         // Actualizar saldos
         $pagoCompleto = $solicitudPago->actualizarSaldos($montoAbono);
-        
+
         // Determinar el estado final
         $estadoFinal = $pagoCompleto ? EstadoSP::PAGADO->value : EstadoSP::AUTORIZADA->value;
         $estadoDA = $pagoCompleto ? EstadoSolicitud::PAGADO->value : EstadoSolicitud::AUTORIZADA->value;
-        
+
         // Actualizar solicitud
         $solicitudPago->update([
             'estado_solicitud' => $estadoFinal,
@@ -222,7 +222,7 @@ class ConstruccSolicitudPagoController extends Controller
             'da_fecha' => now(),
         ]);
 
-        $mensaje = $pagoCompleto 
+        $mensaje = $pagoCompleto
             ? 'Pago completado correctamente. La solicitud ha sido pagada en su totalidad.'
             : "Abono registrado correctamente. Saldo pendiente: {$solicitudPago->fresh()->saldo_pendiente}";
 
@@ -324,28 +324,28 @@ class ConstruccSolicitudPagoController extends Controller
         if ($rol === 'DA') {
             // DA ve las solicitudes AUTORIZADAS para confirmar pago
             // O las que ya tienen pagos parciales (estado PAGADO pero no pago_completo)
-            $query->where(function($q) {
+            $query->where(function ($q) {
                 $q->where('estado_solicitud', EstadoSP::AUTORIZADA->value)
-                  ->orWhere(function($subQ) {
-                      $subQ->where('estado_solicitud', EstadoSP::PAGADO->value)
-                           ->where('pago_completo', false);
-                  });
+                    ->orWhere(function ($subQ) {
+                        $subQ->where('estado_solicitud', EstadoSP::PAGADO->value)
+                            ->where('pago_completo', false);
+                    });
             });
         } else {
             // Otros roles: SP en estado PENDIENTE que no han autorizado aún
             $query->where('estado_solicitud', EstadoSP::PENDIENTE->value)
-                  ->where(function($q) use ($rolField) {
-                      $q->where($rolField, EstadoSolicitud::PENDIENTE->value)
+                ->where(function ($q) use ($rolField) {
+                    $q->where($rolField, EstadoSolicitud::PENDIENTE->value)
                         ->orWhereNull($rolField);
-                  });
-                  
+                });
+
             // Si es DG, mostrar todas las pendientes independientemente de otros roles
             // Si es DT, CO, SI - no mostrar las que ya autorizó DG (para evitar duplicados)
             if ($rol !== 'DG') {
-                $query->where(function($q) {
+                $query->where(function ($q) {
                     $q->where('dg', '!=', EstadoSolicitud::AUTORIZADA->value)
-                      ->orWhereNull('dg')
-                      ->orWhere('dg', EstadoSolicitud::PENDIENTE->value);
+                        ->orWhereNull('dg')
+                        ->orWhere('dg', EstadoSolicitud::PENDIENTE->value);
                 });
             }
         }
@@ -418,16 +418,16 @@ class ConstruccSolicitudPagoController extends Controller
 
         if ($rol) {
             $rolField = strtolower($rol === 'CO' ? 'pc' : $rol);
-            
+
             if ($rol === 'DA') {
                 $stats['pendientes'] = SolicitudPago::where('estado_solicitud', EstadoSP::AUTORIZADA->value)->count();
                 $stats['con_pagos_parciales'] = SolicitudPago::where('estado_solicitud', EstadoSP::PAGADO->value)
                     ->where('pago_completo', false)->count();
             } else {
                 $stats['pendientes'] = SolicitudPago::where('estado_solicitud', EstadoSP::PENDIENTE->value)
-                    ->where(function($q) use ($rolField) {
+                    ->where(function ($q) use ($rolField) {
                         $q->where($rolField, EstadoSolicitud::PENDIENTE->value)
-                          ->orWhereNull($rolField);
+                            ->orWhereNull($rolField);
                     })->count();
             }
         }
@@ -457,8 +457,8 @@ class ConstruccSolicitudPagoController extends Controller
     private function verificarAutorizacionCompleta(SolicitudPago $solicitudPago): bool
     {
         return $solicitudPago->dg === EstadoSolicitud::AUTORIZADA->value &&
-               $solicitudPago->dt === EstadoSolicitud::AUTORIZADA->value &&
-               $solicitudPago->pc === EstadoSolicitud::AUTORIZADA->value &&
-               $solicitudPago->si === EstadoSolicitud::AUTORIZADA->value;
+            $solicitudPago->dt === EstadoSolicitud::AUTORIZADA->value &&
+            $solicitudPago->pc === EstadoSolicitud::AUTORIZADA->value &&
+            $solicitudPago->si === EstadoSolicitud::AUTORIZADA->value;
     }
 }

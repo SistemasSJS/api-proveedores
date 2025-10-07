@@ -1,106 +1,115 @@
 ###
-# ARCHIVO DE PRUEBAS HTTP 1 PROVEEDOR
-# API Solicitudes de Pago - Los Mochis, Sinaloa, México
+# ARCHIVO DE PRUEBAS HTTP - CONSTRUCC
+# API Solicitudes de Pago - Endpoints actualizados según controlador
 ###
 
-# Credenciales de prueba
-# @email = "proveedor@construccionessinaloa.com"
-# @email = "proveedor@ferreteriadelpacifico.mx"
-# @email = "proveedor@transportesnoroeste.com"
-@email = "proveedor@materialesconstruccion.mx"
-@pass = "password"
-
-# Configuración general
-# @baseUrl = https://apicons.ddns.net:8092/api
-@baseUrl = http://localhost:8080/api
+@baseUrl = http://localhost:8080/api/construcc/solicitudes-pago
 @contentType = application/json
 @acceptType = application/json
+@apiKey = /%-!?=T35sT._22<1|:
 
-# Variables
-@solicitudId = 18
-@empresaId = 1
+### VARIABLES
+@solicitudId = 5
+@rol = DA
 
-###############################################################################
-# AUTENTICACIÓN (Proveedor)
-###############################################################################
 
-### Login de proveedor
-POST {{baseUrl}}/auth/login
-Content-Type: {{contentType}}
+###
+# 1. Listado general de solicitudes de pago
+GET {{baseUrl}}
+X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
-{
-  "email": {{email}},
-  "password": {{pass}}
-}
+###
+# 2. Ver detalle de solicitud específica
 
-### Login de proveedor
-GET  {{baseUrl}}/auth/me
-Authorization: Bearer {{proveedorToken}}
+GET {{baseUrl}}/{{solicitudId}}
+X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
-### Guardar el token del login en @proveedorToken manualmente:
-@proveedorToken = 2|yfz8W0bpUQf7O5PnGjVQKjeswdEeorauhaCDk11Z0eb0eb9b
-@proveedorId = 4
+# DESCARGAS DE ARCHIVOS
 
+###
+# 3. Descargar comprobante de pago
+GET {{baseUrl}}/{{solicitudId}}/comprobante/download
+X-API-KEY: {{apiKey}}
 
-###############################################################################
-# RUTAS PROVEEDOR
-###############################################################################
+###
+# 4. Descargar factura PDF
+GET {{baseUrl}}/{{solicitudId}}/factura-pdf/download
+X-API-KEY: {{apiKey}}
 
-### 1. Listado de solicitudes de pago (Proveedor)
-GET {{baseUrl}}/proveedores/{{proveedorId}}/solicitudes-pago
-Authorization: Bearer {{proveedorToken}}
-Accept: {{acceptType}}
+###
+###
+# 5. Descargar factura XML
+GET {{baseUrl}}/{{solicitudId}}/factura-xml/download
+X-API-KEY: {{apiKey}}
 
-### 2. Crear solicitud de pago (Proveedor) - Multipart
-### Crear solicitud de pago
+###
+# 6. Descargar cotización
+GET {{baseUrl}}/{{solicitudId}}/cotizacion/download
+X-API-KEY: {{apiKey}}
 
-### Crear solicitud de pago
-POST {{baseUrl}}/proveedores/{{proveedorId}}/solicitudes-pago
-Authorization: Bearer {{proveedorToken}}
-Accept: application/json
+# CAMBIOS DE ESTATUS
 
-descripcion_concepto=Pago por servicios de construcción - Enero 2024
-empresa_construcc_id={{empresaId}}
-residente=Juan Pérez López
-cotizacion_id=1
-factura_pdf=@./tests/files/facturas/Cfdi-4539.pdf;type=application/pdf
-factura_xml=@./tests/files/facturas/Cfdi-4539.xml;type=application/xml
-
-### 3. Ver detalle de solicitud
-GET {{baseUrl}}/proveedores/{{proveedorId}}/solicitudes-pago/{{solicitudId}}
-Authorization: Bearer {{proveedorToken}}
-Accept: {{acceptType}}
-
-### 4. Actualizar solicitud
-PUT {{baseUrl}}/proveedores/{{proveedorId}}/solicitudes-pago/{{solicitudId}}
-Authorization: Bearer {{proveedorToken}}
+###
+# 7. Autorizar solicitud de pago (rol: DG, DT, CO, SI)
+POST {{baseUrl}}/{{solicitudId}}/autorizar
+X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 
 {
-  "descripcion_concepto": "Pago actualizado",
-  "residente": "Juan Pérez López",
-  "empresa_construcc_id": {{empresaId}}
+  "rol": "{{rol}}"
 }
 
-### 5. Subir comprobante
-POST {{baseUrl}}/proveedores/{{proveedorId}}/solicitudes-pago/{{solicitudId}}/comprobante
-Authorization: Bearer {{proveedorToken}}
-Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+###
+# 8. Rechazar solicitud de pago
+POST {{baseUrl}}/{{solicitudId}}/rechazar
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
 
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="comprobante"; filename="comprobante.pdf"
-Content-Type: application/pdf
+{
+  "rol": "DT",
+  "motivo_rechazo": "El monto no coincide con la cotización original."
+}
 
-< ./tests/files/comprobante.pdf
-------WebKitFormBoundary7MA4YWxkTrZu0gW--
+###
+# 9. Confirmar pago (solo DA)
+POST {{baseUrl}}/{{solicitudId}}/confirmar-pago
+X-API-KEY: {{apiKey}}
+Content-Type: multipart/form-data
+comprobante: @./tests/files/comprobante.pdf
+monto_abono: 50000.00
+notas_abono: Pago parcial correspondiente a avance de obra del 50%.
 
-### 6. Confirmar pago (Proveedor)
-PATCH {{baseUrl}}/proveedores/{{proveedorId}}/solicitudes-pago/{{solicitudId}}/confirmar-pago
-Authorization: Bearer {{proveedorToken}}
+# LISTADOS POR ROL Y ESTADO
+
+###
+# 10. Listar solicitudes pendientes por rol (DG, DT, CO, SI, DA)
+GET {{baseUrl}}/por-rol?rol=DT
+X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
-### 7. Descargar comprobante
-GET {{baseUrl}}/proveedores/{{proveedorId}}/solicitudes-pago/{{solicitudId}}/comprobante/download
-Authorization: Bearer {{proveedorToken}}
+###
+# 11. Listar solicitudes por estado (PENDIENTE, AUTORIZADA, RECHAZADA, PAGADO)
+GET {{baseUrl}}/por-estado?estado=AUTORIZADA
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+# DASHBOARD Y AUXILIARES
+
+###
+# 12. Estadísticas por rol
+GET {{baseUrl}}/estadisticas-rol?rol=DA
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+###
+# 13. Buscar empresas constructoras
+GET {{baseUrl}}/empresas-constructoras/search?search=construcciones&limit=10
+X-API-KEY: {{apiKey}}
+
+###
+# 14. Estadísticas generales
+GET {{baseUrl}}/estadisticas
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
