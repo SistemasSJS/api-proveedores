@@ -14,7 +14,7 @@ class AuthUpdateCredentialsRequest extends FormRequest
   public function rules(): array
   {
     return [
-      'nombre' => ['nullable', 'string', 'max:255'],
+      // 'nombre' => ['nullable', 'string', 'max:255'],
       'current_password' => ['required_with:new_password', 'string', 'min:6'],
       'new_password' => ['required', 'string', 'min:6', 'confirmed'],
       // 'confirmed' automáticamente valida que exista 'new_password_confirmation'
@@ -24,8 +24,8 @@ class AuthUpdateCredentialsRequest extends FormRequest
   public function messages(): array
   {
     return [
-      'nombre.string' => 'El nombre debe ser una cadena de texto.',
-      'nombre.max' => 'El nombre no puede exceder 255 caracteres.',
+      // 'nombre.string' => 'El nombre debe ser una cadena de texto.',
+      // 'nombre.max' => 'El nombre no puede exceder 255 caracteres.',
 
       'current_password.required_with' => 'La contraseña actual es requerida para cambiar la contraseña.',
       'current_password.string' => 'La contraseña actual debe ser una cadena de texto.',

@@ -3,20 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRoleEnumerate;
+use Illuminate\Validation\ValidationException;
 use App\Exceptions\Api\Auth\UnauthorizedException;
+use App\Http\Requests\Auth\AuthUpdateCredentialsRequest;
+use Illuminate\Support\Facades\Hash;
 
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Proveedor;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use App\Http\Resources\ProveedorResource;
 use App\Mail\CompletaRegistroUsuarioMail;
 use App\Mail\CompletaRegistroProveedorMail;
 use App\Http\Requests\Auth\AuthRegisterRequest;
 use App\Http\Resources\UserAuthenticateResource;
 use App\Http\Requests\Auth\AuthRegisterCompleteRequest;
-use App\Http\Requests\Auth\AuthUpdateCredentialsRequest;
 use App\Http\Requests\Auth\AuthUpdateFotoPerfilRequest;
 use App\Http\Requests\Proveedor\ProveedorRegisterRequest;
 use App\Http\Requests\Proveedor\ProveedorRegisterCompleteRequest;
@@ -24,6 +25,7 @@ use App\Http\Requests\Proveedor\ProveedorRegistroBasicoRequest;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+
 
 
 class AuthController extends Controller
@@ -319,5 +321,42 @@ class AuthController extends Controller
             'token' => $token,
             'proveedor' => $proveedor,
         ], 'Proveedor registrado exitosamente', 200);
+    }
+
+
+    /**
+     * Actualizar la contraseña del usuario autenticado
+     *
+     * @param AuthUpdateCredentialsRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updatePassword(AuthUpdateCredentialsRequest $request)
+    {
+        $user = $request->user();
+
+        // Verificar que la contraseña actual sea correcta
+        if (!Hash::check($request->current_password, $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['La contraseña actual no es correcta.'],
+            ]);
+        }
+
+        // Actualizar la nueva contraseña
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        // Revocar token actual y generar uno nuevo
+        $request->user()->currentAccessToken()->delete();
+        $newToken = $user->createToken('API Token')->plainTextToken;
+
+        // Cargar relaciones necesarias
+        $user->load(User::eagerLodable());
+        $proveedor = $user->proveedorPrincipal();
+
+        return $this->success([
+            'user' => new UserAuthenticateResource($user),
+            'token' => $newToken,
+            'proveedor' => new ProveedorResource($proveedor)
+        ], 'Contraseña actualizada correctamente.', 200);
     }
 }

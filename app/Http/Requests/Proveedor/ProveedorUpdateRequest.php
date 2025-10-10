@@ -59,42 +59,34 @@ class ProveedorUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // 'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048',],
-            //usuario
-            // 'email' => ['nullable', 'email', 'max:255'],
-
-            // GENERALES
             'pagina_web' => ['nullable', 'string', 'max:255'],
-            'nombre_comercial' => ['nullable', 'string', 'max:255'],
+            'nombre_comercial' => ['sometimes', 'string', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:15'],
             'direccion_empresa' => ['nullable', 'string', 'max:255'],
             'descripcion_giro_empresa' => ['nullable', 'string', 'max:255'],
-            // 
-            'nombre_propietario' => ['nullable', 'string', 'max:255'], // este no se m
-            'nombre_de_quien_registra' => ['nullable', 'string', 'max:255'], // este no se manda 
 
-            // FISCALES
-            'razon_social' => ['required', 'string', 'min:3', 'max:255'],
-            'rfc' => ['required', 'string', 'regex:/^[A-ZÑ&]{3,4}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])[A-Z0-9]{2}[0-9A]$/'],
-            'regimen_fiscal_clave' => ['required', 'string', 'max:10'],
-            'regimen_fiscal_nombre' => ['required', 'string', 'max:255'],
-            // Campos de dirección fiscal
-            'calle' => ['required', 'string', 'max:255'],
-            'numero_exterior' => ['required', 'string', 'max:20'],
+            'nombre_propietario' => ['nullable', 'string', 'max:255'],
+            'nombre_de_quien_registra' => ['nullable', 'string', 'max:255'],
+
+            // Datos fiscales
+            'razon_social' => ['sometimes', 'string', 'min:3', 'max:255'],
+            'rfc' => ['sometimes', 'string', 'regex:/^[A-ZÑ&]{3,4}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])[A-Z0-9]{2}[0-9A]$/'],
+            'regimen_fiscal_clave' => ['sometimes', 'string', 'max:10'],
+            'regimen_fiscal_nombre' => ['sometimes', 'string', 'max:255'],
+            'calle' => ['sometimes', 'string', 'max:255'],
+            'numero_exterior' => ['sometimes', 'string', 'max:20'],
             'numero_interior' => ['nullable', 'string', 'max:20'],
-            'colonia' => ['required', 'string', 'max:255'],
-            'estado' => ['required', 'string', 'max:255'],
-            'ciudad' => ['required', 'string', 'max:255'],
-            'codigo_postal' => ['required', 'string', 'regex:/^[0-9]{5}$/'],
-            'pais' => ['required', 'string', 'max:255'],
+            'colonia' => ['sometimes', 'string', 'max:255'],
+            'estado' => ['sometimes', 'string', 'max:255'],
+            'ciudad' => ['sometimes', 'string', 'max:255'],
+            'codigo_postal' => ['sometimes', 'string', 'regex:/^[0-9]{5}$/'],
+            'pais' => ['sometimes', 'string', 'max:255'],
 
-            // sin formularios
+            // Contacto
             'contacto_nombre' => ['nullable', 'string', 'max:150'],
             'contacto_cargo' => ['nullable', 'string', 'max:60'],
             'contacto_telefono' => ['nullable', 'string', 'max:15'],
             'contacto_correo' => ['nullable', 'email', 'max:60'],
-            // 'estatus' => ['nullable', new Enum(EstadoUsuario::class)],
-
         ];
     }
 

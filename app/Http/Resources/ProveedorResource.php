@@ -24,13 +24,23 @@ class ProveedorResource extends JsonResource
                     ? $this->logo
                     : asset('storage/' . $this->logo))
                 : null,
+
             'tipo_persona'              => $this->tipo_persona,
             'regimen_fiscal_clave'      => $this->regimen_fiscal_clave,
             'regimen_fiscal_nombre'     => $this->regimen_fiscal_nombre,
-            'direccion_fiscal'          => $this->direccion_fiscal,
-            'estado'                    => $this->estado,
-            'municipio'                 => $this->municipio,
-            'codigo_postal'             => $this->codigo_postal,
+
+            // 👇 Dirección fiscal estructurada
+            'direccion_fiscal' => [
+                'calle'            => $this->calle,
+                'numero_exterior'  => $this->numero_exterior,
+                'numero_interior'  => $this->numero_interior,
+                'colonia'          => $this->colonia,
+                'ciudad'           => $this->ciudad,
+                'estado'           => $this->estado,
+                'codigo_postal'    => $this->codigo_postal,
+                'pais'             => $this->pais,
+            ],
+
             'estatus'                   => $this->estatus,
             'notas'                     => $this->notas,
             'validado_por'              => $this->validado_por,
@@ -53,9 +63,7 @@ class ProveedorResource extends JsonResource
             'is_proveedor_sp'           => $this->is_proveedor_sp ?? null,
             'is_proveedor_catalogo'     => $this->is_proveedor_catalogo ?? null,
             'cambiar_pass_default'      => $this->cambiar_pass_default ?? null,
-
             'perfil_empresa_completo'   => $this->perfil_empresa_completo ?? null,
-
 
             // Relación
             'tipos_empresa' => $this->whenLoaded('tipos_empresa', function () {

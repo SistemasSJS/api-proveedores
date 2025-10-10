@@ -14,20 +14,12 @@ class Proveedor extends BaseModel
     protected $table = "proveedores";
 
     protected $fillable = [
+        // Información general
         'logo',
         'nombre_comercial',
         'pagina_web',
         'email',
         'telefono',
-        'rfc',
-        'tipo_persona',
-        'regimen_fiscal_clave',
-        'regimen_fiscal_nombre',
-        'constancia_fiscal',
-        'direccion_fiscal',
-        'estado',
-        'municipio',
-        'codigo_postal',
         'estatus',
         'notas',
         'validado_por',
@@ -39,6 +31,10 @@ class Proveedor extends BaseModel
         'tipos_empresa_otro',
         'descripcion_giro_empresa',
         'direccion_empresa',
+        'estado',
+        'municipio',
+        'codigo_postal',
+        'ciudad',
         'contacto_nombre',
         'contacto_cargo',
         'contacto_telefono',
@@ -46,12 +42,30 @@ class Proveedor extends BaseModel
         'principal',
         'calificacion',
         'categoria',
-        'ciudad',
         'is_proveedor_sp',
         'is_proveedor_catalogo',
         'cambiar_pass_default',
         'perfil_empresa_completo',
+
+        // Información fiscal (al final)
+        'rfc',
+        'tipo_persona',
+        'regimen_fiscal_clave',
+        'regimen_fiscal_nombre',
+        'constancia_fiscal',
+        'direccion_fiscal',
+
+        // 
+        'calle', 
+        'numero_exterior', 
+        'numero_interior', 
+        'colonia', 
+        'ciudad', 
+        'estado', 
+        'codigo_postal', 
+        'pais', 
     ];
+
 
     protected $casts = [
         'fecha_registro' => 'datetime',

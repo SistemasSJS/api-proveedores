@@ -30,6 +30,7 @@ Route::prefix('auth')->group(function () {
         Route::post('refresh', [AuthController::class, 'refresh'])->middleware(['audit']);
         Route::post('update-img-perfil', [AuthController::class, 'update_foto_perfil'])->middleware(['audit']);
         Route::post('update-credentials', [AuthController::class, 'updateUser'])->middleware(['audit']);
+        Route::post('change-password', [AuthController::class, 'updatePassword'])->middleware(['audit']);
         Route::get('logout', [AuthController::class, 'logout'])->middleware(['audit']);
     });
 });
