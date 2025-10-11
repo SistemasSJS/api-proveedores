@@ -11,12 +11,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class EmpresaConstrucc extends Model
 {
     use HasFactory, Filterable;
-    
+
     /**
      * Nombre de la tabla
      */
     protected $table = 'empresa_construcc';
-    
+
     /**
      * Los atributos que se pueden asignar masivamente.
      */
@@ -34,7 +34,7 @@ class EmpresaConstrucc extends Model
         'proveedor_id',
         'activo',
     ];
-    
+
     /**
      * Filtros disponibles
      */
@@ -45,9 +45,11 @@ class EmpresaConstrucc extends Model
         'ciudad' => 'Ciudad',
         'estado' => 'Estado',
         'proveedor_id' => 'ProveedorId',
+        'proveedores' => 'Proveedores', // 👈 nuevo filtro
         'activo' => 'Activo',
     ];
-    
+
+
     /**
      * Los atributos que deben ser convertidos a tipos nativos.
      */
@@ -56,7 +58,7 @@ class EmpresaConstrucc extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
-    
+
     /**
      * Scopes
      */
@@ -64,14 +66,14 @@ class EmpresaConstrucc extends Model
     {
         return $query->where('activo', true);
     }
-    
+
     public function scopePorNombre($query, $nombre)
     {
         return $query->where('nombre', 'LIKE', "%{$nombre}%")
-                    ->orWhere('razon_social', 'LIKE', "%{$nombre}%")
-                    ->orWhere('rfc', 'LIKE', "%{$nombre}%");
+            ->orWhere('razon_social', 'LIKE', "%{$nombre}%")
+            ->orWhere('rfc', 'LIKE', "%{$nombre}%");
     }
-    
+
     /**
      * Relaciones
      */
@@ -79,12 +81,12 @@ class EmpresaConstrucc extends Model
     {
         return $this->belongsTo(Proveedor::class, 'proveedor_id');
     }
-    
+
     public function solicitudesPago(): HasMany
     {
         return $this->hasMany(SolicitudPago::class, 'empresa_construcc_id');
     }
-    
+
     /**
      * Accessors
      */
@@ -92,7 +94,7 @@ class EmpresaConstrucc extends Model
     {
         return $this->razon_social ?: $this->nombre;
     }
-    
+
     /**
      * Métodos de búsqueda
      */
@@ -100,11 +102,20 @@ class EmpresaConstrucc extends Model
     {
         return static::where(function ($query) use ($termino) {
             $query->where('nombre', 'LIKE', "%{$termino}%")
-                  ->orWhere('razon_social', 'LIKE', "%{$termino}%")
-                  ->orWhere('rfc', 'LIKE', "%{$termino}%");
+                ->orWhere('razon_social', 'LIKE', "%{$termino}%")
+                ->orWhere('rfc', 'LIKE', "%{$termino}%");
         })->activo();
     }
-    
+
+    public function filterByProveedores($query, $value)
+    {
+        $proveedores = explode(',', $value);
+
+        return $query->whereHas('proveedores', function ($q) use ($proveedores) {
+            $q->whereIn('proveedores.id', $proveedores);
+        });
+    }
+
     /**
      * Filtros
      */
@@ -112,34 +123,39 @@ class EmpresaConstrucc extends Model
     {
         return $query->where('nombre', 'like', "%$value%");
     }
-    
+
     public function filterByRfc($query, $value)
     {
         return $query->where('rfc', 'like', "%$value%");
     }
-    
+
     public function filterByRazonSocial($query, $value)
     {
         return $query->where('razon_social', 'like', "%$value%");
     }
-    
+
     public function filterByCiudad($query, $value)
     {
         return $query->where('ciudad', 'like', "%$value%");
     }
-    
+
     public function filterByEstado($query, $value)
     {
         return $query->where('estado', 'like', "%$value%");
     }
-    
+
     public function filterByProveedorId($query, $value)
     {
         return $query->whereIn('proveedor_id', explode(',', $value));
     }
-    
+
     public function filterByActivo($query, $value)
     {
         return $query->where('activo', $value);
+    }
+
+    public function proveedores()
+    {
+        return $this->belongsToMany(Proveedor::class, 'empresa_construcc_proveedor');
     }
 }

@@ -70,6 +70,9 @@ class SolicitudPagoResource extends JsonResource
             'ro'                          => (bool) $this->ro,
             'ro_fecha'                    => $this->ro_fecha?->format('Y-m-d H:i:s'),
 
+            'estado_solicitud' => $this->estado_solicitud,
+            'motivo_rechazo'   => $this->motivo_rechazo,
+
             // Campos de abono y pagos parciales
             'monto_total'                 => (float) $this->monto_total,
             'monto_abonado'               => (float) $this->monto_abonado,

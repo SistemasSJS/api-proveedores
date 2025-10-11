@@ -56,14 +56,14 @@ class Proveedor extends BaseModel
         'direccion_fiscal',
 
         // 
-        'calle', 
-        'numero_exterior', 
-        'numero_interior', 
-        'colonia', 
-        'ciudad', 
-        'estado', 
-        'codigo_postal', 
-        'pais', 
+        'calle',
+        'numero_exterior',
+        'numero_interior',
+        'colonia',
+        'ciudad',
+        'estado',
+        'codigo_postal',
+        'pais',
     ];
 
 
@@ -89,6 +89,8 @@ class Proveedor extends BaseModel
         'descripcion_giro_empresa' => 'descripcion_giro_empresa',
         'direccion_empresa' => 'direccion_empresa',
         'pagina_web' => 'pagina_web',
+        // 👇 Nuevo filtro
+        'empresas_construcc' => 'EmpresasConstrucc',
     ];
 
     public static function eagerLodable(): array
@@ -238,6 +240,15 @@ class Proveedor extends BaseModel
             ->exists();
     }
 
+    public function scopeFilterByEmpresasConstrucc($query, $value)
+    {
+        $empresas = explode(',', $value);
+
+        return $query->whereHas('empresasConstrucc', function ($q) use ($empresas) {
+            $q->whereIn('empresa_construcc.id', $empresas);
+        });
+    }
+
     // ================== CUENTAS BANCARIAS ==================
 
     public function cuentasBancarias(): HasMany
@@ -271,5 +282,10 @@ class Proveedor extends BaseModel
         return $query->whereHas('cuentasBancarias', function ($q) use ($bancoClave) {
             $q->where('banco_clave', $bancoClave);
         });
+    }
+
+    public function empresasConstrucc()
+    {
+        return $this->belongsToMany(EmpresaConstrucc::class, 'empresa_construcc_proveedor');
     }
 }

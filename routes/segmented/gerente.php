@@ -177,7 +177,7 @@ Route::prefix('proveedores')
             Route::get('/stats', [ProveedorDashboardController::class, 'getStats'])->middleware(['audit']);
             Route::get('/cotizaciones', [ProveedorDashboardController::class, 'cotizacionesDashboard'])->middleware(['audit']);
         });
-        
+
         /**
          * COTIZACIONES DEL PROVEEDOR
          */
@@ -185,13 +185,13 @@ Route::prefix('proveedores')
             // Listados
             Route::get('/', [ProveedorCotizacionController::class, 'index'])->middleware(['audit']);        // Paginado
             Route::get('/all', [ProveedorCotizacionController::class, 'uindex'])->middleware(['audit']);    // Sin paginación
-            
+
             // CRUD
             Route::post('/', [ProveedorCotizacionController::class, 'store'])->middleware(['audit']);
             Route::get('/{cotizacion}', [ProveedorCotizacionController::class, 'show'])->middleware(['audit']);
             Route::put('/{cotizacion}', [ProveedorCotizacionController::class, 'update'])->middleware(['audit']);
             Route::delete('/{cotizacion}', [ProveedorCotizacionController::class, 'destroy'])->middleware(['audit']);
-            
+
             // Descargar archivos
             Route::get('/{cotizacion}/descargar-pdf', [ProveedorCotizacionController::class, 'descargarPdf'])->middleware(['audit']);
         });
@@ -235,8 +235,6 @@ Route::prefix('proveedores')
         });
 
 
-
-
         /**
          * GESTIÓN DE EMPRESAS DE CONSTRUCCIÓN
          */
@@ -248,6 +246,8 @@ Route::prefix('proveedores')
             Route::put('/{empresaConstrucc}', [EmpresaConstruccController::class, 'update'])->middleware(['audit']);
             Route::delete('/{empresaConstrucc}', [EmpresaConstruccController::class, 'destroy'])->middleware(['audit']);
         });
+
+
         /**
          * PEDIDOS DEL PROVEEDOR
          */

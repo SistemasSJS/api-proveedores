@@ -528,4 +528,24 @@ class ConstruccSolicitudPagoController extends Controller
             $solicitudPago->pc === $autorizado ||
             $solicitudPago->si === $autorizado);
     }
+
+    /**
+     * Listar proveedores asociados a una empresa constructora
+     */
+    public function proveedoresPorEmpresa($empresaId): JsonResponse
+    {
+        $proveedores = \App\Models\Proveedor::query()
+            ->whereHas('empresas', function ($q) use ($empresaId) {
+                $q->where('empresa_constructora_id', $empresaId);
+            })
+            ->select('id', 'nombre_comercial', 'razon_social', 'rfc')
+            ->orderBy('nombre_comercial')
+            ->get();
+
+        if ($proveedores->isEmpty()) {
+            return $this->error('No se encontraron proveedores asociados a esta empresa.', null, 404);
+        }
+
+        return $this->success($proveedores, 'Proveedores asociados a la empresa constructora.');
+    }
 }
