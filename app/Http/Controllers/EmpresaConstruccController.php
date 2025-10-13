@@ -17,7 +17,7 @@ class EmpresaConstruccController extends Controller
         $search = $request->input('search', '');
         $limit = $request->input('limit', 20);
 
-        $query = $proveedor->empresas()->activo();
+        $query = $proveedor->empresasConstrucc();
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -40,7 +40,7 @@ class EmpresaConstruccController extends Controller
         $perPage = $request->input('per_page', 15);
         $search = $request->input('search', '');
 
-        $query = $proveedor->empresas()->activo();
+        $query = $proveedor->empresasConstrucc();
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -76,7 +76,7 @@ class EmpresaConstruccController extends Controller
         $empresa = EmpresaConstrucc::create($request->all());
 
         // Asociar con proveedor
-        $proveedor->empresas()->attach($empresa->id);
+        $proveedor->empresasConstrucc($empresa->id);
 
         return $this->success($empresa, 'Empresa de construcción creada y asociada correctamente', 201);
     }
@@ -86,7 +86,7 @@ class EmpresaConstruccController extends Controller
      */
     public function show(Proveedor $proveedor, EmpresaConstrucc $empresaConstrucc): JsonResponse
     {
-        if (!$proveedor->empresas()->where('empresa_construcc_id', $empresaConstrucc->id)->exists()) {
+        if (!$proveedor->empresasConstrucc('empresa_construcc_id', $empresaConstrucc->id)->exists()) {
             return $this->error('La empresa no pertenece a este proveedor', 403);
         }
 
@@ -98,7 +98,7 @@ class EmpresaConstruccController extends Controller
      */
     public function update(Request $request, Proveedor $proveedor, EmpresaConstrucc $empresaConstrucc): JsonResponse
     {
-        if (!$proveedor->empresas()->where('empresa_construcc_id', $empresaConstrucc->id)->exists()) {
+        if (!$proveedor->empresasConstrucc('empresa_construcc_id', $empresaConstrucc->id)->exists()) {
             return $this->error('La empresa no pertenece a este proveedor', 403);
         }
 
@@ -126,7 +126,7 @@ class EmpresaConstruccController extends Controller
      */
     public function destroy(Proveedor $proveedor, EmpresaConstrucc $empresaConstrucc): JsonResponse
     {
-        if (!$proveedor->empresas()->where('empresa_construcc_id', $empresaConstrucc->id)->exists()) {
+        if (!$proveedor->empresasConstrucc('empresa_construcc_id', $empresaConstrucc->id)->exists()) {
             return $this->error('La empresa no pertenece a este proveedor', 403);
         }
 
@@ -134,7 +134,7 @@ class EmpresaConstruccController extends Controller
         $empresaConstrucc->update(['activo' => false]);
 
         // Desasociar del proveedor
-        $proveedor->empresas()->detach($empresaConstrucc->id);
+        $proveedor->empresasConstrucc($empresaConstrucc->id);
 
         return $this->success(null, 'Empresa de construcción desactivada y desasociada correctamente');
     }
