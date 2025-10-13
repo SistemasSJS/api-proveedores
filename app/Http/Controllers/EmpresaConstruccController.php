@@ -9,6 +9,20 @@ use Illuminate\Http\JsonResponse;
 
 class EmpresaConstruccController extends Controller
 {
+
+    /**
+     * Obtener todas las empresas asociadas a un proveedor (sin paginación)
+     */
+    public function all(Proveedor $proveedor): JsonResponse
+    {
+        $empresas = $proveedor->empresasConstrucc()
+            ->orderBy('nombre')
+            ->get();
+
+        return $this->success($empresas, 'Listado completo de empresas asociadas al proveedor.');
+    }
+
+    
     /**
      * Buscar empresas de construcción asociadas a un proveedor
      */

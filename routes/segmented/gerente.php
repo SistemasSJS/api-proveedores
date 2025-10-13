@@ -238,14 +238,34 @@ Route::prefix('proveedores')
         /**
          * GESTIÓN DE EMPRESAS DE CONSTRUCCIÓN
          */
-        Route::prefix('{proveedor}/empresas-constructoras')->middleware(['proveedor.access'])->group(function () {
-            Route::get('/search', [EmpresaConstruccController::class, 'search'])->middleware(['audit']);
-            Route::get('/', [EmpresaConstruccController::class, 'index'])->middleware(['audit']);
-            Route::post('/', [EmpresaConstruccController::class, 'store'])->middleware(['audit']);
-            Route::get('/{empresaConstrucc}', [EmpresaConstruccController::class, 'show'])->middleware(['audit']);
-            Route::put('/{empresaConstrucc}', [EmpresaConstruccController::class, 'update'])->middleware(['audit']);
-            Route::delete('/{empresaConstrucc}', [EmpresaConstruccController::class, 'destroy'])->middleware(['audit']);
-        });
+        /**
+         * GESTIÓN DE EMPRESAS DE CONSTRUCCIÓN
+         */
+        Route::prefix('{proveedor}/empresas-constructoras')
+            ->middleware(['proveedor.access'])
+            ->group(function () {
+
+                // 🔍 Buscar empresas (por nombre, razón social o RFC)
+                Route::get('/search', [EmpresaConstruccController::class, 'search'])->middleware(['audit']);
+
+                // ✅ NUEVA RUTA: Obtener todas las empresas (sin paginación)
+                Route::get('/all', [EmpresaConstruccController::class, 'all'])->middleware(['audit']);
+
+                // 📋 Listado paginado de empresas
+                Route::get('/', [EmpresaConstruccController::class, 'index'])->middleware(['audit']);
+
+                // 🆕 Crear empresa y asociar a proveedor
+                Route::post('/', [EmpresaConstruccController::class, 'store'])->middleware(['audit']);
+
+                // 📄 Obtener detalle de una empresa
+                Route::get('/{empresaConstrucc}', [EmpresaConstruccController::class, 'show'])->middleware(['audit']);
+
+                // ✏️ Actualizar empresa existente
+                Route::put('/{empresaConstrucc}', [EmpresaConstruccController::class, 'update'])->middleware(['audit']);
+
+                // ❌ Desasociar o desactivar empresa
+                Route::delete('/{empresaConstrucc}', [EmpresaConstruccController::class, 'destroy'])->middleware(['audit']);
+            });
 
 
         /**
