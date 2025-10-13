@@ -535,8 +535,8 @@ class ConstruccSolicitudPagoController extends Controller
     public function proveedoresPorEmpresa($empresaId): JsonResponse
     {
         $proveedores = \App\Models\Proveedor::query()
-            ->whereHas('empresas', function ($q) use ($empresaId) {
-                $q->where('empresa_constructora_id', $empresaId);
+            ->whereHas('empresasConstrucc', function ($q) use ($empresaId) {
+                $q->where('empresa_construcc_id', $empresaId);
             })
             ->select('id', 'nombre_comercial', 'razon_social', 'rfc')
             ->orderBy('nombre_comercial')

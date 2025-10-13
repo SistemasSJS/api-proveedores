@@ -19,7 +19,7 @@ class CrearSolicitudPagoRequest extends FormRequest
             'factura_xml'            => 'required|file|mimes:xml|max:5120',
             'cotizacion'             => 'nullable|file|mimes:pdf,jpg,jpeg,png,bmp,gif,webp,doc,docx,xls,xlsx|max:10240',
             'proveedor_id'           => 'required|exists:proveedores,id',
-            // 'empresa_construcc_id'   => 'nullable|exists:empresa_construcc,id',
+            'empresa_construcc_id'   => 'nullable|exists:empresa_construcc,id',
             'empresa'                => 'nullable|string|max:255',
             'residente'              => 'nullable|string|max:255',
             'cotizacion_id'          => 'nullable|integer',

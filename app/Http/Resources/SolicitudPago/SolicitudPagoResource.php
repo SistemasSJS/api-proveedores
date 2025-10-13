@@ -20,6 +20,14 @@ class SolicitudPagoResource extends JsonResource
             'descripcion_concepto'        => $this->descripcion_concepto,
             'estado_solicitud'            => $this->estado_solicitud,
 
+            'empresa_construcc' => $this->empresaConstrucc ? [
+                'id' => $this->empresaConstrucc->id,
+                'nombre' => $this->empresaConstrucc->nombre,
+                'razon_social' => $this->empresaConstrucc->razon_social,
+                'rfc' => $this->empresaConstrucc->rfc,
+                'representante_legal' => $this->empresaConstrucc->representante_legal,
+            ] : null,
+
             // Archivos
             'ruta_archivo_factura_xml'    => $this->ruta_archivo_factura_xml,
             'ruta_archivo_factura_pdf'    => $this->ruta_archivo_factura_pdf,

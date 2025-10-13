@@ -156,6 +156,7 @@ Route::prefix('construcc')
             });
         });
 
+
         /*** 
          *--------------------------------------------------------------------------
          * SOLICITUDES DE PAGO - CRUD Completo
@@ -173,6 +174,9 @@ Route::prefix('construcc')
 
             // Endpoints auxiliares
             Route::get('empresas-constructoras/search', [ConstruccSolicitudPagoController::class, 'empresasConstructoras'])->name('empresas-search');
+            // ✅ NUEVO: Listar proveedores asociados a una empresa constructora
+            Route::get('empresa/{empresaId}/proveedores', [ConstruccSolicitudPagoController::class, 'proveedoresPorEmpresa'])->name('proveedores-por-empresa');
+
             Route::get('estadisticas', [ConstruccSolicitudPagoController::class, 'estadisticas'])->name('estadisticas');
             Route::get('{solicitudPago}', [ConstruccSolicitudPagoController::class, 'show'])->name('show');
 
@@ -186,10 +190,6 @@ Route::prefix('construcc')
             Route::post('{solicitudPago}/autorizar', [ConstruccSolicitudPagoController::class, 'autorizar'])->name('autorizar');
             Route::post('{solicitudPago}/rechazar', [ConstruccSolicitudPagoController::class, 'rechazar'])->name('rechazar');
             Route::post('{solicitudPago}/confirmar-pago', [ConstruccSolicitudPagoController::class, 'confirmarPago'])->name('confirmar-pago');
-
-
-            // ✅ NUEVO: Listar proveedores asociados a una empresa constructora
-            Route::get('empresa/{empresaId}/proveedores', [ConstruccSolicitudPagoController::class, 'proveedoresPorEmpresa'])->name('proveedores-por-empresa');
         });
 
         /**

@@ -6,7 +6,6 @@ use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EmpresaConstrucc extends Model
 {
@@ -49,7 +48,6 @@ class EmpresaConstrucc extends Model
         'activo' => 'Activo',
     ];
 
-
     /**
      * Los atributos que deben ser convertidos a tipos nativos.
      */
@@ -77,14 +75,14 @@ class EmpresaConstrucc extends Model
     /**
      * Relaciones
      */
-    public function proveedor(): BelongsTo
-    {
-        return $this->belongsTo(Proveedor::class, 'proveedor_id');
-    }
-
     public function solicitudesPago(): HasMany
     {
         return $this->hasMany(SolicitudPago::class, 'empresa_construcc_id');
+    }
+
+    public function proveedores()
+    {
+        return $this->belongsToMany(Proveedor::class, 'empresa_construcc_proveedor');
     }
 
     /**
@@ -107,6 +105,9 @@ class EmpresaConstrucc extends Model
         })->activo();
     }
 
+    /**
+     * Filtros
+     */
     public function filterByProveedores($query, $value)
     {
         $proveedores = explode(',', $value);
@@ -116,9 +117,6 @@ class EmpresaConstrucc extends Model
         });
     }
 
-    /**
-     * Filtros
-     */
     public function filterByNombre($query, $value)
     {
         return $query->where('nombre', 'like', "%$value%");
@@ -154,8 +152,14 @@ class EmpresaConstrucc extends Model
         return $query->where('activo', $value);
     }
 
-    public function proveedores()
+    /**
+     * Relaciones disponibles para carga anticipada (eager loading)
+     */
+    public static function eagerLodable(): array
     {
-        return $this->belongsToMany(Proveedor::class, 'empresa_construcc_proveedor');
+        return [
+            'proveedores',
+            'solicitudesPago',
+        ];
     }
 }

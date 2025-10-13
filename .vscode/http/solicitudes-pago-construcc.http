@@ -15,6 +15,18 @@
 
 
 
+GET https://apicons.ddns.net:8092/api/solicitudes-pago/empresa/14/proveedores
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+
+### 
+
+GET http://localhost:8080/api/construcc/solicitudes-pago/empresa/14/proveedores
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+
 ###############################################################################
 # RUTAS CONSTRUCC - SOLICITUDES DE PAGO
 ###############################################################################
