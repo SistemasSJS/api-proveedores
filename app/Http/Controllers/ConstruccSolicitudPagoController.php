@@ -543,7 +543,7 @@ class ConstruccSolicitudPagoController extends Controller
             ->get();
 
         if ($proveedores->isEmpty()) {
-            return $this->error('No se encontraron proveedores asociados a esta empresa.', null, 404);
+            return $this->error('No se encontraron proveedores asociados a esta empresa.', null, 200);
         }
 
         return $this->success($proveedores, 'Proveedores asociados a la empresa constructora.');
@@ -563,7 +563,7 @@ class ConstruccSolicitudPagoController extends Controller
             ->get();
 
         if ($proveedores->isEmpty()) {
-            return $this->error('No se encontraron proveedores disponibles para asociar a esta empresa.', null, 404);
+            return $this->error('No se encontraron proveedores disponibles para asociar a esta empresa.', null, 200);
         }
 
         return $this->success($proveedores, 'Proveedores disponibles para asociar a la empresa constructora.');
@@ -583,13 +583,13 @@ class ConstruccSolicitudPagoController extends Controller
         // Verificar que la empresa constructora exista
         $empresa = \App\Models\EmpresaConstrucc::find($empresaId);
         if (!$empresa) {
-            return $this->error('La empresa constructora no existe.', null, 404);
+            return $this->error('La empresa constructora no existe.', null, 200);
         }
 
         // Verificar que el proveedor exista
         $proveedor = \App\Models\Proveedor::find($proveedorId);
         if (!$proveedor) {
-            return $this->error('El proveedor no existe.', null, 404);
+            return $this->error('El proveedor no existe.', null, 200);
         }
 
         // Verificar si ya existe la asociación
@@ -598,7 +598,7 @@ class ConstruccSolicitudPagoController extends Controller
             ->exists();
 
         if ($existeAsociacion) {
-            return $this->error('El proveedor ya está asociado a esta empresa constructora.', null, 409);
+            return $this->error('El proveedor ya está asociado a esta empresa constructora.', null, 200);
         }
 
         // Crear la asociación
@@ -631,17 +631,17 @@ class ConstruccSolicitudPagoController extends Controller
         if ($buscar) {
             $query->where(function ($q) use ($buscar) {
                 $q->where('nombre', 'like', "%{$buscar}%")
-                  ->orWhere('rfc', 'like', "%{$buscar}%")
-                  ->orWhere('razon_social', 'like', "%{$buscar}%");
+                    ->orWhere('rfc', 'like', "%{$buscar}%")
+                    ->orWhere('razon_social', 'like', "%{$buscar}%");
             });
         }
 
         $empresas = $query->orderBy('nombre')
-                         ->limit($limit)
-                         ->get();
+            ->limit($limit)
+            ->get();
 
         if ($empresas->isEmpty()) {
-            return $this->error('No se encontraron empresas constructoras.', null, 404);
+            return $this->error('No se encontraron empresas constructoras.', null, 200);
         }
 
         return $this->success($empresas, 'Empresas constructoras encontradas.');
@@ -655,7 +655,7 @@ class ConstruccSolicitudPagoController extends Controller
         $stats = [
             'total_solicitudes' => SolicitudPago::count(),
             'pendientes' => SolicitudPago::where('estado_solicitud', EstadoSP::PENDIENTE->value)->count(),
-            'autorizadas' => SolicitudPago::where('estado_solicitud', EstadoSP::AUTORIZADA->value)->count(), 
+            'autorizadas' => SolicitudPago::where('estado_solicitud', EstadoSP::AUTORIZADA->value)->count(),
             'rechazadas' => SolicitudPago::where('estado_solicitud', EstadoSP::RECHAZADA->value)->count(),
             'pagadas' => SolicitudPago::where('estado_solicitud', EstadoSP::PAGADO->value)->count(),
             'monto_total' => SolicitudPago::sum('monto_total'),
