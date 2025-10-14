@@ -548,4 +548,121 @@ class ConstruccSolicitudPagoController extends Controller
 
         return $this->success($proveedores, 'Proveedores asociados a la empresa constructora.');
     }
+
+    /**
+     * Listar proveedores NO asociados a una empresa constructora
+     */
+    public function proveedoresNoAsociadosPorEmpresa($empresaId): JsonResponse
+    {
+        $proveedores = \App\Models\Proveedor::query()
+            ->whereDoesntHave('empresasConstrucc', function ($q) use ($empresaId) {
+                $q->where('empresa_construcc_id', $empresaId);
+            })
+            ->select('id', 'nombre_comercial', 'razon_social', 'rfc')
+            ->orderBy('nombre_comercial')
+            ->get();
+
+        if ($proveedores->isEmpty()) {
+            return $this->error('No se encontraron proveedores disponibles para asociar a esta empresa.', null, 404);
+        }
+
+        return $this->success($proveedores, 'Proveedores disponibles para asociar a la empresa constructora.');
+    }
+
+    /**
+     * Asociar un proveedor a una empresa constructora
+     */
+    public function asociarProveedorAEmpresa(Request $request, $empresaId): JsonResponse
+    {
+        $request->validate([
+            'proveedor_id' => ['required', 'integer', 'exists:proveedores,id']
+        ]);
+
+        $proveedorId = $request->input('proveedor_id');
+
+        // Verificar que la empresa constructora exista
+        $empresa = \App\Models\EmpresaConstrucc::find($empresaId);
+        if (!$empresa) {
+            return $this->error('La empresa constructora no existe.', null, 404);
+        }
+
+        // Verificar que el proveedor exista
+        $proveedor = \App\Models\Proveedor::find($proveedorId);
+        if (!$proveedor) {
+            return $this->error('El proveedor no existe.', null, 404);
+        }
+
+        // Verificar si ya existe la asociación
+        $existeAsociacion = $proveedor->empresasConstrucc()
+            ->where('empresa_construcc_id', $empresaId)
+            ->exists();
+
+        if ($existeAsociacion) {
+            return $this->error('El proveedor ya está asociado a esta empresa constructora.', null, 409);
+        }
+
+        // Crear la asociación
+        $proveedor->empresasConstrucc()->attach($empresaId);
+
+        // Recargar el proveedor con la nueva asociación
+        $proveedorActualizado = $proveedor->fresh([
+            'empresasConstrucc' => function ($query) {
+                $query->select('id', 'nombre', 'rfc');
+            }
+        ]);
+
+        return $this->success(
+            $proveedorActualizado,
+            'Proveedor asociado exitosamente a la empresa constructora.'
+        );
+    }
+
+    /**
+     * Buscar empresas constructoras
+     */
+    public function empresasConstructoras(Request $request): JsonResponse
+    {
+        $buscar = $request->input('search', '');
+        $limit = min($request->input('limit', 20), 50); // Máximo 50 resultados
+
+        $query = \App\Models\EmpresaConstrucc::query()
+            ->select('id', 'nombre', 'rfc', 'razon_social');
+
+        if ($buscar) {
+            $query->where(function ($q) use ($buscar) {
+                $q->where('nombre', 'like', "%{$buscar}%")
+                  ->orWhere('rfc', 'like', "%{$buscar}%")
+                  ->orWhere('razon_social', 'like', "%{$buscar}%");
+            });
+        }
+
+        $empresas = $query->orderBy('nombre')
+                         ->limit($limit)
+                         ->get();
+
+        if ($empresas->isEmpty()) {
+            return $this->error('No se encontraron empresas constructoras.', null, 404);
+        }
+
+        return $this->success($empresas, 'Empresas constructoras encontradas.');
+    }
+
+    /**
+     * Obtener estadísticas generales
+     */
+    public function estadisticas(Request $request): JsonResponse
+    {
+        $stats = [
+            'total_solicitudes' => SolicitudPago::count(),
+            'pendientes' => SolicitudPago::where('estado_solicitud', EstadoSP::PENDIENTE->value)->count(),
+            'autorizadas' => SolicitudPago::where('estado_solicitud', EstadoSP::AUTORIZADA->value)->count(), 
+            'rechazadas' => SolicitudPago::where('estado_solicitud', EstadoSP::RECHAZADA->value)->count(),
+            'pagadas' => SolicitudPago::where('estado_solicitud', EstadoSP::PAGADO->value)->count(),
+            'monto_total' => SolicitudPago::sum('monto_total'),
+            'monto_pagado' => SolicitudPago::sum('monto_abonado'),
+            'monto_pendiente' => SolicitudPago::sum('saldo_pendiente'),
+        ];
+
+        return $this->success($stats, 'Estadísticas generales de solicitudes de pago.');
+    }
 }

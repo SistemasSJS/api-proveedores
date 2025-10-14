@@ -176,6 +176,10 @@ Route::prefix('construcc')
             Route::get('empresas-constructoras/search', [ConstruccSolicitudPagoController::class, 'empresasConstructoras'])->name('empresas-search');
             // ✅ NUEVO: Listar proveedores asociados a una empresa constructora
             Route::get('empresa/{empresaId}/proveedores', [ConstruccSolicitudPagoController::class, 'proveedoresPorEmpresa'])->name('proveedores-por-empresa');
+            // ✅ NUEVO: Listar proveedores NO asociados a una empresa constructora
+            Route::get('empresa/{empresaId}/proveedores/no-asociados', [ConstruccSolicitudPagoController::class, 'proveedoresNoAsociadosPorEmpresa'])->name('proveedores-no-asociados');
+            // ✅ NUEVO: Asociar proveedor a una empresa constructora
+            Route::post('empresa/{empresaId}/proveedores/asociar', [ConstruccSolicitudPagoController::class, 'asociarProveedorAEmpresa'])->name('asociar-proveedor');
 
             Route::get('estadisticas', [ConstruccSolicitudPagoController::class, 'estadisticas'])->name('estadisticas');
             Route::get('{solicitudPago}', [ConstruccSolicitudPagoController::class, 'show'])->name('show');

@@ -15,7 +15,7 @@
 
 
 
-GET https://apicons.ddns.net:8092/api/solicitudes-pago/empresa/14/proveedores
+GET https://apicons.ddns.net:8092/api/construcc/solicitudes-pago/empresa/14/proveedores
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
@@ -137,3 +137,89 @@ X-API-KEY: {{apiKey}}
 GET {{baseUrl}}/construcc/solicitudes-pago/estadisticas
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
+
+
+
+###############################################################################
+# GESTIÓN DE PROVEEDORES POR EMPRESA - NUEVOS ENDPOINTS
+###############################################################################
+
+### VARIABLES PARA PRUEBAS DE PROVEEDORES
+@empresaId = 14
+@proveedorId = 1
+
+### 15. Listar proveedores asociados a una empresa constructora
+GET {{baseUrl}}/construcc/solicitudes-pago/empresa/{{empresaId}}/proveedores
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 16. 🆕 Listar proveedores NO asociados a una empresa constructora
+GET {{baseUrl}}/construcc/solicitudes-pago/empresa/{{empresaId}}/proveedores/no-asociados
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 17. 🆕 Asociar un proveedor a una empresa constructora
+POST {{baseUrl}}/construcc/solicitudes-pago/empresa/{{empresaId}}/proveedores/asociar
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+
+{
+  "proveedor_id": {{proveedorId}}
+}
+
+### 18. Prueba con empresa diferente (ID 1)
+GET {{baseUrl}}/construcc/solicitudes-pago/empresa/1/proveedores/no-asociados
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 19. Asociar múltiples proveedores (cambiar proveedorId)
+POST {{baseUrl}}/construcc/solicitudes-pago/empresa/1/proveedores/asociar
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+
+{
+  "proveedor_id": 2
+}
+
+### 20. Verificar asociación (debería mostrar el proveedor asociado)
+GET {{baseUrl}}/construcc/solicitudes-pago/empresa/1/proveedores
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+
+
+###############################################################################
+# CASOS DE ERROR - NUEVOS ENDPOINTS
+###############################################################################
+
+### 21. Error: Empresa que no existe
+GET {{baseUrl}}/construcc/solicitudes-pago/empresa/999999/proveedores/no-asociados
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 22. Error: Proveedor que no existe
+POST {{baseUrl}}/construcc/solicitudes-pago/empresa/{{empresaId}}/proveedores/asociar
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+
+{
+  "proveedor_id": 999999
+}
+
+### 23. Error: Parámetro faltante
+POST {{baseUrl}}/construcc/solicitudes-pago/empresa/{{empresaId}}/proveedores/asociar
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+
+{
+  "proveedor_id": ""
+}
+
+### 24. Error: Intentar asociar el mismo proveedor dos veces (409 Conflict)
+POST {{baseUrl}}/construcc/solicitudes-pago/empresa/{{empresaId}}/proveedores/asociar
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+
+{
+  "proveedor_id": {{proveedorId}}
+}
