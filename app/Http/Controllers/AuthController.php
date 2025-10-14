@@ -282,6 +282,7 @@ class AuthController extends Controller
         // Crear proveedor con campos booleanos según tipo de proveedor
         $proveedor = Proveedor::create([
             ...$request->validated(),
+            'nombre_comercial' => $request->alias,
             'is_proveedor_sp' => true,
             'is_proveedor_catalogo' => false,
             'cambiar_pass_default' => true,
