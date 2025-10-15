@@ -38,6 +38,8 @@ class SolicitudPago extends BaseModel
         'saldo_pendiente',
         'pago_completo',
         'notas_abono',
+        'fecha_rechazo',
+        'fecha_pago',
 
         // Nuevos campos
         'dg',
@@ -81,6 +83,12 @@ class SolicitudPago extends BaseModel
         'fecha_aprobado'                  => 'FechaAprobado',
         'fecha_aprobado_desde'            => 'FechaAprobadoDesde',
         'fecha_aprobado_hasta'            => 'FechaAprobadoHasta',
+        'fecha_rechazo'                   => 'FechaRechazo',
+        'fecha_rechazo_desde'             => 'FechaRechazoDesde',
+        'fecha_rechazo_hasta'             => 'FechaRechazoHasta',
+        'fecha_pago'                      => 'FechaPago',
+        'fecha_pago_desde'                => 'FechaPagoDesde',
+        'fecha_pago_hasta'                => 'FechaPagoHasta',
 
         // Filtros para los nuevos campos
         'dg'                              => 'Dg',
@@ -100,6 +108,8 @@ class SolicitudPago extends BaseModel
         'fecha_con_comprobante'      => 'datetime',
         'fecha_rechazado'            => 'datetime',
         'fecha_aprobado'             => 'datetime',
+        'fecha_rechazo'              => 'datetime',
+        'fecha_pago'                 => 'datetime',
         'created_at'                 => 'datetime',
         'updated_at'                 => 'datetime',
 
@@ -324,6 +334,36 @@ class SolicitudPago extends BaseModel
     public function filterByFechaAprobadoHasta($query, $value)
     {
         return $query->whereDate('fecha_aprobado', '<=', $value);
+    }
+
+    public function filterByFechaRechazo($query, $value)
+    {
+        return $query->whereDate('fecha_rechazo', $value);
+    }
+
+    public function filterByFechaRechazoDesde($query, $value)
+    {
+        return $query->whereDate('fecha_rechazo', '>=', $value);
+    }
+
+    public function filterByFechaRechazoHasta($query, $value)
+    {
+        return $query->whereDate('fecha_rechazo', '<=', $value);
+    }
+
+    public function filterByFechaPago($query, $value)
+    {
+        return $query->whereDate('fecha_pago', $value);
+    }
+
+    public function filterByFechaPagoDesde($query, $value)
+    {
+        return $query->whereDate('fecha_pago', '>=', $value);
+    }
+
+    public function filterByFechaPagoHasta($query, $value)
+    {
+        return $query->whereDate('fecha_pago', '<=', $value);
     }
     
     /** ----------------

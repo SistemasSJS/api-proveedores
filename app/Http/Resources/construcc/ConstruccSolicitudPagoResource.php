@@ -58,6 +58,8 @@ class ConstruccSolicitudPagoResource extends JsonResource
 
             'estado_solicitud' => $this->estado_solicitud,
             'motivo_rechazo'   => $this->motivo_rechazo,
+            'fecha_rechazo'    => $this->fecha_rechazo?->format('Y-m-d H:i:s'),
+            'fecha_pago'       => $this->fecha_pago?->format('Y-m-d H:i:s'),
 
             // Campos de abono y pagos parciales
             'monto_total'      => (float) $this->monto_total,

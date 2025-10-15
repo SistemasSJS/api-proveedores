@@ -160,6 +160,7 @@ class ConstruccSolicitudPagoController extends Controller
         $solicitudPago->update([
             'estado_solicitud' => EstadoSP::RECHAZADA->value,
             'motivo_rechazo' => $data['motivo_rechazo'],
+            'fecha_rechazo' => now(),
             $rolField => EstadoSolicitud::RECHAZADA->value,
             $fechaField => now(),
         ]);
@@ -242,11 +243,20 @@ class ConstruccSolicitudPagoController extends Controller
         $estadoFinal = $pagoCompleto ? EstadoSP::PAGADO->value : EstadoSP::AUTORIZADA->value;
         $estadoDA = $pagoCompleto ? EstadoSolicitud::PAGADO->value : EstadoSolicitud::AUTORIZADA->value;
 
+        // para no dejar comentadas las lineas anteriores se agrega esta linea con el proposito
+        //  de parchar la actul funcionalidad. dado un pago ya se parcial o completo el estatus se asumira 
+        //  como pagada.
+        //
+        //  Falta realizar revision del tema.
+        $estadoFinal = EstadoSP::PAGADO->value;
+        $estadoDA = EstadoSolicitud::PAGADO->value;
+
         // Actualizar solicitud
         $solicitudPago->update([
             'estado_solicitud' => $estadoFinal,
             'ruta_archivo_comprobante_pago' => $path,
             'notas_abono' => $request->notas_abono,
+            'fecha_pago' => now(),
             'da' => $estadoDA,
             'da_fecha' => now(),
         ]);
