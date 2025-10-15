@@ -2,6 +2,9 @@
 
 namespace App\Enums;
 
+/**
+ * este enum se aplica para el campo 'estado_solicitud' de una SP
+ */
 enum EstadoSP: string
 {
   case PENDIENTE   = 'pendiente';

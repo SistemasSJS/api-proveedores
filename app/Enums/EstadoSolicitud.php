@@ -2,6 +2,9 @@
 
 namespace App\Enums;
 
+/**
+ * este enum se aplica para los campos de roles 'dg','dt','pc','si','da','ro' del mopdelo Splicitudes de pago
+ */
 enum EstadoSolicitud: int
 {
   case PENDIENTE   = 0;

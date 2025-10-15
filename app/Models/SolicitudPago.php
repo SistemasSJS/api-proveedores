@@ -77,9 +77,6 @@ class SolicitudPago extends BaseModel
         'fecha_con_comprobante'           => 'FechaConComprobante',
         'fecha_con_comprobante_desde'     => 'FechaConComprobanteDesde',
         'fecha_con_comprobante_hasta'     => 'FechaConComprobanteHasta',
-        'fecha_rechazado'                 => 'FechaRechazado',
-        'fecha_rechazado_desde'           => 'FechaRechazadoDesde',
-        'fecha_rechazado_hasta'           => 'FechaRechazadoHasta',
         'fecha_aprobado'                  => 'FechaAprobado',
         'fecha_aprobado_desde'            => 'FechaAprobadoDesde',
         'fecha_aprobado_hasta'            => 'FechaAprobadoHasta',
@@ -106,7 +103,6 @@ class SolicitudPago extends BaseModel
         'fecha_inicio_procesamiento' => 'datetime',
         'fecha_confirmacion_pago'    => 'datetime',
         'fecha_con_comprobante'      => 'datetime',
-        'fecha_rechazado'            => 'datetime',
         'fecha_aprobado'             => 'datetime',
         'fecha_rechazo'              => 'datetime',
         'fecha_pago'                 => 'datetime',
@@ -304,21 +300,6 @@ class SolicitudPago extends BaseModel
     public function filterByFechaConComprobanteHasta($query, $value)
     {
         return $query->whereDate('fecha_con_comprobante', '<=', $value);
-    }
-
-    public function filterByFechaRechazado($query, $value)
-    {
-        return $query->whereDate('fecha_rechazado', $value);
-    }
-
-    public function filterByFechaRechazadoDesde($query, $value)
-    {
-        return $query->whereDate('fecha_rechazado', '>=', $value);
-    }
-
-    public function filterByFechaRechazadoHasta($query, $value)
-    {
-        return $query->whereDate('fecha_rechazado', '<=', $value);
     }
 
     public function filterByFechaAprobado($query, $value)
