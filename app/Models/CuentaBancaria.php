@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\EstadoCuentaBancaria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -24,6 +25,11 @@ class CuentaBancaria extends BaseModel
         'sucursal',
         'swift',
         'preferida',
+    ];
+
+    protected $casts = [
+        'estatus' => EstadoCuentaBancaria::class,
+        'preferida' => 'boolean',
     ];
 
     protected static $filters = [
@@ -73,7 +79,7 @@ class CuentaBancaria extends BaseModel
 
     public function scopeActivas($query)
     {
-        return $query->where('estatus', 'activo');
+        return $query->where('estatus', EstadoCuentaBancaria::ACTIVA);
     }
 
     public function scopeTitular($query, string $titular)
