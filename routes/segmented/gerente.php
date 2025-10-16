@@ -157,6 +157,8 @@ Route::prefix('proveedores')
             });
         });
 
+        Route::get('{proveedor}/puede-generar-sp', [ProveedorController::class, 'puedeGenerarSP']);
+
 
         /**
          * CSV IMPORT ROUTES

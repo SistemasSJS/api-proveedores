@@ -14,6 +14,7 @@ use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Http\Requests\Proveedor\ProveedorUpdateConstanciaFiscalRequest;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\Admin\AdminProveedorAcordeonResource;
+use App\Http\Resources\ProveedorPuedeGenerarSPResource;
 use Symfony\Component\HttpFoundation\Response;
 
 class ProveedorController extends Controller
@@ -241,5 +242,140 @@ class ProveedorController extends Controller
             'Content-Type'        => 'application/pdf',
             'Content-Disposition' => 'inline; filename="constancia_fiscal.pdf"'
         ]);
+    }
+
+    /**
+     * Valida si el proveedor puede generar una Solicitud de Pago (SP).
+     *
+     * @param  Request  $request
+     * @param  Proveedor  $proveedor
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function puedeGenerarSP(Request $request, Proveedor $proveedor)
+    {
+        // Cargar relaciones necesarias
+        $proveedor->load(['cuentasBancarias']);
+
+        // Validar información general y datos fiscales
+        $tieneInformacionGeneral = $this->validarInformacionGeneral($proveedor);
+        $tieneDatosFiscales = $this->validarDatosFiscales($proveedor);
+        $tieneInformacionGeneralYDatosFiscales = $tieneInformacionGeneral && $tieneDatosFiscales;
+
+        // Validar datos de contacto
+        $tieneDatosContacto = $this->validarDatosContacto($proveedor);
+
+        // Validar logo
+        $tieneLogo = !empty($proveedor->logo);
+
+        // Validar cuenta bancaria
+        $tieneCuentaBancaria = $proveedor->cuentasBancarias->where('estatus', 'activo')->count() > 0;
+
+        // Validar constancia fiscal
+        $tieneConstanciaFiscal = !empty($proveedor->constancia_fiscal);
+
+        // Calcular si el perfil está completo
+        $perfilEmpresaCompleto = $tieneInformacionGeneralYDatosFiscales && 
+                                $tieneDatosContacto && 
+                                $tieneLogo && 
+                                $tieneCuentaBancaria && 
+                                $tieneConstanciaFiscal;
+
+        // Actualizar el campo perfil_empresa_completo en el modelo si ha cambiado
+        if ($proveedor->perfil_empresa_completo !== $perfilEmpresaCompleto) {
+            $proveedor->update(['perfil_empresa_completo' => $perfilEmpresaCompleto]);
+        }
+
+        // Puede generar SP si el perfil está completo
+        $puedeGenerarSP = $perfilEmpresaCompleto;
+
+        $responseData = [
+            'puede_generar_sp' => $puedeGenerarSP,
+            'detalle' => [
+                'perfil_empresa_completo' => $perfilEmpresaCompleto,
+                'tiene_cuenta_bancaria' => $tieneCuentaBancaria,
+                'tiene_constancia_fiscal' => $tieneConstanciaFiscal,
+                'tiene_logo' => $tieneLogo,
+                'tiene_informacion_general_y_datos_fiscales' => $tieneInformacionGeneralYDatosFiscales
+            ]
+        ];
+
+        return $this->success(new ProveedorPuedeGenerarSPResource($responseData));
+    }
+
+    /**
+     * Valida la información general del proveedor.
+     */
+    private function validarInformacionGeneral(Proveedor $proveedor): bool
+    {
+        $camposRequeridos = [
+            'nombre_comercial',
+            'pagina_web',
+            'email',
+            'telefono',
+            'nombre_propietario',
+            'nombre_de_quien_registra',
+            'tipos_empresa_id',
+            'descripcion_giro_empresa',
+            'direccion_empresa',
+            'estado',
+            'municipio',
+            'codigo_postal'
+        ];
+
+        foreach ($camposRequeridos as $campo) {
+            if (empty($proveedor->$campo)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Valida los datos fiscales del proveedor.
+     */
+    private function validarDatosFiscales(Proveedor $proveedor): bool
+    {
+        $camposFiscales = [
+            'razon_social',
+            'rfc',
+            'regimen_fiscal_clave',
+            'regimen_fiscal_nombre',
+            'calle',
+            'numero_exterior',
+            'colonia',
+            'ciudad',
+            'codigo_postal',
+            'pais'
+        ];
+
+        foreach ($camposFiscales as $campo) {
+            if (empty($proveedor->$campo)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Valida los datos de contacto del proveedor.
+     */
+    private function validarDatosContacto(Proveedor $proveedor): bool
+    {
+        $camposContacto = [
+            'contacto_nombre',
+            'contacto_cargo', 
+            'contacto_telefono',
+            'contacto_correo'
+        ];
+
+        foreach ($camposContacto as $campo) {
+            if (empty($proveedor->$campo)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
