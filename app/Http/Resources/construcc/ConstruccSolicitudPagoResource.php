@@ -4,6 +4,7 @@ namespace App\Http\Resources\Construcc;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\Construcc\ConstruccCuentaBancariaResource;
 
 class ConstruccSolicitudPagoResource extends JsonResource
 {
@@ -15,11 +16,15 @@ class ConstruccSolicitudPagoResource extends JsonResource
             'descripcion_concepto'   => $this->descripcion_concepto,
             'monto_total'            => $this->monto_total,
             'proveedor'              => new ConstruccProveedorResource($this->whenLoaded('proveedor')),
+            'cuentas_bancarias'      => ConstruccCuentaBancariaResource::collection(
+                $this->whenLoaded('proveedor') ? $this->proveedor->cuentasBancarias : []
+            ),
             'cotizacion'             => new ConstruccCotizacionResource($this->whenLoaded('cotizacion')),
             'ruta_archivo_factura_xml'    => $this->ruta_archivo_factura_xml,
             'ruta_archivo_factura_pdf'    => $this->ruta_archivo_factura_pdf,
             'ruta_archivo_cotizacion'     => $this->ruta_archivo_cotizacion,
             'ruta_archivo_comprobante_pago' => $this->ruta_archivo_comprobante_pago,
+
             // Archivos con URLs correctas
             'url_comprobante_pago' => $this->ruta_archivo_comprobante_pago
                 ? route('construcc.solicitudes-pago.descargar-comprobante', $this->id)

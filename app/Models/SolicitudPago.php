@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\EstadoCuentaBancaria;
 use App\Enums\EstadoSolicitud;
 use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SolicitudPago extends BaseModel
 {
@@ -122,7 +124,7 @@ class SolicitudPago extends BaseModel
         'da_fecha'  => 'datetime',
         'ro'        => EstadoSolicitud::class,
         'ro_fecha'  => 'datetime',
-        
+
         // Campos de abono
         'monto_total' => 'decimal:2',
         'monto_abonado' => 'decimal:2',
@@ -140,6 +142,7 @@ class SolicitudPago extends BaseModel
             'sucursal',
             'empresaConstrucc',
             'cotizacion',
+            'cuentasBancarias',
         ];
     }
 
@@ -165,6 +168,11 @@ class SolicitudPago extends BaseModel
     public function cotizacion(): BelongsTo
     {
         return $this->belongsTo(Cotizacion::class, 'cotizacion_id')->with('detalles');
+    }
+
+    public function cuentasBancarias(): HasMany
+    {
+        return $this->hasMany(SolicitudPagoCuentaBancaria::class);
     }
 
     /** ----------------
@@ -346,7 +354,7 @@ class SolicitudPago extends BaseModel
     {
         return $query->whereDate('fecha_pago', '<=', $value);
     }
-    
+
     /** ----------------
      * Métodos para manejo de pagos parciales
      * ----------------- */
@@ -355,16 +363,16 @@ class SolicitudPago extends BaseModel
         $nuevoMontoAbonado = $this->monto_abonado + $montoAbono;
         $nuevoSaldoPendiente = $this->monto_total - $nuevoMontoAbonado;
         $pagoCompleto = $nuevoSaldoPendiente <= 0;
-        
+
         $this->update([
             'monto_abonado' => $nuevoMontoAbonado,
             'saldo_pendiente' => max(0, $nuevoSaldoPendiente),
             'pago_completo' => $pagoCompleto
         ]);
-        
+
         return $pagoCompleto;
     }
-    
+
     public function inicializarSaldos()
     {
         if ($this->saldo_pendiente == 0 && $this->monto_abonado == 0) {
@@ -373,6 +381,55 @@ class SolicitudPago extends BaseModel
                 'monto_abonado' => 0,
                 'pago_completo' => false
             ]);
+        }
+    }
+
+    /**
+     * Sincroniza las cuentas bancarias de la solicitud de pago
+     * Si no se especifica un método, se da de baja
+     */
+    public function sincronizarCuentasBancarias(array $cuentasBancarias)
+    {
+        // Obtener IDs de cuentas bancarias actuales
+        $idsActuales = $this->cuentasBancarias()->pluck('cuenta_bancaria_id')->toArray();
+
+        // Obtener IDs de cuentas bancarias del array
+        $idsNuevos = collect($cuentasBancarias)->pluck('cuenta_bancaria_id')->toArray();
+
+        // Eliminar cuentas que ya no están en el array
+        $idsAEliminar = array_diff($idsActuales, $idsNuevos);
+        $this->cuentasBancarias()->whereIn('cuenta_bancaria_id', $idsAEliminar)->delete();
+
+        // Actualizar o crear cuentas bancarias
+        foreach ($cuentasBancarias as $cuentaData) {
+            $cuentaBancaria = CuentaBancaria::find($cuentaData['cuenta_bancaria_id']);
+            if (!$cuentaBancaria) continue;
+
+            // Preparar datos para la tabla pivote
+            $pivotData = [
+                'alias' => $cuentaBancaria->alias,
+                'banco_clave' => $cuentaBancaria->banco_clave,
+                'banco_nombre' => $cuentaBancaria->banco_nombre,
+                'tipo_cuenta' => $cuentaBancaria->tipo_cuenta,
+                'campo_dependiente' => $cuentaBancaria->campo_dependiente,
+                'titular_cuenta' => $cuentaBancaria->titular_cuenta,
+                'referencia' => $cuentaBancaria->referencia,
+                // 'estatus' => EstadoCuentaBancaria::ACTIVA->value,
+                'sucursal' => $cuentaBancaria->sucursal,
+                'swift' => $cuentaBancaria->swift,
+                'preferida' => $cuentaBancaria->preferida,
+            ];
+
+            // Si hay datos específicos en el array, los sobrescribe
+            if (isset($cuentaData['datos_especificos'])) {
+                $pivotData = array_merge($pivotData, $cuentaData['datos_especificos']);
+            }
+
+            // Actualizar o crear en la tabla pivote
+            $this->cuentasBancarias()->updateOrCreate(
+                ['cuenta_bancaria_id' => $cuentaData['cuenta_bancaria_id']],
+                $pivotData
+            );
         }
     }
 }

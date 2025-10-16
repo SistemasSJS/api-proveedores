@@ -23,7 +23,23 @@ class CrearSolicitudPagoRequest extends FormRequest
             'empresa'                => 'nullable|string|max:255',
             'residente'              => 'nullable|string|max:255',
             'cotizacion_id'          => 'nullable|integer',
-            'monto_total'            => 'required|numeric|min:0', // <- agregado
+            'monto_total'            => 'required|numeric|min:0',
+            
+            // Validaciones para cuentas bancarias
+            'cuentas_bancarias'                      => 'nullable|array',
+            'cuentas_bancarias.*.cuenta_bancaria_id' => 'required|integer|exists:cuentas_bancarias,id',
+            'cuentas_bancarias.*.datos_especificos' => 'nullable|array',
+            'cuentas_bancarias.*.datos_especificos.alias' => 'nullable|string|max:255',
+            'cuentas_bancarias.*.datos_especificos.banco_clave' => 'nullable|string|max:10',
+            'cuentas_bancarias.*.datos_especificos.banco_nombre' => 'nullable|string|max:255',
+            'cuentas_bancarias.*.datos_especificos.tipo_cuenta' => 'nullable|string|max:255',
+            'cuentas_bancarias.*.datos_especificos.campo_dependiente' => 'nullable|string|max:255',
+            'cuentas_bancarias.*.datos_especificos.titular_cuenta' => 'nullable|string|max:255',
+            'cuentas_bancarias.*.datos_especificos.referencia' => 'nullable|string|max:255',
+            'cuentas_bancarias.*.datos_especificos.estatus' => 'nullable|integer|min:0|max:2',
+            'cuentas_bancarias.*.datos_especificos.sucursal' => 'nullable|string|max:255',
+            'cuentas_bancarias.*.datos_especificos.swift' => 'nullable|string|max:255',
+            'cuentas_bancarias.*.datos_especificos.preferida' => 'nullable|boolean',
         ];
     }
 
@@ -52,6 +68,13 @@ class CrearSolicitudPagoRequest extends FormRequest
             'monto_total.required'            => 'El monto total es obligatorio',
             'monto_total.numeric'             => 'El monto total debe ser un número válido',
             'monto_total.min'                 => 'El monto total no puede ser negativo',
+            
+            // Mensajes para cuentas bancarias
+            'cuentas_bancarias.array'         => 'Las cuentas bancarias deben ser un array válido',
+            'cuentas_bancarias.*.cuenta_bancaria_id.required' => 'El ID de la cuenta bancaria es obligatorio',
+            'cuentas_bancarias.*.cuenta_bancaria_id.integer'  => 'El ID de la cuenta bancaria debe ser un número entero',
+            'cuentas_bancarias.*.cuenta_bancaria_id.exists'   => 'La cuenta bancaria seleccionada no existe',
+            'cuentas_bancarias.*.datos_especificos.array'     => 'Los datos específicos deben ser un array válido',
         ];
     }
 }

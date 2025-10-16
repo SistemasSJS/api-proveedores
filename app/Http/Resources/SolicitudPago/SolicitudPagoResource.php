@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources\SolicitudPago;
 
+use App\Http\Resources\CuentaBancaria\CuentaBancariaResource;
+use App\Http\Resources\SolicitudPago\SolicitudPagoCuentaBancariaResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -19,14 +21,27 @@ class SolicitudPagoResource extends JsonResource
             'numero_folio_solicitud'      => $this->numero_folio_solicitud,
             'descripcion_concepto'        => $this->descripcion_concepto,
             'estado_solicitud'            => $this->estado_solicitud,
-
-            'empresa_construcc' => $this->empresaConstrucc ? [
-                'id' => $this->empresaConstrucc->id,
-                'nombre' => $this->empresaConstrucc->nombre,
-                'razon_social' => $this->empresaConstrucc->razon_social,
-                'rfc' => $this->empresaConstrucc->rfc,
-                'representante_legal' => $this->empresaConstrucc->representante_legal,
-            ] : null,
+            'cuentas_bancarias'      => SolicitudPagoCuentaBancariaResource::collection($this->whenLoaded('cuentasBancarias')),
+            
+            'proveedor' => $this->whenLoaded('proveedor', function () {
+                return [
+                    'id' => $this->proveedor->id,
+                    'nombre' => $this->proveedor->nombre,
+                    'razon_social' => $this->proveedor->razon_social,
+                    'rfc' => $this->proveedor->rfc,
+                    'representante_legal' => $this->proveedor->representante_legal,
+                ];
+            }),
+            
+            'empresa_construcc' => $this->whenLoaded('empresaConstrucc', function () {
+                return [
+                    'id' => $this->empresaConstrucc->id,
+                    'nombre' => $this->empresaConstrucc->nombre,
+                    'razon_social' => $this->empresaConstrucc->razon_social,
+                    'rfc' => $this->empresaConstrucc->rfc,
+                    'representante_legal' => $this->empresaConstrucc->representante_legal,
+                ];
+            }),
 
             // Archivos
             'ruta_archivo_factura_xml'    => $this->ruta_archivo_factura_xml,

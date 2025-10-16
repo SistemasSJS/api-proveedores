@@ -45,7 +45,7 @@ class ProveedorSolicitudPagoController extends Controller
     $order   = $request->input('order', 'desc');
 
     $items = SolicitudPago::query()
-      ->with(['proveedor', 'empresaConstrucc'])
+      ->with(['proveedor', 'empresaConstrucc', 'cuentasBancarias'])
       ->where('proveedor_id', $proveedor->id)
       ->filter($filters)
       ->orderBy($sortBy, $order)
@@ -111,8 +111,13 @@ class ProveedorSolicitudPagoController extends Controller
       'pago_completo' => false,
     ]);
 
+    // Sincronizar cuentas bancarias si se enviaron
+    if ($request->has('cuentas_bancarias') && is_array($request->cuentas_bancarias)) {
+      $solicitud->sincronizarCuentasBancarias($request->cuentas_bancarias);
+    }
+
     return $this->success(
-      new SolicitudPagoResource($solicitud->load(['proveedor', 'empresaConstrucc'])),
+      new SolicitudPagoResource($solicitud->load(['proveedor', 'empresaConstrucc', 'cuentasBancarias'])),
       'Solicitud de pago creada correctamente.',
       201
     );
@@ -128,7 +133,42 @@ class ProveedorSolicitudPagoController extends Controller
     }
 
     return $this->success(
-      new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc']))
+      new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc', 'cuentasBancarias']))
+    );
+  }
+
+  /**
+   * Actualizar cuentas bancarias de la solicitud de pago
+   */
+  public function actualizarCuentasBancarias(Request $request, Proveedor $proveedor, SolicitudPago $solicitudPago): JsonResponse
+  {
+    if ($solicitudPago->proveedor_id !== $proveedor->id) {
+      return $this->error('Solicitud no pertenece a este proveedor', 403);
+    }
+
+    $request->validate([
+      'cuentas_bancarias'                      => 'required|array',
+      'cuentas_bancarias.*.cuenta_bancaria_id' => 'required|integer|exists:cuentas_bancarias,id',
+      'cuentas_bancarias.*.datos_especificos' => 'nullable|array',
+      'cuentas_bancarias.*.datos_especificos.alias' => 'nullable|string|max:255',
+      'cuentas_bancarias.*.datos_especificos.banco_clave' => 'nullable|string|max:10',
+      'cuentas_bancarias.*.datos_especificos.banco_nombre' => 'nullable|string|max:255',
+      'cuentas_bancarias.*.datos_especificos.tipo_cuenta' => 'nullable|string|max:255',
+      'cuentas_bancarias.*.datos_especificos.campo_dependiente' => 'nullable|string|max:255',
+      'cuentas_bancarias.*.datos_especificos.titular_cuenta' => 'nullable|string|max:255',
+      'cuentas_bancarias.*.datos_especificos.referencia' => 'nullable|string|max:255',
+      'cuentas_bancarias.*.datos_especificos.estatus' => 'nullable|integer|min:0|max:2',
+      'cuentas_bancarias.*.datos_especificos.sucursal' => 'nullable|string|max:255',
+      'cuentas_bancarias.*.datos_especificos.swift' => 'nullable|string|max:255',
+      'cuentas_bancarias.*.datos_especificos.preferida' => 'nullable|boolean',
+    ]);
+
+    // Sincronizar las cuentas bancarias
+    $solicitudPago->sincronizarCuentasBancarias($request->cuentas_bancarias);
+
+    return $this->success(
+      new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc', 'cuentasBancarias'])),
+      'Cuentas bancarias actualizadas correctamente.'
     );
   }
 
@@ -154,7 +194,7 @@ class ProveedorSolicitudPagoController extends Controller
     ]);
 
     return $this->success(
-      new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc'])),
+      new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc', 'cuentasBancarias'])),
       'Comprobante de pago subido correctamente.'
     );
   }
@@ -247,7 +287,7 @@ class ProveedorSolicitudPagoController extends Controller
     ]);
 
     return $this->success(
-      new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc'])),
+      new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc', 'cuentasBancarias'])),
       'Solicitud autorizada correctamente.'
     );
   }
@@ -272,7 +312,7 @@ class ProveedorSolicitudPagoController extends Controller
     ]);
 
     return $this->success(
-      new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc'])),
+      new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc', 'cuentasBancarias'])),
       'Solicitud rechazada correctamente.'
     );
   }
@@ -292,7 +332,7 @@ class ProveedorSolicitudPagoController extends Controller
     ]);
 
     return $this->success(
-      new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc'])),
+      new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc', 'cuentasBancarias'])),
       'Pago confirmado correctamente.'
     );
   }
