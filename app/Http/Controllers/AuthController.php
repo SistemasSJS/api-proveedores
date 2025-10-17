@@ -354,6 +354,10 @@ class AuthController extends Controller
         $user->load(User::eagerLodable());
         $proveedor = $user->proveedorPrincipal();
 
+        // Si el proveedor tiene la bandera cambiar_pass_default en true, actualizarla a false
+        $proveedor->cambiar_pass_default = false;
+        $proveedor->save();
+
         return $this->success([
             'user' => new UserAuthenticateResource($user),
             'token' => $newToken,
