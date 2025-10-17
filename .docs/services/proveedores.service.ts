@@ -67,11 +67,17 @@ export interface SolicitudPago {
 	motivo_rechazo?: string;
 	motivo_cancelacion?: string;
 
-	// Información de pago
+	// Información de pago (actualizados según backend)
 	monto_total?: string | number;
-	monto_pagado?: number;
+	monto_abonado?: number; // Campo actualizado del backend
+	saldo_pendiente?: number; // Nuevo campo del backend
+	pago_completo?: boolean; // Nuevo campo del backend
+	porcentaje_pagado?: number; // Campo calculado del backend
 	notas_abono?: string;
 	observaciones_rechazo?: string;
+	
+	// Campos deprecated para compatibilidad
+	monto_pagado?: number; // @deprecated - usar monto_abonado
 
 	// URLs alternativas para compatibilidad
 	url_factura_pdf?: string;
@@ -99,6 +105,7 @@ export interface SolicitudPago {
 	pc?: number; // CO (Coordinador)
 	si?: number;
 	da?: number;
+	ro?: number; // Nuevo campo RO (Recursos Operativos)
 
 	// Fechas por rol
 	dg_fecha?: string;
@@ -106,6 +113,7 @@ export interface SolicitudPago {
 	pc_fecha?: string;
 	si_fecha?: string;
 	da_fecha?: string;
+	ro_fecha?: string; // Nueva fecha para RO
 
 	// Relaciones
 	proveedor?: {
@@ -117,6 +125,9 @@ export interface SolicitudPago {
 		telefono: string;
 		logo?: string;
 	};
+
+	// Cuentas bancarias del proveedor (desde el backend)
+	cuentas_bancarias?: CuentaBancaria[];
 
 	empresa_construcc?: {
 		id: number;
@@ -154,6 +165,25 @@ export interface EmpresaConstrucc {
 	razon_social: string;
 	rfc: string;
 	representante_legal?: string;
+}
+
+// Cuenta bancaria del proveedor
+export interface CuentaBancaria {
+	id: number;
+	proveedor_id: number;
+	alias?: string;
+	banco_clave: string;
+	banco_nombre: string;
+	tipo_cuenta: string;
+	campo_dependiente: string;
+	titular_cuenta: string;
+	referencia: string;
+	estatus: number; // 0=INACTIVA, 1=ACTIVA, 2=SUSPENDIDA
+	sucursal?: string;
+	swift?: string;
+	preferida: boolean;
+	created_at: string;
+	updated_at: string;
 }
 
 // Filtros para solicitudes de pago
@@ -784,6 +814,121 @@ export class ProveedoresService {
 		};
 	}
 
+	// ==========================================
+	// MÉTODOS DE UTILIDAD PARA PAGOS PARCIALES
+	// ==========================================
+
+	/**
+	 * Calcula el porcentaje pagado de una solicitud
+	 */
+	calcularPorcentajePagado(solicitud: SolicitudPago): number {
+		const montoTotal = Number(solicitud.monto_total) || 0;
+		const montoAbonado = solicitud.monto_abonado || 0;
+		return montoTotal > 0 ? Math.round((montoAbonado / montoTotal) * 100 * 100) / 100 : 0;
+	}
+
+	/**
+	 * Verifica si una solicitud está pagada completamente
+	 */
+	esCompletamentePagada(solicitud: SolicitudPago): boolean {
+		return solicitud.pago_completo === true || 
+			   (solicitud.saldo_pendiente !== undefined && solicitud.saldo_pendiente <= 0);
+	}
+
+	/**
+	 * Obtiene el estado de pago de una solicitud
+	 */
+	getEstadoPago(solicitud: SolicitudPago): 'sin_pago' | 'pago_parcial' | 'pago_completo' {
+		const montoAbonado = solicitud.monto_abonado || 0;
+		if (montoAbonado === 0) {
+			return 'sin_pago';
+		}
+		return this.esCompletamentePagada(solicitud) ? 'pago_completo' : 'pago_parcial';
+	}
+
+	/**
+	 * Formatea el estado de pago para mostrar en UI
+	 */
+	formatearEstadoPago(solicitud: SolicitudPago): string {
+		const estadoPago = this.getEstadoPago(solicitud);
+		const porcentaje = this.calcularPorcentajePagado(solicitud);
+		
+		switch (estadoPago) {
+			case 'sin_pago':
+				return 'Sin abonos';
+			case 'pago_parcial':
+				return `Parcial (${porcentaje}%)`;
+			case 'pago_completo':
+				return 'Pagado completamente';
+			default:
+				return 'Estado desconocido';
+		}
+	}
+
+	/**
+	 * Obtiene el color para el estado de pago
+	 */
+	getColorEstadoPago(solicitud: SolicitudPago): string {
+		const estadoPago = this.getEstadoPago(solicitud);
+		const colores = {
+			sin_pago: '#F44336',      // Rojo
+			pago_parcial: '#FF9800',  // Naranja
+			pago_completo: '#4CAF50'  // Verde
+		};
+		return colores[estadoPago];
+	}
+
+	// ==========================================
+	// MÉTODOS DE UTILIDAD PARA CUENTAS BANCARIAS
+	// ==========================================
+
+	/**
+	 * Obtiene la cuenta bancaria preferida de un proveedor
+	 */
+	getCuentaPreferida(cuentasBancarias: CuentaBancaria[]): CuentaBancaria | null {
+		const cuentaPreferida = cuentasBancarias.find(cuenta => cuenta.preferida && cuenta.estatus === 1);
+		return cuentaPreferida || null;
+	}
+
+	/**
+	 * Filtra cuentas bancarias activas
+	 */
+	getCuentasActivas(cuentasBancarias: CuentaBancaria[]): CuentaBancaria[] {
+		return cuentasBancarias.filter(cuenta => cuenta.estatus === 1);
+	}
+
+	/**
+	 * Formatea el nombre completo de una cuenta bancaria
+	 */
+	formatearNombreCuenta(cuenta: CuentaBancaria): string {
+		const alias = cuenta.alias ? `${cuenta.alias} - ` : '';
+		return `${alias}${cuenta.banco_nombre} (${cuenta.tipo_cuenta})`;
+	}
+
+	/**
+	 * Obtiene el estado de una cuenta bancaria
+	 */
+	getEstadoCuentaBancaria(estatus: number): string {
+		const estados = {
+			0: 'Inactiva',
+			1: 'Activa',
+			2: 'Suspendida'
+		};
+		return estados[estatus as keyof typeof estados] || 'Desconocido';
+	}
+
+	/**
+	 * Obtiene el color para el estado de cuenta bancaria
+	 */
+	getColorEstadoCuenta(estatus: number): string {
+		const colores = {
+			0: '#9E9E9E',    // Gris - Inactiva
+			1: '#4CAF50',   // Verde - Activa  
+			2: '#FF9800'    // Naranja - Suspendida
+		};
+		return colores[estatus as keyof typeof colores] || '#9E9E9E';
+	}
+
 	/**
 	 * 🆕 Lista proveedores NO asociados a una empresa constructora
 	 * GET /api/construcc/solicitudes-pago/empresa/{empresaId}/proveedores/no-asociados
@@ -1077,6 +1222,77 @@ export class SolicitudesPagoComponent implements OnInit {
 		});
 	}
 
+	// 7️⃣ TRABAJAR CON LOS NUEVOS CAMPOS DE PAGO
+	mostrarInformacionPago(solicitud: SolicitudPago) {
+		console.log('=== INFORMACIÓN DE PAGO ===');
+		console.log('Monto Total:', solicitud.monto_total);
+		console.log('Monto Abonado:', solicitud.monto_abonado);
+		console.log('Saldo Pendiente:', solicitud.saldo_pendiente);
+		console.log('Pago Completo:', solicitud.pago_completo);
+		console.log('Porcentaje Pagado:', solicitud.porcentaje_pagado + '%');
+		console.log('Estado de Pago:', this.solicitudService.formatearEstadoPago(solicitud));
+		console.log('Notas de Abono:', solicitud.notas_abono || 'Sin notas');
+	}
+
+	// 8️⃣ TRABAJAR CON CUENTAS BANCARIAS
+	mostrarCuentasBancarias(solicitud: SolicitudPago) {
+		console.log('=== CUENTAS BANCARIAS DEL PROVEEDOR ===');
+		if (!solicitud.cuentas_bancarias || solicitud.cuentas_bancarias.length === 0) {
+			console.log('No hay cuentas bancarias registradas');
+			return;
+		}
+
+		// Mostrar cuenta preferida
+		const cuentaPreferida = this.solicitudService.getCuentaPreferida(solicitud.cuentas_bancarias);
+		if (cuentaPreferida) {
+			console.log('Cuenta Preferida:', this.solicitudService.formatearNombreCuenta(cuentaPreferida));
+			console.log('Referencia:', cuentaPreferida.referencia);
+			console.log('Titular:', cuentaPreferida.titular_cuenta);
+		}
+
+		// Listar todas las cuentas activas
+		const cuentasActivas = this.solicitudService.getCuentasActivas(solicitud.cuentas_bancarias);
+		console.log(`Cuentas Activas (${cuentasActivas.length}):`);
+		cuentasActivas.forEach((cuenta, index) => {
+			console.log(`  ${index + 1}. ${this.solicitudService.formatearNombreCuenta(cuenta)}`);
+			console.log(`     Referencia: ${cuenta.referencia}`);
+			console.log(`     Estado: ${this.solicitudService.getEstadoCuentaBancaria(cuenta.estatus)}`);
+			console.log(`     Preferida: ${cuenta.preferida ? 'Sí' : 'No'}`);
+		});
+	}
+
+	// 9️⃣ TRABAJAR CON EL NUEVO CAMPO RO
+	mostrarEstadosAprobacion(solicitud: SolicitudPago) {
+		console.log('=== ESTADOS DE APROBACIÓN POR ROL ===');
+		const roles = [
+			{ campo: 'dg', fecha: 'dg_fecha', nombre: 'Director General' },
+			{ campo: 'dt', fecha: 'dt_fecha', nombre: 'Director Técnico' },
+			{ campo: 'pc', fecha: 'pc_fecha', nombre: 'Coordinador de Proyecto' },
+			{ campo: 'si', fecha: 'si_fecha', nombre: 'Superintendente' },
+			{ campo: 'da', fecha: 'da_fecha', nombre: 'Director Administrativo' },
+			{ campo: 'ro', fecha: 'ro_fecha', nombre: 'Recursos Operativos' } // NUEVO
+		];
+
+		roles.forEach(rol => {
+			const estado = (solicitud as any)[rol.campo];
+			const fecha = (solicitud as any)[rol.fecha];
+			const estadoTexto = this.getEstadoTextoNumerico(estado);
+			console.log(`${rol.nombre}: ${estadoTexto} ${fecha ? `(${this.formatearFecha(fecha)})` : ''}`);
+		});
+	}
+
+	// Método auxiliar para convertir valores numéricos a texto
+	getEstadoTextoNumerico(valor?: number): string {
+		if (valor === undefined || valor === null) return 'Pendiente';
+		const estados = {
+			0: 'Pendiente',
+			1: 'Autorizada',
+			2: 'Rechazada',
+			3: 'Pagado'
+		};
+		return estados[valor as keyof typeof estados] || 'Desconocido';
+	}
+
 	// Otros métodos originales...
 	cargarSolicitudes() {
 		this.loading = true;
@@ -1128,6 +1344,8 @@ export class SolicitudesPagoComponent implements OnInit {
 				<th>Folio</th>
 				<th>Estado</th>
 				<th>Monto</th>
+				<th>🆕 Estado Pago</th>
+				<th>🆕 Cuenta Preferida</th>
 				<th>Fecha Creación</th>
 				<th>🆕 Fecha Rechazo</th>
 				<th>🆕 Fecha Pago</th>
@@ -1143,6 +1361,21 @@ export class SolicitudesPagoComponent implements OnInit {
 					</span>
 				</td>
 				<td>{{ solicitud.monto_total | currency:'MXN':'symbol':'1.2-2' }}</td>
+				<td>
+					<span [style.color]="solicitudService.getColorEstadoPago(solicitud)"
+						  [title]="'Abonado: ' + (solicitud.monto_abonado | currency:'MXN':'symbol':'1.2-2') + ' | Saldo: ' + (solicitud.saldo_pendiente | currency:'MXN':'symbol':'1.2-2')">
+						{{ solicitudService.formatearEstadoPago(solicitud) }}
+					</span>
+				</td>
+				<td>
+					<span *ngIf="solicitudService.getCuentaPreferida(solicitud.cuentas_bancarias || []) as cuentaPreferida; else noCuenta">
+						{{ solicitudService.formatearNombreCuenta(cuentaPreferida) }}
+						<br><small>{{ cuentaPreferida.referencia }}</small>
+					</span>
+					<ng-template #noCuenta>
+						<span class="no-disponible">Sin cuenta</span>
+					</ng-template>
+				</td>
 				<td>{{ formatearFecha(solicitud.created_at) }}</td>
 				<td>
 					<span *ngIf="solicitud.fecha_rechazo; else noFechaRechazo"
