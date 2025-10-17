@@ -24,7 +24,7 @@ class UserAuthenticateResource extends JsonResource
                     ? $this->foto_perfil_url
                     : asset('storage/' . $this->foto_perfil_url))
                 : null,
-                                        'role'              => new RoleResource($this->whenLoaded('role')),
+            'role'              => new RoleResource($this->whenLoaded('role')),
             'estado'            => $this->estado,
             'created_at'        => $this->created_at,
             'updated_at'        => $this->updated_at,
