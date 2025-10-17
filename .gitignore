@@ -304,5 +304,4 @@ respaldo_*.zip
 !/storage/framework/views/.gitkeep
 routes/segmented/construcc.php
 docs/
-storage/logs/*
-storage/logs/audit.log
+storage/logs/*.*
