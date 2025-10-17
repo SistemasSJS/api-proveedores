@@ -81,14 +81,7 @@ class ProveedorSolicitudPagoController extends Controller
       $rutaCotizacion = $cotizacionFile->store('cotizaciones', 'private');
     }
 
-    // Generar folio
-    $lastFolio = SolicitudPago::where('proveedor_id', $proveedor->id)
-      ->orderBy('id', 'desc')
-      ->value('numero_folio_solicitud');
-    $lastNumber = $lastFolio ? (int) substr($lastFolio, 2) : 0;
-    $nextNumber = $lastNumber + 1;
-    $numeroFolio = 'SP' . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
-
+    $numeroFolio = SolicitudPago::generarNumeroFolio($proveedor);
     $empresaConstructId = $request->empresa_construcc_id;
 
     $montoTotal = $request->monto_total;
@@ -133,7 +126,7 @@ class ProveedorSolicitudPagoController extends Controller
     }
 
     return $this->success(
-      new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc', 'cuentasBancarias']))
+      new SolicitudPagoResource($solicitudPago->load(SolicitudPago::eagerLodable()))
     );
   }
 

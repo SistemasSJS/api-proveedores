@@ -413,7 +413,7 @@ class SolicitudPago extends BaseModel
                 'tipo_cuenta' => $cuentaBancaria->tipo_cuenta,
                 'campo_dependiente' => $cuentaBancaria->campo_dependiente,
                 'titular_cuenta' => $cuentaBancaria->titular_cuenta,
-                'referencia' => $cuentaBancaria->referencia,
+                'referencia' => $cuentaBancaria->referencia ?? '',
                 // 'estatus' => EstadoCuentaBancaria::ACTIVA->value,
                 'sucursal' => $cuentaBancaria->sucursal,
                 'swift' => $cuentaBancaria->swift,
@@ -431,5 +431,40 @@ class SolicitudPago extends BaseModel
                 $pivotData
             );
         }
+    }
+
+
+    /** ----------------
+     * Utilidades s
+     * ----------------- */
+
+    /**
+     * Generar siguiente número de folio para una nueva solicitud de pago para un proveedor
+     * nopmeclatura: 
+     *  SP-
+     *  proveedor abrevicado en tres letras mayusculas, sacadas paartir del nomnre comerical
+     *  seguido de un guion 
+     *  6 digitos consecutivos, iniciando en 00001
+     *  pasado los numoers posibles con 6 digitos, se aumenta a 7 digitos y asi sucesivamente
+     * 
+     * 
+     * ej. SP-ABC-000001
+     */
+    public static function generarNumeroFolio(Proveedor $proveedor)
+    {
+        $ultimoFolio = self::where('proveedor_id', $proveedor->id)
+            ->orderByDesc('id')
+            ->value('numero_folio_solicitud');
+
+        if ($ultimoFolio) {
+            $numero = (int) filter_var($ultimoFolio, FILTER_SANITIZE_NUMBER_INT);
+            $siguienteNumero = $numero + 1;
+        } else {
+            $siguienteNumero = 1;
+        }
+
+        $proveedorClave = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $proveedor->nombre_comercial), 0, 3));
+
+        return sprintf('SP-%s-%06d', $proveedorClave, $siguienteNumero);
     }
 }

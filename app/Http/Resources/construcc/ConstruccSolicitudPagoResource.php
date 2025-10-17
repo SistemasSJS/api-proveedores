@@ -17,7 +17,7 @@ class ConstruccSolicitudPagoResource extends JsonResource
             'monto_total'            => $this->monto_total,
             'proveedor'              => new ConstruccProveedorResource($this->whenLoaded('proveedor')),
             'cuentas_bancarias'      => ConstruccCuentaBancariaResource::collection(
-                $this->whenLoaded('proveedor') ? $this->proveedor->cuentasBancarias : []
+                $this->whenLoaded('cuentasBancarias')
             ),
             'cotizacion'             => new ConstruccCotizacionResource($this->whenLoaded('cotizacion')),
             'ruta_archivo_factura_xml'    => $this->ruta_archivo_factura_xml,

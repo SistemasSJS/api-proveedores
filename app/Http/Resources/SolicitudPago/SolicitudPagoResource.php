@@ -22,7 +22,7 @@ class SolicitudPagoResource extends JsonResource
             'descripcion_concepto'        => $this->descripcion_concepto,
             'estado_solicitud'            => $this->estado_solicitud,
             'cuentas_bancarias'      => SolicitudPagoCuentaBancariaResource::collection($this->whenLoaded('cuentasBancarias')),
-            
+
             'proveedor' => $this->whenLoaded('proveedor', function () {
                 return [
                     'id' => $this->proveedor->id,
@@ -32,7 +32,7 @@ class SolicitudPagoResource extends JsonResource
                     'representante_legal' => $this->proveedor->representante_legal,
                 ];
             }),
-            
+
             'empresa_construcc' => $this->whenLoaded('empresaConstrucc', function () {
                 return [
                     'id' => $this->empresaConstrucc->id,

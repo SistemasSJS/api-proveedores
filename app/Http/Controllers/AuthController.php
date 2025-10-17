@@ -193,7 +193,7 @@ class AuthController extends Controller
     {
         $user = $request->user();
         $user->load(User::eagerLodable());
-        
+
         if ($user->proveedores()->count() == 0) {
             return $this->success([
                 'user' => new UserAuthenticateResource($user),
@@ -325,7 +325,8 @@ class AuthController extends Controller
 
         // Crear token de autenticación
         $token = $user->createToken('auth_token')->plainTextToken;
-
+        $user->load(User::eagerLodable());
+        
         return $this->success([
             'user' => new UserAuthenticateResource($user),
             'token' => $token,
