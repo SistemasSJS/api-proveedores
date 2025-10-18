@@ -114,7 +114,7 @@ class OrdenCompraController extends Controller
         // OC con alertas
         $conAlertas = $query->where('sp_count', 0)
             ->where('estado', EstadoOrdenCompra::APROBADA)
-            ->selectRaw('*, DATEDIFF(NOW(), COALESCE(fecha_aprobacion, created_at)) as dias_sin_sp')
+            // ->selectRaw('*, DATEDIFF(NOW(), COALESCE(fecha_aprobacion, created_at)) as dias_sin_sp')
             ->get()
             ->filter(function ($oc) {
                 return $oc->dias_sin_sp >= 7;

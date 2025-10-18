@@ -29,7 +29,7 @@ trait Filterable
             Log::debug("Aplicando método: $method");
 
             if (method_exists($this, $method)) {
-                $query = $this->$method($query, $value); // 👈 importante
+                $this->$method($query, $value);
             } else {
                 Log::warning("Método $method no existe en " . static::class);
             }

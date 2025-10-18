@@ -106,6 +106,46 @@ class SolicitudPagoResource extends JsonResource
             'notas_abono'                 => $this->notas_abono,
             'porcentaje_pagado'           => $this->monto_total > 0 ? round(($this->monto_abonado / $this->monto_total) * 100, 2) : 0,
 
+            // Información de Órdenes de Compra
+            'origen_oc'                   => (bool) $this->origen_oc,
+            'referencia_oc'               => $this->referencia_oc,
+            'monto_oc_original'           => (float) $this->monto_oc_original,
+            'es_de_orden_compra'          => $this->esDeOrdenCompra(),
+            
+            // Órdenes de compra asociadas
+            'ordenes_compra' => $this->whenLoaded('ordenesCompra', function () {
+                return $this->ordenesCompra->map(function ($oc) {
+                    return [
+                        'id' => $oc->id,
+                        'numero_orden' => $oc->numero_orden,
+                        'fecha_orden' => $oc->fecha_orden?->format('Y-m-d'),
+                        'importe_total' => (float) $oc->importe_total,
+                        'estado' => [
+                            'codigo' => $oc->estado->value,
+                            'label' => $oc->estado->label(),
+                            'color' => $oc->estado->color(),
+                        ],
+                        'monto_disponible' => (float) $oc->getMontoDisponible(),
+                        
+                        // Información de vinculación
+                        'vinculacion' => [
+                            'monto_asociado' => (float) $oc->pivot->monto_asociado,
+                            'fecha_vinculacion' => $oc->pivot->fecha_vinculacion?->format('Y-m-d H:i:s'),
+                            'notas' => $oc->pivot->notas,
+                        ],
+                    ];
+                });
+            }),
+            
+            // Resumen de OC (cuando no se cargan las relaciones completas)
+            'oc_resumen' => $this->when($this->origen_oc && !$this->relationLoaded('ordenesCompra'), function () {
+                return [
+                    'tiene_oc_asociadas' => true,
+                    'referencia_principal' => $this->referencia_oc,
+                    'monto_oc_original' => (float) $this->monto_oc_original,
+                ];
+            }),
+
             // Metadatos
             'created_at'                  => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at'                  => $this->updated_at?->format('Y-m-d H:i:s'),

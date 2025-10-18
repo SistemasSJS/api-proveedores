@@ -17,6 +17,9 @@ use App\Http\Controllers\ProveedorDashboardController;
 use App\Http\Controllers\ProveedorUnidadMedidaController;
 use App\Http\Controllers\ProveedorCuentaBancariaController;
 use App\Http\Controllers\EmpresaConstruccController;
+use App\Http\Controllers\OrdenCompraController;
+use App\Http\Controllers\OrdenCompraRegistroController;
+use App\Http\Controllers\OrdenCompraSolicitudPagoController;
 
 /**
  * GESTIÓN DE PROVEEDORES
@@ -235,6 +238,48 @@ Route::prefix('proveedores')
             Route::post('/{solicitudPago}/confirmar-pago', [ProveedorSolicitudPagoController::class, 'confirmarPagoSP'])->middleware(['audit']);
             Route::post('/{solicitudPago}/procesando', [ProveedorSolicitudPagoController::class, 'procesando'])->middleware(['audit']);
         });
+
+        /**
+         * GESTIÓN DE ÓRDENES DE COMPRA
+         */
+        Route::prefix('{proveedor}/ordenes-compra')
+            ->middleware(['proveedor.access'])
+            ->group(function () {
+
+                // === RUTAS DE REGISTRO (desde frontend) ===
+                Route::post('/registro', [OrdenCompraRegistroController::class, 'store'])->middleware(['audit']); // Registrar OC individual
+                Route::put('/registro/upsert', [OrdenCompraRegistroController::class, 'upsert'])->middleware(['audit']); // Crear o actualizar según numero_orden
+                Route::post('/registro/batch', [OrdenCompraRegistroController::class, 'storeBatch'])->middleware(['audit']); // Registrar múltiples OC
+                Route::post('/registro/check-existence', [OrdenCompraRegistroController::class, 'checkExistence'])->middleware(['audit']); // Verificar existencia
+
+                // === RUTAS DE CONSULTA ===
+                Route::get('/', [OrdenCompraController::class, 'index'])->middleware(['audit']); // Listado paginado de OC
+                Route::get('/{ordenCompra}', [OrdenCompraController::class, 'show'])->middleware(['audit']); // Detalle de una OC
+                Route::get('/dashboard/estadisticas', [OrdenCompraController::class, 'getEstadisticas'])->middleware(['audit']); // Estadísticas generales
+                Route::get('/{ordenCompra}/solicitudes-pago', [OrdenCompraController::class, 'getSolicitudesPago'])->middleware(['audit']); // SP de una OC
+                Route::get('/disponibles/conversion', [OrdenCompraController::class, 'getOrdenesDisponibles'])->middleware(['audit']); // OC disponibles para conversión
+                Route::get('/contadores/sp', [OrdenCompraController::class, 'getContadores'])->middleware(['audit']); // Contadores de SP por OC
+                Route::get('/alertas/sin-solicitudes', [OrdenCompraController::class, 'getOrdenesSinSolicitudes'])->middleware(['audit']); // OC sin SP (alertas)
+            });
+
+        /**
+         * CONVERSIÓN DE ÓRDENES DE COMPRA A SOLICITUDES DE PAGO
+         */
+        Route::prefix('{proveedor}/ordenes-compra-sp')
+            ->middleware(['proveedor.access'])
+            ->group(function () {
+
+                // === RUTAS DE CONVERSIÓN ===
+                Route::post('/convert', [OrdenCompraSolicitudPagoController::class, 'store'])->middleware(['audit']); // Crear SP desde OC
+                Route::post('/validate', [OrdenCompraSolicitudPagoController::class, 'validateConversion'])->middleware(['audit']); // Pre-validar conversión
+                Route::get('/preview', [OrdenCompraSolicitudPagoController::class, 'getConversionPreview'])->middleware(['audit']); // Preview (datos pre-llenados)
+                Route::delete('/unlink', [OrdenCompraSolicitudPagoController::class, 'unlinkSolicitudPago'])->middleware(['audit']); // Desasociar SP de OC
+
+                // === RUTAS DE CONSULTA / MÉTRICAS ===
+                Route::get('/{ordenCompra}/history', [OrdenCompraSolicitudPagoController::class, 'getConversionHistory'])->middleware(['audit']); // Historial de conversiones
+                Route::get('/metricas', [OrdenCompraSolicitudPagoController::class, 'getMetricasConversion'])->middleware(['audit']); // Métricas de conversión
+                Route::get('/recientes', [OrdenCompraSolicitudPagoController::class, 'getConversionesRecientes'])->middleware(['audit']); // Conversiones recientes
+            });
 
 
         /**
