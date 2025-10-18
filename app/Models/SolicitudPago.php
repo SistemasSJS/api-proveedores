@@ -7,7 +7,9 @@ use App\Enums\EstadoSolicitud;
 use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 
 class SolicitudPago extends BaseModel
 {
@@ -56,6 +58,11 @@ class SolicitudPago extends BaseModel
         'da_fecha',
         'ro',
         'ro_fecha',
+        
+        // Campos de tracking para OC
+        'referencia_oc',
+        'origen_oc',
+        'monto_oc_original',
     ];
 
     protected static $filters = [
@@ -96,6 +103,10 @@ class SolicitudPago extends BaseModel
         'si'                              => 'Si',
         'da'                              => 'Da',
         'ro'                              => 'Ro',
+        
+        // Filtros para campos OC
+        'referencia_oc'                   => 'ReferenciaOc',
+        'origen_oc'                       => 'OrigenOc',
 
         //
     ];
@@ -130,6 +141,10 @@ class SolicitudPago extends BaseModel
         'monto_abonado' => 'decimal:2',
         'saldo_pendiente' => 'decimal:2',
         'pago_completo' => 'boolean',
+        
+        // Campos de tracking OC
+        'origen_oc' => 'boolean',
+        'monto_oc_original' => 'decimal:2',
     ];
 
     /** ----------------
@@ -143,6 +158,7 @@ class SolicitudPago extends BaseModel
             'empresaConstrucc',
             'cotizacion',
             'cuentasBancarias',
+            'ordenesCompra',
         ];
     }
 
@@ -173,6 +189,13 @@ class SolicitudPago extends BaseModel
     public function cuentasBancarias(): HasMany
     {
         return $this->hasMany(SolicitudPagoCuentaBancaria::class);
+    }
+
+    public function ordenesCompra(): BelongsToMany
+    {
+        return $this->belongsToMany(OrdenCompra::class, 'orden_compra_solicitud_pago')
+            ->withPivot(['monto_asociado', 'fecha_vinculacion', 'notas'])
+            ->withTimestamps();
     }
 
     /** ----------------
@@ -206,6 +229,16 @@ class SolicitudPago extends BaseModel
     public function filterByRo($query, $value)
     {
         return $query->where('ro', $value instanceof EstadoSolicitud ? $value->value : $value);
+    }
+    
+    public function filterByReferenciaOc($query, $value)
+    {
+        return $query->where('referencia_oc', 'like', "%{$value}%");
+    }
+
+    public function filterByOrigenOc($query, $value)
+    {
+        return $query->where('origen_oc', (bool) $value);
     }
 
 
@@ -466,5 +499,52 @@ class SolicitudPago extends BaseModel
         $proveedorClave = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $proveedor->nombre_comercial), 0, 3));
 
         return sprintf('SP-%s-%06d', $proveedorClave, $siguienteNumero);
+    }
+
+    /** ----------------
+     * Métodos de negocio para Órdenes de Compra
+     * ----------------- */
+    public function esDeOrdenCompra(): bool
+    {
+        return $this->origen_oc;
+    }
+
+    public function scopeWhereFromOrdenCompra(Builder $query): Builder
+    {
+        return $query->where('origen_oc', true);
+    }
+
+    public function getOrdenesCompraAsociadas()
+    {
+        return $this->ordenesCompra;
+    }
+
+    public function validarMontoContraOC(): bool
+    {
+        if (!$this->esDeOrdenCompra() || !$this->monto_oc_original) {
+            return true; // No aplica validación si no es de OC
+        }
+
+        return $this->monto_total <= $this->monto_oc_original;
+    }
+
+    public function asociarConOrdenCompra(OrdenCompra $ordenCompra, float $montoAsociado, ?string $notas = null): void
+    {
+        $this->ordenesCompra()->attach($ordenCompra->id, [
+            'monto_asociado' => $montoAsociado,
+            'fecha_vinculacion' => now(),
+            'notas' => $notas,
+        ]);
+        
+        // Actualizar contadores en la OC
+        $ordenCompra->actualizarContadores();
+    }
+
+    public function desasociarDeOrdenCompra(OrdenCompra $ordenCompra): void
+    {
+        $this->ordenesCompra()->detach($ordenCompra->id);
+        
+        // Actualizar contadores en la OC
+        $ordenCompra->actualizarContadores();
     }
 }
