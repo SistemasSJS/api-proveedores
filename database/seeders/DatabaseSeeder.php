@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\OrdenCompra;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -45,6 +46,8 @@ class DatabaseSeeder extends Seeder
                 AccesoRapidoSeeder::class,
                 CotizacionesSeeder::class,
                 // PedidosSeeder::class,
+
+                OrdenCompraSeeder::class,
             ]);
 
             // ================================================================
@@ -65,7 +68,10 @@ class DatabaseSeeder extends Seeder
                 // 3. Detalles de cotizaciones SP
                 CotizacionDetalleSeeder::class,
 
-                // 4. Solicitudes de pago basadas en cotizaciones
+                // 4. Órdenes de compra (requerido antes de SP para relaciones)
+                OrdenCompraSeeder::class,
+
+                // 5. Solicitudes de pago basadas en cotizaciones
                 SolicitudPagoSeeder::class,
             ]);
 
