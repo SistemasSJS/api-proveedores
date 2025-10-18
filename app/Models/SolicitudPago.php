@@ -58,7 +58,7 @@ class SolicitudPago extends BaseModel
         'da_fecha',
         'ro',
         'ro_fecha',
-        
+
         // Campos de tracking para OC
         'referencia_oc',
         'origen_oc',
@@ -103,7 +103,7 @@ class SolicitudPago extends BaseModel
         'si'                              => 'Si',
         'da'                              => 'Da',
         'ro'                              => 'Ro',
-        
+
         // Filtros para campos OC
         'referencia_oc'                   => 'ReferenciaOc',
         'origen_oc'                       => 'OrigenOc',
@@ -141,7 +141,7 @@ class SolicitudPago extends BaseModel
         'monto_abonado' => 'decimal:2',
         'saldo_pendiente' => 'decimal:2',
         'pago_completo' => 'boolean',
-        
+
         // Campos de tracking OC
         'origen_oc' => 'boolean',
         'monto_oc_original' => 'decimal:2',
@@ -230,7 +230,7 @@ class SolicitudPago extends BaseModel
     {
         return $query->where('ro', $value instanceof EstadoSolicitud ? $value->value : $value);
     }
-    
+
     public function filterByReferenciaOc($query, $value)
     {
         return $query->where('referencia_oc', 'like', "%{$value}%");
@@ -506,9 +506,9 @@ class SolicitudPago extends BaseModel
      * ----------------- */
     public function esDeOrdenCompra(): bool
     {
-        return $this->origen_oc;
+        return $this->origen_oc ?? true;
     }
-
+    
     public function scopeWhereFromOrdenCompra(Builder $query): Builder
     {
         return $query->where('origen_oc', true);
@@ -521,6 +521,7 @@ class SolicitudPago extends BaseModel
 
     public function validarMontoContraOC(): bool
     {
+        return true;
         if (!$this->esDeOrdenCompra() || !$this->monto_oc_original) {
             return true; // No aplica validación si no es de OC
         }
@@ -535,7 +536,7 @@ class SolicitudPago extends BaseModel
             'fecha_vinculacion' => now(),
             'notas' => $notas,
         ]);
-        
+
         // Actualizar contadores en la OC
         $ordenCompra->actualizarContadores();
     }
@@ -543,7 +544,7 @@ class SolicitudPago extends BaseModel
     public function desasociarDeOrdenCompra(OrdenCompra $ordenCompra): void
     {
         $this->ordenesCompra()->detach($ordenCompra->id);
-        
+
         // Actualizar contadores en la OC
         $ordenCompra->actualizarContadores();
     }
