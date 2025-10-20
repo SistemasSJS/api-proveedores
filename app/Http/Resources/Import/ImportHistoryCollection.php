@@ -82,7 +82,7 @@ class ImportHistoryCollection extends ResourceCollection
                 'importaciones_hoy' => $items->where('created_at', '>=', now()->startOfDay())->count(),
                 'importaciones_esta_semana' => $items->where('created_at', '>=', now()->startOfWeek())->count(),
                 'importaciones_este_mes' => $items->where('created_at', '>=', now()->startOfMonth())->count(),
-            ]
+            ],
         ];
     }
 
@@ -102,7 +102,7 @@ class ImportHistoryCollection extends ResourceCollection
                 'fase',
                 'has_errors',
                 'min_registros',
-                'max_registros'
+                'max_registros',
             ])),
             'sort_options' => [
                 'created_at' => 'Fecha de creación',
@@ -138,7 +138,7 @@ class ImportHistoryCollection extends ResourceCollection
                     ['value' => 'cleanup', 'label' => 'Limpieza'],
                     ['value' => 'completed', 'label' => 'Completado'],
                 ],
-            ]
+            ],
         ];
     }
 }

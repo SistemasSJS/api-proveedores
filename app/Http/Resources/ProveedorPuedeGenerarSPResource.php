@@ -21,8 +21,8 @@ class ProveedorPuedeGenerarSPResource extends JsonResource
                 'tiene_cuenta_bancaria' => $this->resource['detalle']['tiene_cuenta_bancaria'],
                 'tiene_constancia_fiscal' => $this->resource['detalle']['tiene_constancia_fiscal'],
                 'tiene_logo' => $this->resource['detalle']['tiene_logo'],
-                'tiene_informacion_general_y_datos_fiscales' => $this->resource['detalle']['tiene_informacion_general_y_datos_fiscales']
-            ]
+                'tiene_informacion_general_y_datos_fiscales' => $this->resource['detalle']['tiene_informacion_general_y_datos_fiscales'],
+            ],
         ];
     }
 }

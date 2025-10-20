@@ -19,7 +19,7 @@ class NotificationController extends Controller
             'title' => 'required|string|max:255',
             'message' => 'required|string',
             'type' => 'nullable|string|in:info,success,warning,error,danger',
-            'data' => 'nullable|array'
+            'data' => 'nullable|array',
         ]);
 
         $user = User::findOrFail($userId);
@@ -38,14 +38,14 @@ class NotificationController extends Controller
                 'user' => [
                     'id' => $user->id,
                     'name' => $user->name,
-                    'email' => $user->email
-                ]
+                    'email' => $user->email,
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al enviar la notificación',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -59,7 +59,7 @@ class NotificationController extends Controller
             'title' => 'required|string|max:255',
             'message' => 'required|string',
             'type' => 'nullable|string|in:info,success,warning,error,danger',
-            'data' => 'nullable|array'
+            'data' => 'nullable|array',
         ]);
 
         $user = Auth::user();
@@ -78,14 +78,14 @@ class NotificationController extends Controller
                 'user' => [
                     'id' => $user->id,
                     'name' => $user->name,
-                    'email' => $user->email
-                ]
+                    'email' => $user->email,
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al enviar la notificación',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -96,7 +96,7 @@ class NotificationController extends Controller
     public function sendTest(Request $request)
     {
         $user = Auth::user();
-        
+
         try {
             $user->notify(new PushNotification(
                 '🔔 Notificación de Prueba',
@@ -105,7 +105,7 @@ class NotificationController extends Controller
                 [
                     'timestamp' => now()->toIsoString(),
                     'source' => 'api_test',
-                    'test' => true
+                    'test' => true,
                 ]
             ));
 
@@ -115,14 +115,14 @@ class NotificationController extends Controller
                 'info' => 'Revisa la aplicación, deberías ver la notificación en tiempo real',
                 'user' => [
                     'id' => $user->id,
-                    'name' => $user->name
-                ]
+                    'name' => $user->name,
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al enviar la notificación de prueba',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -133,14 +133,14 @@ class NotificationController extends Controller
     public function getNotifications(Request $request)
     {
         $user = Auth::user();
-        
+
         $notifications = $user->notifications()
             ->latest()
             ->paginate($request->input('per_page', 15));
 
         return response()->json([
             'success' => true,
-            'notifications' => $notifications
+            'notifications' => $notifications,
         ]);
     }
 
@@ -150,13 +150,13 @@ class NotificationController extends Controller
     public function markAsRead($notificationId)
     {
         $user = Auth::user();
-        
+
         $notification = $user->notifications()->find($notificationId);
-        
-        if (!$notification) {
+
+        if (! $notification) {
             return response()->json([
                 'success' => false,
-                'message' => 'Notificación no encontrada'
+                'message' => 'Notificación no encontrada',
             ], 404);
         }
 
@@ -164,7 +164,7 @@ class NotificationController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Notificación marcada como leída'
+            'message' => 'Notificación marcada como leída',
         ]);
     }
 
@@ -178,7 +178,7 @@ class NotificationController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Todas las notificaciones marcadas como leídas'
+            'message' => 'Todas las notificaciones marcadas como leídas',
         ]);
     }
 }

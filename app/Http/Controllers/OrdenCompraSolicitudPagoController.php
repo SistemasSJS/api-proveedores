@@ -52,7 +52,7 @@ class OrdenCompraSolicitudPagoController extends Controller
                 201
             );
         } catch (\Exception $e) {
-            return $this->error('Error al crear solicitud de pago: ' . $e->getMessage(), 500);
+            return $this->error('Error al crear solicitud de pago: '.$e->getMessage(), 500);
         }
     }
 
@@ -82,7 +82,7 @@ class OrdenCompraSolicitudPagoController extends Controller
 
             return $this->success($validacion);
         } catch (\Exception $e) {
-            return $this->error('Error en la validación: ' . $e->getMessage(), 500);
+            return $this->error('Error en la validación: '.$e->getMessage(), 500);
         }
     }
 
@@ -113,7 +113,7 @@ class OrdenCompraSolicitudPagoController extends Controller
 
             return $this->success($preview);
         } catch (\Exception $e) {
-            return $this->error('Error al obtener preview: ' . $e->getMessage(), 500);
+            return $this->error('Error al obtener preview: '.$e->getMessage(), 500);
         }
     }
 
@@ -141,7 +141,7 @@ class OrdenCompraSolicitudPagoController extends Controller
                 ->firstOrFail();
 
             // Verificar que estén asociadas
-            if (!$ordenCompra->solicitudesPago()->where('solicitud_pago_id', $solicitudPago->id)->exists()) {
+            if (! $ordenCompra->solicitudesPago()->where('solicitud_pago_id', $solicitudPago->id)->exists()) {
                 return $this->error('La solicitud de pago no está asociada a esta orden de compra', 422);
             }
 
@@ -160,15 +160,15 @@ class OrdenCompraSolicitudPagoController extends Controller
                 'orden_compra' => [
                     'id' => $ordenCompra->id,
                     'numero_orden' => $ordenCompra->numero_orden,
-                    'monto_disponible' => $ordenCompra->fresh()->getMontoDisponible()
+                    'monto_disponible' => $ordenCompra->fresh()->getMontoDisponible(),
                 ],
                 'solicitud_pago' => [
                     'id' => $solicitudPago->id,
-                    'numero_folio_solicitud' => $solicitudPago->numero_folio_solicitud
-                ]
+                    'numero_folio_solicitud' => $solicitudPago->numero_folio_solicitud,
+                ],
             ]);
         } catch (\Exception $e) {
-            return $this->error('Error al desasociar: ' . $e->getMessage(), 500);
+            return $this->error('Error al desasociar: '.$e->getMessage(), 500);
         }
     }
 
@@ -183,9 +183,10 @@ class OrdenCompraSolicitudPagoController extends Controller
 
         try {
             $historial = $this->conversionService->getConversionHistory($ordenCompra);
+
             return $this->success($historial);
         } catch (\Exception $e) {
-            return $this->error('Error al obtener historial: ' . $e->getMessage(), 500);
+            return $this->error('Error al obtener historial: '.$e->getMessage(), 500);
         }
     }
 
@@ -211,29 +212,29 @@ class OrdenCompraSolicitudPagoController extends Controller
             $metricas = [
                 'periodo' => [
                     'fecha_desde' => $fechaDesde,
-                    'fecha_hasta' => $fechaHasta
+                    'fecha_hasta' => $fechaHasta,
                 ],
                 'ordenes_compra' => [
                     'total' => $totalOC,
                     'con_sp' => $ocConSP,
                     'sin_sp' => $totalOC - $ocConSP,
-                    'tasa_conversion' => $totalOC > 0 ? ($ocConSP / $totalOC) * 100 : 0
+                    'tasa_conversion' => $totalOC > 0 ? ($ocConSP / $totalOC) * 100 : 0,
                 ],
                 'montos' => [
                     'total_oc' => $totalImporteOC,
                     'total_sp' => $totalImporteSP,
                     'pendiente_conversion' => $totalImporteOC - $totalImporteSP,
-                    'porcentaje_convertido' => $totalImporteOC > 0 ? ($totalImporteSP / $totalImporteOC) * 100 : 0
+                    'porcentaje_convertido' => $totalImporteOC > 0 ? ($totalImporteSP / $totalImporteOC) * 100 : 0,
                 ],
                 'solicitudes_pago' => [
                     'total_generadas' => $ordenesCompra->sum('sp_count'),
-                    'promedio_por_oc' => $ocConSP > 0 ? $ordenesCompra->sum('sp_count') / $ocConSP : 0
-                ]
+                    'promedio_por_oc' => $ocConSP > 0 ? $ordenesCompra->sum('sp_count') / $ocConSP : 0,
+                ],
             ];
 
             return $this->success($metricas);
         } catch (\Exception $e) {
-            return $this->error('Error al calcular métricas: ' . $e->getMessage(), 500);
+            return $this->error('Error al calcular métricas: '.$e->getMessage(), 500);
         }
     }
 
@@ -256,31 +257,32 @@ class OrdenCompraSolicitudPagoController extends Controller
 
             $conversiones = $solicitudesRecientes->map(function ($sp) {
                 $ordenCompra = $sp->ordenesCompra->first();
+
                 return [
                     'solicitud_pago' => [
                         'id' => $sp->id,
                         'numero_folio_solicitud' => $sp->numero_folio_solicitud,
                         'monto_total' => $sp->monto_total,
                         'estado_solicitud' => $sp->estado_solicitud,
-                        'fecha_creacion' => $sp->created_at
+                        'fecha_creacion' => $sp->created_at,
                     ],
                     'orden_compra' => $ordenCompra ? [
                         'id' => $ordenCompra->id,
                         'numero_orden' => $ordenCompra->numero_orden,
                         'importe_total' => $ordenCompra->importe_total,
-                        'monto_asociado' => $sp->ordenesCompra->first()->pivot->monto_asociado ?? 0
+                        'monto_asociado' => $sp->ordenesCompra->first()->pivot->monto_asociado ?? 0,
                     ] : null,
-                    'empresa' => $sp->empresaConstrucc->nombre ?? null
+                    'empresa' => $sp->empresaConstrucc->nombre ?? null,
                 ];
             });
 
             return $this->success([
                 'conversiones' => $conversiones,
                 'total' => $conversiones->count(),
-                'periodo_dias' => $dias
+                'periodo_dias' => $dias,
             ]);
         } catch (\Exception $e) {
-            return $this->error('Error al obtener conversiones recientes: ' . $e->getMessage(), 500);
+            return $this->error('Error al obtener conversiones recientes: '.$e->getMessage(), 500);
         }
     }
 }

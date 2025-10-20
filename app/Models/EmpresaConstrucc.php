@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class EmpresaConstrucc extends Model
 {
-    use HasFactory, Filterable;
+    use Filterable, HasFactory;
 
     /**
      * Nombre de la tabla

@@ -4,7 +4,6 @@ namespace App\Http\Requests\Proveedor;
 
 use App\Enums\EstadoUsuario;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Enum;
 
 /**
  * @OA\Schema(
@@ -28,6 +27,7 @@ use Illuminate\Validation\Rules\Enum;
  *         "contacto_telefono",
  *         "contacto_correo"
  *     },
+ *
  *     @OA\Property(property="nombre_propietario", type="string", maxLength=255),
  *     @OA\Property(property="nombre_de_quien_registra", type="string", maxLength=255),
  *     @OA\Property(property="nombre_comercial", type="string", maxLength=255),
@@ -201,7 +201,7 @@ class ProveedorUpdateRequest extends FormRequest
 
             // Estatus
             'estatus' => 'El estatus seleccionado no es válido.',
-            'estatus.enum' => 'El estatus debe ser uno de los valores permitidos: ' . implode(', ', EstadoUsuario::values()),
+            'estatus.enum' => 'El estatus debe ser uno de los valores permitidos: '.implode(', ', EstadoUsuario::values()),
         ];
     }
 }

@@ -41,6 +41,7 @@ class OrdenCompraController extends Controller
             $oc->nivel_alerta = $oc->getNivelAlerta();
             $oc->monto_disponible = $oc->getMontoDisponible();
             $oc->puede_generar_sp = $oc->puedeGenerarSolicitudPago();
+
             return $oc;
         });
 
@@ -62,7 +63,7 @@ class OrdenCompraController extends Controller
             'empresaConstrucc',
             'solicitudesPago' => function ($query) {
                 $query->with(['proveedor', 'empresaConstrucc']);
-            }
+            },
         ]);
 
         // Agregar datos calculados
@@ -135,8 +136,8 @@ class OrdenCompraController extends Controller
             'montos_por_estado' => $montosPorEstado,
             'alertas' => [
                 'con_alertas' => $conAlertas,
-                'sin_alertas' => $stats['sin_sp'] - $conAlertas
-            ]
+                'sin_alertas' => $stats['sin_sp'] - $conAlertas,
+            ],
         ]);
     }
 
@@ -156,6 +157,7 @@ class OrdenCompraController extends Controller
                 $sp->monto_asociado_oc = $sp->pivot->monto_asociado;
                 $sp->fecha_vinculacion_oc = $sp->pivot->fecha_vinculacion;
                 $sp->notas_vinculacion = $sp->pivot->notas;
+
                 return $sp;
             });
 
@@ -165,9 +167,9 @@ class OrdenCompraController extends Controller
                 'numero_orden' => $ordenCompra->numero_orden,
                 'importe_total' => $ordenCompra->importe_total,
                 'monto_sp_asociado' => $ordenCompra->monto_sp_asociado,
-                'monto_disponible' => $ordenCompra->getMontoDisponible()
+                'monto_disponible' => $ordenCompra->getMontoDisponible(),
             ],
-            'solicitudes_pago' => $solicitudesPago
+            'solicitudes_pago' => $solicitudesPago,
         ]);
     }
 
@@ -191,6 +193,7 @@ class OrdenCompraController extends Controller
         $data = $ordenes->getCollection()->map(function ($oc) {
             $oc->nivel_alerta = $oc->getNivelAlerta();
             $oc->puede_generar_sp = $oc->puedeGenerarSolicitudPago();
+
             return $oc;
         });
 
@@ -204,7 +207,7 @@ class OrdenCompraController extends Controller
     {
         $numeroOrden = $request->input('numero_orden');
 
-        if (!$numeroOrden) {
+        if (! $numeroOrden) {
             return $this->error('Número de orden requerido', 422);
         }
 
@@ -213,7 +216,7 @@ class OrdenCompraController extends Controller
             ->with(['solicitudesPago'])
             ->first();
 
-        if (!$ordenCompra) {
+        if (! $ordenCompra) {
             return $this->error('Orden de compra no encontrada', 404);
         }
 
@@ -231,10 +234,113 @@ class OrdenCompraController extends Controller
                     'numero_folio_solicitud' => $sp->numero_folio_solicitud,
                     'monto_total' => $sp->monto_total,
                     'estado_solicitud' => $sp->estado_solicitud,
-                    'monto_asociado' => $sp->pivot->monto_asociado
+                    'monto_asociado' => $sp->pivot->monto_asociado,
                 ];
-            })
+            }),
         ]);
+    }
+
+    /**
+     * Obtiene solicitudes de pago de una OC específica (sin contexto de proveedor)
+     * Endpoint directo para el segmento gerente
+     */
+    public function getSolicitudesPagoDirecto(OrdenCompra $ordenCompra): JsonResponse
+    {
+        $solicitudesPago = $ordenCompra->solicitudesPago()
+            ->with(['proveedor', 'empresaConstrucc', 'cuentasBancarias'])
+            ->get()
+            ->map(function ($sp) {
+                $sp->monto_asociado_oc = $sp->pivot->monto_asociado;
+                $sp->fecha_vinculacion_oc = $sp->pivot->fecha_vinculacion;
+                $sp->notas_vinculacion = $sp->pivot->notas;
+                return $sp;
+            });
+
+        return $this->success([
+            'orden_compra' => [
+                'id' => $ordenCompra->id,
+                'numero_orden' => $ordenCompra->numero_orden,
+                'importe_total' => $ordenCompra->importe_total,
+                'monto_sp_asociado' => $ordenCompra->monto_sp_asociado,
+                'monto_disponible' => $ordenCompra->getMontoDisponible(),
+                'proveedor' => $ordenCompra->proveedor->razon_social ?? 'N/A',
+                'empresa' => $ordenCompra->empresaConstrucc->nombre ?? 'N/A'
+            ],
+            'solicitudes_pago' => $solicitudesPago
+        ]);
+    }
+
+    /**
+     * Muestra detalle de una orden de compra específica (sin contexto de proveedor)
+     * Endpoint directo para el segmento gerente
+     */
+    public function showDirecto(OrdenCompra $ordenCompra): JsonResponse
+    {
+        $ordenCompra->load([
+            'detalles',
+            'proveedor',
+            'empresaConstrucc',
+            'solicitudesPago' => function ($query) {
+                $query->with(['proveedor', 'empresaConstrucc']);
+            }
+        ]);
+
+        // Agregar datos calculados
+        $ordenCompra->nivel_alerta = $ordenCompra->getNivelAlerta();
+        $ordenCompra->dias_sin_sp = $ordenCompra->getDiasSinSolicitudPago();
+        $ordenCompra->monto_disponible = $ordenCompra->getMontoDisponible();
+        $ordenCompra->puede_generar_sp = $ordenCompra->puedeGenerarSolicitudPago();
+
+        return $this->success($ordenCompra);
+    }
+
+    /**
+     * Listado general de órdenes de compra para el segmento gerente
+     * Sin contexto de proveedor específico
+     */
+    public function indexGeneral(Request $request): JsonResponse
+    {
+        $filters = $request->only(OrdenCompra::getFilters());
+        $sortBy = $request->input('sort_by', 'created_at');
+        $order = $request->input('order', 'desc');
+        $perPage = $request->input('per_page', 15);
+        
+        // Filtros adicionales para gerentes
+        $proveedorId = $request->input('proveedor_id');
+        $empresaId = $request->input('empresa_construcc_id');
+
+        $query = OrdenCompra::query()
+            ->with(['proveedor', 'empresaConstrucc', 'detalles'])
+            ->filter($filters)
+            ->orderBy($sortBy, $order);
+            
+        // Aplicar filtros específicos si se proporcionan
+        if ($proveedorId) {
+            $query->where('proveedor_id', $proveedorId);
+        }
+        
+        if ($empresaId) {
+            $query->where('empresa_construcc_id', $empresaId);
+        }
+
+        // Agregar datos calculados
+        $query->selectRaw('ordenes_compra.*, 
+            CASE 
+                WHEN sp_count > 0 THEN 0
+                ELSE DATEDIFF(NOW(), COALESCE(fecha_aprobacion, created_at))
+            END as dias_sin_sp');
+
+        $originalPaginator = $query->paginate($perPage);
+
+        // Agregar nivel de alerta a cada OC
+        $data = $originalPaginator->getCollection()->map(function ($oc) {
+            $oc->nivel_alerta = $oc->getNivelAlerta();
+            $oc->monto_disponible = $oc->getMontoDisponible();
+            $oc->puede_generar_sp = $oc->puedeGenerarSolicitudPago();
+            return $oc;
+        });
+
+        return $this->paginated($originalPaginator->setCollection($data));
     }
 
     /**
@@ -258,6 +364,7 @@ class OrdenCompraController extends Controller
         // Agregar nivel de alerta
         $data = $ordenes->getCollection()->map(function ($oc) {
             $oc->nivel_alerta = $oc->getNivelAlerta();
+
             return $oc;
         });
 

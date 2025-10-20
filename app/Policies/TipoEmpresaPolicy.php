@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\TipoEmpresa;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class TipoEmpresaPolicy
 {
@@ -13,7 +12,7 @@ class TipoEmpresaPolicy
      */
     public function viewAny(User $user): bool
     {
-                return $user->isUserAdmin();
+        return $user->isUserAdmin();
     }
 
     /**
@@ -21,7 +20,7 @@ class TipoEmpresaPolicy
      */
     public function view(User $user, TipoEmpresa $tipoEmpresa): bool
     {
-                return $user->isUserAdmin();
+        return $user->isUserAdmin();
     }
 
     /**
@@ -29,7 +28,7 @@ class TipoEmpresaPolicy
      */
     public function create(User $user): bool
     {
-                return $user->isUserAdmin();
+        return $user->isUserAdmin();
     }
 
     /**
@@ -37,7 +36,7 @@ class TipoEmpresaPolicy
      */
     public function update(User $user, TipoEmpresa $tipoEmpresa): bool
     {
-                return $user->isUserAdmin();
+        return $user->isUserAdmin();
     }
 
     /**
@@ -45,7 +44,7 @@ class TipoEmpresaPolicy
      */
     public function delete(User $user, TipoEmpresa $tipoEmpresa): bool
     {
-                return $user->isSuperAdmin(); // Solo super admin
+        return $user->isSuperAdmin(); // Solo super admin
     }
 
     /**
@@ -53,7 +52,7 @@ class TipoEmpresaPolicy
      */
     public function restore(User $user, TipoEmpresa $tipoEmpresa): bool
     {
-                return false;
+        return false;
     }
 
     /**
@@ -61,6 +60,6 @@ class TipoEmpresaPolicy
      */
     public function forceDelete(User $user, TipoEmpresa $tipoEmpresa): bool
     {
-                return false;
+        return false;
     }
 }

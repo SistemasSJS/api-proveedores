@@ -30,7 +30,7 @@ class CsvValidateProductResponse
             'existe' => $this->existe,
             'producto_existente' => $this->productoExistente,
             'sugerencias' => $this->sugerencias,
-            'acciones_recomendadas' => $this->accionesRecomendadas
+            'acciones_recomendadas' => $this->accionesRecomendadas,
         ];
     }
 

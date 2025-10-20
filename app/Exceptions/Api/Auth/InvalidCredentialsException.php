@@ -11,6 +11,7 @@ use App\Exceptions\Api\BaseApiException;
  *     description="Se lanza cuando las credenciales del usuario no son válidas.",
  *     type="object",
  *     required={"message", "errorType"},
+ *
  *     @OA\Property(
  *         property="message",
  *         type="string",
@@ -26,6 +27,7 @@ use App\Exceptions\Api\BaseApiException;
 class InvalidCredentialsException extends BaseApiException
 {
     protected string $errorType = 'invalid_credentials';
+
     protected int $statusCode = 401;
 
     public function __construct(string $message = 'Credenciales inválidas.')

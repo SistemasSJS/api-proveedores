@@ -6,26 +6,26 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ProductoImportUploadRequest extends FormRequest
 {
-  public function authorize()
-  {
-    return true;
-  }
+    public function authorize()
+    {
+        return true;
+    }
 
-  public function rules()
-  {
-    return [
+    public function rules()
+    {
+        return [
 
-      'file' => 'required|file|mimes:csv,txt,json,xlsx,xls|max:10240'
-    ];
-  }
+            'file' => 'required|file|mimes:csv,txt,json,xlsx,xls|max:10240',
+        ];
+    }
 
-  public function messages()
-  {
-    return [
-      'file.required' => 'El file es obligatorio.',
-      'file.file' => 'El file...',
-      'file.mimes' => 'El archivo debe ser de tipo: CSV, TXT, JSON, XLSX o XLS.',
-      'file.max' => 'El archivo no debe exceder los 10MB.',
-    ];
-  }
+    public function messages()
+    {
+        return [
+            'file.required' => 'El file es obligatorio.',
+            'file.file' => 'El file...',
+            'file.mimes' => 'El archivo debe ser de tipo: CSV, TXT, JSON, XLSX o XLS.',
+            'file.max' => 'El archivo no debe exceder los 10MB.',
+        ];
+    }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Categoria;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,7 +13,7 @@ class ProveedorProductoResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-                    'id' => $this->id,
+            'id' => $this->id,
             'sku' => $this->sku,
             'codigo_interno' => $this->codigo_interno,
             'nombre' => $this->nombre,
@@ -30,14 +29,14 @@ class ProveedorProductoResource extends JsonResource
             'imagen_principal' => $this->imagen_principal
                 ? (preg_match('/^https?:\/\//', $this->imagen_principal)
                     ? $this->imagen_principal
-                    : asset('storage/' . $this->imagen_principal))
+                    : asset('storage/'.$this->imagen_principal))
                 : null,
-            'marca_id'       => $this->marca_id,
+            'marca_id' => $this->marca_id,
             'categoria_id' => $this->categoria_id,
             'subcategoria_id' => $this->subcategoria_id,
-            'proveedor_id'    => $this->proveedor_id,
+            'proveedor_id' => $this->proveedor_id,
             'unidad_medida_id' => $this->unidad_medida_id,
-    
+
             // Categorización del producto
             'categoria' => $this->when($this->relationLoaded('categoria'), function () {
                 return $this->categoria ? [
@@ -63,7 +62,7 @@ class ProveedorProductoResource extends JsonResource
                     'logo' => $this->marca->logo
                         ? (preg_match('/^https?:\/\//', $this->marca->logo)
                             ? $this->marca->logo
-                            : asset('storage/' . $this->marca->logo))
+                            : asset('storage/'.$this->marca->logo))
                         : null,
                 ] : null;
             }),

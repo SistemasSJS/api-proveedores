@@ -3,10 +3,10 @@
 namespace App\Http\Middleware;
 
 use App\Exceptions\Api\Custom\NotFoundRelationException;
-use Closure;
-use Illuminate\Http\Request;
 use App\Models\Producto;
 use App\Models\Proveedor;
+use Closure;
+use Illuminate\Http\Request;
 
 class EnsureProductoBelongsToProveedor
 {

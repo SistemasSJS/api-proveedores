@@ -28,11 +28,11 @@ class ProveedorEmpresaConstruccResource extends JsonResource
             'representante_legal' => $this->representante_legal,
             'proveedor_id' => $this->proveedor_id,
             'activo' => (bool) $this->activo,
-            
+
             // Información combinada para mostrar
             'nombre_completo' => $this->nombre_completo,
-            'direccion_completa' => $this->direccion . ', ' . $this->ciudad . ', ' . $this->estado . ' ' . $this->codigo_postal,
-            
+            'direccion_completa' => $this->direccion.', '.$this->ciudad.', '.$this->estado.' '.$this->codigo_postal,
+
             // Relaciones
             'proveedor' => $this->whenLoaded('proveedor', function () {
                 return [
@@ -40,7 +40,7 @@ class ProveedorEmpresaConstruccResource extends JsonResource
                     'nombre' => $this->proveedor->nombre_comercial ?? $this->proveedor->nombre,
                 ];
             }),
-            
+
             // Metadatos
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),

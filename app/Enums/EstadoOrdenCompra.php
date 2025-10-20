@@ -12,7 +12,7 @@ enum EstadoOrdenCompra: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PENDIENTE => 'Pendiente',
             self::APROBADA => 'Aprobada',
             self::RECHAZADA => 'Rechazada',
@@ -23,7 +23,7 @@ enum EstadoOrdenCompra: string
 
     public function color(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PENDIENTE => 'warning',
             self::APROBADA => 'success',
             self::RECHAZADA => 'danger',

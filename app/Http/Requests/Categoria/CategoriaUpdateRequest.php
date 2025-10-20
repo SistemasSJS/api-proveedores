@@ -8,6 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
  * @OA\Schema(
  *     schema="CategoriaUpdateRequest",
  *     required={"nombre", "descripcion"},
+ *
  *     @OA\Property(property="nombre", type="string", example="Catálogo actualizado"),
  *     @OA\Property(property="descripcion", type="string", example="Nueva descripción del catálogo"),
  *     @OA\Property(property="categoria_padre_id", type="integer", example=2),

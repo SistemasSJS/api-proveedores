@@ -8,11 +8,11 @@ use Illuminate\Foundation\Http\FormRequest;
  * @OA\Schema(
  *     schema="AuthLoginRequest",
  *     required={"email", "password"},
+ *
  *     @OA\Property(property="email", type="string", format="email", example="juan.perez@example.com"),
  *     @OA\Property(property="password", type="string", format="password", example="contraseña123")
  * )
  */
-
 class AuthLoginRequest extends FormRequest
 {
     /**

@@ -2,8 +2,6 @@
 
 namespace App\Http\Resources\SolicitudPago;
 
-use App\Http\Resources\CuentaBancaria\CuentaBancariaResource;
-use App\Http\Resources\SolicitudPago\SolicitudPagoCuentaBancariaResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -17,11 +15,11 @@ class SolicitudPagoResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'                          => $this->id,
-            'numero_folio_solicitud'      => $this->numero_folio_solicitud,
-            'descripcion_concepto'        => $this->descripcion_concepto,
-            'estado_solicitud'            => $this->estado_solicitud,
-            'cuentas_bancarias'      => SolicitudPagoCuentaBancariaResource::collection($this->whenLoaded('cuentasBancarias')),
+            'id' => $this->id,
+            'numero_folio_solicitud' => $this->numero_folio_solicitud,
+            'descripcion_concepto' => $this->descripcion_concepto,
+            'estado_solicitud' => $this->estado_solicitud,
+            'cuentas_bancarias' => SolicitudPagoCuentaBancariaResource::collection($this->whenLoaded('cuentasBancarias')),
 
             'proveedor' => $this->whenLoaded('proveedor', function () {
                 return [
@@ -44,9 +42,9 @@ class SolicitudPagoResource extends JsonResource
             }),
 
             // Archivos
-            'ruta_archivo_factura_xml'    => $this->ruta_archivo_factura_xml,
-            'ruta_archivo_factura_pdf'    => $this->ruta_archivo_factura_pdf,
-            'ruta_archivo_cotizacion'     => $this->ruta_archivo_cotizacion,
+            'ruta_archivo_factura_xml' => $this->ruta_archivo_factura_xml,
+            'ruta_archivo_factura_pdf' => $this->ruta_archivo_factura_pdf,
+            'ruta_archivo_cotizacion' => $this->ruta_archivo_cotizacion,
             'ruta_archivo_comprobante_pago' => $this->ruta_archivo_comprobante_pago,
 
             // Archivos con URLs correctas
@@ -67,51 +65,51 @@ class SolicitudPagoResource extends JsonResource
                 : null,
 
             // Fechas principales
-            'fecha_registro_pendiente'    => $this->fecha_registro_pendiente?->format('Y-m-d H:i:s'),
-            'fecha_inicio_procesamiento'  => $this->fecha_inicio_procesamiento?->format('Y-m-d H:i:s'),
-            'fecha_aprobado'              => $this->fecha_aprobado?->format('Y-m-d H:i:s'),
-            'fecha_rechazado'             => $this->fecha_rechazado?->format('Y-m-d H:i:s'),
-            'fecha_con_comprobante'       => $this->fecha_con_comprobante?->format('Y-m-d H:i:s'),
-            'fecha_confirmacion_pago'     => $this->fecha_confirmacion_pago?->format('Y-m-d H:i:s'),
+            'fecha_registro_pendiente' => $this->fecha_registro_pendiente?->format('Y-m-d H:i:s'),
+            'fecha_inicio_procesamiento' => $this->fecha_inicio_procesamiento?->format('Y-m-d H:i:s'),
+            'fecha_aprobado' => $this->fecha_aprobado?->format('Y-m-d H:i:s'),
+            'fecha_rechazado' => $this->fecha_rechazado?->format('Y-m-d H:i:s'),
+            'fecha_con_comprobante' => $this->fecha_con_comprobante?->format('Y-m-d H:i:s'),
+            'fecha_confirmacion_pago' => $this->fecha_confirmacion_pago?->format('Y-m-d H:i:s'),
 
             // Nuevos campos booleanos + fechas
-            'dg'                          => (bool) $this->dg,
-            'dg_fecha'                    => $this->dg_fecha?->format('Y-m-d H:i:s'),
+            'dg' => (bool) $this->dg,
+            'dg_fecha' => $this->dg_fecha?->format('Y-m-d H:i:s'),
 
-            'dt'                          => (bool) $this->dt,
-            'dt_fecha'                    => $this->dt_fecha?->format('Y-m-d H:i:s'),
+            'dt' => (bool) $this->dt,
+            'dt_fecha' => $this->dt_fecha?->format('Y-m-d H:i:s'),
 
-            'pc'                          => (bool) $this->pc,
-            'pc_fecha'                    => $this->pc_fecha?->format('Y-m-d H:i:s'),
+            'pc' => (bool) $this->pc,
+            'pc_fecha' => $this->pc_fecha?->format('Y-m-d H:i:s'),
 
-            'si'                          => (bool) $this->si,
-            'si_fecha'                    => $this->si_fecha?->format('Y-m-d H:i:s'),
+            'si' => (bool) $this->si,
+            'si_fecha' => $this->si_fecha?->format('Y-m-d H:i:s'),
 
-            'da'                          => (bool) $this->da,
-            'da_fecha'                    => $this->da_fecha?->format('Y-m-d H:i:s'),
+            'da' => (bool) $this->da,
+            'da_fecha' => $this->da_fecha?->format('Y-m-d H:i:s'),
 
-            'ro'                          => (bool) $this->ro,
-            'ro_fecha'                    => $this->ro_fecha?->format('Y-m-d H:i:s'),
+            'ro' => (bool) $this->ro,
+            'ro_fecha' => $this->ro_fecha?->format('Y-m-d H:i:s'),
 
             'estado_solicitud' => $this->estado_solicitud,
-            'motivo_rechazo'   => $this->motivo_rechazo,
-            'fecha_rechazo'    => $this->fecha_rechazo?->format('Y-m-d H:i:s'),
-            'fecha_pago'       => $this->fecha_pago?->format('Y-m-d H:i:s'),
+            'motivo_rechazo' => $this->motivo_rechazo,
+            'fecha_rechazo' => $this->fecha_rechazo?->format('Y-m-d H:i:s'),
+            'fecha_pago' => $this->fecha_pago?->format('Y-m-d H:i:s'),
 
             // Campos de abono y pagos parciales
-            'monto_total'                 => (float) $this->monto_total,
-            'monto_abonado'               => (float) $this->monto_abonado,
-            'saldo_pendiente'             => (float) $this->saldo_pendiente,
-            'pago_completo'               => (bool) $this->pago_completo,
-            'notas_abono'                 => $this->notas_abono,
-            'porcentaje_pagado'           => $this->monto_total > 0 ? round(($this->monto_abonado / $this->monto_total) * 100, 2) : 0,
+            'monto_total' => (float) $this->monto_total,
+            'monto_abonado' => (float) $this->monto_abonado,
+            'saldo_pendiente' => (float) $this->saldo_pendiente,
+            'pago_completo' => (bool) $this->pago_completo,
+            'notas_abono' => $this->notas_abono,
+            'porcentaje_pagado' => $this->monto_total > 0 ? round(($this->monto_abonado / $this->monto_total) * 100, 2) : 0,
 
             // Información de Órdenes de Compra
-            'origen_oc'                   => (bool) $this->origen_oc,
-            'referencia_oc'               => $this->referencia_oc,
-            'monto_oc_original'           => (float) $this->monto_oc_original,
-            'es_de_orden_compra'          => $this->esDeOrdenCompra(),
-            
+            'origen_oc' => (bool) $this->origen_oc,
+            'referencia_oc' => $this->referencia_oc,
+            'monto_oc_original' => (float) $this->monto_oc_original,
+            'es_de_orden_compra' => $this->esDeOrdenCompra(),
+
             // Órdenes de compra asociadas
             'ordenes_compra' => $this->whenLoaded('ordenesCompra', function () {
                 return $this->ordenesCompra->map(function ($oc) {
@@ -126,7 +124,7 @@ class SolicitudPagoResource extends JsonResource
                             'color' => $oc->estado->color(),
                         ],
                         'monto_disponible' => (float) $oc->getMontoDisponible(),
-                        
+
                         // Información de vinculación
                         'vinculacion' => [
                             'monto_asociado' => (float) $oc->pivot->monto_asociado,
@@ -136,9 +134,9 @@ class SolicitudPagoResource extends JsonResource
                     ];
                 });
             }),
-            
+
             // Resumen de OC (cuando no se cargan las relaciones completas)
-            'oc_resumen' => $this->when($this->origen_oc && !$this->relationLoaded('ordenesCompra'), function () {
+            'oc_resumen' => $this->when($this->origen_oc && ! $this->relationLoaded('ordenesCompra'), function () {
                 return [
                     'tiene_oc_asociadas' => true,
                     'referencia_principal' => $this->referencia_oc,
@@ -147,8 +145,8 @@ class SolicitudPagoResource extends JsonResource
             }),
 
             // Metadatos
-            'created_at'                  => $this->created_at?->format('Y-m-d H:i:s'),
-            'updated_at'                  => $this->updated_at?->format('Y-m-d H:i:s'),
+            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
     }
 }

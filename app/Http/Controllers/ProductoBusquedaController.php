@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Http\Resources\ProductoCatalogoResource;
 use App\Models\Producto;
 use App\Models\Proveedor;
-use App\Services\ProductoSearchService;
-use App\Http\Resources\ProductoResource;
 use App\Models\Sucursal;
+use App\Services\ProductoSearchService;
 use Illuminate\Http\Request;
 
 class ProductoBusquedaController extends Controller
@@ -54,6 +52,7 @@ class ProductoBusquedaController extends Controller
         $productos = $this->searchService->buscar($filtros);
 
         $data = ProductoCatalogoResource::collection($productos)->resolve();
+
         return $this->paginated($productos->setCollection(collect($data)));
     }
 
@@ -117,8 +116,8 @@ class ProductoBusquedaController extends Controller
 
         $query = Producto::where('activo', true)
             ->where(function ($q) use ($request) {
-                $q->where('nombre', 'like', $request->termino . '%')
-                    ->orWhere('sku', 'like', $request->termino . '%');
+                $q->where('nombre', 'like', $request->termino.'%')
+                    ->orWhere('sku', 'like', $request->termino.'%');
             });
 
         if ($request->proveedor_id) {
@@ -130,7 +129,7 @@ class ProductoBusquedaController extends Controller
             ->map(function ($producto) {
                 return [
                     'id' => $producto->id,
-                    'texto' => $producto->nombre . ' (' . $producto->sku . ')',
+                    'texto' => $producto->nombre.' ('.$producto->sku.')',
                     'precio_base' => $producto->precio_base,
                 ];
             });

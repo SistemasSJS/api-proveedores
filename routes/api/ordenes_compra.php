@@ -25,12 +25,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/consultar', [OrdenCompraController::class, 'consultar'])
             ->name('ordenes-compra.consultar');
         
-        // Estadísticas y reportes
-        Route::get('/estadisticas', [OrdenCompraController::class, 'estadisticas'])
-            ->name('ordenes-compra.estadisticas');
-        
-        Route::get('/alertas', [OrdenCompraController::class, 'alertas'])
-            ->name('ordenes-compra.alertas');
+        // Estadísticas y reportes - COMENTADO: Se usan las rutas del dashboard específico del proveedor
+        // Route::get('/estadisticas', [OrdenCompraController::class, 'estadisticas'])
+        //     ->name('ordenes-compra.estadisticas');
+        // 
+        // Route::get('/alertas', [OrdenCompraController::class, 'alertas'])
+        //     ->name('ordenes-compra.alertas');
         
         // Operaciones de creación y actualización
         Route::post('/', [OrdenCompraController::class, 'store'])

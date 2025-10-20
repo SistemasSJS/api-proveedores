@@ -9,6 +9,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 class MontoDisponibleOC implements ValidationRule
 {
     protected ?int $ordenCompraId;
+
     protected ?int $proveedorId;
 
     public function __construct(?int $ordenCompraId = null, ?int $proveedorId = null)
@@ -25,21 +26,22 @@ class MontoDisponibleOC implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         // Si no tenemos ID de OC, no podemos validar
-        if (!$this->ordenCompraId) {
+        if (! $this->ordenCompraId) {
             return;
         }
 
         $query = OrdenCompra::where('id', $this->ordenCompraId);
-        
+
         // Si tenemos proveedor ID, validar que la OC pertenezca al proveedor
         if ($this->proveedorId) {
             $query->where('proveedor_id', $this->proveedorId);
         }
-        
+
         $ordenCompra = $query->first();
-        
-        if (!$ordenCompra) {
+
+        if (! $ordenCompra) {
             $fail('La orden de compra especificada no existe o no pertenece al proveedor.');
+
             return;
         }
 

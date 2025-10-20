@@ -22,7 +22,7 @@ class PedidoDetalleResource extends JsonResource
             'descuento_unitario' => $this->descuento_unitario,
             'descuento_total' => $this->descuento_total,
             'observaciones' => $this->observaciones,
-            
+
             // Control de entrega
             'cantidad_entregada' => $this->cantidad_entregada,
             'cantidad_pendiente' => $this->cantidad_pendiente,
@@ -30,11 +30,11 @@ class PedidoDetalleResource extends JsonResource
             'porcentaje_entregado' => $this->getPorcentajeEntregado(),
             'estado_entrega' => $this->getEstadoEntrega(),
             'color_estado_entrega' => $this->getColorEstadoEntrega(),
-            
+
             // Relaciones
             'cotizacion_detalle' => new CotizacionDetalleResource($this->whenLoaded('cotizacionDetalle')),
             'producto' => new ProductoResource($this->whenLoaded('producto')),
-            
+
             // Metadatos
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),

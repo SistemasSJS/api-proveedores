@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
 class Categoria extends BaseModel
 {
@@ -46,7 +45,7 @@ class Categoria extends BaseModel
     {
         return $this->hasMany(Producto::class, 'subcategoria_id');
     }
-    
+
     // Scope para filtrar por proveedor
     public function scopeDelProveedor($query, $proveedorId)
     {

@@ -9,6 +9,7 @@ use Illuminate\Validation\Rule;
  * @OA\Schema(
  *     schema="UserUpdateRequest",
  *     required={"name", "email"},
+ *
  *     @OA\Property(property="name", type="string", example="Juan Pérez", maxLength=255),
  *     @OA\Property(property="email", type="string", format="email", example="juan.perez@example.com", maxLength=255),
  *     @OA\Property(property="password", type="string", format="password", example="contraseña123", maxLength=255),

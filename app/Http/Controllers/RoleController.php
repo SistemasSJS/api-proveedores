@@ -13,6 +13,7 @@ class RoleController extends Controller
         $filters = $request->only(Role::getFilters());
         $originalPaginator = Role::filter($filters)->paginate(1000);
         $data = RoleResource::collection($originalPaginator)->resolve();
+
         return $this->paginated($originalPaginator->setCollection(collect($data)));
     }
 

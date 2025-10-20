@@ -2,7 +2,6 @@
 
 namespace App\Exceptions\Api\Auth;
 
-use Exception;
 use App\Exceptions\Api\BaseApiException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,6 +13,7 @@ use Illuminate\Http\Request;
  *     description="Se lanza cuando hay un error en el proceso de registro.",
  *     type="object",
  *     required={"message", "errorType", "errors"},
+ *
  *     @OA\Property(
  *         property="message",
  *         type="string",
@@ -27,6 +27,7 @@ use Illuminate\Http\Request;
  *     @OA\Property(
  *         property="errors",
  *         type="array",
+ *
  *         @OA\Items(type="string"),
  *         example={"El campo correo es obligatorio", "El campo contraseña debe tener al menos 8 caracteres"}
  *     )
@@ -36,7 +37,7 @@ class RegistrationException extends BaseApiException
 {
     protected $errors;
 
-    public function __construct($message = "Error en el registro", $errors = [])
+    public function __construct($message = 'Error en el registro', $errors = [])
     {
         $this->errors = $errors;
         parent::__construct($message, 422); // El 422 es para "Unprocessable Entity" (datos inválidos)
@@ -53,7 +54,7 @@ class RegistrationException extends BaseApiException
             'success' => false,
             'message' => $this->getMessage(),
             'errors' => $this->getErrors(),
-            'code' => $this->getCode()
+            'code' => $this->getCode(),
         ], $this->getCode());
     }
 }

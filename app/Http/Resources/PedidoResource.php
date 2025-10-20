@@ -29,24 +29,24 @@ class PedidoResource extends JsonResource
             'transportista' => $this->transportista,
             'fecha_cancelacion' => $this->fecha_cancelacion?->format('Y-m-d H:i:s'),
             'motivo_cancelacion' => $this->motivo_cancelacion,
-            
+
             // Totales
             'subtotal' => $this->subtotal,
             'descuento' => $this->descuento,
             'impuestos' => $this->impuestos,
             'total' => $this->total,
-            
+
             // Información de estado
             'esta_vencido' => $this->estaVencido(),
             'dias_para_vencimiento' => $this->diasParaVencimiento(),
-            
+
             // Relaciones
             'requisicion' => new RequisicionResource($this->whenLoaded('requisicion')),
             'cotizacion' => new CotizacionResource($this->whenLoaded('cotizacion')),
             'detalles' => PedidoDetalleResource::collection($this->whenLoaded('detalles')),
             'proveedor' => new ProveedorResource($this->whenLoaded('proveedor')),
             'usuario' => new UserResource($this->whenLoaded('usuario')),
-            
+
             // Metadatos
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),

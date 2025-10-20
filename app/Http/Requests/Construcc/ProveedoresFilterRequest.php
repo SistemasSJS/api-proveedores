@@ -83,17 +83,17 @@ class ProveedoresFilterRequest extends FormRequest
         // Convertir string 'true'/'false' a boolean para con_productos
         if ($this->has('con_productos')) {
             $this->merge([
-                'con_productos' => filter_var($this->con_productos, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
+                'con_productos' => filter_var($this->con_productos, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
             ]);
         }
 
         // Asegurar que per_page tenga un valor por defecto
-        if (!$this->has('per_page') || !$this->per_page) {
+        if (! $this->has('per_page') || ! $this->per_page) {
             $this->merge(['per_page' => 20]);
         }
 
         // Asegurar que page tenga un valor por defecto
-        if (!$this->has('page') || !$this->page) {
+        if (! $this->has('page') || ! $this->page) {
             $this->merge(['page' => 1]);
         }
     }

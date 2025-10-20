@@ -16,13 +16,11 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     use AutoSwaggerSchema, Filterable;
-
-    use HasFactory, Notifiable, HasApiTokens, HasRoles;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
     protected $fillable = ['name', 'email', 'foto_perfil_url', 'password', 'role_id', 'status'];
 
     protected $hidden = ['password', 'remember_token'];
-
 
     // Filtros disponibles para este modelo
     protected static $filters = [
@@ -30,7 +28,7 @@ class User extends Authenticatable
         'email' => 'Email',
         'role' => 'Role',
     ];
-    
+
     protected function casts(): array
     {
         return ['email_verified_at' => 'datetime', 'password' => 'hashed'];
@@ -178,7 +176,7 @@ class User extends Authenticatable
      * Verifica si el usuario tiene acceso a un proveedor específico
      * Útil para validaciones de autorización
      *
-     * @param int $proveedorId ID del proveedor a verificar
+     * @param  int  $proveedorId  ID del proveedor a verificar
      * @return bool True si el usuario tiene acceso activo al proveedor
      */
     public function tieneAccesoAProveedor(int $proveedorId): bool
@@ -192,7 +190,7 @@ class User extends Authenticatable
     /**
      * Obtiene el tipo de relación del usuario con un proveedor específico
      *
-     * @param int $proveedorId ID del proveedor
+     * @param  int  $proveedorId  ID del proveedor
      * @return string|null 'PRINCIPAL', 'SECUNDARIO' o null si no hay relación activa
      */
     public function tipoRelacionConProveedor(int $proveedorId): ?string
@@ -226,7 +224,7 @@ class User extends Authenticatable
     /**
      * Obtiene tokens activos por plataforma
      *
-     * @param string $platform 'ios', 'android', 'web'
+     * @param  string  $platform  'ios', 'android', 'web'
      * @return HasMany<UserDeviceToken> Tokens activos de la plataforma especificada
      */
     public function deviceTokensByPlatform(string $platform): HasMany
@@ -246,5 +244,4 @@ class User extends Authenticatable
             ->pluck('token')
             ->toArray();
     }
-
 }

@@ -13,6 +13,7 @@ class UnidadMedidaController extends Controller
         $filters = $request->only(UnidadMedida::getFilters());
         $originalPaginator = UnidadMedida::filter($filters)->paginate(1000);
         $unidadMedida = UnidadMedidaResource::collection($originalPaginator)->resolve();
+
         return $this->paginated($originalPaginator->setCollection(collect($unidadMedida)));
     }
 
@@ -32,6 +33,7 @@ class UnidadMedidaController extends Controller
     public function show($id)
     {
         $unidadMedida = UnidadMedida::findOrFail($id);
+
         return $this->success($unidadMedida);
     }
 

@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AccesoRapido extends BaseModel
 {
@@ -19,11 +17,11 @@ class AccesoRapido extends BaseModel
         'url',
         'color',
         'orden',
-        'activo'
+        'activo',
     ];
 
     protected $casts = [
         'activo' => 'boolean',
-        'orden' => 'integer'
+        'orden' => 'integer',
     ];
 }

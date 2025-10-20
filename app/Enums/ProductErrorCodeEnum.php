@@ -20,7 +20,7 @@ enum ProductErrorCodeEnum: string
      */
     public function getMessage(): string
     {
-        return match($this) {
+        return match ($this) {
             self::DUPLICATE_CONFLICT => 'Se encontraron productos duplicados con la misma combinación de código, nombre y descripción',
             self::INVALID_INPUT => 'Los datos proporcionados no son válidos',
             self::RESOURCE_NOT_FOUND => 'El producto solicitado no fue encontrado',
@@ -39,7 +39,7 @@ enum ProductErrorCodeEnum: string
      */
     public function getHttpCode(): int
     {
-        return match($this) {
+        return match ($this) {
             self::DUPLICATE_CONFLICT => 409,
             self::INVALID_INPUT => 422,
             self::RESOURCE_NOT_FOUND => 404,

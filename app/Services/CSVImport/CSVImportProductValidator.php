@@ -2,17 +2,16 @@
 
 namespace App\Services\CSVImport;
 
-use App\Models\Producto;
-use App\Models\Marca;
 use App\Models\Categoria;
+use App\Models\Marca;
+use App\Models\Producto;
 use App\Models\UnidadMedida;
 
 class CSVImportProductValidator
 {
-
     private array $optionalFields = [
         'descripcion',
-        'subcategoria'
+        'subcategoria',
     ];
 
     private array $requiredFields = [
@@ -20,20 +19,25 @@ class CSVImportProductValidator
         'producto',
         'marca',
         'categoria',
-        'unidad_medida'
+        'unidad_medida',
     ];
 
     private array $numericFields = [
         'precio',
         'precio_mayoreo',
-        'precio_menudeo'
+        'precio_menudeo',
     ];
 
     private int $proveedorId;
+
     private array $existingCodigos = [];
+
     private array $existingMarcas = [];
+
     private array $existingCategorias = [];
+
     private array $existingSubcat = [];
+
     private array $existingUnidadMedidas = [];
 
     public function __construct(int $proveedorId)
@@ -46,8 +50,7 @@ class CSVImportProductValidator
      * Validate a single row
      *
      *
-     * @param array $row
-     * @param int $rowIndex (1-based)
+     * @param  int  $rowIndex  (1-based)
      * @return array ['errors' => [], 'warnings' => []]
      */
     public function validateRow(array $row, int $rowIndex): array
@@ -70,7 +73,7 @@ class CSVImportProductValidator
             }
 
             // Validate codigo format (allow alphanumeric, hyphens, underscores, dots, slashes, spaces)
-            if (!preg_match('/^[a-zA-Z0-9_\-.\/ ]+$/', $codigo)) {
+            if (! preg_match('/^[a-zA-Z0-9_\-.\/ ]+$/', $codigo)) {
                 $errors[] = "Codigo '{$codigo}' contiene caracteres no válidos";
             }
 
@@ -83,10 +86,10 @@ class CSVImportProductValidator
         // Validate numeric fields
         foreach ($this->numericFields as $field) {
             $value = trim($row[$field] ?? '');
-            if ($value !== '' && !is_numeric($value)) {
+            if ($value !== '' && ! is_numeric($value)) {
                 $errors[] = "Campo '{$field}' debe ser numérico";
             }
-            if ($value !== '' && (float)$value < 0) {
+            if ($value !== '' && (float) $value < 0) {
                 $warnings[] = "Campo '{$field}' tiene valor negativo";
             }
         }
@@ -94,36 +97,36 @@ class CSVImportProductValidator
         // Validate marca
         $marcaNombre = trim($row['marca'] ?? '');
         if ($marcaNombre && strlen($marcaNombre) > 255) {
-            $errors[] = "Nombre de marca excede 255 caracteres";
+            $errors[] = 'Nombre de marca excede 255 caracteres';
         }
 
         // Validate categoria
         $categoria = trim($row['categoria'] ?? '');
         if ($categoria && strlen($categoria) > 255) {
-            $errors[] = "Nombre de categoría excede 255 caracteres";
+            $errors[] = 'Nombre de categoría excede 255 caracteres';
         }
 
         // Validate unidad de medida if provided
         $unidadMedida = trim($row['unidad_medida'] ?? '');
-        if ($unidadMedida && !in_array($unidadMedida, $this->existingUnidadMedidas)) {
+        if ($unidadMedida && ! in_array($unidadMedida, $this->existingUnidadMedidas)) {
             $warnings[] = "Unidad de medida '{$unidadMedida}' no existe, se creará automáticamente";
         }
 
         // Validate product name length
         $nombreProducto = trim($row['producto'] ?? '');
         if ($nombreProducto && strlen($nombreProducto) > 255) {
-            $errors[] = "Nombre del producto excede 255 caracteres";
+            $errors[] = 'Nombre del producto excede 255 caracteres';
         }
 
         // Validate description length
         $descripcion = trim($row['descripcion'] ?? '');
         if ($descripcion && strlen($descripcion) > 65535) {
-            $warnings[] = "Descripción muy larga, puede ser truncada";
+            $warnings[] = 'Descripción muy larga, puede ser truncada';
         }
 
         return [
             'errors' => $errors,
-            'warnings' => $warnings
+            'warnings' => $warnings,
         ];
     }
 
@@ -141,8 +144,6 @@ class CSVImportProductValidator
         $this->existingMarcas = Marca::where('proveedor_id', $this->proveedorId)
             ->pluck('nombre')
             ->toArray();
-
-
 
         // Load existing categorias
         $this->existingCategorias = Categoria::where('proveedor_id', $this->proveedorId)
@@ -184,21 +185,21 @@ class CSVImportProductValidator
 
         // Check for required headers
         foreach ($expected as $header => $requirement) {
-            if ($requirement === 'required' && !in_array($header, $headers)) {
+            if ($requirement === 'required' && ! in_array($header, $headers)) {
                 $errors[] = "Columna obligatoria '{$header}' no encontrada";
             }
         }
 
         // Check for unknown headers
         foreach ($headers as $header) {
-            if (!array_key_exists($header, $expected)) {
+            if (! array_key_exists($header, $expected)) {
                 $warnings[] = "Columna desconocida '{$header}' será ignorada";
             }
         }
 
         return [
             'errors' => $errors,
-            'warnings' => $warnings
+            'warnings' => $warnings,
         ];
     }
 }

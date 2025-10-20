@@ -7,6 +7,7 @@ namespace App\Docs;
  *     version="1.0.0",
  *     title="API de Proveedores",
  *     description="Documentación de la API de autenticación y gestión de proveedores.",
+ *
  *     @OA\Contact(
  *         name="Soporte",
  *         email="soporte@tuempresa.com"

@@ -41,13 +41,13 @@ class FiscalBancarioRules
             'tipo_cuenta' => ['required', Rule::in(['clabe', 'tarjeta', 'cuenta'])],
             'campo_dependiente' => ['required', function ($attribute, $value, $fail) {
                 $tipoCuenta = request()->input('tipo_cuenta');
-                $rules = match($tipoCuenta) {
+                $rules = match ($tipoCuenta) {
                     'clabe' => self::clabe(),
                     'tarjeta' => self::tarjeta(),
                     'cuenta' => self::cuenta(),
                     default => ['required', 'string']
                 };
-                
+
                 $validator = validator(['campo' => $value], ['campo' => $rules]);
                 if ($validator->fails()) {
                     $fail($validator->errors()->first('campo'));
@@ -57,7 +57,7 @@ class FiscalBancarioRules
             'swift' => ['nullable', 'string', 'regex:/^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/'],
             'sucursal' => ['nullable', 'string'],
             'preferida' => ['boolean'],
-            'estatus' => ['required', Rule::in(['activo', 'inactivo'])]
+            'estatus' => ['required', Rule::in(['activo', 'inactivo'])],
         ];
     }
 
@@ -75,7 +75,7 @@ class FiscalBancarioRules
             'ciudad' => ['required', 'string'],
             'estado' => ['required', 'string'],
             'codigo_postal' => self::codigoPostal(),
-            'pais' => ['required', 'string']
+            'pais' => ['required', 'string'],
         ];
     }
 }

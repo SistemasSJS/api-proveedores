@@ -2,9 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PedidoDetalle extends BaseModel
 {
@@ -22,7 +21,7 @@ class PedidoDetalle extends BaseModel
         'observaciones',
         'cantidad_entregada',
         'cantidad_pendiente',
-        'entrega_completa'
+        'entrega_completa',
     ];
 
     protected $casts = [
@@ -30,7 +29,7 @@ class PedidoDetalle extends BaseModel
         'subtotal' => 'decimal:2',
         'descuento_unitario' => 'decimal:2',
         'descuento_total' => 'decimal:2',
-        'entrega_completa' => 'boolean'
+        'entrega_completa' => 'boolean',
     ];
 
     // Relaciones
@@ -88,7 +87,7 @@ class PedidoDetalle extends BaseModel
 
         $this->update([
             'subtotal' => $subtotal,
-            'descuento_total' => $descuento
+            'descuento_total' => $descuento,
         ]);
     }
 
@@ -99,7 +98,7 @@ class PedidoDetalle extends BaseModel
 
         $this->update([
             'cantidad_pendiente' => max(0, $pendiente),
-            'entrega_completa' => $completa
+            'entrega_completa' => $completa,
         ]);
     }
 
@@ -120,7 +119,7 @@ class PedidoDetalle extends BaseModel
         $this->update([
             'cantidad_entregada' => $this->cantidad_confirmada,
             'cantidad_pendiente' => 0,
-            'entrega_completa' => true
+            'entrega_completa' => true,
         ]);
     }
 

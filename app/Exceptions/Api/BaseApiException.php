@@ -2,19 +2,21 @@
 
 namespace App\Exceptions\Api;
 
+use App\Exceptions\Api\Traits\TracksRequestData;
+use App\Traits\ApiResponse;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\Exceptions\Api\Traits\TracksRequestData;
-use App\Traits\ApiResponse;
 
 abstract class BaseApiException extends Exception
 {
-    use TracksRequestData, ApiResponse;
+    use ApiResponse, TracksRequestData;
 
     protected int $statusCode = 500;
+
     protected string $errorType = 'error';
+
     protected array $additionalData = [];
 
     public function __construct(string $message = '', int $code = 0)
@@ -25,7 +27,7 @@ abstract class BaseApiException extends Exception
 
     protected function log(): void
     {
-        Log::error("{$this->errorType} ({$this->statusCode}): " . $this->getMessage(), array_merge([
+        Log::error("{$this->errorType} ({$this->statusCode}): ".$this->getMessage(), array_merge([
             'exception' => static::class,
             'code' => $this->getCode(),
             'trace' => $this->getTraceAsString(),
@@ -47,4 +49,3 @@ abstract class BaseApiException extends Exception
         );
     }
 }
-    

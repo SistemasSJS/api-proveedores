@@ -10,7 +10,6 @@ class ConstruccMarcaResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @param Request $request
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
@@ -22,8 +21,8 @@ class ConstruccMarcaResource extends JsonResource
             'activo' => (bool) $this->activo,
 
             // Logo optimizado
-            'logo' => $this->logo 
-                ? (preg_match('/^https?:\/\//', $this->logo) ? $this->logo : asset('storage/' . $this->logo))
+            'logo' => $this->logo
+                ? (preg_match('/^https?:\/\//', $this->logo) ? $this->logo : asset('storage/'.$this->logo))
                 : null,
 
             // Información del proveedor (solo ID para optimizar)
@@ -47,7 +46,6 @@ class ConstruccMarcaResource extends JsonResource
     /**
      * Get additional data that should be returned with the resource array.
      *
-     * @param Request $request
      * @return array<string, mixed>
      */
     public function with(Request $request): array

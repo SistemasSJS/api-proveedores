@@ -3,9 +3,9 @@
 namespace App\Exceptions;
 
 use App\Services\AuditService;
-use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -50,7 +50,7 @@ class Handler extends ExceptionHandler
                 return response()->json([
                     'success' => false,
                     'message' => 'No autenticado',
-                    'error_code' => 'UNAUTHENTICATED'
+                    'error_code' => 'UNAUTHENTICATED',
                 ], 401);
             }
 
@@ -58,7 +58,7 @@ class Handler extends ExceptionHandler
                 return response()->json([
                     'success' => false,
                     'message' => 'Recurso no encontrado',
-                    'error_code' => 'RESOURCE_NOT_FOUND'
+                    'error_code' => 'RESOURCE_NOT_FOUND',
                 ], 404);
             }
 
@@ -67,7 +67,7 @@ class Handler extends ExceptionHandler
                     'success' => false,
                     'message' => 'Datos de entrada inválidos',
                     'errors' => $e->validator->errors(),
-                    'error_code' => 'VALIDATION_ERROR'
+                    'error_code' => 'VALIDATION_ERROR',
                 ], 422);
             }
 
@@ -75,7 +75,7 @@ class Handler extends ExceptionHandler
                 return response()->json([
                     'success' => false,
                     'message' => 'Endpoint no encontrado',
-                    'error_code' => 'ENDPOINT_NOT_FOUND'
+                    'error_code' => 'ENDPOINT_NOT_FOUND',
                 ], 404);
             }
 
@@ -85,7 +85,7 @@ class Handler extends ExceptionHandler
                 'message' => app()->environment('production')
                     ? 'Error interno del servidor'
                     : $e->getMessage(),
-                'error_code' => 'INTERNAL_SERVER_ERROR'
+                'error_code' => 'INTERNAL_SERVER_ERROR',
             ], 500);
         }
 

@@ -4,7 +4,6 @@ namespace App\Exceptions\Api\Custom;
 
 use App\Exceptions\Api\BaseApiException;
 
-
 /**
  * @OA\Schema(
  *     schema="MainUserDuplicateException",
@@ -12,6 +11,7 @@ use App\Exceptions\Api\BaseApiException;
  *     description="Se lanza cuando se intenta asignar un usuario principal a un proveedor que ya tiene uno.",
  *    type="object",
  *    required={"message", "errorType"},
+ *
  *    @OA\Property(
  *        property="message",
  *        type="string",
@@ -27,6 +27,7 @@ use App\Exceptions\Api\BaseApiException;
 class MainUserDuplicateException extends BaseApiException
 {
     protected string $errorType = 'main_user_duplicate';
+
     protected int $statusCode = 409;
 
     public function __construct(string $message = 'Usuario principal duplicado.')

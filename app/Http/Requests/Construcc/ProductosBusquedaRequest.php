@@ -103,13 +103,13 @@ class ProductosBusquedaRequest extends FormRequest
         // Convertir string 'true'/'false' a boolean
         if ($this->has('con_stock')) {
             $this->merge([
-                'con_stock' => filter_var($this->con_stock, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
+                'con_stock' => filter_var($this->con_stock, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
             ]);
         }
 
         if ($this->has('destacado')) {
             $this->merge([
-                'destacado' => filter_var($this->destacado, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
+                'destacado' => filter_var($this->destacado, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
             ]);
         }
 
@@ -124,24 +124,24 @@ class ProductosBusquedaRequest extends FormRequest
 
         // Valores por defecto
         $defaults = [];
-        
-        if (!$this->has('orden_por') || !$this->orden_por) {
+
+        if (! $this->has('orden_por') || ! $this->orden_por) {
             $defaults['orden_por'] = 'nombre';
         }
-        
-        if (!$this->has('direccion') || !$this->direccion) {
+
+        if (! $this->has('direccion') || ! $this->direccion) {
             $defaults['direccion'] = 'asc';
         }
-        
-        if (!$this->has('per_page') || !$this->per_page) {
+
+        if (! $this->has('per_page') || ! $this->per_page) {
             $defaults['per_page'] = 20;
         }
-        
-        if (!$this->has('page') || !$this->page) {
+
+        if (! $this->has('page') || ! $this->page) {
             $defaults['page'] = 1;
         }
 
-        if (!empty($defaults)) {
+        if (! empty($defaults)) {
             $this->merge($defaults);
         }
     }

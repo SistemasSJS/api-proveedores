@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 class DashboardController extends Controller
 {
     protected $dashboardService;
+
     protected $reporteService;
 
     public function __construct(
@@ -36,7 +37,7 @@ class DashboardController extends Controller
                     'stats' => $stats,
                     'crecimiento_mensual' => $crecimiento,
                     'top_proveedores' => $topProveedores,
-                ]
+                ],
             ]);
         } elseif ($user->proveedores()->exists()) {
             $proveedorId = $user->proveedores()->first()->id;
@@ -49,7 +50,7 @@ class DashboardController extends Controller
                     'tipo' => 'proveedor',
                     'stats' => $stats,
                     'estadisticas_generales' => $estadisticasGenerales,
-                ]
+                ],
             ]);
         } else {
             $stats = $this->dashboardService->getStatsCliente($user->id);
@@ -59,7 +60,7 @@ class DashboardController extends Controller
                 'data' => [
                     'tipo' => 'cliente',
                     'stats' => $stats,
-                ]
+                ],
             ]);
         }
     }

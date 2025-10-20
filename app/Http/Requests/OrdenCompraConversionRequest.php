@@ -4,7 +4,6 @@ namespace App\Http\Requests;
 
 use App\Models\OrdenCompra;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class OrdenCompraConversionRequest extends FormRequest
 {
@@ -33,7 +32,7 @@ class OrdenCompraConversionRequest extends FormRequest
                     if ($ordenCompra && $ordenCompra->proveedor_id !== $this->route('proveedor')->id) {
                         $fail('La orden de compra no pertenece a este proveedor.');
                     }
-                }
+                },
             ],
             'monto_total' => 'required|numeric|min:0.01',
             'descripcion_concepto' => 'nullable|string|max:500',
@@ -41,7 +40,7 @@ class OrdenCompraConversionRequest extends FormRequest
             'sucursal_id' => 'nullable|integer|exists:sucursales,id',
             'cotizacion_id' => 'nullable|integer|exists:cotizaciones,id',
             'notas_vinculacion' => 'nullable|string|max:1000',
-            
+
             // Cuentas bancarias opcionales
             'cuentas_bancarias' => 'nullable|array',
             'cuentas_bancarias.*.cuenta_bancaria_id' => 'required|integer|exists:cuentas_bancarias,id',
@@ -69,13 +68,13 @@ class OrdenCompraConversionRequest extends FormRequest
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
-            if (!$this->orden_compra_id || !$this->monto_total) {
+            if (! $this->orden_compra_id || ! $this->monto_total) {
                 return;
             }
 
             $ordenCompra = OrdenCompra::find($this->orden_compra_id);
-            
-            if (!$ordenCompra) {
+
+            if (! $ordenCompra) {
                 return;
             }
 

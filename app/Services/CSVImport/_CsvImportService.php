@@ -2,22 +2,23 @@
 
 namespace App\Services;
 
-use App\Models\Producto;
-use App\Models\Marca;
-use App\Models\Categoria;
-use App\Models\UnidadMedida;
-use App\Models\Proveedor;
-use App\Models\ImportAudit;
 use App\Enums\EstadoImportacion;
+use App\Models\Categoria;
+use App\Models\ImportAudit;
+use App\Models\Marca;
+use App\Models\Producto;
+use App\Models\Proveedor;
+use App\Models\UnidadMedida;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use InvalidArgumentException;
 
 class CsvImportService
 {
     private FileParserService $fileParserService;
+
     private CSVImportProductValidator $validator;
+
     private int $proveedorId;
 
     public function __construct(FileParserService $fileParserService, int $proveedorId)
@@ -29,9 +30,8 @@ class CsvImportService
 
     /**
      * Analyze CSV file and extract productos, marcas, categorias, unidades
-     * 
-     * @param UploadedFile|string $file
-     * @return array
+     *
+     * @param  UploadedFile|string  $file
      */
     public function analyzeCsv($file): array
     {
@@ -43,7 +43,7 @@ class CsvImportService
                 return [
                     'success' => false,
                     'error' => 'El archivo CSV está vacío o no se pudo procesar',
-                    'data' => null
+                    'data' => null,
                 ];
             }
 
@@ -51,12 +51,12 @@ class CsvImportService
 
             // Validate headers
             $headerValidation = $this->validator->validateHeaders($headers);
-            if (!empty($headerValidation['errors'])) {
+            if (! empty($headerValidation['errors'])) {
                 return [
                     'success' => false,
                     'error' => 'Encabezados del CSV inválidos',
                     'validation_errors' => $headerValidation['errors'],
-                    'data' => null
+                    'data' => null,
                 ];
             }
 
@@ -75,7 +75,7 @@ class CsvImportService
                 } else {
                     $errors[] = [
                         'fila' => $index + 1,
-                        'errores' => $validation['errors']
+                        'errores' => $validation['errors'],
                     ];
                 }
             }
@@ -91,29 +91,26 @@ class CsvImportService
                     'categorias' => $analysis['categorias'],
                     'unidades' => $analysis['unidades'],
                     'errores_validacion' => $errors,
-                    'headers' => $headers
-                ]
+                    'headers' => $headers,
+                ],
             ];
         } catch (\Exception $e) {
             Log::error('Error analyzing CSV file', [
                 'proveedor_id' => $this->proveedorId,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return [
                 'success' => false,
-                'error' => 'Error al analizar el archivo CSV: ' . $e->getMessage(),
-                'data' => null
+                'error' => 'Error al analizar el archivo CSV: '.$e->getMessage(),
+                'data' => null,
             ];
         }
     }
 
     /**
      * Compare CSV analysis with existing provider data
-     * 
-     * @param array $analysisData
-     * @return array
      */
     public function mergeAnalysis(array $analysisData): array
     {
@@ -138,51 +135,50 @@ class CsvImportService
                         'existentes' => $marcasComparison['existentes'],
                         'total_csv' => count($analysisData['marcas']),
                         'total_nuevas' => count($marcasComparison['nuevas']),
-                        'total_existentes' => count($marcasComparison['existentes'])
+                        'total_existentes' => count($marcasComparison['existentes']),
                     ],
                     'categorias' => [
                         'nuevas' => $categoriasComparison['nuevas'],
                         'existentes' => $categoriasComparison['existentes'],
                         'total_csv' => count($analysisData['categorias']),
                         'total_nuevas' => count($categoriasComparison['nuevas']),
-                        'total_existentes' => count($categoriasComparison['existentes'])
+                        'total_existentes' => count($categoriasComparison['existentes']),
                     ],
                     'unidades' => [
                         'nuevas' => $unidadesComparison['nuevas'],
                         'existentes' => $unidadesComparison['existentes'],
                         'total_csv' => count($analysisData['unidades']),
                         'total_nuevas' => count($unidadesComparison['nuevas']),
-                        'total_existentes' => count($unidadesComparison['existentes'])
+                        'total_existentes' => count($unidadesComparison['existentes']),
                     ],
                     'productos' => [
                         'nuevos' => $productosComparison['nuevas'],
                         'existentes' => $productosComparison['existentes'],
                         'total_csv' => count($analysisData['productos']),
                         'total_nuevos' => count($productosComparison['nuevas']),
-                        'total_existentes' => count($productosComparison['existentes'])
-                    ]
-                ]
+                        'total_existentes' => count($productosComparison['existentes']),
+                    ],
+                ],
             ];
         } catch (\Exception $e) {
             Log::error('Error merging CSV analysis', [
                 'proveedor_id' => $this->proveedorId,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return [
                 'success' => false,
-                'error' => 'Error al comparar datos del CSV con datos existentes: ' . $e->getMessage(),
-                'data' => null
+                'error' => 'Error al comparar datos del CSV con datos existentes: '.$e->getMessage(),
+                'data' => null,
             ];
         }
     }
 
     /**
      * Validate products and separate them into validos, duplicados, error arrays
-     * 
-     * @param UploadedFile|string $file
-     * @return array
+     *
+     * @param  UploadedFile|string  $file
      */
     public function validateProducts($file): array
     {
@@ -193,7 +189,7 @@ class CsvImportService
                 return [
                     'success' => false,
                     'error' => 'El archivo CSV está vacío',
-                    'data' => null
+                    'data' => null,
                 ];
             }
 
@@ -209,12 +205,13 @@ class CsvImportService
                 // Validate the row
                 $validation = $this->validator->validateRow($row, $rowNumber);
 
-                if (!empty($validation['errors'])) {
+                if (! empty($validation['errors'])) {
                     $errores[] = [
                         'fila' => $rowNumber,
                         'data' => $row,
-                        'errores' => $validation['errors']
+                        'errores' => $validation['errors'],
                     ];
+
                     continue;
                 }
 
@@ -224,8 +221,9 @@ class CsvImportService
                         'fila' => $rowNumber,
                         'data' => $row,
                         'tipo_duplicado' => 'interno_csv',
-                        'mensaje' => "Código '{$codigo}' aparece múltiples veces en el CSV"
+                        'mensaje' => "Código '{$codigo}' aparece múltiples veces en el CSV",
                     ];
+
                     continue;
                 }
 
@@ -239,12 +237,12 @@ class CsvImportService
                         'fila' => $rowNumber,
                         'data' => $row,
                         'tipo_duplicado' => 'base_datos',
-                        'mensaje' => "Código '{$codigo}' ya existe en la base de datos y será actualizado"
+                        'mensaje' => "Código '{$codigo}' ya existe en la base de datos y será actualizado",
                     ];
                 } else {
                     $validos[] = [
                         'fila' => $rowNumber,
-                        'data' => $row
+                        'data' => $row,
                     ];
                 }
 
@@ -262,31 +260,29 @@ class CsvImportService
                         'total_validos' => count($validos),
                         'total_duplicados' => count($duplicados),
                         'total_errores' => count($errores),
-                        'porcentaje_validos' => count($rows) > 0 ? round((count($validos) / count($rows)) * 100, 2) : 0
-                    ]
-                ]
+                        'porcentaje_validos' => count($rows) > 0 ? round((count($validos) / count($rows)) * 100, 2) : 0,
+                    ],
+                ],
             ];
         } catch (\Exception $e) {
             Log::error('Error validating products', [
                 'proveedor_id' => $this->proveedorId,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return [
                 'success' => false,
-                'error' => 'Error al validar productos: ' . $e->getMessage(),
-                'data' => null
+                'error' => 'Error al validar productos: '.$e->getMessage(),
+                'data' => null,
             ];
         }
     }
 
     /**
      * Execute the actual import and return statistics
-     * 
-     * @param UploadedFile|string $file
-     * @param array $options
-     * @return array
+     *
+     * @param  UploadedFile|string  $file
      */
     public function executeImport($file, array $options = []): array
     {
@@ -311,7 +307,7 @@ class CsvImportService
             $importAudit->appendLog('Iniciando importación CSV', [
                 'total_registros' => count($rows),
                 'proveedor' => $proveedor->nombre,
-                'opciones' => $options
+                'opciones' => $options,
             ]);
 
             // Process the import
@@ -329,7 +325,7 @@ class CsvImportService
             ]);
 
             $importAudit->appendLog('Importación completada exitosamente', [
-                'estadisticas' => $result['estadisticas']
+                'estadisticas' => $result['estadisticas'],
             ]);
 
             DB::commit();
@@ -343,9 +339,9 @@ class CsvImportService
                     'resumen' => [
                         'total_procesados' => count($rows),
                         'exitosos' => $result['estadisticas']['productos_creados'] + $result['estadisticas']['productos_actualizados'],
-                        'fallidos' => $result['estadisticas']['errores']
-                    ]
-                ]
+                        'fallidos' => $result['estadisticas']['errores'],
+                    ],
+                ],
             ];
         } catch (\Exception $e) {
             DB::rollBack();
@@ -359,29 +355,26 @@ class CsvImportService
                 $importAudit->appendLog('Error durante la importación', [
                     'error' => $e->getMessage(),
                     'file' => $e->getFile(),
-                    'line' => $e->getLine()
+                    'line' => $e->getLine(),
                 ]);
             }
 
             Log::error('Error executing CSV import', [
                 'proveedor_id' => $this->proveedorId,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return [
                 'success' => false,
-                'error' => 'Error al ejecutar la importación: ' . $e->getMessage(),
-                'data' => null
+                'error' => 'Error al ejecutar la importación: '.$e->getMessage(),
+                'data' => null,
             ];
         }
     }
 
     /**
      * Extract unique data from CSV rows
-     * 
-     * @param array $rows
-     * @return array
      */
     private function extractUniqueData(array $rows): array
     {
@@ -393,19 +386,19 @@ class CsvImportService
         foreach ($rows as $row) {
             // Extract marcas
             $marca = trim($row['marca'] ?? '');
-            if ($marca && !in_array($marca, $marcas)) {
+            if ($marca && ! in_array($marca, $marcas)) {
                 $marcas[] = $marca;
             }
 
             // Extract categorias
             $categoria = trim($row['categoria'] ?? '');
-            if ($categoria && !in_array($categoria, $categorias)) {
+            if ($categoria && ! in_array($categoria, $categorias)) {
                 $categorias[] = $categoria;
             }
 
             // Extract unidades
             $unidad = trim($row['unidad_medida'] ?? '');
-            if ($unidad && !in_array($unidad, $unidades)) {
+            if ($unidad && ! in_array($unidad, $unidades)) {
                 $unidades[] = $unidad;
             }
 
@@ -421,16 +414,12 @@ class CsvImportService
             'marcas' => $marcas,
             'categorias' => $categorias,
             'unidades' => $unidades,
-            'productos' => $productos
+            'productos' => $productos,
         ];
     }
 
     /**
      * Compare two arrays and return new and existing items
-     * 
-     * @param array $csvData
-     * @param array $existingData
-     * @return array
      */
     private function compareArrays(array $csvData, array $existingData): array
     {
@@ -439,18 +428,12 @@ class CsvImportService
 
         return [
             'nuevas' => array_values($nuevas),
-            'existentes' => array_values($existentes)
+            'existentes' => array_values($existentes),
         ];
     }
 
     /**
      * Process the actual import of products
-     * 
-     * @param array $rows
-     * @param Proveedor $proveedor
-     * @param ImportAudit $importAudit
-     * @param array $options
-     * @return array
      */
     private function processImport(array $rows, Proveedor $proveedor, ImportAudit $importAudit, array $options): array
     {
@@ -461,7 +444,7 @@ class CsvImportService
             'marcas_creadas' => 0,
             'categorias_creadas' => 0,
             'unidades_creadas' => 0,
-            'errores' => 0
+            'errores' => 0,
         ];
         $errores_detalle = [];
 
@@ -481,7 +464,7 @@ class CsvImportService
             $importAudit->update(['progreso' => $progreso]);
             $importAudit->appendLog("Procesando lote {$currentChunk} de {$totalChunks}", [
                 'registros_en_lote' => count($chunk),
-                'progreso' => $progreso
+                'progreso' => $progreso,
             ]);
 
             foreach ($chunk as $index => $row) {
@@ -522,7 +505,7 @@ class CsvImportService
                     $errores_detalle[] = [
                         'fila' => $index + 1,
                         'codigo' => $row['codigo'] ?? 'N/A',
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ];
                 }
             }
@@ -530,7 +513,7 @@ class CsvImportService
 
         return [
             'estadisticas' => $estadisticas,
-            'errores_detalle' => $errores_detalle
+            'errores_detalle' => $errores_detalle,
         ];
     }
 
@@ -539,7 +522,9 @@ class CsvImportService
      */
     private function getOrCreateMarca(string $nombre, Proveedor $proveedor, array &$existingMarcas, array &$estadisticas): ?int
     {
-        if (empty($nombre)) return null;
+        if (empty($nombre)) {
+            return null;
+        }
 
         if (isset($existingMarcas[$nombre])) {
             return $existingMarcas[$nombre];
@@ -547,7 +532,7 @@ class CsvImportService
 
         $marca = Marca::create([
             'nombre' => $nombre,
-            'proveedor_id' => $proveedor->id
+            'proveedor_id' => $proveedor->id,
         ]);
 
         $existingMarcas[$nombre] = $marca->id;
@@ -561,7 +546,9 @@ class CsvImportService
      */
     private function getOrCreateCategoria(string $nombre, Proveedor $proveedor, array &$existingCategorias, array &$estadisticas): ?int
     {
-        if (empty($nombre)) return null;
+        if (empty($nombre)) {
+            return null;
+        }
 
         if (isset($existingCategorias[$nombre])) {
             return $existingCategorias[$nombre];
@@ -569,7 +556,7 @@ class CsvImportService
 
         $categoria = Categoria::create([
             'nombre' => $nombre,
-            'proveedor_id' => $proveedor->id
+            'proveedor_id' => $proveedor->id,
         ]);
 
         $existingCategorias[$nombre] = $categoria->id;
@@ -583,7 +570,9 @@ class CsvImportService
      */
     private function getOrCreateUnidadMedida(string $nombre, Proveedor $proveedor, array &$existingUnidades, array &$estadisticas): ?int
     {
-        if (empty($nombre)) return null;
+        if (empty($nombre)) {
+            return null;
+        }
 
         if (isset($existingUnidades[$nombre])) {
             return $existingUnidades[$nombre];
@@ -591,7 +580,7 @@ class CsvImportService
 
         $unidad = UnidadMedida::create([
             'descripcion' => $nombre,
-            'proveedor_id' => $proveedor->id
+            'proveedor_id' => $proveedor->id,
         ]);
 
         $existingUnidades[$nombre] = $unidad->id;

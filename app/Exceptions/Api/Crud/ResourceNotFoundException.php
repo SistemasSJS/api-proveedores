@@ -4,7 +4,6 @@ namespace App\Exceptions\Api\Crud;
 
 use App\Exceptions\Api\BaseApiException;
 
-
 /**
  * @OA\Schema(
  *     schema="ResourceNotFoundException",
@@ -12,6 +11,7 @@ use App\Exceptions\Api\BaseApiException;
  *     description="Se lanza cuando el recurso solicitado no existe en el sistema.",
  *     type="object",
  *     required={"message", "errorType"},
+ *
  *     @OA\Property(
  *         property="message",
  *         type="string",
@@ -27,6 +27,7 @@ use App\Exceptions\Api\BaseApiException;
 class ResourceNotFoundException extends BaseApiException
 {
     protected string $errorType = 'resource_not_found';
+
     protected int $statusCode = 404;
 
     public function __construct(string $message = 'Recurso no encontrado.')

@@ -3,13 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-
 
 /**
  * @OA\Schema(
  *     schema="UnidadMedida",
  *     required={"nombre"},
+ *
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="nombre", type="string", example="Kilogramo"),
  *     @OA\Property(property="descripcion", type="string", example="Unidad de peso equivalente a mil gramos"),
@@ -23,7 +22,6 @@ class UnidadMedida extends BaseModel
     use HasFactory;
 
     protected $fillable = ['proveedor_id', 'nombre', 'clave', 'descripcion', 'estatus'];
-
 
     public function scopeFilterByNombre($query, $value)
     {

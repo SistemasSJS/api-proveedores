@@ -22,8 +22,8 @@ class ProveedorValidacionPerfilCompletoResource extends JsonResource
                 'tiene_constancia_fiscal' => $this->resource['detalle']['tiene_constancia_fiscal'],
                 'tiene_logo' => $this->resource['detalle']['tiene_logo'],
                 'tiene_informacion_general_y_datos_fiscales' => $this->resource['detalle']['tiene_informacion_general_y_datos_fiscales'],
-                'datos_faltantes' => $this->resource['detalle']['datos_faltantes'] ?? []
-            ]
+                'datos_faltantes' => $this->resource['detalle']['datos_faltantes'] ?? [],
+            ],
         ];
     }
 }

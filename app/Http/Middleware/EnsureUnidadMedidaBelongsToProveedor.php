@@ -3,10 +3,10 @@
 namespace App\Http\Middleware;
 
 use App\Exceptions\Api\Custom\NotFoundRelationException;
-use Closure;
-use Illuminate\Http\Request;
 use App\Models\Proveedor;
 use App\Models\UnidadMedida;
+use Closure;
+use Illuminate\Http\Request;
 
 class EnsureUnidadMedidaBelongsToProveedor
 {
@@ -16,7 +16,6 @@ class EnsureUnidadMedidaBelongsToProveedor
         $proveedor = $request->route('proveedor');
         $unidadMedida = $request->route('unidad');
 
-
         if (is_numeric($proveedor)) {
         }
         $proveedor = Proveedor::findOrFail($proveedor);
@@ -25,11 +24,9 @@ class EnsureUnidadMedidaBelongsToProveedor
             $unidadMedida = UnidadMedida::findOrFail($unidadMedida);
         }
 
-
         if ($unidadMedida->proveedor_id !== $proveedor->id) {
             throw new NotFoundRelationException('El categoria no pertenece al proveedor.');
         }
-
 
         $request->attributes->set('unidades', $proveedor->unidades);
 

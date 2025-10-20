@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class ValidateProveedorRole
 {
@@ -12,7 +11,7 @@ class ValidateProveedorRole
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
@@ -22,7 +21,7 @@ class ValidateProveedorRole
         }
 
         // Verificar si el usuario tiene uno de los roles requeridos
-        if (!in_array($user->role?->name, $roles)) {
+        if (! in_array($user->role?->name, $roles)) {
             return response()->json(['error' => 'No tienes permisos suficientes'], 403);
         }
 

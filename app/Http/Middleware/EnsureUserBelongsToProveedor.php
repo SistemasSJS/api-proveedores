@@ -2,11 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Exceptions\Api\Custom\NotFoundRelationException;
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
-use App\Models\User;
-use App\Models\Proveedor;
-use App\Exceptions\Api\Custom\NotFoundRelationException;
 
 class EnsureUserBelongsToProveedor
 {
@@ -16,7 +15,7 @@ class EnsureUserBelongsToProveedor
         $userParam = $request->route('user');
 
         // Validar que $proveedor sea un modelo válido
-        if (!$proveedor || !method_exists($proveedor, 'users')) {
+        if (! $proveedor || ! method_exists($proveedor, 'users')) {
             throw new NotFoundRelationException('Proveedor no válido.');
         }
 
@@ -30,7 +29,7 @@ class EnsureUserBelongsToProveedor
             }
 
             // Validamos la relación
-            if (!$proveedor->users()->where('users.id', $user->id)->exists()) {
+            if (! $proveedor->users()->where('users.id', $user->id)->exists()) {
                 throw new NotFoundRelationException('El user no pertenece al proveedor');
             }
 

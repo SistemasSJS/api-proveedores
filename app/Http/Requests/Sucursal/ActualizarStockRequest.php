@@ -44,10 +44,10 @@ class ActualizarStockRequest extends FormRequest
         $validator->after(function ($validator) {
             $sucursal = $this->route('sucursal');
             $productosIds = collect($this->input('actualizaciones', []))->pluck('producto_id');
-            
+
             // Verificar que los productos estén asignados a la sucursal
             $productosAsignados = $sucursal->productos()->whereIn('producto_id', $productosIds)->pluck('producto_id');
-            
+
             if ($productosAsignados->count() !== $productosIds->count()) {
                 $validator->errors()->add('actualizaciones', 'Algunos productos no están asignados a esta sucursal.');
             }

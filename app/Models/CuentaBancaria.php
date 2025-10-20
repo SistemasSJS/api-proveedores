@@ -33,18 +33,18 @@ class CuentaBancaria extends BaseModel
     ];
 
     protected static $filters = [
-        'proveedor_id'      => 'ProveedorId',
-        'alias'             => 'Alias',
-        'banco_clave'       => 'BancoClave',
-        'banco_nombre'      => 'BancoNombre',
-        'tipo_cuenta'       => 'TipoCuenta',
+        'proveedor_id' => 'ProveedorId',
+        'alias' => 'Alias',
+        'banco_clave' => 'BancoClave',
+        'banco_nombre' => 'BancoNombre',
+        'tipo_cuenta' => 'TipoCuenta',
         'campo_dependiente' => 'CampoDependiente',
-        'titular_cuenta'    => 'TitularCuenta',
-        'referencia'        => 'Referencia',
-        'estatus'           => 'Estatus',
-        'sucursal'          => 'Sucursal',
-        'swift'             => 'Swift',
-        'preferida'         => 'Preferida',
+        'titular_cuenta' => 'TitularCuenta',
+        'referencia' => 'Referencia',
+        'estatus' => 'Estatus',
+        'sucursal' => 'Sucursal',
+        'swift' => 'Swift',
+        'preferida' => 'Preferida',
     ];
 
     /**

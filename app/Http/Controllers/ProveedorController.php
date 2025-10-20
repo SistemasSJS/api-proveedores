@@ -3,20 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Enums\EstadoCuentaBancaria;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-
-use App\Models\User;
-use App\Models\Proveedor;
-use App\Http\Resources\ProveedorResource;
-use App\Http\Requests\Proveedor\ProveedorUpdateRequest;
-use App\Http\Requests\Proveedor\ProveedorUpdateLogoRequest;
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Http\Requests\Proveedor\ProveedorUpdateConstanciaFiscalRequest;
-use App\Http\Resources\UserResource;
+use App\Http\Requests\Proveedor\ProveedorUpdateLogoRequest;
+use App\Http\Requests\Proveedor\ProveedorUpdateRequest;
 use App\Http\Resources\Admin\AdminProveedorAcordeonResource;
-use App\Http\Resources\ProveedorPuedeGenerarSPResource;
+use App\Http\Resources\ProveedorResource;
 use App\Http\Resources\ProveedorValidacionPerfilCompletoResource;
+use App\Http\Resources\UserResource;
+use App\Models\Proveedor;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
 class ProveedorController extends Controller
@@ -28,8 +26,6 @@ class ProveedorController extends Controller
      * - Elimina la foto de perfil anterior del usuario (si existe).
      * - Guarda y asigna el nuevo logo.
      *
-     * @param  ProveedorUpdateLogoRequest  $request
-     * @param  Proveedor  $proveedor
      * @return \Illuminate\Http\JsonResponse
      *
      * @throws ResourceNotFoundException Si el proveedor no existe.
@@ -38,23 +34,23 @@ class ProveedorController extends Controller
     {
         $user = $request->user();
         $proveedor = $user->proveedorPrincipal();
-        if (!$proveedor) {
-            throw new ResourceNotFoundException("Proveedor no encontrado.");
+        if (! $proveedor) {
+            throw new ResourceNotFoundException('Proveedor no encontrado.');
         }
 
         if ($proveedor->logo !== null) {
-            $rutaAnterior = str_replace(asset('storage') . '/', '', $proveedor->logo);
+            $rutaAnterior = str_replace(asset('storage').'/', '', $proveedor->logo);
             Storage::disk('public')->delete($rutaAnterior);
         }
 
         if ($user->foto_perfil_url !== null) {
-            $rutaAnterior = str_replace(asset('storage') . '/', '', $user->foto_perfil_url);
+            $rutaAnterior = str_replace(asset('storage').'/', '', $user->foto_perfil_url);
             Storage::disk('public')->delete($rutaAnterior);
         }
 
         $file = $request->file('logo');
-        $filename = 'logo_' . $proveedor->id . '_' . time() . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs("uploads", $filename, 'public');
+        $filename = 'logo_'.$proveedor->id.'_'.time().'.'.$file->getClientOriginalExtension();
+        $path = $file->storeAs('uploads', $filename, 'public');
 
         $proveedor->update(['logo' => $path]);
 
@@ -67,7 +63,6 @@ class ProveedorController extends Controller
     /**
      * Obtiene el proveedor principal asociado a un usuario por ID.
      *
-     * @param  Request  $request
      * @param  int  $id  ID del usuario
      * @return \Illuminate\Http\JsonResponse
      *
@@ -76,20 +71,20 @@ class ProveedorController extends Controller
     public function getProveedorByUserId(Request $request, $id)
     {
         $user = User::find($id);
-        if (!$user) {
-            throw new ResourceNotFoundException("Usuario no encontrado.");
+        if (! $user) {
+            throw new ResourceNotFoundException('Usuario no encontrado.');
         }
         $proveedor = $user->proveedorPrincipal();
-        if (!$proveedor) {
-            throw new ResourceNotFoundException("Proveedor no encontrado.");
+        if (! $proveedor) {
+            throw new ResourceNotFoundException('Proveedor no encontrado.');
         }
+
         return $this->success(new ProveedorResource($proveedor->load(Proveedor::eagerLodable())));
     }
 
     /**
      * Lista los proveedores con filtros, ordenamiento y paginación.
      *
-     * @param  Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function index(Request $request)
@@ -112,8 +107,6 @@ class ProveedorController extends Controller
     /**
      * Muestra los datos de un proveedor específico.
      *
-     * @param  Request  $request
-     * @param  Proveedor  $proveedor
      * @return \Illuminate\Http\JsonResponse
      */
     public function show(Request $request, Proveedor $proveedor)
@@ -124,8 +117,6 @@ class ProveedorController extends Controller
     /**
      * Actualiza la información de un proveedor.
      *
-     * @param  ProveedorUpdateRequest  $request
-     * @param  Proveedor  $proveedor
      * @return \Illuminate\Http\JsonResponse
      */
     public function update(ProveedorUpdateRequest $request, Proveedor $proveedor)
@@ -133,6 +124,7 @@ class ProveedorController extends Controller
         $validated = $request->validated();
         $proveedor->update($validated);
         $proveedor = $proveedor->fresh(Proveedor::eagerLodable());
+
         return $this->success(new ProveedorResource($proveedor), 'Proveedor actualizado con éxito.', 200);
     }
 
@@ -147,17 +139,17 @@ class ProveedorController extends Controller
     public function destroy($id)
     {
         $proveedor = Proveedor::find($id);
-        if (!$proveedor) {
-            throw new ResourceNotFoundException("Proveedor no encontrado.");
+        if (! $proveedor) {
+            throw new ResourceNotFoundException('Proveedor no encontrado.');
         }
         $proveedor->update([['estatus' => 'baja']]);
+
         return $this->success(null, 204);
     }
 
     /**
      * Obtiene los proveedores con sus categorías raíz, subcategorías y conteo de productos.
      *
-     * @param  Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function proveedoresConCategoriasConSubcatCountProductos(Request $request)
@@ -168,17 +160,17 @@ class ProveedorController extends Controller
                     ->with([
                         'children' => function ($subquery) {
                             $subquery->withCount('productos');
-                        }
+                        },
                     ])
                     ->withCount('productos');
-            }
+            },
         ])
             ->withCount('productos') // total de productos por proveedor
             ->get();
 
         return $this->success(
             AdminProveedorAcordeonResource::collection($proveedores),
-            "Listado de proveedores con sus categorías, subcategorías y contador de productos."
+            'Listado de proveedores con sus categorías, subcategorías y contador de productos.'
         );
     }
 
@@ -194,7 +186,7 @@ class ProveedorController extends Controller
         // Verificar acceso
         if ($user->proveedorPrincipal()?->id !== $proveedor->id) {
             return response()->json([
-                'message' => 'No tienes permisos para subir este documento.'
+                'message' => 'No tienes permisos para subir este documento.',
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -206,14 +198,14 @@ class ProveedorController extends Controller
         }
 
         // Guardar nueva constancia en private
-        $filename = 'constancia_' . $proveedor->id . '_' . time() . '.pdf';
-        $path = $file->storeAs("constancias", $filename, 'private');
+        $filename = 'constancia_'.$proveedor->id.'_'.time().'.pdf';
+        $path = $file->storeAs('constancias', $filename, 'private');
 
         $proveedor->update(['constancia_fiscal' => $path]);
 
         return $this->success([
             'proveedor' => new ProveedorResource($proveedor->fresh()),
-            'message'   => 'Constancia fiscal actualizada con éxito.'
+            'message' => 'Constancia fiscal actualizada con éxito.',
         ], 200);
     }
 
@@ -227,13 +219,13 @@ class ProveedorController extends Controller
         // Validar acceso
         if ($user->proveedorPrincipal()?->id !== $proveedor->id) {
             return response()->json([
-                'message' => 'No tienes permisos para acceder a este documento.'
+                'message' => 'No tienes permisos para acceder a este documento.',
             ], Response::HTTP_FORBIDDEN);
         }
 
-        if (!$proveedor->constancia_fiscal || !Storage::disk('private')->exists($proveedor->constancia_fiscal)) {
+        if (! $proveedor->constancia_fiscal || ! Storage::disk('private')->exists($proveedor->constancia_fiscal)) {
             return response()->json([
-                'message' => 'La constancia fiscal no está disponible.'
+                'message' => 'La constancia fiscal no está disponible.',
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -241,22 +233,20 @@ class ProveedorController extends Controller
 
         // Mostrar inline en navegador (preview)
         return response()->file($path, [
-            'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="constancia_fiscal.pdf"'
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="constancia_fiscal.pdf"',
         ]);
     }
 
     /**
      * Valida si el proveedor puede generar una Solicitud de Pago (SP).
      *
-     * @param  Request  $request
-     * @param  Proveedor  $proveedor
      * @return \Illuminate\Http\JsonResponse
      */
     public function puedeGenerarSP(Request $request, Proveedor $proveedor)
     {
         // Verificar primero si es proveedor de SP
-        if (!$proveedor->is_proveedor_sp) {
+        if (! $proveedor->is_proveedor_sp) {
             $responseData = [
                 'puede_generar_sp' => false,
                 'detalle' => [
@@ -265,9 +255,10 @@ class ProveedorController extends Controller
                     'tiene_constancia_fiscal' => false,
                     'tiene_logo' => false,
                     'tiene_informacion_general_y_datos_fiscales' => false,
-                    'datos_faltantes' => ['El proveedor no está habilitado para generar Solicitudes de Pago']
-                ]
+                    'datos_faltantes' => ['El proveedor no está habilitado para generar Solicitudes de Pago'],
+                ],
             ];
+
             return $this->success(new ProveedorValidacionPerfilCompletoResource($responseData));
         }
 
@@ -277,11 +268,11 @@ class ProveedorController extends Controller
             // $proveedor->load(['cuentasBancarias']);
             // $proveedor->cuentasBancarias;
             $tieneCuentaBancaria = $proveedor->cuentasBancarias->where('estatus', EstadoCuentaBancaria::ACTIVA)->count() > 0;
-            
+
             // Validaciones mínimas para confirmar que sigue siendo válido
-            $tieneLogo = !empty($proveedor->logo);
-            $tieneConstanciaFiscal = !empty($proveedor->constancia_fiscal);
-            
+            $tieneLogo = ! empty($proveedor->logo);
+            $tieneConstanciaFiscal = ! empty($proveedor->constancia_fiscal);
+
             // Si las validaciones básicas pasan, no necesitamos hacer validaciones detalladas
             if ($tieneCuentaBancaria && $tieneLogo && $tieneConstanciaFiscal) {
                 $responseData = [
@@ -292,9 +283,10 @@ class ProveedorController extends Controller
                         'tiene_constancia_fiscal' => true,
                         'tiene_logo' => true,
                         'tiene_informacion_general_y_datos_fiscales' => true,
-                        'datos_faltantes' => []
-                    ]
+                        'datos_faltantes' => [],
+                    ],
                 ];
+
                 return $this->success(new ProveedorValidacionPerfilCompletoResource($responseData));
             }
         }
@@ -312,41 +304,41 @@ class ProveedorController extends Controller
         // $tieneDatosContacto = $this->validarDatosContacto($proveedor);
 
         // Validar logo
-        $tieneLogo = !empty($proveedor->logo);
+        $tieneLogo = ! empty($proveedor->logo);
 
         // Validar cuenta bancaria
         $tieneCuentaBancaria = $proveedor->cuentasBancarias->where('estatus', EstadoCuentaBancaria::ACTIVA)->count() > 0;
 
         // Validar constancia fiscal
-        $tieneConstanciaFiscal = !empty($proveedor->constancia_fiscal);
+        $tieneConstanciaFiscal = ! empty($proveedor->constancia_fiscal);
 
         // Calcular si el perfil está completo
-        $perfilEmpresaCompleto = $tieneInformacionGeneralYDatosFiscales && 
-                                // $tieneDatosContacto && 
-                                $tieneLogo && 
-                                $tieneCuentaBancaria && 
+        $perfilEmpresaCompleto = $tieneInformacionGeneralYDatosFiscales &&
+                                // $tieneDatosContacto &&
+                                $tieneLogo &&
+                                $tieneCuentaBancaria &&
                                 $tieneConstanciaFiscal;
 
         // Calcular datos faltantes
         $datosFaltantes = [];
-        if (!$tieneInformacionGeneralYDatosFiscales) {
-            if (!$tieneInformacionGeneral) {
+        if (! $tieneInformacionGeneralYDatosFiscales) {
+            if (! $tieneInformacionGeneral) {
                 $datosFaltantes[] = 'Información general de la empresa';
             }
-            if (!$tieneDatosFiscales) {
+            if (! $tieneDatosFiscales) {
                 $datosFaltantes[] = 'Datos fiscales';
             }
         }
         // if (!$tieneDatosContacto) {
         //     $datosFaltantes[] = 'Datos de contacto';
         // }
-        if (!$tieneLogo) {
+        if (! $tieneLogo) {
             $datosFaltantes[] = 'Logo de la empresa';
         }
-        if (!$tieneCuentaBancaria) {
+        if (! $tieneCuentaBancaria) {
             $datosFaltantes[] = 'Al menos una cuenta bancaria activa';
         }
-        if (!$tieneConstanciaFiscal) {
+        if (! $tieneConstanciaFiscal) {
             $datosFaltantes[] = 'Constancia de situación fiscal';
         }
 
@@ -366,8 +358,8 @@ class ProveedorController extends Controller
                 'tiene_constancia_fiscal' => $tieneConstanciaFiscal,
                 'tiene_logo' => $tieneLogo,
                 'tiene_informacion_general_y_datos_fiscales' => $tieneInformacionGeneralYDatosFiscales,
-                'datos_faltantes' => $datosFaltantes
-            ]
+                'datos_faltantes' => $datosFaltantes,
+            ],
         ];
 
         return $this->success(new ProveedorValidacionPerfilCompletoResource($responseData));
@@ -417,7 +409,7 @@ class ProveedorController extends Controller
             'colonia',
             'ciudad',
             'codigo_postal',
-            'pais'
+            'pais',
         ];
 
         foreach ($camposFiscales as $campo) {
@@ -436,9 +428,9 @@ class ProveedorController extends Controller
     {
         $camposContacto = [
             'contacto_nombre',
-            'contacto_cargo', 
+            'contacto_cargo',
             'contacto_telefono',
-            'contacto_correo'
+            'contacto_correo',
         ];
 
         foreach ($camposContacto as $campo) {

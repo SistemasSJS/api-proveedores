@@ -2,13 +2,14 @@
 
 namespace App\Jobs;
 
+use App\Models\Categoria;
 use App\Models\ImportAudit;
 use App\Models\Marca;
-use App\Models\Categoria;
-use App\Models\UnidadMedida;
 use App\Models\Producto;
-use App\Services\CSVImport\CSVProcessorService;
+use App\Models\UnidadMedida;
 use App\Services\CSVImport\CSVImportProductValidator;
+use App\Services\CSVImport\CSVProcessorService;
+use Exception;
 use Illuminate\Bus\Queueable as BusQueueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -16,20 +17,20 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
-use Exception;
-use Ramsey\Uuid\Type\Integer;
 
 class CSVImportJob implements ShouldQueue
 {
     use BusQueueable, Dispatchable, InteractsWithQueue, SerializesModels;
 
     protected ImportAudit $importAudit;
+
     protected array $options;
 
     // Job configuration
     public int $timeout = 1800; // 30 minutes
+
     public int $tries = 3;
+
     public array $backoff = [60, 180, 300]; // Exponential backoff
 
     // Processing state
@@ -47,6 +48,7 @@ class CSVImportJob implements ShouldQueue
     ];
 
     protected array $errorDetails = [];
+
     protected array $catalogMappings = [
         'marcas' => [],
         'categorias' => [],
@@ -80,7 +82,7 @@ class CSVImportJob implements ShouldQueue
         Log::info('Starting CSV import job', [
             'audit_id' => $this->importAudit->id,
             'proveedor_id' => $this->importAudit->proveedor_id,
-            'options' => $this->options
+            'options' => $this->options,
         ]);
 
         try {
@@ -89,7 +91,7 @@ class CSVImportJob implements ShouldQueue
 
             // Get preview token and validate
             $previewToken = $this->importAudit->preview_data['preview_token'] ?? null;
-            if (!$previewToken) {
+            if (! $previewToken) {
                 throw new Exception('Preview token not found in audit data');
             }
 
@@ -98,7 +100,7 @@ class CSVImportJob implements ShouldQueue
                 ->where('expires_at', '>', now())
                 ->first();
 
-            if (!$cached || !isset($cached->validation_data['temp_table'])) {
+            if (! $cached || ! isset($cached->validation_data['temp_table'])) {
                 throw new Exception('Datos de preview expirados o no encontrados');
             }
 
@@ -112,7 +114,7 @@ class CSVImportJob implements ShouldQueue
             $this->logProcessingStep('Iniciando procesamiento desde tabla temporal', [
                 'total_registros' => $totalRegistros,
                 'tabla' => $tableName,
-                'preview_token' => $previewToken
+                'preview_token' => $previewToken,
             ]);
 
             // Procesar catálogos primero (usando datos ya extraídos en preview)
@@ -153,7 +155,7 @@ class CSVImportJob implements ShouldQueue
                     $this->logProcessingStep('Progreso de importación', [
                         'procesados' => $processedCount,
                         'total' => $totalRegistros,
-                        'porcentaje' => round(($processedCount / $totalRegistros) * 100, 2) . '%'
+                        'porcentaje' => round(($processedCount / $totalRegistros) * 100, 2).'%',
                     ]);
                 }
             }
@@ -163,8 +165,8 @@ class CSVImportJob implements ShouldQueue
 
             $this->logProcessingStep('Importación completada exitosamente', [
                 'estadisticas' => $this->processingStats,
-                'tiempo_total' => round(microtime(true) - $this->startTime, 2) . ' segundos',
-                'registros_procesados' => $processedCount
+                'tiempo_total' => round(microtime(true) - $this->startTime, 2).' segundos',
+                'registros_procesados' => $processedCount,
             ]);
         } catch (Exception $e) {
             $this->handleJobFailure($e);
@@ -185,7 +187,7 @@ class CSVImportJob implements ShouldQueue
         ]);
 
         $this->logProcessingStep('Iniciando proceso de importación', [
-            'opciones' => $this->options
+            'opciones' => $this->options,
         ]);
     }
 
@@ -212,7 +214,7 @@ class CSVImportJob implements ShouldQueue
         $this->logProcessingStep('Catálogos procesados', [
             'marcas' => count($this->catalogMappings['marcas']),
             'categorias' => count($this->catalogMappings['categorias']),
-            'unidades' => count($this->catalogMappings['unidades'])
+            'unidades' => count($this->catalogMappings['unidades']),
         ]);
     }
 
@@ -224,30 +226,30 @@ class CSVImportJob implements ShouldQueue
         $catalogs = [
             'marcas' => [],
             'unidades' => [],
-            'categorias' => []
+            'categorias' => [],
         ];
 
         foreach ($csvData as $row) {
             // Extract brands
-            if (!empty($row['marca']) && !in_array($row['marca'], $catalogs['marcas'])) {
+            if (! empty($row['marca']) && ! in_array($row['marca'], $catalogs['marcas'])) {
                 $catalogs['marcas'][] = trim($row['marca']);
             }
 
             // Extract units
-            if (!empty($row['unidad_medida']) && !in_array($row['unidad_medida'], $catalogs['unidades'])) {
+            if (! empty($row['unidad_medida']) && ! in_array($row['unidad_medida'], $catalogs['unidades'])) {
                 $catalogs['unidades'][] = trim($row['unidad_medida']);
             }
 
             // Extract categories with hierarchy
-            if (!empty($row['categoria'])) {
+            if (! empty($row['categoria'])) {
                 $categoria = trim($row['categoria']);
-                $subcategoria = !empty($row['subcategoria']) ? trim($row['subcategoria']) : null;
+                $subcategoria = ! empty($row['subcategoria']) ? trim($row['subcategoria']) : null;
 
-                if (!isset($catalogs['categorias'][$categoria])) {
+                if (! isset($catalogs['categorias'][$categoria])) {
                     $catalogs['categorias'][$categoria] = [];
                 }
 
-                if ($subcategoria && !in_array($subcategoria, $catalogs['categorias'][$categoria])) {
+                if ($subcategoria && ! in_array($subcategoria, $catalogs['categorias'][$categoria])) {
                     $catalogs['categorias'][$categoria][] = $subcategoria;
                 }
             }
@@ -268,12 +270,12 @@ class CSVImportJob implements ShouldQueue
                 $marca = Marca::firstOrCreate(
                     [
                         'nombre' => $brandName,
-                        'proveedor_id' => $this->importAudit->proveedor_id
+                        'proveedor_id' => $this->importAudit->proveedor_id,
                     ],
                     [
                         'activo' => true,
                         'created_at' => now(),
-                        'updated_at' => now()
+                        'updated_at' => now(),
                     ]
                 );
 
@@ -287,7 +289,7 @@ class CSVImportJob implements ShouldQueue
             } catch (Exception $e) {
                 Log::warning('Error procesando marca', [
                     'marca' => $brandName,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
@@ -308,12 +310,12 @@ class CSVImportJob implements ShouldQueue
                         'nombre' => $categoriaName,
                         'proveedor_id' => $this->importAudit->proveedor_id,
                         'nivel' => 1,
-                        'parent_id' => null
+                        'parent_id' => null,
                     ],
                     [
                         'activo' => true,
                         'created_at' => now(),
-                        'updated_at' => now()
+                        'updated_at' => now(),
                     ]
                 );
 
@@ -332,12 +334,12 @@ class CSVImportJob implements ShouldQueue
                             'nombre' => $subcategoriaName,
                             'parent_id' => $categoria->id,
                             'proveedor_id' => $this->importAudit->proveedor_id,
-                            'nivel' => 2
+                            'nivel' => 2,
                         ],
                         [
                             'activo' => true,
                             'created_at' => now(),
-                            'updated_at' => now()
+                            'updated_at' => now(),
                         ]
                     );
 
@@ -352,7 +354,7 @@ class CSVImportJob implements ShouldQueue
             } catch (Exception $e) {
                 Log::warning('Error procesando categoría', [
                     'categoria' => $categoriaName,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
@@ -370,12 +372,12 @@ class CSVImportJob implements ShouldQueue
                 $unidad = UnidadMedida::firstOrCreate(
                     [
                         'nombre' => $unitName,
-                        'proveedor_id' => $this->importAudit->proveedor_id
+                        'proveedor_id' => $this->importAudit->proveedor_id,
                     ],
                     [
                         'estatus' => 'activo',
                         'created_at' => now(),
-                        'updated_at' => now()
+                        'updated_at' => now(),
                     ]
                 );
 
@@ -389,7 +391,7 @@ class CSVImportJob implements ShouldQueue
             } catch (Exception $e) {
                 Log::warning('Error procesando unidad', [
                     'unidad' => $unitName,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
@@ -420,21 +422,22 @@ class CSVImportJob implements ShouldQueue
                 $this->updateProgress(min(95, $progressPercentage), $processedCount);
 
                 $this->logProcessingStep(
-                    "Chunk procesado " . ($chunkIndex + 1) . "/{$totalChunks}",
+                    'Chunk procesado '.($chunkIndex + 1)."/{$totalChunks}",
                     [
                         'productos_procesados' => $processedCount,
-                        'total_productos'      => $totalProducts,
+                        'total_productos' => $totalProducts,
                     ]
                 );
             } catch (Exception $e) {
                 Log::error('Error procesando chunk de productos', [
                     'chunk_index' => $chunkIndex,
                     'chunk_size' => count($chunk),
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
 
                 // Continue with next chunk
                 $this->processingStats['productos_error'] += count($chunk);
+
                 continue;
             }
         }
@@ -452,8 +455,9 @@ class CSVImportJob implements ShouldQueue
                 // Validate product data
                 $validationResult = $validator->validateRow($productData, $rowNumber);
 
-                if (!empty($validationResult['errors'])) {
+                if (! empty($validationResult['errors'])) {
                     $this->recordProductError($rowNumber, $productData, $validationResult['errors']);
+
                     continue;
                 }
 
@@ -464,7 +468,7 @@ class CSVImportJob implements ShouldQueue
                 Log::warning('Error procesando producto individual', [
                     'row' => $rowNumber,
                     'codigo' => $productData['codigo'] ?? 'N/A',
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
@@ -480,9 +484,9 @@ class CSVImportJob implements ShouldQueue
         $categoriaId = null;
         $subcategoriaId = null;
 
-        if (!empty($productData['categoria'])) {
+        if (! empty($productData['categoria'])) {
             $categoriaId = $this->catalogMappings['categorias'][$productData['categoria']] ?? null;
-            if (!empty($productData['subcategoria'])) {
+            if (! empty($productData['subcategoria'])) {
                 $subcategoriaId = $this->catalogMappings['categorias'][$productData['subcategoria']] ?? null;
             }
         }
@@ -506,7 +510,7 @@ class CSVImportJob implements ShouldQueue
             'precio_mayoreo' => $this->parsePrice($productData['precio_mayoreo'] ?? 0),
             'precio_menudeo' => $this->parsePrice($productData['precio_menudeo'] ?? 0),
             'activo' => true,
-            'updated_at' => now()
+            'updated_at' => now(),
         ];
 
         // Create or update product
@@ -524,11 +528,11 @@ class CSVImportJob implements ShouldQueue
         } else {
             // Only create if doesn't exist
             $existing = Producto::where($productAttributes)->first();
-            if (!$existing) {
+            if (! $existing) {
                 Producto::create(array_merge($productAttributes, $productValues, ['created_at' => now()]));
                 $this->processingStats['productos_nuevos']++;
             } else {
-                if (!$this->options['skip_duplicates']) {
+                if (! $this->options['skip_duplicates']) {
                     $this->recordProductError($rowNumber, $productData, ['Producto ya existe y update_existing está desactivado']);
                 }
             }
@@ -546,6 +550,7 @@ class CSVImportJob implements ShouldQueue
 
         // Clean price string and convert
         $cleanPrice = preg_replace('/[^0-9.]/', '', (string) $price);
+
         return $cleanPrice ? (float) $cleanPrice : 0.0;
     }
 
@@ -562,7 +567,7 @@ class CSVImportJob implements ShouldQueue
             'nombre' => $productData['producto'] ?? 'N/A',
             'errores' => $errors,
             'tipo_error' => 'validacion',
-            'timestamp' => now()->toISOString()
+            'timestamp' => now()->toISOString(),
         ];
     }
 
@@ -611,7 +616,7 @@ class CSVImportJob implements ShouldQueue
         } catch (Exception $e) {
             Log::warning('Error limpiando datos temporales', [
                 'preview_token' => $previewToken,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -635,7 +640,7 @@ class CSVImportJob implements ShouldQueue
      */
     protected function updateProgress(float $percentage, int $count_registros_procesados): void
     {
-        $this->importAudit->progreso =  min(100, max(0, $percentage));
+        $this->importAudit->progreso = min(100, max(0, $percentage));
         $this->importAudit->numero_registros_procesados = $count_registros_procesados;
         $this->importAudit->update([
             'progreso' => min(100, max(0, $percentage)),
@@ -662,7 +667,7 @@ class CSVImportJob implements ShouldQueue
             'audit_id' => $this->importAudit->id,
             'error' => $e->getMessage(),
             'trace' => $e->getTraceAsString(),
-            'processing_stats' => $this->processingStats
+            'processing_stats' => $this->processingStats,
         ]);
 
         $this->updateAuditState('error', $this->importAudit->progreso);
@@ -670,9 +675,9 @@ class CSVImportJob implements ShouldQueue
         $this->importAudit->update([
             'fin_proceso' => now(),
             'errores_detalle' => array_merge($this->errorDetails, [[
-                'error' => 'Job failure: ' . $e->getMessage(),
+                'error' => 'Job failure: '.$e->getMessage(),
                 'tipo_error' => 'sistema',
-                'timestamp' => now()->toISOString()
+                'timestamp' => now()->toISOString(),
             ]]),
             'processing_time' => round(microtime(true) - $this->startTime, 2),
             'memory_usage' => round(memory_get_peak_usage(true) / 1024 / 1024, 2),
@@ -680,7 +685,7 @@ class CSVImportJob implements ShouldQueue
 
         $this->logProcessingStep('Error crítico en importación', [
             'error' => $e->getMessage(),
-            'estadisticas_parciales' => $this->processingStats
+            'estadisticas_parciales' => $this->processingStats,
         ], 'error');
     }
 
@@ -688,25 +693,24 @@ class CSVImportJob implements ShouldQueue
      * Procesa catálogos desde datos ya extraídos en el preview
      * Más eficiente en memoria ya que no necesita volver a procesar todo el CSV
      *
-     * @param array $catalogosData Datos de catálogos extraídos en preview
-     * @return void
+     * @param  array  $catalogosData  Datos de catálogos extraídos en preview
      */
     protected function processCatalogsFromExtracted(array $catalogosData): void
     {
         $this->logProcessingStep('Iniciando procesamiento de catálogos desde datos extraídos');
 
         // Procesar marcas
-        if (isset($catalogosData['marcas']) && !empty($catalogosData['marcas'])) {
+        if (isset($catalogosData['marcas']) && ! empty($catalogosData['marcas'])) {
             $this->processBrands($catalogosData['marcas']);
         }
 
         // Procesar categorías con jerarquía
-        if (isset($catalogosData['categorias']) && !empty($catalogosData['categorias'])) {
+        if (isset($catalogosData['categorias']) && ! empty($catalogosData['categorias'])) {
             $this->processCategories($catalogosData['categorias']);
         }
 
         // Procesar unidades
-        if (isset($catalogosData['unidades']) && !empty($catalogosData['unidades'])) {
+        if (isset($catalogosData['unidades']) && ! empty($catalogosData['unidades'])) {
             $this->processUnits($catalogosData['unidades']);
         }
 
@@ -720,8 +724,8 @@ class CSVImportJob implements ShouldQueue
                 'categorias_nuevas' => $this->processingStats['categorias_nuevas'],
                 'categorias_existentes' => $this->processingStats['categorias_existentes'],
                 'unidades_nuevas' => $this->processingStats['unidades_nuevas'],
-                'unidades_existentes' => $this->processingStats['unidades_existentes']
-            ]
+                'unidades_existentes' => $this->processingStats['unidades_existentes'],
+            ],
         ]);
 
         // Liberar memoria después de procesar catálogos

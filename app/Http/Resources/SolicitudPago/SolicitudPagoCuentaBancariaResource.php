@@ -17,7 +17,7 @@ class SolicitudPagoCuentaBancariaResource extends JsonResource
         return [
             'id' => $this->id,
             'cuenta_bancaria_id' => $this->cuenta_bancaria_id,
-            
+
             // Datos de la cuenta bancaria en la solicitud
             'alias' => $this->alias,
             'banco_clave' => $this->banco_clave,
@@ -30,7 +30,7 @@ class SolicitudPagoCuentaBancariaResource extends JsonResource
             'sucursal' => $this->sucursal,
             'swift' => $this->swift,
             'preferida' => (bool) $this->preferida,
-            
+
             // Relación con la cuenta bancaria original (opcional)
             'cuenta_bancaria_original' => $this->whenLoaded('cuentaBancaria', function () {
                 return [
@@ -41,7 +41,7 @@ class SolicitudPagoCuentaBancariaResource extends JsonResource
                     'referencia' => $this->cuentaBancaria->referencia,
                 ];
             }),
-            
+
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];

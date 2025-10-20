@@ -4,12 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\EmpresaConstrucc;
 use App\Models\Proveedor;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ProveedorEmpresaConstruccController extends Controller
 {
-
     /**
      * Obtener todas las empresas asociadas a un proveedor (sin paginación)
      */
@@ -21,7 +20,6 @@ class ProveedorEmpresaConstruccController extends Controller
 
         return $this->success($empresas, 'Listado completo de empresas asociadas al proveedor.');
     }
-
 
     /**
      * Buscar empresas de construcción asociadas a un proveedor
@@ -103,7 +101,7 @@ class ProveedorEmpresaConstruccController extends Controller
      */
     public function show(Proveedor $proveedor, EmpresaConstrucc $empresaConstrucc): JsonResponse
     {
-        if (!$proveedor->empresasConstrucc('empresa_construcc_id', $empresaConstrucc->id)->exists()) {
+        if (! $proveedor->empresasConstrucc('empresa_construcc_id', $empresaConstrucc->id)->exists()) {
             return $this->error('La empresa no pertenece a este proveedor', 403);
         }
 
@@ -115,13 +113,13 @@ class ProveedorEmpresaConstruccController extends Controller
      */
     public function update(Request $request, Proveedor $proveedor, EmpresaConstrucc $empresaConstrucc): JsonResponse
     {
-        if (!$proveedor->empresasConstrucc('empresa_construcc_id', $empresaConstrucc->id)->exists()) {
+        if (! $proveedor->empresasConstrucc('empresa_construcc_id', $empresaConstrucc->id)->exists()) {
             return $this->error('La empresa no pertenece a este proveedor', 403);
         }
 
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'rfc' => 'required|string|max:13|unique:empresa_construcc,rfc,' . $empresaConstrucc->id,
+            'rfc' => 'required|string|max:13|unique:empresa_construcc,rfc,'.$empresaConstrucc->id,
             'razon_social' => 'nullable|string|max:255',
             'direccion' => 'nullable|string',
             'ciudad' => 'nullable|string|max:100',
@@ -143,7 +141,7 @@ class ProveedorEmpresaConstruccController extends Controller
      */
     public function destroy(Proveedor $proveedor, EmpresaConstrucc $empresaConstrucc): JsonResponse
     {
-        if (!$proveedor->empresasConstrucc('empresa_construcc_id', $empresaConstrucc->id)->exists()) {
+        if (! $proveedor->empresasConstrucc('empresa_construcc_id', $empresaConstrucc->id)->exists()) {
             return $this->error('La empresa no pertenece a este proveedor', 403);
         }
 

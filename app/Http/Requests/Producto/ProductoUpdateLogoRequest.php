@@ -10,13 +10,12 @@ use Illuminate\Foundation\Http\FormRequest;
  *     required={
  *         "logo"
  *     },
+ *
  *     @OA\Property(property="logo", type="string", format="binary", example="logo.png"),
  * )
  */
 class ProductoUpdateLogoRequest extends FormRequest
-
 {
-
     public function authorize(): bool
     {
         return true;

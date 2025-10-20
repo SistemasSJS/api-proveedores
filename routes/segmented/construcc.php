@@ -4,6 +4,7 @@ use App\Enums\UserRoleEnumerate;
 use App\Http\Controllers\ConstruccController;
 use App\Http\Controllers\ConstruccCotizacionController;
 use App\Http\Controllers\ConstruccSolicitudPagoController;
+use App\Http\Controllers\ConstruccOrdenCompraController;
 use App\Http\Middleware\CheckApiKey;
 use Illuminate\Support\Facades\Route;
 
@@ -194,6 +195,34 @@ Route::prefix('construcc')
             Route::post('{solicitudPago}/autorizar', [ConstruccSolicitudPagoController::class, 'autorizar'])->name('autorizar');
             Route::post('{solicitudPago}/rechazar', [ConstruccSolicitudPagoController::class, 'rechazar'])->name('rechazar');
             Route::post('{solicitudPago}/confirmar-pago', [ConstruccSolicitudPagoController::class, 'confirmarPago'])->name('confirmar-pago');
+        });
+
+        /**
+         *--------------------------------------------------------------------------
+         * ÓRDENES DE COMPRA - CRUD Completo
+         *--------------------------------------------------------------------------
+         * Gestión de órdenes de compra desde el segmento construccción
+         */
+        Route::prefix('ordenes-compra')->name('ordenes-compra.')->group(function () {
+
+            // Listado general y por filtros
+            Route::get('/', [ConstruccOrdenCompraController::class, 'index'])->middleware(['audit'])->name('index');
+            Route::get('/estadisticas', [ConstruccOrdenCompraController::class, 'estadisticas'])->middleware(['audit'])->name('estadisticas');
+
+            // Crear nueva orden de compra
+            Route::post('/', [ConstruccOrdenCompraController::class, 'store'])->middleware(['audit'])->name('store');
+
+            // Operaciones sobre una orden específica
+            Route::get('/{ordenCompra}', [ConstruccOrdenCompraController::class, 'show'])->middleware(['audit'])->name('show');
+            Route::put('/{ordenCompra}', [ConstruccOrdenCompraController::class, 'update'])->middleware(['audit'])->name('update');
+            Route::delete('/{ordenCompra}', [ConstruccOrdenCompraController::class, 'destroy'])->middleware(['audit'])->name('destroy');
+
+            // Cambio de estado
+            Route::post('/{ordenCompra}/cambiar-estado', [ConstruccOrdenCompraController::class, 'cambiarEstado'])->middleware(['audit'])->name('cambiar-estado');
+
+            // Consultas por entidad
+            Route::get('/proveedor/{proveedor}', [ConstruccOrdenCompraController::class, 'porProveedor'])->middleware(['audit'])->name('por-proveedor');
+            Route::get('/empresa/{empresa}', [ConstruccOrdenCompraController::class, 'porEmpresa'])->middleware(['audit'])->name('por-empresa');
         });
 
         /**

@@ -24,18 +24,19 @@ class OCAprobada implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         $ordenCompraId = (int) $value;
-        
+
         $query = OrdenCompra::where('id', $ordenCompraId);
-        
+
         // Si tenemos proveedor ID, validar que la OC pertenezca al proveedor
         if ($this->proveedorId) {
             $query->where('proveedor_id', $this->proveedorId);
         }
-        
+
         $ordenCompra = $query->first();
-        
-        if (!$ordenCompra) {
+
+        if (! $ordenCompra) {
             $fail('La orden de compra especificada no existe o no pertenece al proveedor.');
+
             return;
         }
 

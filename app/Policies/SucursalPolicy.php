@@ -5,7 +5,6 @@ namespace App\Policies;
 use App\Models\Sucursal;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Auth\Access\Response;
 
 class SucursalPolicy
 {
@@ -83,7 +82,7 @@ class SucursalPolicy
         }
 
         // GERENTE y SUPERVISOR pueden gestionar productos en sucursales
-        if (!in_array($user->role?->name, ['GERENTE', 'SUPERVISOR'])) {
+        if (! in_array($user->role?->name, ['GERENTE', 'SUPERVISOR'])) {
             return false;
         }
 

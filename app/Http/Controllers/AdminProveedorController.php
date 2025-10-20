@@ -2,21 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-
-use App\Models\User;
-use App\Models\Proveedor;
-use App\Http\Resources\ProveedorResource;
-use App\Http\Requests\Proveedor\ProveedorUpdateRequest;
-use App\Http\Requests\Proveedor\ProveedorUpdateLogoRequest;
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Http\Requests\Admin\AdminProveedorStoreRequest;
-use App\Http\Requests\Proveedor\ProveedorUpdateConstanciaFiscalRequest;
-use App\Http\Resources\UserResource;
+use App\Http\Requests\Proveedor\ProveedorUpdateRequest;
 use App\Http\Resources\Admin\AdminProveedorAcordeonResource;
-use Symfony\Component\HttpFoundation\Response;
-
+use App\Http\Resources\ProveedorResource;
+use App\Models\Proveedor;
+use Illuminate\Http\Request;
 
 class AdminProveedorController extends Controller
 {
@@ -40,11 +32,10 @@ class AdminProveedorController extends Controller
         return $this->paginated($originalPaginator->setCollection(collect($data)));
     }
 
-
     /**
      * Crea un nuevo proveedor.
      *
-     * @param  ProveedorStoreRequest $request
+     * @param  ProveedorStoreRequest  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function store(AdminProveedorStoreRequest $request)
@@ -77,6 +68,7 @@ class AdminProveedorController extends Controller
         $validated = $request->validated();
         $proveedor->update($validated);
         $proveedor = $proveedor->fresh(Proveedor::eagerLodable());
+
         return $this->success(new ProveedorResource($proveedor), 'Proveedor actualizado con éxito.', 200);
     }
 
@@ -86,10 +78,11 @@ class AdminProveedorController extends Controller
     public function destroy($id)
     {
         $proveedor = Proveedor::find($id);
-        if (!$proveedor) {
-            throw new ResourceNotFoundException("Proveedor no encontrado.");
+        if (! $proveedor) {
+            throw new ResourceNotFoundException('Proveedor no encontrado.');
         }
         $proveedor->update(['estatus' => 'baja']);
+
         return $this->success(null, 204);
     }
 
@@ -104,17 +97,17 @@ class AdminProveedorController extends Controller
                     ->with([
                         'children' => function ($subquery) {
                             $subquery->withCount('productos');
-                        }
+                        },
                     ])
                     ->withCount('productos');
-            }
+            },
         ])
             ->withCount('productos') // total de productos por proveedor
             ->get();
 
         return $this->success(
             AdminProveedorAcordeonResource::collection($proveedores),
-            "Listado de proveedores con sus categorías, subcategorías y contador de productos."
+            'Listado de proveedores con sus categorías, subcategorías y contador de productos.'
         );
     }
 }

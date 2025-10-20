@@ -36,7 +36,7 @@ class OrdenCompraRequest extends FormRequest
             'valor_total' => 'required|numeric|min:0',
             'observaciones' => 'nullable|string',
             'estado' => 'nullable|string|in:borrador,enviada,confirmada,entregada,cancelada',
-            
+
             // Detalles de la orden de compra
             'detalles' => 'required|array|min:1',
             'detalles.*.descripcion' => 'required|string|max:500',
@@ -53,7 +53,7 @@ class OrdenCompraRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('ordenes_compra', 'numero_oc')->ignore($ordenId)
+                Rule::unique('ordenes_compra', 'numero_oc')->ignore($ordenId),
             ];
         }
 
@@ -119,7 +119,7 @@ class OrdenCompraRequest extends FormRequest
             'valor_total.numeric' => 'El valor total debe ser un número.',
             'valor_total.min' => 'El valor total debe ser mayor o igual a 0.',
             'estado.in' => 'El estado debe ser: borrador, enviada, confirmada, entregada o cancelada.',
-            
+
             // Mensajes para detalles
             'detalles.required' => 'Los detalles de la orden son obligatorios.',
             'detalles.min' => 'Debe incluir al menos un detalle.',
@@ -146,35 +146,35 @@ class OrdenCompraRequest extends FormRequest
     {
         // Establecer valores por defecto
         $defaults = [];
-        
-        if (!$this->has('estado')) {
+
+        if (! $this->has('estado')) {
             $defaults['estado'] = 'borrador';
         }
-        
-        if (!$this->has('moneda')) {
+
+        if (! $this->has('moneda')) {
             $defaults['moneda'] = 'CLP';
         }
 
-        if (!empty($defaults)) {
+        if (! empty($defaults)) {
             $this->merge($defaults);
         }
 
         // Limpiar y formatear valores numéricos
         if ($this->has('valor_neto')) {
             $this->merge([
-                'valor_neto' => $this->formatNumericValue($this->valor_neto)
+                'valor_neto' => $this->formatNumericValue($this->valor_neto),
             ]);
         }
 
         if ($this->has('valor_iva')) {
             $this->merge([
-                'valor_iva' => $this->formatNumericValue($this->valor_iva)
+                'valor_iva' => $this->formatNumericValue($this->valor_iva),
             ]);
         }
 
         if ($this->has('valor_total')) {
             $this->merge([
-                'valor_total' => $this->formatNumericValue($this->valor_total)
+                'valor_total' => $this->formatNumericValue($this->valor_total),
             ]);
         }
 
@@ -184,23 +184,23 @@ class OrdenCompraRequest extends FormRequest
             foreach ($this->detalles as $detalle) {
                 if (is_array($detalle)) {
                     $detalleFormateado = $detalle;
-                    
+
                     if (isset($detalle['cantidad'])) {
                         $detalleFormateado['cantidad'] = $this->formatNumericValue($detalle['cantidad']);
                     }
-                    
+
                     if (isset($detalle['precio_unitario'])) {
                         $detalleFormateado['precio_unitario'] = $this->formatNumericValue($detalle['precio_unitario']);
                     }
-                    
+
                     if (isset($detalle['valor_total_detalle'])) {
                         $detalleFormateado['valor_total_detalle'] = $this->formatNumericValue($detalle['valor_total_detalle']);
                     }
-                    
+
                     $detallesFormateados[] = $detalleFormateado;
                 }
             }
-            
+
             $this->merge(['detalles' => $detallesFormateados]);
         }
     }
@@ -208,7 +208,7 @@ class OrdenCompraRequest extends FormRequest
     /**
      * Formatear valor numérico removiendo caracteres no numéricos excepto punto y coma
      *
-     * @param mixed $value
+     * @param  mixed  $value
      * @return float|null
      */
     private function formatNumericValue($value)
@@ -218,13 +218,13 @@ class OrdenCompraRequest extends FormRequest
         }
 
         // Remover espacios y caracteres especiales, mantener solo números, punto y coma
-        $cleaned = preg_replace('/[^\d,.-]/', '', (string)$value);
-        
+        $cleaned = preg_replace('/[^\d,.-]/', '', (string) $value);
+
         // Reemplazar coma por punto para decimal
         $cleaned = str_replace(',', '.', $cleaned);
-        
+
         // Convertir a float
-        return is_numeric($cleaned) ? (float)$cleaned : null;
+        return is_numeric($cleaned) ? (float) $cleaned : null;
     }
 
     /**
@@ -238,7 +238,7 @@ class OrdenCompraRequest extends FormRequest
         $validator->after(function ($validator) {
             // Validar que el valor total coincida con la suma de detalles más IVA
             $this->validateTotalValues($validator);
-            
+
             // Validar que cada detalle tenga coherencia en sus valores
             $this->validateDetallesConsistency($validator);
         });
@@ -249,12 +249,12 @@ class OrdenCompraRequest extends FormRequest
      */
     private function validateTotalValues($validator)
     {
-        if (!$this->has(['valor_neto', 'valor_total', 'detalles'])) {
+        if (! $this->has(['valor_neto', 'valor_total', 'detalles'])) {
             return;
         }
 
         $detalles = $this->detalles;
-        if (!is_array($detalles)) {
+        if (! is_array($detalles)) {
             return;
         }
 
@@ -262,13 +262,13 @@ class OrdenCompraRequest extends FormRequest
         $sumaDetalles = 0;
         foreach ($detalles as $detalle) {
             if (isset($detalle['valor_total_detalle']) && is_numeric($detalle['valor_total_detalle'])) {
-                $sumaDetalles += (float)$detalle['valor_total_detalle'];
+                $sumaDetalles += (float) $detalle['valor_total_detalle'];
             }
         }
 
-        $valorNeto = (float)$this->valor_neto;
-        $valorIva = (float)($this->valor_iva ?? 0);
-        $valorTotal = (float)$this->valor_total;
+        $valorNeto = (float) $this->valor_neto;
+        $valorIva = (float) ($this->valor_iva ?? 0);
+        $valorTotal = (float) $this->valor_total;
 
         // Validar que la suma de detalles coincida con el valor neto (tolerancia de 1 peso)
         if (abs($sumaDetalles - $valorNeto) > 1) {
@@ -287,27 +287,27 @@ class OrdenCompraRequest extends FormRequest
      */
     private function validateDetallesConsistency($validator)
     {
-        if (!$this->has('detalles') || !is_array($this->detalles)) {
+        if (! $this->has('detalles') || ! is_array($this->detalles)) {
             return;
         }
 
         foreach ($this->detalles as $index => $detalle) {
-            if (!is_array($detalle)) {
+            if (! is_array($detalle)) {
                 continue;
             }
 
             if (isset($detalle['cantidad'], $detalle['precio_unitario'], $detalle['valor_total_detalle'])) {
-                $cantidad = (float)$detalle['cantidad'];
-                $precioUnitario = (float)$detalle['precio_unitario'];
-                $valorTotalDetalle = (float)$detalle['valor_total_detalle'];
-                
+                $cantidad = (float) $detalle['cantidad'];
+                $precioUnitario = (float) $detalle['precio_unitario'];
+                $valorTotalDetalle = (float) $detalle['valor_total_detalle'];
+
                 $totalEsperado = $cantidad * $precioUnitario;
-                
+
                 // Validar con tolerancia de 1 centavo
                 if (abs($valorTotalDetalle - $totalEsperado) > 0.01) {
                     $validator->errors()->add(
                         "detalles.{$index}.valor_total_detalle",
-                        "El valor total del detalle debe ser cantidad × precio unitario."
+                        'El valor total del detalle debe ser cantidad × precio unitario.'
                     );
                 }
             }

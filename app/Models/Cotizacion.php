@@ -10,8 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Cotizacion extends BaseModel
 {
     /** @use HasFactory<\Database\Factories\CotizacionFactory> */
-
-    use HasFactory, Filterable;
+    use Filterable, HasFactory;
 
     protected $table = 'cotizaciones';
 
@@ -25,20 +24,20 @@ class Cotizacion extends BaseModel
     ];
 
     protected $casts = [
-        'fecha_cotizacion'   => 'datetime',
-        'fecha_vencimiento'  => 'date',
-        'total'              => 'decimal:2',
+        'fecha_cotizacion' => 'datetime',
+        'fecha_vencimiento' => 'date',
+        'total' => 'decimal:2',
     ];
 
     /** ----------------
      * Filtros disponibles
      * ----------------- */
     protected static $filters = [
-        'proveedor_id'      => 'ProveedorId',
-        'fecha_cotizacion'  => 'FechaCotizacion',
+        'proveedor_id' => 'ProveedorId',
+        'fecha_cotizacion' => 'FechaCotizacion',
         'fecha_vencimiento' => 'FechaVencimiento',
-        'total'             => 'Total',
-        'estatus'           => 'Estatus',
+        'total' => 'Total',
+        'estatus' => 'Estatus',
     ];
 
     /**

@@ -5,15 +5,15 @@ namespace App\Models;
 use App\Enums\EstadoCuentaBancaria;
 use App\Enums\EstadoSolicitud;
 use App\Traits\Filterable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Builder;
 
 class SolicitudPago extends BaseModel
 {
-    use HasFactory, Filterable;
+    use Filterable, HasFactory;
 
     protected $table = 'solicitudes_pago';
 
@@ -66,75 +66,75 @@ class SolicitudPago extends BaseModel
     ];
 
     protected static $filters = [
-        'numero_folio_solicitud'          => 'NumeroFolioSolicitud',
-        'descripcion_concepto'            => 'DescripcionConcepto',
-        'estado_solicitud'                => 'EstadoSolicitud',
-        'proveedor_id'                    => 'ProveedorId',
-        'empresa_construcc_id'            => 'EmpresaConstruccId',
-        'residente'                       => 'Residente',
-        'cotizacion_id'                   => 'CotizacionId',
+        'numero_folio_solicitud' => 'NumeroFolioSolicitud',
+        'descripcion_concepto' => 'DescripcionConcepto',
+        'estado_solicitud' => 'EstadoSolicitud',
+        'proveedor_id' => 'ProveedorId',
+        'empresa_construcc_id' => 'EmpresaConstruccId',
+        'residente' => 'Residente',
+        'cotizacion_id' => 'CotizacionId',
 
-        'fecha_registro_pendiente'        => 'FechaRegistroPendiente',
-        'fecha_registro_pendiente_desde'  => 'FechaRegistroPendienteDesde',
-        'fecha_registro_pendiente_hasta'  => 'FechaRegistroPendienteHasta',
-        'fecha_inicio_procesamiento'      => 'FechaInicioProcesamiento',
+        'fecha_registro_pendiente' => 'FechaRegistroPendiente',
+        'fecha_registro_pendiente_desde' => 'FechaRegistroPendienteDesde',
+        'fecha_registro_pendiente_hasta' => 'FechaRegistroPendienteHasta',
+        'fecha_inicio_procesamiento' => 'FechaInicioProcesamiento',
         'fecha_inicio_procesamiento_desde' => 'FechaInicioProcesamientoDesde',
         'fecha_inicio_procesamiento_hasta' => 'FechaInicioProcesamientoHasta',
-        'fecha_confirmacion_pago'         => 'FechaConfirmacionPago',
-        'fecha_confirmacion_pago_desde'   => 'FechaConfirmacionPagoDesde',
-        'fecha_confirmacion_pago_hasta'   => 'FechaConfirmacionPagoHasta',
-        'fecha_con_comprobante'           => 'FechaConComprobante',
-        'fecha_con_comprobante_desde'     => 'FechaConComprobanteDesde',
-        'fecha_con_comprobante_hasta'     => 'FechaConComprobanteHasta',
-        'fecha_aprobado'                  => 'FechaAprobado',
-        'fecha_aprobado_desde'            => 'FechaAprobadoDesde',
-        'fecha_aprobado_hasta'            => 'FechaAprobadoHasta',
-        'fecha_rechazo'                   => 'FechaRechazo',
-        'fecha_rechazo_desde'             => 'FechaRechazoDesde',
-        'fecha_rechazo_hasta'             => 'FechaRechazoHasta',
-        'fecha_pago'                      => 'FechaPago',
-        'fecha_pago_desde'                => 'FechaPagoDesde',
-        'fecha_pago_hasta'                => 'FechaPagoHasta',
+        'fecha_confirmacion_pago' => 'FechaConfirmacionPago',
+        'fecha_confirmacion_pago_desde' => 'FechaConfirmacionPagoDesde',
+        'fecha_confirmacion_pago_hasta' => 'FechaConfirmacionPagoHasta',
+        'fecha_con_comprobante' => 'FechaConComprobante',
+        'fecha_con_comprobante_desde' => 'FechaConComprobanteDesde',
+        'fecha_con_comprobante_hasta' => 'FechaConComprobanteHasta',
+        'fecha_aprobado' => 'FechaAprobado',
+        'fecha_aprobado_desde' => 'FechaAprobadoDesde',
+        'fecha_aprobado_hasta' => 'FechaAprobadoHasta',
+        'fecha_rechazo' => 'FechaRechazo',
+        'fecha_rechazo_desde' => 'FechaRechazoDesde',
+        'fecha_rechazo_hasta' => 'FechaRechazoHasta',
+        'fecha_pago' => 'FechaPago',
+        'fecha_pago_desde' => 'FechaPagoDesde',
+        'fecha_pago_hasta' => 'FechaPagoHasta',
 
         // Filtros para los nuevos campos
-        'dg'                              => 'Dg',
-        'dt'                              => 'Dt',
-        'pc'                              => 'Pc',
-        'si'                              => 'Si',
-        'da'                              => 'Da',
-        'ro'                              => 'Ro',
+        'dg' => 'Dg',
+        'dt' => 'Dt',
+        'pc' => 'Pc',
+        'si' => 'Si',
+        'da' => 'Da',
+        'ro' => 'Ro',
 
         // Filtros para campos OC
-        'referencia_oc'                   => 'ReferenciaOc',
-        'origen_oc'                       => 'OrigenOc',
+        'referencia_oc' => 'ReferenciaOc',
+        'origen_oc' => 'OrigenOc',
 
         //
     ];
 
     protected $casts = [
-        'fecha_registro_pendiente'   => 'datetime',
+        'fecha_registro_pendiente' => 'datetime',
         'fecha_inicio_procesamiento' => 'datetime',
-        'fecha_confirmacion_pago'    => 'datetime',
-        'fecha_con_comprobante'      => 'datetime',
-        'fecha_aprobado'             => 'datetime',
-        'fecha_rechazo'              => 'datetime',
-        'fecha_pago'                 => 'datetime',
-        'created_at'                 => 'datetime',
-        'updated_at'                 => 'datetime',
+        'fecha_confirmacion_pago' => 'datetime',
+        'fecha_con_comprobante' => 'datetime',
+        'fecha_aprobado' => 'datetime',
+        'fecha_rechazo' => 'datetime',
+        'fecha_pago' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
 
         // Nuevos campos como enum numérico
-        'dg'        => EstadoSolicitud::class,
-        'dg_fecha'  => 'datetime',
-        'dt'        => EstadoSolicitud::class,
-        'dt_fecha'  => 'datetime',
-        'pc'        => EstadoSolicitud::class,
-        'pc_fecha'  => 'datetime',
-        'si'        => EstadoSolicitud::class,
-        'si_fecha'  => 'datetime',
-        'da'        => EstadoSolicitud::class,
-        'da_fecha'  => 'datetime',
-        'ro'        => EstadoSolicitud::class,
-        'ro_fecha'  => 'datetime',
+        'dg' => EstadoSolicitud::class,
+        'dg_fecha' => 'datetime',
+        'dt' => EstadoSolicitud::class,
+        'dt_fecha' => 'datetime',
+        'pc' => EstadoSolicitud::class,
+        'pc_fecha' => 'datetime',
+        'si' => EstadoSolicitud::class,
+        'si_fecha' => 'datetime',
+        'da' => EstadoSolicitud::class,
+        'da_fecha' => 'datetime',
+        'ro' => EstadoSolicitud::class,
+        'ro_fecha' => 'datetime',
 
         // Campos de abono
         'monto_total' => 'decimal:2',
@@ -179,7 +179,6 @@ class SolicitudPago extends BaseModel
     {
         return $this->belongsTo(EmpresaConstrucc::class, 'empresa_construcc_id');
     }
-
 
     public function cotizacion(): BelongsTo
     {
@@ -240,7 +239,6 @@ class SolicitudPago extends BaseModel
     {
         return $query->where('origen_oc', (bool) $value);
     }
-
 
     /** ----------------
      * Filtros
@@ -400,7 +398,7 @@ class SolicitudPago extends BaseModel
         $this->update([
             'monto_abonado' => $nuevoMontoAbonado,
             'saldo_pendiente' => max(0, $nuevoSaldoPendiente),
-            'pago_completo' => $pagoCompleto
+            'pago_completo' => $pagoCompleto,
         ]);
 
         return $pagoCompleto;
@@ -412,7 +410,7 @@ class SolicitudPago extends BaseModel
             $this->update([
                 'saldo_pendiente' => $this->monto_total,
                 'monto_abonado' => 0,
-                'pago_completo' => false
+                'pago_completo' => false,
             ]);
         }
     }
@@ -436,7 +434,9 @@ class SolicitudPago extends BaseModel
         // Actualizar o crear cuentas bancarias
         foreach ($cuentasBancarias as $cuentaData) {
             $cuentaBancaria = CuentaBancaria::find($cuentaData['cuenta_bancaria_id']);
-            if (!$cuentaBancaria) continue;
+            if (! $cuentaBancaria) {
+                continue;
+            }
 
             // Preparar datos para la tabla pivote
             $pivotData = [
@@ -466,21 +466,20 @@ class SolicitudPago extends BaseModel
         }
     }
 
-
     /** ----------------
      * Utilidades s
      * ----------------- */
 
     /**
      * Generar siguiente número de folio para una nueva solicitud de pago para un proveedor
-     * nopmeclatura: 
+     * nopmeclatura:
      *  SP-
      *  proveedor abrevicado en tres letras mayusculas, sacadas paartir del nomnre comerical
-     *  seguido de un guion 
+     *  seguido de un guion
      *  6 digitos consecutivos, iniciando en 00001
      *  pasado los numoers posibles con 6 digitos, se aumenta a 7 digitos y asi sucesivamente
-     * 
-     * 
+     *
+     *
      * ej. SP-ABC-000001
      */
     public static function generarNumeroFolio(Proveedor $proveedor)
@@ -508,7 +507,7 @@ class SolicitudPago extends BaseModel
     {
         return $this->origen_oc ?? true;
     }
-    
+
     public function scopeWhereFromOrdenCompra(Builder $query): Builder
     {
         return $query->where('origen_oc', true);
@@ -522,7 +521,7 @@ class SolicitudPago extends BaseModel
     public function validarMontoContraOC(): bool
     {
         return true;
-        if (!$this->esDeOrdenCompra() || !$this->monto_oc_original) {
+        if (! $this->esDeOrdenCompra() || ! $this->monto_oc_original) {
             return true; // No aplica validación si no es de OC
         }
 

@@ -15,14 +15,14 @@ class TiendaProveedorResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'              => (string) $this->id,
-            'nombre'          => $this->nombre,
-            'logo'            => asset('storage/' . $this->logo),
-            'principal'       => (bool) $this->principal,
-            'activo'          => (bool) $this->activo,
-            'calificacion'    => (float) $this->calificacion,
-            'totalProductos'  => (int) $this->total_productos,
-            'tiempoEntrega'   => $this->tiempo_entrega,
+            'id' => (string) $this->id,
+            'nombre' => $this->nombre,
+            'logo' => asset('storage/'.$this->logo),
+            'principal' => (bool) $this->principal,
+            'activo' => (bool) $this->activo,
+            'calificacion' => (float) $this->calificacion,
+            'totalProductos' => (int) $this->total_productos,
+            'tiempoEntrega' => $this->tiempo_entrega,
         ];
     }
 }

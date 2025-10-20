@@ -4,15 +4,13 @@ namespace App\Models;
 
 use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Producto extends BaseModel
 {
-    use HasFactory, Filterable;
+    use Filterable, HasFactory;
 
     protected $fillable = [
         'sku',
@@ -36,16 +34,16 @@ class Producto extends BaseModel
     ];
 
     protected static $filters = [
-        'nombre'       => 'Nombre',
-        'descripcion'  => 'Descripcion',
-        'sku'          => 'Sku',
-        'codigo'       => 'Codigo',
+        'nombre' => 'Nombre',
+        'descripcion' => 'Descripcion',
+        'sku' => 'Sku',
+        'codigo' => 'Codigo',
         'categoria_id' => 'CategoriaId',
         'subcategoria_id' => 'SubCategoriaId',
         'proveedor_id' => 'ProveedorId',
-        'marca_id'     => 'MarcaId',
-        'activo'       => 'Activo',
-        'estatus'      => 'Estatus',
+        'marca_id' => 'MarcaId',
+        'activo' => 'Activo',
+        'estatus' => 'Estatus',
     ];
 
     protected $casts = [
@@ -73,30 +71,93 @@ class Producto extends BaseModel
     /** ----------------
      * Filtros
      * ----------------- */
-    public function filterByCategoriaId($query, $value) { return $query->whereIn('categoria_id', explode(',', $value)); }
-    public function filterBySubCategoriaId($query, $value) { return $query->whereIn('subcategoria_id', explode(',', $value)); }
-    public function filterByMarcaId($query, $value) { return $query->whereIn('marca_id', explode(',', $value)); }
-    public function filterByProveedorId($query, $value) { return $query->whereIn('proveedor_id', explode(',', $value)); }
+    public function filterByCategoriaId($query, $value)
+    {
+        return $query->whereIn('categoria_id', explode(',', $value));
+    }
 
-    public function filterByNombre($query, $value) { return $query->where('nombre', 'like', "%$value%"); }
-    public function filterByDescripcion($query, $value) { return $query->where('descripcion', 'like', "%$value%"); }
-    public function filterBySku($query, $value) { return $query->where('sku', 'like', "%$value%"); }
-    public function filterByCodigo($query, $value) { return $query->where('codigo_interno', 'like', "%$value%"); }
+    public function filterBySubCategoriaId($query, $value)
+    {
+        return $query->whereIn('subcategoria_id', explode(',', $value));
+    }
 
-    public function filterByActivo($query, $value) { return $query->where('activo', (bool)$value); }
-    public function filterByEstatus($query, $value) { return $query->where('estatus', $value); }
+    public function filterByMarcaId($query, $value)
+    {
+        return $query->whereIn('marca_id', explode(',', $value));
+    }
+
+    public function filterByProveedorId($query, $value)
+    {
+        return $query->whereIn('proveedor_id', explode(',', $value));
+    }
+
+    public function filterByNombre($query, $value)
+    {
+        return $query->where('nombre', 'like', "%$value%");
+    }
+
+    public function filterByDescripcion($query, $value)
+    {
+        return $query->where('descripcion', 'like', "%$value%");
+    }
+
+    public function filterBySku($query, $value)
+    {
+        return $query->where('sku', 'like', "%$value%");
+    }
+
+    public function filterByCodigo($query, $value)
+    {
+        return $query->where('codigo_interno', 'like', "%$value%");
+    }
+
+    public function filterByActivo($query, $value)
+    {
+        return $query->where('activo', (bool) $value);
+    }
+
+    public function filterByEstatus($query, $value)
+    {
+        return $query->where('estatus', $value);
+    }
 
     /** ----------------
      * Relaciones
      * ----------------- */
-    public function proveedor(): BelongsTo { return $this->belongsTo(Proveedor::class); }
-    public function unidad_medida(): BelongsTo { return $this->belongsTo(UnidadMedida::class); }
-    public function marca(): BelongsTo { return $this->belongsTo(Marca::class); }
-    public function categoria() { return $this->belongsTo(Categoria::class, 'categoria_id'); }
-    public function subcategoria() { return $this->belongsTo(Categoria::class, 'subcategoria_id'); }
+    public function proveedor(): BelongsTo
+    {
+        return $this->belongsTo(Proveedor::class);
+    }
 
-    public function especificaciones(): HasMany { return $this->hasMany(ProductoEspecificacion::class); }
-    public function imagenes(): HasMany { return $this->hasMany(ProductoImagen::class); }
+    public function unidad_medida(): BelongsTo
+    {
+        return $this->belongsTo(UnidadMedida::class);
+    }
+
+    public function marca(): BelongsTo
+    {
+        return $this->belongsTo(Marca::class);
+    }
+
+    public function categoria()
+    {
+        return $this->belongsTo(Categoria::class, 'categoria_id');
+    }
+
+    public function subcategoria()
+    {
+        return $this->belongsTo(Categoria::class, 'subcategoria_id');
+    }
+
+    public function especificaciones(): HasMany
+    {
+        return $this->hasMany(ProductoEspecificacion::class);
+    }
+
+    public function imagenes(): HasMany
+    {
+        return $this->hasMany(ProductoImagen::class);
+    }
 
     public function sucursales(): BelongsToMany
     {

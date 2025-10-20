@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Http\Middleware;
 
 use App\Exceptions\Api\Auth\UnauthorizedException;
@@ -11,8 +10,8 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * @decrepted
  *      RoleMiddleware validate all roles user permisions
- * 
- *  NOTE: 
+ *
+ *  NOTE:
  *      Not delete file, referes to middleware.
  */
 class AdminMiddleware
@@ -24,7 +23,7 @@ class AdminMiddleware
     {
         $user = $request->user();
 
-        if (!$user || !$user->isUserAdmin()) {
+        if (! $user || ! $user->isUserAdmin()) {
             throw new UnauthorizedException('El usuario no tiene el rol requerido.');
         }
 

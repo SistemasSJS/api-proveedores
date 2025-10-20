@@ -2,21 +2,17 @@
 
 namespace App\Services;
 
-use App\Models\Producto;
-use App\Models\Proveedor;
 use App\Models\Categoria;
 use App\Models\Marca;
-use App\Models\UnidadMedida;
-use Illuminate\Pagination\LengthAwarePaginator;
+use App\Models\Producto;
+use App\Models\Proveedor;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ConstruccSearchService
 {
     /**
      * Búsqueda avanzada de proveedores con filtros múltiples
-     *
-     * @param array $filtros
-     * @return LengthAwarePaginator
      */
     public function buscarProveedores(array $filtros): LengthAwarePaginator
     {
@@ -24,7 +20,7 @@ class ConstruccSearchService
             ->where('estatus', 'activo');
 
         // Búsqueda por texto en múltiples campos
-        if (!empty($filtros['buscar'])) {
+        if (! empty($filtros['buscar'])) {
             $buscar = $filtros['buscar'];
             $query->where(function ($q) use ($buscar) {
                 $q->where('nombre_comercial', 'like', "%{$buscar}%")
@@ -36,22 +32,22 @@ class ConstruccSearchService
         }
 
         // Filtro por estado/municipio
-        if (!empty($filtros['estado'])) {
+        if (! empty($filtros['estado'])) {
             $query->where('estado', 'like', "%{$filtros['estado']}%");
         }
 
-        if (!empty($filtros['municipio'])) {
+        if (! empty($filtros['municipio'])) {
             $query->where('municipio', 'like', "%{$filtros['municipio']}%");
         }
 
         // Filtro por tipo de empresa
-        if (!empty($filtros['tipos_empresa_id'])) {
+        if (! empty($filtros['tipos_empresa_id'])) {
             $tiposEmpresa = $this->parseMultipleIds($filtros['tipos_empresa_id']);
             $query->whereIn('tipos_empresa_id', $tiposEmpresa);
         }
 
         // Filtro por tener productos en categorías específicas
-        if (!empty($filtros['categoria_id'])) {
+        if (! empty($filtros['categoria_id'])) {
             $categorias = $this->parseMultipleIds($filtros['categoria_id']);
             $query->whereHas('productos', function ($q) use ($categorias) {
                 $q->whereIn('categoria_id', $categorias);
@@ -59,7 +55,7 @@ class ConstruccSearchService
         }
 
         // Filtro por tener productos de marcas específicas
-        if (!empty($filtros['marca_id'])) {
+        if (! empty($filtros['marca_id'])) {
             $marcas = $this->parseMultipleIds($filtros['marca_id']);
             $query->whereHas('productos', function ($q) use ($marcas) {
                 $q->whereIn('marca_id', $marcas);
@@ -67,7 +63,7 @@ class ConstruccSearchService
         }
 
         // Solo proveedores con productos activos
-        if (!empty($filtros['con_productos'])) {
+        if (! empty($filtros['con_productos'])) {
             $query->whereHas('productos', function ($q) {
                 $q->where('activo', true);
             });
@@ -83,9 +79,6 @@ class ConstruccSearchService
 
     /**
      * Búsqueda avanzada de productos con filtros múltiples mejorada
-     *
-     * @param array $filtros
-     * @return LengthAwarePaginator
      */
     public function buscarProductos(array $filtros): LengthAwarePaginator
     {
@@ -93,7 +86,7 @@ class ConstruccSearchService
             ->where('activo', true);
 
         // Búsqueda por texto
-        if (!empty($filtros['buscar'])) {
+        if (! empty($filtros['buscar'])) {
             $buscar = $filtros['buscar'];
             $query->where(function ($q) use ($buscar) {
                 $q->where('nombre', 'like', "%{$buscar}%")
@@ -107,21 +100,21 @@ class ConstruccSearchService
         $this->aplicarFiltrosMultiples($query, $filtros);
 
         // Rango de precios
-        if (!empty($filtros['precio_min'])) {
+        if (! empty($filtros['precio_min'])) {
             $query->where('precio_base', '>=', $filtros['precio_min']);
         }
 
-        if (!empty($filtros['precio_max'])) {
+        if (! empty($filtros['precio_max'])) {
             $query->where('precio_base', '<=', $filtros['precio_max']);
         }
 
         // Solo productos con stock
-        if (!empty($filtros['con_stock'])) {
+        if (! empty($filtros['con_stock'])) {
             $query->where('stock', '>', 0);
         }
 
         // Solo productos destacados
-        if (!empty($filtros['destacado'])) {
+        if (! empty($filtros['destacado'])) {
             $query->where('destacado', true);
         }
 
@@ -135,25 +128,17 @@ class ConstruccSearchService
 
     /**
      * Búsqueda de productos específica de un proveedor
-     *
-     * @param int $proveedorId
-     * @param array $filtros
-     * @return LengthAwarePaginator
      */
     public function buscarProductosProveedor(int $proveedorId, array $filtros): LengthAwarePaginator
     {
         // Agregar filtro de proveedor específico
         $filtros['proveedor_id'] = $proveedorId;
-        
+
         return $this->buscarProductos($filtros);
     }
 
     /**
      * Obtiene productos de un proveedor con paginación simple
-     *
-     * @param int $proveedorId
-     * @param array $filtros
-     * @return LengthAwarePaginator
      */
     public function obtenerProductosProveedor(int $proveedorId, array $filtros): LengthAwarePaginator
     {
@@ -174,19 +159,14 @@ class ConstruccSearchService
 
     /**
      * Obtiene sugerencias de productos para autocompletado
-     *
-     * @param string $termino
-     * @param int|null $proveedorId
-     * @param int $limite
-     * @return array
      */
     public function obtenerSugerenciasProductos(string $termino, ?int $proveedorId = null, int $limite = 10): array
     {
         $query = Producto::where('activo', true)
             ->where(function ($q) use ($termino) {
-                $q->where('nombre', 'like', $termino . '%')
-                    ->orWhere('sku', 'like', $termino . '%')
-                    ->orWhere('codigo_interno', 'like', $termino . '%');
+                $q->where('nombre', 'like', $termino.'%')
+                    ->orWhere('sku', 'like', $termino.'%')
+                    ->orWhere('codigo_interno', 'like', $termino.'%');
             });
 
         if ($proveedorId) {
@@ -209,8 +189,6 @@ class ConstruccSearchService
 
     /**
      * Obtiene estadísticas generales del módulo
-     *
-     * @return array
      */
     public function obtenerEstadisticas(): array
     {
@@ -238,15 +216,12 @@ class ConstruccSearchService
 
     /**
      * Obtiene resumen específico de un proveedor
-     *
-     * @param int $proveedorId
-     * @return array
      */
     public function obtenerResumenProveedor(int $proveedorId): array
     {
         $proveedor = Proveedor::find($proveedorId);
-        
-        if (!$proveedor) {
+
+        if (! $proveedor) {
             return [];
         }
 
@@ -277,38 +252,34 @@ class ConstruccSearchService
 
     /**
      * Aplica filtros múltiples a una consulta de productos
-     *
-     * @param Builder $query
-     * @param array $filtros
-     * @return void
      */
     private function aplicarFiltrosMultiples(Builder $query, array $filtros): void
     {
         // Filtro por proveedores múltiples
-        if (!empty($filtros['proveedor_id'])) {
+        if (! empty($filtros['proveedor_id'])) {
             $proveedores = $this->parseMultipleIds($filtros['proveedor_id']);
             $query->whereIn('proveedor_id', $proveedores);
         }
 
         // Filtro por categorías múltiples
-        if (!empty($filtros['categoria_id'])) {
+        if (! empty($filtros['categoria_id'])) {
             $categorias = $this->parseMultipleIds($filtros['categoria_id']);
             $query->whereIn('categoria_id', $categorias);
         }
 
         // Filtro por subcategorías múltiples
-        if (!empty($filtros['subcategoria_id'])) {
+        if (! empty($filtros['subcategoria_id'])) {
             $subcategorias = $this->parseMultipleIds($filtros['subcategoria_id']);
             $query->whereIn('subcategoria_id', $subcategorias);
         }
 
         // Filtro por marcas múltiples
-        if (!empty($filtros['marca_id'])) {
+        if (! empty($filtros['marca_id'])) {
             $marcas = $this->parseMultipleIds($filtros['marca_id']);
             $query->whereIn('marca_id', $marcas);
         }
         // Filtro por unidades de medida múltiples
-        if (!empty($filtros['unidad_medida_id'])) {
+        if (! empty($filtros['unidad_medida_id'])) {
             $unidades = $this->parseMultipleIds($filtros['unidad_medida_id']);
             $query->whereIn('unidad_medida_id', $unidades);
         }
@@ -318,8 +289,7 @@ class ConstruccSearchService
      * Convierte una cadena de IDs separados por comas en array de enteros
      * Ejemplo: "1,2,3" -> [1, 2, 3]
      *
-     * @param string|int $ids
-     * @return array
+     * @param  string|int  $ids
      */
     private function parseMultipleIds($ids): array
     {

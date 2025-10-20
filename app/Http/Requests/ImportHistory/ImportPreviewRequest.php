@@ -29,31 +29,31 @@ class ImportPreviewRequest extends FormRequest
             'delimiter' => [
                 'string',
                 'in:,;|',
-                'nullable'
+                'nullable',
             ],
             'encoding' => [
                 'string',
                 'in:UTF-8,ISO-8859-1,Windows-1252',
-                'nullable'
+                'nullable',
             ],
             'has_header' => [
                 'boolean',
-                'nullable'
+                'nullable',
             ],
             'preview_rows' => [
                 'integer',
                 'min:1',
                 'max:1000',
-                'nullable'
+                'nullable',
             ],
             'strict_validation' => [
                 'boolean',
-                'nullable'
+                'nullable',
             ],
             'auto_create_relations' => [
                 'boolean',
-                'nullable'
-            ]
+                'nullable',
+            ],
         ];
     }
 
@@ -69,7 +69,7 @@ class ImportPreviewRequest extends FormRequest
             'has_header' => 'tiene cabeceras',
             'preview_rows' => 'filas de preview',
             'strict_validation' => 'validación estricta',
-            'auto_create_relations' => 'crear relaciones automáticamente'
+            'auto_create_relations' => 'crear relaciones automáticamente',
         ];
     }
 

@@ -15,11 +15,11 @@ class TiendaCategoriaResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'              => (string) $this->id,
-            'nombre'          => $this->nombre,
-            'icono'           => $this->icono,
-            'activa'          => (bool) $this->activa,
-            'totalProductos'  => (int) $this->total_productos,
+            'id' => (string) $this->id,
+            'nombre' => $this->nombre,
+            'icono' => $this->icono,
+            'activa' => (bool) $this->activa,
+            'totalProductos' => (int) $this->total_productos,
         ];
     }
 }

@@ -23,51 +23,51 @@ class ImportConfirmRequest extends FormRequest
             'preview_token' => [
                 'required',
                 'string',
-                'size:64' // Token de 64 caracteres
+                'size:64', // Token de 64 caracteres
             ],
             'import_mode' => [
                 'string',
                 'in:create_only,update_only,upsert',
-                'nullable'
+                'nullable',
             ],
             'chunk_size' => [
                 'integer',
                 'min:10',
                 'max:1000',
-                'nullable'
+                'nullable',
             ],
             'process_async' => [
                 'boolean',
-                'nullable'
+                'nullable',
             ],
             'strict_validation' => [
                 'boolean',
-                'nullable'
+                'nullable',
             ],
             'auto_create_relations' => [
                 'boolean',
-                'nullable'
+                'nullable',
             ],
             'stop_on_error' => [
                 'boolean',
-                'nullable'
+                'nullable',
             ],
             'selected_rows' => [
                 'array',
-                'nullable'
+                'nullable',
             ],
             'selected_rows.*' => [
                 'integer',
-                'min:1'
+                'min:1',
             ],
             'exclude_rows' => [
                 'array',
-                'nullable'
+                'nullable',
             ],
             'exclude_rows.*' => [
                 'integer',
-                'min:1'
-            ]
+                'min:1',
+            ],
         ];
     }
 
@@ -85,7 +85,7 @@ class ImportConfirmRequest extends FormRequest
             'auto_create_relations' => 'crear relaciones automáticamente',
             'stop_on_error' => 'detener en error',
             'selected_rows' => 'filas seleccionadas',
-            'exclude_rows' => 'filas excluidas'
+            'exclude_rows' => 'filas excluidas',
         ];
     }
 
@@ -101,7 +101,7 @@ class ImportConfirmRequest extends FormRequest
             'chunk_size.min' => 'El tamaño de lote debe ser al menos 10.',
             'chunk_size.max' => 'El tamaño de lote no puede superar 1000.',
             'selected_rows.*.integer' => 'Las filas seleccionadas deben ser números enteros.',
-            'exclude_rows.*.integer' => 'Las filas excluidas deben ser números enteros.'
+            'exclude_rows.*.integer' => 'Las filas excluidas deben ser números enteros.',
         ];
     }
 
@@ -116,7 +116,7 @@ class ImportConfirmRequest extends FormRequest
             'process_async' => true,
             'strict_validation' => false,
             'auto_create_relations' => false,
-            'stop_on_error' => false
+            'stop_on_error' => false,
         ];
     }
 
@@ -146,7 +146,7 @@ class ImportConfirmRequest extends FormRequest
             'auto_create_relations' => $data['auto_create_relations'],
             'stop_on_error' => $data['stop_on_error'],
             'selected_rows' => $data['selected_rows'] ?? null,
-            'exclude_rows' => $data['exclude_rows'] ?? null
+            'exclude_rows' => $data['exclude_rows'] ?? null,
         ];
     }
 }

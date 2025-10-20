@@ -57,23 +57,23 @@ class PedidoUpdateRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             $pedido = $this->route('pedido');
-            
+
             if ($pedido && $this->estatus) {
                 // Validar transición de estatus
-                if (!$pedido->puedeActualizarEstatus($this->estatus)) {
+                if (! $pedido->puedeActualizarEstatus($this->estatus)) {
                     $validator->errors()->add('estatus', 'No se puede cambiar al estatus seleccionado desde el estado actual');
                 }
-                
+
                 // Validar campos requeridos según estatus
-                if ($this->estatus === 'cancelado' && !$this->motivo_cancelacion) {
+                if ($this->estatus === 'cancelado' && ! $this->motivo_cancelacion) {
                     $validator->errors()->add('motivo_cancelacion', 'El motivo de cancelación es requerido');
                 }
-                
-                if ($this->estatus === 'en_transito' && !$this->numero_guia) {
+
+                if ($this->estatus === 'en_transito' && ! $this->numero_guia) {
                     $validator->errors()->add('numero_guia', 'El número de guía es requerido para pedidos en tránsito');
                 }
-                
-                if ($this->estatus === 'entregado' && !$this->fecha_entrega_real) {
+
+                if ($this->estatus === 'entregado' && ! $this->fecha_entrega_real) {
                     $validator->errors()->add('fecha_entrega_real', 'La fecha de entrega real es requerida');
                 }
             }

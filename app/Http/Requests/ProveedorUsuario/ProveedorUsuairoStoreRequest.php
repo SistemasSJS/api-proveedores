@@ -4,12 +4,12 @@ namespace App\Http\Requests\ProveedorUsuario;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-
 /**
  * @OA\Schema(
  *     schema="ProveedorUsuairoStoreRequest",
  *     required={"name","email","password"},
  *     properties={
+ *
  *         @OA\Property(property="name", type="string", example="Juan Pérez"),
  *         @OA\Property(property="email", type="string", format="email", example="juan@example.com"),
  *         @OA\Property(property="password", type="string", format="password", example="secret"),

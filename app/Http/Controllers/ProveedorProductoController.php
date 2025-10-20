@@ -3,21 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
-
 use App\Http\Requests\Producto\ProductoStoreRequest;
 use App\Http\Requests\Producto\ProductoUpdateLogoRequest;
 use App\Http\Requests\Producto\ProductoUpdateRequest;
-use App\Models\Proveedor;
 use App\Http\Resources\ProveedorProductoResource;
 use App\Models\Producto;
-use Illuminate\Http\Request;
+use App\Models\Proveedor;
 use App\Traits\ApiResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class ProveedorProductoController extends Controller
 {
     use ApiResponse;
-
 
     public function __construct() {}
 
@@ -45,13 +43,13 @@ class ProveedorProductoController extends Controller
         return $this->paginated($paginator->setCollection(collect($data)));
     }
 
-
     public function show(Request $request, Proveedor $proveedor, $productoId)
     {
         $producto = Producto::with(Producto::eagerLodable())->findOrFail($productoId);
         if ($producto->proveedor_id !== $proveedor->id) {
-            throw new ResourceNotFoundException("Producto no relacionado al proveedor.");
+            throw new ResourceNotFoundException('Producto no relacionado al proveedor.');
         }
+
         return $this->success(new ProveedorProductoResource($producto));
     }
 
@@ -71,10 +69,11 @@ class ProveedorProductoController extends Controller
         return $this->success(new ProveedorProductoResource($producto));
     }
 
-    public function update(ProductoUpdateRequest  $request, Proveedor $proveedor, $productoId)
+    public function update(ProductoUpdateRequest $request, Proveedor $proveedor, $productoId)
     {
         $producto = Producto::findOrFail($productoId);
         $producto->update($request->validated());
+
         return $this->success(new ProveedorProductoResource(($producto->fresh(Producto::eagerLodable()))));
     }
 
@@ -82,15 +81,16 @@ class ProveedorProductoController extends Controller
     {
         $producto = Producto::findOrFail($productoId);
         if ($producto->imagen_principal) {
-            $rutaAnterior = str_replace(asset('storage') . '/', '', $producto->imagen_principal);
+            $rutaAnterior = str_replace(asset('storage').'/', '', $producto->imagen_principal);
             Storage::disk('public')->delete($rutaAnterior);
         }
 
         $file = $request->file('logo');
-        $filename = "logo_producto_{$producto->id}_" . time() . '.' . $file->getClientOriginalExtension();
+        $filename = "logo_producto_{$producto->id}_".time().'.'.$file->getClientOriginalExtension();
         $path = $file->storeAs('uploads', $filename, 'public');
 
         $producto->update(['imagen_principal' => $path]);
+
         return $this->success(new ProveedorProductoResource($producto->fresh(Producto::eagerLodable())));
     }
 
@@ -99,6 +99,7 @@ class ProveedorProductoController extends Controller
         $producto = Producto::findOrFail($productoId);
         // $producto->sucursales()->detach();
         $producto->delete();
-        return $this->success(message: "Producto eliminado correctamente.");
+
+        return $this->success(message: 'Producto eliminado correctamente.');
     }
 }

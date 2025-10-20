@@ -11,6 +11,7 @@ use App\Exceptions\Api\BaseApiException;
  *     description="Se lanza cuando hay un conflicto con el estado actual del recurso.",
  *     type="object",
  *     required={"message", "errorType"},
+ *
  *     @OA\Property(
  *         property="message",
  *         type="string",
@@ -26,6 +27,7 @@ use App\Exceptions\Api\BaseApiException;
 class ConflictException extends BaseApiException
 {
     protected string $errorType = 'conflict';
+
     protected int $statusCode = 409;
 
     public function __construct(string $message = 'Conflicto con el estado actual del recurso.')

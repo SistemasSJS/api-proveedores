@@ -7,12 +7,11 @@ use App\Http\Resources\Tienda\TiendaAccesoRapidoResource;
 use App\Http\Resources\Tienda\TiendaProductoDestacadoResource;
 use App\Http\Resources\Tienda\TiendaProductoResource;
 use App\Http\Resources\Tienda\TiendaProveedorResource;
-use App\Models\Proveedor;
-use App\Models\Producto;
 use App\Models\AccesoRapido;
-use App\Models\Pedido;
-use Illuminate\Http\Request;
+use App\Models\Producto;
+use App\Models\Proveedor;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class TiendaController extends Controller
 {
@@ -61,6 +60,7 @@ class TiendaController extends Controller
             ->paginate($request->get('per_page', 15));
 
         $data = TiendaProveedorResource::collection($proveedores)->resolve();
+
         return $this->paginated($proveedores->setCollection(collect($data)));
     }
 
@@ -88,7 +88,6 @@ class TiendaController extends Controller
         if ($request->has('proveedor_id')) {
             $query->where('proveedor_id', $request->get('proveedor_id'));
         }
-
 
         if ($request->has('disponible') && $request->get('disponible') == true) {
             $query->where('stock', '>', 0);
@@ -228,15 +227,17 @@ class TiendaController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();
+
         return $this->success(TiendaProductoResource::collection($productos));
     }
 
     public function show($id)
     {
         $producto = Producto::with(Producto::eagerLodable())->find($id);
-        if (!$producto) {
-            throw new ResourceNotFoundException("Producto no encontrado.");
+        if (! $producto) {
+            throw new ResourceNotFoundException('Producto no encontrado.');
         }
+
         return $this->success(new TiendaProductoResource($producto));
     }
 }

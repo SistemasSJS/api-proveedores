@@ -28,6 +28,7 @@ class OrdenCompraEstadisticasResource extends JsonResource
 
             'distribucion_estados' => collect($this->resource['distribucion_estados'])->map(function ($cantidad, $estado) {
                 $config = config("ordenes-compra.estados.{$estado}", []);
+
                 return [
                     'estado' => $estado,
                     'cantidad' => (int) $cantidad,
@@ -89,9 +90,16 @@ class OrdenCompraEstadisticasResource extends JsonResource
      */
     private function getColorKPI(float $valor): string
     {
-        if ($valor >= 80) return '#28a745'; // Verde - Excelente
-        if ($valor >= 60) return '#ffc107'; // Amarillo - Bueno
-        if ($valor >= 40) return '#fd7e14'; // Naranja - Regular
+        if ($valor >= 80) {
+            return '#28a745';
+        } // Verde - Excelente
+        if ($valor >= 60) {
+            return '#ffc107';
+        } // Amarillo - Bueno
+        if ($valor >= 40) {
+            return '#fd7e14';
+        } // Naranja - Regular
+
         return '#dc3545'; // Rojo - Malo
     }
 

@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Proveedor extends BaseModel
 {
     use HasFactory;
 
-    protected $table = "proveedores";
+    protected $table = 'proveedores';
 
     protected $fillable = [
         // Información general
@@ -55,7 +54,7 @@ class Proveedor extends BaseModel
         'constancia_fiscal',
         'direccion_fiscal',
 
-        // 
+        //
         'calle',
         'numero_exterior',
         'numero_interior',
@@ -65,7 +64,6 @@ class Proveedor extends BaseModel
         'codigo_postal',
         'pais',
     ];
-
 
     protected $casts = [
         'fecha_registro' => 'datetime',

@@ -1,13 +1,9 @@
 <?php
 
-
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Requisicion;
-use App\Models\Notificacion;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ClienteDashboardController extends Controller
@@ -41,7 +37,7 @@ class ClienteDashboardController extends Controller
                     ->where('estatus', 'en_proceso')
                     ->orderBy('fecha_requerida', 'asc')
                     ->first()?->fecha_requerida,
-            ]
+            ],
         ];
 
         // Requisiciones recientes (últimas 5)
@@ -101,6 +97,7 @@ class ClienteDashboardController extends Controller
             ->groupBy('proveedor_id')
             ->map(function ($requisiciones, $proveedorId) {
                 $proveedor = $requisiciones->first()->proveedor;
+
                 return [
                     'id' => $proveedor->id,
                     'nombre' => $proveedor->nombre_comercial,
@@ -113,11 +110,11 @@ class ClienteDashboardController extends Controller
             ->values();
 
         return $this->success([
-                'stats' => $stats,
-                'requisiciones_recientes' => $requisicionesRecientes,
-                'notificaciones_recientes' => $notificacionesRecientes,
-                'requisiciones_por_mes' => $requisicionesPorMes,
-                'proveedores_frecuentes' => $proveedoresFrecuentes,
+            'stats' => $stats,
+            'requisiciones_recientes' => $requisicionesRecientes,
+            'notificaciones_recientes' => $notificacionesRecientes,
+            'requisiciones_por_mes' => $requisicionesPorMes,
+            'proveedores_frecuentes' => $proveedoresFrecuentes,
         ]);
     }
 
@@ -128,7 +125,7 @@ class ClienteDashboardController extends Controller
     {
         $request->validate([
             'periodo' => 'nullable|in:semana,mes,trimestre,año',
-            'año' => 'nullable|integer|min:2020|max:' . (date('Y') + 1),
+            'año' => 'nullable|integer|min:2020|max:'.(date('Y') + 1),
         ]);
 
         $user = Auth::user();

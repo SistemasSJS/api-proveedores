@@ -13,13 +13,13 @@ class LogIncomingRequests
 
         // Datos a registrar
         $log = [
-            'method'   => $request->method(),
-            'path'       => $request->path(),
-            'host'       => $request->host(),
-            'url'      => $request->fullUrl(),
-            'ip'       => $request->ip(),
-            'body'     => $request->except(['password', 'password_confirmation']),
-            'headers'  => $request->headers->all(),
+            'method' => $request->method(),
+            'path' => $request->path(),
+            'host' => $request->host(),
+            'url' => $request->fullUrl(),
+            'ip' => $request->ip(),
+            'body' => $request->except(['password', 'password_confirmation']),
+            'headers' => $request->headers->all(),
         ];
 
         Log::channel('requests')->info($request->path(), $log);

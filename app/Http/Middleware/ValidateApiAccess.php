@@ -2,13 +2,13 @@
 
 namespace App\Http\Middleware;
 
+use App\Exceptions\Api\Auth\UnauthorizedProveedorAccessException;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\RateLimiter;
-use App\Exceptions\Api\Auth\UnauthorizedProveedorAccessException;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 
 /**
  * Middleware para validar el acceso a la API con rate limiting
@@ -25,7 +25,7 @@ class ValidateApiAccess
         'SUPERVISOR' => 300,
         'VENTAS' => 200,
         'AUXILIAR' => 100,
-        'default' => 60
+        'default' => 60,
     ];
 
     /**
@@ -35,13 +35,12 @@ class ValidateApiAccess
         'proveedores/*/users',
         'proveedores/*/productos/import',
         'auth/*',
-        'admin/*'
+        'admin/*',
     ];
 
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
      * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      *
@@ -50,11 +49,11 @@ class ValidateApiAccess
     public function handle(Request $request, Closure $next)
     {
         // Verificar autenticación
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json([
                 'status' => 'ERROR',
                 'message' => 'Token de autenticación requerido.',
-                'error_code' => 'AUTHENTICATION_REQUIRED'
+                'error_code' => 'AUTHENTICATION_REQUIRED',
             ], 401);
         }
 
@@ -78,9 +77,6 @@ class ValidateApiAccess
     /**
      * Aplica rate limiting basado en el rol del usuario.
      *
-     * @param Request $request
-     * @param $user
-     * @return void
      * @throws \Illuminate\Http\Exceptions\ThrottleRequestsException
      */
     private function applyRateLimiting(Request $request, $user): void
@@ -99,7 +95,7 @@ class ValidateApiAccess
                 'role' => $roleName,
                 'ip' => $request->ip(),
                 'endpoint' => $request->fullUrl(),
-                'retry_after' => $retryAfter
+                'retry_after' => $retryAfter,
             ]);
 
             abort(429, "Demasiadas solicitudes. Inténtalo de nuevo en {$retryAfter} segundos.");
@@ -110,10 +106,6 @@ class ValidateApiAccess
 
     /**
      * Genera la clave para rate limiting.
-     *
-     * @param Request $request
-     * @param $user
-     * @return string
      */
     private function getRateLimitKey(Request $request, $user): string
     {
@@ -130,9 +122,6 @@ class ValidateApiAccess
 
     /**
      * Verifica si el endpoint es sensible y requiere validación especial.
-     *
-     * @param Request $request
-     * @return bool
      */
     private function isSensitiveEndpoint(Request $request): bool
     {
@@ -153,9 +142,6 @@ class ValidateApiAccess
     /**
      * Valida el acceso a endpoints sensibles.
      *
-     * @param Request $request
-     * @param $user
-     * @return void
      * @throws UnauthorizedProveedorAccessException
      */
     private function validateSensitiveAccess(Request $request, $user): void
@@ -166,10 +152,10 @@ class ValidateApiAccess
         // Validaciones específicas por endpoint
         if (str_contains($path, 'proveedores/') && str_contains($path, '/users')) {
             // Solo usuarios con permisos administrativos pueden gestionar usuarios
-            if (!in_array($roleName, ['ADMINISTRADOR', 'GERENTE'])) {
+            if (! in_array($roleName, ['ADMINISTRADOR', 'GERENTE'])) {
                 // Verificar si es usuario principal del proveedor
                 $proveedorId = $this->extractProveedorIdFromPath($path);
-                if ($proveedorId && !$this->isMainUserOfProveedor($user->id, $proveedorId)) {
+                if ($proveedorId && ! $this->isMainUserOfProveedor($user->id, $proveedorId)) {
                     throw UnauthorizedProveedorAccessException::insufficientPermissions('gestión de usuarios');
                 }
             }
@@ -177,7 +163,7 @@ class ValidateApiAccess
 
         if (str_contains($path, 'import')) {
             // Importaciones requieren permisos especiales
-            if (!in_array($roleName, ['ADMINISTRADOR', 'GERENTE', 'SUPERVISOR'])) {
+            if (! in_array($roleName, ['ADMINISTRADOR', 'GERENTE', 'SUPERVISOR'])) {
                 throw UnauthorizedProveedorAccessException::insufficientPermissions('importación de datos');
             }
         }
@@ -192,9 +178,6 @@ class ValidateApiAccess
 
     /**
      * Extrae el ID del proveedor de la ruta.
-     *
-     * @param string $path
-     * @return int|null
      */
     private function extractProveedorIdFromPath(string $path): ?int
     {
@@ -207,10 +190,6 @@ class ValidateApiAccess
 
     /**
      * Verifica si el usuario es principal de un proveedor.
-     *
-     * @param int $userId
-     * @param int $proveedorId
-     * @return bool
      */
     private function isMainUserOfProveedor(int $userId, int $proveedorId): bool
     {
@@ -227,10 +206,6 @@ class ValidateApiAccess
 
     /**
      * Registra el acceso a la API para auditoría.
-     *
-     * @param Request $request
-     * @param $user
-     * @return void
      */
     private function logApiAccess(Request $request, $user): void
     {
@@ -243,7 +218,7 @@ class ValidateApiAccess
                 'method' => $request->method(),
                 'ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),
-                'timestamp' => now()
+                'timestamp' => now(),
             ];
 
             // Log a archivo específico para análisis posterior
@@ -253,9 +228,6 @@ class ValidateApiAccess
 
     /**
      * Determina si se debe registrar el acceso.
-     *
-     * @param Request $request
-     * @return bool
      */
     private function shouldLogAccess(Request $request): bool
     {

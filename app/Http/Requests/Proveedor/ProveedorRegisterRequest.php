@@ -20,6 +20,7 @@ use Illuminate\Validation\Rule;
  *         "contacto_correo",
  *         "recaptcha_token"
  *     },
+ *
  *     @OA\Property(property="nombre_comercial", type="string", maxLength=255),
  *     @OA\Property(property="razon_social", type="string", maxLength=255),
  *     @OA\Property(property="tipos_empresa_id", type="integer", example=1),
@@ -72,7 +73,6 @@ class ProveedorRegisterRequest extends FormRequest
             'razon_social.required' => 'La razón social es obligatoria.',
             'razon_social.string' => 'La razón social debe ser una cadena de texto.',
             'razon_social.max' => 'La razón social no debe exceder los 255 caracteres.',
-
 
             'tipos_empresa_id.required' => 'El tipo de empresa es obligatorio.',
             'tipos_empresa_id.integer' => 'El tipo de empresa debe ser un número entero.',

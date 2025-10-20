@@ -4,7 +4,6 @@ namespace App\Exceptions\Api\Crud;
 
 use App\Exceptions\Api\BaseApiException;
 
-
 /**
  * @OA\Schema(
  *     schema="InvalidInputException",
@@ -12,6 +11,7 @@ use App\Exceptions\Api\BaseApiException;
  *     description="Se lanza cuando la entrada del usuario no cumple con los requisitos.",
  *     type="object",
  *     required={"message", "errorType"},
+ *
  *     @OA\Property(
  *         property="message",
  *         type="string",
@@ -27,6 +27,7 @@ use App\Exceptions\Api\BaseApiException;
 class InvalidInputException extends BaseApiException
 {
     protected string $errorType = 'invalid_input';
+
     protected int $statusCode = 422;
 
     public function __construct(string $message = 'Entrada inválida.')
