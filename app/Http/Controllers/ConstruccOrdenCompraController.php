@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreOrdenCompraRequest;
+use App\Http\Requests\Construcc\StoreConstruccOrdenCompraRequest;
+use App\Http\Requests\Construcc\UpdateConstruccOrdenCompraRequest;
+use App\Http\Requests\Construcc\CambiarEstadoConstruccOrdenCompraRequest;
 use App\Models\OrdenCompra;
 use App\Models\OrdenCompraDetalle;
 use App\Models\Proveedor;
@@ -10,7 +12,6 @@ use App\Models\EmpresaConstrucc;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 
 class ConstruccOrdenCompraController extends Controller
 {
@@ -23,21 +24,21 @@ class ConstruccOrdenCompraController extends Controller
         $sortBy = $request->input('sort_by', 'created_at');
         $order = $request->input('order', 'desc');
         $perPage = $request->input('per_page', 15);
-        
+
         // Filtros específicos del segmento construcción
         $proveedorId = $request->input('proveedor_id');
         $empresaId = $request->input('empresa_construcc_id');
-        
+
         $query = OrdenCompra::query()
             ->with(['proveedor', 'empresaConstrucc', 'detalles'])
             ->filter($filters)
             ->orderBy($sortBy, $order);
-            
+
         // Aplicar filtros específicos si se proporcionan
         if ($proveedorId) {
             $query->where('proveedor_id', $proveedorId);
         }
-        
+
         if ($empresaId) {
             $query->where('empresa_construcc_id', $empresaId);
         }
@@ -65,41 +66,35 @@ class ConstruccOrdenCompraController extends Controller
     /**
      * Crear una nueva orden de compra desde construcción
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreConstruccOrdenCompraRequest $request): JsonResponse
     {
-        $validator = $this->getCreateValidator($request->all());
-        
-        if ($validator->fails()) {
-            return $this->error('Datos de validación incorrectos', 422, $validator->errors());
-        }
-
         try {
             DB::beginTransaction();
 
-            // Verificar que el proveedor existe
-            $proveedor = Proveedor::findOrFail($request->proveedor_id);
-            
-            // Verificar que la empresa constructora existe
-            $empresa = EmpresaConstrucc::findOrFail($request->empresa_construcc_id);
+            // ✅ Validar y preparar los datos
+            $data = $request->validated();
 
-            // Crear la orden de compra
+            // ✅ Verificar que la empresa constructora existe
+            $empresa = EmpresaConstrucc::findOrFail($data['empresa_construcc_id']);
+
+            // ✅ Crear la orden de compra
             $ordenCompra = OrdenCompra::create([
-                'numero_orden' => $request->numero_orden,
-                'fecha_orden' => $request->fecha_orden,
-                'proveedor_id' => $request->proveedor_id,
-                'empresa_construcc_id' => $request->empresa_construcc_id,
-                'importe_total' => $request->importe_total,
-                'estado' => $request->estado ?? 'pendiente',
-                'fecha_aprobacion' => $request->fecha_aprobacion,
-                'observaciones' => $request->observaciones,
-                'metadata_json' => $request->metadata_json,
+                'numero_orden' => $data['numero_orden'],
+                'fecha_orden' => $data['fecha_orden'],
+                'proveedor_id' => $data['proveedor_id'],
+                'empresa_construcc_id' => $data['empresa_construcc_id'],
+                'importe_total' => $data['importe_total'],
+                'estado' => $data['estado'] ?? 'pendiente',
+                'fecha_aprobacion' => $data['fecha_aprobacion'] ?? null,
+                'observaciones' => $data['observaciones'] ?? null,
+                'metadata_json' => $data['metadata_json'] ?? null,
                 'monto_sp_asociado' => 0,
                 'sp_count' => 0,
             ]);
 
-            // Crear los detalles
-            if ($request->has('detalles') && is_array($request->detalles)) {
-                foreach ($request->detalles as $detalleData) {
+            // ✅ Crear los detalles si existen
+            if (isset($data['detalles']) && is_array($data['detalles'])) {
+                foreach ($data['detalles'] as $detalleData) {
                     OrdenCompraDetalle::create([
                         'orden_compra_id' => $ordenCompra->id,
                         'producto' => $detalleData['producto'],
@@ -123,6 +118,7 @@ class ConstruccOrdenCompraController extends Controller
             return $this->error('Error al crear la orden de compra: ' . $e->getMessage(), 500);
         }
     }
+
 
     /**
      * Mostrar detalle de una orden de compra
@@ -150,31 +146,27 @@ class ConstruccOrdenCompraController extends Controller
     /**
      * Actualizar una orden de compra
      */
-    public function update(Request $request, OrdenCompra $ordenCompra): JsonResponse
+    public function update(UpdateConstruccOrdenCompraRequest $request, OrdenCompra $ordenCompra): JsonResponse
     {
-        $validator = $this->getUpdateValidator($request->all());
-        
-        if ($validator->fails()) {
-            return $this->error('Datos de validación incorrectos', 422, $validator->errors());
-        }
 
         try {
             DB::beginTransaction();
 
             // Actualizar la orden
-            $ordenCompra->update($request->only([
-                'fecha_orden',
-                'empresa_construcc_id',
-                'importe_total',
-                'estado',
-                'fecha_aprobacion',
-                'observaciones',
-                'metadata_json'
-            ]));
+            $updateData = [];
+            if (isset($request['fecha_orden'])) $updateData['fecha_orden'] = $request['fecha_orden'];
+            if (isset($request['empresa_construcc_id'])) $updateData['empresa_construcc_id'] = $request['empresa_construcc_id'];
+            if (isset($request['importe_total'])) $updateData['importe_total'] = $request['importe_total'];
+            if (isset($request['estado'])) $updateData['estado'] = $request['estado'];
+            if (isset($request['fecha_aprobacion'])) $updateData['fecha_aprobacion'] = $request['fecha_aprobacion'];
+            if (isset($request['observaciones'])) $updateData['observaciones'] = $request['observaciones'];
+            if (isset($request['metadata_json'])) $updateData['metadata_json'] = $request['metadata_json'];
+
+            $ordenCompra->update($updateData);
 
             // Sincronizar detalles si se proporcionan
-            if ($request->has('detalles') && is_array($request->detalles)) {
-                $this->syncDetalles($ordenCompra, $request->detalles);
+            if (isset($request['detalles']) && is_array($request['detalles'])) {
+                $this->syncDetalles($ordenCompra, $request['detalles']);
             }
 
             DB::commit();
@@ -201,13 +193,13 @@ class ConstruccOrdenCompraController extends Controller
             }
 
             DB::beginTransaction();
-            
+
             // Eliminar detalles
             $ordenCompra->detalles()->delete();
-            
+
             // Eliminar orden
             $ordenCompra->delete();
-            
+
             DB::commit();
 
             return $this->success(null, 'Orden de compra eliminada exitosamente.');
@@ -220,30 +212,22 @@ class ConstruccOrdenCompraController extends Controller
     /**
      * Cambiar estado de una orden de compra
      */
-    public function cambiarEstado(Request $request, OrdenCompra $ordenCompra): JsonResponse
+    public function cambiarEstado(CambiarEstadoConstruccOrdenCompraRequest $request, OrdenCompra $ordenCompra): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'estado' => 'required|string|in:pendiente,aprobada,rechazada,completada,cancelada',
-            'observaciones' => 'nullable|string|max:1000'
-        ]);
-
-        if ($validator->fails()) {
-            return $this->error('Datos de validación incorrectos', 422, $validator->errors());
-        }
 
         $estadoAnterior = $ordenCompra->estado;
-        
+
         $ordenCompra->update([
-            'estado' => $request->estado,
-            'fecha_aprobacion' => $request->estado === 'aprobada' ? now() : $ordenCompra->fecha_aprobacion,
-            'observaciones' => $request->observaciones ?? $ordenCompra->observaciones
+            'estado' => $request['estado'],
+            'fecha_aprobacion' => $request['estado'] === 'aprobada' ? now() : $ordenCompra->fecha_aprobacion,
+            'observaciones' => $request['observaciones'] ?? $ordenCompra->observaciones
         ]);
 
         return $this->success([
             'orden_compra' => $ordenCompra->fresh(),
             'estado_anterior' => $estadoAnterior,
-            'estado_actual' => $request->estado
-        ], "Estado cambiado de '{$estadoAnterior}' a '{$request->estado}' exitosamente.");
+            'estado_actual' => $request['estado']
+        ], "Estado cambiado de '{$estadoAnterior}' a '{$request['estado']}' exitosamente.");
     }
 
     /**
@@ -253,7 +237,7 @@ class ConstruccOrdenCompraController extends Controller
     {
         $filters = $request->only(OrdenCompra::getFilters());
         $perPage = $request->input('per_page', 15);
-        
+
         $originalPaginator = OrdenCompra::query()
             ->with(['empresaConstrucc', 'detalles'])
             ->where('proveedor_id', $proveedor->id)
@@ -271,7 +255,7 @@ class ConstruccOrdenCompraController extends Controller
     {
         $filters = $request->only(OrdenCompra::getFilters());
         $perPage = $request->input('per_page', 15);
-        
+
         $originalPaginator = OrdenCompra::query()
             ->with(['proveedor', 'detalles'])
             ->where('empresa_construcc_id', $empresa->id)
@@ -313,52 +297,6 @@ class ConstruccOrdenCompraController extends Controller
     }
 
     // Métodos privados
-
-    /**
-     * Validador para crear orden de compra
-     */
-    private function getCreateValidator(array $data): \Illuminate\Validation\Validator
-    {
-        return Validator::make($data, [
-            'numero_orden' => 'required|string|max:255|unique:ordenes_compra,numero_orden',
-            'fecha_orden' => 'required|date',
-            'proveedor_id' => 'required|integer|exists:proveedores,id',
-            'empresa_construcc_id' => 'required|integer|exists:empresas_construcc,id',
-            'importe_total' => 'required|numeric|min:0.01',
-            'estado' => 'nullable|string|in:pendiente,aprobada,rechazada,completada,cancelada',
-            'fecha_aprobacion' => 'nullable|date',
-            'observaciones' => 'nullable|string|max:1000',
-            'metadata_json' => 'nullable|array',
-            'detalles' => 'nullable|array|min:1',
-            'detalles.*.producto' => 'required_with:detalles|string|max:255',
-            'detalles.*.descripcion' => 'nullable|string|max:500',
-            'detalles.*.cantidad' => 'required_with:detalles|numeric|min:0.001',
-            'detalles.*.unidad_medida' => 'nullable|string|max:50',
-            'detalles.*.precio_unitario' => 'required_with:detalles|numeric|min:0.01',
-        ]);
-    }
-
-    /**
-     * Validador para actualizar orden de compra
-     */
-    private function getUpdateValidator(array $data): \Illuminate\Validation\Validator
-    {
-        return Validator::make($data, [
-            'fecha_orden' => 'sometimes|date',
-            'empresa_construcc_id' => 'sometimes|integer|exists:empresas_construcc,id',
-            'importe_total' => 'sometimes|numeric|min:0.01',
-            'estado' => 'sometimes|string|in:pendiente,aprobada,rechazada,completada,cancelada',
-            'fecha_aprobacion' => 'nullable|date',
-            'observaciones' => 'nullable|string|max:1000',
-            'metadata_json' => 'nullable|array',
-            'detalles' => 'sometimes|array|min:1',
-            'detalles.*.producto' => 'required_with:detalles|string|max:255',
-            'detalles.*.descripcion' => 'nullable|string|max:500',
-            'detalles.*.cantidad' => 'required_with:detalles|numeric|min:0.001',
-            'detalles.*.unidad_medida' => 'nullable|string|max:50',
-            'detalles.*.precio_unitario' => 'required_with:detalles|numeric|min:0.01',
-        ]);
-    }
 
     /**
      * Sincronizar detalles de una orden de compra

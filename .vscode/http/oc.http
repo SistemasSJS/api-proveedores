@@ -1,0 +1,100 @@
+###############################################################################
+# RUTAS CONSTRUCC - ÓRDENES DE COMPRA 🧾
+###############################################################################
+
+### VARIABLES GENERALES
+@baseUrl = http://localhost:8080/api/construcc
+@contentType = application/json
+@acceptType = application/json
+@apiKey = /%-!?=T35sT._22<1|:
+@ordenId = 1
+@empresaId = 1
+@proveedorId = 3
+
+### 1. Listado general de órdenes de compra
+GET {{baseUrl}}/ordenes-compra
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 2. Estadísticas generales de órdenes de compra
+GET {{baseUrl}}/ordenes-compra/estadisticas
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+###############################################################################
+# 🆕 3. Crear una nueva orden de compra (STORE)
+###############################################################################
+
+POST {{baseUrl}}/ordenes-compra
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+
+{
+  "numero_orden": "OC-2025-0001",
+  "fecha_orden": "2025-10-19",
+  "proveedor_id": {{proveedorId}},
+  "empresa_construcc_id": {{empresaId}},
+  "importe_total": "25000.50",
+  "estado": "pendiente",
+  "observaciones": "Compra de materiales de obra para el edificio A.",
+  "metadata_json": {
+    "responsable": "Juan Pérez",
+    "proyecto": "Edificio A",
+    "tipo_compra": "Materiales"
+  },
+  "detalles": [
+    {
+      "producto": "Cemento gris 50kg",
+      "descripcion": "Sacos de cemento para estructura",
+      "cantidad": 100,
+      "unidad_medida": "saco",
+      "precio_unitario": 180.50
+    },
+    {
+      "producto": "Varilla 3/8",
+      "descripcion": "Varilla de acero para losa",
+      "cantidad": 50,
+      "unidad_medida": "pieza",
+      "precio_unitario": 220.00
+    }
+  ]
+}
+
+
+### 4. Ver detalle de una orden de compra específica
+GET {{baseUrl}}/ordenes-compra/{{ordenId}}
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 5. Actualizar una orden de compra
+PUT {{baseUrl}}/ordenes-compra/{{ordenId}}
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+
+{
+  "descripcion": "Compra de materiales - actualizado",
+  "monto_total": 60000.00
+}
+
+### 6. Eliminar una orden de compra
+DELETE {{baseUrl}}/ordenes-compra/{{ordenId}}
+X-API-KEY: {{apiKey}}
+
+### 7. Cambiar estado de una orden de compra
+POST {{baseUrl}}/ordenes-compra/{{ordenId}}/cambiar-estado
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+
+{
+  "estado": "AUTORIZADA"
+}
+
+### 8. Listar órdenes de compra por proveedor
+GET {{baseUrl}}/ordenes-compra/proveedor/{{proveedorId}}
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 9. Listar órdenes de compra por empresa
+GET {{baseUrl}}/ordenes-compra/empresa/{{empresaId}}
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
