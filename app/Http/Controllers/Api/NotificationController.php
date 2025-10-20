@@ -181,4 +181,26 @@ class NotificationController extends Controller
             'message' => 'Todas las notificaciones marcadas como leídas',
         ]);
     }
+
+    /**
+     * Endpoint de polling optimizado
+     */
+    public function poll(Request $request)
+    {
+        $pollingService = app(\App\Services\PollingService::class);
+        
+        $lastTimestamp = $request->input('last_timestamp');
+        $result = $pollingService->getNewNotifications($lastTimestamp);
+        
+        // Actividad del usuario para polling adaptativo
+        $userActivity = $pollingService->getUserActivity(Auth::id());
+        $nextInterval = $pollingService->getPollingInterval($userActivity);
+        
+        return response()->json([
+            'success' => true,
+            'data' => $result,
+            'next_poll_in' => $nextInterval,
+            'user_activity' => $userActivity
+        ]);
+    }
 }

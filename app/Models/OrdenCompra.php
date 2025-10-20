@@ -7,7 +7,6 @@ use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OrdenCompra extends BaseModel
@@ -86,11 +85,9 @@ class OrdenCompra extends BaseModel
         return $this->hasMany(OrdenCompraDetalle::class);
     }
 
-    public function solicitudesPago(): BelongsToMany
+    public function solicitudesPago(): HasMany
     {
-        return $this->belongsToMany(SolicitudPago::class, 'orden_compra_solicitud_pago')
-            ->withPivot(['monto_asociado', 'fecha_vinculacion', 'notas'])
-            ->withTimestamps();
+        return $this->hasMany(SolicitudPago::class, 'referencia_oc', 'numero_orden');
     }
 
     /** ----------------
@@ -163,7 +160,7 @@ class OrdenCompra extends BaseModel
     public function actualizarContadores(): void
     {
         $this->sp_count = $this->solicitudesPago()->count();
-        $this->monto_sp_asociado = $this->solicitudesPago()->sum('orden_compra_solicitud_pago.monto_asociado');
+        $this->monto_sp_asociado = $this->solicitudesPago()->sum('monto_total');
         $this->save();
     }
 

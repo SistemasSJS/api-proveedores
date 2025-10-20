@@ -25,7 +25,7 @@ use App\Notifications\PushNotification;
 
 Route::get('status', function () {
     // Buscar el usuario con ID 3
-    $user = User::find(13);
+    $user = User::find(14);
 
     if (!$user) {
         return response()->json([
@@ -47,7 +47,7 @@ Route::get('status', function () {
 
     return response()->json([
         'status' => 'ok',
-        'message' => 'Notificación enviada al usuario 3',
+        'message' => 'Notificación enviada al usuario 14',
     ]);
 });
 

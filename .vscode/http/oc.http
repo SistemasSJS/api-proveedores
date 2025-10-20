@@ -30,7 +30,7 @@ X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 
 {
-  "numero_orden": "OC-2025-0001",
+  "numero_orden": "OC-2025-0002",
   "fecha_orden": "2025-10-19",
   "proveedor_id": {{proveedorId}},
   "empresa_construcc_id": {{empresaId}},

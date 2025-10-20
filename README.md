@@ -311,7 +311,7 @@ npm run build
 - [ ] Archivo `.env` configurado correctamente
 - [ ] Soketi instalado (`npm install -g @soketi/soketi`)
 - [ ] Socket server corriendo (puerto 6001)
-- [ ] Queue worker activo
+- [ ] Queue worker activope
 - [ ] Servidor PHP activo (puerto 8000)
 
 ## 💡 Tips para Desarrollo

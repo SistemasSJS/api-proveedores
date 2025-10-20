@@ -32,13 +32,6 @@ class OrdenCompraConversionService
             // Crear la solicitud de pago
             $solicitudPago = SolicitudPago::create($datosCompletos);
 
-            // Asociar con la orden de compra
-            $solicitudPago->asociarConOrdenCompra(
-                $ordenCompra,
-                $datosSolicitud['monto_total'],
-                $datosSolicitud['notas_vinculacion'] ?? null
-            );
-
             // Sincronizar cuentas bancarias si se proporcionan
             if ($cuentasBancarias) {
                 $solicitudPago->sincronizarCuentasBancarias($cuentasBancarias);
@@ -253,8 +246,11 @@ class OrdenCompraConversionService
      */
     private function actualizarEstadoOrdenCompra(OrdenCompra $ordenCompra): void
     {
-        // Actualizar contadores
-        $ordenCompra->actualizarContadores();
+        // Actualizar contadores basados en las SP con referencia_oc
+        $solicitudesAsociadas = SolicitudPago::where('referencia_oc', $ordenCompra->numero_orden)->get();
+        $ordenCompra->sp_count = $solicitudesAsociadas->count();
+        $ordenCompra->monto_sp_asociado = $solicitudesAsociadas->sum('monto_total');
+        $ordenCompra->save();
 
         // Si no queda monto disponible, marcar como completada
         if ($ordenCompra->getMontoDisponible() <= 0.01) {
@@ -272,7 +268,7 @@ class OrdenCompraConversionService
      */
     public function getConversionHistory(OrdenCompra $ordenCompra): array
     {
-        $solicitudesPago = $ordenCompra->solicitudesPago()
+        $solicitudesPago = SolicitudPago::where('referencia_oc', $ordenCompra->numero_orden)
             ->with(['proveedor', 'empresaConstrucc'])
             ->orderBy('created_at', 'desc')
             ->get();
@@ -291,9 +287,8 @@ class OrdenCompraConversionService
                     'fecha_creacion' => $sp->created_at,
                     'monto_total' => $sp->monto_total,
                     'estado_solicitud' => $sp->estado_solicitud,
-                    'monto_asociado_oc' => $sp->pivot->monto_asociado,
-                    'fecha_vinculacion' => $sp->pivot->fecha_vinculacion,
-                    'notas' => $sp->pivot->notas
+                    'monto_asociado_oc' => $sp->monto_total,
+                    'referencia_oc' => $sp->referencia_oc
                 ];
             })
         ];
