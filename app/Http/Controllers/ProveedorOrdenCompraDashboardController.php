@@ -109,40 +109,40 @@ class ProveedorOrdenCompraDashboardController extends Controller
         // Combinar OC y SP recientes
         $ocRecientes = OrdenCompra::where('proveedor_id', $proveedor->id)
             ->where('created_at', '>=', now()->subDays($dias))
-            ->with(['empresaConstrucc'])
+            ->with(OrdenCompra::eagerLodable())
             ->get()
             ->map(function ($oc) {
                 return [
                     'tipo' => 'orden_compra',
                     'id' => $oc->id,
                     'titulo' => "OC #{$oc->numero_orden}",
-                    'descripcion' => "Orden por \${$oc->importe_total} - {$oc->empresaConstrucc->nombre}",
+                    // 'descripcion' => "Orden por \${$oc->importe_total} - {$oc->empresaConstrucc->nombre}",
                     'fecha' => $oc->created_at,
                     'estado' => $oc->estado,
                     'metadata' => [
                         'numero_orden' => $oc->numero_orden,
                         'importe' => $oc->importe_total,
-                        'empresa' => $oc->empresaConstrucc->nombre,
+                        // 'empresa' => $oc->empresaConstrucc->nombre,
                     ],
                 ];
             });
 
         $spRecientes = SolicitudPago::where('proveedor_id', $proveedor->id)
             ->where('created_at', '>=', now()->subDays($dias))
-            ->with(['empresaConstrucc'])
+            ->with(SolicitudPago::eagerLodable())
             ->get()
             ->map(function ($sp) {
                 return [
                     'tipo' => 'solicitud_pago',
                     'id' => $sp->id,
                     'titulo' => "SP #{$sp->numero_folio_solicitud}",
-                    'descripcion' => "Solicitud por \${$sp->monto_total} - {$sp->empresaConstrucc->nombre}",
+                    // 'descripcion' => "Solicitud por \${$sp->monto_total} - {$sp->empresaConstrucc->nombre}",
                     'fecha' => $sp->created_at,
                     'estado' => $sp->estado_solicitud,
                     'metadata' => [
                         'numero_folio' => $sp->numero_folio_solicitud,
                         'monto' => $sp->monto_total,
-                        'empresa' => $sp->empresaConstrucc->nombre,
+                        // 'empresa' => $sp->empresaConstrucc->nombre,
                         'origen_oc' => $sp->origen_oc ?? false,
                     ],
                 ];
@@ -170,8 +170,7 @@ class ProveedorOrdenCompraDashboardController extends Controller
 
         // Tiempo promedio de conversión OC -> SP
         $tiempoConversion = DB::table('ordenes_compra')
-            ->join('orden_compra_solicitud_pago', 'ordenes_compra.id', '=', 'orden_compra_solicitud_pago.orden_compra_id')
-            ->join('solicitudes_pago', 'orden_compra_solicitud_pago.solicitud_pago_id', '=', 'solicitudes_pago.id')
+            ->join('solicitudes_pago', 'ordenes_compra.numero_orden', '=', 'solicitudes_pago.referencia_oc')
             ->where('ordenes_compra.proveedor_id', $proveedor->id)
             ->whereBetween('ordenes_compra.fecha_orden', [$fechaDesde, $fechaHasta])
             ->selectRaw('AVG(DATEDIFF(solicitudes_pago.created_at, ordenes_compra.fecha_orden)) as promedio_dias')
@@ -263,7 +262,7 @@ class ProveedorOrdenCompraDashboardController extends Controller
     private function getOrdenesRecientes(Proveedor $proveedor, int $limite)
     {
         return OrdenCompra::where('proveedor_id', $proveedor->id)
-            ->with(['empresaConstrucc'])
+            ->with(OrdenCompra::eagerLodable())
             ->orderBy('created_at', 'desc')
             ->limit($limite)
             ->get()
@@ -273,7 +272,7 @@ class ProveedorOrdenCompraDashboardController extends Controller
                     'numero_orden' => $oc->numero_orden,
                     'importe_total' => $oc->importe_total,
                     'estado' => $oc->estado,
-                    'empresa' => $oc->empresaConstrucc->nombre,
+                    // 'empresa' => $oc->empresaConstrucc->nombre,
                     'fecha_orden' => $oc->fecha_orden,
                     'sp_count' => $oc->sp_count,
                     'puede_generar_sp' => $oc->puedeGenerarSolicitudPago(),
@@ -328,10 +327,10 @@ class ProveedorOrdenCompraDashboardController extends Controller
     {
         $page = $request->input('page', 1);
         $limit = $request->input('limit', 10);
-        
+
         $query = OrdenCompra::where('proveedor_id', $proveedor->id)
             ->where('sp_count', 0)
-            ->with(['empresaConstrucc']);
+            ->with(OrdenCompra::eagerLodable());
 
         // Aplicar filtros opcionales
         if ($request->has('estado')) {
@@ -369,15 +368,15 @@ class ProveedorOrdenCompraDashboardController extends Controller
     {
         $totalOC = OrdenCompra::where('proveedor_id', $proveedor->id)->count();
         $totalSP = SolicitudPago::where('proveedor_id', $proveedor->id)->count();
-        
+
         $ocPendientes = OrdenCompra::where('proveedor_id', $proveedor->id)
             ->where('estado', EstadoOrdenCompra::PENDIENTE)
             ->count();
-            
+
         $ocSinSP = OrdenCompra::where('proveedor_id', $proveedor->id)
             ->where('sp_count', 0)
             ->count();
-            
+
         $spPendientes = SolicitudPago::where('proveedor_id', $proveedor->id)
             ->where('estado_solicitud', 'pendiente')
             ->count();
@@ -440,7 +439,8 @@ class ProveedorOrdenCompraDashboardController extends Controller
 
         $ordenes = OrdenCompra::where('proveedor_id', $proveedor->id)
             ->disponiblesParaConversion()
-            ->with(['empresaConstrucc', 'detalles'])
+            // ->with(['empresaConstrucc', 'detalles'])
+            ->with(OrdenCompra::eagerLodable())
             ->selectRaw('*, 
                 (importe_total - monto_sp_asociado) as monto_disponible,
                 DATEDIFF(NOW(), COALESCE(fecha_aprobacion, created_at)) as dias_sin_sp')
@@ -523,7 +523,7 @@ class ProveedorOrdenCompraDashboardController extends Controller
      * Muestra detalle de una orden de compra específica (sin contexto de proveedor)
      * Endpoint directo para el segmento gerente
      */
-    public function showDirecto(Proveedor $proveedor,OrdenCompra $ordenCompra): JsonResponse
+    public function showDirecto(Proveedor $proveedor, OrdenCompra $ordenCompra): JsonResponse
     {
         $ordenCompra->load([
             'detalles',
@@ -547,7 +547,7 @@ class ProveedorOrdenCompraDashboardController extends Controller
      * Obtiene solicitudes de pago de una OC específica (sin contexto de proveedor)
      * Endpoint directo para el segmento gerente
      */
-    public function getSolicitudesPagoDirecto(Proveedor $proveedor,OrdenCompra $ordenCompra): JsonResponse
+    public function getSolicitudesPagoDirecto(Proveedor $proveedor, OrdenCompra $ordenCompra): JsonResponse
     {
         $solicitudesPago = $ordenCompra->solicitudesPago()
             ->with(['proveedor', 'empresaConstrucc', 'cuentasBancarias'])
@@ -567,7 +567,7 @@ class ProveedorOrdenCompraDashboardController extends Controller
                 'monto_sp_asociado' => $ordenCompra->monto_sp_asociado,
                 'monto_disponible' => $ordenCompra->getMontoDisponible(),
                 'proveedor' => $ordenCompra->proveedor->razon_social ?? 'N/A',
-                'empresa' => $ordenCompra->empresaConstrucc->nombre ?? 'N/A'
+                // 'empresa' => $ordenCompra->empresaConstrucc->nombre ?? 'N/A'
             ],
             'solicitudes_pago' => $solicitudesPago
         ]);
@@ -577,13 +577,12 @@ class ProveedorOrdenCompraDashboardController extends Controller
      * Listado general de órdenes de compra para el segmento gerente
      * Sin contexto de proveedor específico
      */
-    public function indexGeneral(Proveedor $proveedor,Request $request): JsonResponse
+    public function indexGeneral(Proveedor $proveedor, Request $request): JsonResponse
     {
         $filters = $request->only(OrdenCompra::getFilters());
         $sortBy = $request->input('sort_by', 'created_at');
         $order = $request->input('order', 'desc');
         $perPage = $request->input('per_page', 15);
-        
         // Filtros adicionales para gerentes
         $proveedorId = $request->input('proveedor_id');
         $empresaId = $request->input('empresa_construcc_id');
@@ -592,12 +591,10 @@ class ProveedorOrdenCompraDashboardController extends Controller
             ->with(['proveedor', 'empresaConstrucc', 'detalles'])
             ->filter($filters)
             ->orderBy($sortBy, $order);
-            
         // Aplicar filtros específicos si se proporcionan
         if ($proveedorId) {
             $query->where('proveedor_id', $proveedorId);
         }
-        
         if ($empresaId) {
             $query->where('empresa_construcc_id', $empresaId);
         }

@@ -47,7 +47,8 @@ class DatabaseSeeder extends Seeder
                 CotizacionesSeeder::class,
                 // PedidosSeeder::class,
 
-                OrdenCompraSeeder::class,
+                // OrdenCompraSeeder::class,
+                EmpresaConstruccSeeder::class,
             ]);
 
             // ================================================================
@@ -69,10 +70,10 @@ class DatabaseSeeder extends Seeder
                 CotizacionDetalleSeeder::class,
 
                 // 4. Órdenes de compra (requerido antes de SP para relaciones)
-                OrdenCompraSeeder::class,
+                // OrdenCompraSeeder::class,
 
                 // 5. Solicitudes de pago basadas en cotizaciones
-                SolicitudPagoSeeder::class,
+                // SolicitudPagoSeeder::class,
             ]);
 
             echo "\n";

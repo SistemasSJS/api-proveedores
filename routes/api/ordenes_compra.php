@@ -11,7 +11,6 @@ use App\Http\Controllers\OrdenCompraController;
 | Rutas principales para la gestión de órdenes de compra (OC).
 | Incluye operaciones CRUD, consultas, estadísticas y conversiones.
 |
-*/
 
 Route::middleware(['auth:sanctum'])->group(function () {
     
@@ -93,3 +92,4 @@ Route::middleware(['auth:sanctum'])->group(function () {
             ->name('reportes.ordenes-compra.pendientes');
     });
 });
+*/
