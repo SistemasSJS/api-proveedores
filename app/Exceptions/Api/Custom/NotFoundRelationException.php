@@ -4,8 +4,6 @@ namespace App\Exceptions\Api\Custom;
 
 use App\Exceptions\Api\BaseApiException;
 
-
-
 /**
  * @OA\Schema(
  *     schema="NotFoundRelationException",
@@ -13,6 +11,7 @@ use App\Exceptions\Api\BaseApiException;
  *     description="Se lanza cuando no se encuentra la relación solicitada.",
  *     type="object",
  *     required={"message", "errorType"},
+ *
  *     @OA\Property(
  *         property="message",
  *         type="string",
@@ -28,6 +27,7 @@ use App\Exceptions\Api\BaseApiException;
 class NotFoundRelationException extends BaseApiException
 {
     protected string $errorType = 'not_found_relation';
+
     protected int $statusCode = 404;
 
     public function __construct(string $message = 'Relación no encontrada.')

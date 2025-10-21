@@ -10,7 +10,6 @@ class ConstruccProductoResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @param Request $request
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
@@ -48,7 +47,7 @@ class ConstruccProductoResource extends JsonResource
             'imagen_principal' => $this->imagen_principal
                 ? (preg_match('/^https?:\/\//', $this->imagen_principal)
                     ? $this->imagen_principal
-                    : asset('storage/' . $this->imagen_principal))
+                    : asset('storage/'.$this->imagen_principal))
                 : null,
 
             // Relación con proveedor (información básica)
@@ -60,7 +59,7 @@ class ConstruccProductoResource extends JsonResource
                     'logo' => $this->proveedor->logo
                         ? (preg_match('/^https?:\/\//', $this->proveedor->logo)
                             ? $this->proveedor->logo
-                            : asset('storage/' . $this->proveedor->logo))
+                            : asset('storage/'.$this->proveedor->logo))
                         : null,
                 ];
             }),
@@ -90,7 +89,7 @@ class ConstruccProductoResource extends JsonResource
                     'logo' => $this->marca->logo
                         ? (preg_match('/^https?:\/\//', $this->marca->logo)
                             ? $this->marca->logo
-                            : asset('storage/' . $this->marca->logo))
+                            : asset('storage/'.$this->marca->logo))
                         : null,
                 ] : null;
             }),
@@ -124,7 +123,7 @@ class ConstruccProductoResource extends JsonResource
                         'url' => $imagen->url
                             ? (preg_match('/^https?:\/\//', $imagen->url)
                                 ? $imagen->url
-                                : asset('storage/' . $imagen->url))
+                                : asset('storage/'.$imagen->url))
                             : null,
                         'descripcion' => $imagen->descripcion,
                         'orden' => $imagen->orden,
@@ -142,7 +141,6 @@ class ConstruccProductoResource extends JsonResource
     /**
      * Get additional data that should be returned with the resource array.
      *
-     * @param Request $request
      * @return array<string, mixed>
      */
     public function with(Request $request): array

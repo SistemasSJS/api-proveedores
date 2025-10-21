@@ -15,11 +15,11 @@ class UnidadMedidaResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'         => $this->id,
-            'nombre'     => $this->nombre,
-            'clave'     => $this->clave,
-            'descripcion'     => $this->descripcion,
-            'estatus'    => $this->estatus,
+            'id' => $this->id,
+            'nombre' => $this->nombre,
+            'clave' => $this->clave,
+            'descripcion' => $this->descripcion,
+            'estatus' => $this->estatus,
             'created_at' => $this->created_at?->toDateTimeString(),
             'updated_at' => $this->updated_at?->toDateTimeString(),
         ];

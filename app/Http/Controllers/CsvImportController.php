@@ -2,33 +2,32 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Proveedor;
-use App\Models\ImportAudit;
-use App\Models\Producto;
-use Illuminate\Http\Request;
-use App\Traits\ApiResponse;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
-use App\Services\CSVImport\CSVProcessorService;
-use App\Services\CSVImport\CSVImportProductValidator;
-use App\Services\CSVImport\CSVImportExportService;
 use App\Http\Responses\CsvUploadResponse;
-use App\Http\Responses\CsvConfirmResponse;
 use App\Http\Responses\CsvValidateProductResponse;
-use App\Models\Categoria;
-use App\Models\Marca;
-use App\Models\UnidadMedida;
 use App\Jobs\CSVImportJob;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\DB;
+use App\Models\Categoria;
+use App\Models\ImportAudit;
+use App\Models\Marca;
+use App\Models\Producto;
+use App\Models\Proveedor;
+use App\Models\UnidadMedida;
+use App\Services\CSVImport\CSVImportExportService;
+use App\Services\CSVImport\CSVImportProductValidator;
+use App\Services\CSVImport\CSVProcessorService;
+use App\Traits\ApiResponse;
 use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class CsvImportController extends Controller
 {
     use ApiResponse;
 
     protected CSVProcessorService $csvProcessor;
+
     protected CSVImportExportService $exportService;
 
     public function __construct(CSVProcessorService $csvProcessor, CSVImportExportService $exportService)
@@ -72,18 +71,18 @@ class CsvImportController extends Controller
                 'has_header' => $request->get('has_header', true),
                 'preview_rows' => $request->get('preview_rows', 100),
                 'strict_validation' => true,
-                'auto_create_relations' => false
+                'auto_create_relations' => false,
             ];
 
             // Procesar archivo CSV y generar preview
             $processingResult = $this->csvProcessor->processCSVPreview($file, $proveedor->id, $options);
 
-            if (!$processingResult['success']) {
+            if (! $processingResult['success']) {
                 return $this->error($processingResult['error'], 422);
             }
 
             // Guardar el archivo
-            $filename = "csv_import_{$proveedor->id}_" . time() . '.' . $originalExtension;
+            $filename = "csv_import_{$proveedor->id}_".time().'.'.$originalExtension;
             $path = $file->storeAs('imports', $filename, 'local');
 
             // Crear registro de auditoría
@@ -103,16 +102,16 @@ class CsvImportController extends Controller
                     'preview_data' => $processingResult['preview_data'],
                     'validation_summary' => $processingResult['validation_summary'],
                     'quality_metrics' => $processingResult['quality_metrics'],
-                    'preview_token' => $processingResult['preview_token']
+                    'preview_token' => $processingResult['preview_token'],
                 ],
                 'total_registros' => $processingResult['file_info']['total_rows'],
-                'progreso' => 100
+                'progreso' => 100,
             ]);
 
             $audit->appendLog('Archivo CSV cargado y analizado correctamente', [
                 'filename' => $file->getClientOriginalName(),
                 'size' => $file->getSize(),
-                'total_rows' => $processingResult['file_info']['total_rows']
+                'total_rows' => $processingResult['file_info']['total_rows'],
             ]);
 
             $response = CsvUploadResponse::fromProcessorResult($audit->id, $jobId, $processingResult);
@@ -122,10 +121,10 @@ class CsvImportController extends Controller
             Log::error('Error en upload CSV', [
                 'proveedor_id' => $id,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
-            return $this->error('Error al procesar el archivo: ' . $e->getMessage(), 500);
+            return $this->error('Error al procesar el archivo: '.$e->getMessage(), 500);
         }
     }
 
@@ -162,13 +161,13 @@ class CsvImportController extends Controller
                 // ->where('estado', 'preview')
                 ->first();
 
-            if (!$audit) {
+            if (! $audit) {
                 return $this->error('No se encontró la importación o ya fue procesada', 404);
             }
 
             // Verificar que tenemos el token de preview
             $previewData = $audit->preview_data;
-            if (!$previewData || $previewData['preview_token'] !== $request->preview_token) {
+            if (! $previewData || $previewData['preview_token'] !== $request->preview_token) {
                 return $this->error('Token de preview inválido', 400);
             }
 
@@ -188,7 +187,7 @@ class CsvImportController extends Controller
 
             $audit->appendLog('Importación confirmada, iniciando procesamiento asíncrono', [
                 'options' => $importOptions,
-                'preview_token' => $request->preview_token
+                'preview_token' => $request->preview_token,
             ]);
 
             // Despachar job de importación asíncrono
@@ -218,17 +217,17 @@ class CsvImportController extends Controller
                 ]);
 
                 $audit->appendLog('Error al confirmar importación', [
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ], 'error');
             }
 
             Log::error('Error en confirm CSV import', [
                 'proveedor_id' => $id,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
-            return $this->error('Error al confirmar la importación: ' . $e->getMessage(), 500);
+            return $this->error('Error al confirmar la importación: '.$e->getMessage(), 500);
         }
     }
 
@@ -247,7 +246,7 @@ class CsvImportController extends Controller
                 ->where('proveedor_id', $proveedor->id)
                 ->first();
 
-            if (!$audit) {
+            if (! $audit) {
                 return $this->error('No se encontró la importación solicitada', 404);
             }
 
@@ -275,10 +274,10 @@ class CsvImportController extends Controller
                 'proveedor_id' => $id,
                 'audit_id' => $auditId,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
-            return $this->error('Error al obtener el estado de la importación: ' . $e->getMessage(), 500);
+            return $this->error('Error al obtener el estado de la importación: '.$e->getMessage(), 500);
         }
     }
 
@@ -297,7 +296,7 @@ class CsvImportController extends Controller
                 ->where('proveedor_id', $proveedor->id)
                 ->first();
 
-            if (!$audit) {
+            if (! $audit) {
                 return $this->error('No se encontró la importación solicitada', 404);
             }
 
@@ -315,14 +314,14 @@ class CsvImportController extends Controller
                 'processing_time' => $this->calculateProcessingTime($audit),
                 'file_info' => [
                     'name' => basename($audit->archivo ?? 'archivo.csv'),
-                    'size' => $this->getFileSize($audit->archivo)
+                    'size' => $this->getFileSize($audit->archivo),
                 ],
                 'estadisticas' => [
                     'total_processed' => $audit->total_registros ?? 0,
                     'created' => $audit->nuevos ?? 0,
                     'updated' => $audit->actualizados ?? 0,
                     'errors' => $audit->errores ?? 0,
-                    'success_rate' => $this->calculateSuccessRate($audit)
+                    'success_rate' => $this->calculateSuccessRate($audit),
                 ],
                 'breakdown' => [
                     'productos' => [
@@ -335,17 +334,17 @@ class CsvImportController extends Controller
                     'marcas' => [
                         'imported' => $audit->marca_imported,
                         'errors' => $audit->marca_errors,
-                        'total' => $audit->marca_total
+                        'total' => $audit->marca_total,
                     ],
                     'categorias' => [
                         'imported' => $audit->categoria_imported,
                         'errors' => $audit->categoria_errors,
-                        'total' => $audit->categoria_total
+                        'total' => $audit->categoria_total,
                     ],
                     'unidades' => [
                         'imported' => $audit->unidad_imported,
                         'errors' => $audit->unidad_errors,
-                        'total' => $audit->unidad_total
+                        'total' => $audit->unidad_total,
                     ],
                 ],
                 'errores_detalle' => $audit->errores_detalle ?? [],
@@ -360,10 +359,10 @@ class CsvImportController extends Controller
                 'proveedor_id' => $id,
                 'audit_id' => $auditId,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
-            return $this->error('Error al obtener los resultados de la importación: ' . $e->getMessage(), 500);
+            return $this->error('Error al obtener los resultados de la importación: '.$e->getMessage(), 500);
         }
     }
 
@@ -381,7 +380,7 @@ class CsvImportController extends Controller
             // Validar parámetros de entrada
             $request->validate([
                 'format' => 'nullable|string|in:xlsx,csv,pdf',
-                'type' => 'nullable|string|in:report,data,summary'
+                'type' => 'nullable|string|in:report,data,summary',
             ]);
 
             // Obtener parámetros con valores por defecto
@@ -393,12 +392,12 @@ class CsvImportController extends Controller
                 ->where('proveedor_id', $proveedor->id)
                 ->first();
 
-            if (!$audit) {
+            if (! $audit) {
                 return $this->error('No se encontró la importación solicitada', 404);
             }
 
             // Verificar que la importación esté completada
-            if (!in_array($audit->estado, ['completado', 'error'])) {
+            if (! in_array($audit->estado, ['completado', 'error'])) {
                 return $this->error('La importación debe estar completada para poder exportar los resultados', 400);
             }
 
@@ -408,7 +407,7 @@ class CsvImportController extends Controller
                 'proveedor_id' => $id,
                 'format' => $format,
                 'type' => $type,
-                'user' => auth()->user()->id ?? 'anonymous'
+                'user' => auth()->user()->id ?? 'anonymous',
             ]);
 
             // Usar el servicio de exportación
@@ -420,10 +419,10 @@ class CsvImportController extends Controller
                 'format' => $request->get('format', 'xlsx'),
                 'type' => $request->get('type', 'report'),
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
-            return $this->error('Error al exportar los resultados: ' . $e->getMessage(), 500);
+            return $this->error('Error al exportar los resultados: '.$e->getMessage(), 500);
         }
     }
 
@@ -439,19 +438,19 @@ class CsvImportController extends Controller
 
             // Validar datos de entrada
             $request->validate([
-                'producto'                  => 'required|array',
-                'producto.codigo'           => 'required|string|max:255',
-                'producto.producto'         => 'required|string|max:255',
-                'producto.descripcion'      => 'nullable|string|max:1000',
-                'producto.modelo'           => 'nullable|string|max:255',
-                'producto.marca'            => 'nullable|string|max:255',
-                'producto.categoria'        => 'nullable|string|max:255',
-                'producto.subcategoria'     => 'nullable|string|max:255',
-                'producto.unidad_medida'    => 'nullable|string|max:100',
-                'producto.precio_base'            => 'nullable|numeric|min:0',
-                'producto.precio_mayoreo'   => 'nullable|numeric|min:0',
-                'producto.precio_menudeo'   => 'nullable|numeric|min:0',
-                'strict_validation'         => 'nullable|boolean'
+                'producto' => 'required|array',
+                'producto.codigo' => 'required|string|max:255',
+                'producto.producto' => 'required|string|max:255',
+                'producto.descripcion' => 'nullable|string|max:1000',
+                'producto.modelo' => 'nullable|string|max:255',
+                'producto.marca' => 'nullable|string|max:255',
+                'producto.categoria' => 'nullable|string|max:255',
+                'producto.subcategoria' => 'nullable|string|max:255',
+                'producto.unidad_medida' => 'nullable|string|max:100',
+                'producto.precio_base' => 'nullable|numeric|min:0',
+                'producto.precio_mayoreo' => 'nullable|numeric|min:0',
+                'producto.precio_menudeo' => 'nullable|numeric|min:0',
+                'strict_validation' => 'nullable|boolean',
             ]);
 
             $productoData = $request->get('producto');
@@ -474,14 +473,14 @@ class CsvImportController extends Controller
                 'id' => $existingProduct->id,
                 'nombre' => $existingProduct->nombre,
                 'precio_base' => $existingProduct->precio,
-                'updated_at' => $existingProduct->updated_at
+                'updated_at' => $existingProduct->updated_at,
             ] : null;
 
             $recommendedActions = $this->getRecommendedActions(['is_valid' => $isValid, 'errors' => $validationResult['errors']], $existingProduct);
 
             $response = CsvValidateProductResponse::fromValidation(
                 $validationResult,
-                !is_null($existingProduct),
+                ! is_null($existingProduct),
                 $existingProductData,
                 $recommendedActions
             );
@@ -496,10 +495,10 @@ class CsvImportController extends Controller
                 'proveedor_id' => $id,
                 'error' => $e->getMessage(),
                 'producto_data' => $request->get('producto', []),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
-            return $this->error('Error al validar el producto: ' . $e->getMessage(), 500);
+            return $this->error('Error al validar el producto: '.$e->getMessage(), 500);
         }
     }
 
@@ -509,9 +508,8 @@ class CsvImportController extends Controller
      * Procesa los datos obtenidos desde la vista previa en caché, valida, registra catálogos,
      * y realiza inserciones/actualizaciones en la base de datos en chunks.
      *
-     * @param ImportAudit $audit   Registro de auditoría de la importación.
-     * @param array       $options Opciones adicionales de importación (ej. ['skip_duplicates' => true]).
-     *
+     * @param  ImportAudit  $audit  Registro de auditoría de la importación.
+     * @param  array  $options  Opciones adicionales de importación (ej. ['skip_duplicates' => true]).
      * @return array{
      *     success: bool,
      *     stats?: array{
@@ -544,7 +542,7 @@ class CsvImportController extends Controller
      *     'error_details' => [...]
      *   ]
      */
-    private function  executeImport(ImportAudit $audit, array $options): array
+    private function executeImport(ImportAudit $audit, array $options): array
     {
         $startTime = microtime(true);
         $stats = [
@@ -553,7 +551,7 @@ class CsvImportController extends Controller
             'updated' => 0,
             'errors' => 0,
             'skipped' => 0,
-            'success_rate' => 0
+            'success_rate' => 0,
         ];
         $errorDetails = [];
 
@@ -562,11 +560,11 @@ class CsvImportController extends Controller
             $previewToken = $audit->preview_data['preview_token'] ?? null;
             // Intentar primero desde tabla temporal, luego fallback a caché
             $cachedData = $this->csvProcessor->getTempTablePreviewData($previewToken);
-            if (!$cachedData) {
+            if (! $cachedData) {
                 $cachedData = $this->csvProcessor->getCachedPreviewData($previewToken);
             }
 
-            if (!$cachedData) {
+            if (! $cachedData) {
                 throw new \Exception('Datos de preview expirados. Por favor, suba el archivo nuevamente.');
             }
 
@@ -577,11 +575,11 @@ class CsvImportController extends Controller
             $catalogos = [
                 'marcas' => collect($productsData)->pluck('marca')->filter()->unique()->values()->toArray(),
                 'unidades' => collect($productsData)->pluck('unidad_medida')->filter()->unique()->values()->toArray(),
-                'categorias' => []
+                'categorias' => [],
             ];
 
             foreach ($productsData as $p) {
-                if (!empty($p['categoria']) && !empty($p['subcategoria'])) {
+                if (! empty($p['categoria']) && ! empty($p['subcategoria'])) {
                     $catalogos['categorias'][$p['categoria']][] = $p['subcategoria'];
                 }
             }
@@ -609,16 +607,16 @@ class CsvImportController extends Controller
             $categoriasMap = Categoria::where('proveedor_id', $proveedorId)
                 ->get()
                 ->groupBy('nivel')
-                ->map(fn($items) => $items->keyBy('nombre'));
+                ->map(fn ($items) => $items->keyBy('nombre'));
 
             foreach ($productsData as &$p) {
                 $p['marca_id'] = $marcasMap[$p['marca']] ?? null;
                 $p['unidad_medida_id'] = $unidadesMap[$p['unidad_medida']] ?? null;
 
-                if (!empty($p['categoria'])) {
+                if (! empty($p['categoria'])) {
                     $cat = $categoriasMap[1][$p['categoria']] ?? null;
                     $sub = null;
-                    if ($cat && !empty($p['subcategoria'])) {
+                    if ($cat && ! empty($p['subcategoria'])) {
                         $sub = $categoriasMap[2]->where('parent_id', $cat->id)->firstWhere('nombre', $p['subcategoria']);
                     }
                     $p['categoria_id'] = $cat->id ?? null;
@@ -643,13 +641,14 @@ class CsvImportController extends Controller
                         $validationResult = $validator->validateRow($productData, $stats['total_processed']);
                         $isValid = empty($validationResult['errors']);
 
-                        if (!$isValid && empty($options['skip_duplicates'])) {
+                        if (! $isValid && empty($options['skip_duplicates'])) {
                             $stats['errors']++;
                             $errorDetails[] = [
                                 'producto' => $productData,
                                 'errores' => $validationResult['errors'],
-                                'tipo_error' => 'validacion'
+                                'tipo_error' => 'validacion',
                             ];
+
                             continue;
                         }
 
@@ -669,7 +668,7 @@ class CsvImportController extends Controller
                         ];
                     }
 
-                    if (!empty($upsertData)) {
+                    if (! empty($upsertData)) {
                         Producto::upsert(
                             $upsertData,
                             ['codigo_interno', 'proveedor_id'],
@@ -700,7 +699,7 @@ class CsvImportController extends Controller
                     $stats['errors'] += count($chunk);
                     $errorDetails[] = [
                         'error' => $e->getMessage(),
-                        'tipo_error' => 'chunk'
+                        'tipo_error' => 'chunk',
                     ];
                 }
             }
@@ -721,42 +720,40 @@ class CsvImportController extends Controller
                 'success' => true,
                 'stats' => $stats,
                 'processing_time' => $processingTime,
-                'error_details' => $errorDetails
+                'error_details' => $errorDetails,
             ];
         } catch (\Exception $e) {
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
                 'stats' => $stats,
-                'error_details' => $errorDetails
+                'error_details' => $errorDetails,
             ];
         }
     }
 
-
     /**
      * Registra los catálogos de marcas, unidades y categorías/subcategorías en la base de datos.
      *
-     * @param array $catalogos
-     *     Estructura esperada:
-     *     [
-     *         'marcas' => ['Marca1', 'Marca2', ...],
-     *         'unidades' => ['kg', 'm', 'l', ...],
-     *         'categorias' => [
-     *             'Categoria1' => ['Subcategoria1', 'Subcategoria2', ...],
-     *             'Categoria2' => ['SubcategoriaA', 'SubcategoriaB', ...],
-     *         ],
-     *     ]
-     * @param int $proveedorId ID del proveedor al que se asociarán los registros
-     *
+     * @param  array  $catalogos
+     *                            Estructura esperada:
+     *                            [
+     *                            'marcas' => ['Marca1', 'Marca2', ...],
+     *                            'unidades' => ['kg', 'm', 'l', ...],
+     *                            'categorias' => [
+     *                            'Categoria1' => ['Subcategoria1', 'Subcategoria2', ...],
+     *                            'Categoria2' => ['SubcategoriaA', 'SubcategoriaB', ...],
+     *                            ],
+     *                            ]
+     * @param  int  $proveedorId  ID del proveedor al que se asociarán los registros
      * @return void
      */
     public function registrarCatalogos(array $catalogos, int $proveedorId): array
     {
         $catalogosImportResults = [
-            "marcas" => ["imported" => 0, "errors" => 0, "total" => 0],
-            "categorias" => ["imported" => 0, "errors" => 0, "total" => 0],
-            "unidades" => ["imported" => 0, "errors" => 0, "total" => 0],
+            'marcas' => ['imported' => 0, 'errors' => 0, 'total' => 0],
+            'categorias' => ['imported' => 0, 'errors' => 0, 'total' => 0],
+            'unidades' => ['imported' => 0, 'errors' => 0, 'total' => 0],
         ];
 
         // --- Registrar marcas ---
@@ -816,7 +813,6 @@ class CsvImportController extends Controller
             }
         }
 
-
         return $catalogosImportResults;
     }
 
@@ -827,11 +823,11 @@ class CsvImportController extends Controller
     {
         $actions = [];
 
-        if (!$validationResult['is_valid']) {
+        if (! $validationResult['is_valid']) {
             $actions[] = [
                 'accion' => 'corregir_errores',
                 'descripcion' => 'Corregir los errores de validación antes de proceder',
-                'prioridad' => 'alta'
+                'prioridad' => 'alta',
             ];
         }
 
@@ -839,7 +835,7 @@ class CsvImportController extends Controller
             $actions[] = [
                 'accion' => 'actualizar_existente',
                 'descripcion' => 'Actualizar el producto existente con los nuevos datos',
-                'prioridad' => 'media'
+                'prioridad' => 'media',
             ];
         }
 
@@ -847,7 +843,7 @@ class CsvImportController extends Controller
             $actions[] = [
                 'accion' => 'crear_producto',
                 'descripcion' => 'El producto puede ser creado sin problemas',
-                'prioridad' => 'baja'
+                'prioridad' => 'baja',
             ];
         }
 
@@ -862,6 +858,7 @@ class CsvImportController extends Controller
         if ($audit->inicio_proceso && $audit->fin_proceso) {
             return round($audit->fin_proceso->diffInSeconds($audit->inicio_proceso, true), 2);
         }
+
         return 0.0;
     }
 
@@ -870,7 +867,7 @@ class CsvImportController extends Controller
      */
     private function getFileSize(?string $filePath): int
     {
-        if (!$filePath) {
+        if (! $filePath) {
             return 0;
         }
 
@@ -881,7 +878,7 @@ class CsvImportController extends Controller
         } catch (Exception $e) {
             Log::warning('Error getting file size', [
                 'file_path' => $filePath,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
 
@@ -899,6 +896,7 @@ class CsvImportController extends Controller
         }
 
         $successful = ($audit->nuevos ?? 0) + ($audit->actualizados ?? 0);
+
         return round(($successful / $totalProcessed) * 100, 2);
     }
 
@@ -921,7 +919,7 @@ class CsvImportController extends Controller
                 'id' => "item_{$i}",
                 'name' => "Producto creado {$i}",
                 'category' => 'productos',
-                'action' => 'created'
+                'action' => 'created',
             ];
         }
 
@@ -930,7 +928,7 @@ class CsvImportController extends Controller
                 'id' => "updated_{$i}",
                 'name' => "Producto actualizado {$i}",
                 'category' => 'productos',
-                'action' => 'updated'
+                'action' => 'updated',
             ];
         }
 
@@ -952,7 +950,7 @@ class CsvImportController extends Controller
             'semicolon' => ';',
             'tab' => "\t",
             'pipe' => '|',
-            'colon' => ':'
+            'colon' => ':',
         ];
 
         // Si es un string conocido, retornar el carácter
@@ -973,8 +971,9 @@ class CsvImportController extends Controller
             default:
                 // Si no es reconocido, usar coma como default
                 Log::warning('Delimitador no reconocido, usando coma como default', [
-                    'delimiter_received' => $delimiter
+                    'delimiter_received' => $delimiter,
                 ]);
+
                 return ',';
         }
     }
@@ -989,14 +988,16 @@ class CsvImportController extends Controller
         $estimatedSeconds = $totalRecords * $secondsPerRecord;
 
         if ($estimatedSeconds < 60) {
-            return round($estimatedSeconds) . ' segundos';
+            return round($estimatedSeconds).' segundos';
         } elseif ($estimatedSeconds < 3600) {
             $minutes = round($estimatedSeconds / 60);
-            return $minutes . ' minutos';
+
+            return $minutes.' minutos';
         } else {
             $hours = floor($estimatedSeconds / 3600);
             $minutes = round(($estimatedSeconds % 3600) / 60);
-            return $hours . 'h ' . $minutes . 'm';
+
+            return $hours.'h '.$minutes.'m';
         }
     }
 
@@ -1016,7 +1017,7 @@ class CsvImportController extends Controller
      */
     private function estimateRemainingTime(ImportAudit $audit): ?string
     {
-        if (!$audit->inicio_proceso || $audit->progreso <= 0) {
+        if (! $audit->inicio_proceso || $audit->progreso <= 0) {
             return null;
         }
 
@@ -1033,11 +1034,11 @@ class CsvImportController extends Controller
         $remainingSeconds = $remainingProgress / $rate;
 
         if ($remainingSeconds < 60) {
-            return round($remainingSeconds) . ' segundos';
+            return round($remainingSeconds).' segundos';
         } elseif ($remainingSeconds < 3600) {
-            return round($remainingSeconds / 60) . ' minutos';
+            return round($remainingSeconds / 60).' minutos';
         } else {
-            return round($remainingSeconds / 3600, 1) . ' horas';
+            return round($remainingSeconds / 3600, 1).' horas';
         }
     }
 
@@ -1083,7 +1084,7 @@ class CsvImportController extends Controller
             return [
                 'total' => 0,
                 'types' => [],
-                'recent' => []
+                'recent' => [],
             ];
         }
 
@@ -1097,7 +1098,7 @@ class CsvImportController extends Controller
         return [
             'total' => $errorsCount,
             'types' => $errorTypes,
-            'recent' => array_slice($errorDetails, -3) // Last 3 errors
+            'recent' => array_slice($errorDetails, -3), // Last 3 errors
         ];
     }
 }

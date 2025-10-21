@@ -3,8 +3,8 @@
 namespace App\Policies;
 
 use App\Models\Pedido;
-use App\Models\User;
 use App\Models\Proveedor;
+use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class PedidoPolicy
@@ -75,7 +75,7 @@ class PedidoPolicy
     public function viewProveedorPedidos(User $user, Proveedor $proveedor): bool
     {
         // El usuario debe tener relación con el proveedor
-        if (!$user->proveedores()->where('proveedor_id', $proveedor->id)->exists()) {
+        if (! $user->proveedores()->where('proveedor_id', $proveedor->id)->exists()) {
             return false;
         }
 
@@ -89,7 +89,7 @@ class PedidoPolicy
     public function updateProveedorPedidos(User $user, Proveedor $proveedor): bool
     {
         // El usuario debe tener relación con el proveedor
-        if (!$user->proveedores()->where('proveedor_id', $proveedor->id)->exists()) {
+        if (! $user->proveedores()->where('proveedor_id', $proveedor->id)->exists()) {
             return false;
         }
 
@@ -103,7 +103,7 @@ class PedidoPolicy
     public function manageShipments(User $user, Proveedor $proveedor): bool
     {
         // El usuario debe tener relación con el proveedor
-        if (!$user->proveedores()->where('proveedor_id', $proveedor->id)->exists()) {
+        if (! $user->proveedores()->where('proveedor_id', $proveedor->id)->exists()) {
             return false;
         }
 
@@ -117,7 +117,7 @@ class PedidoPolicy
     public function confirmDeliveries(User $user, Proveedor $proveedor): bool
     {
         // El usuario debe tener relación con el proveedor
-        if (!$user->proveedores()->where('proveedor_id', $proveedor->id)->exists()) {
+        if (! $user->proveedores()->where('proveedor_id', $proveedor->id)->exists()) {
             return false;
         }
 
@@ -131,7 +131,7 @@ class PedidoPolicy
     public function rejectPedidos(User $user, Proveedor $proveedor): bool
     {
         // El usuario debe tener relación con el proveedor
-        if (!$user->proveedores()->where('proveedor_id', $proveedor->id)->exists()) {
+        if (! $user->proveedores()->where('proveedor_id', $proveedor->id)->exists()) {
             return false;
         }
 
@@ -154,7 +154,7 @@ class PedidoPolicy
     public function exportProveedorPedidos(User $user, Proveedor $proveedor): bool
     {
         // El usuario debe tener relación con el proveedor
-        if (!$user->proveedores()->where('proveedor_id', $proveedor->id)->exists()) {
+        if (! $user->proveedores()->where('proveedor_id', $proveedor->id)->exists()) {
             return false;
         }
 
@@ -168,7 +168,7 @@ class PedidoPolicy
     public function viewDashboard(User $user, Proveedor $proveedor): bool
     {
         // El usuario debe tener relación con el proveedor
-        if (!$user->proveedores()->where('proveedor_id', $proveedor->id)->exists()) {
+        if (! $user->proveedores()->where('proveedor_id', $proveedor->id)->exists()) {
             return false;
         }
 

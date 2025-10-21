@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\EstadoSP;
 use App\Enums\EstadoSolicitud;
+use App\Enums\EstadoSP;
 use App\Http\Requests\Construcc\SolicitudPagoAutorizarRequest;
 use App\Http\Requests\Construcc\SolicitudPagoConfirmarPagoRequest;
 use App\Http\Requests\Construcc\SolicitudPagoRechazarRequest;
@@ -14,9 +14,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
-use Tymon\JWTAuth\Claims\JwtId;
-
-use function PHPUnit\Framework\returnSelf;
 
 class ConstruccSolicitudPagoController extends Controller
 {
@@ -43,8 +40,8 @@ class ConstruccSolicitudPagoController extends Controller
     public function index(Request $request): JsonResponse
     {
         $filters = $request->only(SolicitudPago::getFilters());
-        $sortBy  = $request->input('sort_by', 'created_at');
-        $order   = $request->input('order', 'desc');
+        $sortBy = $request->input('sort_by', 'created_at');
+        $order = $request->input('order', 'desc');
         $perPage = $request->input('per_page', 10);
 
         $query = SolicitudPago::query()
@@ -79,7 +76,7 @@ class ConstruccSolicitudPagoController extends Controller
     /**
      * Autorizar una solicitud de pago por rol específico
      * Roles: DG, DT, PC, SI
-     * 
+     *
      * Reglas:
      * - Solo se puede autorizar si la SP está PENDIENTE
      * - DG puede autorizar directamente (pasa a estado compuesto)
@@ -98,12 +95,12 @@ class ConstruccSolicitudPagoController extends Controller
 
         // Validar que el rol no haya autorizado previamente
         $rolField = strtolower($rol === 'PC' ? 'pc' : $rol);
-        if ($solicitudPago->$rolField === EstadoSolicitud::AUTORIZADA->value) {
+        if (EstadoSolicitud::AUTORIZADA->value === $solicitudPago->$rolField) {
             return $this->error('Este rol ya ha autorizado la solicitud.', null, 400);
         }
 
         // Actualizar el campo del rol y fecha correspondiente
-        $fechaField = $rolField . '_fecha';
+        $fechaField = $rolField.'_fecha';
         $solicitudPago->update([
             $rolField => EstadoSolicitud::AUTORIZADA->value,
             $fechaField => now(),
@@ -128,7 +125,7 @@ class ConstruccSolicitudPagoController extends Controller
 
     /**
      * Rechazar una solicitud de pago por rol específico
-     * 
+     *
      * Reglas:
      * - DT, PC, SI, DA solo pueden rechazar si está PENDIENTE
      * - DG puede rechazar en cualquier momento antes de PAGADO
@@ -155,7 +152,7 @@ class ConstruccSolicitudPagoController extends Controller
 
         // Actualizar estado y registrar quién rechazó
         $rolField = strtolower($rol === 'PC' ? 'pc' : $rol);
-        $fechaField = $rolField . '_fecha';
+        $fechaField = $rolField.'_fecha';
 
         $solicitudPago->update([
             'estado_solicitud' => EstadoSP::RECHAZADA->value,
@@ -202,7 +199,7 @@ class ConstruccSolicitudPagoController extends Controller
         }
 
         // 3. Verificar que esté en estado válido (AUTORIZADA o PAGADO con pagos parciales)
-        if (!in_array($solicitudPago->estado_solicitud, [EstadoSP::PENDIENTE->value, EstadoSP::PAGADO->value])) {
+        if (! in_array($solicitudPago->estado_solicitud, [EstadoSP::PENDIENTE->value, EstadoSP::PAGADO->value])) {
             return $this->error(
                 'Solo se pueden confirmar pagos de solicitudes AUTORIZADAS o con pagos parciales.',
                 null,
@@ -244,7 +241,7 @@ class ConstruccSolicitudPagoController extends Controller
         $estadoDA = $pagoCompleto ? EstadoSolicitud::PAGADO->value : EstadoSolicitud::AUTORIZADA->value;
 
         // para no dejar comentadas las lineas anteriores se agrega esta linea con el proposito
-        //  de parchar la actul funcionalidad. dado un pago ya se parcial o completo el estatus se asumira 
+        //  de parchar la actul funcionalidad. dado un pago ya se parcial o completo el estatus se asumira
         //  como pagada.
         //
         //  Falta realizar revision del tema.
@@ -277,8 +274,8 @@ class ConstruccSolicitudPagoController extends Controller
     public function descargarComprobante(SolicitudPago $solicitudPago)
     {
         if (
-            !$solicitudPago->ruta_archivo_comprobante_pago ||
-            !Storage::disk('private')->exists($solicitudPago->ruta_archivo_comprobante_pago)
+            ! $solicitudPago->ruta_archivo_comprobante_pago ||
+            ! Storage::disk('private')->exists($solicitudPago->ruta_archivo_comprobante_pago)
         ) {
             return $this->error('Comprobante no disponible', null, 404);
         }
@@ -294,8 +291,8 @@ class ConstruccSolicitudPagoController extends Controller
     public function descargarFacturaPdf(SolicitudPago $solicitudPago)
     {
         if (
-            !$solicitudPago->ruta_archivo_factura_pdf ||
-            !Storage::disk('private')->exists($solicitudPago->ruta_archivo_factura_pdf)
+            ! $solicitudPago->ruta_archivo_factura_pdf ||
+            ! Storage::disk('private')->exists($solicitudPago->ruta_archivo_factura_pdf)
         ) {
             return $this->error('Factura PDF no disponible', null, 404);
         }
@@ -311,8 +308,8 @@ class ConstruccSolicitudPagoController extends Controller
     public function descargarFacturaXml(SolicitudPago $solicitudPago)
     {
         if (
-            !$solicitudPago->ruta_archivo_factura_xml ||
-            !Storage::disk('private')->exists($solicitudPago->ruta_archivo_factura_xml)
+            ! $solicitudPago->ruta_archivo_factura_xml ||
+            ! Storage::disk('private')->exists($solicitudPago->ruta_archivo_factura_xml)
         ) {
             return $this->error('Factura XML no disponible', null, 404);
         }
@@ -328,8 +325,8 @@ class ConstruccSolicitudPagoController extends Controller
     public function descargarCotizacion(SolicitudPago $solicitudPago)
     {
         if (
-            !$solicitudPago->ruta_archivo_cotizacion ||
-            !Storage::disk('private')->exists($solicitudPago->ruta_archivo_cotizacion)
+            ! $solicitudPago->ruta_archivo_cotizacion ||
+            ! Storage::disk('private')->exists($solicitudPago->ruta_archivo_cotizacion)
         ) {
             return $this->error('Cotización no disponible', null, 404);
         }
@@ -346,7 +343,7 @@ class ConstruccSolicitudPagoController extends Controller
     public function listarPorRol(Request $request): JsonResponse
     {
         $request->validate([
-            'rol' => ['required', 'string', Rule::in(['DG', 'DT', 'PC', 'SI', 'DA', 'RO'])]
+            'rol' => ['required', 'string', Rule::in(['DG', 'DT', 'PC', 'SI', 'DA', 'RO'])],
         ]);
 
         $rol = strtoupper($request->rol);
@@ -371,12 +368,12 @@ class ConstruccSolicitudPagoController extends Controller
                         ->orWhere('si', EstadoSolicitud::AUTORIZADA->value);
                 })
                 ->where('pago_completo', false);
-        } else if ($rol === 'RO') {
+        } elseif ($rol === 'RO') {
             $query->where(function ($q) {
                 $q->where('estado_solicitud', EstadoSP::PENDIENTE->value);
-                //  TODO : Filtar las que peretenencen a ese RO   
+                //  TODO : Filtar las que peretenencen a ese RO
             });
-        } else if ($rol === 'DG') {
+        } elseif ($rol === 'DG') {
             // Si es DG, mostrar todas las pendientes independientemente de otros roles
             // Si es DT, PC, SI - no mostrar las que ya autorizó DG (para evitar duplicados)
             $query->where(function ($q) {
@@ -384,7 +381,7 @@ class ConstruccSolicitudPagoController extends Controller
                     ->orWhereNull('dg')
                     ->orWhere('dg', EstadoSolicitud::PENDIENTE->value);
             });
-        } else if ($rol === 'DT') {
+        } elseif ($rol === 'DT') {
             // Si es DG, mostrar todas las pendientes independientemente de otros roles
             // Si es DT, PC, SI - no mostrar las que ya autorizó DG (para evitar duplicados)
             $query->where(function ($q) {
@@ -392,7 +389,7 @@ class ConstruccSolicitudPagoController extends Controller
                     ->orWhereNull('dt')
                     ->orWhere('dt', EstadoSolicitud::PENDIENTE->value);
             });
-        } else if ($rol === 'PC') {
+        } elseif ($rol === 'PC') {
             // Si es DG, mostrar todas las pendientes independientemente de otros roles
             // Si es DT, PC, SI - no mostrar las que ya autorizó DG (para evitar duplicados)
             $query->where(function ($q) {
@@ -400,7 +397,7 @@ class ConstruccSolicitudPagoController extends Controller
                     ->orWhereNull('pc')
                     ->orWhere('pc', EstadoSolicitud::PENDIENTE->value);
             });
-        } else if ($rol === 'SI') {
+        } elseif ($rol === 'SI') {
             // Si es DG, mostrar todas las pendientes independientemente de otros roles
             // Si es DT, PC, SI - no mostrar las que ya autorizó DG (para evitar duplicados)
             $query->where(function ($q) {
@@ -409,8 +406,6 @@ class ConstruccSolicitudPagoController extends Controller
                     ->orWhere('si', EstadoSolicitud::PENDIENTE->value);
             });
         }
-
-
 
         $query->filter($filters)->orderBy($sortBy, $order);
         $paginator = $query->paginate($perPage);
@@ -429,7 +424,7 @@ class ConstruccSolicitudPagoController extends Controller
     public function listarPorEstado(Request $request): JsonResponse
     {
         $request->validate([
-            'estado' => ['required', 'string', Rule::in(['PENDIENTE', 'AUTORIZADA', 'RECHAZADA', 'PAGADO'])]
+            'estado' => ['required', 'string', Rule::in(['PENDIENTE', 'AUTORIZADA', 'RECHAZADA', 'PAGADO'])],
         ]);
 
         $estado = strtoupper($request->estado);
@@ -462,7 +457,7 @@ class ConstruccSolicitudPagoController extends Controller
     public function estadisticasPorRol(Request $request): JsonResponse
     {
         $request->validate([
-            'rol' => ['nullable', 'string', Rule::in(['DG', 'DT', 'PC', 'SI', 'DA'])]
+            'rol' => ['nullable', 'string', Rule::in(['DG', 'DT', 'PC', 'SI', 'DA'])],
         ]);
 
         $rol = $request->rol ? strtoupper($request->rol) : null;
@@ -475,7 +470,7 @@ class ConstruccSolicitudPagoController extends Controller
             'con_pagos_parciales' => 0,
             'monto_total_pendiente' => 0,
             'monto_total_autorizado' => 0,
-            'monto_total_pagado' => 0
+            'monto_total_pagado' => 0,
         ];
 
         if ($rol) {
@@ -534,9 +529,9 @@ class ConstruccSolicitudPagoController extends Controller
         }
 
         // Al menos uno de DT, PC o SI debe haber autorizado
-        return ($solicitudPago->dt === $autorizado ||
+        return $solicitudPago->dt === $autorizado ||
             $solicitudPago->pc === $autorizado ||
-            $solicitudPago->si === $autorizado);
+            $solicitudPago->si === $autorizado;
     }
 
     /**
@@ -585,20 +580,20 @@ class ConstruccSolicitudPagoController extends Controller
     public function asociarProveedorAEmpresa(Request $request, $empresaId): JsonResponse
     {
         $request->validate([
-            'proveedor_id' => ['required', 'integer', 'exists:proveedores,id']
+            'proveedor_id' => ['required', 'integer', 'exists:proveedores,id'],
         ]);
 
         $proveedorId = $request->input('proveedor_id');
 
         // Verificar que la empresa constructora exista
         $empresa = \App\Models\EmpresaConstrucc::find($empresaId);
-        if (!$empresa) {
+        if (! $empresa) {
             return $this->error('La empresa constructora no existe.', null, 200);
         }
 
         // Verificar que el proveedor exista
         $proveedor = \App\Models\Proveedor::find($proveedorId);
-        if (!$proveedor) {
+        if (! $proveedor) {
             return $this->error('El proveedor no existe.', null, 200);
         }
 
@@ -618,7 +613,7 @@ class ConstruccSolicitudPagoController extends Controller
         $proveedorActualizado = $proveedor->fresh([
             'empresasConstrucc' => function ($query) {
                 $query->select('id', 'nombre', 'rfc');
-            }
+            },
         ]);
 
         return $this->success(

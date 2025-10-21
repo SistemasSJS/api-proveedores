@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Producto;
-use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Exceptions\Api\Crud\DeleteRestrictedException;
+use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Http\Resources\ProductoResource;
+use App\Models\Producto;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -17,7 +17,7 @@ class ProductoController extends Controller
         $filters = $request->only($fields);
 
         $sortBy = $request->input('sort_by', 'nombre'); // Default sort by 'nombre_comercial'
-        $order =  $request->input('order', 'asc');
+        $order = $request->input('order', 'asc');
         $perPage = $request->input('per_page', 10);
 
         $originalPaginator = Producto::query()
@@ -27,6 +27,7 @@ class ProductoController extends Controller
             ->paginate($perPage);
 
         $data = ProductoResource::collection($originalPaginator)->resolve();
+
         return $this->paginated($originalPaginator->setCollection(collect($data)));
     }
 
@@ -57,27 +58,29 @@ class ProductoController extends Controller
 
         $producto = Producto::create($request->all());
 
-        return $this->success($producto->load(["unidad_medida", "imagenes", "catalogo"]), 201);
+        return $this->success($producto->load(['unidad_medida', 'imagenes', 'catalogo']), 201);
     }
 
     public function show($id)
     {
         // Intentar encontrar el producto, si no se encuentra lanzar ResourceNotFoundException
         $producto = Producto::with(Producto::eagerLodable())->find($id);
-        if (!$producto) {
-            throw new ResourceNotFoundException("Producto no encontrado.");
+        if (! $producto) {
+            throw new ResourceNotFoundException('Producto no encontrado.');
         }
+
         return $this->success(new ProductoResource($producto));
     }
 
     public function update(Request $request, $id)
     {
         $producto = Producto::find($id);
-        if (!$producto) {
-            throw new ResourceNotFoundException("Producto no encontrado.");
+        if (! $producto) {
+            throw new ResourceNotFoundException('Producto no encontrado.');
         }
         $producto->update($request->all());
         $producto->load(Producto::eagerLodable());
+
         return $this->success($producto, 200);
     }
 
@@ -85,13 +88,13 @@ class ProductoController extends Controller
     {
         // Verificar que el producto exista
         $producto = Producto::find($id);
-        if (!$producto) {
-            throw new ResourceNotFoundException("Producto no encontrado.");
+        if (! $producto) {
+            throw new ResourceNotFoundException('Producto no encontrado.');
         }
 
         // Verificar restricciones de eliminación
         if ($producto->isRestricted()) { // Este es un ejemplo de una posible restricción
-            throw new DeleteRestrictedException("Este recurso no puede eliminarse por restricciones.");
+            throw new DeleteRestrictedException('Este recurso no puede eliminarse por restricciones.');
         }
 
         // Eliminar el producto

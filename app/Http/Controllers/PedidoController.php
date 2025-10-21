@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Http\Requests\Pedido\PedidoStoreRequest;
 use App\Http\Requests\Pedido\PedidoUpdateRequest;
 use App\Http\Resources\PedidoResource;
-use App\Models\Pedido;
 use App\Models\Cotizacion;
-use App\Services\PedidoService;
+use App\Models\Pedido;
 use App\Services\NotificacionService;
+use App\Services\PedidoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -47,7 +46,7 @@ class PedidoController extends Controller
         }
 
         if ($request->numero_pedido) {
-            $query->where('numero_pedido', 'like', '%' . $request->numero_pedido . '%');
+            $query->where('numero_pedido', 'like', '%'.$request->numero_pedido.'%');
         }
 
         if ($request->proveedor_id) {
@@ -93,11 +92,12 @@ class PedidoController extends Controller
                 'requisicion',
                 'cotizacion',
                 'detalles.producto',
-                'proveedor'
+                'proveedor',
             ]));
         } catch (\Exception $e) {
             DB::rollback();
-            return response()->json(['error' => 'Error al crear el pedido: ' . $e->getMessage()], 500);
+
+            return response()->json(['error' => 'Error al crear el pedido: '.$e->getMessage()], 500);
         }
     }
 
@@ -112,7 +112,7 @@ class PedidoController extends Controller
             'requisicion.usuario',
             'cotizacion.detalles',
             'detalles.cotizacionDetalle.requisicionDetalle.producto',
-            'proveedor'
+            'proveedor',
         ]);
 
         return new PedidoResource($pedido);
@@ -129,7 +129,7 @@ class PedidoController extends Controller
         if ($request->estatus === 'cancelado') {
             $resultado = $this->pedidoService->cancelar($pedido, $request->motivo_cancelacion);
 
-            if (!$resultado) {
+            if (! $resultado) {
                 return response()->json(['error' => 'No se puede cancelar el pedido en su estado actual'], 400);
             }
 
@@ -139,7 +139,7 @@ class PedidoController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Pedido cancelado correctamente',
-                'pedido' => new PedidoResource($pedido->fresh())
+                'pedido' => new PedidoResource($pedido->fresh()),
             ]);
         }
 
@@ -155,12 +155,12 @@ class PedidoController extends Controller
         $this->authorize('update', $pedido);
 
         $request->validate([
-            'motivo' => 'required|string|max:1000'
+            'motivo' => 'required|string|max:1000',
         ]);
 
         $resultado = $this->pedidoService->cancelar($pedido, $request->motivo);
 
-        if (!$resultado) {
+        if (! $resultado) {
             return response()->json(['error' => 'No se puede cancelar el pedido en su estado actual'], 400);
         }
 
@@ -170,7 +170,7 @@ class PedidoController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Pedido cancelado correctamente',
-            'pedido' => new PedidoResource($pedido->fresh())
+            'pedido' => new PedidoResource($pedido->fresh()),
         ]);
     }
 
@@ -185,7 +185,7 @@ class PedidoController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $stats
+            'data' => $stats,
         ]);
     }
 
@@ -210,11 +210,12 @@ class PedidoController extends Controller
                 'requisicion',
                 'cotizacion',
                 'detalles.producto',
-                'proveedor'
+                'proveedor',
             ]));
         } catch (\Exception $e) {
             DB::rollback();
-            return response()->json(['error' => 'Error al duplicar el pedido: ' . $e->getMessage()], 500);
+
+            return response()->json(['error' => 'Error al duplicar el pedido: '.$e->getMessage()], 500);
         }
     }
 
@@ -227,7 +228,7 @@ class PedidoController extends Controller
 
         $request->validate([
             'observaciones' => 'nullable|string|max:1000',
-            'calificacion' => 'nullable|integer|min:1|max:5'
+            'calificacion' => 'nullable|integer|min:1|max:5',
         ]);
 
         if ($pedido->estatus !== 'entregado') {
@@ -237,7 +238,7 @@ class PedidoController extends Controller
         $pedido->update([
             'estatus' => 'facturado',
             'observaciones_entrega' => $request->observaciones,
-            'calificacion_cliente' => $request->calificacion
+            'calificacion_cliente' => $request->calificacion,
         ]);
 
         // Notificar al proveedor
@@ -246,7 +247,7 @@ class PedidoController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Recepción confirmada correctamente',
-            'pedido' => new PedidoResource($pedido->fresh())
+            'pedido' => new PedidoResource($pedido->fresh()),
         ]);
     }
 
@@ -278,13 +279,13 @@ class PedidoController extends Controller
             ->get();
 
         // Aquí iría la lógica de exportación
-        $fileName = 'pedidos_' . Auth::id() . '_' . now()->format('Y-m-d_H-i-s') . '.' . $request->formato;
+        $fileName = 'pedidos_'.Auth::id().'_'.now()->format('Y-m-d_H-i-s').'.'.$request->formato;
 
         return response()->json([
             'success' => true,
             'message' => 'Exportación iniciada',
             'file_name' => $fileName,
-            'download_url' => route('pedidos.download', ['file' => $fileName])
+            'download_url' => route('pedidos.download', ['file' => $fileName]),
         ]);
     }
 }

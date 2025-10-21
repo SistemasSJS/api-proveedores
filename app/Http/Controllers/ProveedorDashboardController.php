@@ -10,7 +10,6 @@ use App\Models\Proveedor;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 
-
 class ProveedorDashboardController extends Controller
 {
     use ApiResponse;
@@ -36,7 +35,6 @@ class ProveedorDashboardController extends Controller
             'stats' => $stats,
         ]);
     }
-
 
     // public function cotizacionesDashboard(Request $request, Proveedor $proveedor)
     // {
@@ -89,8 +87,8 @@ class ProveedorDashboardController extends Controller
 
         // Contar por estatus (sin aplicar filtro de estatus)
         $estatusCounts = collect(EstadoCotizacion::values())
-            ->mapWithKeys(fn($estatus) => [
-                $estatus => (clone $baseQuery)->where('estatus', $estatus)->count()
+            ->mapWithKeys(fn ($estatus) => [
+                $estatus => (clone $baseQuery)->where('estatus', $estatus)->count(),
             ])
             ->toArray();
 
@@ -103,6 +101,6 @@ class ProveedorDashboardController extends Controller
         ];
 
         // Retornar colección con counts
-        return $this->success($data, "Cotizaciones con conteo de estatus.");
+        return $this->success($data, 'Cotizaciones con conteo de estatus.');
     }
 }

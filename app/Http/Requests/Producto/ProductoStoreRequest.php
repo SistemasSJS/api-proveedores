@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Producto;
 
 use App\Models\Categoria;
-use App\Models\Marca;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProductoStoreRequest extends FormRequest
@@ -37,14 +36,14 @@ class ProductoStoreRequest extends FormRequest
                 function ($attribute, $value, $fail) use ($proveedorId) {
                     $categoria = Categoria::delProveedor($proveedorId)->find($value);
 
-                    if (!$categoria) {
+                    if (! $categoria) {
                         return $fail('La categoría padre no pertenece al proveedor.');
                     }
 
                     if ($categoria->nivel !== 0) {
                         return $fail('La categoría padre debe estar en el nivel 0.');
                     }
-                }
+                },
             ],
             'subcategoria_id' => [
                 'required',
@@ -53,17 +52,17 @@ class ProductoStoreRequest extends FormRequest
                 function ($attribute, $value, $fail) use ($proveedorId) {
                     $subcategoria = Categoria::with('parent')->delProveedor($proveedorId)->find($value);
 
-                    if (!$subcategoria) {
+                    if (! $subcategoria) {
                         return $fail('La subcategoría no pertenece al proveedor.');
                     }
 
                     $padre = $subcategoria->parent;
                     $categoriaId = $this->input('categoria_id');
 
-                    if (!$padre || $padre->id != $categoriaId) {
+                    if (! $padre || $padre->id != $categoriaId) {
                         return $fail('La subcategoría no pertenece a la categoría padre especificada.');
                     }
-                }
+                },
             ],
 
             'marca_id' => [
@@ -71,10 +70,10 @@ class ProductoStoreRequest extends FormRequest
                 'integer',
                 'exists:marcas,id',
                 function ($attribute, $value, $fail) use ($proveedorId) {
-                    if (!\App\Models\Marca::where('id', $value)->where('proveedor_id', $proveedorId)->exists()) {
+                    if (! \App\Models\Marca::where('id', $value)->where('proveedor_id', $proveedorId)->exists()) {
                         $fail('La marca seleccionada no pertenece a este proveedor.');
                     }
-                }
+                },
             ],
         ];
     }

@@ -23,7 +23,7 @@ class LogApiActions
      * Métodos HTTP que NO deben ser loggeados
      */
     protected $excludedMethods = [
-        'OPTIONS'
+        'OPTIONS',
     ];
 
     /**
@@ -283,7 +283,7 @@ class LogApiActions
         }
 
         // Log si hay actividad sospechosa
-        if (!empty($suspiciousIndicators)) {
+        if (! empty($suspiciousIndicators)) {
             AuditService::logError(
                 'Suspicious Activity Detected',
                 'Security',
@@ -313,11 +313,11 @@ class LogApiActions
             'HTTP_FORWARDED_FOR',
             'HTTP_FORWARDED',
             'HTTP_CLIENT_IP',
-            'REMOTE_ADDR'
+            'REMOTE_ADDR',
         ];
 
         foreach ($headers as $header) {
-            if (!empty($_SERVER[$header])) {
+            if (! empty($_SERVER[$header])) {
                 $ips = explode(',', $_SERVER[$header]);
                 $ip = trim($ips[0]);
 

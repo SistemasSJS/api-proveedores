@@ -12,17 +12,13 @@ use App\Services\ProductoSearchService;
 use App\Services\ReporteService;
 use App\Services\SucursalService;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Sanctum\PersonalAccessToken;
 use Laravel\Sanctum\Sanctum;
-use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
-
-    /**
-     * 
-     */
     protected $policies = [
         Sucursal::class => SucursalPolicy::class,
     ];
@@ -35,19 +31,19 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(ExceptionHandler::class, Handler::class);
 
         $this->app->singleton(SucursalService::class, function ($app) {
-            return new SucursalService();
+            return new SucursalService;
         });
 
         $this->app->singleton(ProductoSearchService::class, function ($app) {
-            return new ProductoSearchService();
+            return new ProductoSearchService;
         });
 
         $this->app->singleton(ReporteService::class, function ($app) {
-            return new ReporteService();
+            return new ReporteService;
         });
 
         $this->app->singleton(DashboardService::class, function ($app) {
-            return new DashboardService();
+            return new DashboardService;
         });
     }
 

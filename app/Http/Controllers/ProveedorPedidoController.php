@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Http\Requests\Pedido\PedidoUpdateRequest;
 use App\Http\Resources\PedidoResource;
 use App\Models\Pedido;
 use App\Models\Proveedor;
-use App\Services\PedidoService;
 use App\Services\NotificacionService;
+use App\Services\PedidoService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ProveedorPedidoController extends Controller
@@ -46,12 +44,12 @@ class ProveedorPedidoController extends Controller
         }
 
         if ($request->numero_pedido) {
-            $query->where('numero_pedido', 'like', '%' . $request->numero_pedido . '%');
+            $query->where('numero_pedido', 'like', '%'.$request->numero_pedido.'%');
         }
 
         if ($request->cliente) {
             $query->whereHas('requisicion.usuario', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->cliente . '%');
+                $q->where('name', 'like', '%'.$request->cliente.'%');
             });
         }
 
@@ -86,8 +84,8 @@ class ProveedorPedidoController extends Controller
                     'cliente' => $request->cliente,
                     'vencidos' => $request->vencidos,
                     'proximos_vencer' => $request->proximos_vencer,
-                ]
-            ]
+                ],
+            ],
         ]);
     }
 
@@ -105,7 +103,7 @@ class ProveedorPedidoController extends Controller
         $pedido->load([
             'requisicion.usuario',
             'cotizacion.detalles',
-            'detalles.cotizacionDetalle.requisicionDetalle.producto'
+            'detalles.cotizacionDetalle.requisicionDetalle.producto',
         ]);
 
         return new PedidoResource($pedido);
@@ -126,7 +124,7 @@ class ProveedorPedidoController extends Controller
         try {
             $resultado = $this->pedidoService->actualizarEstatus($pedido, $request->estatus, $request->validated());
 
-            if (!$resultado) {
+            if (! $resultado) {
                 return response()->json(['error' => 'No se puede cambiar al estatus solicitado'], 400);
             }
 
@@ -138,11 +136,12 @@ class ProveedorPedidoController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Estatus actualizado correctamente',
-                'pedido' => new PedidoResource($pedido->fresh())
+                'pedido' => new PedidoResource($pedido->fresh()),
             ]);
         } catch (\Exception $e) {
             DB::rollback();
-            return response()->json(['error' => 'Error al actualizar el estatus: ' . $e->getMessage()], 500);
+
+            return response()->json(['error' => 'Error al actualizar el estatus: '.$e->getMessage()], 500);
         }
     }
 
@@ -157,14 +156,14 @@ class ProveedorPedidoController extends Controller
             'numero_guia' => 'required|string|max:50',
             'transportista' => 'required|string|max:100',
             'fecha_envio' => 'nullable|date',
-            'observaciones' => 'nullable|string|max:1000'
+            'observaciones' => 'nullable|string|max:1000',
         ]);
 
         if ($pedido->requisicion->proveedor_id !== $proveedor->id) {
             return response()->json(['error' => 'Este pedido no pertenece a su proveedor'], 403);
         }
 
-        if (!in_array($pedido->estatus, ['listo_para_entrega', 'en_preparacion'])) {
+        if (! in_array($pedido->estatus, ['listo_para_entrega', 'en_preparacion'])) {
             return response()->json(['error' => 'El pedido debe estar listo para entrega'], 400);
         }
 
@@ -175,7 +174,7 @@ class ProveedorPedidoController extends Controller
                 'numero_guia' => $request->numero_guia,
                 'transportista' => $request->transportista,
                 'observaciones' => $request->observaciones,
-                'fecha_envio' => $request->fecha_envio ?? now()
+                'fecha_envio' => $request->fecha_envio ?? now(),
             ]);
 
             // Notificar al cliente
@@ -186,11 +185,12 @@ class ProveedorPedidoController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Envío preparado correctamente',
-                'pedido' => new PedidoResource($pedido->fresh())
+                'pedido' => new PedidoResource($pedido->fresh()),
             ]);
         } catch (\Exception $e) {
             DB::rollback();
-            return response()->json(['error' => 'Error al preparar el envío: ' . $e->getMessage()], 500);
+
+            return response()->json(['error' => 'Error al preparar el envío: '.$e->getMessage()], 500);
         }
     }
 
@@ -207,14 +207,14 @@ class ProveedorPedidoController extends Controller
             'evidencia_entrega' => 'nullable|string|max:500',
             'detalles_entrega' => 'nullable|array',
             'detalles_entrega.*.pedido_detalle_id' => 'required|exists:pedido_detalles,id',
-            'detalles_entrega.*.cantidad_entregada' => 'required|integer|min:0'
+            'detalles_entrega.*.cantidad_entregada' => 'required|integer|min:0',
         ]);
 
         if ($pedido->requisicion->proveedor_id !== $proveedor->id) {
             return response()->json(['error' => 'Este pedido no pertenece a su proveedor'], 403);
         }
 
-        if (!in_array($pedido->estatus, ['en_transito', 'listo_para_entrega'])) {
+        if (! in_array($pedido->estatus, ['en_transito', 'listo_para_entrega'])) {
             return response()->json(['error' => 'El pedido debe estar en tránsito o listo para entrega'], 400);
         }
 
@@ -238,7 +238,7 @@ class ProveedorPedidoController extends Controller
                 'estatus' => 'entregado',
                 'fecha_entrega_real' => $request->fecha_entrega ?? now(),
                 'observaciones_entrega' => $request->observaciones_entrega,
-                'evidencia_entrega' => $request->evidencia_entrega
+                'evidencia_entrega' => $request->evidencia_entrega,
             ]);
 
             // Notificar al cliente
@@ -249,11 +249,12 @@ class ProveedorPedidoController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Entrega confirmada correctamente',
-                'pedido' => new PedidoResource($pedido->fresh(['detalles']))
+                'pedido' => new PedidoResource($pedido->fresh(['detalles'])),
             ]);
         } catch (\Exception $e) {
             DB::rollback();
-            return response()->json(['error' => 'Error al confirmar la entrega: ' . $e->getMessage()], 500);
+
+            return response()->json(['error' => 'Error al confirmar la entrega: '.$e->getMessage()], 500);
         }
     }
 
@@ -265,14 +266,14 @@ class ProveedorPedidoController extends Controller
         $this->authorize('updateProveedorPedidos', $proveedor);
 
         $request->validate([
-            'motivo' => 'required|string|max:1000'
+            'motivo' => 'required|string|max:1000',
         ]);
 
         if ($pedido->requisicion->proveedor_id !== $proveedor->id) {
             return response()->json(['error' => 'Este pedido no pertenece a su proveedor'], 403);
         }
 
-        if (!in_array($pedido->estatus, ['confirmado', 'en_preparacion'])) {
+        if (! in_array($pedido->estatus, ['confirmado', 'en_preparacion'])) {
             return response()->json(['error' => 'Solo se pueden rechazar pedidos confirmados o en preparación'], 400);
         }
 
@@ -281,7 +282,7 @@ class ProveedorPedidoController extends Controller
             $pedido->update([
                 'estatus' => 'cancelado',
                 'fecha_cancelacion' => now(),
-                'motivo_cancelacion' => $request->motivo
+                'motivo_cancelacion' => $request->motivo,
             ]);
 
             // Notificar al cliente
@@ -292,11 +293,12 @@ class ProveedorPedidoController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Pedido rechazado correctamente',
-                'pedido' => new PedidoResource($pedido->fresh())
+                'pedido' => new PedidoResource($pedido->fresh()),
             ]);
         } catch (\Exception $e) {
             DB::rollback();
-            return response()->json(['error' => 'Error al rechazar el pedido: ' . $e->getMessage()], 500);
+
+            return response()->json(['error' => 'Error al rechazar el pedido: '.$e->getMessage()], 500);
         }
     }
 
@@ -335,7 +337,7 @@ class ProveedorPedidoController extends Controller
                 'pedidos_recientes' => PedidoResource::collection($pedidosRecientes),
                 'pedidos_proximos_vencer' => PedidoResource::collection($pedidosProximosVencer),
                 'pedidos_vencidos' => PedidoResource::collection($pedidosVencidos),
-            ]
+            ],
         ]);
     }
 
@@ -367,13 +369,13 @@ class ProveedorPedidoController extends Controller
             ->get();
 
         // Aquí iría la lógica de exportación
-        $fileName = 'pedidos_proveedor_' . $proveedor->id . '_' . now()->format('Y-m-d_H-i-s') . '.' . $request->formato;
+        $fileName = 'pedidos_proveedor_'.$proveedor->id.'_'.now()->format('Y-m-d_H-i-s').'.'.$request->formato;
 
         return response()->json([
             'success' => true,
             'message' => 'Exportación iniciada',
             'file_name' => $fileName,
-            'download_url' => route('proveedor.pedidos.download', ['proveedor' => $proveedor->id, 'file' => $fileName])
+            'download_url' => route('proveedor.pedidos.download', ['proveedor' => $proveedor->id, 'file' => $fileName]),
         ]);
     }
 }

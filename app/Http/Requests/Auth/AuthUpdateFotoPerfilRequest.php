@@ -10,6 +10,7 @@ use Illuminate\Foundation\Http\FormRequest;
  *     required={
  *         "foto_perfil"
  *     },
+ *
  *     @OA\Property(property="foto_perfil", type="blob")
  * )
  */

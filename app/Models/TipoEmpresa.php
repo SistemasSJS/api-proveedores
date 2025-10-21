@@ -3,12 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @OA\Schema(
  *     schema="TipoEmpresa",
  *     required={"nombre"},
+ *
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="nombre", type="string", example="Pequeña"),
  *     @OA\Property(property="clave", type="string", example="pequeña"),
@@ -20,8 +20,8 @@ use Illuminate\Database\Eloquent\Model;
 class TipoEmpresa extends BaseModel
 {
     use HasFactory;
-    protected $table = "tipos_empresa";
 
+    protected $table = 'tipos_empresa';
 
     protected $fillable = [
         'proveedor_id',
@@ -29,7 +29,7 @@ class TipoEmpresa extends BaseModel
         'clave',
         'estatus',
         'created_at',
-        'update_at'
+        'update_at',
     ];
 
     // Filtros disponibles para este modelo
@@ -38,7 +38,7 @@ class TipoEmpresa extends BaseModel
         'clave' => 'clave',
         'estatus' => 'estatus',
         'created_at' => 'created_at',
-        'update_at' => 'update_at'
+        'update_at' => 'update_at',
     ];
 
     // Filtro específico para 'nombre'

@@ -4,13 +4,12 @@ namespace App\Models;
 
 use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Categoria extends BaseModel
 {
-    use HasFactory, Filterable;
+    use Filterable, HasFactory;
 
     protected $fillable = [
         'nombre',
@@ -23,9 +22,9 @@ class Categoria extends BaseModel
     ];
 
     protected static $filters = [
-        'nombre'      => 'Nombre',
+        'nombre' => 'Nombre',
         'descripcion' => 'Descripcion',
-        'estatus'     => 'Estatus',
+        'estatus' => 'Estatus',
         'proveedor_id' => 'ProveedorId',
     ];
 
@@ -68,22 +67,22 @@ class Categoria extends BaseModel
      * ----------------- */
     public function scopeFilterByNombre($query, $value)
     {
-        return $query->when($value, fn($q) => $q->where('nombre', 'like', "%$value%"));
+        return $query->when($value, fn ($q) => $q->where('nombre', 'like', "%$value%"));
     }
 
     public function scopeFilterByDescripcion($query, $value)
     {
-        return $query->when($value, fn($q) => $q->where('descripcion', 'like', "%$value%"));
+        return $query->when($value, fn ($q) => $q->where('descripcion', 'like', "%$value%"));
     }
 
     public function scopeFilterByEstatus($query, $value)
     {
-        return $query->when($value, fn($q) => $q->where('estatus', $value));
+        return $query->when($value, fn ($q) => $q->where('estatus', $value));
     }
 
     public function scopeDelProveedor($query, $proveedorId)
     {
-        return $query->when($proveedorId, fn($q) => $q->where('proveedor_id', $proveedorId));
+        return $query->when($proveedorId, fn ($q) => $q->where('proveedor_id', $proveedorId));
     }
 
     /** ----------------

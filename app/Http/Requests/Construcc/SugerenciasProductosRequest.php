@@ -66,7 +66,7 @@ class SugerenciasProductosRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         // Establecer límite por defecto si no se proporciona
-        if (!$this->has('limite') || !$this->limite) {
+        if (! $this->has('limite') || ! $this->limite) {
             $this->merge(['limite' => 10]);
         }
     }

@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\SolicitudPago\SolicitudPagoResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -27,18 +26,18 @@ class OrdenCompraConSPResource extends JsonResource
                 'color' => $this->estado->color(),
             ],
             'observaciones' => $this->observaciones,
-            
+
             // Información específica de SP
             'sp_info' => [
                 'sp_count' => (int) $this->sp_count,
                 'monto_sp_asociado' => (float) $this->monto_sp_asociado,
                 'monto_disponible' => (float) $this->getMontoDisponible(),
-                'porcentaje_convertido' => $this->importe_total > 0 ? 
+                'porcentaje_convertido' => $this->importe_total > 0 ?
                     round(($this->monto_sp_asociado / $this->importe_total) * 100, 2) : 0,
                 'puede_generar_sp' => $this->puedeGenerarSolicitudPago(),
                 'permite_pagos_parciales' => $this->estado === \App\Enums\EstadoOrdenCompra::APROBADA,
             ],
-            
+
             // Alertas
             'alerta_info' => [
                 'dias_sin_sp' => $this->dias_sin_sp ?? $this->getDiasSinSolicitudPago(),
@@ -46,7 +45,7 @@ class OrdenCompraConSPResource extends JsonResource
                 'mensaje_alerta' => $this->mensaje_alerta ?? null,
                 'prioridad' => $this->prioridad ?? null,
             ],
-            
+
             // Relaciones básicas
             'proveedor' => $this->whenLoaded('proveedor', function () {
                 return [
@@ -55,7 +54,7 @@ class OrdenCompraConSPResource extends JsonResource
                     'rfc' => $this->proveedor->rfc,
                 ];
             }),
-            
+
             'empresa_construcc' => $this->whenLoaded('empresaConstrucc', function () {
                 return [
                     'id' => $this->empresaConstrucc->id,
@@ -63,7 +62,7 @@ class OrdenCompraConSPResource extends JsonResource
                     'rfc' => $this->empresaConstrucc->rfc,
                 ];
             }),
-            
+
             // Solicitudes de pago detalladas
             'solicitudes_pago' => $this->whenLoaded('solicitudesPago', function () {
                 return $this->solicitudesPago->map(function ($sp) {
@@ -75,14 +74,14 @@ class OrdenCompraConSPResource extends JsonResource
                         'estado_solicitud' => $sp->estado_solicitud,
                         'fecha_creacion' => $sp->created_at?->format('Y-m-d H:i:s'),
                         'residente' => $sp->residente,
-                        
+
                         // Información de vinculación con OC
                         'vinculacion' => [
                             'monto_asociado' => (float) $sp->pivot->monto_asociado,
                             'fecha_vinculacion' => $sp->pivot->fecha_vinculacion?->format('Y-m-d H:i:s'),
                             'notas' => $sp->pivot->notas,
                         ],
-                        
+
                         // Estado del pago
                         'pago_info' => [
                             'monto_abonado' => (float) $sp->monto_abonado,
@@ -92,7 +91,7 @@ class OrdenCompraConSPResource extends JsonResource
                     ];
                 });
             }),
-            
+
             // Resumen de detalles (sin detalles completos para evitar payload grande)
             'detalles_resumen' => $this->whenLoaded('detalles', function () {
                 return [
@@ -101,7 +100,7 @@ class OrdenCompraConSPResource extends JsonResource
                     'mas_productos' => $this->detalles->count() > 3,
                 ];
             }),
-            
+
             // Timestamps
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
@@ -121,7 +120,7 @@ class OrdenCompraConSPResource extends JsonResource
                 ],
                 'estados_sp' => [
                     'pendiente' => 'Pendiente',
-                    'en_proceso' => 'En Proceso', 
+                    'en_proceso' => 'En Proceso',
                     'aprobada' => 'Aprobada',
                     'pagada' => 'Pagada',
                     'rechazada' => 'Rechazada',

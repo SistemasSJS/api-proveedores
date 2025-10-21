@@ -4,7 +4,6 @@ namespace App\Http\Requests\Sucursal;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-
 class SucursalStoreRequest extends FormRequest
 {
     public function authorize(): bool

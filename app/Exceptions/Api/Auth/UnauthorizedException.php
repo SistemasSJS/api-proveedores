@@ -11,6 +11,7 @@ use App\Exceptions\Api\BaseApiException;
  *     description="Se lanza cuando el acceso está prohibido por no tener los permisos necesarios.",
  *     type="object",
  *     required={"message", "errorType"},
+ *
  *     @OA\Property(
  *         property="message",
  *         type="string",
@@ -26,6 +27,7 @@ use App\Exceptions\Api\BaseApiException;
 class UnauthorizedException extends BaseApiException
 {
     protected string $errorType = 'unauthorized';
+
     protected int $statusCode = 401;
 
     public function __construct(string $message = 'Acceso no autorizado.')

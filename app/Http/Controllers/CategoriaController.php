@@ -11,6 +11,7 @@ class CategoriaController extends Controller
     {
         $filters = $request->only(['nombre', 'estatus']);
         $categorias = Categoria::filter($filters)->paginate();
+
         return $this->paginated($categorias);
     }
 
@@ -30,6 +31,7 @@ class CategoriaController extends Controller
     public function show($id)
     {
         $categoria = Categoria::findOrFail($id);
+
         return $this->success($categoria);
     }
 

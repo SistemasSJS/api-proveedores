@@ -9,6 +9,7 @@ use Illuminate\Validation\Rule;
  * @OA\Schema(
  *     schema="ProveedorUsuairoUpdateRequest",
  *     required={"name","email"},
+ *
  *     @OA\Property(property="name", type="string", example="Juan Pérez"),
  *     @OA\Property(property="email", type="string", format="email", example="juan@example.com"),
  *     @OA\Property(property="is_main", type="boolean", example=false)
@@ -29,7 +30,7 @@ class ProveedorUsuairoUpdateRequest extends FormRequest
             'name' => [
                 'sometimes',
                 'string',
-                'max:255'
+                'max:255',
             ],
             'email' => [
                 'sometimes',
@@ -41,12 +42,12 @@ class ProveedorUsuairoUpdateRequest extends FormRequest
                 'sometimes',
                 'string',
                 'min:8',
-                'confirmed' // espera password_confirmation
+                'confirmed', // espera password_confirmation
             ],
             'rol_id' => [
                 'sometimes',
                 'integer',
-                'exists:roles,id'
+                'exists:roles,id',
             ],
         ];
     }

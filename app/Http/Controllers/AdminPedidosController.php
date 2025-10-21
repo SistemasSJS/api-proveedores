@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers;
 
-
-use App\Models\Pedido;
 use App\Models\AuditLog;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\DB;
+use App\Models\Pedido;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class AdminPedidosController extends Controller
 {
@@ -95,7 +93,7 @@ class AdminPedidosController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'ERROR',
-                'message' => 'Error al obtener pedidos: ' . $e->getMessage(),
+                'message' => 'Error al obtener pedidos: '.$e->getMessage(),
                 'data' => null,
             ], 500);
         }
@@ -136,7 +134,7 @@ class AdminPedidosController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'ERROR',
-                'message' => 'Error al obtener estadísticas: ' . $e->getMessage(),
+                'message' => 'Error al obtener estadísticas: '.$e->getMessage(),
                 'data' => null,
             ], 500);
         }
@@ -178,7 +176,7 @@ class AdminPedidosController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'ERROR',
-                'message' => 'Error al obtener pedido: ' . $e->getMessage(),
+                'message' => 'Error al obtener pedido: '.$e->getMessage(),
                 'data' => null,
             ], 404);
         }
@@ -230,7 +228,7 @@ class AdminPedidosController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'ERROR',
-                'message' => 'Error al cambiar estado: ' . $e->getMessage(),
+                'message' => 'Error al cambiar estado: '.$e->getMessage(),
                 'data' => null,
             ], 500);
         }
@@ -262,7 +260,7 @@ class AdminPedidosController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'ERROR',
-                'message' => 'Error al eliminar pedido: ' . $e->getMessage(),
+                'message' => 'Error al eliminar pedido: '.$e->getMessage(),
                 'data' => null,
             ], 500);
         }
@@ -317,7 +315,7 @@ class AdminPedidosController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'ERROR',
-                'message' => 'Error al obtener reportes: ' . $e->getMessage(),
+                'message' => 'Error al obtener reportes: '.$e->getMessage(),
                 'data' => null,
             ], 500);
         }
@@ -358,7 +356,7 @@ class AdminPedidosController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'ERROR',
-                'message' => 'Error al obtener log de auditoría: ' . $e->getMessage(),
+                'message' => 'Error al obtener log de auditoría: '.$e->getMessage(),
                 'data' => null,
             ], 500);
         }
@@ -397,7 +395,7 @@ class AdminPedidosController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'ERROR',
-                'message' => 'Error en sincronización: ' . $e->getMessage(),
+                'message' => 'Error en sincronización: '.$e->getMessage(),
                 'data' => null,
             ], 500);
         }
@@ -414,7 +412,7 @@ class AdminPedidosController extends Controller
             // Simulación de generación de factura
             // En producción aquí iría la lógica real de generación
 
-            $numeroFactura = 'FACT-' . date('Ymd') . '-' . str_pad($pedido->id, 6, '0', STR_PAD_LEFT);
+            $numeroFactura = 'FACT-'.date('Ymd').'-'.str_pad($pedido->id, 6, '0', STR_PAD_LEFT);
 
             $pedido->update([
                 'facturado' => true,
@@ -440,7 +438,7 @@ class AdminPedidosController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'ERROR',
-                'message' => 'Error al generar factura: ' . $e->getMessage(),
+                'message' => 'Error al generar factura: '.$e->getMessage(),
                 'data' => null,
             ], 500);
         }
@@ -479,7 +477,7 @@ class AdminPedidosController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'ERROR',
-                'message' => 'Error al confirmar pago: ' . $e->getMessage(),
+                'message' => 'Error al confirmar pago: '.$e->getMessage(),
                 'data' => null,
             ], 500);
         }
@@ -503,7 +501,7 @@ class AdminPedidosController extends Controller
             ]);
         } catch (\Exception $e) {
             // Log de error pero no interrumpir el flujo principal
-            Log::error('Error al registrar auditoría: ' . $e->getMessage());
+            Log::error('Error al registrar auditoría: '.$e->getMessage());
         }
     }
 }

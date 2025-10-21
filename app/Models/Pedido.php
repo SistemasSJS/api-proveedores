@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
 
 class Pedido extends BaseModel
@@ -29,7 +28,7 @@ class Pedido extends BaseModel
         'subtotal',
         'descuento',
         'impuestos',
-        'total'
+        'total',
     ];
 
     protected $casts = [
@@ -40,7 +39,7 @@ class Pedido extends BaseModel
         'subtotal' => 'decimal:2',
         'descuento' => 'decimal:2',
         'impuestos' => 'decimal:2',
-        'total' => 'decimal:2'
+        'total' => 'decimal:2',
     ];
 
     // Relaciones
@@ -118,7 +117,7 @@ class Pedido extends BaseModel
     {
         return $query->whereBetween('fecha_entrega_estimada', [
             now()->toDateString(),
-            now()->addDays($dias)->toDateString()
+            now()->addDays($dias)->toDateString(),
         ])->whereNotIn('estatus', ['entregado', 'facturado', 'cancelado']);
     }
 
@@ -132,7 +131,7 @@ class Pedido extends BaseModel
             'en_transito' => ['entregado'],
             'entregado' => ['facturado'],
             'facturado' => [],
-            'cancelado' => []
+            'cancelado' => [],
         ];
 
         return in_array($nuevoEstatus, $transicionesPermitidas[$this->estatus] ?? []);
@@ -141,7 +140,7 @@ class Pedido extends BaseModel
     public function estaVencido(): bool
     {
         return $this->fecha_entrega_estimada < now()->toDateString() &&
-            !in_array($this->estatus, ['entregado', 'facturado', 'cancelado']);
+            ! in_array($this->estatus, ['entregado', 'facturado', 'cancelado']);
     }
 
     public function diasParaVencimiento(): int
@@ -189,27 +188,27 @@ class Pedido extends BaseModel
             'subtotal' => $subtotal,
             'descuento' => $descuento,
             'impuestos' => $impuestos,
-            'total' => $total
+            'total' => $total,
         ]);
     }
 
     public function marcarComoEntregado(?string $observaciones = null): bool
     {
-        if (!$this->puedeActualizarEstatus('entregado')) {
+        if (! $this->puedeActualizarEstatus('entregado')) {
             return false;
         }
 
         $this->update([
             'estatus' => 'entregado',
             'fecha_entrega_real' => now(),
-            'observaciones_entrega' => $observaciones
+            'observaciones_entrega' => $observaciones,
         ]);
 
         // Marcar detalles como entregados
         $this->detalles()->update([
             'cantidad_entregada' => DB::raw('cantidad_confirmada'),
             'cantidad_pendiente' => 0,
-            'entrega_completa' => true
+            'entrega_completa' => true,
         ]);
 
         return true;
@@ -217,14 +216,14 @@ class Pedido extends BaseModel
 
     public function cancelar(string $motivo): bool
     {
-        if (!$this->puedeActualizarEstatus('cancelado')) {
+        if (! $this->puedeActualizarEstatus('cancelado')) {
             return false;
         }
 
         $this->update([
             'estatus' => 'cancelado',
             'fecha_cancelacion' => now(),
-            'motivo_cancelacion' => $motivo
+            'motivo_cancelacion' => $motivo,
         ]);
 
         return true;
@@ -237,7 +236,7 @@ class Pedido extends BaseModel
         $fecha = now()->format('Ymd');
         $ultimo = static::whereDate('created_at', now()->toDateString())->count() + 1;
 
-        return $prefix . $fecha . str_pad($ultimo, 3, '0', STR_PAD_LEFT);
+        return $prefix.$fecha.str_pad($ultimo, 3, '0', STR_PAD_LEFT);
     }
 
     // Boot method

@@ -13,6 +13,7 @@ class TipoEmpresaController extends Controller
         $filters = $request->only(TipoEmpresa::getFilters());
         $originalPaginator = TipoEmpresa::filter($filters)->paginate(1000);
         $tipoEmpresas = TipoEmpresaResource::collection($originalPaginator)->resolve();
+
         return $this->paginated($originalPaginator->setCollection(collect($tipoEmpresas)));
     }
 
@@ -32,6 +33,7 @@ class TipoEmpresaController extends Controller
     public function show($id)
     {
         $tipoEmpresa = TipoEmpresa::findOrFail($id);
+
         return $this->success($tipoEmpresa);
     }
 

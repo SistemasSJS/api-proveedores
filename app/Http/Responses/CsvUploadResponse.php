@@ -2,8 +2,6 @@
 
 namespace App\Http\Responses;
 
-use Illuminate\Http\JsonResponse;
-
 /**
  * Response para el endpoint de carga CSV
  * POST /api/proveedores/{id}/csv-import
@@ -44,7 +42,7 @@ class CsvUploadResponse
             'processing_info' => $this->processingInfo,
             'catalogos' => $this->catalogos,
             'estado' => $this->estado,
-            'mensaje' => $this->mensaje
+            'mensaje' => $this->mensaje,
         ];
     }
 

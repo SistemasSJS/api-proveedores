@@ -7,18 +7,18 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class CategoriaAcordeonResource extends JsonResource
 {
-  /**
-   * Transform the resource into an array.
-   *
-   * @return array<string, mixed>
-   */
-  public function toArray(Request $request): array
-  {
-    return [
-      'id'     => (string) $this->id,
-      'nombre' => $this->nombre,
-      'count'  => $this->productos_count ?? 0,
-      'childs' => CategoriaAcordeonResource::collection($this->whenLoaded('children')),
-    ];
-  }
+    /**
+     * Transform the resource into an array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => (string) $this->id,
+            'nombre' => $this->nombre,
+            'count' => $this->productos_count ?? 0,
+            'childs' => CategoriaAcordeonResource::collection($this->whenLoaded('children')),
+        ];
+    }
 }

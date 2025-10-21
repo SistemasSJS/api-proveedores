@@ -4,15 +4,15 @@ namespace App\Models;
 
 use App\Enums\EstadoOrdenCompra;
 use App\Traits\Filterable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Builder;
 
 class OrdenCompra extends BaseModel
 {
-    use HasFactory, Filterable;
+    use Filterable, HasFactory;
 
     protected $table = 'ordenes_compra';
 
@@ -31,16 +31,16 @@ class OrdenCompra extends BaseModel
     ];
 
     protected static $filters = [
-        'numero_orden'          => 'NumeroOrden',
-        'estado'                => 'Estado',
-        'proveedor_id'          => 'ProveedorId',
-        'empresa_construcc_id'  => 'EmpresaConstruccId',
-        'fecha_orden'           => 'FechaOrden',
-        'fecha_orden_desde'     => 'FechaOrdenDesde',
-        'fecha_orden_hasta'     => 'FechaOrdenHasta',
-        'importe_total'         => 'ImporteTotal',
-        'importe_desde'         => 'ImporteDesde',
-        'importe_hasta'         => 'ImporteHasta',
+        'numero_orden' => 'NumeroOrden',
+        'estado' => 'Estado',
+        'proveedor_id' => 'ProveedorId',
+        'empresa_construcc_id' => 'EmpresaConstruccId',
+        'fecha_orden' => 'FechaOrden',
+        'fecha_orden_desde' => 'FechaOrdenDesde',
+        'fecha_orden_hasta' => 'FechaOrdenHasta',
+        'importe_total' => 'ImporteTotal',
+        'importe_desde' => 'ImporteDesde',
+        'importe_hasta' => 'ImporteHasta',
     ];
 
     protected $casts = [
@@ -142,16 +142,21 @@ class OrdenCompra extends BaseModel
         }
 
         $fechaBase = $this->fecha_aprobacion ?? $this->created_at;
+
         return $fechaBase->diffInDays(now());
     }
 
     public function getNivelAlerta(): ?string
     {
         $dias = $this->getDiasSinSolicitudPago();
-        
-        if ($dias >= 15) return 'danger';
-        if ($dias >= 7) return 'warning';
-        
+
+        if ($dias >= 15) {
+            return 'danger';
+        }
+        if ($dias >= 7) {
+            return 'warning';
+        }
+
         return null;
     }
 

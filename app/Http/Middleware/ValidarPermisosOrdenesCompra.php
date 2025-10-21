@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class ValidarPermisosOrdenesCompra
@@ -12,37 +11,34 @@ class ValidarPermisosOrdenesCompra
     /**
      * Maneja una request entrante para validar permisos de órdenes de compra.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     * @param  string  $accion
-     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function handle(Request $request, Closure $next, string $accion = 'ver'): Response
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'error' => 'Usuario no autenticado',
-                'message' => 'Se requiere autenticación para acceder a órdenes de compra'
+                'message' => 'Se requiere autenticación para acceder a órdenes de compra',
             ], 401);
         }
 
         // Verificar permisos según el rol del usuario
-        if (!$this->tienePermiso($user, $accion)) {
+        if (! $this->tienePermiso($user, $accion)) {
             return response()->json([
                 'error' => 'Permisos insuficientes',
                 'message' => "No tiene permisos para $accion órdenes de compra",
                 'accion_solicitada' => $accion,
-                'rol_usuario' => $user->rol ?? 'sin_rol'
+                'rol_usuario' => $user->rol ?? 'sin_rol',
             ], 403);
         }
 
         // Validaciones específicas por acción
-        if (!$this->validarAccionEspecifica($request, $user, $accion)) {
+        if (! $this->validarAccionEspecifica($request, $user, $accion)) {
             return response()->json([
                 'error' => 'Validación fallida',
-                'message' => $this->getMensajeValidacion($accion)
+                'message' => $this->getMensajeValidacion($accion),
             ], 422);
         }
 
@@ -63,7 +59,7 @@ class ValidarPermisosOrdenesCompra
             'rechazar' => ['admin', 'gerente'],
             'cancelar' => ['admin', 'gerente'],
             'convertir' => ['admin', 'gerente', 'empleado'],
-            'reportes' => ['admin', 'gerente']
+            'reportes' => ['admin', 'gerente'],
         ];
 
         $rolUsuario = $user->rol ?? 'sin_rol';
@@ -80,20 +76,20 @@ class ValidarPermisosOrdenesCompra
         switch ($accion) {
             case 'ver':
                 return $this->validarAccesoLectura($request, $user);
-            
+
             case 'crear':
                 return $this->validarCreacion($request, $user);
-            
+
             case 'editar':
                 return $this->validarEdicion($request, $user);
-            
+
             case 'aprobar':
             case 'rechazar':
                 return $this->validarAprobacion($request, $user);
-            
+
             case 'convertir':
                 return $this->validarConversion($request, $user);
-            
+
             default:
                 return true;
         }
@@ -107,11 +103,11 @@ class ValidarPermisosOrdenesCompra
         // Los proveedores solo pueden ver sus propias órdenes
         if ($user->rol === 'proveedor') {
             $ordenId = $request->route('ordenCompra');
-            if ($ordenId && !$this->perteneceAlProveedor($ordenId, $user->id)) {
+            if ($ordenId && ! $this->perteneceAlProveedor($ordenId, $user->id)) {
                 return false;
             }
         }
-        
+
         return true;
     }
 
@@ -134,13 +130,13 @@ class ValidarPermisosOrdenesCompra
     private function validarEdicion(Request $request, $user): bool
     {
         $ordenId = $request->route('ordenCompra');
-        
-        if (!$ordenId) {
+
+        if (! $ordenId) {
             return false;
         }
 
         // Verificar estado de la orden
-        if (!$this->puedeEditarse($ordenId)) {
+        if (! $this->puedeEditarse($ordenId)) {
             return false;
         }
 
@@ -153,8 +149,8 @@ class ValidarPermisosOrdenesCompra
     private function validarAprobacion(Request $request, $user): bool
     {
         $ordenId = $request->route('ordenCompra');
-        
-        if (!$ordenId) {
+
+        if (! $ordenId) {
             return false;
         }
 
@@ -168,8 +164,8 @@ class ValidarPermisosOrdenesCompra
     private function validarConversion(Request $request, $user): bool
     {
         $ordenId = $request->route('ordenCompra');
-        
-        if (!$ordenId) {
+
+        if (! $ordenId) {
             return false;
         }
 
@@ -248,7 +244,7 @@ class ValidarPermisosOrdenesCompra
             'editar' => 'La orden de compra no puede editarse en su estado actual',
             'aprobar' => 'La orden de compra debe estar en estado pendiente para aprobarla',
             'rechazar' => 'La orden de compra debe estar en estado pendiente para rechazarla',
-            'convertir' => 'La orden de compra debe estar aprobada y tener monto disponible'
+            'convertir' => 'La orden de compra debe estar aprobada y tener monto disponible',
         ];
 
         return $mensajes[$accion] ?? 'Validación fallida para la acción solicitada';

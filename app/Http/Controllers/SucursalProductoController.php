@@ -3,11 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Sucursal\AsignarProductosRequest;
+use App\Http\Resources\ProductoResource;
 use App\Models\Proveedor;
 use App\Models\Sucursal;
-use App\Models\Producto;
 use App\Services\SucursalService;
-use App\Http\Resources\ProductoResource;
 use Illuminate\Http\Request;
 
 class SucursalProductoController extends Controller
@@ -51,7 +50,7 @@ class SucursalProductoController extends Controller
 
         return response()->json([
             'success' => $resultado,
-            'message' => 'Productos asignados correctamente'
+            'message' => 'Productos asignados correctamente',
         ]);
     }
 
@@ -63,6 +62,7 @@ class SucursalProductoController extends Controller
         ]);
 
         $sucursal->productos()->detach($request->productos);
+
         return response()->json(['message' => 'Productos desasignados correctamente']);
     }
 
@@ -83,7 +83,7 @@ class SucursalProductoController extends Controller
 
         return response()->json([
             'success' => $resultado,
-            'message' => 'Stock actualizado correctamente'
+            'message' => 'Stock actualizado correctamente',
         ]);
     }
 
@@ -145,7 +145,7 @@ class SucursalProductoController extends Controller
                     'activo' => $producto->pivot->activo,
                     'valor_inventario' => $producto->pivot->stock_local * ($producto->pivot->precio_local ?? $producto->precio_base),
                 ];
-            })
+            }),
         ];
 
         return response()->json(['data' => $reporte]);

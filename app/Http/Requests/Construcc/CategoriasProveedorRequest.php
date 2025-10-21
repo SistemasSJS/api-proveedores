@@ -61,28 +61,28 @@ class CategoriasProveedorRequest extends FormRequest
         // Convertir string 'true'/'false' a boolean
         if ($this->has('incluir_subcategorias')) {
             $this->merge([
-                'incluir_subcategorias' => filter_var($this->incluir_subcategorias, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
+                'incluir_subcategorias' => filter_var($this->incluir_subcategorias, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
             ]);
         }
 
         if ($this->has('solo_padres')) {
             $this->merge([
-                'solo_padres' => filter_var($this->solo_padres, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
+                'solo_padres' => filter_var($this->solo_padres, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
             ]);
         }
 
         // Valores por defecto
         $defaults = [];
-        
-        if (!$this->has('incluir_subcategorias')) {
+
+        if (! $this->has('incluir_subcategorias')) {
             $defaults['incluir_subcategorias'] = false;
         }
-        
-        if (!$this->has('solo_padres')) {
+
+        if (! $this->has('solo_padres')) {
             $defaults['solo_padres'] = false;
         }
 
-        if (!empty($defaults)) {
+        if (! empty($defaults)) {
             $this->merge($defaults);
         }
     }

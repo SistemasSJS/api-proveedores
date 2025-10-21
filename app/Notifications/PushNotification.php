@@ -11,8 +11,11 @@ class PushNotification extends Notification implements ShouldBroadcast
     use Queueable;
 
     public $title;
+
     public $message;
+
     public $type;
+
     public $data;
 
     /**
@@ -48,7 +51,7 @@ class PushNotification extends Notification implements ShouldBroadcast
             'type' => $this->type,
             'data' => $this->data,
             'timestamp' => now()->toIsoString(),
-            'read_at' => null
+            'read_at' => null,
         ];
     }
 
@@ -72,7 +75,7 @@ class PushNotification extends Notification implements ShouldBroadcast
             'mensaje' => $this->message,
             'type' => $this->type,
             'data' => $this->data,
-            'timestamp' => now()->toIsoString()
+            'timestamp' => now()->toIsoString(),
         ];
     }
 }

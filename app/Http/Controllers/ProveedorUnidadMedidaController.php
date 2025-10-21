@@ -3,14 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Enums\EstadoGeneral;
-
-use App\Http\Requests\UnidadMedidaRequest;
 use App\Http\Requests\UnidadMedidaStoreRequest;
 use App\Http\Requests\UnidadMedidaUpdateRequest;
-use App\Models\UnidadMedida;
 use App\Models\Proveedor;
-use Illuminate\Http\Request;
+use App\Models\UnidadMedida;
 use Illuminate\Database\Eloquent\RelationNotFoundException;
+use Illuminate\Http\Request;
 
 class ProveedorUnidadMedidaController extends Controller
 {
@@ -22,6 +20,7 @@ class ProveedorUnidadMedidaController extends Controller
 
         return $this->paginated($originalPaginator);
     }
+
     public function index(Request $request, Proveedor $proveedor)
     {
         $filters = $request->only(UnidadMedida::getFilters());

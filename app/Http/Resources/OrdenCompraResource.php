@@ -27,18 +27,18 @@ class OrdenCompraResource extends JsonResource
             ],
             'observaciones' => $this->observaciones,
             'metadata_json' => $this->metadata_json,
-            
+
             // Campos calculados
             'monto_sp_asociado' => (float) $this->monto_sp_asociado,
             'sp_count' => (int) $this->sp_count,
             'monto_disponible' => (float) $this->getMontoDisponible(),
             'puede_generar_sp' => $this->puedeGenerarSolicitudPago(),
-            
+
             // Información de alertas
             'dias_sin_sp' => $this->dias_sin_sp ?? $this->getDiasSinSolicitudPago(),
             'nivel_alerta' => $this->nivel_alerta ?? $this->getNivelAlerta(),
             'mensaje_alerta' => $this->mensaje_alerta ?? null,
-            
+
             // Relaciones
             'proveedor' => $this->whenLoaded('proveedor', function () {
                 return [
@@ -47,7 +47,7 @@ class OrdenCompraResource extends JsonResource
                     'rfc' => $this->proveedor->rfc,
                 ];
             }),
-            
+
             'empresa_construcc' => $this->whenLoaded('empresaConstrucc', function () {
                 return [
                     'id' => $this->empresaConstrucc->id,
@@ -55,9 +55,9 @@ class OrdenCompraResource extends JsonResource
                     'rfc' => $this->empresaConstrucc->rfc,
                 ];
             }),
-            
+
             'detalles' => OrdenCompraDetalleResource::collection($this->whenLoaded('detalles')),
-            
+
             'solicitudes_pago' => $this->whenLoaded('solicitudesPago', function () {
                 return $this->solicitudesPago->map(function ($sp) {
                     return [
@@ -72,11 +72,11 @@ class OrdenCompraResource extends JsonResource
                     ];
                 });
             }),
-            
+
             // Estadísticas
-            'porcentaje_convertido' => $this->importe_total > 0 ? 
+            'porcentaje_convertido' => $this->importe_total > 0 ?
                 round(($this->monto_sp_asociado / $this->importe_total) * 100, 2) : 0,
-            
+
             // Timestamps
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),

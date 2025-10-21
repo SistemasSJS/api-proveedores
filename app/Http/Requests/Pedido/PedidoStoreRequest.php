@@ -72,7 +72,7 @@ class PedidoStoreRequest extends FormRequest
                 if ($cotizacion && $cotizacion->fecha_vencimiento < now()->toDateString()) {
                     $validator->errors()->add('cotizacion_id', 'La cotización ha vencido');
                 }
-                
+
                 // Validar que la cotización no tenga ya un pedido
                 if ($cotizacion && $cotizacion->pedido()->exists()) {
                     $validator->errors()->add('cotizacion_id', 'Esta cotización ya tiene un pedido asociado');
@@ -83,9 +83,9 @@ class PedidoStoreRequest extends FormRequest
             if ($this->detalles && $this->cotizacion_id) {
                 $cotizacionDetalleIds = \App\Models\CotizacionDetalle::where('cotizacion_id', $this->cotizacion_id)
                     ->pluck('id')->toArray();
-                
+
                 foreach ($this->detalles as $index => $detalle) {
-                    if (!in_array($detalle['cotizacion_detalle_id'], $cotizacionDetalleIds)) {
+                    if (! in_array($detalle['cotizacion_detalle_id'], $cotizacionDetalleIds)) {
                         $validator->errors()->add(
                             "detalles.{$index}.cotizacion_detalle_id",
                             'El detalle no pertenece a la cotización seleccionada'

@@ -30,7 +30,7 @@ class StoreOrdenCompraRequest extends FormRequest
                 'max:255',
                 Rule::unique('ordenes_compra')->where(function ($query) {
                     return $query->where('proveedor_id', $this->route('proveedor')->id);
-                })
+                }),
             ],
             'fecha_orden' => 'required|date',
             'empresa_construcc_id' => 'required|integer|exists:empresas_construcc,id',
@@ -39,7 +39,7 @@ class StoreOrdenCompraRequest extends FormRequest
             'fecha_aprobacion' => 'nullable|date|after_or_equal:fecha_orden',
             'observaciones' => 'nullable|string|max:1000',
             'metadata_json' => 'nullable|array',
-            
+
             // Detalles de la orden
             'detalles' => 'required|array|min:1',
             'detalles.*.producto' => 'required|string|max:255',
@@ -73,8 +73,8 @@ class StoreOrdenCompraRequest extends FormRequest
         $validator->after(function ($validator) {
             // Validar que el importe total coincida con la suma de los detalles
             $importeCalculado = collect($this->detalles ?? [])
-                ->sum(fn($detalle) => ($detalle['cantidad'] ?? 0) * ($detalle['precio_unitario'] ?? 0));
-                
+                ->sum(fn ($detalle) => ($detalle['cantidad'] ?? 0) * ($detalle['precio_unitario'] ?? 0));
+
             if (abs($importeCalculado - ($this->importe_total ?? 0)) > 0.01) {
                 $validator->errors()->add('importe_total', 'El importe total no coincide con la suma de los detalles.');
             }

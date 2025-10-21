@@ -36,10 +36,10 @@ class ProductoUpdateRequest extends FormRequest
                 'integer',
                 'exists:categorias,id',
                 function ($attribute, $value, $fail) use ($proveedorId) {
-                    if (!Categoria::where('id', $value)->where('proveedor_id', $proveedorId)->exists()) {
+                    if (! Categoria::where('id', $value)->where('proveedor_id', $proveedorId)->exists()) {
                         $fail('La categoría seleccionada no pertenece a este proveedor.');
                     }
-                }
+                },
             ],
 
             // subcategoría (debe ser hija)
@@ -48,13 +48,13 @@ class ProductoUpdateRequest extends FormRequest
                 'integer',
                 'exists:categorias,id',
                 function ($attribute, $value, $fail) use ($proveedorId) {
-                    if (!Categoria::where('id', $value)
+                    if (! Categoria::where('id', $value)
                         ->where('proveedor_id', $proveedorId)
                         ->whereNotNull('parent_id')
                         ->exists()) {
                         $fail('La subcategoría seleccionada no es válida o no pertenece a una categoría padre.');
                     }
-                }
+                },
             ],
 
             // marca
@@ -63,10 +63,10 @@ class ProductoUpdateRequest extends FormRequest
                 'integer',
                 'exists:marcas,id',
                 function ($attribute, $value, $fail) use ($proveedorId) {
-                    if (!Marca::where('id', $value)->where('proveedor_id', $proveedorId)->exists()) {
+                    if (! Marca::where('id', $value)->where('proveedor_id', $proveedorId)->exists()) {
                         $fail('La marca seleccionada no pertenece a este proveedor.');
                     }
-                }
+                },
             ],
         ];
     }

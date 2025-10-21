@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
-
 use App\Http\Requests\Sucursal\SucursalStoreRequest;
 use App\Http\Requests\Sucursal\SucursalUpdateRequest;
 use App\Http\Resources\SucursalResource;
@@ -42,7 +41,7 @@ class ProveedorSucursalController extends Controller
         $sucursal = Sucursal::with(Sucursal::eagerLodable())->findOrFail($sucursalId);
 
         if ($sucursal->proveedor_id !== $proveedor->id) {
-            throw new ResourceNotFoundException("Sucursal no relacionada al proveedor.");
+            throw new ResourceNotFoundException('Sucursal no relacionada al proveedor.');
         }
 
         return $this->success(new SucursalResource($sucursal));
@@ -63,7 +62,7 @@ class ProveedorSucursalController extends Controller
         $sucursal = Sucursal::findOrFail($sucursalId);
 
         if ($sucursal->proveedor_id !== $proveedor->id) {
-            throw new ResourceNotFoundException("Sucursal no relacionada al proveedor.");
+            throw new ResourceNotFoundException('Sucursal no relacionada al proveedor.');
         }
 
         $sucursal->update($request->validated());
@@ -76,11 +75,11 @@ class ProveedorSucursalController extends Controller
         $sucursal = Sucursal::findOrFail($sucursalId);
 
         if ($sucursal->proveedor_id !== $proveedor->id) {
-            throw new ResourceNotFoundException("Sucursal no relacionada al proveedor.");
+            throw new ResourceNotFoundException('Sucursal no relacionada al proveedor.');
         }
 
         $sucursal->delete();
 
-        return $this->success(message: "Sucursal eliminada correctamente.");
+        return $this->success(message: 'Sucursal eliminada correctamente.');
     }
 }

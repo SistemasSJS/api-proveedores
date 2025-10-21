@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Enums\EstadoGeneral;
-
 use App\Http\Requests\Categoria\CategoriaStoreRequest;
 use App\Http\Resources\CategoriaAcordeonResource;
 use App\Http\Resources\CategoriaResource;
@@ -14,7 +13,6 @@ use Illuminate\Http\Request;
 
 class ProveedorCategoriaController extends Controller
 {
-
     public function all(Request $request, Proveedor $proveedor)
     {
         // Obtener todas las categorías activas para el proveedor con las subcategorías (hijas)
@@ -24,7 +22,8 @@ class ProveedorCategoriaController extends Controller
             ->where('estatus', EstadoGeneral::ACTIVO->value)
             ->paginate(10000);
 
-        $categorias =    CategoriaResource::collection($data)->resolve();
+        $categorias = CategoriaResource::collection($data)->resolve();
+
         return $this->paginated($data->setCollection(collect($categorias)));
     }
 
@@ -46,9 +45,9 @@ class ProveedorCategoriaController extends Controller
         $paginator = $query->paginate($perPage);
 
         $data = CategoriaResource::collection(($paginator))->resolve();
+
         return $this->paginated($paginator->setCollection(collect($data)));
     }
-
 
     public function index_sub_categorias(Request $request, Proveedor $proveedor, $categoriaId)
     {
@@ -61,6 +60,7 @@ class ProveedorCategoriaController extends Controller
 
         $filters = $request->only(['nombre', 'estatus']);
         $data = $categoriaPadre->children()->filter($filters)->paginate();
+
         return $this->paginated($data);
     }
 
@@ -89,13 +89,12 @@ class ProveedorCategoriaController extends Controller
         return $this->success($categoria, 201);
     }
 
-
     public function show(Request $request, Proveedor $proveedor, $categoriaId)
     {
         $categoria = Categoria::findOrFail($categoriaId);
+
         return $this->success($categoria);
     }
-
 
     public function update(Request $request, Proveedor $proveedor, $categoriaId)
     {
@@ -129,14 +128,14 @@ class ProveedorCategoriaController extends Controller
                 $query->withCount([
                     'productosSubcategoria as productos_count' => function ($q) use ($proveedor) {
                         $q->where('productos.proveedor_id', $proveedor->id);
-                    }
+                    },
                 ]);
-            }
+            },
         ])
             ->withCount([
                 'productos as productos_count' => function ($q) use ($proveedor) {
                     $q->where('productos.proveedor_id', $proveedor->id);
-                }
+                },
             ])
             ->whereNull('parent_id')
             ->where('proveedor_id', $proveedor->id)
@@ -144,7 +143,7 @@ class ProveedorCategoriaController extends Controller
 
         return $this->success(
             CategoriaAcordeonResource::collection($categorias),
-            "Listado de categorías con subcategorías con contador de productos."
+            'Listado de categorías con subcategorías con contador de productos.'
         );
     }
 }

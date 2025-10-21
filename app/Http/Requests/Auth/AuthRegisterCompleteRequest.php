@@ -8,6 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
  * @OA\Schema(
  *     schema="AuthRegisterCompleteRequest",
  *     required={"token", "password", "password_confirmation"},
+ *
  *     @OA\Property(
  *         property="token",
  *         type="string",

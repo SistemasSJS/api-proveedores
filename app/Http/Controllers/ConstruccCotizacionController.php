@@ -6,16 +6,15 @@ use App\Models\Cotizacion;
 use App\Models\CotizacionDetalle;
 use App\Models\Proveedor;
 use App\Notifications\CotizacionCreada;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\ValidationException;
 
 /**
  * Controlador para la gestión de cotizaciones en el módulo de construcción
- * 
+ *
  * Maneja todas las operaciones CRUD de cotizaciones con sus detalles asociados.
  * Incluye validaciones complejas y manejo de transacciones para garantizar
  * la integridad de los datos entre cotizaciones y sus detalles.
@@ -24,9 +23,6 @@ class ConstruccCotizacionController extends Controller
 {
     /**
      * Lista paginada de cotizaciones con filtros opcionales
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
     {
@@ -70,9 +66,6 @@ class ConstruccCotizacionController extends Controller
 
     /**
      * Crea una nueva cotización con sus detalles
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function store(Request $request): JsonResponse
     {
@@ -130,15 +123,12 @@ class ConstruccCotizacionController extends Controller
 
             return $this->success($cotizacion, 'Cotización creada exitosamente.', 201);
         } catch (\Exception $e) {
-            return $this->error('Error al crear la cotización: ' . $e->getMessage(), null, 500);
+            return $this->error('Error al crear la cotización: '.$e->getMessage(), null, 500);
         }
     }
 
     /**
      * Muestra una cotización específica con sus detalles
-     *
-     * @param Cotizacion $cotizacion
-     * @return JsonResponse
      */
     public function show(Cotizacion $cotizacion): JsonResponse
     {
@@ -149,10 +139,6 @@ class ConstruccCotizacionController extends Controller
 
     /**
      * Actualiza una cotización existente
-     *
-     * @param Request $request
-     * @param Cotizacion $cotizacion
-     * @return JsonResponse
      */
     public function update(Request $request, Cotizacion $cotizacion): JsonResponse
     {
@@ -175,7 +161,7 @@ class ConstruccCotizacionController extends Controller
             $cotizacionActualizada = DB::transaction(function () use ($cotizacion, $validatedData) {
                 // Actualizar datos básicos de la cotización
                 $datosBasicos = collect($validatedData)->except(['detalles'])->toArray();
-                if (!empty($datosBasicos)) {
+                if (! empty($datosBasicos)) {
                     $cotizacion->update($datosBasicos);
                 }
 
@@ -196,15 +182,12 @@ class ConstruccCotizacionController extends Controller
 
             return $this->success($cotizacionActualizada, 'Cotización actualizada exitosamente.');
         } catch (\Exception $e) {
-            return $this->error('Error al actualizar la cotización: ' . $e->getMessage(), null, 500);
+            return $this->error('Error al actualizar la cotización: '.$e->getMessage(), null, 500);
         }
     }
 
     /**
      * Elimina una cotización y todos sus detalles
-     *
-     * @param Cotizacion $cotizacion
-     * @return JsonResponse
      */
     public function destroy(Cotizacion $cotizacion): JsonResponse
     {
@@ -212,24 +195,19 @@ class ConstruccCotizacionController extends Controller
             DB::transaction(function () use ($cotizacion) {
                 // Eliminar primero los detalles
                 $cotizacion->detalles()->delete();
-                
+
                 // Luego eliminar la cotización
                 $cotizacion->delete();
             });
 
             return $this->success(null, 'Cotización eliminada exitosamente.');
         } catch (\Exception $e) {
-            return $this->error('Error al eliminar la cotización: ' . $e->getMessage(), null, 500);
+            return $this->error('Error al eliminar la cotización: '.$e->getMessage(), null, 500);
         }
     }
 
     /**
      * Procesa los detalles de una cotización (crear, actualizar, eliminar)
-     *
-     * @param Cotizacion $cotizacion
-     * @param array $detalles
-     * @param int $proveedorId
-     * @return void
      */
     private function procesarDetalles(Cotizacion $cotizacion, array $detalles, int $proveedorId): void
     {
@@ -239,7 +217,7 @@ class ConstruccCotizacionController extends Controller
             if (isset($detalle['id'])) {
                 // Detalle existente
                 $detalleExistente = CotizacionDetalle::find($detalle['id']);
-                
+
                 if ($detalleExistente && $detalleExistente->cotizacion_id === $cotizacion->id) {
                     if (isset($detalle['eliminar']) && $detalle['eliminar']) {
                         // Eliminar detalle
@@ -274,20 +252,18 @@ class ConstruccCotizacionController extends Controller
 
     /**
      * Envía notificaciones a los usuarios del proveedor cuando se crea una cotización
-     *
-     * @param Cotizacion $cotizacion
-     * @return void
      */
     private function enviarNotificacionesCotizacionCreada(Cotizacion $cotizacion): void
     {
         try {
             // Obtener el usuario que está creando la cotización
             $solicitante = Auth::user();
-            
-            if (!$solicitante) {
+
+            if (! $solicitante) {
                 Log::warning('No se pudo identificar el usuario que creó la cotización', [
-                    'cotizacion_id' => $cotizacion->id
+                    'cotizacion_id' => $cotizacion->id,
                 ]);
+
                 return;
             }
 
@@ -295,11 +271,12 @@ class ConstruccCotizacionController extends Controller
             $proveedor = Proveedor::with('usuariosActivos')
                 ->find($cotizacion->proveedor_id);
 
-            if (!$proveedor) {
+            if (! $proveedor) {
                 Log::error('Proveedor no encontrado para enviar notificaciones', [
                     'proveedor_id' => $cotizacion->proveedor_id,
-                    'cotizacion_id' => $cotizacion->id
+                    'cotizacion_id' => $cotizacion->id,
                 ]);
+
                 return;
             }
 
@@ -309,8 +286,9 @@ class ConstruccCotizacionController extends Controller
             if ($usuariosProveedor->isEmpty()) {
                 Log::warning('No hay usuarios activos para notificar en el proveedor', [
                     'proveedor_id' => $proveedor->id,
-                    'cotizacion_id' => $cotizacion->id
+                    'cotizacion_id' => $cotizacion->id,
                 ]);
+
                 return;
             }
 
@@ -327,14 +305,14 @@ class ConstruccCotizacionController extends Controller
                         'cotizacion_id' => $cotizacion->id,
                         'usuario_id' => $usuario->id,
                         'usuario_email' => $usuario->email,
-                        'proveedor_id' => $proveedor->id
+                        'proveedor_id' => $proveedor->id,
                     ]);
                 } catch (\Exception $e) {
                     Log::error('Error al enviar notificación individual', [
                         'error' => $e->getMessage(),
                         'cotizacion_id' => $cotizacion->id,
                         'usuario_id' => $usuario->id,
-                        'usuario_email' => $usuario->email
+                        'usuario_email' => $usuario->email,
                     ]);
                 }
             }
@@ -343,14 +321,14 @@ class ConstruccCotizacionController extends Controller
                 'cotizacion_id' => $cotizacion->id,
                 'proveedor_id' => $proveedor->id,
                 'usuarios_notificados' => $usuariosProveedor->count(),
-                'solicitante_id' => $solicitante->id
+                'solicitante_id' => $solicitante->id,
             ]);
 
         } catch (\Exception $e) {
             Log::error('Error general en el envío de notificaciones de cotización', [
                 'error' => $e->getMessage(),
                 'cotizacion_id' => $cotizacion->id,
-                'stack_trace' => $e->getTraceAsString()
+                'stack_trace' => $e->getTraceAsString(),
             ]);
         }
     }

@@ -6,13 +6,13 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class CategoriaResource extends JsonResource
 {
-  public function toArray($request)
-  {
-    return [
-      'id'          => $this->id,
-      'nombre'      => $this->nombre,
-      'estatus'      => $this->estatus,
-      'subcategorias' => $this->whenLoaded('children'),  // Aquí cargamos las subcategorías si están disponibles
-    ];
-  }
+    public function toArray($request)
+    {
+        return [
+            'id' => $this->id,
+            'nombre' => $this->nombre,
+            'estatus' => $this->estatus,
+            'subcategorias' => $this->whenLoaded('children'),  // Aquí cargamos las subcategorías si están disponibles
+        ];
+    }
 }

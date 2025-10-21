@@ -33,8 +33,9 @@ class TestNotification extends Command
 
         $user = User::find($userId);
 
-        if (!$user) {
+        if (! $user) {
             $this->error("Usuario con ID {$userId} no encontrado.");
+
             return 1;
         }
 
@@ -52,9 +53,9 @@ class TestNotification extends Command
                         'action' => 'view',
                         'data' => [
                             'timestamp' => now()->toIsoString(),
-                            'source' => 'test_command'
-                        ]
-                    ]
+                            'source' => 'test_command',
+                        ],
+                    ],
                 ]
             ));
 
@@ -62,10 +63,11 @@ class TestNotification extends Command
             $this->info("Tipo: {$type}");
             $this->info("Mensaje: {$message}");
             $this->info('La notificación debería aparecer en la aplicación Angular/Ionic.');
-            
+
             return 0;
         } catch (\Exception $e) {
-            $this->error('❌ Error al enviar la notificación: ' . $e->getMessage());
+            $this->error('❌ Error al enviar la notificación: '.$e->getMessage());
+
             return 1;
         }
     }

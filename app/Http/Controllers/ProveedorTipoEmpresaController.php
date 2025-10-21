@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Http\Resources\TipoEmpresaResource;
 use App\Models\Proveedor;
 use App\Models\TipoEmpresa;
@@ -16,6 +15,7 @@ class ProveedorTipoEmpresaController extends Controller
         $filters = $request->only(TipoEmpresa::getFilters());
         $originalPaginator = TipoEmpresa::filter($filters)->paginate(1000);
         $tipoEmpresas = TipoEmpresaResource::collection($originalPaginator)->resolve();
+
         return $this->paginated($originalPaginator->setCollection(collect($tipoEmpresas)));
     }
 

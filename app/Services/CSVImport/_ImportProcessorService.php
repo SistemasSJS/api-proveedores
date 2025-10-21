@@ -2,21 +2,21 @@
 
 namespace App\Services\CSVImport;
 
-
 use App\Jobs\ImportProcessorJob;
-use App\Models\ImportAudit;
-use App\Models\Proveedor;
-use App\Models\Producto;
 use App\Models\Categoria;
+use App\Models\ImportAudit;
 use App\Models\Marca;
+use App\Models\Producto;
+use App\Models\Proveedor;
 use App\Models\UnidadMedida;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 
 class ImportProcessorService
 {
     private const CHUNK_SIZE = 1000;
+
     private const LARGE_IMPORT_THRESHOLD = 5000;
 
     private array $catalogCache = [];
@@ -44,13 +44,13 @@ class ImportProcessorService
         $importAudit->appendLog('Importación grande detectada. Usando sistema de colas.', [
             'total_registros' => count($productosData),
             'chunk_size' => self::CHUNK_SIZE,
-            'use_preview' => $usePreview
+            'use_preview' => $usePreview,
         ]);
 
         // Actualizar estado para indicar que se está procesando en cola
         $importAudit->update([
             'estado' => 'queued',
-            'fase' => $usePreview ? 'preview' : 'processing'
+            'fase' => $usePreview ? 'preview' : 'processing',
         ]);
 
         // Dividir en chunks y crear jobs
@@ -64,7 +64,7 @@ class ImportProcessorService
 
         $importAudit->appendLog('Jobs de procesamiento creados', [
             'chunks_count' => count($chunks),
-            'job_ids' => $jobIds
+            'job_ids' => $jobIds,
         ]);
 
         return [
@@ -72,7 +72,7 @@ class ImportProcessorService
             'chunks_count' => count($chunks),
             'job_ids' => $jobIds,
             'import_audit_id' => $importAudit->id,
-            'message' => 'Importación iniciada en segundo plano. Use el endpoint de estado para monitorear el progreso.'
+            'message' => 'Importación iniciada en segundo plano. Use el endpoint de estado para monitorear el progreso.',
         ];
     }
 
@@ -86,7 +86,7 @@ class ImportProcessorService
 
         $importAudit->appendLog('Procesando importación sincronizada', [
             'total_registros' => count($productosData),
-            'chunk_size' => self::CHUNK_SIZE
+            'chunk_size' => self::CHUNK_SIZE,
         ]);
 
         // Inicializar cache de catálogos
@@ -98,7 +98,7 @@ class ImportProcessorService
             'errores' => [],
             'error_types' => [],
             'processing_time' => 0,
-            'memory_usage' => 0
+            'memory_usage' => 0,
         ];
 
         $chunks = array_chunk($productosData, self::CHUNK_SIZE);
@@ -114,7 +114,7 @@ class ImportProcessorService
 
             // Agregar tipos de error únicos
             foreach ($chunkResult['error_types'] as $errorType) {
-                if (!in_array($errorType, $result['error_types'])) {
+                if (! in_array($errorType, $result['error_types'])) {
                     $result['error_types'][] = $errorType;
                 }
             }
@@ -130,7 +130,7 @@ class ImportProcessorService
         return [
             'processing_type' => 'sync',
             'result' => $result,
-            'import_audit_id' => $importAudit->id
+            'import_audit_id' => $importAudit->id,
         ];
     }
 
@@ -143,17 +143,17 @@ class ImportProcessorService
             'productos_creados' => 0,
             'productos_actualizados' => 0,
             'errores' => [],
-            'error_types' => []
+            'error_types' => [],
         ];
 
         DB::beginTransaction();
 
         try {
             // Crear savepoint
-            DB::unprepared('SAVEPOINT chunk_' . $chunkNumber);
+            DB::unprepared('SAVEPOINT chunk_'.$chunkNumber);
 
             $importAudit->appendLog("Procesando chunk {$chunkNumber} de {$totalChunks}", [
-                'chunk_size' => count($chunk)
+                'chunk_size' => count($chunk),
             ]);
 
             // Procesar catálogos primero
@@ -176,11 +176,11 @@ class ImportProcessorService
             $importAudit->appendLog("Chunk {$chunkNumber} procesado exitosamente", [
                 'productos_creados' => $result['productos_creados'],
                 'productos_actualizados' => $result['productos_actualizados'],
-                'errores' => count($result['errores'])
+                'errores' => count($result['errores']),
             ]);
         } catch (\Throwable $e) {
             // Rollback to savepoint
-            DB::unprepared('ROLLBACK TO SAVEPOINT chunk_' . $chunkNumber);
+            DB::unprepared('ROLLBACK TO SAVEPOINT chunk_'.$chunkNumber);
             DB::rollback();
 
             $errorType = get_class($e);
@@ -192,14 +192,14 @@ class ImportProcessorService
                     'item' => $item,
                     'error' => $e->getMessage(),
                     'error_type' => $errorType,
-                    'chunk' => $chunkNumber
+                    'chunk' => $chunkNumber,
                 ];
             }
 
             $importAudit->appendLog("Error procesando chunk {$chunkNumber}", [
                 'error' => $e->getMessage(),
                 'error_type' => $errorType,
-                'chunk_size' => count($chunk)
+                'chunk_size' => count($chunk),
             ]);
 
             Log::error('Error en chunk de importación', [
@@ -207,7 +207,7 @@ class ImportProcessorService
                 'proveedor_id' => $proveedor->id,
                 'import_audit_id' => $importAudit->id,
                 'error' => $e->getMessage(),
-                'error_type' => $errorType
+                'error_type' => $errorType,
             ]);
         }
 
@@ -260,7 +260,7 @@ class ImportProcessorService
     {
         $existing = $this->catalogCache[$cacheKey] ?? [];
         $missing = $items->filter(function ($item) use ($existing) {
-            return !isset($existing[$item]);
+            return ! isset($existing[$item]);
         });
 
         if ($missing->isNotEmpty()) {
@@ -269,7 +269,7 @@ class ImportProcessorService
                     'nombre' => $item,
                     'proveedor_id' => $proveedor->id,
                     'created_at' => now(),
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ];
             })->toArray();
 
@@ -315,23 +315,23 @@ class ImportProcessorService
                 $result['errors'][] = [
                     'item' => $item,
                     'error' => $e->getMessage(),
-                    'error_type' => $errorType
+                    'error_type' => $errorType,
                 ];
 
-                if (!in_array($errorType, $result['error_types'])) {
+                if (! in_array($errorType, $result['error_types'])) {
                     $result['error_types'][] = $errorType;
                 }
             }
         }
 
         // Bulk insert for new products
-        if (!empty($productsToInsert)) {
+        if (! empty($productsToInsert)) {
             Producto::insert($productsToInsert);
             $result['created'] = count($productsToInsert);
         }
 
         // Bulk update for existing products using upsert
-        if (!empty($productsToUpdate)) {
+        if (! empty($productsToUpdate)) {
             Producto::upsert(
                 $productsToUpdate,
                 ['codigo_interno', 'proveedor_id'], // uniqueBy
@@ -365,7 +365,7 @@ class ImportProcessorService
             'unidad_medida_id' => $unidadId,
             'proveedor_id' => $proveedor->id,
             'created_at' => now(),
-            'updated_at' => now()
+            'updated_at' => now(),
         ];
     }
 
@@ -385,15 +385,15 @@ class ImportProcessorService
             'errores_detalle' => $result['errores'],
             'error_types' => $result['error_types'],
             'processing_time' => $result['processing_time'],
-            'memory_usage' => $result['memory_usage']
+            'memory_usage' => $result['memory_usage'],
         ]);
 
         $importAudit->appendLog('Importación completada', [
             'productos_creados' => $result['productos_creados'],
             'productos_actualizados' => $result['productos_actualizados'],
             'errores' => count($result['errores']),
-            'processing_time' => $result['processing_time'] . 's',
-            'memory_usage' => $result['memory_usage'] . 'MB'
+            'processing_time' => $result['processing_time'].'s',
+            'memory_usage' => $result['memory_usage'].'MB',
         ]);
 
         // Limpiar cache de catálogos

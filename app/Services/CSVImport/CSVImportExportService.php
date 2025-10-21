@@ -3,34 +3,31 @@
 namespace App\Services\CSVImport;
 
 use App\Models\ImportAudit;
-use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Facades\Excel;
+use Exception;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
-use Exception;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CSVImportExportService
 {
     /**
      * Exportar resultados de importación en el formato especificado
      *
-     * @param ImportAudit $audit
-     * @param string $format Formato: xlsx, csv, pdf
-     * @param string $type Tipo: report, data, summary
-     * @return Response
+     * @param  string  $format  Formato: xlsx, csv, pdf
+     * @param  string  $type  Tipo: report, data, summary
      */
     public function exportImportResults(ImportAudit $audit, string $format = 'xlsx', string $type = 'report'): Response
     {
         try {
             // Validar formato
             $validFormats = ['xlsx', 'csv', 'pdf'];
-            if (!in_array($format, $validFormats)) {
+            if (! in_array($format, $validFormats)) {
                 throw new Exception("Formato no soportado: {$format}");
             }
 
             // Validar tipo
             $validTypes = ['report', 'data', 'summary'];
-            if (!in_array($type, $validTypes)) {
+            if (! in_array($type, $validTypes)) {
                 throw new Exception("Tipo de exportación no soportado: {$type}");
             }
 
@@ -54,7 +51,7 @@ class CSVImportExportService
                 'format' => $format,
                 'type' => $type,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             throw $e;
@@ -100,27 +97,27 @@ class CSVImportExportService
                 'nuevos' => $audit->nuevos ?? 0,
                 'actualizados' => $audit->actualizados ?? 0,
                 'errores' => $audit->errores ?? 0,
-                'tasa_exito' => $this->calculateSuccessRate($audit)
+                'tasa_exito' => $this->calculateSuccessRate($audit),
             ],
             'breakdown_catalogos' => [
                 'marcas' => [
                     'importadas' => $audit->marca_imported ?? 0,
                     'errores' => $audit->marca_errors ?? 0,
-                    'total' => $audit->marca_total ?? 0
+                    'total' => $audit->marca_total ?? 0,
                 ],
                 'categorias' => [
                     'importadas' => $audit->categoria_imported ?? 0,
                     'errores' => $audit->categoria_errors ?? 0,
-                    'total' => $audit->categoria_total ?? 0
+                    'total' => $audit->categoria_total ?? 0,
                 ],
                 'unidades' => [
                     'importadas' => $audit->unidad_imported ?? 0,
                     'errores' => $audit->unidad_errors ?? 0,
-                    'total' => $audit->unidad_total ?? 0
-                ]
+                    'total' => $audit->unidad_total ?? 0,
+                ],
             ],
             'errores_detalle' => $audit->errores_detalle ?? [],
-            'logs' => $audit->logs ?? []
+            'logs' => $audit->logs ?? [],
         ]);
     }
 
@@ -150,8 +147,8 @@ class CSVImportExportService
                 'exitosos' => ($audit->nuevos ?? 0) + ($audit->actualizados ?? 0),
                 'errores' => $audit->errores ?? 0,
                 'tasa_exito' => $this->calculateSuccessRate($audit),
-                'duracion' => $this->formatProcessingTime($audit)
-            ]
+                'duracion' => $this->formatProcessingTime($audit),
+            ],
         ]);
     }
 
@@ -224,7 +221,7 @@ class CSVImportExportService
         $sheet->row($row++, ['Proveedor ID:', $data['proveedor_id']]);
         $sheet->row($row++, ['Estado:', $data['estado']]);
         $sheet->row($row++, ['Archivo:', basename($data['archivo'] ?? 'N/A')]);
-        $sheet->row($row++, ['Tiempo procesamiento:', ($data['processing_time'] ?? 0) . 's']);
+        $sheet->row($row++, ['Tiempo procesamiento:', ($data['processing_time'] ?? 0).'s']);
 
         $row++;
         $sheet->row($row++, ['Estadísticas:']);
@@ -237,12 +234,12 @@ class CSVImportExportService
         $sheet->row($row++, ['Tasa de éxito (%):', $stats['tasa_exito'] ?? 0]);
 
         $breakdown = $data['breakdown_catalogos'] ?? [];
-        if (!empty($breakdown)) {
+        if (! empty($breakdown)) {
             $row++;
             $sheet->row($row++, ['Catálogos:']);
             foreach ($breakdown as $catalogo => $info) {
-                $sheet->row($row++, [ucfirst($catalogo) . ' importadas:', $info['importadas'] ?? 0]);
-                $sheet->row($row++, [ucfirst($catalogo) . ' errores:', $info['errores'] ?? 0]);
+                $sheet->row($row++, [ucfirst($catalogo).' importadas:', $info['importadas'] ?? 0]);
+                $sheet->row($row++, [ucfirst($catalogo).' errores:', $info['errores'] ?? 0]);
             }
         }
     }
@@ -275,7 +272,7 @@ class CSVImportExportService
 
         $row = 3;
         foreach ($data as $key => $value) {
-            if (!is_array($value)) {
+            if (! is_array($value)) {
                 $sheet->row($row++, [$key, $value]);
             }
         }
@@ -287,6 +284,7 @@ class CSVImportExportService
     private function generateFilename(ImportAudit $audit, string $type, string $extension): string
     {
         $timestamp = now()->format('Y-m-d_H-i-s');
+
         return "import_{$type}_audit_{$audit->id}_proveedor_{$audit->proveedor_id}_{$timestamp}.{$extension}";
     }
 
@@ -298,6 +296,7 @@ class CSVImportExportService
         if ($audit->inicio_proceso && $audit->fin_proceso) {
             return round($audit->fin_proceso->diffInSeconds($audit->inicio_proceso, true), 2);
         }
+
         return 0.0;
     }
 
@@ -313,10 +312,12 @@ class CSVImportExportService
         } elseif ($seconds < 3600) {
             $minutes = floor($seconds / 60);
             $remainingSeconds = $seconds % 60;
+
             return "{$minutes}m {$remainingSeconds}s";
         } else {
             $hours = floor($seconds / 3600);
             $minutes = floor(($seconds % 3600) / 60);
+
             return "{$hours}h {$minutes}m";
         }
     }
@@ -332,6 +333,7 @@ class CSVImportExportService
         }
 
         $successful = ($audit->nuevos ?? 0) + ($audit->actualizados ?? 0);
+
         return round(($successful / $total) * 100, 2);
     }
 }

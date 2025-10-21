@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
 class Role extends BaseModel
 {
@@ -13,7 +12,7 @@ class Role extends BaseModel
         'nombre',
         'estatus',
         'created_at',
-        'update_at'
+        'update_at',
     ];
 
     /**
@@ -25,7 +24,7 @@ class Role extends BaseModel
         'nombre' => 'nombre',
         'estatus' => 'estatus',
         'created_at' => 'created_at',
-        'update_at' => 'update_at'
+        'update_at' => 'update_at',
     ];
 
     /**
@@ -35,7 +34,6 @@ class Role extends BaseModel
     {
         return $query->where('nombre', 'like', "%$value%");
     }
-
 
     /**
      * Filtro específico para 'estatus'

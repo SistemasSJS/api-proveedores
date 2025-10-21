@@ -23,10 +23,10 @@ class OrdenCompraDetalleResource extends JsonResource
             'precio_unitario' => (float) $this->precio_unitario,
             'importe' => (float) $this->importe,
             'importe_calculado' => (float) $this->calcularImporte(),
-            
+
             // Relación con orden de compra (solo ID para evitar ciclos)
             'orden_compra_id' => $this->orden_compra_id,
-            
+
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];

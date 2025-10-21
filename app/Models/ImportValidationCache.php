@@ -15,14 +15,14 @@ class ImportValidationCache extends Model
         'file_name',
         'total_rows',
         'validation_data',
-        'expires_at'
+        'expires_at',
     ];
 
     protected $casts = [
         'validation_data' => 'array',
         'expires_at' => 'datetime',
         'total_rows' => 'integer',
-        'proveedor_id' => 'integer'
+        'proveedor_id' => 'integer',
     ];
 
     /**

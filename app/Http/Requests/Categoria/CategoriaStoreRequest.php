@@ -9,6 +9,7 @@ use Illuminate\Foundation\Http\FormRequest;
  * @OA\Schema(
  *     schema="CategoriaStoreRequest",
  *     required={"nombre", "descripcion"},
+ *
  *     @OA\Property(property="nombre", type="string", example="Catálogo de materiales"),
  *     @OA\Property(property="descripcion", type="string", example="Listado de productos para obra negra"),
  *     @OA\Property(property="categoria_padre_id", type="integer", example=1)
@@ -33,13 +34,13 @@ class CategoriaStoreRequest extends FormRequest
                 'integer',
                 'exists:categorias,id',
                 function ($attribute, $value, $fail) use ($proveedorId) {
-                    if (!Categoria::where('id', $value)
+                    if (! Categoria::where('id', $value)
                         ->where('proveedor_id', $proveedorId)
                         ->where('nivel', '<', 2) // No permitir más de 2 niveles
                         ->exists()) {
                         $fail('La categoría padre no es válida o no pertenece a este proveedor.');
                     }
-                }
+                },
             ],
         ];
     }

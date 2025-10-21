@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Enums\EstadoGeneral;
-
 use App\Http\Resources\MarcaResource;
 use App\Models\Marca;
 use App\Models\Proveedor;
@@ -12,7 +11,6 @@ use Illuminate\Http\Request;
 
 class ProveedorMarcaController extends Controller
 {
-
     public function all(Request $request, Proveedor $proveedor)
     {
         $data = Marca::where('proveedor_id', $proveedor->id)
@@ -34,11 +32,12 @@ class ProveedorMarcaController extends Controller
             ->paginate();
 
         $data = MarcaResource::collection($originalPaginator)->resolve();
+
         return $this->paginated($originalPaginator->setCollection(collect($data)));
     }
 
     /**
-     * @decrepted 
+     * @decrepted
      * Lineas ya no forma parte del modelo de datos.
      */
     public function index_lineas_por_marca(Request $request, Proveedor $proveedor, $marcaId)
@@ -50,6 +49,7 @@ class ProveedorMarcaController extends Controller
         }
         $filters = $request->only(['nombre', 'estatus']);
         $data = $marca->lineas()->filter($filters)->paginate();
+
         return $this->paginated($data);
     }
 
@@ -70,6 +70,7 @@ class ProveedorMarcaController extends Controller
     public function show(Request $request, Proveedor $proveedor, $marcaId)
     {
         $marca = Marca::findOrFail($marcaId);
+
         return $this->success($marca);
     }
 

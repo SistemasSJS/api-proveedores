@@ -3,10 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-
 
 class Sucursal extends BaseModel
 {
@@ -24,13 +22,15 @@ class Sucursal extends BaseModel
         'activa',
         'coordenadas_lat',
         'coordenadas_lng',
-        'estatus'
+        'estatus',
     ];
+
     protected $casts = [
         'activa' => 'boolean',
         'coordenadas_lat' => 'float',
         'coordenadas_lng' => 'float',
     ];
+
     protected $hidden = [
         'created_at',
         'updated_at',
@@ -42,7 +42,6 @@ class Sucursal extends BaseModel
         'descripcion' => 'descripcion',
         'modelo' => 'modelo',
     ];
-
 
     /**
      * Define las relaciones permitidas para cargar con with() (eager loading).

@@ -15,12 +15,12 @@ class MarcaResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'         => $this->id,
-            'logo'       => asset('storage/' . $this->logo),
-            'nombre'     => $this->nombre,
-            'descripcion'     => $this->descripcion,
+            'id' => $this->id,
+            'logo' => asset('storage/'.$this->logo),
+            'nombre' => $this->nombre,
+            'descripcion' => $this->descripcion,
             'productos_count' => $this->productos_count, // 👈 aquí lo expones
-            'estatus'    => $this->estatus,
+            'estatus' => $this->estatus,
             // 'created_at' => $this->created_at?->toDateTimeString(),
             // 'updated_at' => $this->updated_at?->toDateTimeString(),
         ];

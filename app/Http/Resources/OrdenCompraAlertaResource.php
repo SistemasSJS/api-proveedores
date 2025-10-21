@@ -70,7 +70,7 @@ class OrdenCompraAlertaResource extends JsonResource
      */
     private function getColorAlerta(): string
     {
-        return match($this->nivel_alerta) {
+        return match ($this->nivel_alerta) {
             'danger' => '#dc3545',
             'warning' => '#ffc107',
             default => '#28a745'
@@ -83,8 +83,13 @@ class OrdenCompraAlertaResource extends JsonResource
     private function getPrioridad(): int
     {
         $dias = $this->dias_sin_sp ?? 0;
-        if ($dias >= 15) return 3; // Alta
-        if ($dias >= 7) return 2;  // Media
+        if ($dias >= 15) {
+            return 3;
+        } // Alta
+        if ($dias >= 7) {
+            return 2;
+        }  // Media
+
         return 1; // Baja
     }
 
@@ -102,7 +107,7 @@ class OrdenCompraAlertaResource extends JsonResource
                 'descripcion' => 'Esta orden requiere atención inmediata',
                 'icono' => 'exclamation-triangle',
                 'color' => '#dc3545',
-                'url' => "/ordenes-compra/{$this->id}/crear-sp"
+                'url' => "/ordenes-compra/{$this->id}/crear-sp",
             ];
 
             $acciones[] = [
@@ -119,7 +124,7 @@ class OrdenCompraAlertaResource extends JsonResource
                 'descripcion' => 'Generar solicitud antes que se vuelva crítica',
                 'icono' => 'plus-circle',
                 'color' => '#ffc107',
-                'url' => "/ordenes-compra/{$this->id}/crear-sp"
+                'url' => "/ordenes-compra/{$this->id}/crear-sp",
             ];
 
             $acciones[] = [
@@ -138,7 +143,7 @@ class OrdenCompraAlertaResource extends JsonResource
             'descripcion' => 'Ver información completa de la orden',
             'icono' => 'eye',
             'color' => '#007bff',
-            'url' => "/ordenes-compra/{$this->id}"
+            'url' => "/ordenes-compra/{$this->id}",
         ];
 
         return $acciones;

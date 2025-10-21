@@ -36,9 +36,9 @@ class ProductoImagenController extends Controller
     public function show($id)
     {
         $imagen = ProductoImagen::findOrFail($id);
+
         return $this->success($imagen, 'Imagen encontrada.', 201);
     }
-
 
     public function update(Request $request, $id)
     {

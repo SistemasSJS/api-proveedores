@@ -2,28 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
-use App\Models\User;
-use App\Models\Proveedor;
-
-use App\Http\Resources\UserResource;
-
-
-use App\Http\Requests\ProveedorUsuario\ProveedorUsuairoStoreRequest;
-use App\Http\Requests\ProveedorUsuario\ProveedorUsuairoUpdateRequest;
-use App\Http\Requests\ProveedorUsuario\ProveedorUsuairoUpdateLogoRequest;
-
 use App\Exceptions\Api\Auth\UnauthorizedException;
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Exceptions\Api\Custom\MainUserDuplicateException;
 use App\Exceptions\Api\Custom\NotFoundRelationException;
-
+use App\Http\Requests\ProveedorUsuario\ProveedorUsuairoStoreRequest;
+use App\Http\Requests\ProveedorUsuario\ProveedorUsuairoUpdateLogoRequest;
+use App\Http\Requests\ProveedorUsuario\ProveedorUsuairoUpdateRequest;
+use App\Http\Resources\UserResource;
+use App\Models\Proveedor;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class ProveedorUsuarioController extends Controller
 {
-
     public function index(Request $request, Proveedor $proveedor)
     {
         $this->authorizeAccess($request->user(), $proveedor);
@@ -42,6 +35,7 @@ class ProveedorUsuarioController extends Controller
             ->paginate($perPage);
 
         $users = UserResource::collection($usersPaginate)->resolve();
+
         return $this->paginated(
             $usersPaginate->setCollection(collect($users)),
             'Usuarios obtenidos correctamente.'
@@ -88,7 +82,7 @@ class ProveedorUsuarioController extends Controller
     {
         $this->authorizeAccess($request->user(), $proveedor);
         $user = USer::findOrFail($user_id);
-        if (!$proveedor->users()->find($user->id)) {
+        if (! $proveedor->users()->find($user->id)) {
             throw new ResourceNotFoundException(404, 'Usuario no asociado al proveedor.');
         }
 
@@ -101,7 +95,7 @@ class ProveedorUsuarioController extends Controller
         // 2. VERIFICAR QUE EL USUARIO EN LOS PARAM QRY PERTENECE AL PROVEEDOR
         $this->authorizeAccess($request->user(), $proveedor);
         $user = USer::findOrFail($user_id);
-        if (!$proveedor->users()->find($user->id)) {
+        if (! $proveedor->users()->find($user->id)) {
             throw new ResourceNotFoundException(404, 'Usuario no asociado al proveedor.');
         }
         $validated = $request->validated();
@@ -118,8 +112,7 @@ class ProveedorUsuarioController extends Controller
 
         $pivotData = $proveedor->users()->find($user->id);
 
-
-        if (!$pivotData) {
+        if (! $pivotData) {
             throw new NotFoundRelationException('Usuario no asociado al proveedor.');
         }
 
@@ -137,18 +130,18 @@ class ProveedorUsuarioController extends Controller
     {
         $this->authorizeAccess($request->user(), $proveedor);
         $user = USer::findOrFail($user_id);
-        if (!$proveedor->users()->find($user->id)) {
+        if (! $proveedor->users()->find($user->id)) {
             throw new ResourceNotFoundException(404, 'Usuario no asociado al proveedor.');
         }
         // Eliminar logo anterior si existe
         if ($user->foto_perfil_url) {
-            $rutaAnterior = str_replace(asset('storage') . '/', '', $user->foto_perfil_url);
+            $rutaAnterior = str_replace(asset('storage').'/', '', $user->foto_perfil_url);
             Storage::disk('public')->delete($rutaAnterior);
         }
 
         // Guardar nuevo archivo
         $file = $request->file('logo');
-        $filename = "logo_user_{$user->id}_" . time() . '.' . $file->getClientOriginalExtension();
+        $filename = "logo_user_{$user->id}_".time().'.'.$file->getClientOriginalExtension();
         $path = $file->storeAs('uploads', $filename, 'public');
 
         // Actualizar ruta en base de datos
@@ -165,8 +158,8 @@ class ProveedorUsuarioController extends Controller
 
         $proveedorPrincipal = $currentUser->proveedorPrincipal();
 
-        if (!$proveedorPrincipal || $proveedorPrincipal->id !== $proveedor->id) {
-            throw new UnauthorizedException();
+        if (! $proveedorPrincipal || $proveedorPrincipal->id !== $proveedor->id) {
+            throw new UnauthorizedException;
         }
     }
 }

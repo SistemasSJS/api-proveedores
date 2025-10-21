@@ -2,10 +2,8 @@
 
 namespace App\Exceptions\Api\Shared;
 
-use Illuminate\Support\MessageBag;
-use Illuminate\Http\JsonResponse;
 use App\Exceptions\Api\BaseApiException;
-
+use Illuminate\Support\MessageBag;
 
 /**
  * @OA\Schema(
@@ -14,6 +12,7 @@ use App\Exceptions\Api\BaseApiException;
  *     description="Se lanza cuando los datos enviados en el formulario no son válidos.",
  *     type="object",
  *     required={"message", "errorType", "errors"},
+ *
  *     @OA\Property(
  *         property="message",
  *         type="string",
@@ -31,6 +30,7 @@ use App\Exceptions\Api\BaseApiException;
  *         additionalProperties={
  *             @OA\Property(
  *                 type="array",
+ *
  *                 @OA\Items(type="string")
  *             )
  *         }
@@ -40,14 +40,15 @@ use App\Exceptions\Api\BaseApiException;
 class FormValidationException extends BaseApiException
 {
     protected string $errorType = 'validation_error';
+
     protected int $statusCode = 422;
 
-    public function __construct(string $message = 'Datos de formulario inválidos.', MessageBag $errors)
+    public function __construct(string $message, MessageBag $errors)
     {
         parent::__construct($message);
 
         $this->additionalData = [
-            'errors' => $errors->toArray()
+            'errors' => $errors->toArray(),
         ];
     }
 }

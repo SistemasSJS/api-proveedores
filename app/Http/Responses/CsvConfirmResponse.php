@@ -25,7 +25,7 @@ class CsvConfirmResponse
             'audit_id' => $this->auditId,
             'estado' => $this->estado,
             'estadisticas' => $this->estadisticas,
-            'resumen' => $this->resumen
+            'resumen' => $this->resumen,
         ];
 
         if ($this->erroresDetalle !== null) {
@@ -49,7 +49,7 @@ class CsvConfirmResponse
                 'creados' => $importStats['created'],
                 'actualizados' => $importStats['updated'],
                 'errores' => $importStats['errors'],
-                'tasa_exito' => $importStats['success_rate']
+                'tasa_exito' => $importStats['success_rate'],
             ]
         );
     }
@@ -68,7 +68,7 @@ class CsvConfirmResponse
                 'creados' => $importStats['created'] ?? 0,
                 'actualizados' => $importStats['updated'] ?? 0,
                 'errores' => $importStats['errors'] ?? 0,
-                'tasa_exito' => $importStats['success_rate'] ?? 0
+                'tasa_exito' => $importStats['success_rate'] ?? 0,
             ],
             erroresDetalle: $errorDetails
         );

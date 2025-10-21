@@ -15,12 +15,12 @@ class TiendaMarcaResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'              => (string) $this->id,
-            'nombre'          => $this->nombre,
-            'logo'            => asset('storage/' . $this->logo),
-            'activa'          => (bool) $this->activa,
-            'color'           => $this->color,
-            'totalProductos'  => (int) $this->total_productos,
+            'id' => (string) $this->id,
+            'nombre' => $this->nombre,
+            'logo' => asset('storage/'.$this->logo),
+            'activa' => (bool) $this->activa,
+            'color' => $this->color,
+            'totalProductos' => (int) $this->total_productos,
         ];
     }
 }

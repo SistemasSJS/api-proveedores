@@ -2,29 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Proveedor;
-use App\Models\Producto;
-use App\Models\Categoria;
-use App\Models\Marca;
-use App\Models\UnidadMedida;
-use App\Services\ConstruccSearchService;
-use App\Http\Resources\Construcc\ConstruccProveedorResource;
-use App\Http\Resources\Construcc\ConstruccProductoResource;
+use App\Http\Requests\Construcc\ProveedoresBusquedaRequest;
+use App\Http\Requests\Construcc\ProveedoresFilterRequest;
 use App\Http\Resources\Construcc\ConstruccCategoriaResource;
 use App\Http\Resources\Construcc\ConstruccMarcaResource;
+use App\Http\Resources\Construcc\ConstruccProductoResource;
+use App\Http\Resources\Construcc\ConstruccProveedorResource;
 use App\Http\Resources\Construcc\ConstruccUnidadResource;
-use App\Http\Requests\Construcc\ProveedoresFilterRequest;
-use App\Http\Requests\Construcc\ProveedoresBusquedaRequest;
-use App\Http\Requests\Construcc\ProductosProveedorRequest;
-use App\Http\Requests\Construcc\ProductosBusquedaRequest;
-use App\Http\Requests\Construcc\SugerenciasProductosRequest;
-use App\Http\Requests\Construcc\CategoriasProveedorRequest;
-use Illuminate\Http\Request;
+use App\Models\Categoria;
+use App\Models\Marca;
+use App\Models\Producto;
+use App\Models\Proveedor;
+use App\Models\UnidadMedida;
+use App\Services\ConstruccSearchService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 /**
  * Controlador para el módulo de construcción
- * 
+ *
  * Maneja todas las operaciones relacionadas con proveedores, productos,
  * búsquedas avanzadas y catálogos para el sistema de construcción.
  */
@@ -45,9 +41,6 @@ class ConstruccController extends Controller
 
     /**
      * Lista paginada de proveedores con filtros básicos
-     *
-     * @param ProveedoresFilterRequest $request
-     * @return JsonResponse
      */
     public function proveedores(ProveedoresFilterRequest $request): JsonResponse
     {
@@ -92,14 +85,12 @@ class ConstruccController extends Controller
             ->paginate($filtros['per_page']);
 
         $data = ConstruccProveedorResource::collection($proveedores)->resolve();
+
         return $this->paginated($proveedores->setCollection(collect($data)));
     }
 
     /**
      * Búsqueda avanzada de proveedores con filtros múltiples
-     *
-     * @param ProveedoresBusquedaRequest $request
-     * @return JsonResponse
      */
     public function buscarProveedores(ProveedoresBusquedaRequest $request): JsonResponse
     {
@@ -110,7 +101,7 @@ class ConstruccController extends Controller
             'tipos_empresa_id',
             'categoria_id',
             'marca_id',
-            'con_productos'
+            'con_productos',
         ]);
         $filtros['sort_by'] = $request->orden_por;
         $filtros['order'] = $request->direccion;
@@ -119,15 +110,12 @@ class ConstruccController extends Controller
         $proveedores = $this->searchService->buscarProveedores($filtros);
 
         $data = ConstruccProveedorResource::collection($proveedores)->resolve();
+
         return $this->paginated($proveedores->setCollection(collect($data)));
     }
 
     /**
      * Productos de un proveedor específico con paginación
-     *
-     * @param Request $request
-     * @param Proveedor $proveedor
-     * @return JsonResponse
      */
     public function productosPorProveedor(Request $request, Proveedor $proveedor): JsonResponse
     {
@@ -149,15 +137,12 @@ class ConstruccController extends Controller
         $productos = $this->searchService->obtenerProductosProveedor($proveedor->id, $filtros);
 
         $data = ConstruccProductoResource::collection($productos)->resolve();
+
         return $this->paginated($productos->setCollection(collect($data)));
     }
 
     /**
      * Búsqueda avanzada en productos de un proveedor específico
-     *
-     * @param Request $request
-     * @param Proveedor $proveedor
-     * @return JsonResponse
      */
     public function buscarProductosProveedor(Request $request, Proveedor $proveedor): JsonResponse
     {
@@ -181,7 +166,7 @@ class ConstruccController extends Controller
             'precio_min',
             'precio_max',
             'con_stock',
-            'destacado'
+            'destacado',
         ]);
         $filtros['sort_by'] = $request->orden_por ?? 'nombre';
         $filtros['order'] = $request->direccion ?? 'asc';
@@ -190,6 +175,7 @@ class ConstruccController extends Controller
         $productos = $this->searchService->buscarProductosProveedor($proveedor->id, $filtros);
 
         $data = ConstruccProductoResource::collection($productos)->resolve();
+
         return $this->paginated($productos->setCollection(collect($data)));
     }
 
@@ -201,9 +187,6 @@ class ConstruccController extends Controller
 
     /**
      * Búsqueda general de productos con filtros múltiples
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function buscarProductos(Request $request): JsonResponse
     {
@@ -233,7 +216,7 @@ class ConstruccController extends Controller
             'precio_min',
             'precio_max',
             'con_stock',
-            'destacado'
+            'destacado',
         ]);
         $filtros['sort_by'] = $request->orden_por ?? 'nombre';
         $filtros['order'] = $request->direccion ?? 'asc';
@@ -242,14 +225,12 @@ class ConstruccController extends Controller
         $productos = $this->searchService->buscarProductos($filtros);
 
         $data = ConstruccProductoResource::collection($productos)->resolve();
+
         return $this->paginated($productos->setCollection(collect($data)));
     }
 
     /**
      * Obtiene los filtros disponibles para productos
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function filtrosProductos(Request $request): JsonResponse
     {
@@ -257,21 +238,21 @@ class ConstruccController extends Controller
             'proveedores' => Proveedor::where('estatus', 'activo')
                 ->has('productos')
                 ->get(['id', 'nombre_comercial'])
-                ->map(fn($p) => ['id' => $p->id, 'nombre' => $p->nombre_comercial]),
+                ->map(fn ($p) => ['id' => $p->id, 'nombre' => $p->nombre_comercial]),
 
             'categorias' => Categoria::whereHas('productos')
                 ->where('activo', true)
                 ->get(['id', 'nombre'])
-                ->map(fn($c) => ['id' => $c->id, 'nombre' => $c->nombre]),
+                ->map(fn ($c) => ['id' => $c->id, 'nombre' => $c->nombre]),
 
             'marcas' => Marca::whereHas('productos')
                 ->where('activo', true)
                 ->get(['id', 'nombre'])
-                ->map(fn($m) => ['id' => $m->id, 'nombre' => $m->nombre]),
+                ->map(fn ($m) => ['id' => $m->id, 'nombre' => $m->nombre]),
 
             'unidades' => UnidadMedida::whereHas('productos')
                 ->get(['id', 'nombre', 'clave'])
-                ->map(fn($u) => ['id' => $u->id, 'nombre' => $u->nombre, 'clave' => $u->clave]),
+                ->map(fn ($u) => ['id' => $u->id, 'nombre' => $u->nombre, 'clave' => $u->clave]),
 
             'rango_precios' => [
                 'min' => Producto::where('activo', true)->min('precio_base') ?? 0,
@@ -284,9 +265,6 @@ class ConstruccController extends Controller
 
     /**
      * Sugerencias de productos para autocompletado
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function sugerenciasProductos(Request $request): JsonResponse
     {
@@ -313,10 +291,6 @@ class ConstruccController extends Controller
 
     /**
      * Marcas de un proveedor específico (sin paginación)
-     *
-     * @param Request $request
-     * @param Proveedor $proveedor
-     * @return JsonResponse
      */
     public function marcasProveedor(Request $request, Proveedor $proveedor): JsonResponse
     {
@@ -330,16 +304,12 @@ class ConstruccController extends Controller
 
         return $this->success([
             'marcas' => ConstruccMarcaResource::collection($marcas),
-            'total' => $marcas->count()
+            'total' => $marcas->count(),
         ]);
     }
 
     /**
      * Categorías de un proveedor con subcategorías anidadas (sin paginación)
-     *
-     * @param Request $request
-     * @param Proveedor $proveedor
-     * @return JsonResponse
      */
     public function categoriasProveedor(Request $request, Proveedor $proveedor): JsonResponse
     {
@@ -371,16 +341,12 @@ class ConstruccController extends Controller
 
         return $this->success([
             'categorias' => ConstruccCategoriaResource::collection($categorias),
-            'total' => $categorias->count()
+            'total' => $categorias->count(),
         ]);
     }
 
     /**
      * Unidades de medida de un proveedor específico (sin paginación)
-     *
-     * @param Request $request
-     * @param Proveedor $proveedor
-     * @return JsonResponse
      */
     public function unidadesProveedor(Request $request, Proveedor $proveedor): JsonResponse
     {
@@ -393,7 +359,7 @@ class ConstruccController extends Controller
 
         return $this->success([
             'unidades' => ConstruccUnidadResource::collection($unidades),
-            'total' => $unidades->count()
+            'total' => $unidades->count(),
         ]);
     }
 
@@ -405,26 +371,21 @@ class ConstruccController extends Controller
 
     /**
      * Estadísticas generales del módulo
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function estadisticas(Request $request): JsonResponse
     {
         $estadisticas = $this->searchService->obtenerEstadisticas();
+
         return $this->success($estadisticas, 'Estadísticas obtenidas correctamente.');
     }
 
     /**
      * Resumen específico de un proveedor
-     *
-     * @param Request $request
-     * @param Proveedor $proveedor
-     * @return JsonResponse
      */
     public function resumenProveedor(Request $request, Proveedor $proveedor): JsonResponse
     {
         $resumen = $this->searchService->obtenerResumenProveedor($proveedor->id);
+
         return $this->success($resumen, 'Resumen del proveedor obtenido correctamente.');
     }
 
@@ -436,9 +397,6 @@ class ConstruccController extends Controller
 
     /**
      * Filtros disponibles globalmente
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function filtrosDisponibles(Request $request): JsonResponse
     {
@@ -457,7 +415,7 @@ class ConstruccController extends Controller
                     'precio_min',
                     'precio_max',
                     'con_stock',
-                    'destacado'
+                    'destacado',
                 ],
                 'ordenamiento' => ['nombre', 'precio_base', 'stock', 'created_at', 'updated_at'],
             ],
@@ -468,9 +426,6 @@ class ConstruccController extends Controller
 
     /**
      * Opciones de ordenamiento disponibles
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function opcionesOrdenamiento(Request $request): JsonResponse
     {

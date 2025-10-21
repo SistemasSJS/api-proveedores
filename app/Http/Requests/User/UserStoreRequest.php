@@ -14,6 +14,7 @@ use Illuminate\Foundation\Http\FormRequest;
  *       "telefono",
  *      "role"
  *    },
+ *
  *    @OA\Property(property="name", type="string", maxLength=255, example="Juan Pérez"),
  *    @OA\Property(property="email", type="string", format="email", maxLength=255, example="juan.perez@example.com"),
  *    @OA\Property(property="password", type="string", format="password", example="contraseña123"),
@@ -21,7 +22,6 @@ use Illuminate\Foundation\Http\FormRequest;
  *    @OA\Property(property="role", type="string", example="user"),
  * )
  */
-
 class UserStoreRequest extends FormRequest
 {
     public function authorize(): bool

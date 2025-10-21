@@ -2,9 +2,8 @@
 
 namespace App\Rules;
 
-
-use Illuminate\Support\Facades\App;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Http;
 
 class ReCaptcha implements Rule

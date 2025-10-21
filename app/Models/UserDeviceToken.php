@@ -5,12 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Carbon\Carbon;
 
 class UserDeviceToken extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = [
         'user_id',
         'token',
@@ -19,21 +18,21 @@ class UserDeviceToken extends Model
         'device_name',
         'metadata',
         'last_used_at',
-        'is_active'
+        'is_active',
     ];
-    
+
     protected $casts = [
         'metadata' => 'array',
         'last_used_at' => 'datetime',
         'is_active' => 'boolean',
     ];
-    
+
     protected $dates = [
         'last_used_at',
         'created_at',
-        'updated_at'
+        'updated_at',
     ];
-    
+
     /**
      * Relación con User
      */
@@ -41,7 +40,7 @@ class UserDeviceToken extends Model
     {
         return $this->belongsTo(User::class);
     }
-    
+
     /**
      * Scope para tokens activos
      */
@@ -49,7 +48,7 @@ class UserDeviceToken extends Model
     {
         return $query->where('is_active', true);
     }
-    
+
     /**
      * Scope por plataforma
      */
@@ -57,7 +56,7 @@ class UserDeviceToken extends Model
     {
         return $query->where('platform', $platform);
     }
-    
+
     /**
      * Scope para tokens usados recientemente
      */
@@ -65,7 +64,7 @@ class UserDeviceToken extends Model
     {
         return $query->where('last_used_at', '>=', now()->subDays($days));
     }
-    
+
     /**
      * Marcar token como usado
      */
@@ -73,10 +72,10 @@ class UserDeviceToken extends Model
     {
         $this->update([
             'last_used_at' => now(),
-            'is_active' => true
+            'is_active' => true,
         ]);
     }
-    
+
     /**
      * Desactivar token
      */
@@ -84,19 +83,19 @@ class UserDeviceToken extends Model
     {
         $this->update(['is_active' => false]);
     }
-    
+
     /**
      * Verificar si el token está expirado (no usado en X días)
      */
     public function isExpired(int $days = 60): bool
     {
-        if (!$this->last_used_at) {
+        if (! $this->last_used_at) {
             return $this->created_at->lt(now()->subDays($days));
         }
-        
+
         return $this->last_used_at->lt(now()->subDays($days));
     }
-    
+
     /**
      * Obtener información del dispositivo
      */
@@ -107,7 +106,7 @@ class UserDeviceToken extends Model
             'device_id' => $this->device_id,
             'device_name' => $this->device_name,
             'last_used' => $this->last_used_at?->diffForHumans(),
-            'metadata' => $this->metadata
+            'metadata' => $this->metadata,
         ];
     }
 }

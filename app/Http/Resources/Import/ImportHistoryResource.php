@@ -30,9 +30,9 @@ class ImportHistoryResource extends JsonResource
             'fase_label' => $this->getFaseLabel(),
             'logs' => $this->logs,
             'eta_seconds' => $this->eta_seconds,
-            'eta_formatted' => $this->eta_seconds ? gmdate("H:i:s", $this->eta_seconds) : null,
+            'eta_formatted' => $this->eta_seconds ? gmdate('H:i:s', $this->eta_seconds) : null,
             'mem_peak_mb' => $this->mem_peak_mb,
-            'mem_peak_formatted' => $this->mem_peak_mb ? number_format($this->mem_peak_mb, 2) . ' MB' : null,
+            'mem_peak_formatted' => $this->mem_peak_mb ? number_format($this->mem_peak_mb, 2).' MB' : null,
             'total_registros' => $this->total_registros,
             'nuevos' => $this->nuevos,
             'actualizados' => $this->actualizados,
@@ -43,7 +43,7 @@ class ImportHistoryResource extends JsonResource
             'preview_data' => $this->preview_data,
             'errores_detalle' => $this->errores_detalle,
             'progreso' => $this->progreso,
-            'progreso_formatted' => $this->progreso ? number_format($this->progreso, 1) . '%' : null,
+            'progreso_formatted' => $this->progreso ? number_format($this->progreso, 1).'%' : null,
             'inicio_proceso' => $this->inicio_proceso?->format('Y-m-d H:i:s'),
             'fin_proceso' => $this->fin_proceso?->format('Y-m-d H:i:s'),
             'duracion_segundos' => $this->getDuracionSegundos(),
@@ -52,24 +52,24 @@ class ImportHistoryResource extends JsonResource
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
             'created_at_human' => $this->created_at->diffForHumans(),
             'updated_at_human' => $this->updated_at->diffForHumans(),
-            
+
             // Relaciones
-            'proveedor' => $this->whenLoaded('proveedor', fn() => [
+            'proveedor' => $this->whenLoaded('proveedor', fn () => [
                 'id' => $this->proveedor->id,
                 'nombre' => $this->proveedor->nombre,
                 'logo' => $this->proveedor->logo,
             ]),
-            
+
             // Estadísticas calculadas
             'stats' => [
                 'success_rate' => $this->getSuccessRate(),
                 'error_rate' => $this->getErrorRate(),
-                'has_preview' => !empty($this->preview_data),
+                'has_preview' => ! empty($this->preview_data),
                 'has_errors' => ($this->errores ?? 0) > 0,
                 'is_completed' => $this->estado === 'completed',
                 'is_failed' => $this->estado === 'failed',
                 'is_processing' => in_array($this->estado, ['pending', 'processing']),
-            ]
+            ],
         ];
     }
 
@@ -78,7 +78,7 @@ class ImportHistoryResource extends JsonResource
      */
     private function getTipoLabel(): string
     {
-        return match($this->tipo) {
+        return match ($this->tipo) {
             'productos' => 'Productos',
             'marcas' => 'Marcas',
             'categorias' => 'Categorías',
@@ -92,7 +92,7 @@ class ImportHistoryResource extends JsonResource
      */
     private function getEstadoLabel(): string
     {
-        return match($this->estado) {
+        return match ($this->estado) {
             'pending' => 'Pendiente',
             'processing' => 'Procesando',
             'completed' => 'Completado',
@@ -107,7 +107,7 @@ class ImportHistoryResource extends JsonResource
      */
     private function getEstadoColor(): string
     {
-        return match($this->estado) {
+        return match ($this->estado) {
             'pending' => 'warning',
             'processing' => 'primary',
             'completed' => 'success',
@@ -122,7 +122,7 @@ class ImportHistoryResource extends JsonResource
      */
     private function getFaseLabel(): string
     {
-        return match($this->fase) {
+        return match ($this->fase) {
             'upload' => 'Subida',
             'validation' => 'Validación',
             'processing' => 'Procesamiento',
@@ -137,10 +137,10 @@ class ImportHistoryResource extends JsonResource
      */
     private function getDuracionSegundos(): ?int
     {
-        if (!$this->inicio_proceso || !$this->fin_proceso) {
+        if (! $this->inicio_proceso || ! $this->fin_proceso) {
             return null;
         }
-        
+
         return $this->fin_proceso->diffInSeconds($this->inicio_proceso);
     }
 
@@ -150,11 +150,11 @@ class ImportHistoryResource extends JsonResource
     private function getDuracionFormatted(): ?string
     {
         $duracion = $this->getDuracionSegundos();
-        if (!$duracion) {
+        if (! $duracion) {
             return null;
         }
-        
-        return gmdate("H:i:s", $duracion);
+
+        return gmdate('H:i:s', $duracion);
     }
 
     /**
@@ -162,11 +162,12 @@ class ImportHistoryResource extends JsonResource
      */
     private function getSuccessRate(): ?float
     {
-        if (!$this->total_registros || $this->total_registros == 0) {
+        if (! $this->total_registros || $this->total_registros == 0) {
             return null;
         }
-        
+
         $exitosos = ($this->nuevos ?? 0) + ($this->actualizados ?? 0);
+
         return round(($exitosos / $this->total_registros) * 100, 2);
     }
 
@@ -175,10 +176,10 @@ class ImportHistoryResource extends JsonResource
      */
     private function getErrorRate(): ?float
     {
-        if (!$this->total_registros || $this->total_registros == 0) {
+        if (! $this->total_registros || $this->total_registros == 0) {
             return null;
         }
-        
+
         return round((($this->errores ?? 0) / $this->total_registros) * 100, 2);
     }
 }

@@ -57,7 +57,8 @@ class OrdenCompraRegistroController extends Controller
             );
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->error('Error al registrar la orden de compra: ' . $e->getMessage(), 500);
+
+            return $this->error('Error al registrar la orden de compra: '.$e->getMessage(), 500);
         }
     }
 
@@ -139,7 +140,7 @@ class OrdenCompraRegistroController extends Controller
                         'precio_unitario' => $detalleData['precio_unitario'],
                     ]);
                 }
-                
+
                 $mensaje = 'Orden de compra creada exitosamente.';
                 $codigo = 201;
             }
@@ -153,7 +154,8 @@ class OrdenCompraRegistroController extends Controller
             );
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->error('Error al procesar la orden de compra: ' . $e->getMessage(), 500);
+
+            return $this->error('Error al procesar la orden de compra: '.$e->getMessage(), 500);
         }
     }
 
@@ -213,9 +215,9 @@ class OrdenCompraRegistroController extends Controller
             } catch (\Exception $e) {
                 DB::rollBack();
                 $resultados['fallidas'][] = [
-                    'index' => $index, 
+                    'index' => $index,
                     'numero_orden' => $ordenData['numero_orden'],
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ];
             }
         }
@@ -242,7 +244,7 @@ class OrdenCompraRegistroController extends Controller
 
         return $this->success([
             'exists' => $exists,
-            'numero_orden' => $request->numero_orden
+            'numero_orden' => $request->numero_orden,
         ]);
     }
 

@@ -3,20 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRoleEnumerate;
-
-use App\Models\User;
-use App\Models\Proveedor;
-use App\Models\Producto;
 use App\Models\Categoria;
 use App\Models\Marca;
-use App\Models\Sucursal;
-use App\Models\UnidadMedida;
-use App\Models\TipoEmpresa;
 use App\Models\Pedido;
+use App\Models\Producto;
+use App\Models\Proveedor;
 use App\Models\Role;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Models\Sucursal;
+use App\Models\TipoEmpresa;
+use App\Models\UnidadMedida;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class AdminDashboardController extends Controller
 {
@@ -41,7 +39,7 @@ class AdminDashboardController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'ERROR',
-                'message' => 'Error al obtener estadísticas: ' . $e->getMessage(),
+                'message' => 'Error al obtener estadísticas: '.$e->getMessage(),
                 'data' => null,
             ], 500);
         }
@@ -63,7 +61,7 @@ class AdminDashboardController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'ERROR',
-                'message' => 'Error al obtener métricas: ' . $e->getMessage(),
+                'message' => 'Error al obtener métricas: '.$e->getMessage(),
                 'data' => null,
             ], 500);
         }
@@ -85,7 +83,7 @@ class AdminDashboardController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'ERROR',
-                'message' => 'Error al obtener resumen de catálogos: ' . $e->getMessage(),
+                'message' => 'Error al obtener resumen de catálogos: '.$e->getMessage(),
                 'data' => null,
             ], 500);
         }
@@ -119,8 +117,6 @@ class AdminDashboardController extends Controller
         $roleAdminId = Role::where('nombre', UserRoleEnumerate::ADMINISTRADOR)->first()->id;
         $roleGerenteId = Role::where('nombre', UserRoleEnumerate::GERENTE)->first()->id;
         $roleClienteId = Role::where('nombre', UserRoleEnumerate::CLIENTE)->first()->id;
-
-
 
         return [
             'total' => $total,
@@ -172,6 +168,7 @@ class AdminDashboardController extends Controller
             'ventasPorMes' => $this->getVentasPorMes(),
         ];
     }
+
     /**
      * Obtiene visitas de hoy
      */
@@ -288,7 +285,7 @@ class AdminDashboardController extends Controller
             $fecha = Carbon::now()->subMonths($i);
             $mes = $fecha->format('M');
 
-            // En producción esto sería: 
+            // En producción esto sería:
             // $ventas = Pedido::whereYear('created_at', $fecha->year)
             //     ->whereMonth('created_at', $fecha->month)
             //     ->sum('monto_total');
