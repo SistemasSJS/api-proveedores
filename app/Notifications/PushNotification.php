@@ -60,7 +60,7 @@ class PushNotification extends Notification implements ShouldBroadcast
      */
     public function broadcastType(): string
     {
-        return 'notification';
+        return 'notifications';
     }
 
     /**
