@@ -36,7 +36,7 @@ return [
             'secret' => env('PUSHER_APP_SECRET'),
             'app_id' => env('PUSHER_APP_ID'),
             'options' => [
-                'host' => env('PUSHER_HOST') ?: 'api-'.env('PUSHER_APP_CLUSTER', 'mt1').'.pusherapp.com',
+                'host' => env('PUSHER_HOST') ?: 'api-' . env('PUSHER_APP_CLUSTER', 'mt1') . '.pusherapp.com',
                 'port' => env('PUSHER_PORT', 443),
                 'scheme' => env('PUSHER_SCHEME', 'https'),
                 'encrypted' => true,
@@ -63,21 +63,6 @@ return [
 
         'null' => [
             'driver' => 'null',
-        ],
-
-        // Custom WebSocket connection for local development
-        'websocket' => [
-            'driver' => 'pusher',
-            'key' => env('WEBSOCKET_APP_KEY', 'app-key'),
-            'secret' => env('WEBSOCKET_APP_SECRET', 'app-secret'),
-            'app_id' => env('WEBSOCKET_APP_ID', 'app-id'),
-            'options' => [
-                'host' => env('WEBSOCKET_HOST', '127.0.0.1'),
-                'port' => env('WEBSOCKET_PORT', 80),
-                'scheme' => 'http',
-                'encrypted' => false,
-                'useTLS' => false,
-            ],
         ],
 
     ],
