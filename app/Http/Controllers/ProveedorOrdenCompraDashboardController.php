@@ -170,8 +170,7 @@ class ProveedorOrdenCompraDashboardController extends Controller
 
         // Tiempo promedio de conversión OC -> SP
         $tiempoConversion = DB::table('ordenes_compra')
-            ->join('orden_compra_solicitud_pago', 'ordenes_compra.id', '=', 'orden_compra_solicitud_pago.orden_compra_id')
-            ->join('solicitudes_pago', 'orden_compra_solicitud_pago.solicitud_pago_id', '=', 'solicitudes_pago.id')
+            ->join('solicitudes_pago', 'ordenes_compra.numero_orden', '=', 'solicitudes_pago.referencia_oc')
             ->where('ordenes_compra.proveedor_id', $proveedor->id)
             ->whereBetween('ordenes_compra.fecha_orden', [$fechaDesde, $fechaHasta])
             ->selectRaw('AVG(DATEDIFF(solicitudes_pago.created_at, ordenes_compra.fecha_orden)) as promedio_dias')

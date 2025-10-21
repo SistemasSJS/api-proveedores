@@ -7,6 +7,7 @@ use App\Models\SolicitudPago;
 use App\Models\Cotizacion;
 use App\Models\EmpresaConstrucc;
 use App\Models\Sucursal;
+use App\Models\Proveedor;
 use App\Enums\EstadoSP;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -53,7 +54,7 @@ class SolicitudPagoSeeder extends Seeder
                 $estadoSolicitud = $this->generarEstadoSolicitudAleatorio();
 
                 $solicitud = [
-                    'numero_folio_solicitud' => $this->generarFolioSolicitud($totalSolicitudes + 1),
+                    'numero_folio_solicitud' => SolicitudPago::generarNumeroFolio($cotizacion->proveedor),
                     'descripcion_concepto' => $this->generarDescripcionConcepto($cotizacion),
                     'ruta_archivo_factura_xml' => $this->generarRutaArchivo('xml', $totalSolicitudes + 1),
                     'ruta_archivo_factura_pdf' => $this->generarRutaArchivo('pdf', $totalSolicitudes + 1),
@@ -112,11 +113,7 @@ class SolicitudPagoSeeder extends Seeder
         return $valores[array_rand($valores)];
     }
 
-    private function generarFolioSolicitud(int $numero): string
-    {
-        $año = date('Y');
-        return "SP-{$año}-" . str_pad($numero, 6, '0', STR_PAD_LEFT);
-    }
+    // Método eliminado - ahora se usa SolicitudPago::generarNumeroFolio()
 
     private function generarDescripcionConcepto($cotizacion): string
     {

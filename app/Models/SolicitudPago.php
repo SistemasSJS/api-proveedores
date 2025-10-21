@@ -8,7 +8,6 @@ use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SolicitudPago extends BaseModel
@@ -158,7 +157,7 @@ class SolicitudPago extends BaseModel
             'empresaConstrucc',
             'cotizacion',
             'cuentasBancarias',
-            'ordenesCompra',
+            'ordenCompra',
         ];
     }
 
@@ -190,11 +189,9 @@ class SolicitudPago extends BaseModel
         return $this->hasMany(SolicitudPagoCuentaBancaria::class);
     }
 
-    public function ordenesCompra(): BelongsToMany
+    public function ordenCompra(): BelongsTo
     {
-        return $this->belongsToMany(OrdenCompra::class, 'orden_compra_solicitud_pago')
-            ->withPivot(['monto_asociado', 'fecha_vinculacion', 'notas'])
-            ->withTimestamps();
+        return $this->belongsTo(OrdenCompra::class, 'referencia_oc', 'numero_orden');
     }
 
     /** ----------------
@@ -513,9 +510,9 @@ class SolicitudPago extends BaseModel
         return $query->where('origen_oc', true);
     }
 
-    public function getOrdenesCompraAsociadas()
+    public function getOrdenCompraAsociada()
     {
-        return $this->ordenesCompra;
+        return $this->ordenCompra;
     }
 
     public function validarMontoContraOC(): bool
@@ -528,23 +525,4 @@ class SolicitudPago extends BaseModel
         return $this->monto_total <= $this->monto_oc_original;
     }
 
-    public function asociarConOrdenCompra(OrdenCompra $ordenCompra, float $montoAsociado, ?string $notas = null): void
-    {
-        $this->ordenesCompra()->attach($ordenCompra->id, [
-            'monto_asociado' => $montoAsociado,
-            'fecha_vinculacion' => now(),
-            'notas' => $notas,
-        ]);
-
-        // Actualizar contadores en la OC
-        $ordenCompra->actualizarContadores();
-    }
-
-    public function desasociarDeOrdenCompra(OrdenCompra $ordenCompra): void
-    {
-        $this->ordenesCompra()->detach($ordenCompra->id);
-
-        // Actualizar contadores en la OC
-        $ordenCompra->actualizarContadores();
-    }
 }

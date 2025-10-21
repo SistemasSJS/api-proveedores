@@ -141,19 +141,19 @@ class OrdenCompraSolicitudPagoController extends Controller
                 ->firstOrFail();
 
             // Verificar que estén asociadas
-            if (! $ordenCompra->solicitudesPago()->where('solicitud_pago_id', $solicitudPago->id)->exists()) {
+            if ($solicitudPago->referencia_oc !== $ordenCompra->numero_orden) {
                 return $this->error('La solicitud de pago no está asociada a esta orden de compra', 422);
             }
 
-            // Desasociar
-            $solicitudPago->desasociarDeOrdenCompra($ordenCompra);
-
-            // Actualizar campos de tracking en SP
+            // Actualizar campos de tracking en SP para desasociar
             $solicitudPago->update([
                 'origen_oc' => false,
                 'referencia_oc' => null,
                 'monto_oc_original' => null,
             ]);
+
+            // Actualizar contadores de la OC
+            $ordenCompra->actualizarContadores();
 
             return $this->success([
                 'mensaje' => 'Solicitud de pago desasociada exitosamente',
@@ -250,13 +250,13 @@ class OrdenCompraSolicitudPagoController extends Controller
             $solicitudesRecientes = SolicitudPago::where('proveedor_id', $proveedor->id)
                 ->where('origen_oc', true)
                 ->where('created_at', '>=', now()->subDays($dias))
-                ->with(['ordenesCompra', 'empresaConstrucc'])
+                ->with(['ordenCompra', 'empresaConstrucc'])
                 ->orderBy('created_at', 'desc')
                 ->limit($limite)
                 ->get();
 
             $conversiones = $solicitudesRecientes->map(function ($sp) {
-                $ordenCompra = $sp->ordenesCompra->first();
+                $ordenCompra = $sp->ordenCompra;
 
                 return [
                     'solicitud_pago' => [
@@ -270,7 +270,7 @@ class OrdenCompraSolicitudPagoController extends Controller
                         'id' => $ordenCompra->id,
                         'numero_orden' => $ordenCompra->numero_orden,
                         'importe_total' => $ordenCompra->importe_total,
-                        'monto_asociado' => $sp->ordenesCompra->first()->pivot->monto_asociado ?? 0,
+                        'monto_asociado' => $sp->monto_total,
                     ] : null,
                     'empresa' => $sp->empresaConstrucc->nombre ?? null,
                 ];
