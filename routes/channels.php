@@ -7,6 +7,6 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 });
 
 // Canal público de notificaciones
-Broadcast::channel('notifications', function () {
+Broadcast::channel('public-notifications', function () {
     return true;
 });

@@ -22,7 +22,7 @@ class TestEvent implements ShouldBroadcastNow
     public function broadcastOn()
     {
         return [
-            new Channel('notifications'), // canal público
+            new Channel('public-notifications'), // canal público
         ];
     }
 
