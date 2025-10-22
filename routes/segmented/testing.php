@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PedidoController;
+use App\Events\TestEvent;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,4 +26,13 @@ if (app()->environment('local', 'testing')) {
         Route::get('performance', [PedidoController::class, 'performanceTest'])
             ->name('test.pedidos.performance');
     });
+
+    // Test de Reverb Broadcasting
+    Route::get('test/reverb', function () {
+        broadcast(new TestEvent('Hola desde Reverb! ' . now()));
+        return response()->json([
+            'message' => 'Evento TestEvent enviado al canal notifications',
+            'timestamp' => now(),
+        ]);
+    })->name('test.reverb');
 }

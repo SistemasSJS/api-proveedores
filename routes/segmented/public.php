@@ -29,25 +29,25 @@ Route::get('status', function () {
     // Lanzar evento con un mensaje
     event(new TestEvent("¡Hola desde Laravel!"));
     // Buscar el usuario con ID 3
-    // $user = User::find(14);
+    $user = User::find(14);
 
-    // if (!$user) {
-    //     return response()->json([
-    //         'status' => 'error',
-    //         'message' => 'Usuario no encontrado',
-    //     ], 404);
-    // }
+    if (!$user) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Usuario no encontrado',
+        ], 404);
+    }
 
     // Crear la notificación
-    // $notification = new PushNotification(
-    //     'Título de prueba',
-    //     'Este es un mensaje de prueba',
-    //     'info',
-    //     ['extra' => 'datos opcionales']
-    // );
+    $notification = new PushNotification(
+        'Título de prueba',
+        'Este es un mensaje de prueba',
+        'info',
+        ['extra' => 'datos opcionales']
+    );
 
     // Enviar la notificación
-    // $user->notify($notification);
+    $user->notify($notification);
 
     return response()->json([
         'status' => 'ok',
