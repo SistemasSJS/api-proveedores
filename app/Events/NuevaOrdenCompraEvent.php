@@ -55,7 +55,8 @@ class NuevaOrdenCompraEvent implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return new Channel('proveedor.' . $this->proveedorId);
+        return new Channel('public-notifications');
+        // return new Channel('proveedor.' . $this->proveedorId);
     }
 
     public function broadcastAs()
