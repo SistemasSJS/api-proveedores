@@ -13,11 +13,11 @@ class TestReverb extends Command
     public function handle()
     {
         $mensaje = 'Prueba desde comando: ' . now();
-        
+
         $this->info('Enviando evento TestEvent...');
         broadcast(new TestEvent($mensaje));
         $this->info('Evento enviado: ' . $mensaje);
-        
+
         return 0;
     }
 }
