@@ -9,6 +9,8 @@
 5. ✅ Controlador `NotificationController` actualizado con método `nuevaOrden()`
 6. ✅ Rutas configuradas con middleware `apikey:api_construcciones`
 7. ✅ Configuración en `config/services.php` lista
+8. ✅ Canal `proveedor.{proveedorId}` registrado en `channels.php`
+9. ✅ Notificaciones push a todos los usuarios activos del proveedor
 
 ---
 
@@ -205,6 +207,17 @@ Evento:
 ```
 NuevaOrdenCompra
 ```
+
+### Autorización del Canal
+El canal está protegido y solo permite acceso a:
+- Usuarios autenticados que pertenecen al proveedor (verificado con `tieneAccesoAProveedor()`)
+- Usuarios con relación activa en la tabla `user_proveedor`
+
+### Notificaciones Múltiples
+Cuando se crea una nueva orden de compra:
+1. Se guarda en la tabla `notificaciones`
+2. Se hace broadcast al canal `proveedor.{id}` (WebSocket)
+3. Se envía notificación push a **TODOS** los usuarios activos del proveedor
 
 ---
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Notificacion;
+use App\Models\Proveedor;
 use App\Models\User;
 use App\Notifications\PushNotification;
 use App\Events\NuevaOrdenCompraEvent;
@@ -211,7 +212,10 @@ class NotificationController extends Controller
         ]);
 
         try {
-            // 1. Guardar notificación en tabla
+            // 1. Verificar que el proveedor existe y obtener sus usuarios activos
+            $proveedor = Proveedor::with('usuariosActivos')->findOrFail($validated['proveedor_id']);
+            
+            // 2. Guardar notificación en tabla
             $notificacion = Notificacion::create([
                 'tipo' => 'nueva_orden_compra',
                 'proveedor_id' => $validated['proveedor_id'],
@@ -239,10 +243,11 @@ class NotificationController extends Controller
             Log::channel('inter_api')->info('Notificación de orden de compra guardada', [
                 'notificacion_id' => $notificacion->id,
                 'num_orden' => $validated['num_orden'],
-                'proveedor_id' => $validated['proveedor_id']
+                'proveedor_id' => $validated['proveedor_id'],
+                'usuarios_notificados' => $proveedor->usuariosActivos->count()
             ]);
 
-            // 2. Broadcast para notificación en tiempo real
+            // 3. Broadcast para notificación en tiempo real (WebSocket)
             broadcast(new NuevaOrdenCompraEvent([
                 'notificacion_id' => $notificacion->id,
                 'proveedor_id' => $validated['proveedor_id'],
@@ -263,6 +268,28 @@ class NotificationController extends Controller
                 'titulo' => $notificacion->titulo,
                 'mensaje' => $notificacion->mensaje
             ]));
+
+            // 4. Enviar notificación push a todos los usuarios activos del proveedor
+            foreach ($proveedor->usuariosActivos as $usuario) {
+                try {
+                    $usuario->notify(new PushNotification(
+                        $notificacion->titulo,
+                        $notificacion->mensaje,
+                        'info',
+                        [
+                            'notificacion_id' => $notificacion->id,
+                            'num_orden' => $validated['num_orden'],
+                            'importe' => $validated['importe'],
+                            'tipo' => 'nueva_orden_compra'
+                        ]
+                    ));
+                } catch (\Exception $e) {
+                    Log::channel('inter_api')->warning('Error al enviar notificación push a usuario', [
+                        'usuario_id' => $usuario->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
 
             return response()->json([
                 'success' => true,
