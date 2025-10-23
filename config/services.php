@@ -41,4 +41,12 @@ return [
     'frontend' => [
         'url' => env('APP_FRONTEND_URL', 'http://localhost:8100'), // Valor por defecto
     ],
+
+    /**
+     * CONFIGURACION PARA INTERCOMUNICACION CON API_CONSTRUCC
+     */
+    'api_construcciones' => [
+        'url' => env('API_CONSTRUCCIONES_URL', 'http://localhost:8091'),
+        'apikey' => env('API_CONSTRUCCIONES_APIKEY'),
+    ],
 ];

@@ -13,6 +13,7 @@ use App\Http\Middleware\EnsureProveedorProductAccess;
 use App\Http\Middleware\EnsureSucursalBelongsToProveedor;
 use App\Http\Middleware\EnsureUnidadMedidaBelongsToProveedor;
 use App\Http\Middleware\ValidateApiAccess;
+use App\Http\Middleware\ValidateApiKey;
 use App\Http\Middleware\ValidateProveedorRole;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -47,6 +48,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'proveedor.producto.access' => EnsureProveedorProductAccess::class,
             'proveedor.role' => ValidateProveedorRole::class,
             'api.access' => ValidateApiAccess::class,
+            'apikey' => ValidateApiKey::class,
             'audit' => LogApiActions::class,
             'proveedor.full' => [
                 'auth:sanctum',

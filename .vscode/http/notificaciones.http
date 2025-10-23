@@ -1,0 +1,321 @@
+###
+# =========================================================================
+# PRUEBAS DE NOTIFICACIONES API - Sistema Proveedores
+# =========================================================================
+# 
+# Este archivo contiene pruebas para:
+# 1. Endpoint protegido con ApiKey (para API Construcciones)
+# 2. Endpoints protegidos con auth:sanctum (para Frontend)
+#
+# REQUISITOS:
+# - Configurar API_CONSTRUCCIONES_APIKEY en .env
+# - Token de autenticación válido para endpoints del frontend
+# =========================================================================
+
+@baseUrl = http://localhost:80/api
+@apiKey = cf5cd9d4b56257d25baf3300447af494d1e815f802553a5b65204099b26ea6e1
+@authToken = Bearer tu_token_sanctum_aqui
+
+###
+# =========================================================================
+# SECCIÓN 1: ENDPOINT PARA API CONSTRUCCIONES (Con ApiKey)
+# =========================================================================
+# Este endpoint es llamado desde API Construcciones cuando se crea
+# una nueva orden de compra
+# =========================================================================
+
+### 1.1 - Test Sin ApiKey (Debe fallar con 401)
+POST {{baseUrl}}/notificaciones/nueva-orden
+Content-Type: application/json
+Accept: application/json
+
+{
+  "num_orden": "OC-2025-001",
+  "proveedor_id": 1,
+  "fecha": "2025-10-23",
+  "obra_id": 5,
+  "empresa": 1,
+  "usuario": 10,
+  "tipo_orden": "REQUISICION",
+  "requisicion_id": 25,
+  "tiene_requisicion": true,
+  "subtotal": 10000.00,
+  "iva": 1600.00,
+  "tasa": 16,
+  "importe": 11600.00,
+  "estatus": "BO",
+  "observaciones": "Entrega urgente"
+}
+
+### 1.2 - Test Con ApiKey Incorrecta (Debe fallar con 401)
+POST {{baseUrl}}/notificaciones/nueva-orden
+Content-Type: application/json
+Accept: application/json
+X-API-KEY: {{apiKey}}
+
+{
+  "num_orden": "OC-2025-001",
+  "proveedor_id": 1,
+  "fecha": "2025-10-23",
+  "obra_id": 5,
+  "empresa": 1,
+  "usuario": 10,
+  "tipo_orden": "REQUISICION",
+  "requisicion_id": 25,
+  "tiene_requisicion": true,
+  "subtotal": 10000.00,
+  "iva": 1600.00,
+  "tasa": 16,
+  "importe": 11600.00,
+  "estatus": "BO",
+  "observaciones": "Entrega urgente"
+}
+
+### 1.3 - ✅ Test Con ApiKey Correcta (Debe funcionar - 201)
+POST {{baseUrl}}/notificaciones/nueva-orden
+Content-Type: application/json
+Accept: application/json
+X-API-KEY: {{apiKey}}
+
+{
+  "num_orden": "OC-2025-001",
+  "proveedor_id": 3,
+  "fecha": "2025-10-23",
+  "obra_id": 5,
+  "empresa": 1,
+  "usuario": 10,
+  "tipo_orden": "REQUISICION",
+  "requisicion_id": 25,
+  "tiene_requisicion": true,
+  "subtotal": 10000.00,
+  "iva": 1600.00,
+  "tasa": 16,
+  "importe": 11600.00,
+  "estatus": "BO",
+  "observaciones": "Entrega urgente"
+}
+
+### 1.4 - Nueva Orden sin Requisición
+POST {{baseUrl}}/notificaciones/nueva-orden
+Content-Type: application/json
+Accept: application/json
+X-API-KEY: {{apiKey}}
+
+{
+  "num_orden": "OC-2025-002",
+  "proveedor_id": 1,
+  "fecha": "2025-10-24",
+  "obra_id": 3,
+  "empresa": 1,
+  "usuario": 8,
+  "tipo_orden": "NORMAL",
+  "requisicion_id": null,
+  "tiene_requisicion": false,
+  "subtotal": 5000.00,
+  "iva": 800.00,
+  "tasa": 16,
+  "importe": 5800.00,
+  "estatus": "BO",
+  "observaciones": null
+}
+
+### 1.5 - Nueva Orden con Observaciones Largas
+POST {{baseUrl}}/notificaciones/nueva-orden
+Content-Type: application/json
+Accept: application/json
+X-API-KEY: {{apiKey}}
+
+{
+  "num_orden": "OC-2025-003",
+  "proveedor_id": 2,
+  "fecha": "2025-10-25",
+  "obra_id": 10,
+  "empresa": 2,
+  "usuario": 15,
+  "tipo_orden": "URGENTE",
+  "requisicion_id": 30,
+  "tiene_requisicion": true,
+  "subtotal": 25000.00,
+  "iva": 4000.00,
+  "tasa": 16,
+  "importe": 29000.00,
+  "estatus": "BO",
+  "observaciones": "Material urgente para construcción - Requiere entrega antes del viernes. Coordinar con el encargado de obra Ing. Juan Pérez. Teléfono: 668-123-4567"
+}
+
+### 1.6 - Test Validación: Proveedor Inexistente (Debe fallar)
+POST {{baseUrl}}/notificaciones/nueva-orden
+Content-Type: application/json
+Accept: application/json
+X-API-KEY: {{apiKey}}
+
+{
+  "num_orden": "OC-2025-999",
+  "proveedor_id": 99999,
+  "fecha": "2025-10-23",
+  "obra_id": 5,
+  "empresa": 1,
+  "usuario": 10,
+  "tipo_orden": "REQUISICION",
+  "requisicion_id": 25,
+  "tiene_requisicion": true,
+  "subtotal": 10000.00,
+  "iva": 1600.00,
+  "tasa": 16,
+  "importe": 11600.00,
+  "estatus": "BO",
+  "observaciones": "Test validación"
+}
+
+### 1.7 - Test Validación: Campos Faltantes (Debe fallar)
+POST {{baseUrl}}/notificaciones/nueva-orden
+Content-Type: application/json
+Accept: application/json
+X-API-KEY: {{apiKey}}
+
+{
+  "num_orden": "OC-2025-004",
+  "proveedor_id": 1,
+  "fecha": "2025-10-23"
+}
+
+###
+# =========================================================================
+# SECCIÓN 2: ENDPOINTS PARA FRONTEND (Con Auth Sanctum)
+# =========================================================================
+# Estos endpoints son usados por el frontend de proveedores
+# para listar y gestionar notificaciones
+# =========================================================================
+
+### 2.1 - Obtener todas las notificaciones del proveedor (paginadas)
+GET {{baseUrl}}/notifications
+Content-Type: application/json
+Accept: application/json
+Authorization: {{authToken}}
+
+### 2.2 - Obtener notificaciones con paginación personalizada
+GET {{baseUrl}}/notifications?per_page=10
+Content-Type: application/json
+Accept: application/json
+Authorization: {{authToken}}
+
+### 2.3 - Marcar notificación específica como leída
+# @name markAsRead
+PATCH {{baseUrl}}/notifications/1/read
+Content-Type: application/json
+Accept: application/json
+Authorization: {{authToken}}
+
+### 2.4 - Marcar todas las notificaciones como leídas
+PATCH {{baseUrl}}/notifications/mark-all-read
+Content-Type: application/json
+Accept: application/json
+Authorization: {{authToken}}
+
+###
+# =========================================================================
+# SECCIÓN 3: PRUEBAS DE NOTIFICACIONES PUSH (Sistema existente)
+# =========================================================================
+
+### 3.1 - Enviar notificación de prueba (WebSocket)
+POST {{baseUrl}}/notifications/test
+Content-Type: application/json
+Accept: application/json
+Authorization: {{authToken}}
+
+### 3.2 - Enviar notificación al usuario actual
+POST {{baseUrl}}/notifications/send
+Content-Type: application/json
+Accept: application/json
+Authorization: {{authToken}}
+
+{
+  "title": "Prueba de Notificación",
+  "message": "Este es un mensaje de prueba",
+  "type": "info",
+  "data": {
+    "custom_field": "valor_personalizado"
+  }
+}
+
+### 3.3 - Enviar notificación a usuario específico (requiere permisos)
+POST {{baseUrl}}/notifications/send/5
+Content-Type: application/json
+Accept: application/json
+Authorization: {{authToken}}
+
+{
+  "title": "Nueva Orden de Compra",
+  "message": "Tienes una nueva orden pendiente de revisión",
+  "type": "success",
+  "data": {
+    "orden_id": 123,
+    "monto": 15000.50
+  }
+}
+
+###
+# =========================================================================
+# SECCIÓN 4: ESCENARIOS DE PRUEBA COMPLETOS
+# =========================================================================
+
+### 4.1 - Flujo Completo: Crear Notificación → Listar → Marcar como Leída
+
+# PASO 1: Crear nueva orden (simular llamada desde API Construcciones)
+POST {{baseUrl}}/notificaciones/nueva-orden
+Content-Type: application/json
+Accept: application/json
+X-API-KEY: {{apiKey}}
+
+{
+  "num_orden": "OC-FLOW-001",
+  "proveedor_id": 1,
+  "fecha": "2025-10-23",
+  "obra_id": 7,
+  "empresa": 1,
+  "usuario": 12,
+  "tipo_orden": "REQUISICION",
+  "requisicion_id": 45,
+  "tiene_requisicion": true,
+  "subtotal": 15000.00,
+  "iva": 2400.00,
+  "tasa": 16,
+  "importe": 17400.00,
+  "estatus": "BO",
+  "observaciones": "Flujo completo de prueba"
+}
+
+# PASO 2: Listar notificaciones (desde frontend)
+# GET {{baseUrl}}/notifications
+# Authorization: {{authToken}}
+
+# PASO 3: Marcar como leída (usar el ID de la notificación creada)
+# PATCH {{baseUrl}}/notifications/{id}/read
+# Authorization: {{authToken}}
+
+###
+# =========================================================================
+# NOTAS IMPORTANTES
+# =========================================================================
+# 
+# 1. HEADER REQUERIDO PARA API CONSTRUCCIONES:
+#    X-API-KEY: clave_secreta_compartida_entre_apis
+#
+# 2. HEADER REQUERIDO PARA FRONTEND:
+#    Authorization: Bearer {token_sanctum}
+#
+# 3. LOGS:
+#    Los logs se guardan en storage/logs/inter_api.log
+#    Comando: tail -f storage/logs/inter_api.log
+#
+# 4. BROADCASTING:
+#    Canal: proveedor.{proveedor_id}
+#    Evento: NuevaOrdenCompra
+#    
+# 5. PARA GENERAR TOKEN SANCTUM:
+#    Usa el endpoint de login en auth.http
+#
+# 6. VERIFICAR BASE DE DATOS:
+#    SELECT * FROM notificaciones WHERE proveedor_id = 1;
+#
+# =========================================================================
