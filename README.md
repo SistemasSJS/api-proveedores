@@ -5,12 +5,12 @@ API backend para el sistema de gestión de proveedores de SJS Construcciones con
 
 ## 🚀 Requisitos Previos
 
-- **Node.js** (versión 14 o superior)
-- **PHP** (versión 7.4 o superior)
+- **Node.js** (versión 18 o superior)
+- **PHP** (versión 8.2 o superior)
 - **Composer** (gestor de paquetes de PHP)
 - **Git** (control de versiones)
 - **MySQL/MariaDB** (base de datos)
-- **Soketi** (WebSocket server para notificaciones en tiempo real)
+- **Laravel Reverb** (WebSocket server integrado - incluido en el proyecto)
 
 ## 📁 Estructura del Proyecto
 
@@ -58,44 +58,39 @@ npm install
 ```
 
 ### 4. Configurar Variables de Entorno
-Crear o verificar el archivo `.env` con las siguientes configuraciones:
+
+El archivo `.env` ya está configurado. Verifica estas variables clave:
 
 ```env
-# Configuración de Base de Datos
+# Base de Datos
 DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
+DB_HOST=*********
 DB_PORT=3306
-DB_DATABASE=nombre_base_datos
-DB_USERNAME=usuario
-DB_PASSWORD=contraseña
+DB_DATABASE=db_proveedores
+DB_USERNAME=user_db_proveedores
+DB_PASSWORD=Sistemas789sjs
 
-# Configuración de la Aplicación
+# Aplicación
 APP_ENV=local
 APP_DEBUG=true
-APP_URL=http://localhost:8000
-APP_KEY=base64:XXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+APP_URL=https://localhost:80
+APP_KEY=base64:/GwWRGgv9r5AiO1gXVxmJZWcZo7oW+aQEyrqiwkhVxA=
 
-# Configuración de Colas/Jobs
+# Colas
 QUEUE_CONNECTION=database
 QUEUE_DRIVER=database
 
-# Configuración de Broadcasting/WebSockets
-BROADCAST_DRIVER=pusher
-
-# Configuración de Soketi (WebSocket Server)
-PUSHER_APP_ID=app-id
-PUSHER_APP_KEY=app-key
-PUSHER_APP_SECRET=app-secret
-PUSHER_HOST=127.0.0.1
-PUSHER_PORT=6001
-PUSHER_SCHEME=http
+# Broadcasting con Reverb
+BROADCAST_CONNECTION=reverb
+REVERB_APP_ID=887893
+REVERB_APP_KEY=uosxzpdch98xbhpehcxx
+REVERB_APP_SECRET=fvenkvletgtan8likynl
+REVERB_HOST=************
+REVERB_PORT=8080
+REVERB_SERVER_HOST=*******
+REVERB_SERVER_PORT=8080
+REVERB_SCHEME=http
 PUSHER_APP_CLUSTER=mt1
-
-# Configuración adicional de Soketi
-SOKETI_DEBUG=true
-SOKETI_DEFAULT_APP_ID=app-id
-SOKETI_DEFAULT_APP_KEY=app-key
-SOKETI_DEFAULT_APP_SECRET=app-secret
 ```
 
 ### 5. Configurar Base de Datos
@@ -113,62 +108,55 @@ php artisan notifications:table
 php artisan migrate
 ```
 
-### 6. Instalar y Configurar Soketi (WebSocket Server)
+### 6. Laravel Reverb (WebSocket Server)
+
+Reverb ya está instalado como dependencia del proyecto:
 
 ```bash
-# Instalar Soketi globalmente
-npm install -g @soketi/soketi
-
-# O instalar localmente en el proyecto
-npm install @soketi/soketi
+# Ver versión instalada
+composer show laravel/reverb
 ```
 
 ## 🚀 Levantar el Proyecto Completo
 
-### Paso 1: Iniciar el Socket Server (Soketi)
+### Opción 1: Inicio Rápido (Recomendado)
+
+```bash
+composer dev
+```
+
+Este comando inicia automáticamente:
+- 👨‍💻 **Servidor Laravel** (localhost:8080)
+- 📋 **Queue Workers** (imports, notifications, default)
+- 📝 **Logs en tiempo real** (storage/logs/laravel.log)
+- ⚡ **Vite** (assets frontend)
+- 🔌 **Reverb WebSocket** (puerto 8080)
+
+### Opción 2: Inicio Manual
+
+**Terminal 1 - Servidor Laravel:**
+```bash
+php artisan serve --host localhost --port 8080
+```
+
+**Terminal 2 - Queue Workers:**
+```bash
+php artisan queue:work --queue=imports,notifications,default --sleep=3 --tries=3
+```
+
+**Terminal 3 - Reverb WebSocket:**
+```bash
+php artisan reverb:start
+```
+
+**Terminal 4 - Logs (Opcional):**
 ```powershell
-# En PowerShell, ejecutar el script
-.\start-soketi-env.ps1
+Get-Content -Path ./storage/logs/laravel.log -Wait -Tail 10
 ```
 
-**Contenido del script `start-soketi-env.ps1`:**
-```powershell
-# Script para iniciar Soketi con configuración del proyecto
-$env:DEBUG = "1"
-$env:DEFAULT_APP_ID = "app-id"
-$env:DEFAULT_APP_KEY = "app-key"
-$env:DEFAULT_APP_SECRET = "app-secret"
-$env:DEFAULT_APP_MAX_CONNECTIONS = "1000"
-$env:DEFAULT_APP_ENABLE_CLIENT_MESSAGES = "true"
-$env:SOKETI_PORT = "6001"
-$env:SOKETI_HOST = "127.0.0.1"
-
-# Iniciar Soketi
-soketi start
-```
-
-### Paso 2: Iniciar el Procesador de Jobs/Colas
+**Terminal 5 - Vite (Si tienes assets):**
 ```bash
-# En una nueva terminal
-php artisan queue:work --queue=notifications,import,default
-
-# O para desarrollo con reinicio automático
-php artisan queue:listen
-```
-
-### Paso 3: Iniciar el Servidor PHP
-```bash
-# En otra terminal
-php artisan serve
-```
-
-### Paso 4: Compilar Assets (si es necesario)
-```bash
-# En otra terminal
 npm run dev
-
-# O para observar cambios automáticamente
-npm run watch
 ```
 
 ## 📊 Sistema de Jobs para Importación y Notificaciones

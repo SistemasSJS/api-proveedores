@@ -12,6 +12,7 @@ use App\Http\Controllers\UnidadMedidaController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\PedidoController;
+use App\Events\TestEvent;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,8 +25,11 @@ use App\Models\User;
 use App\Notifications\PushNotification;
 
 Route::get('status', function () {
+
+    // Lanzar evento con un mensaje
+    event(new TestEvent("¡Hola desde Laravel!"));
     // Buscar el usuario con ID 3
-    $user = User::find(13);
+    $user = User::find(14);
 
     if (!$user) {
         return response()->json([
