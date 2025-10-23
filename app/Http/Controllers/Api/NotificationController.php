@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Notificacion;
 use App\Models\User;
 use App\Notifications\PushNotification;
+use App\Events\NuevaOrdenCompraEvent;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -180,5 +183,104 @@ class NotificationController extends Controller
             'success' => true,
             'message' => 'Todas las notificaciones marcadas como leídas',
         ]);
+    }
+
+
+    //---------------
+    /**
+     * Recibir notificación de nueva orden de compra desde API Construcciones
+     */
+    public function nuevaOrden(Request $request)
+    {
+        $validated = $request->validate([
+            'num_orden' => 'required|string',
+            'proveedor_id' => 'required|integer|exists:proveedores,id',
+            'fecha' => 'required|string',
+            'obra_id' => 'required|integer',
+            'empresa' => 'required|integer',
+            'usuario' => 'nullable|integer',
+            'tipo_orden' => 'required|string',
+            'requisicion_id' => 'nullable|integer',
+            'tiene_requisicion' => 'required|boolean',
+            'subtotal' => 'required|numeric',
+            'iva' => 'required|numeric',
+            'tasa' => 'required|numeric',
+            'importe' => 'required|numeric',
+            'estatus' => 'required|string',
+            'observaciones' => 'nullable|string',
+        ]);
+
+        try {
+            // 1. Guardar notificación en tabla
+            $notificacion = Notificacion::create([
+                'tipo' => 'nueva_orden_compra',
+                'proveedor_id' => $validated['proveedor_id'],
+                'titulo' => 'Nueva Orden de Compra #' . $validated['num_orden'],
+                'mensaje' => "Tienes una nueva orden de compra por $" . number_format($validated['importe'], 2),
+                'data' => [
+                    'num_orden' => $validated['num_orden'],
+                    'fecha' => $validated['fecha'],
+                    'obra_id' => $validated['obra_id'],
+                    'empresa' => $validated['empresa'],
+                    'usuario' => $validated['usuario'] ?? null,
+                    'tipo_orden' => $validated['tipo_orden'],
+                    'requisicion_id' => $validated['requisicion_id'] ?? null,
+                    'tiene_requisicion' => $validated['tiene_requisicion'],
+                    'subtotal' => $validated['subtotal'],
+                    'iva' => $validated['iva'],
+                    'tasa' => $validated['tasa'],
+                    'importe' => $validated['importe'],
+                    'estatus' => $validated['estatus'],
+                    'observaciones' => $validated['observaciones'] ?? null
+                ],
+                'leida' => false,
+            ]);
+
+            Log::channel('inter_api')->info('Notificación de orden de compra guardada', [
+                'notificacion_id' => $notificacion->id,
+                'num_orden' => $validated['num_orden'],
+                'proveedor_id' => $validated['proveedor_id']
+            ]);
+
+            // 2. Broadcast para notificación en tiempo real
+            broadcast(new NuevaOrdenCompraEvent([
+                'notificacion_id' => $notificacion->id,
+                'proveedor_id' => $validated['proveedor_id'],
+                'num_orden' => $validated['num_orden'],
+                'fecha' => $validated['fecha'],
+                'obra_id' => $validated['obra_id'],
+                'empresa' => $validated['empresa'],
+                'usuario' => $validated['usuario'] ?? null,
+                'tipo_orden' => $validated['tipo_orden'],
+                'requisicion_id' => $validated['requisicion_id'] ?? null,
+                'tiene_requisicion' => $validated['tiene_requisicion'],
+                'subtotal' => $validated['subtotal'],
+                'iva' => $validated['iva'],
+                'tasa' => $validated['tasa'],
+                'importe' => $validated['importe'],
+                'estatus' => $validated['estatus'],
+                'observaciones' => $validated['observaciones'] ?? null,
+                'titulo' => $notificacion->titulo,
+                'mensaje' => $notificacion->mensaje
+            ]));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Notificación creada correctamente',
+                'notificacion' => $notificacion
+            ], 201);
+        } catch (\Exception $e) {
+            Log::channel('inter_api')->error('Error al crear notificación', [
+                'error' => $e->getMessage(),
+                'num_orden' => $validated['num_orden'] ?? null,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al crear notificación',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

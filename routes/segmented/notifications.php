@@ -4,6 +4,11 @@ use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\NotificationController;
 
+// Ruta para API Construcciones (protegida con ApiKey)
+Route::middleware(['apikey:api_construcciones'])->prefix('notificaciones')->group(function () {
+    Route::post('/nueva-orden', [NotificationController::class, 'nuevaOrden']);
+});
+
 // Rutas de autenticación de broadcasting
 Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
@@ -16,5 +21,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/send/{userId}', [NotificationController::class, 'sendToUser'])->middleware(['audit']);
     Route::patch('/{notificationId}/read', [NotificationController::class, 'markAsRead'])->middleware(['audit']);
     Route::patch('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->middleware(['audit']);
+
   });
 });
