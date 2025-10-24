@@ -12,7 +12,7 @@
 # - Token de autenticación válido para endpoints del frontend
 # =========================================================================
 
-# @baseUrl = http://localhost:80/api
+# @baseUrl = http://127.0.0.1:80/api
 @baseUrl = https://apicons.ddns.net:8092/api
 @apiKey = cf5cd9d4b56257d25baf3300447af494d1e815f802553a5b65204099b26ea6e1
 @authToken = Bearer tu_token_sanctum_aqui
@@ -31,7 +31,7 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "num_orden": "OC-2025-001",
+  "num_orden": "OC-01",
   "proveedor_id": 1,
   "fecha": "2025-10-23",
   "obra_id": 5,
@@ -61,7 +61,7 @@ X-API-KEY: {{apiKey}}
   "obra_id": 5,
   "empresa": 1,
   "usuario": 10,
-  "tipo_orden": "REQUISICION",
+  "tipo_orden": "REQUISICION",A
   "requisicion_id": 25,
   "tiene_requisicion": true,
   "subtotal": 10000.00,
@@ -79,7 +79,7 @@ Accept: application/json
 X-API-KEY: {{apiKey}}
 
 {
-  "num_orden": "OC-2025-001",
+  "num_orden": "OC-001",
   "proveedor_id": 3,
   "fecha": "2025-10-23",
   "obra_id": 5,
