@@ -216,10 +216,10 @@ class NotificationController extends Controller
         try {
             // 1. Verificar que el proveedor existe y obtener sus usuarios activos
             $proveedor = Proveedor::with('usuariosActivos')->findOrFail($validated['proveedor_id']);
-            
+
             // Iniciar transacción
             DB::beginTransaction();
-            
+
             // 2. Guardar orden de compra en tabla ordenes_compra
             $ordenCompra = OrdenCompra::create([
                 'numero_orden' => $validated['num_orden'],
@@ -240,7 +240,7 @@ class NotificationController extends Controller
                 'tasa' => $validated['tasa'],
                 'estatus_construcc' => $validated['estatus'], // Estatus original de construcciones
             ]);
-            
+
             // 3. Guardar notificación en tabla
             $notificacion = Notificacion::create([
                 'tipo' => 'nueva_orden_compra',
@@ -265,7 +265,7 @@ class NotificationController extends Controller
                 ],
                 'leida' => false,
             ]);
-            
+
             Log::channel('inter_api')->info('Orden de compra y notificación guardadas', [
                 'orden_compra_id' => $ordenCompra->id,
                 'notificacion_id' => $notificacion->id,
@@ -318,7 +318,12 @@ class NotificationController extends Controller
                     ]);
                 }
             }
-             return response()->json([
+
+
+            // 6. Confirmar transacción
+            DB::commit();
+            
+            return response()->json([
                 'success' => true,
                 'message' => 'Orden de compra y notificación creadas correctamente',
                 'data' => [
@@ -329,7 +334,7 @@ class NotificationController extends Controller
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             Log::channel('inter_api')->error('Error al crear orden de compra y notificación', [
                 'error' => $e->getMessage(),
                 'num_orden' => $validated['num_orden'] ?? null,
