@@ -197,7 +197,7 @@ class NotificationController extends Controller
     {
         $validated = $request->validate([
             'num_orden' => 'required|string',
-            'proveedor_id' => 'required|integer|exists:proveedores,id',
+            'proveedor_id' => 'required|integer|exists:proveedores,proveedor_id',
             'fecha' => 'required|string',
             'obra_id' => 'required|integer',
             'empresa' => 'required|integer',
