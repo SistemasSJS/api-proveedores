@@ -198,81 +198,173 @@ class NotificationController extends Controller
      */
     public function nuevaOrden(Request $request)
     {
-        DB::purge('mysql'); // Limpia la conexión
-        DB::reconnect('mysql'); // Reconecta
-        DB::purge('mysql5'); // Limpia la conexión
-        DB::reconnect('mysql5'); // Reconecta
+        Log::info('🔵 ========== INICIO nuevaOrden() ==========');
+        
+        try {
+            // Reconectar bases de datos
+            DB::purge('mysql');
+            DB::reconnect('mysql');
+            DB::purge('mysql5');
+            DB::reconnect('mysql5');
+            Log::info('🔄 Conexiones de BD reconectadas');
 
-        Log::info('📦 Request antes de validar:', $request->all());
+            Log::info('📦 Request recibido:', [
+                'headers' => $request->headers->all(),
+                'body' => $request->all()
+            ]);
 
-        // 1. Validar body de la petición
-        $validated = $request->validate([
-            'empresa_id' => 'required|integer',
-            'proveedor_id' => 'required|integer',
-            'orden_compra_id' => 'required|string',
-            'estatus' => 'nullable|string',
-        ]);
+            // 1. Validar body de la petición
+            Log::info('🔍 Validando request...');
+            $validated = $request->validate([
+                'empresa_id' => 'required|integer',
+                'proveedor_id' => 'required|integer',
+                'orden_compra_id' => 'required|string',
+                'estatus' => 'nullable|string',
+            ]);
+            Log::info('✅ Validación exitosa:', $validated);
 
-        // 2. Buscar los usuarios del proveedor mediante las relaciones definidas en el modelo
-        $proveedor = Proveedor::findOrFail($validated['proveedor_id']);
-        $usuarioPrincipal = $proveedor->usuarioPrincipal();
-        $usuariosActivos = $proveedor->usuariosActivos()->get();
+            // 2. Buscar proveedor
+            Log::info('🔍 Buscando proveedor ID: ' . $validated['proveedor_id']);
+            $proveedor = Proveedor::findOrFail($validated['proveedor_id']);
+            Log::info('✅ Proveedor encontrado:', [
+                'id' => $proveedor->id,
+                'nombre' => $proveedor->nombre ?? 'N/A'
+            ]);
 
-        if (!$usuarioPrincipal) {
-            return response()->json([
-                'success' => false,
-                'message' => 'El proveedor no tiene un usuario principal asignado',
-                'proveedor_id' => $validated['proveedor_id']
-            ], 422);
-        }
+            // 3. Buscar usuario principal
+            Log::info('🔍 Buscando usuario principal del proveedor...');
+            $usuarioPrincipal = $proveedor->usuarioPrincipal();
+            
+            if (!$usuarioPrincipal) {
+                Log::error('❌ Proveedor sin usuario principal', [
+                    'proveedor_id' => $validated['proveedor_id']
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El proveedor no tiene un usuario principal asignado',
+                    'proveedor_id' => $validated['proveedor_id']
+                ], 422);
+            }
+            
+            Log::info('✅ Usuario principal encontrado:', [
+                'id' => $usuarioPrincipal->id,
+                'name' => $usuarioPrincipal->name,
+                'email' => $usuarioPrincipal->email
+            ]);
 
-        // 2. Insertar en la tabla usando la conexión mysql5
-        $inserted = DB::connection('mysql5')->table('oc_construcc')->insert([
-            'empresa_id' => $validated['empresa_id'],
-            'proveedor_id' => $validated['proveedor_id'],
-            'orden_compra_id' => $validated['orden_compra_id'],
-            'estatus' => $validated['estatus'] ?? 'pendiente', // Valor por defecto
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        /**
-         * Enviar notificación usando Laravel Notifications
-         * Esto automáticamente:
-         * - Guarda en tabla 'notifications'
-         * - Envía por broadcast (WebSocket)
-         * - Puede procesarse en cola (queue)
-         */
-        $usuarioPrincipal->notify(new NuevaOrdenCompra(
-            $validated['orden_compra_id'],
-            $validated['proveedor_id'],
-            $validated['empresa_id'],
-            $validated['estatus']
-        ));
-
-        Log::info('✅ Notificación enviada correctamente', [
-            'usuario_id' => $usuarioPrincipal->id,
-            'orden_compra_id' => $validated['orden_compra_id'],
-            'tipo' => 'nueva_orden_compra'
-        ]);
-
-        // 3. Devolver información de la inserción y la conexión actual
-        return response()->json([
-            'success' => $inserted,
-            'message' => $inserted ? 'Orden de compra creada correctamente' : 'Error al crear la orden de compra',
-            'data' => [
+            // 4. Insertar en tabla oc_construcc
+            Log::info('💾 Insertando en tabla oc_construcc (mysql5)...');
+            $dataToInsert = [
                 'empresa_id' => $validated['empresa_id'],
                 'proveedor_id' => $validated['proveedor_id'],
                 'orden_compra_id' => $validated['orden_compra_id'],
                 'estatus' => $validated['estatus'] ?? 'pendiente',
-            ],
-            'connection' => [
-                'default' => config('database.default'),
-                'current_connection_name' => DB::connection()->getName(),
-                'database_name' => DB::connection('mysql5')->getDatabaseName(),
-                'driver' => DB::connection('mysql5')->getDriverName(),
-            ],
-        ], $inserted ? 201 : 500);
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+            Log::info('📊 Datos a insertar:', $dataToInsert);
+            
+            $inserted = DB::connection('mysql5')->table('oc_construcc')->insert($dataToInsert);
+            
+            if ($inserted) {
+                Log::info('✅ Inserción exitosa en oc_construcc');
+            } else {
+                Log::error('❌ Error al insertar en oc_construcc');
+            }
+
+            // 5. Enviar notificación Laravel
+            Log::info('🔔 Enviando notificación Laravel...');
+            Log::info('📊 Datos de notificación:', [
+                'orden_compra_id' => $validated['orden_compra_id'],
+                'proveedor_id' => $validated['proveedor_id'],
+                'empresa_id' => $validated['empresa_id'],
+                'estatus' => $validated['estatus'] ?? 'pendiente'
+            ]);
+            
+            // Verificar tabla notifications antes
+            $notificationsBefore = DB::table('notifications')
+                ->where('notifiable_id', $usuarioPrincipal->id)
+                ->count();
+            Log::info('📊 Notificaciones antes: ' . $notificationsBefore);
+            
+            $usuarioPrincipal->notify(new NuevaOrdenCompra(
+                $validated['orden_compra_id'],
+                $validated['proveedor_id'],
+                $validated['empresa_id'],
+                $validated['estatus'] ?? 'pendiente'
+            ));
+            
+            // Verificar tabla notifications después
+            $notificationsAfter = DB::table('notifications')
+                ->where('notifiable_id', $usuarioPrincipal->id)
+                ->count();
+            Log::info('📊 Notificaciones después: ' . $notificationsAfter);
+            Log::info('📊 Notificaciones nuevas: ' . ($notificationsAfter - $notificationsBefore));
+
+            // Obtener última notificación
+            $lastNotification = DB::table('notifications')
+                ->where('notifiable_id', $usuarioPrincipal->id)
+                ->orderBy('created_at', 'desc')
+                ->first();
+            
+            if ($lastNotification) {
+                Log::info('✅ Última notificación creada:', [
+                    'id' => $lastNotification->id,
+                    'type' => $lastNotification->type,
+                    'created_at' => $lastNotification->created_at
+                ]);
+            } else {
+                Log::warning('⚠️ No se encontró la notificación en la BD');
+            }
+
+            Log::info('✅ Notificación enviada correctamente', [
+                'usuario_id' => $usuarioPrincipal->id,
+                'orden_compra_id' => $validated['orden_compra_id'],
+                'tipo' => 'nueva_orden_compra'
+            ]);
+            
+            Log::info('🔵 ========== FIN nuevaOrden() EXITOSO ==========');
+            
+            // 6. Devolver respuesta
+            return response()->json([
+                'success' => $inserted,
+                'message' => $inserted ? 'Orden de compra creada correctamente' : 'Error al crear la orden de compra',
+                'data' => [
+                    'empresa_id' => $validated['empresa_id'],
+                    'proveedor_id' => $validated['proveedor_id'],
+                    'orden_compra_id' => $validated['orden_compra_id'],
+                    'estatus' => $validated['estatus'] ?? 'pendiente',
+                    'usuario_notificado' => [
+                        'id' => $usuarioPrincipal->id,
+                        'name' => $usuarioPrincipal->name,
+                        'email' => $usuarioPrincipal->email
+                    ],
+                    'notificaciones_count' => $notificationsAfter ?? 0
+                ],
+                'connection' => [
+                    'default' => config('database.default'),
+                    'current_connection_name' => DB::connection()->getName(),
+                    'database_name' => DB::connection('mysql5')->getDatabaseName(),
+                    'driver' => DB::connection('mysql5')->getDriverName(),
+                ],
+            ], $inserted ? 201 : 500);
+            
+        } catch (\Exception $e) {
+            Log::error('🔴 ========== ERROR en nuevaOrden() ==========');
+            Log::error('❌ Excepción capturada:', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al procesar la orden de compra',
+                'error' => $e->getMessage(),
+                'trace' => config('app.debug') ? $e->getTraceAsString() : null
+            ], 500);
+        }
     }
     /**
      * Recibir notificación de nueva orden de compra desde API Construcciones
