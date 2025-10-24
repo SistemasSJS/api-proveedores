@@ -27,6 +27,16 @@ class OrdenCompra extends BaseModel
         'metadata_json',
         'monto_sp_asociado',
         'sp_count',
+        // Campos de sincronización con API Construcciones
+        'obra_id',
+        'usuario_id',
+        'tipo_orden',
+        'requisicion_id',
+        'tiene_requisicion',
+        'subtotal',
+        'iva',
+        'tasa',
+        'estatus_construcc',
     ];
 
     protected static $filters = [
@@ -52,6 +62,11 @@ class OrdenCompra extends BaseModel
         'metadata_json' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        // Casts adicionales para campos de API Construcciones
+        'tiene_requisicion' => 'boolean',
+        'subtotal' => 'decimal:2',
+        'iva' => 'decimal:2',
+        'tasa' => 'decimal:2',
     ];
 
     /** ----------------

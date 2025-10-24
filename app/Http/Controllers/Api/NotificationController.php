@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Notificacion;
+use App\Models\OrdenCompra;
 use App\Models\Proveedor;
 use App\Models\User;
 use App\Notifications\PushNotification;
 use App\Events\NuevaOrdenCompraEvent;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -215,7 +217,31 @@ class NotificationController extends Controller
             // 1. Verificar que el proveedor existe y obtener sus usuarios activos
             $proveedor = Proveedor::with('usuariosActivos')->findOrFail($validated['proveedor_id']);
             
-            // 2. Guardar notificación en tabla
+            // Iniciar transacción
+            DB::beginTransaction();
+            
+            // 2. Guardar orden de compra en tabla ordenes_compra
+            $ordenCompra = OrdenCompra::create([
+                'numero_orden' => $validated['num_orden'],
+                'fecha_orden' => $validated['fecha'],
+                'proveedor_id' => $validated['proveedor_id'],
+                'empresa_construcc_id' => $validated['empresa'],
+                'importe_total' => $validated['importe'],
+                'estado' => 'pendiente', // Estado inicial en sistema proveedores
+                'observaciones' => $validated['observaciones'],
+                // Campos específicos de API Construcciones
+                'obra_id' => $validated['obra_id'],
+                'usuario_id' => $validated['usuario'],
+                'tipo_orden' => $validated['tipo_orden'],
+                'requisicion_id' => $validated['requisicion_id'],
+                'tiene_requisicion' => $validated['tiene_requisicion'],
+                'subtotal' => $validated['subtotal'],
+                'iva' => $validated['iva'],
+                'tasa' => $validated['tasa'],
+                'estatus_construcc' => $validated['estatus'], // Estatus original de construcciones
+            ]);
+            
+            // 3. Guardar notificación en tabla
             $notificacion = Notificacion::create([
                 'tipo' => 'nueva_orden_compra',
                 'proveedor_id' => $validated['proveedor_id'],
@@ -239,15 +265,17 @@ class NotificationController extends Controller
                 ],
                 'leida' => false,
             ]);
-
-            Log::channel('inter_api')->info('Notificación de orden de compra guardada', [
+            
+            Log::channel('inter_api')->info('Orden de compra y notificación guardadas', [
+                'orden_compra_id' => $ordenCompra->id,
                 'notificacion_id' => $notificacion->id,
                 'num_orden' => $validated['num_orden'],
                 'proveedor_id' => $validated['proveedor_id'],
+                'importe_total' => $validated['importe'],
                 'usuarios_notificados' => $proveedor->usuariosActivos->count()
             ]);
 
-            // 3. Broadcast para notificación en tiempo real (WebSocket)
+            // 4. Broadcast para notificación en tiempo real (WebSocket)
             broadcast(new NuevaOrdenCompraEvent([
                 'notificacion_id' => $notificacion->id,
                 'proveedor_id' => $validated['proveedor_id'],
@@ -269,7 +297,7 @@ class NotificationController extends Controller
                 'mensaje' => $notificacion->mensaje
             ]));
 
-            // 4. Enviar notificación push a todos los usuarios activos del proveedor
+            // 5. Enviar notificación push a todos los usuarios activos del proveedor
             foreach ($proveedor->usuariosActivos as $usuario) {
                 try {
                     $usuario->notify(new PushNotification(
@@ -290,14 +318,19 @@ class NotificationController extends Controller
                     ]);
                 }
             }
-
-            return response()->json([
+             return response()->json([
                 'success' => true,
-                'message' => 'Notificación creada correctamente',
-                'notificacion' => $notificacion
+                'message' => 'Orden de compra y notificación creadas correctamente',
+                'data' => [
+                    'orden_compra_id' => $ordenCompra->id,
+                    'notificacion_id' => $notificacion->id,
+                    'numero_orden' => $ordenCompra->numero_orden
+                ]
             ], 201);
         } catch (\Exception $e) {
-            Log::channel('inter_api')->error('Error al crear notificación', [
+            DB::rollBack();
+            
+            Log::channel('inter_api')->error('Error al crear orden de compra y notificación', [
                 'error' => $e->getMessage(),
                 'num_orden' => $validated['num_orden'] ?? null,
                 'trace' => $e->getTraceAsString()
@@ -305,7 +338,7 @@ class NotificationController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error al crear notificación',
+                'message' => 'Error al crear orden de compra y notificación',
                 'error' => $e->getMessage()
             ], 500);
         }
