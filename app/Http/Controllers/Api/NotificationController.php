@@ -202,10 +202,7 @@ class NotificationController extends Controller
         DB::purge('mysql'); // Limpia la conexión
         DB::reconnect('mysql'); // Reconecta
 
-        $ocConstrucc = new OcConstrucc();
-        $ocConstrucc->setConnection('mysql'); // Fuerza la conexión
-        // ... asigna datos
-        $ocConstrucc->save();
+
         Log::info('📦 Request antes de validar:', $request->all());   // 1. Validar body de la petición con los 4 campos requeridos
 
         $validated = $request->validate([
@@ -238,13 +235,23 @@ class NotificationController extends Controller
             DB::beginTransaction();
 
             // 3. Almacenar la OC con los datos definidos en el body en la tabla oc_construcc
-            $ordenCompra = OcConstrucc::create([
-                'empresa_id' => $request->empresa_id,
-                'proveedor_id' => $request->proveedor_id,
-                'orden_compra_id' => $request->orden_compra_id,
-                'estatus' => $request->estatus,
-            ]);
+            // $ordenCompra = OcConstrucc::create([
+            //     'empresa_id' => $request->empresa_id,
+            //     'proveedor_id' => $request->proveedor_id,
+            //     'orden_compra_id' => $request->orden_compra_id,
+            //     'estatus' => $request->estatus,
+            // ]);
+            $ocConstrucc = new OcConstrucc();
+            $ocConstrucc->setConnection('mysql'); // Fuerza la conexión
 
+            // Asignar datos del request al objeto
+            $ocConstrucc->empresa_id = $request->empresa_id;
+            $ocConstrucc->proveedor_id = $request->proveedor_id;
+            $ocConstrucc->orden_compra_id = $request->orden_compra_id;
+            $ocConstrucc->estatus = $request->estatus;
+
+            // Guardar en la base de datos
+            $ocConstrucc->save();
             // Crear notificación en tabla notificaciones
             // $notificacion = Notificacion::create([
             //     'tipo' => 'nueva_orden_compra',
