@@ -199,8 +199,8 @@ class NotificationController extends Controller
      */
     public function nuevaOrden(Request $request)
     {
-        Log::info('📦 Request Ante de validar:', $request);
-        // 1. Validar body de la petición con los 4 campos requeridos
+        Log::info('📦 Request antes de validar:', $request->all());   // 1. Validar body de la petición con los 4 campos requeridos
+        
         $validated = $request->validate([
             'empresa_id' => 'required|integer',
             'proveedor_id' => 'required|integer',
@@ -232,16 +232,16 @@ class NotificationController extends Controller
 
             // 3. Almacenar la OC con los datos definidos en el body en la tabla oc_construcc
             $ordenCompra = OcConstrucc::create([
-                'empresa_id' => $validated['empresa_id'],
-                'proveedor_id' => $validated['proveedor_id'],
-                'orden_compra_id' => $validated['orden_compra_id'],
-                'estatus' => $validated['estatus'],
+                'empresa_id' => $request->empresa_id,
+                'proveedor_id' => $request->proveedor_id,
+                'orden_compra_id' => $request->orden_compra_id,
+                'estatus' => $request->estatus,
             ]);
 
             // Crear notificación en tabla notificaciones
             // $notificacion = Notificacion::create([
             //     'tipo' => 'nueva_orden_compra',
-            //     'proveedor_id' => $validated['proveedor_id'],
+            //     'proveedor_id' => $request->proveedor_id,
             //     'titulo' => 'Nueva Orden de Compra #' . $validated['orden_compra_id'],
             //     'mensaje' => "Tienes una nueva orden de compra: {$validated['orden_compra_id']}",
             //     'data' => [
