@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Notificacion;
+use App\Models\OcConstrucc;
 use App\Models\OrdenCompra;
 use App\Models\Proveedor;
 use App\Models\User;
@@ -228,8 +229,8 @@ class NotificationController extends Controller
             // Iniciar transacción
             DB::beginTransaction();
 
-            // 3. Almacenar la OC con los datos definidos en el body en la tabla ordenes_compra
-            $ordenCompra = OrdenCompra::create([
+            // 3. Almacenar la OC con los datos definidos en el body en la tabla oc_construcc
+            $ordenCompra = OcConstrucc::create([
                 'empresa_id' => $validated['empresa_id'],
                 'proveedor_id' => $validated['proveedor_id'],
                 'orden_compra_id' => $validated['orden_compra_id'],

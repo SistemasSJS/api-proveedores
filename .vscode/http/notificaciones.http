@@ -12,8 +12,8 @@
 # - Token de autenticación válido para endpoints del frontend
 # =========================================================================
 
-# @baseUrl = http://127.0.0.1:80/api
-@baseUrl = https://apicons.ddns.net:8092/api
+@baseUrl = http://localhost:80/api
+# @baseUrl = https://apicons.ddns.net:8092/api
 @apiKey = cf5cd9d4b56257d25baf3300447af494d1e815f802553a5b65204099b26ea6e1
 @authToken = Bearer tu_token_sanctum_aqui
 
@@ -73,28 +73,19 @@ X-API-KEY: {{apiKey}}
 }
 
 ### 1.3 - ✅ Test Con ApiKey Correcta (Debe funcionar - 201)
+### 1.3 - ✅ Test Con ApiKey Correcta (Debe funcionar - 201)
 POST {{baseUrl}}/notificaciones/nueva-orden
 Content-Type: application/json
 Accept: application/json
 X-API-KEY: {{apiKey}}
 
 {
-  "num_orden": "OC-001",
+  "empresa_id": 14,
   "proveedor_id": 3,
-  "fecha": "2025-10-23",
-  "obra_id": 5,
-  "empresa": 1,
-  "usuario": 10,
-  "tipo_orden": "REQUISICION",
-  "requisicion_id": 25,
-  "tiene_requisicion": true,
-  "subtotal": 10000.00,
-  "iva": 1600.00,
-  "tasa": 16,
-  "importe": 11600.00,
-  "estatus": "BO",
-  "observaciones": "Entrega urgente"
+  "orden_compra_id": "OC-0000002",
+  "estatus": "pendiente"
 }
+
 
 ### 1.4 - Nueva Orden sin Requisición
 POST {{baseUrl}}/notificaciones/nueva-orden

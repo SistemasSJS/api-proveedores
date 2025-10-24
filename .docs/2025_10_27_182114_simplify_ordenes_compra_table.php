@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -12,7 +13,26 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('ordenes_compra', function (Blueprint $table) {
-            // Solo actualizar columnas existentes para permitir NULL
+            // 🔹 Primero eliminar claves foráneas que impiden modificar
+            if (Schema::hasColumn('ordenes_compra', 'proveedor_id')) {
+                try {
+                    $table->dropForeign('ordenes_compra_proveedor_id_foreign');
+                } catch (\Throwable $e) {
+                    // Ignorar si no existe
+                }
+            }
+
+            if (Schema::hasColumn('ordenes_compra', 'empresa_construcc_id')) {
+                try {
+                    $table->dropForeign('ordenes_compra_empresa_construcc_id_foreign');
+                } catch (\Throwable $e) {
+                    // Ignorar si no existe
+                }
+            }
+        });
+
+        // 🔹 Luego cambiar las columnas a NULLABLE
+        Schema::table('ordenes_compra', function (Blueprint $table) {
             $nullableColumns = [
                 'numero_orden',
                 'fecha_orden',
@@ -41,7 +61,6 @@ return new class extends Migration
                     try {
                         $table->string($col)->nullable()->change();
                     } catch (\Throwable $e) {
-                        // Si no es string, intentamos otros tipos comunes
                         try {
                             $table->decimal($col, 12, 2)->nullable()->change();
                         } catch (\Throwable $e2) {
@@ -59,6 +78,31 @@ return new class extends Migration
                 }
             }
         });
+
+        // 🔹 Finalmente, restaurar las foreign keys eliminadas
+        Schema::table('ordenes_compra', function (Blueprint $table) {
+            if (Schema::hasColumn('ordenes_compra', 'proveedor_id')) {
+                try {
+                    $table->foreign('proveedor_id', 'ordenes_compra_proveedor_id_foreign')
+                        ->references('id')
+                        ->on('proveedores')
+                        ->nullOnDelete();
+                } catch (\Throwable $e) {
+                    // Ignorar si ya existe
+                }
+            }
+
+            if (Schema::hasColumn('ordenes_compra', 'empresa_construcc_id')) {
+                try {
+                    $table->foreign('empresa_construcc_id', 'ordenes_compra_empresa_construcc_id_foreign')
+                        ->references('id')
+                        ->on('empresa_construcc')
+                        ->nullOnDelete();
+                } catch (\Throwable $e) {
+                    // Ignorar si ya existe
+                }
+            }
+        });
     }
 
     /**
@@ -67,33 +111,24 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('ordenes_compra', function (Blueprint $table) {
-            // Revertir a columnas NOT NULL cuando sea posible
-            $notNullableColumns = [
-                'numero_orden',
-                'fecha_orden',
+            // Restaurar a NOT NULL
+            $notNullable = [
                 'proveedor_id',
                 'empresa_construcc_id',
                 'importe_total',
                 'estado',
             ];
 
-            foreach ($notNullableColumns as $col) {
+            foreach ($notNullable as $col) {
                 if (Schema::hasColumn('ordenes_compra', $col)) {
                     try {
-                        $table->string($col)->nullable(false)->change();
+                        $table->integer($col)->nullable(false)->change();
                     } catch (\Throwable $e) {
-                        try {
-                            $table->decimal($col, 12, 2)->nullable(false)->change();
-                        } catch (\Throwable $e2) {
-                            try {
-                                $table->integer($col)->nullable(false)->change();
-                            } catch (\Throwable $e3) {
-                                // Ignorar si no aplica
-                            }
-                        }
+                        // Ignorar si no aplica
                     }
                 }
             }
         });
     }
 };
+    
