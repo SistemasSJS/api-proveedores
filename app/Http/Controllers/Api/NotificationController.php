@@ -199,6 +199,7 @@ class NotificationController extends Controller
      */
     public function nuevaOrden(Request $request)
     {
+        Log::info('📦 Request Ante de validar:', $request);
         // 1. Validar body de la petición con los 4 campos requeridos
         $validated = $request->validate([
             'empresa_id' => 'required|integer',

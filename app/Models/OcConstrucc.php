@@ -38,17 +38,17 @@ class OcConstrucc extends BaseModel
     public static function eagerLodable(): array
     {
         return [
-            'proveedor',
+            // 'proveedor',
         ];
     }
 
     /** ----------------
      * Relaciones
      * ----------------- */
-    public function proveedor(): BelongsTo
-    {
-        return $this->belongsTo(Proveedor::class, 'proveedor_id');
-    }
+    // public function proveedor(): BelongsTo
+    // {
+    //     return $this->belongsTo(Proveedor::class, 'proveedor_id');
+    // }
 
     /** ----------------
      * Scopes
