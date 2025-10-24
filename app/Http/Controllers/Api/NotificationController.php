@@ -201,10 +201,12 @@ class NotificationController extends Controller
     {
         DB::purge('mysql'); // Limpia la conexión
         DB::reconnect('mysql'); // Reconecta
+        DB::purge('mysql5'); // Limpia la conexión
+        DB::reconnect('mysql5'); // Reconecta
 
+        Log::info('📦 Request antes de validar:', $request->all());
 
-        Log::info('📦 Request antes de validar:', $request->all());   // 1. Validar body de la petición con los 4 campos requeridos
-
+        // 1. Validar body de la petición
         $validated = $request->validate([
             'empresa_id' => 'required|integer',
             'proveedor_id' => 'required|integer',
@@ -212,144 +214,172 @@ class NotificationController extends Controller
             'estatus' => 'nullable|string',
         ]);
 
-        // Establecer estatus por defecto si no se proporciona
-        $validated['estatus'] = $validated['estatus'] ?? 'pendiente';
+        // 2. Insertar en la tabla usando la conexión mysql5
+        $inserted = DB::connection('mysql5')->table('oc_construcc')->insert([
+            'empresa_id' => $validated['empresa_id'],
+            'proveedor_id' => $validated['proveedor_id'],
+            'orden_compra_id' => $validated['orden_compra_id'],
+            'estatus' => $validated['estatus'] ?? 'pendiente', // Valor por defecto
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
-        Log::info('📦 Nueva orden recibida:', $validated);
+        // 3. Devolver información de la inserción y la conexión actual
+        return response()->json([
+            'success' => $inserted,
+            'message' => $inserted ? 'Orden de compra creada correctamente' : 'Error al crear la orden de compra',
+            'data' => [
+                'empresa_id' => $validated['empresa_id'],
+                'proveedor_id' => $validated['proveedor_id'],
+                'orden_compra_id' => $validated['orden_compra_id'],
+                'estatus' => $validated['estatus'] ?? 'pendiente',
+            ],
+            'connection' => [
+                'default' => config('database.default'),
+                'current_connection_name' => DB::connection()->getName(),
+                'database_name' => DB::connection('mysql5')->getDatabaseName(),
+                'driver' => DB::connection('mysql5')->getDriverName(),
+            ],
+        ], $inserted ? 201 : 500);
 
-        try {
-            // 2. Buscar los usuarios del proveedor mediante las relaciones definidas en el modelo
-            // $proveedor = Proveedor::findOrFail($validated['proveedor_id']);
-            // $usuarioPrincipal = $proveedor->usuarioPrincipal();
-            // $usuariosActivos = $proveedor->usuariosActivos()->get();
+        // // Establecer estatus por defecto si no se proporciona
+        // $validated['estatus'] = $validated['estatus'] ?? 'pendiente';
 
-            // if (!$usuarioPrincipal) {
-            //     return response()->json([
-            //         'success' => false,
-            //         'message' => 'El proveedor no tiene un usuario principal asignado',
-            //         'proveedor_id' => $validated['proveedor_id']
-            //     ], 422);
-            // }
+        // Log::info('📦 Nueva orden recibida:', $validated);
 
-            // Iniciar transacción
-            DB::beginTransaction();
+        // try {
+        //     // 2. Buscar los usuarios del proveedor mediante las relaciones definidas en el modelo
+        //     // $proveedor = Proveedor::findOrFail($validated['proveedor_id']);
+        //     // $usuarioPrincipal = $proveedor->usuarioPrincipal();
+        //     // $usuariosActivos = $proveedor->usuariosActivos()->get();
 
-            // 3. Almacenar la OC con los datos definidos en el body en la tabla oc_construcc
-            // $ordenCompra = OcConstrucc::create([
-            //     'empresa_id' => $request->empresa_id,
-            //     'proveedor_id' => $request->proveedor_id,
-            //     'orden_compra_id' => $request->orden_compra_id,
-            //     'estatus' => $request->estatus,
-            // ]);
-            $ocConstrucc = new OcConstrucc();
-            $ocConstrucc->setConnection('mysql'); // Fuerza la conexión
+        //     // if (!$usuarioPrincipal) {
+        //     //     return response()->json([
+        //     //         'success' => false,
+        //     //         'message' => 'El proveedor no tiene un usuario principal asignado',
+        //     //         'proveedor_id' => $validated['proveedor_id']
+        //     //     ], 422);
+        //     // }
 
-            // Asignar datos del request al objeto
-            $ocConstrucc->empresa_id = $request->empresa_id;
-            $ocConstrucc->proveedor_id = $request->proveedor_id;
-            $ocConstrucc->orden_compra_id = $request->orden_compra_id;
-            $ocConstrucc->estatus = $request->estatus;
+        //     // Iniciar transacción
+        //     DB::beginTransaction();
 
-            // Guardar en la base de datos
-            $ocConstrucc->save();
-            // Crear notificación en tabla notificaciones
-            // $notificacion = Notificacion::create([
-            //     'tipo' => 'nueva_orden_compra',
-            //     'proveedor_id' => $request->proveedor_id,
-            //     'titulo' => 'Nueva Orden de Compra #' . $validated['orden_compra_id'],
-            //     'mensaje' => "Tienes una nueva orden de compra: {$validated['orden_compra_id']}",
-            //     'data' => [
-            //         'orden_compra_id' => $validated['orden_compra_id'],
-            //         'empresa_id' => $validated['empresa_id'],
-            //         'estatus' => $validated['estatus'],
-            //     ],
-            //     'leida' => false,
-            // ]);
+        //     // 3. Almacenar la OC con los datos definidos en el body en la tabla oc_construcc
+        //     // $ordenCompra = OcConstrucc::create([
+        //     //     'empresa_id' => $request->empresa_id,
+        //     //     'proveedor_id' => $request->proveedor_id,
+        //     //     'orden_compra_id' => $request->orden_compra_id,
+        //     //     'estatus' => $request->estatus,
+        //     // ]);
+        //     $ocConstrucc = new OcConstrucc();
+        //     $ocConstrucc->setConnection('mysql5'); // Fuerza la conexión
 
-            // 4. Generar notificación por el canal de usuarios
-            // TODO: Implementar notificación asíncrona mediante queue/job para mejorar el tiempo de respuesta.
-            // Se puede usar Jobs/Events con listeners para enviar notificaciones push y broadcast.
-            // Ejemplo: dispatch(new NotificarNuevaOrdenJob($ordenCompra, $usuariosActivos));
+        //     // Asignar datos del request al objeto
+        //     $ocConstrucc->empresa_id = $request->empresa_id;
+        //     $ocConstrucc->proveedor_id = $request->proveedor_id;
+        //     $ocConstrucc->orden_compra_id = $request->orden_compra_id;
+        //     $ocConstrucc->estatus = $request->estatus;
 
-            // // Broadcast para notificación en tiempo real (WebSocket)
-            // broadcast(new NuevaOrdenCompraEvent([
-            //     'orden_compra_id' => $ordenCompra->id,
-            //     'proveedor_id' => $validated['proveedor_id'],
-            //     'orden_compra_numero' => $validated['orden_compra_id'],
-            //     'empresa_id' => $validated['empresa_id'],
-            //     'estatus' => $validated['estatus'],
-            //     'notificacion_id' => $notificacion->id,
-            //     'titulo' => $notificacion->titulo,
-            //     'mensaje' => $notificacion->mensaje,
-            // ]));
+        //     // Guardar en la base de datos
+        //     $ocConstrucc->save();
+        //     // Crear notificación en tabla notificaciones
+        //     // $notificacion = Notificacion::create([
+        //     //     'tipo' => 'nueva_orden_compra',
+        //     //     'proveedor_id' => $request->proveedor_id,
+        //     //     'titulo' => 'Nueva Orden de Compra #' . $validated['orden_compra_id'],
+        //     //     'mensaje' => "Tienes una nueva orden de compra: {$validated['orden_compra_id']}",
+        //     //     'data' => [
+        //     //         'orden_compra_id' => $validated['orden_compra_id'],
+        //     //         'empresa_id' => $validated['empresa_id'],
+        //     //         'estatus' => $validated['estatus'],
+        //     //     ],
+        //     //     'leida' => false,
+        //     // ]);
 
-            // Enviar notificación push al usuario principal
-            // $usuarioPrincipal->notify(new PushNotification(
-            //     $notificacion->titulo,
-            //     $notificacion->mensaje,
-            //     'info',
-            //     [
-            //         // 'notificacion_id' => $notificacion->id,
-            //         'orden_compra_id' => $validated['orden_compra_id'],
-            //         'tipo' => 'nueva_orden_compra'
-            //     ]
-            // ));
+        //     // 4. Generar notificación por el canal de usuarios
+        //     // TODO: Implementar notificación asíncrona mediante queue/job para mejorar el tiempo de respuesta.
+        //     // Se puede usar Jobs/Events con listeners para enviar notificaciones push y broadcast.
+        //     // Ejemplo: dispatch(new NotificarNuevaOrdenJob($ordenCompra, $usuariosActivos));
 
-            // Log::info('✅ Notificación push enviada', [
-            //     // 'usuario_id' => $usuarioPrincipal->id,
-            //     // 'notificacion_id' => $notificacion->id
-            // ]);
+        //     // // Broadcast para notificación en tiempo real (WebSocket)
+        //     // broadcast(new NuevaOrdenCompraEvent([
+        //     //     'orden_compra_id' => $ordenCompra->id,
+        //     //     'proveedor_id' => $validated['proveedor_id'],
+        //     //     'orden_compra_numero' => $validated['orden_compra_id'],
+        //     //     'empresa_id' => $validated['empresa_id'],
+        //     //     'estatus' => $validated['estatus'],
+        //     //     'notificacion_id' => $notificacion->id,
+        //     //     'titulo' => $notificacion->titulo,
+        //     //     'mensaje' => $notificacion->mensaje,
+        //     // ]));
+
+        //     // Enviar notificación push al usuario principal
+        //     // $usuarioPrincipal->notify(new PushNotification(
+        //     //     $notificacion->titulo,
+        //     //     $notificacion->mensaje,
+        //     //     'info',
+        //     //     [
+        //     //         // 'notificacion_id' => $notificacion->id,
+        //     //         'orden_compra_id' => $validated['orden_compra_id'],
+        //     //         'tipo' => 'nueva_orden_compra'
+        //     //     ]
+        //     // ));
+
+        //     // Log::info('✅ Notificación push enviada', [
+        //     //     // 'usuario_id' => $usuarioPrincipal->id,
+        //     //     // 'notificacion_id' => $notificacion->id
+        //     // ]);
 
 
-            // Confirmar transacción
-            DB::commit();
+        //     // Confirmar transacción
+        //     DB::commit();
 
-            // 5. Resolver con la respuesta de la OC, la notificación creada, así como los usuarios notificados
-            return response()->json([
-                'success' => true,
-                'message' => 'Orden de compra y notificación creadas correctamente',
-                'data' => [
-                    'orden_compra' => [
-                        // 'id' => $ordenCompra->id,
-                        'orden_compra_id' => $ordenCompra->orden_compra_id,
-                        'empresa_id' => $ordenCompra->empresa_id,
-                        'proveedor_id' => $ordenCompra->proveedor_id,
-                        'estatus' => $ordenCompra->estatus,
-                    ],
-                    // 'notificacion' => [
-                    //     // 'id' => $notificacion->id,
-                    //     'titulo' => $notificacion->titulo,
-                    //     'mensaje' => $notificacion->mensaje,
-                    // ],
-                    // 'usuarios_notificados' => [
-                    //     'principal' => [
-                    //         // 'id' => $usuarioPrincipal->id,
-                    //         'name' => $usuarioPrincipal->name,
-                    //         'email' => $usuarioPrincipal->email,
-                    //     ],
-                    //     'total_usuarios_activos' => $usuariosActivos->count(),
-                    // ]
-                ]
-            ], 201);
-        } catch (\Exception $e) {
-            DB::rollBack();
+        //     // 5. Resolver con la respuesta de la OC, la notificación creada, así como los usuarios notificados
+        //     return response()->json([
+        //         'success' => true,
+        //         'message' => 'Orden de compra y notificación creadas correctamente',
+        //         'data' => [
+        //             'orden_compra' => [
+        //                 // 'id' => $ordenCompra->id,
+        //                 'orden_compra_id' => $ordenCompra->orden_compra_id,
+        //                 'empresa_id' => $ordenCompra->empresa_id,
+        //                 'proveedor_id' => $ordenCompra->proveedor_id,
+        //                 'estatus' => $ordenCompra->estatus,
+        //             ],
+        //             // 'notificacion' => [
+        //             //     // 'id' => $notificacion->id,
+        //             //     'titulo' => $notificacion->titulo,
+        //             //     'mensaje' => $notificacion->mensaje,
+        //             // ],
+        //             // 'usuarios_notificados' => [
+        //             //     'principal' => [
+        //             //         // 'id' => $usuarioPrincipal->id,
+        //             //         'name' => $usuarioPrincipal->name,
+        //             //         'email' => $usuarioPrincipal->email,
+        //             //     ],
+        //             //     'total_usuarios_activos' => $usuariosActivos->count(),
+        //             // ]
+        //         ]
+        //     ], 201);
+        // } catch (\Exception $e) {
+        //     DB::rollBack();
 
-            Log::error('❌ Error al crear orden de compra', [
-                'error' => $e->getMessage(),
-                'orden_compra_id' => $validated['orden_compra_id'] ?? null,
-                'trace' => $e->getTraceAsString()
-            ]);
+        //     Log::error('❌ Error al crear orden de compra', [
+        //         'error' => $e->getMessage(),
+        //         'orden_compra_id' => $validated['orden_compra_id'] ?? null,
+        //         'trace' => $e->getTraceAsString()
+        //     ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al crear orden de compra y notificación',
-                'error' => $e->getMessage()
-            ], 500);
-        } catch (\Exception $e) {
-            Log::error('❌ Error al enviar notificación push', [
-                // 'usuario_id' => $usuarioPrincipal->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Error al crear orden de compra y notificación',
+        //         'error' => $e->getMessage()
+        //     ], 500);
+        // } catch (\Exception $e) {
+        //     Log::error('❌ Error al enviar notificación push', [
+        //         // 'usuario_id' => $usuarioPrincipal->id,
+        //         'error' => $e->getMessage(),
+        //     ]);
+        // }
     }
 }
