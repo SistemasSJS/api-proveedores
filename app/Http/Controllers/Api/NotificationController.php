@@ -199,8 +199,15 @@ class NotificationController extends Controller
      */
     public function nuevaOrden(Request $request)
     {
+        DB::purge('mysql'); // Limpia la conexión
+        DB::reconnect('mysql'); // Reconecta
+
+        $ocConstrucc = new OcConstrucc();
+        $ocConstrucc->setConnection('mysql'); // Fuerza la conexión
+        // ... asigna datos
+        $ocConstrucc->save();
         Log::info('📦 Request antes de validar:', $request->all());   // 1. Validar body de la petición con los 4 campos requeridos
-        
+
         $validated = $request->validate([
             'empresa_id' => 'required|integer',
             'proveedor_id' => 'required|integer',
