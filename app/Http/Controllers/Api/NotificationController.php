@@ -195,6 +195,7 @@ class NotificationController extends Controller
      */
     public function nuevaOrden(Request $request)
     {
+        Log::info('📦 Datos recibidos en nuevaOrden <Antes>:', $request->all());
         $validated = $request->validate([
             'num_orden' => 'required|string',
             'proveedor_id' => 'required|integer', // Verifica que existe en tabla proveedores, columna id
@@ -212,7 +213,7 @@ class NotificationController extends Controller
             'estatus' => 'required|string',
             'observaciones' => 'nullable|string',
         ]);
-
+        Log::info('📦 Datos recibidos en nuevaOrden:', $request->all());
         try {
             // 1. Obtener el proveedor y su usuario principal
             $proveedor = Proveedor::findOrFail($validated['proveedor_id']);
@@ -276,15 +277,15 @@ class NotificationController extends Controller
                 'leida' => false,
             ]);
 
-            Log::channel('inter_api')->info('Orden de compra y notificación guardadas', [
-                'orden_compra_id' => $ordenCompra->id,
-                'notificacion_id' => $notificacion->id,
-                'num_orden' => $validated['num_orden'],
-                'proveedor_id' => $validated['proveedor_id'],
-                'importe_total' => $validated['importe'],
-                'usuario_notificado_id' => $usuarioPrincipal->id,
-                'usuario_notificado_name' => $usuarioPrincipal->name
-            ]);
+            // Log::channel('inter_api')->info('Orden de compra y notificación guardadas', [
+            //     'orden_compra_id' => $ordenCompra->id,
+            //     'notificacion_id' => $notificacion->id,
+            //     'num_orden' => $validated['num_orden'],
+            //     'proveedor_id' => $validated['proveedor_id'],
+            //     'importe_total' => $validated['importe'],
+            //     'usuario_notificado_id' => $usuarioPrincipal->id,
+            //     'usuario_notificado_name' => $usuarioPrincipal->name
+            // ]);
 
             // 4. Broadcast para notificación en tiempo real (WebSocket)
             broadcast(new NuevaOrdenCompraEvent([
@@ -294,7 +295,7 @@ class NotificationController extends Controller
                 'fecha' => $validated['fecha'],
                 'obra_id' => $validated['obra_id'],
                 'empresa' => $validated['empresa'],
-                'usuario' => $validated['usuario'] ?? null,
+                'usuario' => $usuarioPrincipal,
                 'tipo_orden' => $validated['tipo_orden'],
                 'requisicion_id' => $validated['requisicion_id'] ?? null,
                 'tiene_requisicion' => $validated['tiene_requisicion'],
@@ -322,15 +323,15 @@ class NotificationController extends Controller
                     ]
                 ));
 
-                Log::channel('inter_api')->info('Notificación push enviada correctamente', [
-                    'usuario_id' => $usuarioPrincipal->id,
-                    'usuario_name' => $usuarioPrincipal->name,
-                    'notificacion_id' => $notificacion->id
+                Log::info('Notificación push enviada correctamente', [
+                    // 'usuario_id' => $usuarioPrincipal->id,
+                    // 'usuario_name' => $usuarioPrincipal->name,
+                    // 'notificacion_id' => $notificacion->id
                 ]);
             } catch (\Exception $e) {
-                Log::channel('inter_api')->error('Error al enviar notificación push a usuario principal', [
-                    'usuario_id' => $usuarioPrincipal->id,
-                    'proveedor_id' => $validated['proveedor_id'],
+                Log::error('Error al enviar notificación push a usuario principal', [
+                    // 'usuario_id' => $usuarioPrincipal->id,
+                    // 'proveedor_id' => $validated['proveedor_id'],
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString()
                 ]);
