@@ -197,7 +197,7 @@ class NotificationController extends Controller
     {
         $validated = $request->validate([
             'num_orden' => 'required|string',
-            'proveedor_id' => 'required|integer|exists:proveedores,id', // Verifica que existe en tabla proveedores, columna id
+            'proveedor_id' => 'required|integer', // Verifica que existe en tabla proveedores, columna id
             'fecha' => 'required|string',
             'obra_id' => 'required|integer',
             'empresa' => 'required|integer',
@@ -217,7 +217,7 @@ class NotificationController extends Controller
             // 1. Obtener el proveedor y su usuario principal
             $proveedor = Proveedor::findOrFail($validated['proveedor_id']);
             $usuarioPrincipal = $proveedor->usuarioPrincipal();
-            
+
             // Verificar que el proveedor tiene un usuario principal asignado
             if (!$usuarioPrincipal) {
                 return response()->json([
@@ -321,7 +321,7 @@ class NotificationController extends Controller
                         'tipo' => 'nueva_orden_compra'
                     ]
                 ));
-                
+
                 Log::channel('inter_api')->info('Notificación push enviada correctamente', [
                     'usuario_id' => $usuarioPrincipal->id,
                     'usuario_name' => $usuarioPrincipal->name,
