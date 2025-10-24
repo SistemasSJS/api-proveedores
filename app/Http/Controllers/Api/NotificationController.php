@@ -277,7 +277,7 @@ class NotificationController extends Controller
 
             // 4. Broadcast para notificación en tiempo real (WebSocket)
             broadcast(new NuevaOrdenCompraEvent([
-                'notificacion_id' => $notificacion->id,
+                'notificacion_id' => $notificacion['num_orden'],
                 'proveedor_id' => $validated['proveedor_id'],
                 'num_orden' => $validated['num_orden'],
                 'fecha' => $validated['fecha'],
@@ -322,7 +322,7 @@ class NotificationController extends Controller
 
             // 6. Confirmar transacción
             DB::commit();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Orden de compra y notificación creadas correctamente',
