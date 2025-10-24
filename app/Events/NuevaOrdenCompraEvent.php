@@ -18,6 +18,7 @@ class NuevaOrdenCompraEvent implements ShouldBroadcast
     public $proveedorId;
     public $ordenCompraId;
     public $estatus;
+    public $userId;
 
     public function __construct($data)
     {
@@ -26,16 +27,22 @@ class NuevaOrdenCompraEvent implements ShouldBroadcast
         $this->proveedorId = $data['proveedor_id'];
         $this->ordenCompraId = $data['orden_compra_id'];
         $this->estatus = $data['estatus'] ?? null;
+        $this->userId = $data['user_id'] ?? null;
     }
 
     public function broadcastOn()
     {
-        // Usar los tres canales definidos
-        return [
+        $channels = [
             new Channel('public-notifications'),                    // Canal público
             new PrivateChannel('proveedor.' . $this->proveedorId), // Canal privado por proveedor
-            new PrivateChannel('App.Models.User.' . $this->proveedorId), // Canal privado por usuario
         ];
+
+        // Agregar canal de usuario si existe
+        if ($this->userId) {
+            $channels[] = new PrivateChannel('App.Models.User.' . $this->userId);
+        }
+
+        return $channels;
     }
 
     public function broadcastAs()

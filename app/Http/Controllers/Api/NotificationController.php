@@ -267,6 +267,7 @@ class NotificationController extends Controller
             'notificacion_id' => $notificacion->id,
             'titulo' => $notificacion->titulo,
             'mensaje' => $notificacion->mensaje,
+            'user_id' => $usuarioPrincipal->id, // ID del usuario principal
         ]));
 
 

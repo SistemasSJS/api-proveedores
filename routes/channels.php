@@ -2,18 +2,14 @@
 
 use Illuminate\Support\Facades\Broadcast;
 
-Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
-    return (int) $user->id === (int) $id;
-});
-
 // Canal público de notificaciones
 Broadcast::channel('public-notifications', function () {
     return true;
 });
 
 // Canal privado de usuario (notificaciones personales)
-Broadcast::channel('App.Models.User.{userId}', function ($user, $userId) {
-    return (int) $user->id === (int) $userId;
+Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
+    return (int) $user->id === (int) $id;
 });
 
 // Canal de notificaciones por proveedor
