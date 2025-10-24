@@ -197,7 +197,7 @@ class NotificationController extends Controller
     {
         $validated = $request->validate([
             'num_orden' => 'required|string',
-            'proveedor_id' => 'required|integer|exists:proveedores,proveedor_id',
+            'proveedor_id' => 'required|integer|exists:proveedores,id', // Verifica que existe en tabla proveedores, columna id
             'fecha' => 'required|string',
             'obra_id' => 'required|integer',
             'empresa' => 'required|integer',
@@ -214,8 +214,18 @@ class NotificationController extends Controller
         ]);
 
         try {
-            // 1. Verificar que el proveedor existe y obtener sus usuarios activos
-            $proveedor = Proveedor::with('usuariosActivos')->findOrFail($validated['proveedor_id']);
+            // 1. Obtener el proveedor y su usuario principal
+            $proveedor = Proveedor::findOrFail($validated['proveedor_id']);
+            $usuarioPrincipal = $proveedor->usuarioPrincipal();
+            
+            // Verificar que el proveedor tiene un usuario principal asignado
+            if (!$usuarioPrincipal) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El proveedor no tiene un usuario principal asignado',
+                    'proveedor_id' => $validated['proveedor_id']
+                ], 422);
+            }
 
             // Iniciar transacción
             DB::beginTransaction();
@@ -272,7 +282,8 @@ class NotificationController extends Controller
                 'num_orden' => $validated['num_orden'],
                 'proveedor_id' => $validated['proveedor_id'],
                 'importe_total' => $validated['importe'],
-                'usuarios_notificados' => $proveedor->usuariosActivos->count()
+                'usuario_notificado_id' => $usuarioPrincipal->id,
+                'usuario_notificado_name' => $usuarioPrincipal->name
             ]);
 
             // 4. Broadcast para notificación en tiempo real (WebSocket)
@@ -297,26 +308,32 @@ class NotificationController extends Controller
                 'mensaje' => $notificacion->mensaje
             ]));
 
-            // 5. Enviar notificación push a todos los usuarios activos del proveedor
-            foreach ($proveedor->usuariosActivos as $usuario) {
-                try {
-                    $usuario->notify(new PushNotification(
-                        $notificacion->titulo,
-                        $notificacion->mensaje,
-                        'info',
-                        [
-                            'notificacion_id' => $notificacion->id,
-                            'num_orden' => $validated['num_orden'],
-                            'importe' => $validated['importe'],
-                            'tipo' => 'nueva_orden_compra'
-                        ]
-                    ));
-                } catch (\Exception $e) {
-                    Log::channel('inter_api')->warning('Error al enviar notificación push a usuario', [
-                        'usuario_id' => $usuario->id,
-                        'error' => $e->getMessage()
-                    ]);
-                }
+            // 5. Enviar notificación push al usuario principal del proveedor
+            try {
+                $usuarioPrincipal->notify(new PushNotification(
+                    $notificacion->titulo,
+                    $notificacion->mensaje,
+                    'info',
+                    [
+                        'notificacion_id' => $notificacion->id,
+                        'num_orden' => $validated['num_orden'],
+                        'importe' => $validated['importe'],
+                        'tipo' => 'nueva_orden_compra'
+                    ]
+                ));
+                
+                Log::channel('inter_api')->info('Notificación push enviada correctamente', [
+                    'usuario_id' => $usuarioPrincipal->id,
+                    'usuario_name' => $usuarioPrincipal->name,
+                    'notificacion_id' => $notificacion->id
+                ]);
+            } catch (\Exception $e) {
+                Log::channel('inter_api')->error('Error al enviar notificación push a usuario principal', [
+                    'usuario_id' => $usuarioPrincipal->id,
+                    'proveedor_id' => $validated['proveedor_id'],
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
             }
 
 
