@@ -197,21 +197,22 @@ class NotificationController extends Controller
     {
         Log::info('📦 Datos recibidos en nuevaOrden <Antes>:', $request->all());
         $validated = $request->validate([
+            'empresa' => 'nullable|integer',
             'num_orden' => 'required|string',
             'proveedor_id' => 'required|integer', // Verifica que existe en tabla proveedores, columna id
-            'fecha' => 'required|string',
-            'obra_id' => 'required|integer',
-            'empresa' => 'required|integer',
-            'usuario' => 'nullable|integer',
             'tipo_orden' => 'required|string',
-            'requisicion_id' => 'nullable|integer',
-            'tiene_requisicion' => 'required|boolean',
-            'subtotal' => 'required|numeric',
-            'iva' => 'required|numeric',
-            'tasa' => 'required|numeric',
-            'importe' => 'required|numeric',
             'estatus' => 'required|string',
-            'observaciones' => 'nullable|string',
+
+            // 'obra_id' => 'required|integer',
+            // 'importe' => 'required|numeric',
+            // 'subtotal' => 'required|numeric',
+            // 'iva' => 'required|numeric',
+            // 'fecha' => 'required|string',
+            // 'observaciones' => 'nullable|string',
+            // 'requisicion_id' => 'nullable|integer',
+            // $validated['usuario'] => 'nullable|integer',
+            // $validated['tiene_requisicion'] => 'required|boolean',
+            // $validated['tasa'] => 'required|numeric',
         ]);
         Log::info('📦 Datos recibidos en nuevaOrden:', $request->all());
         try {
@@ -242,13 +243,13 @@ class NotificationController extends Controller
                 'observaciones' => $validated['observaciones'],
                 // Campos específicos de API Construcciones
                 'obra_id' => $validated['obra_id'],
-                'usuario_id' => $validated['usuario'],
+                // 'usuario_id' => $validated['usuario'],
                 'tipo_orden' => $validated['tipo_orden'],
                 'requisicion_id' => $validated['requisicion_id'],
-                'tiene_requisicion' => $validated['tiene_requisicion'],
+                // 'tiene_requisicion' => $validated['tiene_requisicion'],
                 'subtotal' => $validated['subtotal'],
                 'iva' => $validated['iva'],
-                'tasa' => $validated['tasa'],
+                // 'tasa' => $validated['tasa'],
                 'estatus_construcc' => $validated['estatus'], // Estatus original de construcciones
             ]);
 
@@ -263,13 +264,13 @@ class NotificationController extends Controller
                     'fecha' => $validated['fecha'],
                     'obra_id' => $validated['obra_id'],
                     'empresa' => $validated['empresa'],
-                    'usuario' => $validated['usuario'] ?? null,
+                    // 'usuario' => $validated['usuario'] ?? null,
                     'tipo_orden' => $validated['tipo_orden'],
                     'requisicion_id' => $validated['requisicion_id'] ?? null,
-                    'tiene_requisicion' => $validated['tiene_requisicion'],
+                    // 'tiene_requisicion' => $validated['tiene_requisicion'],
                     'subtotal' => $validated['subtotal'],
                     'iva' => $validated['iva'],
-                    'tasa' => $validated['tasa'],
+                    // 'tasa' => $validated['tasa'],
                     'importe' => $validated['importe'],
                     'estatus' => $validated['estatus'],
                     'observaciones' => $validated['observaciones'] ?? null
@@ -298,10 +299,10 @@ class NotificationController extends Controller
                 'usuario' => $usuarioPrincipal,
                 'tipo_orden' => $validated['tipo_orden'],
                 'requisicion_id' => $validated['requisicion_id'] ?? null,
-                'tiene_requisicion' => $validated['tiene_requisicion'],
+                // 'tiene_requisicion' => $validated['tiene_requisicion'],
                 'subtotal' => $validated['subtotal'],
                 'iva' => $validated['iva'],
-                'tasa' => $validated['tasa'],
+                // 'tasa' => $validated['tasa'],
                 'importe' => $validated['importe'],
                 'estatus' => $validated['estatus'],
                 'observaciones' => $validated['observaciones'] ?? null,
