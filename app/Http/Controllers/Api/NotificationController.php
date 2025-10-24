@@ -202,7 +202,7 @@ class NotificationController extends Controller
         // 1. Validar body de la petición con los 4 campos requeridos
         $validated = $request->validate([
             'empresa_id' => 'required|integer',
-            'proveedor_id' => 'required|integer|exists:proveedores,id',
+            'proveedor_id' => 'required|integer',
             'orden_compra_id' => 'required|string',
             'estatus' => 'nullable|string',
         ]);
@@ -214,17 +214,17 @@ class NotificationController extends Controller
 
         try {
             // 2. Buscar los usuarios del proveedor mediante las relaciones definidas en el modelo
-            $proveedor = Proveedor::findOrFail($validated['proveedor_id']);
-            $usuarioPrincipal = $proveedor->usuarioPrincipal();
-            $usuariosActivos = $proveedor->usuariosActivos()->get();
+            // $proveedor = Proveedor::findOrFail($validated['proveedor_id']);
+            // $usuarioPrincipal = $proveedor->usuarioPrincipal();
+            // $usuariosActivos = $proveedor->usuariosActivos()->get();
 
-            if (!$usuarioPrincipal) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'El proveedor no tiene un usuario principal asignado',
-                    'proveedor_id' => $validated['proveedor_id']
-                ], 422);
-            }
+            // if (!$usuarioPrincipal) {
+            //     return response()->json([
+            //         'success' => false,
+            //         'message' => 'El proveedor no tiene un usuario principal asignado',
+            //         'proveedor_id' => $validated['proveedor_id']
+            //     ], 422);
+            // }
 
             // Iniciar transacción
             DB::beginTransaction();
@@ -238,59 +238,53 @@ class NotificationController extends Controller
             ]);
 
             // Crear notificación en tabla notificaciones
-            $notificacion = Notificacion::create([
-                'tipo' => 'nueva_orden_compra',
-                'proveedor_id' => $validated['proveedor_id'],
-                'titulo' => 'Nueva Orden de Compra #' . $validated['orden_compra_id'],
-                'mensaje' => "Tienes una nueva orden de compra: {$validated['orden_compra_id']}",
-                'data' => [
-                    'orden_compra_id' => $validated['orden_compra_id'],
-                    'empresa_id' => $validated['empresa_id'],
-                    'estatus' => $validated['estatus'],
-                ],
-                'leida' => false,
-            ]);
+            // $notificacion = Notificacion::create([
+            //     'tipo' => 'nueva_orden_compra',
+            //     'proveedor_id' => $validated['proveedor_id'],
+            //     'titulo' => 'Nueva Orden de Compra #' . $validated['orden_compra_id'],
+            //     'mensaje' => "Tienes una nueva orden de compra: {$validated['orden_compra_id']}",
+            //     'data' => [
+            //         'orden_compra_id' => $validated['orden_compra_id'],
+            //         'empresa_id' => $validated['empresa_id'],
+            //         'estatus' => $validated['estatus'],
+            //     ],
+            //     'leida' => false,
+            // ]);
 
             // 4. Generar notificación por el canal de usuarios
             // TODO: Implementar notificación asíncrona mediante queue/job para mejorar el tiempo de respuesta.
             // Se puede usar Jobs/Events con listeners para enviar notificaciones push y broadcast.
             // Ejemplo: dispatch(new NotificarNuevaOrdenJob($ordenCompra, $usuariosActivos));
 
-            // Broadcast para notificación en tiempo real (WebSocket)
-            broadcast(new NuevaOrdenCompraEvent([
-                'orden_compra_id' => $ordenCompra->id,
-                'proveedor_id' => $validated['proveedor_id'],
-                'orden_compra_numero' => $validated['orden_compra_id'],
-                'empresa_id' => $validated['empresa_id'],
-                'estatus' => $validated['estatus'],
-                'notificacion_id' => $notificacion->id,
-                'titulo' => $notificacion->titulo,
-                'mensaje' => $notificacion->mensaje,
-            ]));
+            // // Broadcast para notificación en tiempo real (WebSocket)
+            // broadcast(new NuevaOrdenCompraEvent([
+            //     'orden_compra_id' => $ordenCompra->id,
+            //     'proveedor_id' => $validated['proveedor_id'],
+            //     'orden_compra_numero' => $validated['orden_compra_id'],
+            //     'empresa_id' => $validated['empresa_id'],
+            //     'estatus' => $validated['estatus'],
+            //     'notificacion_id' => $notificacion->id,
+            //     'titulo' => $notificacion->titulo,
+            //     'mensaje' => $notificacion->mensaje,
+            // ]));
 
             // Enviar notificación push al usuario principal
-            try {
-                $usuarioPrincipal->notify(new PushNotification(
-                    $notificacion->titulo,
-                    $notificacion->mensaje,
-                    'info',
-                    [
-                        'notificacion_id' => $notificacion->id,
-                        'orden_compra_id' => $validated['orden_compra_id'],
-                        'tipo' => 'nueva_orden_compra'
-                    ]
-                ));
+            // $usuarioPrincipal->notify(new PushNotification(
+            //     $notificacion->titulo,
+            //     $notificacion->mensaje,
+            //     'info',
+            //     [
+            //         // 'notificacion_id' => $notificacion->id,
+            //         'orden_compra_id' => $validated['orden_compra_id'],
+            //         'tipo' => 'nueva_orden_compra'
+            //     ]
+            // ));
 
-                Log::info('✅ Notificación push enviada', [
-                    'usuario_id' => $usuarioPrincipal->id,
-                    'notificacion_id' => $notificacion->id
-                ]);
-            } catch (\Exception $e) {
-                Log::error('❌ Error al enviar notificación push', [
-                    'usuario_id' => $usuarioPrincipal->id,
-                    'error' => $e->getMessage(),
-                ]);
-            }
+            // Log::info('✅ Notificación push enviada', [
+            //     // 'usuario_id' => $usuarioPrincipal->id,
+            //     // 'notificacion_id' => $notificacion->id
+            // ]);
+
 
             // Confirmar transacción
             DB::commit();
@@ -301,25 +295,25 @@ class NotificationController extends Controller
                 'message' => 'Orden de compra y notificación creadas correctamente',
                 'data' => [
                     'orden_compra' => [
-                        'id' => $ordenCompra->id,
+                        // 'id' => $ordenCompra->id,
                         'orden_compra_id' => $ordenCompra->orden_compra_id,
                         'empresa_id' => $ordenCompra->empresa_id,
                         'proveedor_id' => $ordenCompra->proveedor_id,
                         'estatus' => $ordenCompra->estatus,
                     ],
-                    'notificacion' => [
-                        'id' => $notificacion->id,
-                        'titulo' => $notificacion->titulo,
-                        'mensaje' => $notificacion->mensaje,
-                    ],
-                    'usuarios_notificados' => [
-                        'principal' => [
-                            'id' => $usuarioPrincipal->id,
-                            'name' => $usuarioPrincipal->name,
-                            'email' => $usuarioPrincipal->email,
-                        ],
-                        'total_usuarios_activos' => $usuariosActivos->count(),
-                    ]
+                    // 'notificacion' => [
+                    //     // 'id' => $notificacion->id,
+                    //     'titulo' => $notificacion->titulo,
+                    //     'mensaje' => $notificacion->mensaje,
+                    // ],
+                    // 'usuarios_notificados' => [
+                    //     'principal' => [
+                    //         // 'id' => $usuarioPrincipal->id,
+                    //         'name' => $usuarioPrincipal->name,
+                    //         'email' => $usuarioPrincipal->email,
+                    //     ],
+                    //     'total_usuarios_activos' => $usuariosActivos->count(),
+                    // ]
                 ]
             ], 201);
         } catch (\Exception $e) {
@@ -336,6 +330,11 @@ class NotificationController extends Controller
                 'message' => 'Error al crear orden de compra y notificación',
                 'error' => $e->getMessage()
             ], 500);
+        } catch (\Exception $e) {
+            Log::error('❌ Error al enviar notificación push', [
+                // 'usuario_id' => $usuarioPrincipal->id,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 }
