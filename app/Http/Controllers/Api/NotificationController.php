@@ -214,6 +214,115 @@ class NotificationController extends Controller
             'estatus' => 'nullable|string',
         ]);
 
+        // 2. Buscar los usuarios del proveedor mediante las relaciones definidas en el modelo
+        $proveedor = Proveedor::findOrFail($validated['proveedor_id']);
+        $usuarioPrincipal = $proveedor->usuarioPrincipal();
+        $usuariosActivos = $proveedor->usuariosActivos()->get();
+
+        if (!$usuarioPrincipal) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El proveedor no tiene un usuario principal asignado',
+                'proveedor_id' => $validated['proveedor_id']
+            ], 422);
+        }
+
+        // 2. Insertar en la tabla usando la conexión mysql5
+        $inserted = DB::connection('mysql5')->table('oc_construcc')->insert([
+            'empresa_id' => $validated['empresa_id'],
+            'proveedor_id' => $validated['proveedor_id'],
+            'orden_compra_id' => $validated['orden_compra_id'],
+            'estatus' => $validated['estatus'] ?? 'pendiente', // Valor por defecto
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Crear notificación en tabla notificaciones
+        $notificacion = Notificacion::create([
+            'tipo' => 'nueva_orden_compra',
+            'proveedor_id' => $request->proveedor_id,
+            'titulo' => 'Nueva Orden de Compra #' . $validated['orden_compra_id'],
+            'mensaje' => "Tienes una nueva orden de compra: {$validated['orden_compra_id']}",
+            'data' => [
+                'orden_compra_id' => $validated['orden_compra_id'],
+                'empresa_id' => $validated['empresa_id'],
+                'estatus' => $validated['estatus'],
+            ],
+            'leida' => false,
+        ]);
+
+        /**
+         *    4. Generar notificación por el canal de usuarios
+         *    TODO: Implementar notificación asíncrona mediante queue/job para mejorar el 
+         * tiempo de respuesta.
+         *    Se puede usar Jobs/Events con listeners para enviar notificaciones push y * broadcast.
+         *    Ejemplo: dispatch(new NotificarNuevaOrdenJob($ordenCompra, $usuariosActivos));
+         */
+        // Broadcast para notificación en tiempo real (WebSocket)
+        broadcast(new NuevaOrdenCompraEvent([
+            'orden_compra_id' => $validated['orden_compra_id'],
+            'proveedor_id' => $validated['proveedor_id'],
+            'empresa_id' => $validated['empresa_id'],
+            'estatus' => $validated['estatus'],
+            'notificacion_id' => $notificacion->id,
+            'titulo' => $notificacion->titulo,
+            'mensaje' => $notificacion->mensaje,
+        ]));
+
+
+        // Enviar notificación push al usuario principal
+        $usuarioPrincipal->notify(new PushNotification(
+            $notificacion->titulo,
+            $notificacion->mensaje,
+            'info',
+            [
+                'notificacion_id' => $notificacion->id,
+                'orden_compra_id' => $validated['orden_compra_id'],
+                'tipo' => 'nueva_orden_compra'
+            ]
+        ));
+
+        // 3. Devolver información de la inserción y la conexión actual
+        return response()->json([
+            'success' => $inserted,
+            'message' => $inserted ? 'Orden de compra creada correctamente' : 'Error al crear la orden de compra',
+            'data' => [
+                'empresa_id' => $validated['empresa_id'],
+                'proveedor_id' => $validated['proveedor_id'],
+                'orden_compra_id' => $validated['orden_compra_id'],
+                'estatus' => $validated['estatus'] ?? 'pendiente',
+            ],
+            'connection' => [
+                'default' => config('database.default'),
+                'current_connection_name' => DB::connection()->getName(),
+                'database_name' => DB::connection('mysql5')->getDatabaseName(),
+                'driver' => DB::connection('mysql5')->getDriverName(),
+            ],
+        ], $inserted ? 201 : 500);
+    }
+    /**
+     * Recibir notificación de nueva orden de compra desde API Construcciones
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function nuevaOrdenOld(Request $request)
+    {
+        DB::purge('mysql'); // Limpia la conexión
+        DB::reconnect('mysql'); // Reconecta
+        DB::purge('mysql5'); // Limpia la conexión
+        DB::reconnect('mysql5'); // Reconecta
+
+        Log::info('📦 Request antes de validar:', $request->all());
+
+        // 1. Validar body de la petición
+        $validated = $request->validate([
+            'empresa_id' => 'required|integer',
+            'proveedor_id' => 'required|integer',
+            'orden_compra_id' => 'required|string',
+            'estatus' => 'nullable|string',
+        ]);
+
         // 2. Insertar en la tabla usando la conexión mysql5
         $inserted = DB::connection('mysql5')->table('oc_construcc')->insert([
             'empresa_id' => $validated['empresa_id'],

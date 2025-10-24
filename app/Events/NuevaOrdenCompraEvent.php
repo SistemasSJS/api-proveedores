@@ -13,6 +13,7 @@ class NuevaOrdenCompraEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    public $notificacionId;
     public $empresaId;
     public $proveedorId;
     public $ordenCompraId;
@@ -20,6 +21,7 @@ class NuevaOrdenCompraEvent implements ShouldBroadcast
 
     public function __construct($data)
     {
+        $this->notificacionId = $data['notificacion_id'];
         $this->empresaId = $data['empresa_id'];
         $this->proveedorId = $data['proveedor_id'];
         $this->ordenCompraId = $data['orden_compra_id'];
@@ -44,6 +46,7 @@ class NuevaOrdenCompraEvent implements ShouldBroadcast
     public function broadcastWith()
     {
         return [
+            'notificacion_id' => $this->notificacionId,
             'empresa_id' => $this->empresaId,
             'proveedor_id' => $this->proveedorId,
             'orden_compra_id' => $this->ordenCompraId,
