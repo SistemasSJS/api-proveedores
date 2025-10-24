@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Notificacion;
 use App\Models\OcConstrucc;
 use App\Models\OrdenCompra;
 use App\Models\Proveedor;
 use App\Models\User;
 use App\Notifications\PushNotification;
-use App\Events\NuevaOrdenCompraEvent;
+use App\Notifications\NuevaOrdenCompra;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
@@ -237,51 +236,25 @@ class NotificationController extends Controller
             'updated_at' => now(),
         ]);
 
-        // Crear notificación en tabla notificaciones
-        $notificacion = Notificacion::create([
-            'tipo' => 'nueva_orden_compra',
-            'proveedor_id' => $request->proveedor_id,
-            'titulo' => 'Nueva Orden de Compra #' . $validated['orden_compra_id'],
-            'mensaje' => "Tienes una nueva orden de compra: {$validated['orden_compra_id']}",
-            'data' => [
-                'orden_compra_id' => $validated['orden_compra_id'],
-                'empresa_id' => $validated['empresa_id'],
-                'estatus' => $validated['estatus'],
-            ],
-            'leida' => false,
-        ]);
-
         /**
-         *    4. Generar notificación por el canal de usuarios
-         *    TODO: Implementar notificación asíncrona mediante queue/job para mejorar el 
-         * tiempo de respuesta.
-         *    Se puede usar Jobs/Events con listeners para enviar notificaciones push y * broadcast.
-         *    Ejemplo: dispatch(new NotificarNuevaOrdenJob($ordenCompra, $usuariosActivos));
+         * Enviar notificación usando Laravel Notifications
+         * Esto automáticamente:
+         * - Guarda en tabla 'notifications'
+         * - Envía por broadcast (WebSocket)
+         * - Puede procesarse en cola (queue)
          */
-        // Broadcast para notificación en tiempo real (WebSocket)
-        broadcast(new NuevaOrdenCompraEvent([
-            'orden_compra_id' => $validated['orden_compra_id'],
-            'proveedor_id' => $validated['proveedor_id'],
-            'empresa_id' => $validated['empresa_id'],
-            'estatus' => $validated['estatus'],
-            'notificacion_id' => $notificacion->id,
-            'titulo' => $notificacion->titulo,
-            'mensaje' => $notificacion->mensaje,
-            'user_id' => $usuarioPrincipal->id, // ID del usuario principal
-        ]));
-
-
-        // Enviar notificación push al usuario principal
-        $usuarioPrincipal->notify(new PushNotification(
-            $notificacion->titulo,
-            $notificacion->mensaje,
-            'info',
-            [
-                'notificacion_id' => $notificacion->id,
-                'orden_compra_id' => $validated['orden_compra_id'],
-                'tipo' => 'nueva_orden_compra'
-            ]
+        $usuarioPrincipal->notify(new NuevaOrdenCompra(
+            $validated['orden_compra_id'],
+            $validated['proveedor_id'],
+            $validated['empresa_id'],
+            $validated['estatus']
         ));
+
+        Log::info('✅ Notificación enviada correctamente', [
+            'usuario_id' => $usuarioPrincipal->id,
+            'orden_compra_id' => $validated['orden_compra_id'],
+            'tipo' => 'nueva_orden_compra'
+        ]);
 
         // 3. Devolver información de la inserción y la conexión actual
         return response()->json([
