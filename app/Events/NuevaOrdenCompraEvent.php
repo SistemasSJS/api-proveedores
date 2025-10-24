@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -12,51 +13,27 @@ class NuevaOrdenCompraEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $notificacionId;
+    public $empresaId;
     public $proveedorId;
-    public $numOrden;
-    public $fecha;
-    public $obraId;
-    public $empresa;
-    public $usuario;
-    public $tipoOrden;
-    public $requisicionId;
-    public $tieneRequisicion;
-    public $subtotal;
-    public $iva;
-    public $tasa;
-    public $importe;
+    public $ordenCompraId;
     public $estatus;
-    public $observaciones;
-    public $titulo;
-    public $mensaje;
 
     public function __construct($data)
     {
-        $this->notificacionId = $data['notificacion_id'];
+        $this->empresaId = $data['empresa_id'];
         $this->proveedorId = $data['proveedor_id'];
-        $this->numOrden = $data['num_orden'];
-        $this->fecha = $data['fecha'];
-        $this->obraId = $data['obra_id'];
-        $this->empresa = $data['empresa'];
-        $this->usuario = $data['usuario'] ?? null;
-        $this->tipoOrden = $data['tipo_orden'];
-        $this->requisicionId = $data['requisicion_id'] ?? null;
-        $this->tieneRequisicion = $data['tiene_requisicion'];
-        $this->subtotal = $data['subtotal'];
-        $this->iva = $data['iva'];
-        $this->tasa = $data['tasa'];
-        $this->importe = $data['importe'];
-        $this->estatus = $data['estatus'];
-        $this->observaciones = $data['observaciones'] ?? null;
-        $this->titulo = $data['titulo'];
-        $this->mensaje = $data['mensaje'];
+        $this->ordenCompraId = $data['orden_compra_id'];
+        $this->estatus = $data['estatus'] ?? null;
     }
 
     public function broadcastOn()
     {
-        return new Channel('public-notifications');
-        // return new Channel('proveedor.' . $this->proveedorId);
+        // Usar los tres canales definidos
+        return [
+            new Channel('public-notifications'),                    // Canal público
+            new PrivateChannel('proveedor.' . $this->proveedorId), // Canal privado por proveedor
+            new PrivateChannel('App.Models.User.' . $this->proveedorId), // Canal privado por usuario
+        ];
     }
 
     public function broadcastAs()
@@ -67,23 +44,10 @@ class NuevaOrdenCompraEvent implements ShouldBroadcast
     public function broadcastWith()
     {
         return [
-            'notificacion_id' => $this->notificacionId,
-            'num_orden' => $this->numOrden,
-            'fecha' => $this->fecha,
-            'obra_id' => $this->obraId,
-            'empresa' => $this->empresa,
-            'usuario' => $this->usuario,
-            'tipo_orden' => $this->tipoOrden,
-            'requisicion_id' => $this->requisicionId,
-            'tiene_requisicion' => $this->tieneRequisicion,
-            'subtotal' => $this->subtotal,
-            'iva' => $this->iva,
-            'tasa' => $this->tasa,
-            'importe' => $this->importe,
+            'empresa_id' => $this->empresaId,
+            'proveedor_id' => $this->proveedorId,
+            'orden_compra_id' => $this->ordenCompraId,
             'estatus' => $this->estatus,
-            'observaciones' => $this->observaciones,
-            'titulo' => $this->titulo,
-            'mensaje' => $this->mensaje,
             'timestamp' => now()->toIso8601String()
         ];
     }

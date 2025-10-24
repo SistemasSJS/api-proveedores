@@ -192,35 +192,31 @@ class NotificationController extends Controller
     //---------------
     /**
      * Recibir notificación de nueva orden de compra desde API Construcciones
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function nuevaOrden(Request $request)
     {
-        Log::info('📦 Datos recibidos en nuevaOrden <Antes>:', $request->all());
+        // 1. Validar body de la petición con los 4 campos requeridos
         $validated = $request->validate([
-            'empresa' => 'nullable|integer',
-            'num_orden' => 'required|string',
-            'proveedor_id' => 'required|integer', // Verifica que existe en tabla proveedores, columna id
-            'tipo_orden' => 'required|string',
-            'estatus' => 'required|string',
-
-            // 'obra_id' => 'required|integer',
-            // 'importe' => 'required|numeric',
-            // 'subtotal' => 'required|numeric',
-            // 'iva' => 'required|numeric',
-            // 'fecha' => 'required|string',
-            // 'observaciones' => 'nullable|string',
-            // 'requisicion_id' => 'nullable|integer',
-            // $validated['usuario'] => 'nullable|integer',
-            // $validated['tiene_requisicion'] => 'required|boolean',
-            // $validated['tasa'] => 'required|numeric',
+            'empresa_id' => 'required|integer',
+            'proveedor_id' => 'required|integer|exists:proveedores,id',
+            'orden_compra_id' => 'required|string',
+            'estatus' => 'nullable|string',
         ]);
-        Log::info('📦 Datos recibidos en nuevaOrden:', $request->all());
+
+        // Establecer estatus por defecto si no se proporciona
+        $validated['estatus'] = $validated['estatus'] ?? 'pendiente';
+
+        Log::info('📦 Nueva orden recibida:', $validated);
+
         try {
-            // 1. Obtener el proveedor y su usuario principal
+            // 2. Buscar los usuarios del proveedor mediante las relaciones definidas en el modelo
             $proveedor = Proveedor::findOrFail($validated['proveedor_id']);
             $usuarioPrincipal = $proveedor->usuarioPrincipal();
+            $usuariosActivos = $proveedor->usuariosActivos()->get();
 
-            // Verificar que el proveedor tiene un usuario principal asignado
             if (!$usuarioPrincipal) {
                 return response()->json([
                     'success' => false,
@@ -232,85 +228,46 @@ class NotificationController extends Controller
             // Iniciar transacción
             DB::beginTransaction();
 
-            // 2. Guardar orden de compra en tabla ordenes_compra
+            // 3. Almacenar la OC con los datos definidos en el body en la tabla ordenes_compra
             $ordenCompra = OrdenCompra::create([
-                'numero_orden' => $validated['num_orden'],
-                'fecha_orden' => $validated['fecha'],
+                'empresa_id' => $validated['empresa_id'],
                 'proveedor_id' => $validated['proveedor_id'],
-                'empresa_construcc_id' => $validated['empresa'],
-                'importe_total' => $validated['importe'],
-                'estado' => 'pendiente', // Estado inicial en sistema proveedores
-                'observaciones' => $validated['observaciones'],
-                // Campos específicos de API Construcciones
-                'obra_id' => $validated['obra_id'],
-                // 'usuario_id' => $validated['usuario'],
-                'tipo_orden' => $validated['tipo_orden'],
-                'requisicion_id' => $validated['requisicion_id'],
-                // 'tiene_requisicion' => $validated['tiene_requisicion'],
-                'subtotal' => $validated['subtotal'],
-                'iva' => $validated['iva'],
-                // 'tasa' => $validated['tasa'],
-                'estatus_construcc' => $validated['estatus'], // Estatus original de construcciones
+                'orden_compra_id' => $validated['orden_compra_id'],
+                'estatus' => $validated['estatus'],
             ]);
 
-            // 3. Guardar notificación en tabla
+            // Crear notificación en tabla notificaciones
             $notificacion = Notificacion::create([
                 'tipo' => 'nueva_orden_compra',
                 'proveedor_id' => $validated['proveedor_id'],
-                'titulo' => 'Nueva Orden de Compra #' . $validated['num_orden'],
-                'mensaje' => "Tienes una nueva orden de compra por $" . number_format($validated['importe'], 2),
+                'titulo' => 'Nueva Orden de Compra #' . $validated['orden_compra_id'],
+                'mensaje' => "Tienes una nueva orden de compra: {$validated['orden_compra_id']}",
                 'data' => [
-                    'num_orden' => $validated['num_orden'],
-                    'fecha' => $validated['fecha'],
-                    'obra_id' => $validated['obra_id'],
-                    'empresa' => $validated['empresa'],
-                    // 'usuario' => $validated['usuario'] ?? null,
-                    'tipo_orden' => $validated['tipo_orden'],
-                    'requisicion_id' => $validated['requisicion_id'] ?? null,
-                    // 'tiene_requisicion' => $validated['tiene_requisicion'],
-                    'subtotal' => $validated['subtotal'],
-                    'iva' => $validated['iva'],
-                    // 'tasa' => $validated['tasa'],
-                    'importe' => $validated['importe'],
+                    'orden_compra_id' => $validated['orden_compra_id'],
+                    'empresa_id' => $validated['empresa_id'],
                     'estatus' => $validated['estatus'],
-                    'observaciones' => $validated['observaciones'] ?? null
                 ],
                 'leida' => false,
             ]);
 
-            // Log::channel('inter_api')->info('Orden de compra y notificación guardadas', [
-            //     'orden_compra_id' => $ordenCompra->id,
-            //     'notificacion_id' => $notificacion->id,
-            //     'num_orden' => $validated['num_orden'],
-            //     'proveedor_id' => $validated['proveedor_id'],
-            //     'importe_total' => $validated['importe'],
-            //     'usuario_notificado_id' => $usuarioPrincipal->id,
-            //     'usuario_notificado_name' => $usuarioPrincipal->name
-            // ]);
+            // 4. Generar notificación por el canal de usuarios
+            // TODO: Implementar notificación asíncrona mediante queue/job para mejorar el tiempo de respuesta.
+            // Se puede usar Jobs/Events con listeners para enviar notificaciones push y broadcast.
+            // Ejemplo: dispatch(new NotificarNuevaOrdenJob($ordenCompra, $usuariosActivos));
 
-            // 4. Broadcast para notificación en tiempo real (WebSocket)
+            // Broadcast para notificación en tiempo real (WebSocket)
             broadcast(new NuevaOrdenCompraEvent([
-                'notificacion_id' => $notificacion['num_orden'],
+                'orden_compra_id' => $ordenCompra->id,
                 'proveedor_id' => $validated['proveedor_id'],
-                'num_orden' => $validated['num_orden'],
-                'fecha' => $validated['fecha'],
-                'obra_id' => $validated['obra_id'],
-                'empresa' => $validated['empresa'],
-                'usuario' => $usuarioPrincipal,
-                'tipo_orden' => $validated['tipo_orden'],
-                'requisicion_id' => $validated['requisicion_id'] ?? null,
-                // 'tiene_requisicion' => $validated['tiene_requisicion'],
-                'subtotal' => $validated['subtotal'],
-                'iva' => $validated['iva'],
-                // 'tasa' => $validated['tasa'],
-                'importe' => $validated['importe'],
+                'orden_compra_numero' => $validated['orden_compra_id'],
+                'empresa_id' => $validated['empresa_id'],
                 'estatus' => $validated['estatus'],
-                'observaciones' => $validated['observaciones'] ?? null,
+                'notificacion_id' => $notificacion->id,
                 'titulo' => $notificacion->titulo,
-                'mensaje' => $notificacion->mensaje
+                'mensaje' => $notificacion->mensaje,
             ]));
 
-            // 5. Enviar notificación push al usuario principal del proveedor
+            // Enviar notificación push al usuario principal
             try {
                 $usuarioPrincipal->notify(new PushNotification(
                     $notificacion->titulo,
@@ -318,45 +275,58 @@ class NotificationController extends Controller
                     'info',
                     [
                         'notificacion_id' => $notificacion->id,
-                        'num_orden' => $validated['num_orden'],
-                        'importe' => $validated['importe'],
+                        'orden_compra_id' => $validated['orden_compra_id'],
                         'tipo' => 'nueva_orden_compra'
                     ]
                 ));
 
-                Log::info('Notificación push enviada correctamente', [
-                    // 'usuario_id' => $usuarioPrincipal->id,
-                    // 'usuario_name' => $usuarioPrincipal->name,
-                    // 'notificacion_id' => $notificacion->id
+                Log::info('✅ Notificación push enviada', [
+                    'usuario_id' => $usuarioPrincipal->id,
+                    'notificacion_id' => $notificacion->id
                 ]);
             } catch (\Exception $e) {
-                Log::error('Error al enviar notificación push a usuario principal', [
-                    // 'usuario_id' => $usuarioPrincipal->id,
-                    // 'proveedor_id' => $validated['proveedor_id'],
+                Log::error('❌ Error al enviar notificación push', [
+                    'usuario_id' => $usuarioPrincipal->id,
                     'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
                 ]);
             }
 
-
-            // 6. Confirmar transacción
+            // Confirmar transacción
             DB::commit();
 
+            // 5. Resolver con la respuesta de la OC, la notificación creada, así como los usuarios notificados
             return response()->json([
                 'success' => true,
                 'message' => 'Orden de compra y notificación creadas correctamente',
                 'data' => [
-                    'orden_compra_id' => $ordenCompra->id,
-                    'notificacion_id' => $notificacion->id,
-                    'numero_orden' => $ordenCompra->numero_orden
+                    'orden_compra' => [
+                        'id' => $ordenCompra->id,
+                        'orden_compra_id' => $ordenCompra->orden_compra_id,
+                        'empresa_id' => $ordenCompra->empresa_id,
+                        'proveedor_id' => $ordenCompra->proveedor_id,
+                        'estatus' => $ordenCompra->estatus,
+                    ],
+                    'notificacion' => [
+                        'id' => $notificacion->id,
+                        'titulo' => $notificacion->titulo,
+                        'mensaje' => $notificacion->mensaje,
+                    ],
+                    'usuarios_notificados' => [
+                        'principal' => [
+                            'id' => $usuarioPrincipal->id,
+                            'name' => $usuarioPrincipal->name,
+                            'email' => $usuarioPrincipal->email,
+                        ],
+                        'total_usuarios_activos' => $usuariosActivos->count(),
+                    ]
                 ]
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
 
-            Log::channel('inter_api')->error('Error al crear orden de compra y notificación', [
+            Log::error('❌ Error al crear orden de compra', [
                 'error' => $e->getMessage(),
-                'num_orden' => $validated['num_orden'] ?? null,
+                'orden_compra_id' => $validated['orden_compra_id'] ?? null,
                 'trace' => $e->getTraceAsString()
             ]);
 
