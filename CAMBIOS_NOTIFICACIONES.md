@@ -52,17 +52,27 @@ API Proveedores (/api/notificaciones/nueva-orden)
       ↓
    [Busca Proveedor + Usuarios Activos]
       ↓
-   [Guarda en tabla notificaciones]
+   [DB::beginTransaction()]
       ↓
-   [Broadcast WebSocket] ──────────→ Canal: proveedor.{id}
-      ↓                                    ↓
-   [Loop usuarios activos]          Frontend (Vue/Ionic)
-      ↓                                    ↓
-   [Envía PushNotification]         [Escucha canal autorizado]
-      ↓                                    ↓
-   Usuario 1 ✅                      [Recibe evento NuevaOrdenCompra]
-   Usuario 2 ✅                            ↓
-   Usuario 3 ✅                      [Muestra notificación en UI]
+   [Guarda en ordenes_compra] ──────→ Tabla: ordenes_compra
+      ↓
+   [Guarda en notificaciones] ──────→ Tabla: notificaciones
+      ↓
+   [Broadcast WebSocket Canal Público] ──→ Canal: proveedor.{id}
+      ↓                                          ↓
+   [Loop usuarios activos]                Frontend (Escucha proveedor.{id})
+      ↓                                          ↓
+   Usuario 1 ───────────────────→ Canal: App.Models.User.1
+   [Envía PushNotification]                    ↓
+      ↓                                  Frontend (Escucha privado)
+   Usuario 2 ───────────────────→ Canal: App.Models.User.2
+   [Envía PushNotification]                    ↓
+      ↓                                  [Muestra notificación]
+   Usuario 3 ───────────────────→ Canal: App.Models.User.3
+      ↓
+   [DB::commit()]
+      ↓
+   [Response JSON]
 ```
 
 ---
@@ -117,9 +127,10 @@ API Proveedores (/api/notificaciones/nueva-orden)
 - ✅ Usuarios secundarios reciben notificación
 - ✅ Todos los usuarios activos están informados
 
-### 2. **Doble Canal de Notificación**
-- ✅ **WebSocket (Reverb)**: Notificación en tiempo real en la UI
-- ✅ **Push Notification**: Sistema de notificaciones persistente de Laravel
+### 2. **Triple Canal de Notificación**
+- ✅ **Canal Público de Proveedor** (`proveedor.{id}`): Todos los usuarios del proveedor reciben eventos
+- ✅ **Canal Privado de Usuario** (`App.Models.User.{id}`): Notificaciones personales de cada usuario
+- ✅ **Base de Datos**: Notificaciones persistentes en tabla `notifications`
 
 ### 3. **Seguridad**
 - ✅ Canal protegido con autorización
