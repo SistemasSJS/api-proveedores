@@ -31,10 +31,11 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcast
 
     /**
      * Canales de notificación - SYNC (sin cola)
+     * Solo broadcast y database. El push se envía manualmente.
      */
     public function via(object $notifiable): array
     {
-        return ['broadcast', 'database', 'fcm'];
+        return ['broadcast', 'database'];
     }
 
     /**
@@ -83,51 +84,6 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcast
         ];
     }
 
-    /**
-     * Configuración para FCM (Push Notification)
-     */
-    public function toFcm(object $notifiable): array
-    {
-        return [
-            'title' => 'Nueva Orden de Compra #' . $this->ordenCompraId,
-            'body' => "Tienes una nueva orden de compra: {$this->ordenCompraId}",
-            'data' => [
-                'tipo' => 'nueva_orden_compra',
-                'orden_compra_id' => $this->ordenCompraId,
-                'proveedor_id' => $this->proveedorId,
-                'empresa_id' => $this->empresaId,
-                'estatus' => $this->estatus,
-                'timestamp' => now()->toIsoString(),
-            ],
-            // Configuración Android - Notificación Audible y Heads-Up
-            'android' => [
-                'priority' => 'high',
-                'notification' => [
-                    'sound' => 'default',
-                    'priority' => 'high',
-                    'visibility' => 'public',  // Visible en pantalla bloqueada
-                    'channel_id' => 'app_proveedores_notifications',
-                    'vibrate' => [300, 100, 400],  // Patrón de vibración
-                ],
-            ],
-            // Configuración iOS
-            'apns' => [
-                'payload' => [
-                    'aps' => [
-                        'sound' => 'default',
-                        'badge' => 1,
-                        'alert' => [
-                            'title' => 'Nueva Orden de Compra #' . $this->ordenCompraId,
-                            'body' => "Tienes una nueva orden de compra: {$this->ordenCompraId}",
-                        ],
-                        'content-available' => 1,
-                        'mutable-content' => 1,
-                    ],
-                ],
-            ],
-        ];
-    }
-    
     /**
      * IMPORTANTE: Esta notificación NO usa colas
      * Se envía de forma INSTANTÁNEA y SÍNCRONA

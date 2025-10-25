@@ -33,8 +33,7 @@ class NuevaOrdenCompraEvent implements ShouldBroadcast
     public function broadcastOn()
     {
         $channels = [
-            new Channel('public-notifications'),                    // Canal público
-            new PrivateChannel('proveedor.' . $this->proveedorId), // Canal privado por proveedor
+            new Channel('public-notifications'),  // Canal público
         ];
 
         // Agregar canal de usuario si existe
