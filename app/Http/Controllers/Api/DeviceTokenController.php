@@ -18,128 +18,7 @@ class DeviceTokenController extends Controller
 {
     /**
      * Registrar o actualizar un token de dispositivo
-     */#  Integración Laravel Reverb + Ionic (Frontend en Tiempo Real)
-Esta guía muestra la configuración **más simple y funcional** para conectar un
-backend **Laravel con Reverb** y un frontend **Ionic** usando *Laravel Echo* y
-*Pusher-js*.
----
-## 隣 1 Requisitos previos
-### En Laravel
-Asegúrate de tener instalado y configurado Reverb.
-```bash
-composer require laravel/reverb
-php artisan install:broadcasting
-php artisan reverb:start
-```
-Archivo `.env` básico:
-```env
-BROADCAST_CONNECTION=reverb
-REVERB_APP_ID=app-id
-REVERB_APP_KEY=app-key
-REVERB_APP_SECRET=app-secret
-REVERB_HOST=127.0.0.1
-REVERB_PORT=8080
-```
----
-## ⚙ 2 Instalar dependencias en Ionic
-En tu proyecto Ionic (Angular, React o Vue):
-```bash
-npm install laravel-echo pusher-js
-```
----
-
-##  3 Configurar Laravel Echo en Ionic (Angular)
-Crea un servicio: `src/app/services/reverb.service.ts`
-```ts
-import { Injectable } from '@angular/core';
-import Echo from 'laravel-echo';
-import Pusher from 'pusher-js';
-@Injectable({
-providedIn: 'root'
-})
-export class ReverbService {
-echo: Echo;
-constructor() {
-// @ts-ignore
-window.Pusher = Pusher;
-this.echo = new Echo({
-broadcaster: 'pusher',
-key: 'app-key', // mismo que REVERB_APP_KEY
-wsHost: '127.0.0.1', // mismo que REVERB_HOST
-wsPort: 8080, // mismo que REVERB_PORT
-forceTLS: false,
-disableStats: true,
-});
-}
-listenToChat(callback: (data: any) => void) {
-this.echo.private('chat')
-.listen('MensajeEnviado', (e: any) => {
-callback(e);
-});
-}
-}
-```
----
-##  4 Usar en un componente Ionic
-
-Archivo `src/app/home/home.page.ts`:
-```ts
-import { Component, OnInit } from '@angular/core';
-import { ReverbService } from '../services/reverb.service';
-@Component({
-selector: 'app-home',
-templateUrl: 'home.page.html',
-styleUrls: ['home.page.scss'],
-})
-export class HomePage implements OnInit {
-mensajes: string[] = [];
-constructor(private reverb: ReverbService) {}
-ngOnInit() {
-this.reverb.listenToChat((data) => {
-console.log(' Mensaje recibido:', data.mensaje);
-this.mensajes.push(data.mensaje);
-});
-}
-}
-```
-Y el HTML:
-```html
-<ion-header>
-<ion-toolbar>
-<ion-title>Chat Realtime (Laravel Reverb)</ion-title>
-</ion-toolbar>
-</ion-header>
-<ion-content>
-<ion-list>
-<ion-item *ngFor="let m of mensajes">
-{{ m }}
-</ion-item>
-</ion-list>
-</ion-content>
-
-```
----
-## 離 5 Probar
-1. Inicia Laravel:
-```bash
-php artisan serve
-php artisan reverb:start
-```
-2. Inicia Ionic:
-```bash
-ionic serve
-```
-3. Dispara un evento desde Laravel:
-```php
-MensajeEnviado::dispatch("Hola desde Laravel Reverb!");
-```
- Verás el mensaje en tu app Ionic **en tiempo real**.
----
-## ✅ Resultado Final
-- Backend: Laravel + Reverb (WebSockets propios)
-- Frontend: Ionic + Laravel Echo (con Pusher-js)
-- Comunicación: en tiempo real sin servicios externos
-
+     */
     public function store(Request $request): JsonResponse
     {
         try {
@@ -224,7 +103,6 @@ MensajeEnviado::dispatch("Hola desde Laravel Reverb!");
                     ],
                 ], 201);
             }
-
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
@@ -281,7 +159,6 @@ MensajeEnviado::dispatch("Hola desde Laravel Reverb!");
                     'platforms' => $tokens->groupBy('platform')->keys()->toArray(),
                 ],
             ]);
-
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
@@ -320,7 +197,6 @@ MensajeEnviado::dispatch("Hola desde Laravel Reverb!");
                     'is_active' => $token->is_active,
                 ],
             ]);
-
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
@@ -357,7 +233,6 @@ MensajeEnviado::dispatch("Hola desde Laravel Reverb!");
                     'criteria_days' => $days,
                 ],
             ]);
-
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
@@ -408,7 +283,6 @@ MensajeEnviado::dispatch("Hola desde Laravel Reverb!");
                     ],
                 ],
             ]);
-
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,

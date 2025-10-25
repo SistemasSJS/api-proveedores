@@ -11,7 +11,7 @@ class OcConstrucc extends BaseModel
 {
     use Filterable, HasFactory;
 
-    protected $connection = 'mysql';
+    protected $connection = 'mysql5';
     protected $table = 'oc_construcc';
 
     protected $fillable = [
