@@ -2,20 +2,17 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 
-class PushNotification extends Notification implements ShouldBroadcast
+class PushNotification extends Notification implements ShouldBroadcastNow
 {
-    use Queueable;
-
     public $title;
     public $message;
     public $type;
     public $data;
 
-    // Nueva propiedad para saber desde qué canal se envía
+    // Para saber desde qué canal se envía
     protected $currentChannel = null;
 
     public function __construct($title, $message, $type = 'info', $data = [])
@@ -26,29 +23,40 @@ class PushNotification extends Notification implements ShouldBroadcast
         $this->data = $data;
     }
 
+    /**
+     * Canales de envío
+     */
     public function via(object $notifiable): array
     {
         return ['broadcast', 'database', 'fcm'];
     }
 
+    /**
+     * Payload para broadcasting
+     */
     public function toBroadcast(object $notifiable): array
     {
         $this->currentChannel = 'broadcast';
         return $this->formatPayload();
     }
 
+    /**
+     * Payload para base de datos
+     */
     public function toArray(object $notifiable): array
     {
         $this->currentChannel = 'database';
         return $this->formatPayload();
     }
 
+    /**
+     * Payload para FCM
+     */
     public function toFcm(object $notifiable): array
     {
         $this->currentChannel = 'fcm';
         $payload = $this->formatPayload();
-        
-        // FCM requiere formato específico: notification + data
+
         return [
             'notification' => [
                 'title' => $payload['title'],
@@ -65,11 +73,14 @@ class PushNotification extends Notification implements ShouldBroadcast
         ];
     }
 
+    /**
+     * Formato común del payload
+     */
     protected function formatPayload(): array
     {
         $data = $this->data;
 
-        // Si el canal actual es FCM → agregar bandera
+        // Solo para FCM
         if ($this->currentChannel === 'fcm') {
             $data['show_web_notification'] = true;
         }
@@ -85,6 +96,9 @@ class PushNotification extends Notification implements ShouldBroadcast
         ];
     }
 
+    /**
+     * Tipo de broadcast
+     */
     public function broadcastType(): string
     {
         return 'notification';

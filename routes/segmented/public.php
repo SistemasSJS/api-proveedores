@@ -11,11 +11,9 @@ use App\Http\Controllers\UnidadMedidaController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\PedidoController;
-
-use App\Http\Controllers\AuthController;
 use App\Notifications\PushNotification;
-use App\Events\TestEvent;
 use App\Models\User;
+use Illuminate\Support\Facades\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,8 +23,10 @@ use App\Models\User;
 */
 
 
-Route::get('status', function () {
-    $user = User::find(14);
+Route::get('status', function (Request $request) {
+    $userId = $request->query('id'); // o $request->get('id')
+    $user = User::find($userId);
+
 
     if (!$user) {
         return response()->json([
@@ -51,7 +51,7 @@ Route::get('status', function () {
     );
 
     // Enviar la notificación
-    $user->notify($notification);
+    $user->notifyNow($notification);
 
     return response()->json([
         'status' => 'ok',

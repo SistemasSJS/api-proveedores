@@ -7,6 +7,7 @@ use App\Models\Cotizacion;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -16,9 +17,9 @@ use Illuminate\Support\Facades\URL;
  * Notificación enviada al proveedor cuando se crea una nueva cotización
  * desde el módulo de construcción
  */
-class CotizacionCreada extends Notification implements ShouldBroadcast
+class CotizacionCreada extends Notification implements ShouldBroadcastNow
 {
-    use Queueable;
+    // use Queueable;
 
     protected Cotizacion $cotizacion;
 

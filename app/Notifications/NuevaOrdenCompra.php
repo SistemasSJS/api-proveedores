@@ -3,13 +3,14 @@
 namespace App\Notifications;
 
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Notification;
 
 /**
  * Notificación enviada cuando se crea una nueva orden de compra
  * ENVÍO INSTANTÁNEO - Sin cola de jobs
  */
-class NuevaOrdenCompra extends Notification implements ShouldBroadcast
+class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
 {
 
     public $ordenCompraId;

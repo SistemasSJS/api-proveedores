@@ -3,13 +3,14 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ReverbNotification extends Notification
+class ReverbNotification extends Notification implements ShouldBroadcastNow
 {
-    use Queueable;
+    // use Queueable;
 
     /**
      * Create a new notification instance.
