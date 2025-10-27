@@ -11,16 +11,13 @@ class PushNotification extends Notification implements ShouldBroadcast
     use Queueable;
 
     public $title;
-
     public $message;
-
     public $type;
-
     public $data;
 
-    /**
-     * Create a new notification instance.
-     */
+    // Nueva propiedad para saber desde qué canal se envía
+    protected $currentChannel = null;
+
     public function __construct($title, $message, $type = 'info', $data = [])
     {
         $this->title = $title;
@@ -29,53 +26,51 @@ class PushNotification extends Notification implements ShouldBroadcast
         $this->data = $data;
     }
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
     public function via(object $notifiable): array
     {
-        return ['broadcast', 'database'];
+        return ['broadcast', 'database', 'fcm'];
     }
 
-    /**
-     * Get the broadcastable representation of the notification.
-     */
     public function toBroadcast(object $notifiable): array
     {
+        $this->currentChannel = 'broadcast';
+        return $this->formatPayload();
+    }
+
+    public function toArray(object $notifiable): array
+    {
+        $this->currentChannel = 'database';
+        return $this->formatPayload();
+    }
+
+    public function toFcm(object $notifiable): array
+    {
+        $this->currentChannel = 'fcm';
+        return $this->formatPayload();
+    }
+
+    protected function formatPayload(): array
+    {
+        $data = $this->data;
+
+        // Si el canal actual es FCM → agregar bandera
+        if ($this->currentChannel === 'fcm') {
+            $data['show_web_notification'] = true;
+        }
+
         return [
             'id' => $this->id,
             'title' => $this->title,
             'mensaje' => $this->message,
             'type' => $this->type,
-            'data' => $this->data,
+            'data' => $data,
             'timestamp' => now()->toIsoString(),
             'read_at' => null,
         ];
     }
 
-    /**
-     * Get the type of the notification being broadcast.
-     */
     public function broadcastType(): string
     {
         return 'notification';
-    }
-
-    /**
-     * Get the array representation of the notification for database storage.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(object $notifiable): array
-    {
-        return [
-            'title' => $this->title,
-            'mensaje' => $this->message,
-            'type' => $this->type,
-            'data' => $this->data,
-            'timestamp' => now()->toIsoString(),
-        ];
     }
 }

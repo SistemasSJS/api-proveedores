@@ -16,6 +16,7 @@ Broadcast::routes(['middleware' => ['auth:sanctum']]);
 Route::middleware(['auth:sanctum'])->group(function () {
   Route::prefix('notifications')->group(function () {
     Route::get('/', [NotificationController::class, 'getNotifications'])->middleware(['audit']);
+    Route::get('/poll', [NotificationController::class, 'poll']); // Sin audit para no llenar logs
     Route::post('/test', [NotificationController::class, 'sendTest'])->middleware(['audit']);
     Route::post('/send', [NotificationController::class, 'sendToCurrentUser'])->middleware(['audit']);
     Route::post('/send/{userId}', [NotificationController::class, 'sendToUser'])->middleware(['audit']);

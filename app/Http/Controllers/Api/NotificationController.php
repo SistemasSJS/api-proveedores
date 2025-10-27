@@ -189,6 +189,34 @@ class NotificationController extends Controller
         ]);
     }
 
+    /**
+     * Polling endpoint para notificaciones
+     * Usado por el servicio SSE/Polling del frontend
+     */
+    public function poll(Request $request)
+    {
+        $user = Auth::user();
+        $lastTimestamp = $request->query('last_timestamp');
+
+        $query = $user->notifications()->latest();
+
+        if ($lastTimestamp) {
+            $query->where('created_at', '>', $lastTimestamp);
+        }
+
+        $notifications = $query->take(50)->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'has_changes' => $notifications->count() > 0,
+                'notifications' => $notifications,
+                'timestamp' => now()->toIsoString(),
+                'unread_count' => $user->unreadNotifications->count()
+            ]
+        ]);
+    }
+
 
     //---------------
     /**

@@ -15,7 +15,7 @@
 @baseUrl = http://localhost:80/api
 # @baseUrl = https://apicons.ddns.net:8092/api
 @apiKey = cf5cd9d4b56257d25baf3300447af494d1e815f802553a5b65204099b26ea6e1
-@authToken = Bearer tu_token_sanctum_aqui
+@authToken = Bearer 8|IAtT96wh0fGGKsyaO7LmTTvRwJ5ejk0pbwixV60zbbc237b0
 
 ###
 # =========================================================================
@@ -260,21 +260,9 @@ Accept: application/json
 X-API-KEY: {{apiKey}}
 
 {
-  "num_orden": "OC-FLOW-001",
-  "proveedor_id": 1,
-  "fecha": "2025-10-23",
-  "obra_id": 7,
-  "empresa": 1,
-  "usuario": 12,
-  "tipo_orden": "REQUISICION",
-  "requisicion_id": 45,
-  "tiene_requisicion": true,
-  "subtotal": 15000.00,
-  "iva": 2400.00,
-  "tasa": 16,
-  "importe": 17400.00,
-  "estatus": "BO",
-  "observaciones": "Flujo completo de prueba"
+  "empresa_id": 14,
+  "proveedor_id": 3,
+  "orden_compra_id": "OC-FLOW-001",
 }
 
 # PASO 2: Listar notificaciones (desde frontend)

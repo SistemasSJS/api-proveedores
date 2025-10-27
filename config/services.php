@@ -49,4 +49,13 @@ return [
         'url' => env('API_CONSTRUCCIONES_URL', 'http://localhost:8091'),
         'apikey' => env('API_CONSTRUCCIONES_APIKEY'),
     ],
+
+    /**
+     * FIREBASE CLOUD MESSAGING (FCM) - PUSH NOTIFICATIONS
+     */
+    'fcm' => [
+        'credentials' => env('FIREBASE_CREDENTIALS', 'app/firebase/service-account.json'),
+        'project_id' => env('FCM_PROJECT_ID', 'app-proveedores-notificacion'),
+        'sender_id' => env('FCM_SENDER_ID', '989092385974'),
+    ],
 ];

@@ -17,8 +17,8 @@ class NuevaOrdenCompraEvent implements ShouldBroadcast
     public $empresaId;
     public $proveedorId;
     public $ordenCompraId;
-    public $estatus;
-    public $userId;
+    public  $estatus;
+    public  $userId;
 
     public function __construct($data)
     {

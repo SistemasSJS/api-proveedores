@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TipoEmpresaController;
 use App\Http\Controllers\ProveedorController;
@@ -12,7 +11,11 @@ use App\Http\Controllers\UnidadMedidaController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\PedidoController;
+
+use App\Http\Controllers\AuthController;
+use App\Notifications\PushNotification;
 use App\Events\TestEvent;
+use App\Models\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,39 +24,42 @@ use App\Events\TestEvent;
 | Estas rutas no requieren autenticación
 */
 
-use App\Models\User;
-use App\Notifications\PushNotification;
 
-Route::get('status', function ($request) {
-
-    // Lanzar evento con un mensaje
-    // event(new TestEvent("¡Hola desde Laravel!"));
-    // Buscar el usuario con ID 3
-    //     $request->input('user_id')
-    // );
-    
-    // if (!$user) {
-        //     return response()->json([
-            //         'status' => 'error',
-            //         'message' => 'Usuario no encontrado',
-            //     ], 404);
-            // }
-            
-            // Crear la notificación
-            $notification = new PushNotification(
-                'Título de prueba',
-                'Este es un mensaje de prueba',
-                'info',
-                ['extra' => 'datos opcionales']
-            );
-            
-            // Enviar la notificación
+Route::get('status', function () {
     $user = User::find(14);
-    $user ->notify($notification);
+
+    if (!$user) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Usuario no encontrado',
+        ], 404);
+    }
+
+    // Crear la notificación CON el canal push
+    $notification = new PushNotification(
+        'Título de prueba',
+        'Este es un mensaje de prueba',
+        'info',
+        [
+            'channel' => 'push',  // ← AGREGAR ESTO
+            'extra' => 'datos opcionales',
+            // Opcional: agregar deep-link
+            'type' => 'product',
+            'entityId' => '123',
+            'action' => 'view'
+        ]
+    );
+
+    // Enviar la notificación
+    $user->notify($notification);
 
     return response()->json([
         'status' => 'ok',
-        'message' => 'Notificación enviada al usuario 3',
+        'message' => 'Notificación push enviada al usuario 14',
+        'user' => [
+            'id' => $user->id,
+            'name' => $user->name
+        ]
     ]);
 });
 

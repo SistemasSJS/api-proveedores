@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Channels\FcmChannel;
 use App\Models\Cotizacion;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
@@ -42,39 +43,26 @@ class CotizacionCreada extends Notification implements ShouldBroadcast
      */
     public function via(object $notifiable): array
     {
-        $channels = ['mail', 'broadcast', 'database'];
+        $channels = ['mail', 'broadcast', 'database', 'fcm'];
 
-        // Agregar broadcasting si está configurado
-        // if (config('broadcasting.default') !== 'null') {
-        //     $channels[] = 'broadcast';
-        // }
+        // Agregar FCM si el usuario tiene tokens activos
+        if ($notifiable->activeDeviceTokens()->exists()) {
+            $channels[] = FcmChannel::class;
+        }
 
         return $channels;
     }
 
-    /**
-     * Verificar si se debe enviar notificación FCM
-     */
-    private function shouldSendFcmNotification(object $notifiable): bool
-    {
-        // Verificar que FCM esté configurado
-        if (! config('services.fcm.server_key')) {
-            return false;
-        }
-
-        // Verificar que el usuario tenga tokens activos
-        return $notifiable->activeDeviceTokens()->exists();
-    }
 
     /**
      * Get the mail representation of the notification.
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $urlCotizacion = URL::to('/admin/cotizaciones/'.$this->cotizacion->id);
+        $urlCotizacion = URL::to('/admin/cotizaciones/' . $this->cotizacion->id);
 
         return (new MailMessage)
-            ->subject('Nueva Cotización Solicitada - #'.$this->cotizacion->id)
+            ->subject('Nueva Cotización Solicitada - #' . $this->cotizacion->id)
             ->view('emails.cotizacion-creada', [
                 'notifiable' => $notifiable,
                 'cotizacion' => $this->cotizacion,
@@ -97,9 +85,9 @@ class CotizacionCreada extends Notification implements ShouldBroadcast
      */
     public function toFcm(object $notifiable): array
     {
-        $title = '🏗️ Nueva Cotización #'.$this->cotizacion->id;
-        $body = 'Se ha creado una nueva cotización desde '.ucfirst($this->moduloOrigen).
-                '. Total: $'.number_format($this->cotizacion->total, 2);
+        $title = '🏗️ Nueva Cotización #' . $this->cotizacion->id;
+        $body = 'Se ha creado una nueva cotización desde ' . ucfirst($this->moduloOrigen) .
+            '. Total: $' . number_format($this->cotizacion->total, 2);
 
         return [
             'notification' => [
@@ -117,7 +105,7 @@ class CotizacionCreada extends Notification implements ShouldBroadcast
                 'title' => $title,
                 'body' => $body,
                 'moduloOrigen' => $this->moduloOrigen,
-                'url' => '/admin/cotizaciones/'.$this->cotizacion->id,
+                'url' => '/admin/cotizaciones/' . $this->cotizacion->id,
                 'timestamp' => now()->toISOString(),
                 // Datos adicionales para el frontend
                 'cotizacion' => json_encode([
@@ -162,7 +150,7 @@ class CotizacionCreada extends Notification implements ShouldBroadcast
         return [
             'tipo' => 'Cotizaciones',
             'titulo' => 'Nueva Cotización',
-            'mensaje' => 'Se ha creado una nueva cotización #'.$this->cotizacion->id,
+            'mensaje' => 'Se ha creado una nueva cotización #' . $this->cotizacion->id,
             'icono' => '',
             'data' => [
                 'id' => $this->cotizacion->id,
@@ -176,7 +164,7 @@ class CotizacionCreada extends Notification implements ShouldBroadcast
                 ],
             ],
             // 'url' => URL::to(config('services.frontend.url') . '/pages/proveedor/cotizacion/' . $this->cotizacion->id . '/view'),
-            'url' => URL::to('/pages/proveedor/cotizacion/'.$this->cotizacion->id.'/view'),
+            'url' => URL::to('/pages/proveedor/cotizacion/' . $this->cotizacion->id . '/view'),
             'modulo_origen' => $this->moduloOrigen,
             'timestamp' => now()->toISOString(),
         ];
