@@ -46,7 +46,23 @@ class PushNotification extends Notification implements ShouldBroadcast
     public function toFcm(object $notifiable): array
     {
         $this->currentChannel = 'fcm';
-        return $this->formatPayload();
+        $payload = $this->formatPayload();
+        
+        // FCM requiere formato específico: notification + data
+        return [
+            'notification' => [
+                'title' => $payload['title'],
+                'body' => $payload['mensaje'],
+            ],
+            'data' => array_merge(
+                $payload['data'],
+                [
+                    'id' => $payload['id'],
+                    'type' => $payload['type'],
+                    'timestamp' => $payload['timestamp'],
+                ]
+            ),
+        ];
     }
 
     protected function formatPayload(): array

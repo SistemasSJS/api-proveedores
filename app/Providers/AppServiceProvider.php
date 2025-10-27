@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Channels\FcmChannel;
 use App\Exceptions\Handler;
 use App\Models\Producto;
 use App\Models\Sucursal;
@@ -12,6 +13,7 @@ use App\Services\ProductoSearchService;
 use App\Services\ReporteService;
 use App\Services\SucursalService;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -66,5 +68,10 @@ class AppServiceProvider extends ServiceProvider
         if (env('APP_ENV') === 'production') {
             $this->app['request']->server->set('HTTPS', true);
         }
+
+        // Registrar canal personalizado FCM
+        Notification::extend('fcm', function ($app) {
+            return $app->make(FcmChannel::class);
+        });
     }
 }
