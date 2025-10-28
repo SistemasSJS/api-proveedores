@@ -3,14 +3,13 @@
 namespace App\Notifications;
 
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Notification;
 
 /**
  * Notificación enviada cuando se crea una nueva orden de compra
  * ENVÍO INSTANTÁNEO - Sin cola de jobs
  */
-class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
+class NuevaOrdenCompra extends Notification implements ShouldBroadcast
 {
 
     public $ordenCompraId;
@@ -31,30 +30,12 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
     }
 
     /**
-     * Canales de envío basados en contexto del usuario
-     * - broadcast: Reverb WebSocket (para web)
-     * - fcm: Push nativas (Android/iOS)
-     * - database: Historial de notificaciones
+     * Canales de notificación - SYNC (sin cola)
+     * Solo broadcast y database. El push se envía manualmente.
      */
     public function via(object $notifiable): array
     {
-        $channels = [];
-
-        // 1. SIEMPRE: Guardar en base de datos para historial
-        $channels[] = 'database';
-
-        // 2. SIEMPRE: Broadcast via Reverb (para usuarios web conectados)
-        $channels[] = 'broadcast';
-
-        // 3. CONDICIONAL: FCM para usuarios con tokens activos (nativos)
-        if (
-            method_exists($notifiable, 'activeDeviceTokens') &&
-            $notifiable->activeDeviceTokens()->exists()
-        ) {
-            $channels[] = 'fcm';
-        }
-
-        return $channels;
+        return ['broadcast', 'database'];
     }
 
     /**
