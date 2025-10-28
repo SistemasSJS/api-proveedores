@@ -25,8 +25,8 @@ class DeviceTokenController extends Controller
             $validator = Validator::make($request->all(), [
                 'token' => 'required|string|max:255',
                 'platform' => 'required|in:ios,android,web',
-                'device_id' => 'nullable|string|max:100',
-                'device_name' => 'nullable|string|max:100',
+                'device_id' => 'nullable|string|max:255',
+                'device_name' => 'nullable|string|max:255',
                 'metadata' => 'nullable|array',
             ]);
 
