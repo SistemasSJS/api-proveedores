@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\DeviceTokenController;
 use App\Http\Controllers\CategoriaController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TiendaController;
@@ -69,4 +70,15 @@ Route::middleware('auth:sanctum')->group(function () {
      * DASHBOARD BÁSICO
      */
     Route::get('dashboard/stats', [DashboardController::class, 'getStats'])->middleware(['audit']);
+
+    /**
+     * DEVICE TOKENS (FCM)
+     */
+    Route::prefix('device-tokens')->group(function () {
+        Route::post('/', [DeviceTokenController::class, 'store'])->middleware(['audit']);
+        Route::get('/', [DeviceTokenController::class, 'index'])->middleware(['audit']);
+        Route::delete('/{tokenId}', [DeviceTokenController::class, 'deactivate'])->middleware(['audit']);
+        Route::post('/cleanup', [DeviceTokenController::class, 'cleanup'])->middleware(['audit']);
+        Route::post('/test', [DeviceTokenController::class, 'testNotification'])->middleware(['audit']);
+    });
 });
