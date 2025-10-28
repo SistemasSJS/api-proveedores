@@ -31,12 +31,30 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
     }
 
     /**
-     * Canales de notificación - SYNC (sin cola)
-     * Solo broadcast y database. El push se envía manualmente.
+     * Canales de envío basados en contexto del usuario
+     * - broadcast: Reverb WebSocket (para web)
+     * - fcm: Push nativas (Android/iOS)
+     * - database: Historial de notificaciones
      */
     public function via(object $notifiable): array
     {
-        return ['broadcast', 'database', 'mail', 'fcm'];
+        $channels = [];
+
+        // 1. SIEMPRE: Guardar en base de datos para historial
+        $channels[] = 'database';
+
+        // 2. SIEMPRE: Broadcast via Reverb (para usuarios web conectados)
+        $channels[] = 'broadcast';
+
+        // 3. CONDICIONAL: FCM para usuarios con tokens activos (nativos)
+        if (
+            method_exists($notifiable, 'activeDeviceTokens') &&
+            $notifiable->activeDeviceTokens()->exists()
+        ) {
+            $channels[] = 'fcm';
+        }
+
+        return $channels;
     }
 
     /**

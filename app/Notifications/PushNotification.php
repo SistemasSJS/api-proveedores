@@ -2,15 +2,23 @@
 
 namespace App\Notifications;
 
-use App\Channels\FcmChannel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class PushNotification extends Notification implements ShouldBroadcastNow
+/**
+ * Notificación multicanal que soporta:
+ * - Reverb (broadcast) para usuarios web
+ * - FCM para aplicaciones nativas (Android/iOS)
+ * - WhatsApp (opcional)
+ * - Database para historial
+ */
+class PushNotification extends Notification implements ShouldBroadcastNow, ShouldQueue
 {
     use Queueable;
-    
+
     public $title;
     public $message;
     public $type;
@@ -19,8 +27,12 @@ class PushNotification extends Notification implements ShouldBroadcastNow
     // Para saber desde qué canal se envía
     protected $currentChannel = null;
 
-    public function __construct($title, $message, $type = 'info', $data = [])
-    {
+    public function __construct(
+        string $title,
+        string $message,
+        string $type = 'info',
+        array $data = []
+    ) {
         $this->title = $title;
         $this->message = $message;
         $this->type = $type;
@@ -28,15 +40,27 @@ class PushNotification extends Notification implements ShouldBroadcastNow
     }
 
     /**
-     * Canales de envío
+     * Canales de envío basados en contexto del usuario
+     * - broadcast: Reverb WebSocket (para web)
+     * - fcm: Push nativas (Android/iOS)
+     * - database: Historial de notificaciones
      */
     public function via(object $notifiable): array
     {
-        $channels = ['mail', 'broadcast', 'database', 'fcm'];
+        $channels = [];
 
-        // Agregar FCM si el usuario tiene tokens activos
-        if ($notifiable->activeDeviceTokens()->exists()) {
-            $channels[] = FcmChannel::class;
+        // 1. SIEMPRE: Guardar en base de datos para historial
+        $channels[] = 'database';
+
+        // 2. SIEMPRE: Broadcast via Reverb (para usuarios web conectados)
+        $channels[] = 'broadcast';
+
+        // 3. CONDICIONAL: FCM para usuarios con tokens activos (nativos)
+        if (
+            method_exists($notifiable, 'activeDeviceTokens') &&
+            $notifiable->activeDeviceTokens()->exists()
+        ) {
+            $channels[] = 'fcm';
         }
 
         return $channels;
@@ -109,6 +133,9 @@ class PushNotification extends Notification implements ShouldBroadcastNow
 
     /**
      * Tipo de broadcast
+     * Laravel automáticamente transmite a: private-App.Models.User.{user_id}
+     * El frontend escucha en: private-App.Models.User.{user_id}
+     * Evento: Illuminate\Notifications\Events\BroadcastNotificationCreated
      */
     public function broadcastType(): string
     {

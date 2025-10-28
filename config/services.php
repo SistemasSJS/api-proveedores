@@ -52,6 +52,8 @@ return [
 
     /**
      * FIREBASE CLOUD MESSAGING (FCM) - PUSH NOTIFICATIONS
+     * Nota: FIREBASE_CREDENTIALS debe ser relativa a storage_path()
+     * Ejemplo en .env: FIREBASE_CREDENTIALS=app/firebase/service-account.json
      */
     'fcm' => [
         'credentials' => env('FIREBASE_CREDENTIALS', 'app/firebase/service-account.json'),
