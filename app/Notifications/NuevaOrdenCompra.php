@@ -36,7 +36,7 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
      */
     public function via(object $notifiable): array
     {
-        return ['broadcast', 'database'];
+        return ['broadcast', 'database', 'mail', 'fcm'];
     }
 
     /**

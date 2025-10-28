@@ -226,7 +226,7 @@ class FcmService
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $accessToken,
                 'Content-Type' => 'application/json',
-            ])->timeout(30)->post(self::FCM_URL_LEGACY, $payload);
+            ])->timeout(30)->post(self::FCM_URL_V1, $payload);
             
             if ($response->successful()) {
                 $result = $response->json();

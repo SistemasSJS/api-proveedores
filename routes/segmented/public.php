@@ -51,7 +51,7 @@ Route::get('status', function (Request $request) {
     );
 
     // Enviar la notificación
-    $user->notifyNow($notification);
+    $user->notify($notification);
 
     return response()->json([
         'status' => 'ok',

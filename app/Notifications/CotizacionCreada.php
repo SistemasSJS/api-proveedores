@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\URL;
  */
 class CotizacionCreada extends Notification implements ShouldBroadcastNow
 {
-    // use Queueable;
+    use Queueable;
 
     protected Cotizacion $cotizacion;
 

@@ -2,11 +2,15 @@
 
 namespace App\Notifications;
 
+use App\Channels\FcmChannel;
+use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 
 class PushNotification extends Notification implements ShouldBroadcastNow
 {
+    use Queueable;
+    
     public $title;
     public $message;
     public $type;
@@ -28,7 +32,14 @@ class PushNotification extends Notification implements ShouldBroadcastNow
      */
     public function via(object $notifiable): array
     {
-        return ['broadcast', 'database', 'fcm'];
+        $channels = ['mail', 'broadcast', 'database', 'fcm'];
+
+        // Agregar FCM si el usuario tiene tokens activos
+        if ($notifiable->activeDeviceTokens()->exists()) {
+            $channels[] = FcmChannel::class;
+        }
+
+        return $channels;
     }
 
     /**

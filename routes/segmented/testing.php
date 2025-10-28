@@ -53,7 +53,7 @@ Route::post('test/notification', function (Request $request) {
 
     try {
         // Enviar notificación usando el sistema de Laravel
-        $user->notifyNow(new PushNotification($title, $message, $type, $data));
+        $user->notify(new PushNotification($title, $message, $type, $data));
 
         // Para canal reverb, también hacer broadcast adicional
         if ($validated['channel'] === 'reverb') {
@@ -113,7 +113,7 @@ Route::get('test/notification/type/{type}', function (string $type) {
     ];
 
     try {
-        $user->notifyNow(new PushNotification(
+        $user->notify(new PushNotification(
             $titles[$type] ?? 'Test',
             $messages[$type] ?? 'Mensaje de prueba',
             $type,
@@ -147,7 +147,7 @@ Route::get('test/notification/channel/{channel}', function (string $channel) {
     $data = ['test' => true, 'channel_test' => $channel];
 
     try {
-        $user->notifyNow(new PushNotification($title, $message, 'info', $data));
+        $user->notify(new PushNotification($title, $message, 'info', $data));
 
         if ($channel === 'reverb') {
             broadcast(new TestEvent([
@@ -208,7 +208,7 @@ Route::post('test/send-to-user', function (Request $request) {
         ];
 
         // Siempre guardar en database
-        $targetUser->notifyNow(new PushNotification(
+        $targetUser->notify(new PushNotification(
             $validated['title'],
             $validated['message'],
             $validated['type'],
