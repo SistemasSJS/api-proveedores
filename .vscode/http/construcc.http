@@ -1,324 +1,301 @@
-  ###
-  # MÓDULO CONSTRUCCIÓN
-  # Rutas especiales para integración con sistemas de construcción
-  # Autenticación mediante API token específico
-  ###
+###
+# MÓDULO CONSTRUCCIÓN
+# Rutas especiales para integración con sistemas de construcción
+# Autenticación mediante API token específico
+###
 
-@baseUrl = http://localhost:8080/api
-# @baseUrl = https://apicons.ddns.net:8092/api
+# @baseUrl = http://localhost:8080/api
+@baseUrl = https://apicons.ddns.net:8092/api
 @contentType = application/json
 @acceptType = application/json
 @apiKey =  /%-!?=T35sT._22<1|:
 
 
-  ###
-  # PRODUCTOS PARA CONSTRUCCIÓN
-  ###
+###
+# PRODUCTOS PARA CONSTRUCCIÓN
+###
 
-  ### Buscar productos para construcción con filtros avanzados
-  POST {{baseUrl}}/construcc/productos/buscar
-  {{commonHeaders}}
-  X-API-TOKEN: {{construccToken}}
+### Buscar productos para construcción con filtros avanzados
+POST {{baseUrl}}/construcc/productos/buscar
+{{commonHeaders}}
+X-API-TOKEN: {{apiKey}}
 
-  {
-    "filtros": {
-      "categoria": "construccion",
-      "subcategoria": "herramientas",
-      "marca": "DeWalt",
-      "precio_min": 100.00,
-      "precio_max": 1000.00,
-      "disponible": true
+{
+  "filtros": {
+    "categoria": "construccion",
+    "subcategoria": "herramientas",
+    "marca": "DeWalt",
+    "precio_min": 100.00,
+    "precio_max": 1000.00,
+    "disponible": true
+  },
+  "busqueda": {
+    "termino": "taladro",
+    "campos": ["nombre", "descripcion", "sku"]
+  },
+  "ordenamiento": {
+    "campo": "precio_base",
+    "direccion": "asc"
+  },
+  "paginacion": {
+    "pagina": 1,
+    "por_pagina": 20
+  }
+}
+
+### Obtener productos destacados para construcción
+GET {{baseUrl}}/construcc/productos/destacados?limit=10
+{{commonHeaders}}
+X-API-TOKEN: {{apiKey}}
+
+### Obtener productos por categoría de construcción
+GET {{baseUrl}}/construcc/productos/categoria/construccion
+{{commonHeaders}}
+X-API-TOKEN: {{apiKey}}
+
+### Verificar disponibilidad de productos para proyecto
+POST {{baseUrl}}/construcc/productos/verificar-disponibilidad
+{{commonHeaders}}
+X-API-TOKEN: {{apiKey}}
+
+{
+  "productos": [
+    {
+      "producto_id": 1,
+      "cantidad_requerida": 50,
+      "fecha_requerida": "2025-09-15"
     },
-    "busqueda": {
-      "termino": "taladro",
-      "campos": ["nombre", "descripcion", "sku"]
-    },
-    "ordenamiento": {
-      "campo": "precio_base",
-      "direccion": "asc"
-    },
-    "paginacion": {
-      "pagina": 1,
-      "por_pagina": 20
+    {
+      "producto_id": 2,
+      "cantidad_requerida": 25,
+      "fecha_requerida": "2025-09-15"
     }
+  ],
+  "proyecto": {
+    "nombre": "Construcción Plaza Comercial",
+    "ubicacion": "CDMX",
+    "tipo": "comercial"
   }
+}
 
-  ### Obtener productos destacados para construcción
-  GET {{baseUrl}}/construcc/productos/destacados?limit=10
-  {{commonHeaders}}
-  X-API-TOKEN: {{construccToken}}
+### Obtener precios especiales para construcción
+POST {{baseUrl}}/construcc/productos/precios-especiales
+{{commonHeaders}}
+X-API-TOKEN: {{apiKey}}
 
-  ### Obtener productos por categoría de construcción
-  GET {{baseUrl}}/construcc/productos/categoria/construccion
-  {{commonHeaders}}
-  X-API-TOKEN: {{construccToken}}
+{
+  "productos": [1, 2, 3, 4, 5],
+  "tipo_cliente": "constructor",
+  "volumen_estimado": "alto",
+  "proyecto_tipo": "residencial"
+}
 
-  ### Verificar disponibilidad de productos para proyecto
-  POST {{baseUrl}}/construcc/productos/verificar-disponibilidad
-  {{commonHeaders}}
-  X-API-TOKEN: {{construccToken}}
+###
+# COTIZACIONES PARA CONSTRUCCIÓN
+###
 
-  {
-    "productos": [
-      {
-        "producto_id": 1,
-        "cantidad_requerida": 50,
-        "fecha_requerida": "2025-09-15"
-      },
-      {
-        "producto_id": 2,
-        "cantidad_requerida": 25,
-        "fecha_requerida": "2025-09-15"
-      }
-    ],
-    "proyecto": {
-      "nombre": "Construcción Plaza Comercial",
-      "ubicacion": "CDMX",
-      "tipo": "comercial"
+### Crear cotización para proyecto de construcción
+POST {{baseUrl}}/construcc/cotizaciones
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+Accept: {{acceptType}}
+
+{
+  "proveedor_id": 4,
+  "fecha_vencimiento":"2025-10-01",
+  "fecha_cotizacion":"2025-10-01",
+  "detalles": [
+  
+  ],
+
+}
+
+### Ver cotización específica
+GET {{baseUrl}}/construcc/cotizaciones/1
+{{commonHeaders}}
+X-API-TOKEN: {{apiKey}}
+
+### Actualizar cotización
+PUT {{baseUrl}}/construcc/cotizaciones/1
+{{commonHeaders}}
+X-API-TOKEN: {{apiKey}}
+
+{
+  "productos": [
+    {
+      "producto_id": 1,
+      "cantidad": 120,
+      "precio_unitario": 145.00
     }
-  }
+  ],
+  "observaciones": "Ajuste por cambio en proyecto"
+}
 
-  ### Obtener precios especiales para construcción
-  POST {{baseUrl}}/construcc/productos/precios-especiales
-  {{commonHeaders}}
-  X-API-TOKEN: {{construccToken}}
+### Aprobar cotización
+PATCH {{baseUrl}}/construcc/cotizaciones/1/aprobar
+{{commonHeaders}}
+X-API-TOKEN: {{apiKey}}
 
-  {
-    "productos": [1, 2, 3, 4, 5],
-    "tipo_cliente": "constructor",
-    "volumen_estimado": "alto",
-    "proyecto_tipo": "residencial"
-  }
+{
+  "aprobado_por": "Ing. Juan Pérez",
+  "fecha_aprobacion": "2025-08-25",
+  "observaciones": "Cotización aprobada para inicio inmediato"
+}
 
-  ###
-  # COTIZACIONES PARA CONSTRUCCIÓN
-  ###
+### Rechazar cotización
+PATCH {{baseUrl}}/construcc/cotizaciones/1/rechazar
+{{commonHeaders}}
+X-API-TOKEN: {{apiKey}}
 
-  ### Crear cotización para proyecto de construcción
-  POST {{baseUrl}}/construcc/cotizaciones
-  {{commonHeaders}}
-  X-API-TOKEN: {{construccToken}}
+{
+  "motivo_rechazo": "Precios fuera de presupuesto",
+  "observaciones": "Se requiere nueva propuesta con precios más competitivos"
+}
 
-  {
-    "proyecto": {
-      "nombre": "Edificio Residencial Torre Norte",
-      "descripcion": "Construcción de edificio de 15 pisos",
-      "ubicacion": "CDMX, Col. Roma Norte",
-      "tipo": "residencial",
-      "fecha_inicio": "2025-10-01",
-      "fecha_fin": "2026-06-30"
+###
+# PEDIDOS PARA CONSTRUCCIÓN
+###
+
+### Crear pedido a partir de cotización aprobada
+POST {{baseUrl}}/construcc/pedidos/desde-cotizacion
+{{commonHeaders}}
+X-API-TOKEN: {{apiKey}}
+
+{
+  "cotizacion_id": 1,
+  "programacion_entregas": [
+    {
+      "fecha": "2025-09-15",
+      "productos": [
+        {
+          "producto_id": 1,
+          "cantidad": 50
+        }
+      ]
     },
-    "productos": [
-      {
-        "producto_id": 1,
-        "cantidad": 100,
-        "precio_unitario": 150.00,
-        "especificaciones": "Calidad premium"
-      },
-      {
-        "producto_id": 2,
-        "cantidad": 50,
-        "precio_unitario": 300.00,
-        "especificaciones": "Instalación incluida"
-      }
-    ],
-    "descuentos": {
-      "por_volumen": 5.0,
-      "por_cliente_frecuente": 2.0
-    },
-    "condiciones": {
-      "forma_pago": "30-60-90 dias",
-      "entrega": "Obra según cronograma",
-      "garantia": "12 meses"
+    {
+      "fecha": "2025-10-15",
+      "productos": [
+        {
+          "producto_id": 1,
+          "cantidad": 50
+        },
+        {
+          "producto_id": 2,
+          "cantidad": 50
+        }
+      ]
     }
+  ],
+  "direccion_obra": {
+    "calle": "Av. Insurgentes Sur 1234",
+    "colonia": "Del Valle",
+    "ciudad": "CDMX",
+    "cp": "03100",
+    "referencias": "Junto al metro Hospital 20 de Noviembre"
   }
+}
 
-  ### Ver cotización específica
-  GET {{baseUrl}}/construcc/cotizaciones/1
-  {{commonHeaders}}
-  X-API-TOKEN: {{construccToken}}
+### Programar entregas escalonadas
+POST {{baseUrl}}/construcc/pedidos/1/programar-entregas
+{{commonHeaders}}
+X-API-TOKEN: {{apiKey}}
 
-  ### Actualizar cotización
-  PUT {{baseUrl}}/construcc/cotizaciones/1
-  {{commonHeaders}}
-  X-API-TOKEN: {{construccToken}}
-
-  {
-    "productos": [
-      {
-        "producto_id": 1,
-        "cantidad": 120,
-        "precio_unitario": 145.00
-      }
-    ],
-    "observaciones": "Ajuste por cambio en proyecto"
-  }
-
-  ### Aprobar cotización
-  PATCH {{baseUrl}}/construcc/cotizaciones/1/aprobar
-  {{commonHeaders}}
-  X-API-TOKEN: {{construccToken}}
-
-  {
-    "aprobado_por": "Ing. Juan Pérez",
-    "fecha_aprobacion": "2025-08-25",
-    "observaciones": "Cotización aprobada para inicio inmediato"
-  }
-
-  ### Rechazar cotización
-  PATCH {{baseUrl}}/construcc/cotizaciones/1/rechazar
-  {{commonHeaders}}
-  X-API-TOKEN: {{construccToken}}
-
-  {
-    "motivo_rechazo": "Precios fuera de presupuesto",
-    "observaciones": "Se requiere nueva propuesta con precios más competitivos"
-  }
-
-  ###
-  # PEDIDOS PARA CONSTRUCCIÓN
-  ###
-
-  ### Crear pedido a partir de cotización aprobada
-  POST {{baseUrl}}/construcc/pedidos/desde-cotizacion
-  {{commonHeaders}}
-  X-API-TOKEN: {{construccToken}}
-
-  {
-    "cotizacion_id": 1,
-    "programacion_entregas": [
-      {
-        "fecha": "2025-09-15",
-        "productos": [
-          {
-            "producto_id": 1,
-            "cantidad": 50
-          }
-        ]
-      },
-      {
-        "fecha": "2025-10-15",
-        "productos": [
-          {
-            "producto_id": 1,
-            "cantidad": 50
-          },
-          {
-            "producto_id": 2,
-            "cantidad": 50
-          }
-        ]
-      }
-    ],
-    "direccion_obra": {
-      "calle": "Av. Insurgentes Sur 1234",
-      "colonia": "Del Valle",
-      "ciudad": "CDMX",
-      "cp": "03100",
-      "referencias": "Junto al metro Hospital 20 de Noviembre"
-    }
-  }
-
-  ### Programar entregas escalonadas
-  POST {{baseUrl}}/construcc/pedidos/1/programar-entregas
-  {{commonHeaders}}
-  X-API-TOKEN: {{construccToken}}
-
-  {
-    "entregas": [
-      {
-        "fecha": "2025-09-01",
-        "productos": [{"producto_id": 1, "cantidad": 25}],
-        "horario": "08:00-12:00",
-        "contacto": "Ing. Carlos López",
-        "telefono": "555-123-4567"
-      },
-      {
-        "fecha": "2025-09-15",
-        "productos": [{"producto_id": 2, "cantidad": 30}],
-        "horario": "14:00-18:00",
-        "contacto": "Arq. María García",
-        "telefono": "555-987-6543"
-      }
-    ]
-  }
-
-  ### Confirmar entrega en obra
-  PATCH {{baseUrl}}/construcc/pedidos/1/entregar
-  {{commonHeaders}}
-  X-API-TOKEN: {{construccToken}}
-
-  {
-    "fecha_entrega": "2025-09-01T10:30:00Z",
-    "recibido_por": "Ing. Carlos López",
-    "productos_entregados": [
-      {
-        "producto_id": 1,
-        "cantidad_entregada": 25,
-        "estado": "perfecto",
-        "observaciones": "Entregado según especificaciones"
-      }
-    ],
-    "evidencias": [
-      "https://ejemplo.com/foto1.jpg",
-      "https://ejemplo.com/acta-entrega.pdf"
-    ]
-  }
-
-  ###
-  # REPORTES Y ANÁLISIS CONSTRUCCIÓN
-  ###
-
-  ### Reporte de consumo por obra
-  GET {{baseUrl}}/construcc/reportes/consumo-obra?obra_id=1&fecha_inicio=2025-08-01&fecha_fin=2025-08-31
-  {{commonHeaders}}
-  X-API-TOKEN: {{construccToken}}
-
-  ### Análisis de costos por m²
-  GET {{baseUrl}}/construcc/reportes/costo-m2?tipo_construccion=residencial&ubicacion=cdmx
-  {{commonHeaders}}
-  X-API-TOKEN: {{construccToken}}
-
-  ### Proyección de materiales para obra
-  POST {{baseUrl}}/construcc/reportes/proyeccion-materiales
-  {{commonHeaders}}
-  X-API-TOKEN: {{construccToken}}
-
-  {
-    "obra": {
-      "tipo": "residencial",
-      "metros_construccion": 1500,
-      "niveles": 3,
-      "ubicacion": "CDMX"
+{
+  "entregas": [
+    {
+      "fecha": "2025-09-01",
+      "productos": [{"producto_id": 1, "cantidad": 25}],
+      "horario": "08:00-12:00",
+      "contacto": "Ing. Carlos López",
+      "telefono": "555-123-4567"
     },
-    "especificaciones": {
-      "calidad": "media-alta",
-      "incluye_acabados": true,
-      "sistema_constructivo": "tradicional"
+    {
+      "fecha": "2025-09-15",
+      "productos": [{"producto_id": 2, "cantidad": 30}],
+      "horario": "14:00-18:00",
+      "contacto": "Arq. María García",
+      "telefono": "555-987-6543"
     }
+  ]
+}
+
+### Confirmar entrega en obra
+PATCH {{baseUrl}}/construcc/pedidos/1/entregar
+{{commonHeaders}}
+X-API-TOKEN: {{apiKey}}
+
+{
+  "fecha_entrega": "2025-09-01T10:30:00Z",
+  "recibido_por": "Ing. Carlos López",
+  "productos_entregados": [
+    {
+      "producto_id": 1,
+      "cantidad_entregada": 25,
+      "estado": "perfecto",
+      "observaciones": "Entregado según especificaciones"
+    }
+  ],
+  "evidencias": [
+    "https://ejemplo.com/foto1.jpg",
+    "https://ejemplo.com/acta-entrega.pdf"
+  ]
+}
+
+###
+# REPORTES Y ANÁLISIS CONSTRUCCIÓN
+###
+
+### Reporte de consumo por obra
+GET {{baseUrl}}/construcc/reportes/consumo-obra?obra_id=1&fecha_inicio=2025-08-01&fecha_fin=2025-08-31
+{{commonHeaders}}
+X-API-TOKEN: {{apiKey}}
+
+### Análisis de costos por m²
+GET {{baseUrl}}/construcc/reportes/costo-m2?tipo_construccion=residencial&ubicacion=cdmx
+{{commonHeaders}}
+X-API-TOKEN: {{apiKey}}
+
+### Proyección de materiales para obra
+POST {{baseUrl}}/construcc/reportes/proyeccion-materiales
+{{commonHeaders}}
+X-API-TOKEN: {{apiKey}}
+
+{
+  "obra": {
+    "tipo": "residencial",
+    "metros_construccion": 1500,
+    "niveles": 3,
+    "ubicacion": "CDMX"
+  },
+  "especificaciones": {
+    "calidad": "media-alta",
+    "incluye_acabados": true,
+    "sistema_constructivo": "tradicional"
   }
+}
 
-  ###
-  # PROVEEDORES ESPECIALIZADOS CONSTRUCCIÓN
-  ###
+###
+# PROVEEDORES ESPECIALIZADOS CONSTRUCCIÓN
+###
 
-  ### Buscar proveedores especializados
-  GET {{baseUrl}}/construcc/proveedores/especializados?especialidad=herramientas&ubicacion=cdmx&radio=50km
-  {{commonHeaders}}
-  X-API-TOKEN: {{construccToken}}
+### Buscar proveedores especializados
+GET {{baseUrl}}/construcc/proveedores/especializados?especialidad=herramientas&ubicacion=cdmx&radio=50km
+{{commonHeaders}}
+X-API-TOKEN: {{apiKey}}
 
-  ### Evaluar proveedores
-  POST {{baseUrl}}/construcc/proveedores/evaluar
-  {{commonHeaders}}
-  X-API-TOKEN: {{construccToken}}
+### Evaluar proveedores
+POST {{baseUrl}}/construcc/proveedores/evaluar
+{{commonHeaders}}
+X-API-TOKEN: {{apiKey}}
 
-  {
-    "criterios": {
-      "precio": 0.4,
-      "calidad": 0.3,
-      "tiempo_entrega": 0.2,
-      "experiencia": 0.1
-    },
-    "productos_requeridos": [1, 2, 3],
-    "fecha_requerida": "2025-09-15"
-  }
+{
+  "criterios": {
+    "precio": 0.4,
+    "calidad": 0.3,
+    "tiempo_entrega": 0.2,
+    "experiencia": 0.1
+  },
+  "productos_requeridos": [1, 2, 3],
+  "fecha_requerida": "2025-09-15"
+}

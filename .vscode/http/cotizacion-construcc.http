@@ -33,7 +33,7 @@ X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 
 {
-  "proveedor_id": {{proveedorId}},
+  "proveedor_id": ,
   "fecha_cotizacion": "2025-10-03",
   "fecha_vencimiento": "2025-10-10",
   "observaciones": "Cotización inicial para proyecto piloto",
