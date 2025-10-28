@@ -12,8 +12,8 @@
 # - Token de autenticación válido para endpoints del frontend
 # =========================================================================
 
-# @baseUrl = http://localhost:80/api
-@baseUrl = https://apicons.ddns.net:8092/api
+@baseUrl = http://localhost:80/api
+# @baseUrl = https://apicons.ddns.net:8092/api
 @apiKey = cf5cd9d4b56257d25baf3300447af494d1e815f802553a5b65204099b26ea6e1
 @authToken = Bearer 8|IAtT96wh0fGGKsyaO7LmTTvRwJ5ejk0pbwixV60zbbc237b0
 
@@ -81,7 +81,7 @@ X-API-KEY: {{apiKey}}
 
 {
   "empresa_id": 14,
-  "proveedor_id": 4,
+  "proveedor_id": 3,
   "orden_compra_id": "OC-0000002",
   "estatus": "pendiente"
 }

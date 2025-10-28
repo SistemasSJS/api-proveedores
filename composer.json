@@ -21,6 +21,7 @@
         "predis/predis": "^2.0",
         "pusher/pusher-php-server": "^7.2",
         "spatie/laravel-query-builder": "^6.3",
+        "twilio/sdk": "^8.8",
         "tymon/jwt-auth": "^2.2"
     },
     "require-dev": {
