@@ -2,54 +2,53 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Messages\BroadcastMessage;
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 
 class ReverbNotification extends Notification implements ShouldBroadcastNow
 {
-    // use Queueable;
-
-    /**
-     * Create a new notification instance.
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'broadcast'];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+            ->subject('Notificación de prueba Reverb')
+            ->line('Esto es una notificación de prueba enviada por Reverb.')
+            ->action('Ver más', url('/'))
+            ->line('Gracias por usar nuestra aplicación.');
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        return new BroadcastMessage([
+            'titulo' => 'Notificación Reverb',
+            'mensaje' => 'Esta es una notificación instantánea enviada vía Reverb.',
+            'timestamp' => now()->toIsoString(),
+        ]);
+    }
+
+    public function broadcastType(): string
+    {
+        return 'reverb-notification';
+    }
+
+    public function broadcastOn()
+    {
+        return [new Channel('public-notifications')];
+    }
+
     public function toArray(object $notifiable): array
     {
         return [
-            //
+            'titulo' => 'Notificación Reverb',
+            'mensaje' => 'Esta es una notificación instantánea enviada vía Reverb.',
+            'timestamp' => now()->toIsoString(),
         ];
     }
 }

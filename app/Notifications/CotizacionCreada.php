@@ -6,7 +6,6 @@ use App\Channels\FcmChannel;
 use App\Models\Cotizacion;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -22,14 +21,9 @@ class CotizacionCreada extends Notification implements ShouldBroadcastNow
     use Queueable;
 
     protected Cotizacion $cotizacion;
-
     protected User $solicitante;
-
     protected string $moduloOrigen;
 
-    /**
-     * Create a new notification instance.
-     */
     public function __construct(Cotizacion $cotizacion, User $solicitante, string $moduloOrigen = 'construccion')
     {
         $this->cotizacion = $cotizacion;
@@ -37,16 +31,10 @@ class CotizacionCreada extends Notification implements ShouldBroadcastNow
         $this->moduloOrigen = $moduloOrigen;
     }
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
     public function via(object $notifiable): array
     {
-        $channels = ['mail', 'broadcast', 'database', 'fcm'];
+        $channels = ['mail', 'broadcast', 'database'];
 
-        // Agregar FCM si el usuario tiene tokens activos
         if ($notifiable->activeDeviceTokens()->exists()) {
             $channels[] = FcmChannel::class;
         }
@@ -54,10 +42,6 @@ class CotizacionCreada extends Notification implements ShouldBroadcastNow
         return $channels;
     }
 
-
-    /**
-     * Get the mail representation of the notification.
-     */
     public function toMail(object $notifiable): MailMessage
     {
         $urlCotizacion = URL::to('/admin/cotizaciones/' . $this->cotizacion->id);
@@ -73,17 +57,16 @@ class CotizacionCreada extends Notification implements ShouldBroadcastNow
             ]);
     }
 
-    /**
-     * Get the broadcastable representation of the notification.
-     */
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage($this->getPayloadCotizacion());
     }
 
-    /**
-     * Get the FCM representation of the notification.
-     */
+    public function broadcastType(): string
+    {
+        return 'cotizacion-creada';
+    }
+
     public function toFcm(object $notifiable): array
     {
         $title = '🏗️ Nueva Cotización #' . $this->cotizacion->id;
@@ -98,7 +81,6 @@ class CotizacionCreada extends Notification implements ShouldBroadcastNow
                 'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
             ],
             'data' => [
-                // Datos compatibles con NotificationService del frontend
                 'type' => 'cotizacion',
                 'entityId' => (string) $this->cotizacion->id,
                 'proveedorId' => (string) ($this->cotizacion->proveedor_id ?? ''),
@@ -108,45 +90,16 @@ class CotizacionCreada extends Notification implements ShouldBroadcastNow
                 'moduloOrigen' => $this->moduloOrigen,
                 'url' => '/admin/cotizaciones/' . $this->cotizacion->id,
                 'timestamp' => now()->toISOString(),
-                // Datos adicionales para el frontend
-                'cotizacion' => json_encode([
-                    'id' => $this->cotizacion->id,
-                    'fecha_cotizacion' => $this->cotizacion->fecha_cotizacion->format('Y-m-d'),
-                    'fecha_vencimiento' => $this->cotizacion->fecha_vencimiento->format('Y-m-d'),
-                    'total' => $this->cotizacion->total,
-                    'productos_count' => $this->cotizacion->detalles->count(),
-                ]),
-                'solicitante' => json_encode([
-                    'name' => $this->solicitante->name,
-                    'email' => $this->solicitante->email,
-                ]),
             ],
         ];
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(object $notifiable): array
     {
         return $this->getPayloadCotizacion();
     }
 
-    /**
-     * Determine which queues should be used for each notification channel.
-     */
-    public function viaQueues(): array
-    {
-        return [
-            'mail' => 'notifications',
-            'database' => 'default',
-            'broadcast' => 'broadcast',
-        ];
-    }
-
-    private function getPayloadCotizacion()
+    private function getPayloadCotizacion(): array
     {
         return [
             'tipo' => 'Cotizaciones',
@@ -164,7 +117,6 @@ class CotizacionCreada extends Notification implements ShouldBroadcastNow
                     'email' => $this->solicitante->email,
                 ],
             ],
-            // 'url' => URL::to(config('services.frontend.url') . '/pages/proveedor/cotizacion/' . $this->cotizacion->id . '/view'),
             'url' => URL::to('/pages/proveedor/cotizacion/' . $this->cotizacion->id . '/view'),
             'modulo_origen' => $this->moduloOrigen,
             'timestamp' => now()->toISOString(),

@@ -3,13 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\OcConstrucc;
-use App\Models\OrdenCompra;
 use App\Models\Proveedor;
 use App\Models\User;
 use App\Notifications\PushNotification;
 use App\Notifications\NuevaOrdenCompra;
-// use App\Services\FcmService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
@@ -328,21 +325,21 @@ class NotificationController extends Controller
                 $validated['empresa_id'],
                 $validated['estatus'] ?? 'pendiente'
             ));
-            
+
             // 2. CANAL PUSH: Enviar notificación push MANUALMENTE
             // $tokens = $usuarioPrincipal->deviceTokens()
             //     ->where('is_active', true)
             //     ->pluck('token')
             //     ->toArray();
-            
+
             // if (!empty($tokens)) {
             //     // $fcmService = app(FcmService::class);
-                
+
             //     $notification = [
             //         'title' => '📦 Nueva Orden de Compra #' . $validated['orden_compra_id'],
             //         'body' => "Tienes una nueva orden de compra: {$validated['orden_compra_id']}",
             //     ];
-                
+
             //     $data = [
             //         'tipo' => 'nueva_orden_compra',
             //         'orden_compra_id' => $validated['orden_compra_id'],
@@ -351,9 +348,9 @@ class NotificationController extends Controller
             //         'estatus' => $validated['estatus'] ?? 'pendiente',
             //         'timestamp' => now()->toIsoString(),
             //     ];
-                
+
             //     $pushSuccess = $fcmService->sendToTokens($tokens, $notification, $data);
-                
+
             //     if ($pushSuccess) {
             //         Log::info('✅ Notificación Push enviada exitosamente', [
             //             'usuario_id' => $usuarioPrincipal->id,

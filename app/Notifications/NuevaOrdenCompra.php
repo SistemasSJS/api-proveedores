@@ -2,48 +2,34 @@
 
 namespace App\Notifications;
 
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Notifications\Messages\BroadcastMessage;
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Notifications\Notification;
 
-/**
- * Notificación enviada cuando se crea una nueva orden de compra
- * ENVÍO INSTANTÁNEO - Sin cola de jobs
- */
-class NuevaOrdenCompra extends Notification implements ShouldBroadcast
+class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
 {
-
     public $ordenCompraId;
     public $proveedorId;
     public $empresaId;
     public $estatus;
 
-    public function __construct(
-        string $ordenCompraId,
-        int $proveedorId,
-        int $empresaId,
-        ?string $estatus = null
-    ) {
+    public function __construct(string $ordenCompraId, int $proveedorId, int $empresaId, ?string $estatus = null)
+    {
         $this->ordenCompraId = $ordenCompraId;
         $this->proveedorId = $proveedorId;
         $this->empresaId = $empresaId;
         $this->estatus = $estatus ?? 'pendiente';
     }
 
-    /**
-     * Canales de notificación - SYNC (sin cola)
-     * Solo broadcast y database. El push se envía manualmente.
-     */
     public function via(object $notifiable): array
     {
         return ['broadcast', 'database'];
     }
 
-    /**
-     * Representación para broadcast (WebSocket)
-     */
-    public function toBroadcast(object $notifiable): array
+    public function toBroadcast(object $notifiable): BroadcastMessage
     {
-        return [
+        return new BroadcastMessage([
             'id' => $this->id,
             'tipo' => 'nueva_orden_compra',
             'titulo' => 'Nueva Orden de Compra #' . $this->ordenCompraId,
@@ -56,20 +42,19 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcast
             ],
             'timestamp' => now()->toIsoString(),
             'read_at' => null,
-        ];
+        ]);
     }
 
-    /**
-     * Tipo de evento broadcast
-     */
     public function broadcastType(): string
     {
         return 'nueva-orden-compra';
     }
 
-    /**
-     * Representación para base de datos
-     */
+    public function broadcastOn()
+    {
+        return [new Channel('public-notifications')];
+    }
+
     public function toArray(object $notifiable): array
     {
         return [
@@ -82,14 +67,5 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcast
             'estatus' => $this->estatus,
             'timestamp' => now()->toIsoString(),
         ];
-    }
-
-    /**
-     * IMPORTANTE: Esta notificación NO usa colas
-     * Se envía de forma INSTANTÁNEA y SÍNCRONA
-     */
-    public function shouldQueue(): bool
-    {
-        return false;
     }
 }
