@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\NuevaOrdenCompraEvent;
 use App\Http\Controllers\Controller;
 use App\Models\Proveedor;
 use App\Models\User;
@@ -318,13 +319,23 @@ class NotificationController extends Controller
                 ->count();
             Log::info('📊 Notificaciones antes (mysql5): ' . $notificationsBefore);
 
+            $dataEvento = [
+                'notificacion_id' => uniqid('notif_'),
+                'empresa_id' => $validated['empresa_id'],
+                'proveedor_id' => $validated['proveedor_id'],
+                'orden_compra_id' => $validated['orden_compra_id'],
+                'estatus' => $validated['estatus'] ?? 'pendiente',
+                'user_id' => $usuarioPrincipal->id,
+            ];
+
+            event(new NuevaOrdenCompraEvent($dataEvento));
             // 1. CANAL DATABASE + BROADCAST: Enviar notificación Laravel
-            $usuarioPrincipal->notify(new NuevaOrdenCompra(
-                $validated['orden_compra_id'],
-                $validated['proveedor_id'],
-                $validated['empresa_id'],
-                $validated['estatus'] ?? 'pendiente'
-            ));
+            // $usuarioPrincipal->notify(new NuevaOrdenCompra(
+            //     $validated['orden_compra_id'],
+            //     $validated['proveedor_id'],
+            //     $validated['empresa_id'],
+            //     $validated['estatus'] ?? 'pendiente'
+            // ));
 
             // 2. CANAL PUSH: Enviar notificación push MANUALMENTE
             // $tokens = $usuarioPrincipal->deviceTokens()
@@ -438,6 +449,7 @@ class NotificationController extends Controller
             ], 500);
         }
     }
+    
     /**
      * Recibir notificación de nueva orden de compra desde API Construcciones
      * 
