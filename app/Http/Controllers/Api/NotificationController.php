@@ -8,6 +8,7 @@ use App\Models\Proveedor;
 use App\Models\User;
 use App\Notifications\PushNotification;
 use App\Notifications\NuevaOrdenCompra;
+use App\Services\FcmService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
@@ -328,55 +329,49 @@ class NotificationController extends Controller
                 'user_id' => $usuarioPrincipal->id,
             ];
 
+            // 1. Event para Broadcasting (Reverb WebSocket)
             event(new NuevaOrdenCompraEvent($dataEvento));
-            // 1. CANAL DATABASE + BROADCAST: Enviar notificación Laravel
-            // $usuarioPrincipal->notify(new NuevaOrdenCompra(
-            //     $validated['orden_compra_id'],
-            //     $validated['proveedor_id'],
-            //     $validated['empresa_id'],
-            //     $validated['estatus'] ?? 'pendiente'
-            // ));
 
             // 2. CANAL PUSH: Enviar notificación push MANUALMENTE
-            // $tokens = $usuarioPrincipal->deviceTokens()
-            //     ->where('is_active', true)
-            //     ->pluck('token')
-            //     ->toArray();
+            $tokens = $usuarioPrincipal->deviceTokens()
+                ->where('is_active', true)
+                ->pluck('token')
+                ->toArray();
 
-            // if (!empty($tokens)) {
-            //     // $fcmService = app(FcmService::class);
+            if (!empty($tokens)) {
+                $fcmService = app(FcmService::class);
 
-            //     $notification = [
-            //         'title' => '📦 Nueva Orden de Compra #' . $validated['orden_compra_id'],
-            //         'body' => "Tienes una nueva orden de compra: {$validated['orden_compra_id']}",
-            //     ];
+                $notification = [
+                    'title' => '📦 Nueva Orden de Compra #' . $validated['orden_compra_id'],
+                    'body' => "Tienes una nueva orden de compra: {$validated['orden_compra_id']}",
+                ];
 
-            //     $data = [
-            //         'tipo' => 'nueva_orden_compra',
-            //         'orden_compra_id' => $validated['orden_compra_id'],
-            //         'proveedor_id' => $validated['proveedor_id'],
-            //         'empresa_id' => $validated['empresa_id'],
-            //         'estatus' => $validated['estatus'] ?? 'pendiente',
-            //         'timestamp' => now()->toIsoString(),
-            //     ];
+                $data = [
+                    'tipo' => 'nueva_orden_compra',
+                    'orden_compra_id' => $validated['orden_compra_id'],
+                    'proveedor_id' => $validated['proveedor_id'],
+                    'empresa_id' => $validated['empresa_id'],
+                    'estatus' => $validated['estatus'] ?? 'pendiente',
+                    'timestamp' => now()->toIso8601String(),
+                ];
 
-            //     $pushSuccess = $fcmService->sendToTokens($tokens, $notification, $data);
+                $pushSuccess = $fcmService->sendToTokens($tokens, $notification, $data);
 
-            //     if ($pushSuccess) {
-            //         Log::info('✅ Notificación Push enviada exitosamente', [
-            //             'usuario_id' => $usuarioPrincipal->id,
-            //             'tokens_count' => count($tokens),
-            //         ]);
-            //     } else {
-            //         Log::warning('⚠️ Error al enviar notificación push', [
-            //             'usuario_id' => $usuarioPrincipal->id,
-            //         ]);
-            //     }
-            // } else {
-            //     Log::info('🔔 Usuario sin tokens FCM activos', [
-            //         'usuario_id' => $usuarioPrincipal->id,
-            //     ]);
-            // }
+                if ($pushSuccess) {
+                    Log::info('✅ Notificación Push enviada exitosamente', [
+                        'usuario_id' => $usuarioPrincipal->id,
+                        'tokens_count' => count($tokens),
+                    ]);
+                } else {
+                    Log::warning('⚠️ Error al enviar notificación push', [
+                        'usuario_id' => $usuarioPrincipal->id,
+                    ]);
+                }
+            } else {
+                Log::info('🔔 Usuario sin tokens FCM activos', [
+                    'usuario_id' => $usuarioPrincipal->id,
+                ]);
+            }
 
             // Verificar tabla notifications después (mysql5)
             $notificationsAfter = DB::connection('mysql5')->table('notifications')
@@ -449,7 +444,7 @@ class NotificationController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * Recibir notificación de nueva orden de compra desde API Construcciones
      * 
