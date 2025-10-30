@@ -314,87 +314,98 @@ class NotificationController extends Controller
                 'estatus' => $validated['estatus'] ?? 'pendiente'
             ]);
 
-            // Verificar tabla notifications antes (mysql5)
-            $notificationsBefore = DB::connection('mysql5')->table('notifications')
-                ->where('notifiable_id', $usuarioPrincipal->id)
-                ->count();
-            Log::info('📊 Notificaciones antes (mysql5): ' . $notificationsBefore);
+            $usuarioPrincipal->notify(new NuevaOrdenCompra(
+                $validated['orden_compra_id'],
+                $validated['proveedor_id'],
+                $validated['empresa_id'],
+                $validated['estatus'] ?? 'pendiente'
+            ));
 
-            $dataEvento = [
-                'notificacion_id' => uniqid('notif_'),
-                'empresa_id' => $validated['empresa_id'],
-                'proveedor_id' => $validated['proveedor_id'],
-                'orden_compra_id' => $validated['orden_compra_id'],
-                'estatus' => $validated['estatus'] ?? 'pendiente',
-                'user_id' => $usuarioPrincipal->id,
-            ];
+            /** Send Notificacion mediante evento
+             * // Verificar tabla notifications antes (mysql5)
+             * $notificationsBefore = DB::connection('mysql5')->table('notifications')
+             *     ->where('notifiable_id', $usuarioPrincipal->id)
+             *     ->count();
+             * Log::info('📊 Notificaciones antes (mysql5): ' . $notificationsBefore);
+             * 
+             * $dataEvento = [
+             *     'notificacion_id' => uniqid('notif_'),
+             *     'empresa_id' => $validated['empresa_id'],
+             *     'proveedor_id' => $validated['proveedor_id'],
+             *     'orden_compra_id' => $validated['orden_compra_id'],
+             *     'estatus' => $validated['estatus'] ?? 'pendiente',
+             *     'user_id' => $usuarioPrincipal->id,
+             * ];
+             *
+             * 
+             *  // 1. Event para Broadcasting (Reverb WebSocket)
+             *  event(new NuevaOrdenCompraEvent($dataEvento));
+             *  
+             *  // 2. CANAL PUSH: Enviar notificación push MANUALMENTE
+             *  $tokens = $usuarioPrincipal->deviceTokens()
+             *      ->where('is_active', true)
+             *      ->pluck('token')
+             *      ->toArray();
+             *  
+             *  if (!empty($tokens)) {
+             *      $fcmService = app(FcmService::class);
+             *  
+             *      $notification = [
+             *          'title' => '📦 Nueva Orden de Compra #' . $validated['orden_compra_id'],
+             *          'body' => "Tienes una nueva orden de compra: {$validated['orden_compra_id']}",
+             *      ];
+             *  
+             *      $data = [
+             *          'tipo' => 'nueva_orden_compra',
+             *          'orden_compra_id' => $validated['orden_compra_id'],
+             *          'proveedor_id' => $validated['proveedor_id'],
+             *          'empresa_id' => $validated['empresa_id'],
+             *          'estatus' => $validated['estatus'] ?? 'pendiente',
+             *          'timestamp' => now()->toIso8601String(),
+             *      ];
+             *  
+             *      $pushSuccess = $fcmService->sendToTokens($tokens, $notification, $data);
+             *  
+             *      if ($pushSuccess) {
+             *          Log::info('✅ Notificación Push enviada exitosamente', [
+             *              'usuario_id' => $usuarioPrincipal->id,
+             *              'tokens_count' => count($tokens),
+             *          ]);
+             *      } else {
+             *          Log::warning('⚠️ Error al enviar notificación push', [
+             *              'usuario_id' => $usuarioPrincipal->id,
+             *          ]);
+             *      }
+             *  } else {
+             *      Log::info('🔔 Usuario sin tokens FCM activos', [
+             *          'usuario_id' => $usuarioPrincipal->id,
+             *      ]);
+             *  }
+             *  
+             *  // Verificar tabla notifications después (mysql5)
+             *  $notificationsAfter = DB::connection('mysql5')->table('notifications')
+             *      ->where('notifiable_id', $usuarioPrincipal->id)
+             *      ->count();
+             *  Log::info('📊 Notificaciones después (mysql5): ' . $notificationsAfter);
+             *  Log::info('📊 Notificaciones nuevas: ' . ($notificationsAfter - $notificationsBefore));
+             * 
+             *  // Obtener última notificación (mysql5)
+             *  $lastNotification = DB::connection('mysql5')->table('notifications')
+             *      ->where('notifiable_id', $usuarioPrincipal->id)
+             *      ->orderBy('created_at', 'desc')
+             *      ->first();
+             * 
+             * if ($lastNotification) {
+             *     Log::info('✅ Última notificación creada:', [
+             *         'id' => $lastNotification->id,
+             *         'type' => $lastNotification->type,
+             *         'created_at' => $lastNotification->created_at
+             *     ]);
+             * } else {
+             *     Log::warning('⚠️ No se encontró la notificación en la BD');
+             * }
+             */
 
-            // 1. Event para Broadcasting (Reverb WebSocket)
-            event(new NuevaOrdenCompraEvent($dataEvento));
-
-            // 2. CANAL PUSH: Enviar notificación push MANUALMENTE
-            $tokens = $usuarioPrincipal->deviceTokens()
-                ->where('is_active', true)
-                ->pluck('token')
-                ->toArray();
-
-            if (!empty($tokens)) {
-                $fcmService = app(FcmService::class);
-
-                $notification = [
-                    'title' => '📦 Nueva Orden de Compra #' . $validated['orden_compra_id'],
-                    'body' => "Tienes una nueva orden de compra: {$validated['orden_compra_id']}",
-                ];
-
-                $data = [
-                    'tipo' => 'nueva_orden_compra',
-                    'orden_compra_id' => $validated['orden_compra_id'],
-                    'proveedor_id' => $validated['proveedor_id'],
-                    'empresa_id' => $validated['empresa_id'],
-                    'estatus' => $validated['estatus'] ?? 'pendiente',
-                    'timestamp' => now()->toIso8601String(),
-                ];
-
-                $pushSuccess = $fcmService->sendToTokens($tokens, $notification, $data);
-
-                if ($pushSuccess) {
-                    Log::info('✅ Notificación Push enviada exitosamente', [
-                        'usuario_id' => $usuarioPrincipal->id,
-                        'tokens_count' => count($tokens),
-                    ]);
-                } else {
-                    Log::warning('⚠️ Error al enviar notificación push', [
-                        'usuario_id' => $usuarioPrincipal->id,
-                    ]);
-                }
-            } else {
-                Log::info('🔔 Usuario sin tokens FCM activos', [
-                    'usuario_id' => $usuarioPrincipal->id,
-                ]);
-            }
-
-            // Verificar tabla notifications después (mysql5)
-            $notificationsAfter = DB::connection('mysql5')->table('notifications')
-                ->where('notifiable_id', $usuarioPrincipal->id)
-                ->count();
-            Log::info('📊 Notificaciones después (mysql5): ' . $notificationsAfter);
-            Log::info('📊 Notificaciones nuevas: ' . ($notificationsAfter - $notificationsBefore));
-
-            // Obtener última notificación (mysql5)
-            $lastNotification = DB::connection('mysql5')->table('notifications')
-                ->where('notifiable_id', $usuarioPrincipal->id)
-                ->orderBy('created_at', 'desc')
-                ->first();
-
-            if ($lastNotification) {
-                Log::info('✅ Última notificación creada:', [
-                    'id' => $lastNotification->id,
-                    'type' => $lastNotification->type,
-                    'created_at' => $lastNotification->created_at
-                ]);
-            } else {
-                Log::warning('⚠️ No se encontró la notificación en la BD');
-            }
 
             Log::info('✅ Notificación enviada correctamente', [
                 'usuario_id' => $usuarioPrincipal->id,
