@@ -135,7 +135,7 @@ class FcmService
 
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $accessToken,
-                'Content-Type' => 'application/json',
+                'Content-Type'  => 'application/json',
             ])->timeout(30)->post($url, $payload);
 
             if ($response->successful()) {
@@ -145,9 +145,31 @@ class FcmService
                 return true;
             }
 
+            // ⚠️ Manejo específico para tokens inválidos (UNREGISTERED)
+            $status = $response->status();
+            $body = $response->body();
+
+            if ($status === 404 && str_contains($body, 'UNREGISTERED')) {
+                $token = data_get($payload, 'message.token');
+
+                Log::warning('FCM: Token inválido (UNREGISTERED), se eliminará', [
+                    'token' => $token,
+                    'response' => $body,
+                ]);
+
+                // 🔥 Eliminar el token de la tabla user_device_tokens
+                if ($token && class_exists(\App\Models\UserDeviceToken::class)) {
+                    \App\Models\UserDeviceToken::where('token', $token)->delete();
+                }
+
+                // No consideramos esto un error fatal
+                return true;
+            }
+
+            // Otros errores HTTP
             Log::error('FCM: Error en respuesta HTTP', [
-                'status' => $response->status(),
-                'body' => $response->body(),
+                'status' => $status,
+                'body' => $body,
             ]);
 
             return false;
@@ -160,6 +182,7 @@ class FcmService
             return false;
         }
     }
+
 
     /**
      * Procesar datos para que todos sean strings
