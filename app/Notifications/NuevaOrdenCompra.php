@@ -31,9 +31,9 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
     {
         $via = ['broadcast', 'database', 'mail'];
 
-        if (method_exists($notifiable, 'deviceTokens') && $notifiable->deviceTokens()->where('is_active', true)->exists()) {
-            $via[] = 'fcm';
-        }
+        // if (method_exists($notifiable, 'deviceTokens') && $notifiable->deviceTokens()->where('is_active', true)->exists()) {
+        //     $via[] = 'fcm';
+        // }
 
         return $via;
     }
