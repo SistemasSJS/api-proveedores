@@ -18,16 +18,9 @@ class ProveedorRegistroBasicoRequest extends FormRequest
         return [
             'empresa' => ['required', 'string', 'max:255'],
             'alias' => ['nullable', 'string', 'max:255'],
-            'rfc' => [
-                'required',
-                'string',
-                'min:12',
-                'max:13',
-                'regex:/^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$/',
-            ],
             'razon_social' => ['required', 'string', 'max:255'],
-            // Si más adelante agregas email:
-            // 'email' => ['nullable', 'email', 'max:255', Rule::unique('proveedores', 'email')],
+            'email' => ['required', 'email', 'max:255', Rule::unique('proveedores', 'email')],
+            'telefono' => ['required', 'string', 'min:10', 'max:15'],
         ];
     }
 
@@ -41,15 +34,19 @@ class ProveedorRegistroBasicoRequest extends FormRequest
             'alias.string' => 'El alias de la empresa debe ser una cadena de texto.',
             'alias.max' => 'El alias de la empresa no debe exceder los 255 caracteres.',
 
-            'rfc.required' => 'El RFC es obligatorio.',
-            'rfc.string' => 'El RFC debe ser una cadena de texto.',
-            'rfc.min' => 'El RFC debe tener al menos 12 caracteres.',
-            'rfc.max' => 'El RFC no debe exceder los 13 caracteres.',
-            'rfc.regex' => 'El RFC no tiene un formato válido.',
-
             'razon_social.required' => 'La razón social es obligatoria.',
             'razon_social.string' => 'La razón social debe ser una cadena de texto.',
             'razon_social.max' => 'La razón social no debe exceder los 255 caracteres.',
+
+            'email.required' => 'El correo electrónico es obligatorio.',
+            'email.email' => 'El correo electrónico debe ser una dirección válida.',
+            'email.max' => 'El correo electrónico no debe exceder los 255 caracteres.',
+            'email.unique' => 'Este correo electrónico ya está registrado.',
+
+            'telefono.required' => 'El teléfono es obligatorio.',
+            'telefono.string' => 'El teléfono debe ser una cadena de texto.',
+            'telefono.min' => 'El teléfono debe tener al menos 10 caracteres.',
+            'telefono.max' => 'El teléfono no debe exceder los 15 caracteres.',
         ];
     }
 }

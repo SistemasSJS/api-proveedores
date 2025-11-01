@@ -10,11 +10,13 @@ use App\Http\Requests\Auth\AuthUpdateCredentialsRequest;
 use App\Http\Requests\Auth\AuthUpdateFotoPerfilRequest;
 use App\Http\Requests\Proveedor\ProveedorRegisterCompleteRequest;
 use App\Http\Requests\Proveedor\ProveedorRegisterRequest;
+use App\Http\Requests\Proveedor\ProveedorRegistroBasicoCompleteRequest;
 use App\Http\Requests\Proveedor\ProveedorRegistroBasicoRequest;
 use App\Http\Resources\ProveedorResource;
 use App\Http\Resources\UserAuthenticateResource;
 use App\Mail\CompletaRegistroProveedorMail;
 use App\Mail\CompletaRegistroUsuarioMail;
+use App\Mail\ValidaCorreoProveedorBasicoMail;
 use App\Models\Proveedor;
 use App\Models\Role;
 use App\Models\User;
@@ -280,35 +282,66 @@ class AuthController extends Controller
 
     /**
      * Registrar un nuevo proveedor (versión básica sin usuario asociado)
+     * Envía un correo de validación para que el usuario cree su contraseña
      *
      * @return \Illuminate\Http\JsonResponse
      */
     public function register_proveedor_basico_sp(ProveedorRegistroBasicoRequest $request)
     {
-        // Crear proveedor con campos booleanos según tipo de proveedor
+        $validatedData = $request->validated();
+        $token = Str::random(60);
+
+        // Guardar datos del proveedor en cache por 7 días
+        Cache::put("registro_proveedor_basico_{$token}", $validatedData, 60 * 24 * 7);
+
+        // Generar URL para completar el registro
+        $url = config('services.frontend.url')."/gen-pass-basico?token={$token}";
+
+        // Enviar correo de validación
+        Mail::to($validatedData['email'])->send(
+            new ValidaCorreoProveedorBasicoMail($url, $validatedData['empresa'])
+        );
+
+        return $this->success([
+            'url' => $url,
+            'email' => $validatedData['email'],
+        ], 'Registro iniciado. Revisa tu correo para completar el registro.', 200);
+    }
+
+    /**
+     * Completar el registro básico del proveedor con contraseña
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function register_proveedor_basico_completar(ProveedorRegistroBasicoCompleteRequest $request)
+    {
+        $data = Cache::get("registro_proveedor_basico_{$request->token}");
+
+        if (! $data) {
+            return $this->error('Token inválido o expirado', [], 498);
+        }
+
+        // Crear proveedor con datos del cache
         $proveedor = Proveedor::create([
-            ...$request->validated(),
-            'nombre_comercial' => $request->alias,
+            'empresa' => $data['empresa'],
+            'nombre_comercial' => $data['alias'] ?? $data['empresa'],
+            'razon_social' => $data['razon_social'],
+            'email' => $data['email'],
+            'telefono' => $data['telefono'],
             'is_proveedor_sp' => true,
             'is_proveedor_catalogo' => false,
-            'cambiar_pass_default' => true,
+            'cambiar_pass_default' => false,
             'perfil_empresa_completo' => false,
         ]);
 
         // Obtener rol de gerente
         $idRoleProveedor = Role::where('nombre', UserRoleEnumerate::GERENTE->value)->first()->id;
 
-        // Contraseña por defecto si no se envía
-        // $password = $request->password ?? substr($request->rfc, -6);
-
-        // Email ficticio si no se proporciona
-        // $email = $request->email ?? $request->rfc . '@proveedor.local';
-
-        // Crear usuario usando RFC como nombre de usuario
+        // Crear usuario
         $user = User::create([
-            'name' => $request->rfc,       // RFC como nombre de usuario
-            'email' => $request->rfc,             // Email real o ficticio
-            'password' => Hash::make($request->rfc), // RFC como contraseña por defecto
+            'name' => $data['empresa'],
+            'email' => $data['email'],
+            'password' => Hash::make($request->password),
             'role_id' => $idRoleProveedor,
         ]);
 
@@ -320,15 +353,35 @@ class AuthController extends Controller
             'observaciones' => 'Usuario principal del proveedor',
         ]);
 
+        /**
+         * Crear sucursal matriz por defecto si el proveedor aún no tiene ninguna.
+         */
+        if (! $proveedor->sucursales()->exists()) {
+            $proveedor->sucursales()->create([
+                'nombre' => 'Matriz',
+                'direccion' => $proveedor->direccion ?? 'Dirección pendiente',
+                'telefono' => $proveedor->telefono ?? '0000000000',
+                'email' => $proveedor->email,
+                'encargado' => $proveedor->nombre_comercial,
+                'activa' => true,
+                'coordenadas_lat' => null,
+                'coordenadas_lng' => null,
+                'estatus' => 'activo',
+            ]);
+        }
+
+        // Eliminar datos del cache
+        Cache::forget("registro_proveedor_basico_{$request->token}");
+
         // Crear token de autenticación
         $token = $user->createToken('auth_token')->plainTextToken;
         $user->load(User::eagerLodable());
 
         return $this->success([
             'user' => new UserAuthenticateResource($user),
+            'proveedor' => new ProveedorResource($proveedor->load(Proveedor::eagerLodable())),
             'token' => $token,
-            'proveedor' => $proveedor,
-        ], 'Proveedor registrado exitosamente', 200);
+        ], 'Registro completado exitosamente', 201);
     }
 
     /**
