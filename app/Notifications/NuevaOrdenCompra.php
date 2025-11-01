@@ -92,13 +92,15 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
      */
     public function toMail(object $notifiable): MailMessage
     {
+        $frontendUrl = config('app.frontend_url', config('app.url'));
+        
         return (new MailMessage)
             ->subject('Nueva Orden de Compra #' . $this->ordenCompraId)
             ->greeting('Hola ' . $notifiable->name . ',')
             ->line('Tienes una nueva orden de compra registrada.')
             ->line('Número de orden: ' . $this->ordenCompraId)
             ->line('Estatus: ' . ucfirst($this->estatus))
-            ->action('Ver Orden', url('/ordenes-compra/' . $this->ordenCompraId))
+            ->action('Ver Orden', $frontendUrl . '/ordenes-compra/' . $this->ordenCompraId)
             ->line('Gracias por utilizar CONSTRUCC.');
     }
 

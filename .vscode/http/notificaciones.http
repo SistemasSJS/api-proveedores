@@ -1,4 +1,3 @@
-###
 # =========================================================================
 # PRUEBAS DE NOTIFICACIONES API - Sistema Proveedores
 # =========================================================================
@@ -12,7 +11,7 @@
 # - Token de autenticación válido para endpoints del frontend
 # =========================================================================
 
-# @baseUrl = http://localhost:80/api
+# @baseUrl = http://localhost:80/api  
 @baseUrl = https://apicons.ddns.net:8092/api
 @apiKey = cf5cd9d4b56257d25baf3300447af494d1e815f802553a5b65204099b26ea6e1
 @authToken = Bearer 8|IAtT96wh0fGGKsyaO7LmTTvRwJ5ejk0pbwixV60zbbc237b0
@@ -94,11 +93,11 @@ Accept: application/json
 X-API-KEY: {{apiKey}}
 
 {
-  "num_orden": "OC-2025-002",
   "proveedor_id": 1,
+  "orden_compra_id": "OC-2025-002",
   "fecha": "2025-10-24",
   "obra_id": 3,
-  "empresa": 1,
+  "empresa_id": 1,
   "usuario": 8,
   "tipo_orden": "NORMAL",
   "requisicion_id": null,

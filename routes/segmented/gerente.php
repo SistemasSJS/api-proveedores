@@ -21,6 +21,7 @@ use App\Http\Controllers\OrdenCompraController;
 use App\Http\Controllers\OrdenCompraRegistroController;
 use App\Http\Controllers\OrdenCompraSolicitudPagoController;
 use App\Http\Controllers\ProveedorOrdenCompraDashboardController;
+use App\Http\Controllers\ProveedorOrdenCompraController;
 
 /**
  * GESTIÓN DE PROVEEDORES
@@ -253,6 +254,10 @@ Route::prefix('proveedores')
                 Route::put('/registro/upsert', [OrdenCompraRegistroController::class, 'upsert'])->middleware(['audit']);
                 Route::post('/registro/batch', [OrdenCompraRegistroController::class, 'storeBatch'])->middleware(['audit']);
                 Route::post('/registro/check-existence', [OrdenCompraRegistroController::class, 'checkExistence'])->middleware(['audit']);
+
+                // === NUEVAS RUTAS: CONSULTA DESDE API CONSTRUCCIONES ===
+                Route::get('/consultar', [ProveedorOrdenCompraController::class, 'index'])->middleware(['audit']); // Listado de OC del proveedor
+                Route::get('/consultar/{ordenCompraId}', [ProveedorOrdenCompraController::class, 'show'])->middleware(['audit']); // Detalle de OC
 
                 // === DASHBOARD Y ESTADÍSTICAS ===
                 Route::get('/dashboard', [ProveedorOrdenCompraDashboardController::class, 'dashboard'])->middleware(['audit']); // Dashboard completo
