@@ -28,10 +28,17 @@
         }
         
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, #FFC107 0%, #FFD54F 100%);
+            color: #000000;
             padding: 30px 20px;
             text-align: center;
+        }
+        
+        .logo {
+            max-width: 80px;
+            height: auto;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
         }
         
         .header h1 {
@@ -76,13 +83,13 @@
             align-items: center;
             margin-bottom: 15px;
             padding-bottom: 15px;
-            border-bottom: 2px solid #667eea;
+            border-bottom: 2px solid #FFC107;
         }
         
         .cotizacion-id {
             font-size: 20px;
             font-weight: 600;
-            color: #667eea;
+            color: #FFC107;
         }
         
         .cotizacion-total {
@@ -134,8 +141,8 @@
         
         .action-button {
             display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, #FFC107 0%, #FFD54F 100%);
+            color: #000000;
             padding: 15px 30px;
             text-decoration: none;
             border-radius: 6px;
@@ -148,7 +155,7 @@
         
         .action-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 6px 12px rgba(255, 193, 7, 0.3);
         }
         
         .solicitante-info {
@@ -215,7 +222,8 @@
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-            <h1>🏗️ Nueva Cotización Solicitada</h1>
+            <img src="{{ asset('assets/logo-icon-384x384.png') }}" alt="SJS Construcciones Logo" class="logo">
+            <h1>🏭 Nueva Cotización Solicitada</h1>
             <p>Sistema de Gestión de Proveedores</p>
         </div>
         

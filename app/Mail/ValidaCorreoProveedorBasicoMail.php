@@ -21,7 +21,7 @@ class ValidaCorreoProveedorBasicoMail extends Mailable
 
     public function build()
     {
-        return $this->subject('Confirma tu correo y completa tu registro')
+        return $this->subject('Bienvenido a SJS Construcciones - Crea tu contraseña')
             ->view('emails.valida-correo-proveedor-basico');
     }
 }
