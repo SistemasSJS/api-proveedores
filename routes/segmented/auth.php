@@ -23,6 +23,13 @@ Route::prefix('auth')->group(function () {
     Route::post('register_proveedor_completar', [AuthController::class, 'register_proveedor_completar'])->middleware(['audit']);
     Route::post('register_basico', [AuthController::class, 'register_proveedor_basico_sp'])->middleware(['audit']);
     Route::post('register_basico_completar', [AuthController::class, 'register_proveedor_basico_completar'])->middleware(['audit']);
+    
+    /**
+     * RECUPERACIÓN DE CONTRASEÑA
+     */
+    Route::post('password/forgot', [AuthController::class, 'requestPasswordReset'])->middleware(['audit']);
+    Route::post('password/reset', [AuthController::class, 'resetPassword'])->middleware(['audit']);
+    
     /**
      * PERFIL Y GESTIÓN DE CUENTA
      */

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Completa tu registro</title>
+    <title>Recuperación de Contraseña</title>
     <style>
         * {
             margin: 0;
@@ -30,7 +30,6 @@
             max-width: 100px;
             height: auto;
             margin-bottom: 15px;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
         }
         .header-title {
             color: #000000;
@@ -67,23 +66,23 @@
             font-weight: 600;
             font-size: 16px;
             box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4);
-            transition: transform 0.2s;
         }
-        .cta-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 193, 7, 0.5);
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e0e0e0, transparent);
+            margin: 30px 0;
         }
-        .security-note {
-            background-color: #fff3cd;
-            border: 1px solid #ffeeba;
-            padding: 15px;
-            border-radius: 6px;
-            margin-top: 25px;
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #FFC107;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 4px;
         }
-        .security-note p {
-            color: #856404;
-            font-size: 13px;
+        .info-box p {
             margin: 0;
+            color: #666666;
+            font-size: 14px;
         }
         .footer {
             background-color: #f8f9fa;
@@ -99,6 +98,18 @@
         .footer-link {
             color: #FFC107;
             text-decoration: none;
+        }
+        .security-note {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 25px;
+        }
+        .security-note p {
+            color: #856404;
+            font-size: 13px;
+            margin: 0;
         }
         @media only screen and (max-width: 600px) {
             .content {
@@ -119,33 +130,47 @@
         <!-- Header con logo -->
         <div class="header">
             <img src="{{ config('app.url') }}/assets/logo-icon-384x384.png" alt="SJS Construcciones Logo" class="logo">
-            <h1 class="header-title">¡Completa tu registro!</h1>
+            <h1 class="header-title">Recuperación de Contraseña</h1>
         </div>
 
         <!-- Contenido principal -->
         <div class="content">
+            @if($userName)
+            <p class="welcome-text">¡Hola, {{ $userName }}!</p>
+            @else
             <p class="welcome-text">¡Hola!</p>
+            @endif
             
             <p class="message">
-                Estás a un paso de completar tu registro en la plataforma de proveedores SJS Construcciones.
+                Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en SJS Construcciones.
             </p>
 
             <p class="message">
-                Haz clic en el botón de abajo para finalizar tu registro y establecer tu contraseña.
+                Si realizaste esta solicitud, haz clic en el botón de abajo para crear una nueva contraseña:
             </p>
 
             <!-- Botón de acción -->
             <div class="cta-container">
                 <a href="{{ $url }}" class="cta-button">
-                    Completar mi registro
+                    Restablecer mi contraseña
                 </a>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Información adicional -->
+            <div class="info-box">
+                <p>
+                    <strong>Por tu seguridad:</strong><br>
+                    Este enlace es válido por <strong>60 minutos</strong> y solo puede ser utilizado una vez.
+                </p>
             </div>
 
             <!-- Nota de seguridad -->
             <div class="security-note">
                 <p>
-                    <strong>⚠️ Nota importante:</strong> Si no solicitaste este registro, 
-                    puedes ignorar este correo de forma segura.
+                    <strong>⚠️ Importante:</strong> Si no solicitaste restablecer tu contraseña, 
+                    ignora este correo. Tu contraseña actual permanecerá sin cambios y tu cuenta estará segura.
                 </p>
             </div>
         </div>

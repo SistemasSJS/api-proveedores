@@ -8,6 +8,8 @@ use App\Http\Requests\Auth\AuthRegisterCompleteRequest;
 use App\Http\Requests\Auth\AuthRegisterRequest;
 use App\Http\Requests\Auth\AuthUpdateCredentialsRequest;
 use App\Http\Requests\Auth\AuthUpdateFotoPerfilRequest;
+use App\Http\Requests\Auth\PasswordResetRequest;
+use App\Http\Requests\Auth\PasswordResetCompleteRequest;
 use App\Http\Requests\Proveedor\ProveedorRegisterCompleteRequest;
 use App\Http\Requests\Proveedor\ProveedorRegisterRequest;
 use App\Http\Requests\Proveedor\ProveedorRegistroBasicoCompleteRequest;
@@ -17,6 +19,7 @@ use App\Http\Resources\UserAuthenticateResource;
 use App\Mail\CompletaRegistroProveedorMail;
 use App\Mail\CompletaRegistroUsuarioMail;
 use App\Mail\ValidaCorreoProveedorBasicoMail;
+use App\Mail\PasswordResetMail;
 use App\Models\Proveedor;
 use App\Models\Role;
 use App\Models\User;
@@ -421,5 +424,109 @@ class AuthController extends Controller
             'token' => $newToken,
             'proveedor' => new ProveedorResource($proveedor),
         ], 'Contraseña actualizada correctamente.', 200);
+    }
+
+    /**
+     * Solicitar recuperación de contraseña
+     *
+     * @param PasswordResetRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function requestPasswordReset(PasswordResetRequest $request)
+    {
+        $email = $request->email;
+        $user = User::where('email', $email)->first();
+        
+        if (!$user) {
+            // Retornar éxito aunque no exista para evitar enumeration attacks
+            return $this->success(
+                ['email' => $email],
+                'Si existe una cuenta con este correo, recibirás las instrucciones para recuperar tu contraseña.',
+                200
+            );
+        }
+
+        // Generar token único
+        $token = Str::random(60);
+        
+        // Guardar en cache con expiración de 1 hora
+        Cache::put("password_reset_{$token}", [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'created_at' => now()
+        ], 60 * 60); // 1 hora
+
+        // Generar URL para reset
+        $url = config('services.frontend.url') . "/auth/reset-password?token={$token}";
+        
+        // Enviar email
+        Mail::to($user->email)->send(new PasswordResetMail($url, $user->name));
+
+        return $this->success(
+            ['email' => $email],
+            'Si existe una cuenta con este correo, recibirás las instrucciones para recuperar tu contraseña.',
+            200
+        );
+    }
+
+    /**
+     * Resetear contraseña con token
+     *
+     * @param PasswordResetCompleteRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function resetPassword(PasswordResetCompleteRequest $request)
+    {
+        $data = Cache::get("password_reset_{$request->token}");
+        
+        if (!$data) {
+            return $this->error(
+                'El enlace de recuperación ha expirado o es inválido. Por favor, solicita uno nuevo.',
+                [],
+                400
+            );
+        }
+
+        // Verificar que no haya pasado más de 1 hora
+        $createdAt = \Carbon\Carbon::parse($data['created_at']);
+        if ($createdAt->diffInMinutes(now()) > 60) {
+            Cache::forget("password_reset_{$request->token}");
+            return $this->error(
+                'El enlace de recuperación ha expirado. Por favor, solicita uno nuevo.',
+                [],
+                400
+            );
+        }
+
+        // Buscar usuario
+        $user = User::find($data['user_id']);
+        
+        if (!$user) {
+            return $this->error(
+                'Usuario no encontrado.',
+                [],
+                404
+            );
+        }
+
+        // Actualizar contraseña
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        // Eliminar token del cache
+        Cache::forget("password_reset_{$request->token}");
+
+        // Crear nuevo token de autenticación
+        $token = $user->createToken('API Token')->plainTextToken;
+        $user->load(User::eagerLodable());
+        
+        // Obtener proveedor si existe
+        $proveedor = $user->proveedorPrincipal();
+
+        return $this->success([
+            'user' => new UserAuthenticateResource($user),
+            'token' => $token,
+            'proveedor' => $proveedor ? new ProveedorResource($proveedor) : null,
+        ], 'Contraseña restablecida exitosamente.', 200);
     }
 }

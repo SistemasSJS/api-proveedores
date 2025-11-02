@@ -222,7 +222,7 @@
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-            <img src="{{ asset('assets/logo-icon-384x384.png') }}" alt="SJS Construcciones Logo" class="logo">
+            <img src="{{ config('app.url') }}/assets/logo-icon-384x384.png" alt="SJS Construcciones Logo" class="logo">
             <h1>🏭 Nueva Cotización Solicitada</h1>
             <p>Sistema de Gestión de Proveedores</p>
         </div>
