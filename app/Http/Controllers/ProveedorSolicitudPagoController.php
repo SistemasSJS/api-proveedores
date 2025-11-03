@@ -7,12 +7,21 @@ use App\Http\Resources\SolicitudPago\SolicitudPagoResource;
 use App\Models\EmpresaConstrucc;
 use App\Models\Proveedor;
 use App\Models\SolicitudPago;
+use App\Services\InterApiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
 class ProveedorSolicitudPagoController extends Controller
 {
+
+    protected $interapiSrv;
+
+    public function __construct(InterApiService $interapiSrv)
+    {
+        $this->interapiSrv = $interapiSrv;
+    }
     /**
      * Listado con paginación, filtrando por proveedor
      */
@@ -109,6 +118,11 @@ class ProveedorSolicitudPagoController extends Controller
             $solicitud->sincronizarCuentasBancarias($request->cuentas_bancarias);
         }
 
+        // 
+        $response = $this->interapiSrv->notifyNewSolicitudCompra($solicitud);
+        if ($response['suceess']) {
+        }
+        
         return $this->success(
             new SolicitudPagoResource($solicitud->load(['proveedor', 'empresaConstrucc', 'cuentasBancarias'])),
             'Solicitud de pago creada correctamente.',
@@ -478,7 +492,7 @@ class ProveedorSolicitudPagoController extends Controller
             $timeline[] = [
                 'estado' => 'rechazada',
                 'fecha' => $sp->fecha_rechazado,
-                'descripcion' => 'Solicitud rechazada: '.($sp->motivo_rechazo ?? 'Sin motivo especificado'),
+                'descripcion' => 'Solicitud rechazada: ' . ($sp->motivo_rechazo ?? 'Sin motivo especificado'),
             ];
         }
 

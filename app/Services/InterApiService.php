@@ -7,68 +7,52 @@ use Illuminate\Support\Facades\Log;
 
 class InterApiService
 {
-  protected $apiProveedoresUrl;
-  protected $apiProveedoresApiKey;
+  protected $apiContruccUrl;
+  protected $apiContruccApiKey;
   protected $timeout;
   public function __construct()
   {
-    $this->apiProveedoresUrl = config('services.api_proveedores.url');
-    $this->apiProveedoresApiKey = config('services.api_proveedores.apikey');
-    $this->timeout = config('services.api_proveedores.timeout', 10);
+    $this->apiContruccUrl = config('services.api_construcciones.url');
+    $this->apiContruccApiKey = config('services.api_construcciones.apikey');
+    $this->timeout = config('services.api_construcciones.timeout', 10);
   }
   /**
    * Notificar a API Proveedores sobre nueva orden de compra
    */
-  public function notifyNewOrdenCompra($ordenCompra)
+  public function notifyNewSolicitudCompra($sp)
   {
     try {
+      $payload = [
+        'sp_id' => 1,
+        'company' => 14,
+        'obra' => 1,
+        'message' => 'Nueva Solicitud de compra',
+        'user_id' => 1,
+      ];
+
       // Enviar a API Proveedores con ApiKey header
       $response = Http::withHeaders([
-        'X-API-KEY' => $this->apiProveedoresApiKey,
+        'X-API-KEY' => $this->apiContruccApiKey,
         'Content-Type' => 'application/json',
         'Accept' => 'application/json'
       ])
         ->timeout($this->timeout)
         ->retry(3, 100) // 3 reintentos con 100ms de delay
-        ->post("{$this->apiProveedoresUrl}/api/notificaciones/nueva-orden", [
-          'orden_compra_id' => $ordenCompra->id,
-          'proveedor_id' => $ordenCompra->proveedor_id,
-          'total' => $ordenCompra->total,
-          'productos' => $ordenCompra->detalles->map(function ($detalle) {
-            return [
-              'nombre' => $detalle->producto_nombre,
-              'cantidad' => $detalle->cantidad,
-              'precio' => $detalle->precio_unitario,
-              'subtotal' => $detalle->subtotal
-            ];
-          })->toArray(),
-          'fecha' => $ordenCompra->created_at->toIso8601String(),
-          'estado' => $ordenCompra->estado,
-          'observaciones' => $ordenCompra->observaciones ?? null
-        ]);
+        ->post("{$this->apiContruccUrl}/api/notify-sp", $payload);
+
       if ($response->successful()) {
-        Log::channel('inter_api')->info('Orden de compra notificada a proveedores', [
-          'orden_compra_id' => $ordenCompra->id,
-          'proveedor_id' => $ordenCompra->proveedor_id,
-          'response' => $response->json()
-        ]);
         return [
           'success' => true,
           'data' => $response->json()
         ];
       }
-      Log::channel('inter_api')->error('Error al notificar orden de compra', [
-        'orden_compra_id' => $ordenCompra->id,
-        'status' => $response->status(),
-        'body' => $response->body()
-      ]);
       return [
         'success' => false,
         'error' => $response->body()
       ];
     } catch (\Exception $e) {
-      Log::channel('inter_api')->error('Excepción al notificar orden de compra', [
-        'orden_compra_id' => $ordenCompra->id,
+      Log::channel('inter_api')->error('Excepción al notificar sp', [
+        'sp_id' => $sp->id,
         'error' => $e->getMessage(),
         'trace' => $e->getTraceAsString()
       ]);
