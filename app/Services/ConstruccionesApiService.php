@@ -26,10 +26,13 @@ class ConstruccionesApiService
         try {
             $response = Http::withHeaders([
                 'X-API-KEY' => $this->apiKey,
+                'Content-Type' => 'application/json',
+
                 'Accept' => 'application/json'
             ])
-                ->timeout($this->timeout)
-                ->get("{$this->apiUrl}/api/ordenes-compra/proveedor/{$proveedorId}", $params);
+                ->get("{$this->apiUrl}/ordenes-compra");
+            // ->timeout($this->timeout)
+            // ->get("{$this->apiUrl}/api/ordenes-compra", $params);
 
             if ($response->successful()) {
                 return [
