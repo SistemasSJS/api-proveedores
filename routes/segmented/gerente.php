@@ -250,10 +250,11 @@ Route::prefix('proveedores')
             ->group(function () {
 
                 // === RUTAS DE REGISTRO (desde frontend) ===
-                Route::post('/registro', [OrdenCompraRegistroController::class, 'store'])->middleware(['audit']);
-                Route::put('/registro/upsert', [OrdenCompraRegistroController::class, 'upsert'])->middleware(['audit']);
-                Route::post('/registro/batch', [OrdenCompraRegistroController::class, 'storeBatch'])->middleware(['audit']);
-                Route::post('/registro/check-existence', [OrdenCompraRegistroController::class, 'checkExistence'])->middleware(['audit']);
+                /** ESTAS YA NO SON NECESARIAS */
+                // Route::post('/registro', [OrdenCompraRegistroController::class, 'store'])->middleware(['audit']);
+                // Route::put('/registro/upsert', [OrdenCompraRegistroController::class, 'upsert'])->middleware(['audit']);
+                // Route::post('/registro/batch', [OrdenCompraRegistroController::class, 'storeBatch'])->middleware(['audit']);
+                // Route::post('/registro/check-existence', [OrdenCompraRegistroController::class, 'checkExistence'])->middleware(['audit']);
 
                 // === NUEVAS RUTAS: CONSULTA DESDE API CONSTRUCCIONES ===
                 Route::get('/consultar', [ProveedorOrdenCompraController::class, 'index'])->middleware(['audit']); // Listado de OC del proveedor
@@ -273,7 +274,7 @@ Route::prefix('proveedores')
                 Route::get('/disponibles/conversion', [ProveedorOrdenCompraDashboardController::class, 'getOrdenesDisponibles'])->middleware(['audit']);
                 Route::get('/{ordenCompra}', [ProveedorOrdenCompraDashboardController::class, 'show'])->middleware(['audit']); // Detalle OC
                 Route::get('/{ordenCompra}/solicitudes-pago', [ProveedorOrdenCompraDashboardController::class, 'getSolicitudesPago'])->middleware(['audit']); // SP enlazadas
-                
+
                 // === RUTAS DIRECTAS CON CONTEXTO DE PROVEEDOR ===
                 Route::get('/id/{ordenCompra}', [ProveedorOrdenCompraDashboardController::class, 'showDirecto'])->middleware(['audit']); // Detalle OC por ID
                 Route::get('/id/{ordenCompra}/solicitudes-pago', [ProveedorOrdenCompraDashboardController::class, 'getSolicitudesPagoDirecto'])->middleware(['audit']); // SP de OC por ID

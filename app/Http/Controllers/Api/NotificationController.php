@@ -226,7 +226,7 @@ class NotificationController extends Controller
      */
     public function nuevaOrden(Request $request)
     {
-        Log::info('🔵 ========== INICIO nuevaOrden() ==========');
+        // Log::info('🔵 ========== INICIO nuevaOrden() ==========');
 
         try {
             // Reconectar bases de datos
@@ -234,34 +234,34 @@ class NotificationController extends Controller
             DB::reconnect('mysql');
             DB::purge('mysql5');
             DB::reconnect('mysql5');
-            Log::info('🔄 Conexiones de BD reconectadas');
+            // Log::info('🔄 Conexiones de BD reconectadas');
 
-            Log::info('📦 Request recibido:', [
-                'headers' => $request->headers->all(),
-                'body' => $request->all()
-            ]);
+            // Log::info('📦 Request recibido:', [
+            //     'headers' => $request->headers->all(),
+            //     'body' => $request->all()
+            // ]);
 
             // 1. Validar body de la petición
-            Log::info('🔍 Validando request...');
+            // Log::info('🔍 Validando request...');
             $validated = $request->validate([
                 'empresa_id' => 'required|integer',
                 'proveedor_id' => 'required|integer',
                 'orden_compra_id' => 'required|string',
                 'estatus' => 'nullable|string',
             ]);
-            Log::info('✅ Validación exitosa:', $validated);
+            // Log::info('✅ Validación exitosa:', $validated);
 
             // 2. Buscar proveedor usando conexión mysql5
-            Log::info('🔍 Buscando proveedor ID: ' . $validated['proveedor_id'] . ' (mysql5)');
+            // Log::info('🔍 Buscando proveedor ID: ' . $validated['proveedor_id'] . ' (mysql5)');
             $proveedor = Proveedor::on('mysql5')->findOrFail($validated['proveedor_id']);
-            Log::info('✅ Proveedor encontrado:', [
-                'id' => $proveedor->id,
-                'nombre' => $proveedor->nombre ?? 'N/A',
-                'connection' => $proveedor->getConnectionName()
-            ]);
+            // Log::info('✅ Proveedor encontrado:', [
+            //     'id' => $proveedor->id,
+            //     'nombre' => $proveedor->nombre ?? 'N/A',
+            //     'connection' => $proveedor->getConnectionName()
+            // ]);
 
             // 3. Buscar usuario principal usando conexión mysql5
-            Log::info('🔍 Buscando usuario principal del proveedor (mysql5)...');
+            // Log::info('🔍 Buscando usuario principal del proveedor (mysql5)...');
             $usuarioPrincipal = $proveedor->usuarioPrincipal();
 
             if (!$usuarioPrincipal) {
@@ -278,15 +278,15 @@ class NotificationController extends Controller
             // Forzar conexión mysql5 en el usuario
             $usuarioPrincipal->setConnection('mysql5');
 
-            Log::info('✅ Usuario principal encontrado:', [
-                'id' => $usuarioPrincipal->id,
-                'name' => $usuarioPrincipal->name,
-                'email' => $usuarioPrincipal->email,
-                'connection' => $usuarioPrincipal->getConnectionName()
-            ]);
+            // Log::info('✅ Usuario principal encontrado:', [
+            //     'id' => $usuarioPrincipal->id,
+            //     'name' => $usuarioPrincipal->name,
+            //     'email' => $usuarioPrincipal->email,
+            //     'connection' => $usuarioPrincipal->getConnectionName()
+            // ]);
 
             // 4. Insertar en tabla oc_construcc
-            Log::info('💾 Insertando en tabla oc_construcc (mysql5)...');
+            // Log::info('💾 Insertando en tabla oc_construcc (mysql5)...');
             $dataToInsert = [
                 'empresa_id' => $validated['empresa_id'],
                 'proveedor_id' => $validated['proveedor_id'],
@@ -295,7 +295,7 @@ class NotificationController extends Controller
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
-            Log::info('📊 Datos a insertar:', $dataToInsert);
+            // Log::info('📊 Datos a insertar:', $dataToInsert);
 
             $inserted = DB::connection('mysql5')->table('oc_construcc')->insert($dataToInsert);
 
@@ -306,13 +306,13 @@ class NotificationController extends Controller
             }
 
             // 5. Enviar notificación Laravelz
-            Log::info('🔔 Enviando notificación Laravel...');
-            Log::info('📊 Datos de notificación:', [
-                'orden_compra_id' => $validated['orden_compra_id'],
-                'proveedor_id' => $validated['proveedor_id'],
-                'empresa_id' => $validated['empresa_id'],
-                'estatus' => $validated['estatus'] ?? 'pendiente'
-            ]);
+            // Log::info('🔔 Enviando notificación Laravel...');
+            // Log::info('📊 Datos de notificación:', [
+            //     'orden_compra_id' => $validated['orden_compra_id'],
+            //     'proveedor_id' => $validated['proveedor_id'],
+            //     'empresa_id' => $validated['empresa_id'],
+            //     'estatus' => $validated['estatus'] ?? 'pendiente'
+            // ]);
 
             $usuarioPrincipal->notify(new NuevaOrdenCompra(
                 $validated['orden_compra_id'],
