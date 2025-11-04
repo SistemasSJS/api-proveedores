@@ -31,11 +31,12 @@ class InterApiService
       ];
 
       // Enviar a API Proveedores con ApiKey header
-      $response = Http::withHeaders([
-        'X-API-KEY' => $this->apiContruccApiKey,
-        'Content-Type' => 'application/json',
-        'Accept' => 'application/json'
-      ])
+      $response = Http::withoutVerifying()
+        ->withHeaders([
+          'X-API-KEY' => $this->apiContruccApiKey,
+          'Content-Type' => 'application/json',
+          'Accept' => 'application/json'
+        ])
         ->timeout($this->timeout)
         ->retry(3, 100) // 3 reintentos con 100ms de delay
         ->post("{$this->apiContruccUrl}/notify-sp", $payload);
