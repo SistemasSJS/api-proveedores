@@ -104,7 +104,7 @@ class ProveedorSolicitudPagoController extends Controller
             'ruta_archivo_cotizacion' => $rutaCotizacion,
             'empresa_construcc_id' => $empresaConstructId,
             'residente' => $request->residente,
-            'cotizacion_id' => $request->cotizacion_id,
+            'cotizacion_id' => null, //$request->cotizacion_id,
             'estado_solicitud' => 'pendiente',
             'fecha_registro_pendiente' => now(),
             'monto_total' => $montoTotal,
@@ -122,7 +122,7 @@ class ProveedorSolicitudPagoController extends Controller
         $response = $this->interapiSrv->notifyNewSolicitudCompra($solicitud);
         if ($response['suceess']) {
         }
-        
+
         return $this->success(
             new SolicitudPagoResource($solicitud->load(['proveedor', 'empresaConstrucc', 'cuentasBancarias'])),
             'Solicitud de pago creada correctamente.',
