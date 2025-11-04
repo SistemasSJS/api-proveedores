@@ -38,7 +38,7 @@ class InterApiService
       ])
         ->timeout($this->timeout)
         ->retry(3, 100) // 3 reintentos con 100ms de delay
-        ->post("{$this->apiContruccUrl}/api/notify-sp", $payload);
+        ->post("{$this->apiContruccUrl}/notify-sp", $payload);
 
       if ($response->successful()) {
         return [
