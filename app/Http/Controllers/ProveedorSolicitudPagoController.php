@@ -478,7 +478,7 @@ class ProveedorSolicitudPagoController extends Controller
             $timeline[] = [
                 'estado' => 'rechazada',
                 'fecha' => $sp->fecha_rechazado,
-                'descripcion' => 'Solicitud rechazada: ' . ($sp->motivo_rechazo ?? 'Sin motivo especificado'),
+                'descripcion' => 'Solicitud rechazada: '.($sp->motivo_rechazo ?? 'Sin motivo especificado'),
             ];
         }
 
