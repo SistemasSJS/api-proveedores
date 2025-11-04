@@ -481,19 +481,16 @@ class SolicitudPago extends BaseModel
      */
     public static function generarNumeroFolio(Proveedor $proveedor)
     {
-        $ultimoFolio = self::where('proveedor_id', $proveedor->id)
-            ->orderByDesc('id')
-            ->value('numero_folio_solicitud');
+        // Contamos cuántas solicitudes tiene el proveedor
+        $count = self::where('proveedor_id', $proveedor->id)->count();
 
-        if ($ultimoFolio) {
-            $numero = (int) filter_var($ultimoFolio, FILTER_SANITIZE_NUMBER_INT);
-            $siguienteNumero = $numero + 1;
-        } else {
-            $siguienteNumero = 1;
-        }
+        // El siguiente número será count + 1
+        $siguienteNumero = $count + 1;
 
+        // Tomamos las primeras 3 letras del nombre comercial, solo letras
         $proveedorClave = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $proveedor->nombre_comercial), 0, 3));
 
+        // Generamos el folio con formato SP-ABC-000001
         return sprintf('SP-%s-%06d', $proveedorClave, $siguienteNumero);
     }
 
@@ -524,5 +521,4 @@ class SolicitudPago extends BaseModel
 
         return $this->monto_total <= $this->monto_oc_original;
     }
-
 }
