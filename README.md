@@ -340,3 +340,87 @@ Para problemas o consultas sobre el proyecto, contactar al equipo de desarrollo.
 **Última actualización:** Agosto 2025
 **Versión:** 1.0.0
 **Entorno:** Windows PowerShell
+rutas necesarias para las ordendes de compra en construcc  (OC): 
+
+- GET Listado de OC filtradas por: 
+  - proveedor_id
+  - estatus (que se puedan concatenar valores ejem: ?estatus=pendiente,pagado)
+  - fecha (rangos de fecha) --- hoy, ayer, mañana, rango especifico
+  // todos los filtros son independientes y deben poder aplicarse juntos
+
+
+- GET Consulta OC by ID (Necesario validar si la OC pertenece al proveedor, parametros: proveedor_id, orden_compra_id)
+
+// para los los post validar si el proveedor es el de la OC. Retornar error: No se cuenta con los permisos para este recurso.
+- POST Estatus SP generada
+- POST cancelada, rechazada, ...
+
+Notificaciones: 
+1. Al generarse una OC --> se registra en proveediore y genera notifcacion
+2. Al generar SP apartir de una OC --> se debe notificar al usuario construcc de la SP
+3. SP: al subir el comprobante de pago --> se debe notificar al proveedor del pago de la SP
+4. SP: En caso de ser rechaza --> 
+  4.1. Si rechaza proveedor --> motivo de rechazo y se notifica a usuairo construcc
+  4.1. Si rechaza usuario construcc  --> motivo de rechazo y se notifica al proveedor
+
+
+
+Para la app proveedores: 
+1. Listar la OC pendientes de generar SP, 
+2. Al seleccionar una Consutlar detalle para mostrar detalle (cambiar a pagina). 
+  a. la consulta de la oc se realizara a consturcc
+  b. las SP relacionadas se obtiene de api-proveedores
+3. La generacion de SP apartir de una OC puede ser desde el dash en la pagiuna de detalle, o bien de las notificaciones (El link debe corresponder a la pp de proveedores) 
+
+
+
+quiero que los servicios acutales los quietes y adaptes este flujo que te indico. Al menos concetrate en la parte Para la app proveedores. EL resto solo es contexto. La respouesta de listado de las OC es la siguiente 
+
+{
+    "status": "SUCCESS",
+    "data": [
+        {
+            "NumOrden": "OC-000039",
+            "Fecha": "2025-10-25T07:00:00.000000Z",
+            "ProvID": 4,
+            "importe": "348.00",
+            "obraid": "346",
+            "usuario": 75,
+            "estatus": "pendiente",
+            "Iva": "48.00",
+            "Subtotal": "300.00",
+            "observaciones": null,
+            "tasa": "0.16",
+            "reviso": null,
+            "autorizo": null,
+            "respobra": null,
+            "dirigidoa": null,
+            "utilizaen": null,
+            "Fentrega": null,
+            "Hentrega": null,
+            "empresa": 14,
+            "requisicion_id": "412",
+            "tiene_requisicion": true,
+            "tipo_orden": "REQUISICION",
+            "created_at": "2025-10-25T01:18:07.000000Z",
+            "updated_at": "2025-10-25T01:18:07.000000Z",
+            "detalles": [
+                {
+                    "id": 39,
+                    "NumOrden": "OC-000039",
+                    "requisicion_detalle_id": 966,
+                    "concepto": "CEMENTO GRIS 25 KG",
+                    "unidad": null,
+                    "cantidad_solicitada": "1.00",
+                    "cantidad_autorizada": "1.00",
+                    "cantidad_ordenada": "1.00",
+                    "precio_unitario": "300.00",
+                    "subtotal": "300.00",
+                    "observaciones": null,
+                    "created_at": "2025-10-25T01:18:07.000000Z",
+                    "updated_at": "2025-10-25T01:18:07.000000Z"
+                }
+            ]
+        },
+    ]
+}

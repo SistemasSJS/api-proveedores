@@ -23,6 +23,19 @@ class PedidoController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/pedidos",
+     *     summary="Listar pedidos del usuario autenticado",
+     *     tags={"Pedidos"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="estatus", in="query", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="fecha_desde", in="query", required=false, @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="fecha_hasta", in="query", required=false, @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="numero_pedido", in="query", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="proveedor_id", in="query", required=false, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="per_page", in="query", required=false, @OA\Schema(type="integer", default=15)),
+     *     @OA\Response(response=200, description="Lista de pedidos")
+     * )
      * Listar pedidos del usuario autenticado
      */
     public function index(Request $request)
@@ -66,6 +79,22 @@ class PedidoController extends Controller
     }
 
     /**
+     * @OA\Post(
+     *     path="/api/pedidos",
+     *     summary="Crear pedido desde cotización",
+     *     tags={"Pedidos"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"cotizacion_id"},
+     *             @OA\Property(property="cotizacion_id", type="integer", example=1),
+     *             @OA\Property(property="notas", type="string", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Pedido creado exitosamente"),
+     *     @OA\Response(response=403, description="Sin permisos")
+     * )
      * Crear pedido desde cotización
      */
     public function store(PedidoStoreRequest $request)
@@ -102,6 +131,15 @@ class PedidoController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/pedidos/{id}",
+     *     summary="Obtener detalles de un pedido",
+     *     tags={"Pedidos"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Detalles del pedido"),
+     *     @OA\Response(response=404, description="Pedido no encontrado")
+     * )
      * Mostrar pedido específico
      */
     public function show(Pedido $pedido)
@@ -148,6 +186,22 @@ class PedidoController extends Controller
     }
 
     /**
+     * @OA\Post(
+     *     path="/api/pedidos/{id}/cancelar",
+     *     summary="Cancelar un pedido",
+     *     tags={"Pedidos"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"motivo"},
+     *             @OA\Property(property="motivo", type="string", example="Cambio de especificaciones")
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Pedido cancelado"),
+     *     @OA\Response(response=400, description="No se puede cancelar")
+     * )
      * Cancelar pedido
      */
     public function cancel(Request $request, Pedido $pedido)

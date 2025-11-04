@@ -8,6 +8,15 @@ use Illuminate\Http\Request;
 
 class RoleController extends Controller
 {
+    /**
+     * @OA\Get(
+     *     path="/api/roles",
+     *     summary="Listar roles",
+     *     tags={"Administración"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Lista de roles")
+     * )
+     */
     public function index(Request $request)
     {
         $filters = $request->only(Role::getFilters());
@@ -17,6 +26,22 @@ class RoleController extends Controller
         return $this->paginated($originalPaginator->setCollection(collect($data)));
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/roles",
+     *     summary="Crear nuevo rol",
+     *     tags={"Administración"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name"},
+     *             @OA\Property(property="name", type="string", example="Editor")
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Rol creado")
+     * )
+     */
     public function store(Request $request)
     {
         $request->validate(['name' => 'required|string|unique:roles,name']);

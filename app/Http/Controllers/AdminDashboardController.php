@@ -19,6 +19,22 @@ use Illuminate\Http\Request;
 class AdminDashboardController extends Controller
 {
     /**
+     * @OA\Get(
+     *     path="/api/admin/dashboard/stats",
+     *     summary="Obtener estadísticas completas del dashboard administrativo",
+     *     tags={"Dashboard"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Estadísticas completas",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="catalogos", type="object"),
+     *             @OA\Property(property="usuarios", type="object"),
+     *             @OA\Property(property="pedidos", type="object"),
+     *             @OA\Property(property="metricas", type="object")
+     *         )
+     *     )
+     * )
      * Obtiene estadísticas completas del dashboard administrativo
      */
     public function getStatsCompletas(Request $request)

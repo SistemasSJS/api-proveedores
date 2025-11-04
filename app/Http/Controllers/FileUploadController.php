@@ -6,6 +6,34 @@ use Illuminate\Http\Request;
 
 class FileUploadController extends Controller
 {
+    /**
+     * @OA\Post(
+     *     path="/api/upload",
+     *     summary="Subir archivos",
+     *     tags={"Archivos"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(
+     *                     property="archivos[]",
+     *                     type="array",
+     *                     @OA\Items(type="string", format="binary")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Archivos subidos exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="path", type="array", @OA\Items(type="string"))
+     *         )
+     *     )
+     * )
+     */
     public function store(Request $request)
     {
         /**

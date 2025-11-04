@@ -17,6 +17,23 @@ use Illuminate\Support\Facades\Validator;
 class DeviceTokenController extends Controller
 {
     /**
+     * @OA\Post(
+     *     path="/api/device-tokens",
+     *     summary="Registrar token de dispositivo para notificaciones push",
+     *     tags={"Notificaciones"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"token", "platform"},
+     *             @OA\Property(property="token", type="string", example="FCM_TOKEN_HERE"),
+     *             @OA\Property(property="platform", type="string", enum={"ios", "android", "web"}),
+     *             @OA\Property(property="device_id", type="string", nullable=true),
+     *             @OA\Property(property="device_name", type="string", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Token registrado correctamente")
+     * )
      * Registrar o actualizar un token de dispositivo
      */
     public function store(Request $request): JsonResponse
@@ -113,6 +130,15 @@ class DeviceTokenController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/device-tokens",
+     *     summary="Listar tokens de dispositivos del usuario",
+     *     tags={"Notificaciones"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="platform", in="query", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="active", in="query", required=false, @OA\Schema(type="boolean")),
+     *     @OA\Response(response=200, description="Lista de tokens")
+     * )
      * Obtener todos los tokens del usuario autenticado
      */
     public function index(Request $request): JsonResponse

@@ -17,6 +17,53 @@ use Illuminate\Support\Facades\Log;
 class OrdenCompraController extends Controller
 {
     /**
+     * @OA\Get(
+     *     path="/api/construcc/ordenes-compra",
+     *     summary="Listar órdenes de compra",
+     *     tags={"Órdenes de Compra"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="proveedor_id",
+     *         in="query",
+     *         description="Filtrar por ID del proveedor",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="empresa_id",
+     *         in="query",
+     *         description="Filtrar por ID de la empresa",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="estado",
+     *         in="query",
+     *         description="Filtrar por estado",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Cantidad de resultados por página",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=15)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Lista de órdenes de compra",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/OrdenCompra")),
+     *             @OA\Property(property="pagination", ref="#/components/schemas/PaginationMeta")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="No autenticado",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     )
+     * )
      * Display a listing of the purchase orders.
      */
     public function index(Request $request): JsonResponse
@@ -102,6 +149,43 @@ class OrdenCompraController extends Controller
     }
 
     /**
+     * @OA\Post(
+     *     path="/api/construcc/ordenes-compra",
+     *     summary="Crear nueva orden de compra",
+     *     tags={"Órdenes de Compra"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"empresa_id", "proveedor_id", "detalles"},
+     *             @OA\Property(property="empresa_id", type="integer", example=1),
+     *             @OA\Property(property="proveedor_id", type="integer", example=5),
+     *             @OA\Property(property="orden_compra_id", type="string", example="OC-2025-001"),
+     *             @OA\Property(
+     *                 property="detalles",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     @OA\Property(property="producto_id", type="integer"),
+     *                     @OA\Property(property="cantidad", type="number"),
+     *                     @OA\Property(property="precio_unitario", type="number")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Orden de compra creada exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Orden de compra creada exitosamente"),
+     *             @OA\Property(property="data", ref="#/components/schemas/OrdenCompra")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Error de validación",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     )
+     * )
      * Store a newly created purchase order in storage.
      */
     public function store(OrdenCompraRequest $request): JsonResponse
@@ -157,6 +241,38 @@ class OrdenCompraController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/construcc/ordenes-compra/{id}",
+     *     summary="Obtener detalle de orden de compra",
+     *     tags={"Órdenes de Compra"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID de la orden de compra",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="incluir_solicitudes",
+     *         in="query",
+     *         description="Incluir solicitudes de pago",
+     *         required=false,
+     *         @OA\Schema(type="boolean")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Detalle de la orden de compra",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", ref="#/components/schemas/OrdenCompra")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Orden de compra no encontrada",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     )
+     * )
      * Display the specified purchase order.
      */
     public function show(int $id, Request $request): JsonResponse

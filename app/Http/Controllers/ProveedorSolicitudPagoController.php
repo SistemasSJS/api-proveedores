@@ -61,6 +61,8 @@ class ProveedorSolicitudPagoController extends Controller
      */
     public function store(CrearSolicitudPagoRequest $request, Proveedor $proveedor): JsonResponse
     {
+        $validated = $request->validated();
+
         $facturaPdf = $request->file('factura_pdf');
         $facturaXml = $request->file('factura_xml');
         $cotizacionFile = $request->file('cotizacion');
@@ -82,20 +84,21 @@ class ProveedorSolicitudPagoController extends Controller
         }
 
         $numeroFolio = SolicitudPago::generarNumeroFolio($proveedor);
-        $empresaConstructId = $request->empresa_construcc_id;
-
-        $montoTotal = $request->monto_total;
+        $empresaConstructId = $validated['empresa_construcc_id'] ?? null;
+        $residente = $validated['residente'] ?? null;
+        $cotizacion_id = $validated['cotizacion_id'] ?? null;
+        $montoTotal = $validated['monto_total'];
 
         $solicitud = SolicitudPago::create([
             'proveedor_id' => $proveedor->id,
             'numero_folio_solicitud' => $numeroFolio,
-            'descripcion_concepto' => $request->descripcion_concepto,
+            'descripcion_concepto' => $validated['descripcion_concepto'] ?? '',
             'ruta_archivo_factura_pdf' => $rutaPdf,
             'ruta_archivo_factura_xml' => $rutaXml,
             'ruta_archivo_cotizacion' => $rutaCotizacion,
             'empresa_construcc_id' => $empresaConstructId,
-            'residente' => $request->residente,
-            'cotizacion_id' => $request->cotizacion_id,
+            'residente' => $residente,
+            'cotizacion_id' => $cotizacion_id,
             'estado_solicitud' => 'pendiente',
             'fecha_registro_pendiente' => now(),
             'monto_total' => $montoTotal,
@@ -105,8 +108,8 @@ class ProveedorSolicitudPagoController extends Controller
         ]);
 
         // Sincronizar cuentas bancarias si se enviaron
-        if ($request->has('cuentas_bancarias') && is_array($request->cuentas_bancarias)) {
-            $solicitud->sincronizarCuentasBancarias($request->cuentas_bancarias);
+        if (array_key_exists('cuentas_bancarias', $validated) && is_array($validated['cuentas_bancarias'])) {
+            $solicitud->sincronizarCuentasBancarias($validated['cuentas_bancarias']);
         }
 
         return $this->success(
@@ -478,7 +481,7 @@ class ProveedorSolicitudPagoController extends Controller
             $timeline[] = [
                 'estado' => 'rechazada',
                 'fecha' => $sp->fecha_rechazado,
-                'descripcion' => 'Solicitud rechazada: '.($sp->motivo_rechazo ?? 'Sin motivo especificado'),
+                'descripcion' => 'Solicitud rechazada: ' . ($sp->motivo_rechazo ?? 'Sin motivo especificado'),
             ];
         }
 

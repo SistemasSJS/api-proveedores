@@ -11,6 +11,28 @@ use Illuminate\Validation\Rule;
 
 class ProductoController extends Controller
 {
+    /**
+     * @OA\Get(
+     *     path="/api/productos",
+     *     summary="Listar productos",
+     *     tags={"Productos"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="nombre", in="query", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="proveedor_id", in="query", required=false, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="categoria_id", in="query", required=false, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="sort_by", in="query", required=false, @OA\Schema(type="string", default="nombre")),
+     *     @OA\Parameter(name="order", in="query", required=false, @OA\Schema(type="string", enum={"asc", "desc"})),
+     *     @OA\Parameter(name="per_page", in="query", required=false, @OA\Schema(type="integer", default=10)),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Lista de productos",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object")),
+     *             @OA\Property(property="pagination", ref="#/components/schemas/PaginationMeta")
+     *         )
+     *     )
+     * )
+     */
     public function index(Request $request)
     {
         $fields = Producto::getFilters();
@@ -31,6 +53,29 @@ class ProductoController extends Controller
         return $this->paginated($originalPaginator->setCollection(collect($data)));
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/productos",
+     *     summary="Crear nuevo producto",
+     *     tags={"Productos"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"catalogo_id", "nombre", "codigo_interno", "precio_unitario", "disponible", "unidad_medida_id"},
+     *             @OA\Property(property="catalogo_id", type="integer", example=1),
+     *             @OA\Property(property="nombre", type="string", example="Cemento Portland"),
+     *             @OA\Property(property="descripcion", type="string", nullable=true),
+     *             @OA\Property(property="codigo_interno", type="string", example="CEM-001"),
+     *             @OA\Property(property="precio_unitario", type="number", example=250.50),
+     *             @OA\Property(property="disponible", type="boolean", example=true),
+     *             @OA\Property(property="unidad_medida_id", type="integer", example=1)
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Producto creado exitosamente"),
+     *     @OA\Response(response=422, description="Error de validación")
+     * )
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -61,6 +106,17 @@ class ProductoController extends Controller
         return $this->success($producto->load(['unidad_medida', 'imagenes', 'catalogo']), 201);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/productos/{id}",
+     *     summary="Obtener producto por ID",
+     *     tags={"Productos"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Datos del producto"),
+     *     @OA\Response(response=404, description="Producto no encontrado")
+     * )
+     */
     public function show($id)
     {
         // Intentar encontrar el producto, si no se encuentra lanzar ResourceNotFoundException
@@ -72,6 +128,25 @@ class ProductoController extends Controller
         return $this->success(new ProductoResource($producto));
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/productos/{id}",
+     *     summary="Actualizar producto",
+     *     tags={"Productos"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="nombre", type="string"),
+     *             @OA\Property(property="precio_unitario", type="number"),
+     *             @OA\Property(property="disponible", type="boolean")
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Producto actualizado"),
+     *     @OA\Response(response=404, description="Producto no encontrado")
+     * )
+     */
     public function update(Request $request, $id)
     {
         $producto = Producto::find($id);
@@ -84,6 +159,17 @@ class ProductoController extends Controller
         return $this->success($producto, 200);
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/api/productos/{id}",
+     *     summary="Eliminar producto",
+     *     tags={"Productos"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=204, description="Producto eliminado"),
+     *     @OA\Response(response=404, description="Producto no encontrado")
+     * )
+     */
     public function destroy($id)
     {
         // Verificar que el producto exista

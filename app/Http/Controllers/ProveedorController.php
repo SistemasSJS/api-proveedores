@@ -20,6 +20,23 @@ use Symfony\Component\HttpFoundation\Response;
 class ProveedorController extends Controller
 {
     /**
+     * @OA\Post(
+     *     path="/api/proveedor/logo",
+     *     summary="Actualizar logo del proveedor",
+     *     tags={"Proveedores"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(property="logo", type="string", format="binary")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Logo actualizado"),
+     *     @OA\Response(response=404, description="Proveedor no encontrado")
+     * )
      * Actualiza el logo del proveedor principal del usuario autenticado.
      *
      * - Elimina el logo anterior del proveedor (si existe).
@@ -83,6 +100,26 @@ class ProveedorController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/proveedores",
+     *     summary="Listar proveedores",
+     *     tags={"Proveedores"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="nombre_comercial", in="query", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="rfc", in="query", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="estatus", in="query", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="sort_by", in="query", required=false, @OA\Schema(type="string", default="nombre_comercial")),
+     *     @OA\Parameter(name="order", in="query", required=false, @OA\Schema(type="string", enum={"asc", "desc"}, default="asc")),
+     *     @OA\Parameter(name="per_page", in="query", required=false, @OA\Schema(type="integer", default=10)),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Lista de proveedores",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Proveedor")),
+     *             @OA\Property(property="pagination", ref="#/components/schemas/PaginationMeta")
+     *         )
+     *     )
+     * )
      * Lista los proveedores con filtros, ordenamiento y paginación.
      *
      * @return \Illuminate\Http\JsonResponse
@@ -105,6 +142,15 @@ class ProveedorController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/proveedores/{id}",
+     *     summary="Obtener proveedor por ID",
+     *     tags={"Proveedores"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Datos del proveedor", @OA\JsonContent(ref="#/components/schemas/Proveedor")),
+     *     @OA\Response(response=404, description="Proveedor no encontrado")
+     * )
      * Muestra los datos de un proveedor específico.
      *
      * @return \Illuminate\Http\JsonResponse
@@ -115,6 +161,25 @@ class ProveedorController extends Controller
     }
 
     /**
+     * @OA\Put(
+     *     path="/api/proveedores/{id}",
+     *     summary="Actualizar proveedor",
+     *     tags={"Proveedores"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="nombre_comercial", type="string"),
+     *             @OA\Property(property="razon_social", type="string"),
+     *             @OA\Property(property="rfc", type="string"),
+     *             @OA\Property(property="email", type="string"),
+     *             @OA\Property(property="telefono", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Proveedor actualizado"),
+     *     @OA\Response(response=422, description="Error de validación")
+     * )
      * Actualiza la información de un proveedor.
      *
      * @return \Illuminate\Http\JsonResponse
@@ -129,6 +194,15 @@ class ProveedorController extends Controller
     }
 
     /**
+     * @OA\Delete(
+     *     path="/api/proveedores/{id}",
+     *     summary="Dar de baja proveedor (eliminación lógica)",
+     *     tags={"Proveedores"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=204, description="Proveedor dado de baja"),
+     *     @OA\Response(response=404, description="Proveedor no encontrado")
+     * )
      * Marca un proveedor como baja (eliminación lógica).
      *
      * @param  int  $id
@@ -181,6 +255,7 @@ class ProveedorController extends Controller
         ProveedorUpdateConstanciaFiscalRequest $request,
         Proveedor $proveedor
     ) {
+        $validated = $request->validated();
         $user = $request->user();
 
         // Verificar acceso

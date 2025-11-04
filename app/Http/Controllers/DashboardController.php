@@ -21,6 +21,22 @@ class DashboardController extends Controller
         $this->reporteService = $reporteService;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/dashboard/stats",
+     *     summary="Obtener estadísticas del dashboard según rol de usuario",
+     *     tags={"Dashboard"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Estadísticas del dashboard",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="tipo", type="string", example="admin"),
+     *             @OA\Property(property="stats", type="object")
+     *         )
+     *     )
+     * )
+     */
     public function getStats(Request $request)
     {
         $user = Auth::user();

@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
+
 
 class SolicitudPago extends BaseModel
 {
@@ -466,7 +468,7 @@ class SolicitudPago extends BaseModel
     /** ----------------
      * Utilidades s
      * ----------------- */
-
+    
     /**
      * Generar siguiente número de folio para una nueva solicitud de pago para un proveedor
      * nopmeclatura:
@@ -481,18 +483,18 @@ class SolicitudPago extends BaseModel
      */
     public static function generarNumeroFolio(Proveedor $proveedor)
     {
+        // Contamos cuántas solicitudes tiene el proveedor
+        $count = self::where('proveedor_id', $proveedor->id)->count();
+
+        // El siguiente número será count + 1
+        $siguienteNumero = $count + 1;
+
+        // Tomamos las primeras 3 letras del nombre comercial, solo letras
         $proveedorClave = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $proveedor->nombre_comercial), 0, 3));
 
-        do {
-            // Genera un código aleatorio de 6 caracteres alfanuméricos
-            $codigoAleatorio = strtoupper(Str::random(6));
-            $folio = sprintf('SP-%s-%s', $proveedorClave, $codigoAleatorio);
-
-            // Verifica que no exista un folio igual
-            $existe = self::where('numero_folio_solicitud', $folio)->exists();
-        } while ($existe);
-
-        return $folio;
+        // Generamos el folio con formato SP-ABC-000001
+        // return sprintf('SP-%s-%06d', $proveedorClave, $siguienteNumero);
+        return sprintf('%06d', $siguienteNumero);
     }
 
 

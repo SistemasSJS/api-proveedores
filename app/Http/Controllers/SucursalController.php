@@ -12,6 +12,19 @@ use Illuminate\Http\Request;
 
 class SucursalController extends Controller
 {
+    /**
+     * @OA\Get(
+     *     path="/api/sucursales",
+     *     summary="Listar sucursales",
+     *     tags={"Sucursales"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="nombre", in="query", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="proveedor_id", in="query", required=false, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="estatus", in="query", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="per_page", in="query", required=false, @OA\Schema(type="integer", default=10)),
+     *     @OA\Response(response=200, description="Lista de sucursales")
+     * )
+     */
     public function index(Request $request)
     {
         $request->validate([
@@ -80,6 +93,17 @@ class SucursalController extends Controller
         ]);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/sucursales/{id}",
+     *     summary="Obtener sucursal por ID",
+     *     tags={"Sucursales"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Datos de la sucursal"),
+     *     @OA\Response(response=404, description="Sucursal no encontrada")
+     * )
+     */
     public function show(Request $reuqest, $sucursalId)
     {
         $sucursal = Sucursal::with(Sucursal::eagerLodable())->findOrFail($sucursalId);
@@ -87,6 +111,26 @@ class SucursalController extends Controller
         return $this->success(new SucursalResource($sucursal));
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/sucursales",
+     *     summary="Crear nueva sucursal",
+     *     tags={"Sucursales"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"proveedor_id", "nombre", "direccion"},
+     *             @OA\Property(property="proveedor_id", type="integer"),
+     *             @OA\Property(property="nombre", type="string"),
+     *             @OA\Property(property="direccion", type="string"),
+     *             @OA\Property(property="telefono", type="string"),
+     *             @OA\Property(property="email", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Sucursal creada")
+     * )
+     */
     public function store(SucursalStoreRequest $request)
     {
         $proveedor = Proveedor::findOrFail($request->input('proveedor_id'));
@@ -95,6 +139,17 @@ class SucursalController extends Controller
         return $this->success(new SucursalResource($sucursal), 'Sucursal creada correctamente');
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/sucursales/{id}",
+     *     summary="Actualizar sucursal",
+     *     tags={"Sucursales"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(@OA\Property(property="nombre", type="string"))),
+     *     @OA\Response(response=200, description="Sucursal actualizada")
+     * )
+     */
     public function update(SucursalUpdateRequest $request, $sucursalId)
     {
         $proveedor = Proveedor::findOrFail($request->input('proveedor_id'));
@@ -104,6 +159,16 @@ class SucursalController extends Controller
         return $this->success(new SucursalResource($sucursal), 'Sucursal actualizada correctamente');
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/api/sucursales/{id}",
+     *     summary="Desactivar sucursal",
+     *     tags={"Sucursales"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Sucursal desactivada")
+     * )
+     */
     public function destroy(Request $request, $sucursalId)
     {
         $sucursal = Sucursal::findOrFail($sucursalId);
