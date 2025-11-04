@@ -7,21 +7,12 @@ use App\Http\Resources\SolicitudPago\SolicitudPagoResource;
 use App\Models\EmpresaConstrucc;
 use App\Models\Proveedor;
 use App\Models\SolicitudPago;
-use App\Services\InterApiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class ProveedorSolicitudPagoController extends Controller
 {
-
-    protected $interapiSrv;
-
-    public function __construct(InterApiService $interapiSrv)
-    {
-        $this->interapiSrv = $interapiSrv;
-    }
     /**
      * Listado con paginación, filtrando por proveedor
      */
@@ -70,103 +61,60 @@ class ProveedorSolicitudPagoController extends Controller
      */
     public function store(CrearSolicitudPagoRequest $request, Proveedor $proveedor): JsonResponse
     {
-        $validated = $request->validated();
-        Log::info('Iniciando creación de solicitud de pago', [
-            'proveedor_id' => $proveedor->id,
-            'proveedor_nombre' => $proveedor->nombre_comercial,
-            // 'usuario_id' => auth()->user()?->id,
-        ]);
-
         $facturaPdf = $request->file('factura_pdf');
         $facturaXml = $request->file('factura_xml');
         $cotizacionFile = $request->file('cotizacion');
 
         if (! $facturaPdf || ! $facturaXml) {
-            Log::warning('Archivos obligatorios faltantes', [
-                'factura_pdf' => $facturaPdf ? 'OK' : 'NO',
-                'factura_xml' => $facturaXml ? 'OK' : 'NO',
-            ]);
-
             return response()->json([
                 'success' => false,
                 'message' => 'Los archivos PDF y XML son obligatorios.',
             ], 422);
         }
 
-        try {
-            Log::info('Guardando archivos PDF, XML y cotización...');
-            $rutaPdf = $facturaPdf->store('facturas/pdf', 'private');
-            $rutaXml = $facturaXml->store('facturas/xml', 'private');
-            $rutaCotizacion = $cotizacionFile?->store('cotizaciones', 'private');
+        $rutaPdf = $facturaPdf->store('facturas/pdf', 'private');
+        $rutaXml = $facturaXml->store('facturas/xml', 'private');
 
-            Log::info('Archivos subidos correctamente', [
-                'ruta_pdf' => $rutaPdf,
-                'ruta_xml' => $rutaXml,
-                'ruta_cotizacion' => $rutaCotizacion,
-            ]);
-
-            // Generar número de folio (aleatorio y único)
-            $numeroFolio = SolicitudPago::generarNumeroFolio($proveedor);
-            Log::info('Número de folio generado', ['folio' => $numeroFolio]);
-
-            $empresaConstructId = $validated->empresa_construcc_id;
-            $montoTotal = $validated->monto_total;
-
-            // Crear la solicitud de pago
-            $solicitud = SolicitudPago::create([
-                'proveedor_id' => $proveedor->id,
-                'numero_folio_solicitud' => $numeroFolio,
-                'descripcion_concepto' => '',
-                'ruta_archivo_factura_pdf' => $rutaPdf,
-                'ruta_archivo_factura_xml' => $rutaXml,
-                'ruta_archivo_cotizacion' => $rutaCotizacion,
-                'empresa_construcc_id' => $empresaConstructId,
-                'residente' => null,
-                'cotizacion_id' => null,
-                'estado_solicitud' => 'pendiente',
-                'fecha_registro_pendiente' => now(),
-                'monto_total' => $montoTotal,
-                'saldo_pendiente' => $montoTotal,
-                'monto_abonado' => 0,
-                'pago_completo' => false,
-            ]);
-
-            Log::info('Solicitud de pago creada exitosamente', [
-                'solicitud_id' => $solicitud->id,
-                'folio' => $solicitud->numero_folio_solicitud,
-                'monto_total' => $solicitud->monto_total,
-            ]);
-
-            // Sincronizar cuentas bancarias (si existen)
-            if ($validated->has('cuentas_bancarias') && is_array($validated->cuentas_bancarias)) {
-                $solicitud->sincronizarCuentasBancarias($validated->cuentas_bancarias);
-                Log::info('Cuentas bancarias sincronizadas', [
-                    'cuentas_bancarias' => $validated->cuentas_bancarias,
-                ]);
-            }
-
-            // Notificar sistema externo
-            $response = $this->interapiSrv->notifyNewSolicitudCompra($solicitud);
-            Log::info('Respuesta del servicio externo', ['response' => $response]);
-
-            return $this->success(
-                new SolicitudPagoResource($solicitud->load(['proveedor', 'cuentasBancarias'])),
-                'Solicitud de pago creada correctamente.',
-                201
-            );
-        } catch (\Throwable $e) {
-            Log::error('Error al crear solicitud de pago', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Error interno al crear la solicitud de pago.',
-            ], 500);
+        // Procesar archivo de cotización si existe
+        $rutaCotizacion = null;
+        if ($cotizacionFile) {
+            $rutaCotizacion = $cotizacionFile->store('cotizaciones', 'private');
         }
-    }
 
+        $numeroFolio = SolicitudPago::generarNumeroFolio($proveedor);
+        $empresaConstructId = $request->empresa_construcc_id;
+
+        $montoTotal = $request->monto_total;
+
+        $solicitud = SolicitudPago::create([
+            'proveedor_id' => $proveedor->id,
+            'numero_folio_solicitud' => $numeroFolio,
+            'descripcion_concepto' => $request->descripcion_concepto,
+            'ruta_archivo_factura_pdf' => $rutaPdf,
+            'ruta_archivo_factura_xml' => $rutaXml,
+            'ruta_archivo_cotizacion' => $rutaCotizacion,
+            'empresa_construcc_id' => $empresaConstructId,
+            'residente' => $request->residente,
+            'cotizacion_id' => $request->cotizacion_id,
+            'estado_solicitud' => 'pendiente',
+            'fecha_registro_pendiente' => now(),
+            'monto_total' => $montoTotal,
+            'saldo_pendiente' => $montoTotal,
+            'monto_abonado' => 0,
+            'pago_completo' => false,
+        ]);
+
+        // Sincronizar cuentas bancarias si se enviaron
+        if ($request->has('cuentas_bancarias') && is_array($request->cuentas_bancarias)) {
+            $solicitud->sincronizarCuentasBancarias($request->cuentas_bancarias);
+        }
+
+        return $this->success(
+            new SolicitudPagoResource($solicitud->load(['proveedor', 'empresaConstrucc', 'cuentasBancarias'])),
+            'Solicitud de pago creada correctamente.',
+            201
+        );
+    }
 
     /**
      * Mostrar detalle
