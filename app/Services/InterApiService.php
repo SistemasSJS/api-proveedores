@@ -51,7 +51,7 @@ class InterApiService
           'Accept' => 'application/json'
         ])
         ->timeout($this->timeout)
-        ->retry(3, 100) // 3 reintentos con 100ms de delay
+        // ->retry(3, 100) // 3 reintentos con 100ms de delay
         ->post($url, $payload);
 
       Log::channel('inter_api')->info('Respuesta recibida desde API Proveedores', [
