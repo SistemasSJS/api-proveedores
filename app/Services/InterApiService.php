@@ -22,23 +22,25 @@ class InterApiService
   public function notifyNewSolicitudCompra($sp)
   {
     try {
+      Log::channel('inter_api')->info('Iniciando notificación de nueva solicitud de compra', [
+        'sp_id' => $sp->id ?? null
+      ]);
+
       $payload = [
         'sp_id' => $sp->id,
         'company' => '14',
         'obra' => '1',
-        'message' => 'Nueva Solicitud de compra',
+        'message' => '',
         'pkusuario' => 75,
       ];
 
-      Log::channel('inter_api')->error('Excepción al notificar sp', [
-        'sp' => [
-          'sp_id' => $sp->id,
-          'company' => '14',
-          'obra' => '1',
-          'message' => 'Nueva Solicitud de compra',
-          'pkusuario' => 75,
-        ],
-        'url' => "{$this->apiContruccUrl}/notify-sp"
+      Log::channel('inter_api')->info('Payload preparado para notificación SP', [
+        'payload' => $payload
+      ]);
+
+      $url = "{$this->apiContruccUrl}/api/notify-sp";
+      Log::channel('inter_api')->info('URL destino para notificación SP', [
+        'url' => $url
       ]);
 
       // Enviar a API Proveedores con ApiKey header
@@ -50,24 +52,41 @@ class InterApiService
         ])
         ->timeout($this->timeout)
         ->retry(3, 100) // 3 reintentos con 100ms de delay
-        ->post("{$this->apiContruccUrl}/notify-sp", $payload);
+        ->post($url, $payload);
+
+      Log::channel('inter_api')->info('Respuesta recibida desde API Proveedores', [
+        'status' => $response->status(),
+        'body' => $response->body()
+      ]);
 
       if ($response->successful()) {
+        Log::channel('inter_api')->info('Notificación SP enviada exitosamente', [
+          'sp_id' => $sp->id
+        ]);
+
         return [
           'success' => true,
           'data' => $response->json()
         ];
       }
+
+      Log::channel('inter_api')->warning('Fallo en notificación SP', [
+        'sp_id' => $sp->id,
+        'status' => $response->status(),
+        'error' => $response->body()
+      ]);
+
       return [
         'success' => false,
         'error' => $response->body()
       ];
     } catch (\Exception $e) {
-      Log::channel('inter_api')->error('Excepción al notificar sp', [
-        'sp_id' => $sp->id,
+      Log::channel('inter_api')->error('Excepción al notificar SP', [
+        'sp_id' => $sp->id ?? null,
         'error' => $e->getMessage(),
         'trace' => $e->getTraceAsString()
       ]);
+
       // No lanzamos la excepción para que no afecte el guardado
       return [
         'success' => false,
