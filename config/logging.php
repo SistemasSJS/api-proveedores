@@ -50,5 +50,12 @@ return [
             'level' => 'info',
             'replace_placeholders' => true,
         ],
+
+        'inter_api' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/inter_api.log'),
+            'level' => 'debug',
+            'replace_placeholders' => true,
+        ],
     ],
 ];

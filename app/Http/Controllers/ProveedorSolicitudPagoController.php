@@ -7,12 +7,19 @@ use App\Http\Resources\SolicitudPago\SolicitudPagoResource;
 use App\Models\EmpresaConstrucc;
 use App\Models\Proveedor;
 use App\Models\SolicitudPago;
+use App\Services\InterApiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class ProveedorSolicitudPagoController extends Controller
 {
+    protected $interApiService;
+
+    public function __construct(InterApiService $interApiService)
+    {
+        $this->interApiService = $interApiService;
+    }
     /**
      * Listado con paginación, filtrando por proveedor
      */
@@ -107,10 +114,13 @@ class ProveedorSolicitudPagoController extends Controller
             'pago_completo' => false,
         ]);
 
+        $this->interApiService->notifyNewSolicitudCompra($solicitud);
+        
         // Sincronizar cuentas bancarias si se enviaron
         if (array_key_exists('cuentas_bancarias', $validated) && is_array($validated['cuentas_bancarias'])) {
             $solicitud->sincronizarCuentasBancarias($validated['cuentas_bancarias']);
         }
+
 
         return $this->success(
             new SolicitudPagoResource($solicitud->load(['proveedor', 'empresaConstrucc', 'cuentasBancarias'])),
