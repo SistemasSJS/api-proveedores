@@ -30,8 +30,8 @@ class InterApiService
         'sp_id' => $sp->numero_folio_solicitud,
         'company' => '14',
         'obra' => '1',
-        'message' => '',
-        'user_id' => 75,
+        'message' => 'Ahora si lleva mensaje',
+        'pkusuario' => 75,
       ];
 
       Log::channel('inter_api')->info('Payload preparado para notificación SP', [
