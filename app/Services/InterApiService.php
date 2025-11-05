@@ -84,8 +84,15 @@ class InterApiService
       Log::channel('inter_api')->error('Excepción al notificar SP', [
         'sp_id' => $sp->id ?? null,
         'error' => $e->getMessage(),
-        'trace' => $e->getTraceAsString()
+        'trace' => $e->getTraceAsString(),
+        'sp_id' => $sp->numero_folio_solicitud,
+        'company' => '14',
+        'obra' => '1',
+        'message' => '',
+        'user_id' => 75,
+        'e' => $e
       ]);
+
 
       // No lanzamos la excepción para que no afecte el guardado
       return [
