@@ -27,7 +27,7 @@ class InterApiService
       ]);
 
       $payload = [
-        'sp_id' => $sp->id,
+        'sp_id' => $sp->numero_folio_solicitud,
         'company' => '14',
         'obra' => '1',
         'message' => '',
