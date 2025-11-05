@@ -31,7 +31,7 @@ class InterApiService
         'company' => '14',
         'obra' => '1',
         'message' => '',
-        'pkusuario' => 75,
+        'user_id' => 75,
       ];
 
       Log::channel('inter_api')->info('Payload preparado para notificación SP', [
