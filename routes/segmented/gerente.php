@@ -216,6 +216,7 @@ Route::prefix('proveedores')
             Route::get('/', [ProveedorSolicitudPagoController::class, 'index'])->middleware(['audit']);        // Paginado
             Route::get('/all', [ProveedorSolicitudPagoController::class, 'uindex'])->middleware(['audit']);    // Sin paginación
             Route::get('/historico', [ProveedorSolicitudPagoController::class, 'historico'])->middleware(['audit']); // Histórico OC y SP
+            Route::get('/conteo-por-estado', [ProveedorSolicitudPagoController::class, 'conteoPorEstado'])->middleware(['audit']); // Conteo por segmento
 
             // Empresas de construcción para búsqueda
             Route::get('/empresas-constructoras', [ProveedorSolicitudPagoController::class, 'empresasConstructoras'])->middleware(['audit']);

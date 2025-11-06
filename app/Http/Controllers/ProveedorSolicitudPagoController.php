@@ -507,6 +507,34 @@ class ProveedorSolicitudPagoController extends Controller
     }
 
     /**
+     * Obtener conteo de solicitudes por estado
+     */
+    public function conteoPorEstado(Request $request, Proveedor $proveedor): JsonResponse
+    {
+        $filters = $request->only(['fecha_registro_pendiente_desde', 'fecha_registro_pendiente_hasta', 'empresa_construcc_id']);
+
+        // Base query con filtros opcionales
+        $baseQuery = SolicitudPago::query()
+            ->where('proveedor_id', $proveedor->id);
+
+        // Aplicar filtros si existen
+        if (!empty($filters)) {
+            $baseQuery->filter($filters);
+        }
+
+        // Conteos por estado (usando STRINGS - el campo estado_solicitud NO usa el enum)
+        $conteos = [
+            'total' => (clone $baseQuery)->count(),
+            'pendientes' => (clone $baseQuery)->where('estado_solicitud', 'pendiente')->count(),
+            'autorizadas' => (clone $baseQuery)->where('estado_solicitud', 'autorizada')->count(),
+            'rechazadas' => (clone $baseQuery)->where('estado_solicitud', 'rechazada')->count(),
+            'pagadas' => (clone $baseQuery)->where('estado_solicitud', 'pagado')->count(),
+        ];
+
+        return $this->success($conteos, 'Conteo por estado obtenido correctamente');
+    }
+
+    /**
      * Eliminar
      */
     public function destroy(Proveedor $proveedor, SolicitudPago $solicitudPago): JsonResponse
