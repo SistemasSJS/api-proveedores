@@ -42,7 +42,7 @@ class ConstruccSolicitudPagoController extends Controller
         $filters = $request->only(SolicitudPago::getFilters());
         $sortBy = $request->input('sort_by', 'created_at');
         $order = $request->input('order', 'desc');
-        $perPage = $request->input('per_page', 10);
+        $perPage = $request->input('per_page', 10000);
 
         $query = SolicitudPago::query()
             ->with(SolicitudPago::eagerLodable())
