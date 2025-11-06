@@ -3,7 +3,7 @@
 ###############################################################################
 
 ### VARIABLES GENERALES
-@baseUrl = http://localhost:8080/api/construcc
+@baseUrl = http://localhost:80/api/construcc
 @contentType = application/json
 @acceptType = application/json
 @apiKey = /%-!?=T35sT._22<1|:

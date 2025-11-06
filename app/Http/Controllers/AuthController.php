@@ -529,4 +529,25 @@ class AuthController extends Controller
             'proveedor' => $proveedor ? new ProveedorResource($proveedor) : null,
         ], 'Contraseña restablecida exitosamente.', 200);
     }
+
+    /**
+     * Verificar si un correo electrónico ya está registrado
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function verificarEmailExistente(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        // Verificar si el correo existe en la tabla users
+        $existe = User::where('email', $request->email)->exists();
+
+        return $this->success([
+            'existe' => $existe,
+            'email' => $request->email,
+        ], $existe ? 'El correo ya está registrado.' : 'El correo está disponible.', 200);
+    }
 }

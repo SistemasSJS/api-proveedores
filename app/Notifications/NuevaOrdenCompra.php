@@ -65,10 +65,10 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
     /**
      * Canal privado por usuario
      */
-    // public function broadcastOn(): array
-    // {
-    //     return [new PrivateChannel('App.Models.User.' . $this->notifiable->id)];
-    // }
+    public function broadcastOn(): array
+    {
+        return [new PrivateChannel('App.Models.User.' . $this->id)];
+    }
 
     /**
      * Canal Database
@@ -93,7 +93,7 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
     public function toMail(object $notifiable): MailMessage
     {
         $frontendUrl = config('app.frontend_url', config('app.url'));
-        
+
         return (new MailMessage)
             ->subject('Nueva Orden de Compra #' . $this->ordenCompraId)
             ->greeting('Hola ' . $notifiable->name . ',')

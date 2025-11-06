@@ -23,6 +23,7 @@ Route::prefix('auth')->group(function () {
     Route::post('register_proveedor_completar', [AuthController::class, 'register_proveedor_completar'])->middleware(['audit']);
     Route::post('register_basico', [AuthController::class, 'register_proveedor_basico_sp'])->middleware(['audit']);
     Route::post('register_basico_completar', [AuthController::class, 'register_proveedor_basico_completar'])->middleware(['audit']);
+    Route::post('verificar-email', [AuthController::class, 'verificarEmailExistente'])->middleware(['audit']);
     
     /**
      * RECUPERACIÓN DE CONTRASEÑA

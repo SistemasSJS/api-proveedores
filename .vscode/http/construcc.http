@@ -1,301 +1,229 @@
 ###
-# MÓDULO CONSTRUCCIÓN
-# Rutas especiales para integración con sistemas de construcción
-# Autenticación mediante API token específico
+# ARCHIVO DE PRUEBAS HTTP - CONSTRUCC
+# API Solicitudes de Pago - Los Mochis, Sinaloa, México
 ###
 
-# @baseUrl = http://localhost:8080/api
-@baseUrl = https://apicons.ddns.net:8092/api
+@baseUrl = http://localhost:80/api
+# @baseUrl = https://apicons.ddns.net:8092/api
 @contentType = application/json
 @acceptType = application/json
-@apiKey =  /%-!?=T35sT._22<1|:
+@apiKey = /%-!?=T35sT._22<1|:
+
+### VARIABLES
+@solicitudId = 17
+@rol = DG
 
 
-###
-# PRODUCTOS PARA CONSTRUCCIÓN
-###
-
-### Buscar productos para construcción con filtros avanzados
-POST {{baseUrl}}/construcc/productos/buscar
-{{commonHeaders}}
-X-API-TOKEN: {{apiKey}}
-
-{
-  "filtros": {
-    "categoria": "construccion",
-    "subcategoria": "herramientas",
-    "marca": "DeWalt",
-    "precio_min": 100.00,
-    "precio_max": 1000.00,
-    "disponible": true
-  },
-  "busqueda": {
-    "termino": "taladro",
-    "campos": ["nombre", "descripcion", "sku"]
-  },
-  "ordenamiento": {
-    "campo": "precio_base",
-    "direccion": "asc"
-  },
-  "paginacion": {
-    "pagina": 1,
-    "por_pagina": 20
-  }
-}
-
-### Obtener productos destacados para construcción
-GET {{baseUrl}}/construcc/productos/destacados?limit=10
-{{commonHeaders}}
-X-API-TOKEN: {{apiKey}}
-
-### Obtener productos por categoría de construcción
-GET {{baseUrl}}/construcc/productos/categoria/construccion
-{{commonHeaders}}
-X-API-TOKEN: {{apiKey}}
-
-### Verificar disponibilidad de productos para proyecto
-POST {{baseUrl}}/construcc/productos/verificar-disponibilidad
-{{commonHeaders}}
-X-API-TOKEN: {{apiKey}}
-
-{
-  "productos": [
-    {
-      "producto_id": 1,
-      "cantidad_requerida": 50,
-      "fecha_requerida": "2025-09-15"
-    },
-    {
-      "producto_id": 2,
-      "cantidad_requerida": 25,
-      "fecha_requerida": "2025-09-15"
-    }
-  ],
-  "proyecto": {
-    "nombre": "Construcción Plaza Comercial",
-    "ubicacion": "CDMX",
-    "tipo": "comercial"
-  }
-}
-
-### Obtener precios especiales para construcción
-POST {{baseUrl}}/construcc/productos/precios-especiales
-{{commonHeaders}}
-X-API-TOKEN: {{apiKey}}
-
-{
-  "productos": [1, 2, 3, 4, 5],
-  "tipo_cliente": "constructor",
-  "volumen_estimado": "alto",
-  "proyecto_tipo": "residencial"
-}
-
-###
-# COTIZACIONES PARA CONSTRUCCIÓN
-###
-
-### Crear cotización para proyecto de construcción
-POST {{baseUrl}}/construcc/cotizaciones
+https://apicons.ddns.net:8092/api/construcc/solicitudes-pago?estado_solicitud=rechazada&proveedor_id=1
 X-API-KEY: {{apiKey}}
-Content-Type: {{contentType}}
 Accept: {{acceptType}}
 
-{
-  "proveedor_id": 4,
-  "fecha_vencimiento":"2025-10-01",
-  "fecha_cotizacion":"2025-10-01",
-  "detalles": [
-  
-  ],
 
+### 
+
+GET http://localhost:8080/api/construcc/solicitudes-pago/empresa/14/proveedores
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+
+###############################################################################
+# RUTAS CONSTRUCC - SOLICITUDES DE PAGO
+###############################################################################
+
+### 1. Listado general de solicitudes de pago
+GET {{baseUrl}}/construcc/solicitudes-pago
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 🆕 1.1. Buscar solicitud de pago por folio
+GET {{baseUrl}}/construcc/solicitudes-pago/folio/000017
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 2. Ver detalle de solicitud específica
+GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 3. Descargar comprobante de pago
+GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/comprobante/download
+X-API-KEY: {{apiKey}}
+
+### 4. Descargar factura PDF
+GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/factura-pdf/download
+X-API-KEY: {{apiKey}}
+
+### 5. Descargar factura XML
+GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/factura-xml/download
+X-API-KEY: {{apiKey}}
+
+### 6. Descargar cotización
+GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/cotizacion/download
+X-API-KEY: {{apiKey}}
+
+
+
+###############################################################################
+# CAMBIOS DE ESTATUS - CONSTRUCC
+###############################################################################
+
+### 7. Autorizar solicitud de pago (por rol)
+POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/autorizar
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+
+{
+  "rol": "{{rol}}"
 }
 
-### Ver cotización específica
-GET {{baseUrl}}/construcc/cotizaciones/1
-{{commonHeaders}}
-X-API-TOKEN: {{apiKey}}
-
-### Actualizar cotización
-PUT {{baseUrl}}/construcc/cotizaciones/1
-{{commonHeaders}}
-X-API-TOKEN: {{apiKey}}
+### 8. Rechazar solicitud de pago
+POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/rechazar
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
 
 {
-  "productos": [
-    {
-      "producto_id": 1,
-      "cantidad": 120,
-      "precio_unitario": 145.00
-    }
-  ],
-  "observaciones": "Ajuste por cambio en proyecto"
+  "rol": "DT",
+  "motivo_rechazo": "El monto no corresponde con la cotización original."
 }
 
-### Aprobar cotización
-PATCH {{baseUrl}}/construcc/cotizaciones/1/aprobar
-{{commonHeaders}}
-X-API-TOKEN: {{apiKey}}
+### 9. Confirmar pago (solo DA)
+POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/confirmar-pago
+X-API-KEY: {{apiKey}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="comprobante"; filename="comprobante_pago.pdf"
+Content-Type: application/pdf
+
+< ./tests/files/comprobante_pago.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="monto_abono"
+
+50000.00
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="notas_abono"
+
+Pago parcial correspondiente a avance de obra del 50%.
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+
+
+###############################################################################
+# LISTADOS POR ROL Y ESTADO
+###############################################################################
+
+### 10. Listar solicitudes pendientes por rol (DG, DT, CO, SI, DA)
+GET {{baseUrl}}/construcc/solicitudes-pago/por-rol?rol=DT
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 11. Listar solicitudes por estado (PENDIENTE, AUTORIZADA, RECHAZADA, PAGADO)
+GET {{baseUrl}}/construcc/solicitudes-pago/por-estado?estado=AUTORIZADA
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+
+
+###############################################################################
+# DASHBOARD Y AUXILIARES
+###############################################################################
+
+### 12. Estadísticas por rol
+GET {{baseUrl}}/construcc/solicitudes-pago/estadisticas-rol?rol=DA
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 13. Buscar empresas constructoras
+GET {{baseUrl}}/construcc/solicitudes-pago/empresas-constructoras/search?search=construcciones&limit=10
+X-API-KEY: {{apiKey}}
+
+### 14. Estadísticas generales
+GET {{baseUrl}}/construcc/solicitudes-pago/estadisticas
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+
+
+###############################################################################
+# GESTIÓN DE PROVEEDORES POR EMPRESA - NUEVOS ENDPOINTS
+###############################################################################
+
+### VARIABLES PARA PRUEBAS DE PROVEEDORES
+@empresaId = 14
+@proveedorId = 1
+
+### 15. Listar proveedores asociados a una empresa constructora
+GET {{baseUrl}}/construcc/solicitudes-pago/empresa/{{empresaId}}/proveedores
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 16. 🆕 Listar proveedores NO asociados a una empresa constructora
+GET {{baseUrl}}/construcc/solicitudes-pago/empresa/{{empresaId}}/proveedores/no-asociados
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 17. 🆕 Asociar un proveedor a una empresa constructora
+POST {{baseUrl}}/construcc/solicitudes-pago/empresa/{{empresaId}}/proveedores/asociar
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
 
 {
-  "aprobado_por": "Ing. Juan Pérez",
-  "fecha_aprobacion": "2025-08-25",
-  "observaciones": "Cotización aprobada para inicio inmediato"
+  "proveedor_id": {{proveedorId}}
 }
 
-### Rechazar cotización
-PATCH {{baseUrl}}/construcc/cotizaciones/1/rechazar
-{{commonHeaders}}
-X-API-TOKEN: {{apiKey}}
+### 18. Prueba con empresa diferente (ID 1)
+GET {{baseUrl}}/construcc/solicitudes-pago/empresa/1/proveedores/no-asociados
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 19. Asociar múltiples proveedores (cambiar proveedorId)
+POST {{baseUrl}}/construcc/solicitudes-pago/empresa/1/proveedores/asociar
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
 
 {
-  "motivo_rechazo": "Precios fuera de presupuesto",
-  "observaciones": "Se requiere nueva propuesta con precios más competitivos"
+  "proveedor_id": 2
 }
 
-###
-# PEDIDOS PARA CONSTRUCCIÓN
-###
+### 20. Verificar asociación (debería mostrar el proveedor asociado)
+GET {{baseUrl}}/construcc/solicitudes-pago/empresa/1/proveedores
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
 
-### Crear pedido a partir de cotización aprobada
-POST {{baseUrl}}/construcc/pedidos/desde-cotizacion
-{{commonHeaders}}
-X-API-TOKEN: {{apiKey}}
+
+
+###############################################################################
+# CASOS DE ERROR - NUEVOS ENDPOINTS
+###############################################################################
+
+### 21. Error: Empresa que no existe
+GET {{baseUrl}}/construcc/solicitudes-pago/empresa/999999/proveedores/no-asociados
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 22. Error: Proveedor que no existe
+POST {{baseUrl}}/construcc/solicitudes-pago/empresa/{{empresaId}}/proveedores/asociar
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
 
 {
-  "cotizacion_id": 1,
-  "programacion_entregas": [
-    {
-      "fecha": "2025-09-15",
-      "productos": [
-        {
-          "producto_id": 1,
-          "cantidad": 50
-        }
-      ]
-    },
-    {
-      "fecha": "2025-10-15",
-      "productos": [
-        {
-          "producto_id": 1,
-          "cantidad": 50
-        },
-        {
-          "producto_id": 2,
-          "cantidad": 50
-        }
-      ]
-    }
-  ],
-  "direccion_obra": {
-    "calle": "Av. Insurgentes Sur 1234",
-    "colonia": "Del Valle",
-    "ciudad": "CDMX",
-    "cp": "03100",
-    "referencias": "Junto al metro Hospital 20 de Noviembre"
-  }
+  "proveedor_id": 999999
 }
 
-### Programar entregas escalonadas
-POST {{baseUrl}}/construcc/pedidos/1/programar-entregas
-{{commonHeaders}}
-X-API-TOKEN: {{apiKey}}
+### 23. Error: Parámetro faltante
+POST {{baseUrl}}/construcc/solicitudes-pago/empresa/{{empresaId}}/proveedores/asociar
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
 
 {
-  "entregas": [
-    {
-      "fecha": "2025-09-01",
-      "productos": [{"producto_id": 1, "cantidad": 25}],
-      "horario": "08:00-12:00",
-      "contacto": "Ing. Carlos López",
-      "telefono": "555-123-4567"
-    },
-    {
-      "fecha": "2025-09-15",
-      "productos": [{"producto_id": 2, "cantidad": 30}],
-      "horario": "14:00-18:00",
-      "contacto": "Arq. María García",
-      "telefono": "555-987-6543"
-    }
-  ]
+  "proveedor_id": ""
 }
 
-### Confirmar entrega en obra
-PATCH {{baseUrl}}/construcc/pedidos/1/entregar
-{{commonHeaders}}
-X-API-TOKEN: {{apiKey}}
+### 24. Error: Intentar asociar el mismo proveedor dos veces (409 Conflict)
+POST {{baseUrl}}/construcc/solicitudes-pago/empresa/{{empresaId}}/proveedores/asociar
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
 
 {
-  "fecha_entrega": "2025-09-01T10:30:00Z",
-  "recibido_por": "Ing. Carlos López",
-  "productos_entregados": [
-    {
-      "producto_id": 1,
-      "cantidad_entregada": 25,
-      "estado": "perfecto",
-      "observaciones": "Entregado según especificaciones"
-    }
-  ],
-  "evidencias": [
-    "https://ejemplo.com/foto1.jpg",
-    "https://ejemplo.com/acta-entrega.pdf"
-  ]
-}
-
-###
-# REPORTES Y ANÁLISIS CONSTRUCCIÓN
-###
-
-### Reporte de consumo por obra
-GET {{baseUrl}}/construcc/reportes/consumo-obra?obra_id=1&fecha_inicio=2025-08-01&fecha_fin=2025-08-31
-{{commonHeaders}}
-X-API-TOKEN: {{apiKey}}
-
-### Análisis de costos por m²
-GET {{baseUrl}}/construcc/reportes/costo-m2?tipo_construccion=residencial&ubicacion=cdmx
-{{commonHeaders}}
-X-API-TOKEN: {{apiKey}}
-
-### Proyección de materiales para obra
-POST {{baseUrl}}/construcc/reportes/proyeccion-materiales
-{{commonHeaders}}
-X-API-TOKEN: {{apiKey}}
-
-{
-  "obra": {
-    "tipo": "residencial",
-    "metros_construccion": 1500,
-    "niveles": 3,
-    "ubicacion": "CDMX"
-  },
-  "especificaciones": {
-    "calidad": "media-alta",
-    "incluye_acabados": true,
-    "sistema_constructivo": "tradicional"
-  }
-}
-
-###
-# PROVEEDORES ESPECIALIZADOS CONSTRUCCIÓN
-###
-
-### Buscar proveedores especializados
-GET {{baseUrl}}/construcc/proveedores/especializados?especialidad=herramientas&ubicacion=cdmx&radio=50km
-{{commonHeaders}}
-X-API-TOKEN: {{apiKey}}
-
-### Evaluar proveedores
-POST {{baseUrl}}/construcc/proveedores/evaluar
-{{commonHeaders}}
-X-API-TOKEN: {{apiKey}}
-
-{
-  "criterios": {
-    "precio": 0.4,
-    "calidad": 0.3,
-    "tiempo_entrega": 0.2,
-    "experiencia": 0.1
-  },
-  "productos_requeridos": [1, 2, 3],
-  "fecha_requerida": "2025-09-15"
+  "proveedor_id": {{proveedorId}}
 }
