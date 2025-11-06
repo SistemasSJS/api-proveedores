@@ -10,12 +10,14 @@ class InterApiService
   protected $apiContruccUrl;
   protected $apiContruccApiKey;
   protected $timeout;
+
   public function __construct()
   {
     $this->apiContruccUrl = config('services.api_construcciones.url');
     $this->apiContruccApiKey = config('services.api_construcciones.apikey');
     $this->timeout = config('services.api_construcciones.timeout', 10);
   }
+  
   /**
    * Notificar a API Proveedores sobre nueva orden de compra
    */
@@ -27,10 +29,11 @@ class InterApiService
       ]);
 
       $payload = [
-        'sp_id' => $sp->numero_folio_solicitud,
+        'sp_id' => $sp->id,
+        'sp_folio' => $sp->numero_folio_solicitud,
         'company' => '14',
         'obra' => '1',
-        'message' => 'Ahora si lleva mensaje',
+        // 'message' => 'Ahora si lleva mensaje',
         'user_id' => 75
       ];
 
