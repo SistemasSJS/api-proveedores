@@ -51,32 +51,39 @@ class ProveedorController extends Controller
     {
         $user = $request->user();
         $proveedor = $user->proveedorPrincipal();
+
         if (! $proveedor) {
             throw new ResourceNotFoundException('Proveedor no encontrado.');
         }
 
-        if ($proveedor->logo !== null) {
-            $rutaAnterior = str_replace(asset('storage').'/', '', $proveedor->logo);
-            Storage::disk('public')->delete($rutaAnterior);
+        // Eliminar logo anterior si existe físicamente
+        if ($proveedor->logo && Storage::disk('public')->exists($proveedor->logo)) {
+            Storage::disk('public')->delete($proveedor->logo);
         }
 
-        if ($user->foto_perfil_url !== null) {
-            $rutaAnterior = str_replace(asset('storage').'/', '', $user->foto_perfil_url);
-            Storage::disk('public')->delete($rutaAnterior);
+        try {
+            // Subir nuevo logo
+            $file = $request->file('logo');
+            $filename = 'logo_' . $proveedor->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('uploads', $filename, 'public');
+
+            // Actualizar proveedor
+            $proveedor->update(['logo' => $path]);
+        } catch (\Throwable $e) {
+            throw new \Exception('Error al subir el logo: ' . $e->getMessage());
         }
 
-        $file = $request->file('logo');
-        $filename = 'logo_'.$proveedor->id.'_'.time().'.'.$file->getClientOriginalExtension();
-        $path = $file->storeAs('uploads', $filename, 'public');
+        // Recargar modelos con relaciones
+        $proveedor->refresh()->load(Proveedor::eagerLodable());
+        $user->refresh()->load(\App\Models\User::eagerLodable());
 
-        $proveedor->update(['logo' => $path]);
-
+        // Respuesta JSON con recursos actualizados
         return $this->success([
-            'proveedor' => new ProveedorResource(($proveedor->fresh(Proveedor::eagerLodable()))),
-            'user' => new UserResource(($user->fresh(User::eagerLodable()))),
+            'proveedor' => new ProveedorResource($proveedor),
+            'user' => new UserResource($user),
         ]);
     }
-
+    
     /**
      * Obtiene el proveedor principal asociado a un usuario por ID.
      *
@@ -273,7 +280,7 @@ class ProveedorController extends Controller
         }
 
         // Guardar nueva constancia en private
-        $filename = 'constancia_'.$proveedor->id.'_'.time().'.pdf';
+        $filename = 'constancia_' . $proveedor->id . '_' . time() . '.pdf';
         $path = $file->storeAs('constancias', $filename, 'private');
 
         $proveedor->update(['constancia_fiscal' => $path]);
@@ -389,10 +396,10 @@ class ProveedorController extends Controller
 
         // Calcular si el perfil está completo
         $perfilEmpresaCompleto = $tieneInformacionGeneralYDatosFiscales &&
-                                // $tieneDatosContacto &&
-                                $tieneLogo &&
-                                $tieneCuentaBancaria &&
-                                $tieneConstanciaFiscal;
+            // $tieneDatosContacto &&
+            $tieneLogo &&
+            $tieneCuentaBancaria &&
+            $tieneConstanciaFiscal;
 
         // Calcular datos faltantes
         $datosFaltantes = [];
