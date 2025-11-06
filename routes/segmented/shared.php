@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\DeviceTokenController;
+use App\Http\Controllers\Notifications\DeviceTokenController;
 use App\Http\Controllers\CategoriaController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TiendaController;

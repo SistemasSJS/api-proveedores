@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Notifications;
 
 use App\Http\Controllers\Controller;
 use App\Models\UserDeviceToken;
@@ -58,26 +58,24 @@ class DeviceTokenController extends Controller
             $user = Auth::user();
             $validated = $validator->validated();
 
-            // Buscar token existente por usuario y device_id (si existe)
-            $existingToken = null;
-            if ($validated['device_id']) {
+            // Buscar token existente por token exacto (independiente del usuario)
+            // El token es único globalmente, puede que otro usuario lo tenga
+            $existingToken = UserDeviceToken::where('token', $validated['token'])->first();
+
+            // Si no existe, buscar por device_id del mismo usuario
+            if (!$existingToken && isset($validated['device_id'])) {
                 $existingToken = UserDeviceToken::where('user_id', $user->id)
                     ->where('device_id', $validated['device_id'])
                     ->first();
             }
 
-            // Si no hay device_id, buscar por token exacto
-            if (! $existingToken) {
-                $existingToken = UserDeviceToken::where('user_id', $user->id)
-                    ->where('token', $validated['token'])
-                    ->first();
-            }
-
             if ($existingToken) {
-                // Actualizar token existente
+                // Actualizar token existente (puede cambiar de usuario)
                 $existingToken->update([
+                    'user_id' => $user->id, // Actualizar el usuario si cambió
                     'token' => $validated['token'],
                     'platform' => $validated['platform'],
+                    'device_id' => $validated['device_id'] ?? $existingToken->device_id,
                     'device_name' => $validated['device_name'] ?? $existingToken->device_name,
                     'metadata' => array_merge($existingToken->metadata ?? [], $validated['metadata'] ?? []),
                     'last_used_at' => now(),

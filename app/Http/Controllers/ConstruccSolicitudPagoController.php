@@ -9,9 +9,12 @@ use App\Http\Requests\Construcc\SolicitudPagoConfirmarPagoRequest;
 use App\Http\Requests\Construcc\SolicitudPagoRechazarRequest;
 use App\Http\Resources\Construcc\ConstruccSolicitudPagoResource;
 use App\Models\SolicitudPago;
+use App\Notifications\SolicitudPago\SolicitudPagoPagada;
+use App\Notifications\SolicitudPago\SolicitudPagoRechazada;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -162,6 +165,34 @@ class ConstruccSolicitudPagoController extends Controller
             $fechaField => now(),
         ]);
 
+        // Enviar notificación al proveedor
+        try {
+            $proveedor = $solicitudPago->proveedor;
+            $usuarioPrincipal = $proveedor->usuarioPrincipal();
+
+            if ($usuarioPrincipal) {
+                $usuarioPrincipal->notify(new SolicitudPagoRechazada(
+                    $solicitudPago->folio,
+                    $proveedor->id,
+                    $solicitudPago->empresa_construcc_id,
+                    $data['motivo_rechazo']
+                ));
+
+                Log::info('✅ Notificación de SP Rechazada enviada', [
+                    'solicitud_pago_id' => $solicitudPago->id,
+                    'folio' => $solicitudPago->folio,
+                    'proveedor_id' => $proveedor->id,
+                    'usuario_id' => $usuarioPrincipal->id,
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('❌ Error al enviar notificación de SP Rechazada', [
+                'solicitud_pago_id' => $solicitudPago->id,
+                'error' => $e->getMessage(),
+            ]);
+            // No fallar la operación si la notificación falla
+        }
+
         return $this->success(
             new ConstruccSolicitudPagoResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
             "Solicitud rechazada correctamente por {$rol}."
@@ -261,6 +292,36 @@ class ConstruccSolicitudPagoController extends Controller
         $mensaje = $pagoCompleto
             ? 'Pago completado correctamente. La solicitud ha sido pagada en su totalidad.'
             : "Abono registrado correctamente. Saldo pendiente: {$solicitudPago->fresh()->saldo_pendiente}";
+
+        // Enviar notificación al proveedor
+        try {
+            $proveedor = $solicitudPago->proveedor;
+            $usuarioPrincipal = $proveedor->usuarioPrincipal();
+
+            if ($usuarioPrincipal) {
+                $usuarioPrincipal->notify(new SolicitudPagoPagada(
+                    $solicitudPago->folio,
+                    $proveedor->id,
+                    $solicitudPago->empresa_construcc_id,
+                    $montoAbono
+                ));
+
+                Log::info('✅ Notificación de SP Pagada enviada', [
+                    'solicitud_pago_id' => $solicitudPago->id,
+                    'folio' => $solicitudPago->folio,
+                    'proveedor_id' => $proveedor->id,
+                    'usuario_id' => $usuarioPrincipal->id,
+                    'monto' => $montoAbono,
+                    'pago_completo' => $pagoCompleto,
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('❌ Error al enviar notificación de SP Pagada', [
+                'solicitud_pago_id' => $solicitudPago->id,
+                'error' => $e->getMessage(),
+            ]);
+            // No fallar la operación si la notificación falla
+        }
 
         return $this->success(
             new ConstruccSolicitudPagoResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),

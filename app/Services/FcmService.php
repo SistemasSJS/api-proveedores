@@ -133,10 +133,17 @@ class FcmService
                 'payload' => $payload,
             ]);
 
-            $response = Http::withHeaders([
+            $http = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $accessToken,
                 'Content-Type'  => 'application/json',
-            ])->timeout(30)->post($url, $payload);
+            ])->timeout(30);
+
+            // Deshabilitar verificación SSL en desarrollo local (solo Windows)
+            if (app()->environment('local') && strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                $http = $http->withOptions(['verify' => false]);
+            }
+
+            $response = $http->post($url, $payload);
 
             if ($response->successful()) {
                 Log::info('FCM: Notificación enviada correctamente', [
@@ -232,7 +239,14 @@ class FcmService
 
             $jwt = $data . '.' . $base64Signature;
 
-            $response = Http::asForm()->post('https://oauth2.googleapis.com/token', [
+            $http = Http::asForm();
+
+            // Deshabilitar verificación SSL en desarrollo local (solo Windows)
+            if (app()->environment('local') && strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                $http = $http->withOptions(['verify' => false]);
+            }
+
+            $response = $http->post('https://oauth2.googleapis.com/token', [
                 'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
                 'assertion' => $jwt,
             ]);

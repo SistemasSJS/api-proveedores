@@ -1,5 +1,5 @@
 # =========================================================================
-# PRUEBAS DE NOTIFICACIONES API - Sistema Proveedores
+# PRUEBAS DE NOTIFICAtions API - Sistema Proveedores
 # =========================================================================
 # 
 # Este archivo contiene pruebas para:
@@ -25,7 +25,7 @@
 # =========================================================================
 
 ### 1.1 - Test Sin ApiKey (Debe fallar con 401)
-POST {{baseUrl}}/notificaciones/nueva-orden
+POST {{baseUrl}}/notifications/nueva-orden
 Content-Type: application/json
 Accept: application/json
 
@@ -48,7 +48,7 @@ Accept: application/json
 }
 
 ### 1.2 - Test Con ApiKey Incorrecta (Debe fallar con 401)
-POST {{baseUrl}}/notificaciones/nueva-orden
+POST {{baseUrl}}/notifications/nueva-orden
 Content-Type: application/json
 Accept: application/json
 X-API-KEY: {{apiKey}}
@@ -73,7 +73,7 @@ X-API-KEY: {{apiKey}}
 
 ### 1.3 - ✅ Test Con ApiKey Correcta (Debe funcionar - 201)
 ### 1.3 - ✅ Test Con ApiKey Correcta (Debe funcionar - 201)
-POST {{baseUrl}}/notificaciones/nueva-orden
+POST {{baseUrl}}/notifications/nueva-orden
 Content-Type: application/json
 Accept: application/json
 X-API-KEY: {{apiKey}}
@@ -81,13 +81,13 @@ X-API-KEY: {{apiKey}}
 {
   "empresa_id": 14,
   "proveedor_id": 3,
-  "orden_compra_id": "OC-0000002",
+  "orden_compra_id": "OC-00010002",
   "estatus": "pendiente"
 }
 
 
 ### 1.4 - Nueva Orden sin Requisición
-POST {{baseUrl}}/notificaciones/nueva-orden
+POST {{baseUrl}}/notifications/nueva-orden
 Content-Type: application/json
 Accept: application/json
 X-API-KEY: {{apiKey}}
@@ -111,7 +111,7 @@ X-API-KEY: {{apiKey}}
 }
 
 ### 1.5 - Nueva Orden con Observaciones Largas
-POST {{baseUrl}}/notificaciones/nueva-orden
+POST {{baseUrl}}/notifications/nueva-orden
 Content-Type: application/json
 Accept: application/json
 X-API-KEY: {{apiKey}}
@@ -135,7 +135,7 @@ X-API-KEY: {{apiKey}}
 }
 
 ### 1.6 - Test Validación: Proveedor Inexistente (Debe fallar)
-POST {{baseUrl}}/notificaciones/nueva-orden
+POST {{baseUrl}}/notifications/nueva-orden
 Content-Type: application/json
 Accept: application/json
 X-API-KEY: {{apiKey}}
@@ -159,7 +159,7 @@ X-API-KEY: {{apiKey}}
 }
 
 ### 1.7 - Test Validación: Campos Faltantes (Debe fallar)
-POST {{baseUrl}}/notificaciones/nueva-orden
+POST {{baseUrl}}/notifications/nueva-orden
 Content-Type: application/json
 Accept: application/json
 X-API-KEY: {{apiKey}}
@@ -172,19 +172,102 @@ X-API-KEY: {{apiKey}}
 
 ###
 # =========================================================================
+# SECCIÓN 1B: ENDPOINTS PARA SOLICITUDES DE PAGO (Con ApiKey)
+# =========================================================================
+# Estos endpoints son llamados desde API Construcciones cuando una
+# solicitud de pago es pagada o rechazada
+# =========================================================================
+
+### 1B.1 - ✅ Solicitud de Pago Pagada/Aceptada
+POST {{baseUrl}}/notifications/solicitud-pago/pagada
+Content-Type: application/json
+Accept: application/json
+X-API-KEY: {{apiKey}}
+
+{
+  "empresa_id": 14,
+  "proveedor_id": 3,
+  "solicitud_pago_folio": "SP-2025-001",
+  "monto": 15000.50
+}
+
+### 1B.2 - ✅ Solicitud de Pago Rechazada
+POST {{baseUrl}}/notifications/solicitud-pago/rechazada
+Content-Type: application/json
+Accept: application/json
+X-API-KEY: {{apiKey}}
+
+{
+  "empresa_id": 14,
+  "proveedor_id": 3,
+  "solicitud_pago_folio": "000018",
+  "motivo": "Documentación incompleta - Falta factura fiscal"
+}
+
+### 1B.3 - Test Solicitud Pagada sin Monto (Válido - monto es opcional)
+POST {{baseUrl}}/notifications/solicitud-pago/pagada
+Content-Type: application/json
+Accept: application/json
+X-API-KEY: {{apiKey}}
+
+{
+  "empresa_id": 14,
+  "proveedor_id": 3,
+  "solicitud_pago_folio": "SP-2025-002"
+}
+
+### 1B.4 - Test Solicitud Rechazada sin Motivo (Válido - motivo es opcional)
+POST {{baseUrl}}/notifications/solicitud-pago/rechazada
+Content-Type: application/json
+Accept: application/json
+X-API-KEY: {{apiKey}}
+
+{
+  "empresa_id": 14,
+  "proveedor_id": 3,
+  "solicitud_pago_folio": "SP-2025-003"
+}
+
+### 1B.5 - Test Validación: Proveedor Inexistente (Debe fallar - 404)
+POST {{baseUrl}}/notifications/solicitud-pago/pagada
+Content-Type: application/json
+Accept: application/json
+X-API-KEY: {{apiKey}}
+
+{
+  "empresa_id": 14,
+  "proveedor_id": 99999,
+  "solicitud_pago_folio": "SP-2025-999",
+  "monto": 10000.00
+}
+
+### 1B.6 - Test Sin ApiKey (Debe fallar - 401)
+POST {{baseUrl}}/notifications/solicitud-pago/pagada
+Content-Type: application/json
+Accept: application/json
+
+{
+  "empresa_id": 14,
+  "proveedor_id": 3,
+  "solicitud_pago_folio": "SP-2025-004",
+  "monto": 5000.00
+}
+
+###
+# =========================================================================
 # SECCIÓN 2: ENDPOINTS PARA FRONTEND (Con Auth Sanctum)
 # =========================================================================
 # Estos endpoints son usados por el frontend de proveedores
-# para listar y gestionar notificaciones
+# para listar y gestionar notifications
 # =========================================================================
 
-### 2.1 - Obtener todas las notificaciones del proveedor (paginadas)
+### 2.1 - Obtener todas las notifications del proveedor (paginadas)
 GET {{baseUrl}}/notifications
 Content-Type: application/json
 Accept: application/json
 Authorization: {{authToken}}
 
-### 2.2 - Obtener notificaciones con paginación personalizada
+### 2.2 - Obtener notifications con paginación personalizada
 GET {{baseUrl}}/notifications?per_page=10
 Content-Type: application/json
 Accept: application/json
@@ -197,7 +280,7 @@ Content-Type: application/json
 Accept: application/json
 Authorization: {{authToken}}
 
-### 2.4 - Marcar todas las notificaciones como leídas
+### 2.4 - Marcar todas las notifications como leídas
 PATCH {{baseUrl}}/notifications/mark-all-read
 Content-Type: application/json
 Accept: application/json
@@ -205,7 +288,7 @@ Authorization: {{authToken}}
 
 ###
 # =========================================================================
-# SECCIÓN 3: PRUEBAS DE NOTIFICACIONES PUSH (Sistema existente)
+# SECCIÓN 3: PRUEBAS DE NOTIFICAtions PUSH (Sistema existente)
 # =========================================================================
 
 ### 3.1 - Enviar notificación de prueba (WebSocket)
@@ -253,7 +336,7 @@ Authorization: {{authToken}}
 ### 4.1 - Flujo Completo: Crear Notificación → Listar → Marcar como Leída
 
 # PASO 1: Crear nueva orden (simular llamada desde API Construcciones)
-POST {{baseUrl}}/notificaciones/nueva-orden
+POST {{baseUrl}}/notifications/nueva-orden
 Content-Type: application/json
 Accept: application/json
 X-API-KEY: {{apiKey}}
@@ -264,7 +347,7 @@ X-API-KEY: {{apiKey}}
   "orden_compra_id": "OC-FLOW-001",
 }
 
-# PASO 2: Listar notificaciones (desde frontend)
+# PASO 2: Listar notifications (desde frontend)
 # GET {{baseUrl}}/notifications
 # Authorization: {{authToken}}
 
@@ -295,6 +378,6 @@ X-API-KEY: {{apiKey}}
 #    Usa el endpoint de login en auth.http
 #
 # 6. VERIFICAR BASE DE DATOS:
-#    SELECT * FROM notificaciones WHERE proveedor_id = 1;
+#    SELECT * FROM notifications WHERE proveedor_id = 1;
 #
 # =========================================================================
