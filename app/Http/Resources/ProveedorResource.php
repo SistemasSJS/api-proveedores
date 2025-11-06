@@ -19,11 +19,11 @@ class ProveedorResource extends JsonResource
             'telefono' => $this->telefono,
             'email' => $this->email,
             'direccion' => $this->direccion_empresa,
-            'logo' => $this->logo
-                ? (preg_match('/^https?:\/\//', $this->logo)
-                    ? $this->logo
-                    : asset('storage/'.$this->logo))
-                : null,
+            'logo' => $this->logo,
+            // ? (preg_match('/^https?:\/\//', $this->logo)
+            //     ? $this->logo
+            //     : asset('storage/'.$this->logo))
+            // : null,
 
             'tipo_persona' => $this->tipo_persona,
             'regimen_fiscal_clave' => $this->regimen_fiscal_clave,

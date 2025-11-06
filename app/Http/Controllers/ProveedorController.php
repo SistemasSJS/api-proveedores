@@ -66,9 +66,12 @@ class ProveedorController extends Controller
             $file = $request->file('logo');
             $filename = 'logo_' . $proveedor->id . '_' . time() . '.' . $file->getClientOriginalExtension();
             $path = $file->storeAs('uploads', $filename, 'public');
+            
+            // Generar URL completa del logo
+            $url = asset("storage/$path");
 
-            // Actualizar proveedor
-            $proveedor->update(['logo' => $path]);
+            // Actualizar proveedor con la URL completa
+            $proveedor->update(['logo' => $url]);
         } catch (\Throwable $e) {
             throw new \Exception('Error al subir el logo: ' . $e->getMessage());
         }
