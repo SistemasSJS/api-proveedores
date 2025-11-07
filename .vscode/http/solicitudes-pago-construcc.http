@@ -10,7 +10,7 @@
 @apiKey = /%-!?=T35sT._22<1|:
 
 ### VARIABLES
-@solicitudId = 17
+@solicitudId = 16
 @rol = DG
 
 
@@ -37,7 +37,7 @@ X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
 ### 2. Ver detalle de solicitud específica
-GET {{baseUrl}}/construcc/solicitudes-pago/000021
+GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 

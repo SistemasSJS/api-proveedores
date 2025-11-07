@@ -37,7 +37,7 @@ POST {{baseUrl}}/auth/login
 
 {
   "email": "proveedor@elgrangero.com",
-  "password": "password"
+  "password": "Pass123!"
 }
 
 ### Login - Obtener token de acceso

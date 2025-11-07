@@ -13,14 +13,14 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
 {
     public $solicitudPagoFolio;
     public $proveedorId;
-    public $empresaId;
+    // public $empresaId;
     public $motivo;
 
-    public function __construct(string $solicitudPagoFolio, int $proveedorId, int $empresaId, ?string $motivo = null)
+    public function __construct(string $solicitudPagoFolio, int $proveedorId, ?string $motivo = null) //int $empresaId, )
     {
         $this->solicitudPagoFolio = $solicitudPagoFolio;
         $this->proveedorId = $proveedorId;
-        $this->empresaId = $empresaId;
+        // $this->empresaId = $empresaId;
         $this->motivo = $motivo;
     }
 
@@ -47,10 +47,11 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
             'tipo' => 'solicitud_pago_rechazada',
             'titulo' => 'Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
             'mensaje' => "Tu solicitud de pago #{$this->solicitudPagoFolio} ha sido rechazada.",
+            'action_url' => '/solicitudes-pago/' . $this->solicitudPagoFolio,
             'data' => [
                 'solicitud_pago_folio' => $this->solicitudPagoFolio,
                 'proveedor_id' => $this->proveedorId,
-                'empresa_id' => $this->empresaId,
+                // 'empresa_id' => $this->empresaId,
                 'motivo' => $this->motivo,
                 'estatus' => 'rechazada',
             ],
@@ -80,9 +81,10 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
             'tipo' => 'solicitud_pago_rechazada',
             'titulo' => 'Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
             'mensaje' => "Tu solicitud de pago #{$this->solicitudPagoFolio} ha sido rechazada.",
+            'action_url' => '/solicitudes-pago/' . $this->solicitudPagoFolio,
             'solicitud_pago_folio' => $this->solicitudPagoFolio,
             'proveedor_id' => $this->proveedorId,
-            'empresa_id' => $this->empresaId,
+            // 'empresa_id' => $this->empresaId,
             'motivo' => $this->motivo,
             'estatus' => 'rechazada',
             'timestamp' => now()->toIso8601String(),
@@ -128,16 +130,17 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
 
         $notification = [
             'title' => '❌ Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
-            'body' => $this->motivo 
+            'body' => $this->motivo
                 ? "Tu solicitud de pago ha sido rechazada. Motivo: {$this->motivo}"
                 : "Tu solicitud de pago ha sido rechazada.",
         ];
 
         $data = [
             'tipo' => 'solicitud_pago_rechazada',
+            'action_url' => '/solicitudes-pago/' . $this->solicitudPagoFolio,
             'solicitud_pago_folio' => $this->solicitudPagoFolio,
-            'proveedor_id' => $this->proveedorId,
-            'empresa_id' => $this->empresaId,
+            'proveedor_id' => (string) $this->proveedorId,
+            // 'empresa_id' => (string) $this->empresaId,
             'motivo' => $this->motivo,
             'estatus' => 'rechazada',
             'timestamp' => now()->toIso8601String(),

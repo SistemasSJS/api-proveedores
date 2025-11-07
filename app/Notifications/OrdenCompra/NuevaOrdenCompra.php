@@ -47,6 +47,7 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
             'tipo' => 'nueva_orden_compra',
             'titulo' => 'Nueva Orden de Compra #' . $this->ordenCompraId,
             'mensaje' => "Tienes una nueva orden de compra: {$this->ordenCompraId}",
+            'action_url' => '/ordenes-compra/' . $this->ordenCompraId,
             'data' => [
                 'orden_compra_id' => $this->ordenCompraId,
                 'proveedor_id' => $this->proveedorId,
@@ -79,6 +80,7 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
             'tipo' => 'nueva_orden_compra',
             'titulo' => 'Nueva Orden de Compra #' . $this->ordenCompraId,
             'mensaje' => "Tienes una nueva orden de compra: {$this->ordenCompraId}",
+            'action_url' => '/ordenes-compra/' . $this->ordenCompraId,
             'orden_compra_id' => $this->ordenCompraId,
             'proveedor_id' => $this->proveedorId,
             'empresa_id' => $this->empresaId,
@@ -125,9 +127,10 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
 
         $data = [
             'tipo' => 'nueva_orden_compra',
+            'action_url' => '/ordenes-compra/' . $this->ordenCompraId,
             'orden_compra_id' => $this->ordenCompraId,
-            'proveedor_id' => $this->proveedorId,
-            'empresa_id' => $this->empresaId,
+            'proveedor_id' => (string) $this->proveedorId,
+            'empresa_id' => (string) $this->empresaId,
             'estatus' => $this->estatus,
             'timestamp' => now()->toIso8601String(),
         ];

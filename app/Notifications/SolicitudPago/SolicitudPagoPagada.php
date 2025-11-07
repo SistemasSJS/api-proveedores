@@ -13,14 +13,14 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
 {
     public $solicitudPagoFolio;
     public $proveedorId;
-    public $empresaId;
+    // public $empresaId;
     public $monto;
 
-    public function __construct(string $solicitudPagoFolio, int $proveedorId, int $empresaId, ?float $monto = null)
+    public function __construct(string $solicitudPagoFolio, int $proveedorId, ?float $monto = null)
     {
         $this->solicitudPagoFolio = $solicitudPagoFolio;
         $this->proveedorId = $proveedorId;
-        $this->empresaId = $empresaId;
+        // // $this->empresaId = $empresaId;
         $this->monto = $monto;
     }
 
@@ -47,10 +47,11 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
             'tipo' => 'solicitud_pago_pagada',
             'titulo' => 'Solicitud de Pago Pagada #' . $this->solicitudPagoFolio,
             'mensaje' => "Tu solicitud de pago #{$this->solicitudPagoFolio} ha sido pagada.",
+            'action_url' => '/solicitudes-pago/' . $this->solicitudPagoFolio,
             'data' => [
                 'solicitud_pago_folio' => $this->solicitudPagoFolio,
                 'proveedor_id' => $this->proveedorId,
-                'empresa_id' => $this->empresaId,
+                // 'empresa_id' => $this->empresaId,
                 'monto' => $this->monto,
                 'estatus' => 'pagada',
             ],
@@ -80,9 +81,10 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
             'tipo' => 'solicitud_pago_pagada',
             'titulo' => 'Solicitud de Pago Pagada #' . $this->solicitudPagoFolio,
             'mensaje' => "Tu solicitud de pago #{$this->solicitudPagoFolio} ha sido pagada.",
+            'action_url' => '/solicitudes-pago/' . $this->solicitudPagoFolio,
             'solicitud_pago_folio' => $this->solicitudPagoFolio,
             'proveedor_id' => $this->proveedorId,
-            'empresa_id' => $this->empresaId,
+            // 'empresa_id' => $this->empresaId,
             'monto' => $this->monto,
             'estatus' => 'pagada',
             'timestamp' => now()->toIso8601String(),
@@ -129,9 +131,10 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
 
         $data = [
             'tipo' => 'solicitud_pago_pagada',
+            'action_url' => '/solicitudes-pago/' . $this->solicitudPagoFolio,
             'solicitud_pago_folio' => $this->solicitudPagoFolio,
-            'proveedor_id' => $this->proveedorId,
-            'empresa_id' => $this->empresaId,
+            'proveedor_id' => (string) $this->proveedorId,
+            // 'empresa_id' => (string) $this->empresaId,
             'monto' => $this->monto ? (string) $this->monto : null,
             'estatus' => 'pagada',
             'timestamp' => now()->toIso8601String(),

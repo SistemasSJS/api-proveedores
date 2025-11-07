@@ -103,7 +103,7 @@ class ConstruccSolicitudPagoController extends Controller
         }
 
         // Actualizar el campo del rol y fecha correspondiente
-        $fechaField = $rolField.'_fecha';
+        $fechaField = $rolField . '_fecha';
         $solicitudPago->update([
             $rolField => EstadoSolicitud::AUTORIZADA->value,
             $fechaField => now(),
@@ -155,7 +155,7 @@ class ConstruccSolicitudPagoController extends Controller
 
         // Actualizar estado y registrar quién rechazó
         $rolField = strtolower($rol === 'PC' ? 'pc' : $rol);
-        $fechaField = $rolField.'_fecha';
+        $fechaField = $rolField . '_fecha';
 
         $solicitudPago->update([
             'estado_solicitud' => EstadoSP::RECHAZADA->value,
@@ -172,7 +172,7 @@ class ConstruccSolicitudPagoController extends Controller
 
             if ($usuarioPrincipal) {
                 $usuarioPrincipal->notify(new SolicitudPagoRechazada(
-                    $solicitudPago->folio,
+                    $solicitudPago->numero_folio_solicitud,
                     $proveedor->id,
                     $solicitudPago->empresa_construcc_id,
                     $data['motivo_rechazo']
@@ -180,7 +180,7 @@ class ConstruccSolicitudPagoController extends Controller
 
                 Log::info('✅ Notificación de SP Rechazada enviada', [
                     'solicitud_pago_id' => $solicitudPago->id,
-                    'folio' => $solicitudPago->folio,
+                    'folio' => $solicitudPago->numero_folio_solicitud,
                     'proveedor_id' => $proveedor->id,
                     'usuario_id' => $usuarioPrincipal->id,
                 ]);
@@ -283,7 +283,7 @@ class ConstruccSolicitudPagoController extends Controller
         $solicitudPago->update([
             'estado_solicitud' => $estadoFinal,
             'ruta_archivo_comprobante_pago' => $path,
-            'notas_abono' => $request->notas_abono,
+            // 'notas_abono' => $request->notas_abono,
             'fecha_pago' => now(),
             'da' => $estadoDA,
             'da_fecha' => now(),
@@ -300,15 +300,15 @@ class ConstruccSolicitudPagoController extends Controller
 
             if ($usuarioPrincipal) {
                 $usuarioPrincipal->notify(new SolicitudPagoPagada(
-                    $solicitudPago->folio,
+                    $solicitudPago->numero_folio_solicitud,
                     $proveedor->id,
-                    $solicitudPago->empresa_construcc_id,
+                    // $solicitudPago->empresa_construcc_id,
                     $montoAbono
                 ));
 
                 Log::info('✅ Notificación de SP Pagada enviada', [
                     'solicitud_pago_id' => $solicitudPago->id,
-                    'folio' => $solicitudPago->folio,
+                    'folio' => $solicitudPago->numero_folio_solicitud,
                     'proveedor_id' => $proveedor->id,
                     'usuario_id' => $usuarioPrincipal->id,
                     'monto' => $montoAbono,
