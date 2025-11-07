@@ -174,8 +174,8 @@ class ConstruccSolicitudPagoController extends Controller
                 $usuarioPrincipal->notify(new SolicitudPagoRechazada(
                     $solicitudPago->numero_folio_solicitud,
                     $proveedor->id,
-                    $solicitudPago->empresa_construcc_id,
-                    $data['motivo_rechazo']
+                    $data['motivo_rechazo'],
+                    $usuarioPrincipal->id
                 ));
 
                 Log::info('✅ Notificación de SP Rechazada enviada', [
@@ -302,8 +302,8 @@ class ConstruccSolicitudPagoController extends Controller
                 $usuarioPrincipal->notify(new SolicitudPagoPagada(
                     $solicitudPago->numero_folio_solicitud,
                     $proveedor->id,
-                    // $solicitudPago->empresa_construcc_id,
-                    $montoAbono
+                    $montoAbono,
+                    $usuarioPrincipal->id
                 ));
 
                 Log::info('✅ Notificación de SP Pagada enviada', [

@@ -57,5 +57,12 @@ return [
             'level' => 'debug',
             'replace_placeholders' => true,
         ],
+
+        'fcm_unregistered' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/fcm_unregistered.log'),
+            'level' => 'info',
+            'replace_placeholders' => true,
+        ],
     ],
 ];

@@ -159,9 +159,12 @@ class FcmService
             if ($status === 404 && str_contains($body, 'UNREGISTERED')) {
                 $token = data_get($payload, 'message.token');
 
-                Log::warning('FCM: Token inválido (UNREGISTERED), se eliminará', [
+                // Log en archivo separado para dispositivos desinstalados
+                Log::channel('fcm_unregistered')->info('Dispositivo desinstalado o token expirado - Token FCM eliminado automáticamente', [
                     'token' => $token,
-                    'response' => $body,
+                    'motivo' => 'El usuario desinstaló la aplicación, borró los datos de la app, o el token expiró',
+                    'accion' => 'Token eliminado de la base de datos',
+                    'fecha' => now()->toDateTimeString(),
                 ]);
 
                 // 🔥 Eliminar el token de la tabla user_device_tokens

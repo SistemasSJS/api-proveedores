@@ -7,21 +7,20 @@ use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Notifications\Notification;
-use App\Services\FcmService;
 
 class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
 {
     public $solicitudPagoFolio;
     public $proveedorId;
-    // public $empresaId;
     public $monto;
+    public $userId;
 
-    public function __construct(string $solicitudPagoFolio, int $proveedorId, ?float $monto = null)
+    public function __construct(string $solicitudPagoFolio, int $proveedorId, ?float $monto = null, ?int $userId = null)
     {
         $this->solicitudPagoFolio = $solicitudPagoFolio;
         $this->proveedorId = $proveedorId;
-        // // $this->empresaId = $empresaId;
         $this->monto = $monto;
+        $this->userId = $userId;
     }
 
     /**
@@ -47,7 +46,7 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
             'tipo' => 'solicitud_pago_pagada',
             'titulo' => 'Solicitud de Pago Pagada #' . $this->solicitudPagoFolio,
             'mensaje' => "Tu solicitud de pago #{$this->solicitudPagoFolio} ha sido pagada.",
-            'action_url' => '/solicitudes-pago/' . $this->solicitudPagoFolio,
+            'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoFolio,
             'data' => [
                 'solicitud_pago_folio' => $this->solicitudPagoFolio,
                 'proveedor_id' => $this->proveedorId,
@@ -69,7 +68,9 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
-        return [new PrivateChannel('App.Models.User.' . $this->id)];
+        // Usa el userId si está disponible, sino usa proveedorId como fallback
+        $channelId = $this->userId ?? $this->proveedorId;
+        return [new PrivateChannel('App.Models.User.' . $channelId)];
     }
 
     /**
@@ -113,33 +114,22 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
     /**
      * Canal FCM personalizado
      */
-    public function toFcm(object $notifiable): void
+    public function toFcm(object $notifiable): array
     {
-        $tokens = $notifiable->deviceTokens()
-            ->where('is_active', true)
-            ->pluck('token')
-            ->toArray();
-
-        if (empty($tokens)) {
-            return;
-        }
-
-        $notification = [
-            'title' => '✅ Solicitud de Pago Pagada #' . $this->solicitudPagoFolio,
-            'body' => "Tu solicitud de pago ha sido pagada exitosamente.",
+        return [
+            'notification' => [
+                'title' => '✅ Solicitud de Pago Pagada #' . $this->solicitudPagoFolio,
+                'body' => "Tu solicitud de pago ha sido pagada exitosamente.",
+            ],
+            'data' => [
+                'tipo' => 'solicitud_pago_pagada',
+                'action_url' => '/solicitudes-pago/' . $this->solicitudPagoFolio,
+                'solicitud_pago_folio' => $this->solicitudPagoFolio,
+                'proveedor_id' => (string) $this->proveedorId,
+                'monto' => $this->monto ? (string) $this->monto : null,
+                'estatus' => 'pagada',
+                'timestamp' => now()->toIso8601String(),
+            ],
         ];
-
-        $data = [
-            'tipo' => 'solicitud_pago_pagada',
-            'action_url' => '/solicitudes-pago/' . $this->solicitudPagoFolio,
-            'solicitud_pago_folio' => $this->solicitudPagoFolio,
-            'proveedor_id' => (string) $this->proveedorId,
-            // 'empresa_id' => (string) $this->empresaId,
-            'monto' => $this->monto ? (string) $this->monto : null,
-            'estatus' => 'pagada',
-            'timestamp' => now()->toIso8601String(),
-        ];
-
-        app(FcmService::class)->sendToTokens($tokens, $notification, $data);
     }
 }
