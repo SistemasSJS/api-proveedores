@@ -14,25 +14,37 @@ class TestReverb extends Command
 
     public function handle()
     {
-        $mensaje = 'Prueba desde comando: ' . now();
+        $this->info('🚀 Probando Reverb con PushNotification...');
+        $this->newLine();
 
         $user = User::find(14);
 
+        if (!$user) {
+            $this->error('❌ Usuario con ID 14 no encontrado.');
+            return Command::FAILURE;
+        }
+
+        $this->info("👤 Usuario: {$user->name} (ID: {$user->id})");
+        $this->newLine();
+
         $user->notify(
             new PushNotification(
-
-                'Title: Notificaion Push',
-                'Mensaje: Notificaion Push',
-                'info',
-                [
-                    'mensaje' => 'saludio'
-                ]
+                title: '🔔 Notificación de Prueba Reverb',
+                message: 'Prueba desde comando: ' . now()->format('Y-m-d H:i:s'),
+                type: 'info',
+                data: [
+                    'mensaje' => 'Hola desde TestReverb',
+                    'timestamp' => now()->toIso8601String(),
+                ],
+                actionUrl: null,
+                userId: $user->id
             )
         );
-        // $this->info('Enviando evento TestEvent...');
-        // broadcast(new TestEvent($mensaje));
-        // $this->info('Evento enviado: ' . $mensaje);
 
-        return 0;
+        $this->info('✅ Notificación enviada correctamente');
+        $this->line('  - Canal privado: App.Models.User.' . $user->id);
+        $this->line('  - Revisa la consola del navegador o app móvil');
+
+        return Command::SUCCESS;
     }
 }

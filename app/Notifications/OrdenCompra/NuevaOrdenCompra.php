@@ -7,6 +7,7 @@ use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Notifications\Notification;
+use App\Services\FcmService;
 
 class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
 {
@@ -28,7 +29,7 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
      */
     public function via(object $notifiable): array
     {
-        $via = ['broadcast', 'database', 'mail'];
+        $via = ['database', 'mail'];
 
         if (method_exists($notifiable, 'deviceTokens') && $notifiable->deviceTokens()->where('is_active', true)->exists()) {
             $via[] = 'fcm';
@@ -108,22 +109,32 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
     /**
      * Canal FCM personalizado
      */
-    public function toFcm(object $notifiable): array
+    public function toFcm(object $notifiable): void
     {
-        return [
-            'notification' => [
-                'title' => '📦 Nueva Orden de Compra #' . $this->ordenCompraId,
-                'body' => "Tienes una nueva orden de compra disponible.",
-            ],
-            'data' => [
-                'tipo' => 'nueva_orden_compra',
-                'action_url' => '/ordenes-compra/' . $this->ordenCompraId,
-                'orden_compra_id' => $this->ordenCompraId,
-                'proveedor_id' => (string) $this->proveedorId,
-                'empresa_id' => (string) $this->empresaId,
-                'estatus' => $this->estatus,
-                'timestamp' => now()->toIso8601String(),
-            ],
+        $tokens = $notifiable->deviceTokens()
+            ->where('is_active', true)
+            ->pluck('token')
+            ->toArray();
+
+        if (empty($tokens)) {
+            return;
+        }
+
+        $notification = [
+            'title' => '📦 Nueva Orden de Compra #' . $this->ordenCompraId,
+            'body' => "Tienes una nueva orden de compra disponible.",
         ];
+
+        $data = [
+            'tipo' => 'nueva_orden_compra',
+            'action_url' => '/ordenes-compra/' . $this->ordenCompraId,
+            'orden_compra_id' => $this->ordenCompraId,
+            'proveedor_id' => (string) $this->proveedorId,
+            'empresa_id' => (string) $this->empresaId,
+            'estatus' => $this->estatus,
+            'timestamp' => now()->toIso8601String(),
+        ];
+
+        app(FcmService::class)->sendToTokens($tokens, $notification, $data);
     }
 }

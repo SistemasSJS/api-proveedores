@@ -173,6 +173,7 @@ class ConstruccSolicitudPagoController extends Controller
             if ($usuarioPrincipal) {
                 $usuarioPrincipal->notify(new SolicitudPagoRechazada(
                     $solicitudPago->numero_folio_solicitud,
+                    $solicitudPago->id,
                     $proveedor->id,
                     $data['motivo_rechazo'],
                     $usuarioPrincipal->id
@@ -301,6 +302,7 @@ class ConstruccSolicitudPagoController extends Controller
             if ($usuarioPrincipal) {
                 $usuarioPrincipal->notify(new SolicitudPagoPagada(
                     $solicitudPago->numero_folio_solicitud,
+                    $solicitudPago->id,
                     $proveedor->id,
                     $montoAbono,
                     $usuarioPrincipal->id

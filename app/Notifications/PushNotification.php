@@ -5,7 +5,8 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Messages\BroadcastMessage;
-use Illuminate\Broadcasting\Channel;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Notifications\Notification;
 
 class PushNotification extends Notification implements ShouldBroadcastNow
@@ -16,73 +17,117 @@ class PushNotification extends Notification implements ShouldBroadcastNow
     public $message;
     public $type;
     public $data;
+    public $actionUrl;
+    public $userId;
 
-    public function __construct(string $title, string $message, string $type = 'info', array $data = [])
-    {
+    public function __construct(
+        string $title, 
+        string $message, 
+        string $type = 'info', 
+        array $data = [], 
+        ?string $actionUrl = null,
+        ?int $userId = null
+    ) {
         $this->title = $title;
         $this->message = $message;
         $this->type = $type;
         $this->data = $data;
+        $this->actionUrl = $actionUrl;
+        $this->userId = $userId;
     }
 
+    /**
+     * Canales de notificación
+     */
     public function via(object $notifiable): array
     {
-        $channels = ['database', 'broadcast'];
+        $via = ['broadcast', 'database'];
 
-        if (method_exists($notifiable, 'activeDeviceTokens') && $notifiable->activeDeviceTokens()->exists()) {
-            $channels[] = 'fcm';
+        if (method_exists($notifiable, 'deviceTokens') && $notifiable->deviceTokens()->where('is_active', true)->exists()) {
+            $via[] = 'fcm';
         }
 
-        return $channels;
+        return $via;
     }
 
+    /**
+     * Canal Broadcast (WebSocket) — PRIVADO POR USUARIO
+     */
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
-        return new BroadcastMessage($this->formatPayload());
-    }
-
-    public function toArray(object $notifiable): array
-    {
-        return $this->formatPayload();
-    }
-
-    public function toFcm(object $notifiable): array
-    {
-        $payload = $this->formatPayload();
-
-        return [
-            'notification' => [
-                'title' => $payload['title'],
-                'body' => $payload['mensaje'],
-            ],
-            'data' => array_merge($payload['data'], [
-                'id' => $payload['id'],
-                'type' => $payload['type'],
-                'timestamp' => $payload['timestamp'],
-            ]),
-        ];
-    }
-
-    protected function formatPayload(): array
-    {
-        return [
-            'id' => $this->id,
-            'title' => $this->title,
+        return new BroadcastMessage([
+            'tipo' => $this->type,
+            'titulo' => $this->title,
             'mensaje' => $this->message,
-            'type' => $this->type,
+            'action_url' => $this->actionUrl,
             'data' => $this->data,
-            'timestamp' => now()->toIsoString(),
-            'read_at' => null,
-        ];
+            'timestamp' => now()->toIso8601String(),
+        ]);
     }
 
     public function broadcastType(): string
     {
-        return 'notification';
+        return 'push-notification';
     }
 
-    public function broadcastOn()
+    /**
+     * Canal privado por usuario
+     */
+    public function broadcastOn(): array
     {
-        return [new Channel('public-notifications')];
+        // Usa el userId si está disponible
+        $channelId = $this->userId ?? ($this->data['user_id'] ?? null);
+        
+        if ($channelId) {
+            return [new PrivateChannel('App.Models.User.' . $channelId)];
+        }
+        
+        // Fallback a canal público si no hay userId (no recomendado)
+        return [new PrivateChannel('notifications')];
+    }
+
+    /**
+     * Canal Database
+     */
+    public function toArray(object $notifiable): array
+    {
+        return [
+            'tipo' => $this->type,
+            'titulo' => $this->title,
+            'mensaje' => $this->message,
+            'action_url' => $this->actionUrl,
+            'data' => $this->data,
+            'timestamp' => now()->toIso8601String(),
+        ];
+    }
+
+    /**
+     * Canal FCM personalizado
+     */
+    public function toFcm(object $notifiable): array
+    {
+        // Determinar el ícono según el tipo
+        $icon = match($this->type) {
+            'success' => '✅',
+            'error', 'danger' => '❌',
+            'warning' => '⚠️',
+            'info' => '🔔',
+            default => '🔔',
+        };
+
+        return [
+            'notification' => [
+                'title' => $icon . ' ' . $this->title,
+                'body' => $this->message,
+            ],
+            'data' => array_merge(
+                $this->data,
+                [
+                    'tipo' => $this->type,
+                    'action_url' => $this->actionUrl,
+                    'timestamp' => now()->toIso8601String(),
+                ]
+            ),
+        ];
     }
 }
