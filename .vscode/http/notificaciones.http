@@ -10,11 +10,49 @@
 # - Configurar API_CONSTRUCCIONES_APIKEY en .env
 # - Token de autenticación válido para endpoints del frontend
 # =========================================================================
-
-@baseUrl = http://localhost:80/api  
-# @baseUrl = https://apicons.ddns.net:8092/api
+# 
+# @baseUrl = http://localhost:80/api  
+@baseUrl = https://apicons.ddns.net:8092/api
 @apiKey = cf5cd9d4b56257d25baf3300447af494d1e815f802553a5b65204099b26ea6e1
-@authToken = Bearer 8|IAtT96wh0fGGKsyaO7LmTTvRwJ5ejk0pbwixV60zbbc237b0
+@authToken = Bearer 203|gixpgElUCBeU3enpmbQREtCZu9je5MVI1xKCec8pbc2034c4
+
+###
+POST {{baseUrl}}/notifications/nueva-orden
+Content-Type: application/json
+Accept: application/json
+X-API-KEY: {{apiKey}}
+
+{
+  "empresa_id": 14,
+  "proveedor_id": 4,
+  "orden_compra_id": "OC-TEST-002",
+  "estatus": "pendiente"
+}
+
+###
+POST {{baseUrl}}/proveedores/3/solicitudes-pago/23/autorizar
+Authorization: Bearer 30|o5NXlg8eFmBgwRLkdUEV4acd3KRvC0Sk7Y7FYnxD6d2dd3f0
+Accept: application/json1
+
+{ }
+ 
+###
+GET {{baseUrl}}/construcc/solicitudes-pago?estado_solicitud=pendiente&proveedor_id=4
+Content-Type: application/json
+Accept: application/json
+X-API-KEY: /%-!?=T35sT._22<1|:
+###
+POST {{baseUrl}}/construcc/solicitudes-pago/38/rechazar
+Content-Type: application/json
+Accept: application/json
+X-API-KEY: /%-!?=T35sT._22<1|:
+
+{
+  "rol": "DT",
+  "motivo_rechazo": "El monto no corresponde con la cotización original."
+}
+
+###
 
 ###
 # =========================================================================
@@ -81,7 +119,7 @@ X-API-KEY: {{apiKey}}
 {
   "empresa_id": 14,
   "proveedor_id": 3,
-  "orden_compra_id": "OC-00010002",
+  "orden_compra_id": "OC-0002",
   "estatus": "pendiente"
 }
 

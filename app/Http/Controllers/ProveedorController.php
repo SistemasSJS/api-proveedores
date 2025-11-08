@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Enums\EstadoCuentaBancaria;
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
+use App\Http\Requests\Proveedor\ProveedorStoreRequest;
 use App\Http\Requests\Proveedor\ProveedorUpdateConstanciaFiscalRequest;
-use App\Http\Requests\Proveedor\ProveedorUpdateLogoRequest;
 use App\Http\Requests\Proveedor\ProveedorUpdateRequest;
+use App\Services\ConstanciaFiscalService;
 use App\Http\Resources\Admin\AdminProveedorAcordeonResource;
 use App\Http\Resources\ProveedorResource;
 use App\Http\Resources\ProveedorValidacionPerfilCompletoResource;
@@ -14,6 +15,7 @@ use App\Http\Resources\UserResource;
 use App\Models\Proveedor;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -263,7 +265,8 @@ class ProveedorController extends Controller
      */
     public function updateConstanciaFiscal(
         ProveedorUpdateConstanciaFiscalRequest $request,
-        Proveedor $proveedor
+        Proveedor $proveedor,
+        ConstanciaFiscalService $constanciaService
     ) {
         $validated = $request->validated();
         $user = $request->user();
@@ -288,8 +291,31 @@ class ProveedorController extends Controller
 
         $proveedor->update(['constancia_fiscal' => $path]);
 
+        // Extraer datos fiscales del QR de la constancia
+        $datosFiscales = null;
+        try {
+            $fullPath = Storage::disk('private')->path($path);
+            Log::info('Intentando extraer datos fiscales de: ' . $fullPath);
+            
+            $datosFiscales = $constanciaService->extraerDatosFiscales($fullPath);
+            
+            Log::info('Datos fiscales extraídos:', ['datos' => $datosFiscales]);
+            
+            // Agregar clave de régimen si se obtuvo el nombre
+            if ($datosFiscales && !empty($datosFiscales['regimen_fiscal_nombre'])) {
+                $datosFiscales['regimen_fiscal_clave'] = $constanciaService->obtenerClaveRegimen(
+                    $datosFiscales['regimen_fiscal_nombre']
+                );
+                Log::info('Clave de régimen fiscal agregada: ' . $datosFiscales['regimen_fiscal_clave']);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error al extraer datos fiscales: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+        }
+
         return $this->success([
             'proveedor' => new ProveedorResource($proveedor->fresh()),
+            'datos_fiscales' => $datosFiscales,
             'message' => 'Constancia fiscal actualizada con éxito.',
         ], 200);
     }

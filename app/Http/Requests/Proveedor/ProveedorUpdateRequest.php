@@ -61,8 +61,8 @@ class ProveedorUpdateRequest extends FormRequest
         return [
             'pagina_web' => ['nullable', 'string', 'max:255'],
             'nombre_comercial' => ['sometimes', 'string', 'max:255'],
-            'telefono' => ['nullable', 'string', 'max:15'],
-            'email' => ['nullable', 'email', 'max:255'],
+            'telefono' => ['sometimes', 'required', 'string', 'max:15'],
+            'email' => ['sometimes', 'required', 'email', 'max:255'],
             'direccion_empresa' => ['nullable', 'string', 'max:255'],
             'descripcion_giro_empresa' => ['nullable', 'string', 'max:255'],
 
