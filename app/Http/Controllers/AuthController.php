@@ -243,7 +243,8 @@ class AuthController extends Controller
             throw new UnauthorizedException('No autorizado o sesión no válida');
         }
 
-        $request->user()->tokens()->delete();
+        // Solo eliminar el token del dispositivo actual, no todos los tokens
+        $request->user()->currentAccessToken()->delete();
 
         return $this->success(
             [
