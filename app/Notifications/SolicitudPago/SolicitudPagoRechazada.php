@@ -47,7 +47,7 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
     {
         return new BroadcastMessage([
             'tipo' => 'solicitud_pago_rechazada',
-            'titulo' => 'Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
+            'titulo' => '<Broadcast> Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
             'mensaje' => "Tu solicitud de pago #{$this->solicitudPagoFolio} ha sido rechazada.",
             'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
             'data' => [
@@ -133,7 +133,7 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
         }
         // return [
         $notification = [
-            'title' => '❌ Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
+            'title' => '<FMC>❌ Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
             'body' => $this->motivo
                 ? "Tu solicitud de pago ha sido rechazada. Motivo: {$this->motivo}"
                 : "Tu solicitud de pago ha sido rechazada.",
