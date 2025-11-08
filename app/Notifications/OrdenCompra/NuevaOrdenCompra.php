@@ -29,7 +29,7 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
      */
     public function via(object $notifiable): array
     {
-        $via = ['database', 'mail'];
+        $via = ['database', 'mail', 'broadcast'];
 
         if (method_exists($notifiable, 'deviceTokens') && $notifiable->deviceTokens()->where('is_active', true)->exists()) {
             $via[] = 'fcm';
@@ -68,7 +68,10 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
-        return [new PrivateChannel('App.Models.User.' . $this->id)];
+        // No necesitas especificar el canal aquí cuando usas Notification
+        // Laravel automáticamente envía al canal privado del notifiable (usuario)
+        // Esto enviará a: private-App.Models.User.{userId}
+        return [];
     }
 
     /**

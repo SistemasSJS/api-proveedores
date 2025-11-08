@@ -31,7 +31,7 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
      */
     public function via(object $notifiable): array
     {
-        $via = ['database', 'mail'];
+        $via = ['database', 'mail', 'broadcast'];
 
         if (method_exists($notifiable, 'deviceTokens') && $notifiable->deviceTokens()->where('is_active', true)->exists()) {
             $via[] = 'fcm';
@@ -71,10 +71,11 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
-        // Usa el userId si está disponible, sino usa proveedorId como fallback
-        $channelId = $this->userId ?? $this->proveedorId;
-        return [new PrivateChannel('App.Models.User.' . $channelId)];
+        // Laravel automáticamente envía al canal privado del notifiable (usuario)
+        // Esto enviará a: private-App.Models.User.{userId}
+        return [];
     }
+
 
     /**
      * Canal Database
