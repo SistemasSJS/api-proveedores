@@ -31,7 +31,7 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
      */
     public function via(object $notifiable): array
     {
-        $via = ['database', 'mail', 'broadcast'];
+        $via = ['broadcast', 'database', 'mail'];
 
         if (method_exists($notifiable, 'deviceTokens') && $notifiable->deviceTokens()->where('is_active', true)->exists()) {
             $via[] = 'fcm';
@@ -47,13 +47,12 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
     {
         return new BroadcastMessage([
             'tipo' => 'solicitud_pago_rechazada',
-            'titulo' => '<Broadcast> Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
+            'titulo' => 'Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
             'mensaje' => "Tu solicitud de pago #{$this->solicitudPagoFolio} ha sido rechazada.",
             'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
             'data' => [
                 'solicitud_pago_folio' => $this->solicitudPagoFolio,
                 'proveedor_id' => $this->proveedorId,
-                // 'empresa_id' => $this->empresaId,
                 'motivo' => $this->motivo,
                 'estatus' => 'rechazada',
             ],
@@ -101,21 +100,18 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
     public function toMail(object $notifiable): MailMessage
     {
         $frontendUrl = config('app.frontend_url', config('app.url'));
+        $urlSolicitud = $frontendUrl . '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId;
 
-        $mailMessage = (new MailMessage)
+        return (new MailMessage)
             ->subject('Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio)
-            ->greeting('Hola ' . $notifiable->name . ',')
-            ->line('Tu solicitud de pago ha sido rechazada.')
-            ->line('Número de solicitud: ' . $this->solicitudPagoFolio);
-
-        if ($this->motivo) {
-            $mailMessage->line('Motivo: ' . $this->motivo);
-        }
-
-        return $mailMessage
-            ->line('Estatus: Rechazada')
-            ->action('Ver Solicitud', $frontendUrl . '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId)
-            ->line('Gracias por utilizar CONSTRUCC.');
+            ->view('emails.solicitud-pago.rechazada', [
+                'notifiable' => $notifiable,
+                'solicitudPagoFolio' => $this->solicitudPagoFolio,
+                'solicitudPagoId' => $this->solicitudPagoId,
+                'proveedorId' => $this->proveedorId,
+                'motivo' => $this->motivo,
+                'urlSolicitud' => $urlSolicitud,
+            ]);
     }
 
     /**
@@ -131,9 +127,8 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
         if (empty($tokens)) {
             return;
         }
-        // return [
         $notification = [
-            'title' => '<FMC>❌ Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
+            'title' => '❌ Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
             'body' => $this->motivo
                 ? "Tu solicitud de pago ha sido rechazada. Motivo: {$this->motivo}"
                 : "Tu solicitud de pago ha sido rechazada.",
@@ -147,7 +142,7 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
             'estatus' => 'rechazada',
             'timestamp' => now()->toIso8601String(),
         ];
-        // ];
+
         app(FcmService::class)->sendToTokens($tokens, $notification, $data);
     }
 }
