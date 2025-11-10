@@ -6,6 +6,7 @@ use App\Enums\EstadoCuentaBancaria;
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Http\Requests\Proveedor\ProveedorStoreRequest;
 use App\Http\Requests\Proveedor\ProveedorUpdateConstanciaFiscalRequest;
+use App\Http\Requests\Proveedor\ProveedorUpdateLogoRequest;
 use App\Http\Requests\Proveedor\ProveedorUpdateRequest;
 use App\Services\ConstanciaFiscalService;
 use App\Http\Resources\Admin\AdminProveedorAcordeonResource;
@@ -68,7 +69,7 @@ class ProveedorController extends Controller
             $file = $request->file('logo');
             $filename = 'logo_' . $proveedor->id . '_' . time() . '.' . $file->getClientOriginalExtension();
             $path = $file->storeAs('uploads', $filename, 'public');
-            
+
             // Generar URL completa del logo
             $url = asset("storage/$path");
 
@@ -88,7 +89,7 @@ class ProveedorController extends Controller
             'user' => new UserResource($user),
         ]);
     }
-    
+
     /**
      * Obtiene el proveedor principal asociado a un usuario por ID.
      *
@@ -296,11 +297,11 @@ class ProveedorController extends Controller
         try {
             $fullPath = Storage::disk('private')->path($path);
             Log::info('Intentando extraer datos fiscales de: ' . $fullPath);
-            
+
             $datosFiscales = $constanciaService->extraerDatosFiscales($fullPath);
-            
+
             Log::info('Datos fiscales extraídos:', ['datos' => $datosFiscales]);
-            
+
             // Agregar clave de régimen si se obtuvo el nombre
             if ($datosFiscales && !empty($datosFiscales['regimen_fiscal_nombre'])) {
                 $datosFiscales['regimen_fiscal_clave'] = $constanciaService->obtenerClaveRegimen(
