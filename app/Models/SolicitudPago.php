@@ -494,7 +494,7 @@ class SolicitudPago extends BaseModel
 
         // Generamos el folio con formato SP-ABC-000001
         // return sprintf('SP-%s-%06d', $proveedorClave, $siguienteNumero);
-        return sprintf('%06d', $siguienteNumero);
+        return sprintf('%04d', $siguienteNumero);
     }
 
 
