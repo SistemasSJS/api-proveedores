@@ -29,7 +29,7 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
      */
     public function via(object $notifiable): array
     {
-        $via = ['database', 'mail', ];
+        $via = ['broadcast', 'database', 'mail'];
 
         if (method_exists($notifiable, 'deviceTokens') && $notifiable->deviceTokens()->where('is_active', true)->exists()) {
             $via[] = 'fcm';
@@ -98,15 +98,18 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
     public function toMail(object $notifiable): MailMessage
     {
         $frontendUrl = config('app.frontend_url', config('app.url'));
+        $urlOrden = $frontendUrl . '/ordenes-compra/' . $this->ordenCompraId;
 
         return (new MailMessage)
             ->subject('Nueva Orden de Compra #' . $this->ordenCompraId)
-            ->greeting('Hola ' . $notifiable->name . ',')
-            ->line('Tienes una nueva orden de compra registrada.')
-            ->line('Número de orden: ' . $this->ordenCompraId)
-            ->line('Estatus: ' . ucfirst($this->estatus))
-            ->action('Ver Orden', $frontendUrl . '/ordenes-compra/' . $this->ordenCompraId)
-            ->line('Gracias por utilizar CONSTRUCC.');
+            ->view('emails.orden-compra.nueva', [
+                'notifiable' => $notifiable,
+                'ordenCompraId' => $this->ordenCompraId,
+                'proveedorId' => $this->proveedorId,
+                'empresaId' => $this->empresaId,
+                'estatus' => $this->estatus,
+                'urlOrden' => $urlOrden,
+            ]);
     }
 
     /**

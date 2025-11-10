@@ -31,7 +31,7 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
      */
     public function via(object $notifiable): array
     {
-        $via = ['database', 'mail', 'broadcast'];
+        $via = ['broadcast', 'database', 'mail'];
 
         if (method_exists($notifiable, 'deviceTokens') && $notifiable->deviceTokens()->where('is_active', true)->exists()) {
             $via[] = 'fcm';
@@ -102,17 +102,18 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
     public function toMail(object $notifiable): MailMessage
     {
         $frontendUrl = config('app.frontend_url', config('app.url'));
-        $montoFormateado = $this->monto ? '$' . number_format($this->monto, 2) : '';
+        $urlSolicitud = $frontendUrl . '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId;
 
         return (new MailMessage)
             ->subject('Solicitud de Pago Pagada #' . $this->solicitudPagoFolio)
-            ->greeting('Hola ' . $notifiable->name . ',')
-            ->line('Tu solicitud de pago ha sido pagada exitosamente.')
-            ->line('Número de solicitud: ' . $this->solicitudPagoFolio)
-            ->line($montoFormateado ? 'Monto: ' . $montoFormateado : '')
-            ->line('Estatus: Pagada')
-            ->action('Ver Solicitud', $frontendUrl . '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId)
-            ->line('Gracias por utilizar CONSTRUCC.');
+            ->view('emails.solicitud-pago.pagada', [
+                'notifiable' => $notifiable,
+                'solicitudPagoFolio' => $this->solicitudPagoFolio,
+                'solicitudPagoId' => $this->solicitudPagoId,
+                'proveedorId' => $this->proveedorId,
+                'monto' => $this->monto,
+                'urlSolicitud' => $urlSolicitud,
+            ]);
     }
 
     /**
