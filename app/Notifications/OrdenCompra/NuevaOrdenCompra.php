@@ -44,7 +44,8 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-            'tipo' => 'nueva_orden_compra',
+            'tipo' => 'orden_compra',  // Categoría base
+            'subtipo' => 'nueva',       // Tipo específico
             'titulo' => 'Nueva Orden de Compra #' . $this->ordenCompraId,
             'mensaje' => "Tienes una nueva orden de compra: {$this->ordenCompraId}",
             'action_url' => '/ordenes-compra/' . $this->ordenCompraId,
@@ -60,7 +61,7 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
 
     public function broadcastType(): string
     {
-        return 'nueva-orden-compra';
+        return 'orden-compra';
     }
 
     /**
@@ -80,7 +81,8 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
     public function toArray(object $notifiable): array
     {
         return [
-            'tipo' => 'nueva_orden_compra',
+            'tipo' => 'orden_compra',  // Categoría base
+            'subtipo' => 'nueva',       // Tipo específico
             'titulo' => 'Nueva Orden de Compra #' . $this->ordenCompraId,
             'mensaje' => "Tienes una nueva orden de compra: {$this->ordenCompraId}",
             'action_url' => '/ordenes-compra/' . $this->ordenCompraId,
@@ -132,7 +134,8 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
         ];
 
         $data = [
-            'tipo' => 'nueva_orden_compra',
+            'tipo' => 'orden_compra',  // Categoría base
+            'subtipo' => 'nueva',       // Tipo específico
             'action_url' => '/ordenes-compra/' . $this->ordenCompraId,
             'orden_compra_id' => $this->ordenCompraId,
             'proveedor_id' => (string) $this->proveedorId,

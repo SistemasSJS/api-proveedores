@@ -46,7 +46,8 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-            'tipo' => 'solicitud_pago_rechazada',
+            'tipo' => 'solicitud_pago',   // Categoría base
+            'subtipo' => 'rechazada',     // Tipo específico
             'titulo' => 'Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
             'mensaje' => "Tu solicitud de pago #{$this->solicitudPagoFolio} ha sido rechazada.",
             'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
@@ -62,7 +63,7 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
 
     public function broadcastType(): string
     {
-        return 'solicitud-pago-rechazada';
+        return 'solicitud-pago ';
     }
 
     /**
@@ -81,7 +82,8 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
     public function toArray(object $notifiable): array
     {
         return [
-            'tipo' => 'solicitud_pago_rechazada',
+            'tipo' => 'solicitud_pago',   // Categoría base
+            'subtipo' => 'rechazada',     // Tipo específico
             'titulo' => 'Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
             'mensaje' => "Tu solicitud de pago #{$this->solicitudPagoFolio} ha sido rechazada.",
             'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
@@ -134,7 +136,8 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
                 : "Tu solicitud de pago ha sido rechazada.",
         ];
         $data = [
-            'tipo' => 'solicitud_pago_rechazada',
+            'tipo' => 'solicitud_pago',   // Categoría base
+            'subtipo' => 'rechazada',     // Tipo específico
             'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
             'solicitud_pago_folio' => $this->solicitudPagoFolio,
             'proveedor_id' => (string) $this->proveedorId,
