@@ -174,7 +174,19 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
+        // Buscar usuario por email
         $user = User::where('email', $request->email)->first();
+        
+        // Si no se encuentra por email, buscar por razón social del proveedor
+        if (!$user) {
+            $proveedor = Proveedor::where('razon_social', $request->email)
+                ->orWhere('nombre_comercial', $request->email)
+                ->first();
+            
+            if ($proveedor) {
+                $user = $proveedor->users()->first();
+            }
+        }
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
             throw new UnauthorizedException('Credenciales incorrectas.');
@@ -293,23 +305,66 @@ class AuthController extends Controller
     public function register_proveedor_basico_sp(ProveedorRegistroBasicoRequest $request)
     {
         $validatedData = $request->validated();
-        $token = Str::random(60);
+        
+        // Crear proveedor
+        $proveedor = Proveedor::create([
+            'nombre_comercial' => $validatedData['nombre_comercial'],
+            'razon_social' => $validatedData['nombre_comercial'], // Usar el mismo nombre comercial por defecto
+            'is_proveedor_sp' => true,
+            'is_proveedor_catalogo' => false,
+            'cambiar_pass_default' => false,
+            'perfil_empresa_completo' => false,
+        ]);
 
-        // Guardar datos del proveedor en cache por 7 días
-        Cache::put("registro_proveedor_basico_{$token}", $validatedData, 60 * 24 * 7);
+        // Obtener rol de gerente
+        $idRoleProveedor = Role::where('nombre', UserRoleEnumerate::GERENTE->value)->first()->id;
 
-        // Generar URL para completar el registro
-        $url = config('services.frontend.url')."/gen-pass-basico?token={$token}";
+        // Crear usuario
+        $user = User::create([
+            'name' => $validatedData['nombre_comercial'],
+            'email' => $validatedData['nombre_comercial'] . '_' . $proveedor->id . '@temp.com', // Email temporal
+            'password' => Hash::make($validatedData['password']),
+            'role_id' => $idRoleProveedor,
+        ]);
 
-        // Enviar correo de validación
-        Mail::to($validatedData['email'])->send(
-            new ValidaCorreoProveedorBasicoMail($url, $validatedData['empresa'])
-        );
+        // Relacionar usuario con proveedor
+        $user->proveedores()->attach($proveedor->id, [
+            'tipo_relacion' => 'PRINCIPAL',
+            'activo' => true,
+            'fecha_asignacion' => now(),
+            'observaciones' => 'Usuario principal del proveedor - Registro por enlace',
+        ]);
+
+        // Crear sucursal matriz por defecto
+        $proveedor->sucursales()->create([
+            'nombre' => 'Matriz',
+            'direccion' => 'Dirección pendiente',
+            'telefono' => '0000000000',
+            'email' => $validatedData['nombre_comercial'] . '@temp.com',
+            'encargado' => $validatedData['nombre_comercial'],
+            'activa' => true,
+            'coordenadas_lat' => null,
+            'coordenadas_lng' => null,
+            'estatus' => 'activo',
+        ]);
+
+        // Registrar relación con empresa Construcc si se proporcionaron los datos
+        if (isset($validatedData['empresa_construcc_id'])) {
+            $proveedor->empresasConstrucc()->attach($validatedData['empresa_construcc_id'], [
+                'usuario_construcc_id' => $validatedData['usuario_construcc_id'] ?? null,
+                'usuario_construcc_nombre' => $validatedData['usuario_construcc_nombre'] ?? null,
+            ]);
+        }
+
+        // Crear token de autenticación
+        $token = $user->createToken('auth_token')->plainTextToken;
+        $user->load(User::eagerLodable());
 
         return $this->success([
-            'url' => $url,
-            'email' => $validatedData['email'],
-        ], 'Registro iniciado. Revisa tu correo para completar el registro.', 200);
+            'user' => new UserAuthenticateResource($user),
+            'proveedor' => new ProveedorResource($proveedor->load(Proveedor::eagerLodable())),
+            'token' => $token,
+        ], 'Registro completado exitosamente', 201);
     }
 
     /**
@@ -550,5 +605,26 @@ class AuthController extends Controller
             'existe' => $existe,
             'email' => $request->email,
         ], $existe ? 'El correo ya está registrado.' : 'El correo está disponible.', 200);
+    }
+
+    /**
+     * Verificar si una razón social/nombre comercial ya está registrado
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function verificarRazonSocialExistente(Request $request)
+    {
+        $request->validate([
+            'razon_social' => ['required', 'string'],
+        ]);
+
+        // Verificar si la razón social existe en la tabla proveedores
+        $existe = Proveedor::where('razon_social', $request->razon_social)->exists();
+
+        return $this->success([
+            'existe' => $existe,
+            'razon_social' => $request->razon_social,
+        ], $existe ? 'La razón social ya está registrada.' : 'La razón social está disponible.', 200);
     }
 }

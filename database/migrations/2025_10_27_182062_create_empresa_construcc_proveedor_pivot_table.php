@@ -23,8 +23,8 @@ return new class extends Migration
                 ->constrained('proveedores')
                 ->cascadeOnDelete();
 
-            // Evitar duplicados
-            $table->unique(['empresa_construcc_id', 'proveedor_id'], 'empresa_proveedor_unique');
+            // Índice para búsquedas (sin UNIQUE para permitir múltiples usuarios)
+            $table->index(['empresa_construcc_id', 'proveedor_id'], 'idx_empresa_proveedor');
 
             $table->timestamps();
         });

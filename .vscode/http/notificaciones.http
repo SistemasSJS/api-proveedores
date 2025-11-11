@@ -11,8 +11,8 @@
 # - Token de autenticación válido para endpoints del frontend
 # =========================================================================
 # 
-# @baseUrl = http://localhost:80/api  
-@baseUrl = https://apicons.ddns.net:8092/api
+@baseUrl = http://localhost:80/api  
+# @baseUrl = https://apicons.ddns.net:8092/api
 @apiKey = cf5cd9d4b56257d25baf3300447af494d1e815f802553a5b65204099b26ea6e1
 @authToken = Bearer 203|gixpgElUCBeU3enpmbQREtCZu9je5MVI1xKCec8pbc2034c4
 
@@ -24,7 +24,7 @@ X-API-KEY: {{apiKey}}
 
 {
   "empresa_id": 14,
-  "proveedor_id": 4,
+  "proveedor_id": 3,
   "orden_compra_id": "OC-TEST-002",
   "estatus": "pendiente"
 }
@@ -42,7 +42,7 @@ Content-Type: application/json
 Accept: application/json
 X-API-KEY: /%-!?=T35sT._22<1|:
 ###
-POST {{baseUrl}}/construcc/solicitudes-pago/38/rechazar
+POST {{baseUrl}}/construcc/solicitudes-pago/2/rechazar
 Content-Type: application/json
 Accept: application/json
 X-API-KEY: /%-!?=T35sT._22<1|:

@@ -638,50 +638,58 @@ class ConstruccSolicitudPagoController extends Controller
     }
 
     /**
-     * Asociar un proveedor a una empresa constructora
+     * Asociar un proveedor a una empresa constructora con usuario
+     * Siempre crea un nuevo registro, permitiendo múltiples usuarios por relación
      */
     public function asociarProveedorAEmpresa(Request $request, $empresaId): JsonResponse
     {
         $request->validate([
             'proveedor_id' => ['required', 'integer', 'exists:proveedores,id'],
+            'usuario_construcc_id' => ['required', 'integer'],
+            'usuario_construcc_nombre' => ['required', 'string', 'max:255'],
         ]);
 
         $proveedorId = $request->input('proveedor_id');
+        $usuarioConstruccId = $request->input('usuario_construcc_id');
+        $usuarioConstruccNombre = $request->input('usuario_construcc_nombre');
 
         // Verificar que la empresa constructora exista
         $empresa = \App\Models\EmpresaConstrucc::find($empresaId);
         if (! $empresa) {
-            return $this->error('La empresa constructora no existe.', null, 200);
+            return $this->error('La empresa constructora no existe.', null, 404);
         }
 
         // Verificar que el proveedor exista
         $proveedor = \App\Models\Proveedor::find($proveedorId);
         if (! $proveedor) {
-            return $this->error('El proveedor no existe.', null, 200);
+            return $this->error('El proveedor no existe.', null, 404);
         }
 
-        // Verificar si ya existe la asociación
-        $existeAsociacion = $proveedor->empresasConstrucc()
+        // Verificar si ya existe la asociación con ESTE usuario específico
+        $existeConUsuario = \DB::table('empresa_construcc_proveedor')
             ->where('empresa_construcc_id', $empresaId)
+            ->where('proveedor_id', $proveedorId)
+            ->where('usuario_construcc_id', $usuarioConstruccId)
             ->exists();
 
-        if ($existeAsociacion) {
-            return $this->error('El proveedor ya está asociado a esta empresa constructora.', null, 200);
+        if ($existeConUsuario) {
+            return $this->error('Este usuario ya tiene registrada una invitación para este proveedor.', null, 400);
         }
 
-        // Crear la asociación
-        $proveedor->empresasConstrucc()->attach($empresaId);
-
-        // Recargar el proveedor con la nueva asociación
-        $proveedorActualizado = $proveedor->fresh([
-            'empresasConstrucc' => function ($query) {
-                $query->select('id', 'nombre', 'rfc');
-            },
+        // Crear nueva asociación con el usuario
+        $proveedor->empresasConstrucc()->attach($empresaId, [
+            'usuario_construcc_id' => $usuarioConstruccId,
+            'usuario_construcc_nombre' => $usuarioConstruccNombre,
         ]);
 
         return $this->success(
-            $proveedorActualizado,
-            'Proveedor asociado exitosamente a la empresa constructora.'
+            [
+                'proveedor_id' => $proveedorId,
+                'empresa_id' => $empresaId,
+                'usuario_construcc_id' => $usuarioConstruccId,
+                'usuario_construcc_nombre' => $usuarioConstruccNombre,
+            ],
+            'Proveedor asociado exitosamente por el usuario.'
         );
     }
 

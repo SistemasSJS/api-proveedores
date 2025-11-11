@@ -16,37 +16,26 @@ class ProveedorRegistroBasicoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'empresa' => ['required', 'string', 'max:255'],
-            'alias' => ['nullable', 'string', 'max:255'],
-            'razon_social' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('proveedores', 'email')],
-            'telefono' => ['required', 'string', 'min:10', 'max:15'],
+            'nombre_comercial' => ['required', 'string', 'max:255'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'token' => ['required', 'string'],
+            'empresa_construcc_id' => ['nullable', 'integer'],
+            'empresa_construcc_nombre' => ['nullable', 'string', 'max:255'],
+            'usuario_construcc_id' => ['nullable', 'integer'],
+            'usuario_construcc_nombre' => ['nullable', 'string', 'max:255'],
+            'recaptcha_token' => ['nullable', 'string'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'empresa.required' => 'El nombre de la empresa es obligatorio.',
-            'empresa.string' => 'El nombre de la empresa debe ser una cadena de texto.',
-            'empresa.max' => 'El nombre de la empresa no debe exceder los 255 caracteres.',
-
-            'alias.string' => 'El alias de la empresa debe ser una cadena de texto.',
-            'alias.max' => 'El alias de la empresa no debe exceder los 255 caracteres.',
-
-            'razon_social.required' => 'La razón social es obligatoria.',
-            'razon_social.string' => 'La razón social debe ser una cadena de texto.',
-            'razon_social.max' => 'La razón social no debe exceder los 255 caracteres.',
-
-            'email.required' => 'El correo electrónico es obligatorio.',
-            'email.email' => 'El correo electrónico debe ser una dirección válida.',
-            'email.max' => 'El correo electrónico no debe exceder los 255 caracteres.',
-            'email.unique' => 'Este correo electrónico ya está registrado.',
-
-            'telefono.required' => 'El teléfono es obligatorio.',
-            'telefono.string' => 'El teléfono debe ser una cadena de texto.',
-            'telefono.min' => 'El teléfono debe tener al menos 10 caracteres.',
-            'telefono.max' => 'El teléfono no debe exceder los 15 caracteres.',
+            'nombre_comercial.required' => 'El nombre comercial es obligatorio.',
+            'nombre_comercial.max' => 'El nombre comercial no debe exceder los 255 caracteres.',
+            'password.required' => 'La contraseña es obligatoria.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
+            'token.required' => 'El token de invitación es obligatorio.',
         ];
     }
 }

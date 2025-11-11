@@ -98,11 +98,37 @@ class EmpresaConstruccController extends Controller
      */
     public function show(Proveedor $proveedor, EmpresaConstrucc $empresaConstrucc): JsonResponse
     {
-        if (! $proveedor->empresasConstrucc('empresa_construcc_id', $empresaConstrucc->id)->exists()) {
+        if (! $proveedor->empresasConstrucc->contains('id', $empresaConstrucc->id)) {
             return $this->error('La empresa no pertenece a este proveedor', 403);
         }
 
         return $this->success($empresaConstrucc);
+    }
+    
+    /**
+     * Obtener usuarios asociados a una empresa en la tabla pivot
+     */
+    public function usuarios(Proveedor $proveedor, EmpresaConstrucc $empresaConstrucc): JsonResponse
+    {
+        if (! $proveedor->empresasConstrucc->contains('id', $empresaConstrucc->id)) {
+            return $this->error('La empresa no pertenece a este proveedor', 403);
+        }
+        
+        // Obtener todos los registros de la pivot table para esta empresa y proveedor
+        $usuarios = \DB::table('empresa_construcc_proveedor')
+            ->where('empresa_construcc_id', $empresaConstrucc->id)
+            ->where('proveedor_id', $proveedor->id)
+            ->select('usuario_construcc_id', 'usuario_construcc_nombre')
+            ->distinct()
+            ->get()
+            ->map(function($item) {
+                return [
+                    'id' => $item->usuario_construcc_id,
+                    'nombre' => $item->usuario_construcc_nombre
+                ];
+            });
+
+        return $this->success($usuarios, 'Usuarios de la empresa obtenidos correctamente');
     }
 
     /**

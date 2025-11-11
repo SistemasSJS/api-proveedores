@@ -324,8 +324,11 @@ Route::prefix('proveedores')
                 // 🆕 Crear empresa y asociar a proveedor
                 Route::post('/', [EmpresaConstruccController::class, 'store'])->middleware(['audit']);
 
-                // 📄 Obtener detalle de una empresa
+                // 📝 Obtener detalle de una empresa
                 Route::get('/{empresaConstrucc}', [EmpresaConstruccController::class, 'show'])->middleware(['audit']);
+                
+                // 👥 Obtener usuarios de una empresa
+                Route::get('/{empresaConstrucc}/usuarios', [EmpresaConstruccController::class, 'usuarios'])->middleware(['audit']);
 
                 // ✏️ Actualizar empresa existente
                 Route::put('/{empresaConstrucc}', [EmpresaConstruccController::class, 'update'])->middleware(['audit']);
