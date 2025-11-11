@@ -599,12 +599,20 @@ class ConstruccSolicitudPagoController extends Controller
 
     /**
      * Listar proveedores asociados a una empresa constructora
+     * Opcionalmente filtra por usuario_construcc_id mediante parámetro GET
      */
-    public function proveedoresPorEmpresa($empresaId): JsonResponse
+    public function proveedoresPorEmpresa(Request $request, $empresaId): JsonResponse
     {
+        $usuarioConstruccId = $request->input('usuario_construcc_id');
+
         $proveedores = \App\Models\Proveedor::query()
-            ->whereHas('empresasConstrucc', function ($q) use ($empresaId) {
+            ->whereHas('empresasConstrucc', function ($q) use ($empresaId, $usuarioConstruccId) {
                 $q->where('empresa_construcc_id', $empresaId);
+                
+                // Filtrar por usuario si se proporciona el parámetro
+                if ($usuarioConstruccId) {
+                    $q->where('usuario_construcc_id', $usuarioConstruccId);
+                }
             })
             ->select('id', 'nombre_comercial', 'razon_social', 'rfc')
             ->orderBy('nombre_comercial')
@@ -619,12 +627,21 @@ class ConstruccSolicitudPagoController extends Controller
 
     /**
      * Listar proveedores NO asociados a una empresa constructora
+     * Opcionalmente filtra por usuario_construcc_id mediante parámetro GET
+     * Si se proporciona usuario_construcc_id, muestra proveedores que NO están asociados a esa combinación empresa-usuario
      */
-    public function proveedoresNoAsociadosPorEmpresa($empresaId): JsonResponse
+    public function proveedoresNoAsociadosPorEmpresa(Request $request, $empresaId): JsonResponse
     {
+        $usuarioConstruccId = $request->input('usuario_construcc_id');
+
         $proveedores = \App\Models\Proveedor::query()
-            ->whereDoesntHave('empresasConstrucc', function ($q) use ($empresaId) {
+            ->whereDoesntHave('empresasConstrucc', function ($q) use ($empresaId, $usuarioConstruccId) {
                 $q->where('empresa_construcc_id', $empresaId);
+                
+                // Filtrar por usuario si se proporciona el parámetro
+                if ($usuarioConstruccId) {
+                    $q->where('usuario_construcc_id', $usuarioConstruccId);
+                }
             })
             ->select('id', 'nombre_comercial', 'razon_social', 'rfc')
             ->orderBy('nombre_comercial')
