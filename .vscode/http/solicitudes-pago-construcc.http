@@ -34,7 +34,14 @@ Accept: {{acceptType}}
 ### 1. Listado general de solicitudes de pago (solo verificadas)
 GET {{baseUrl}}/construcc/solicitudes-pago
 X-API-KEY: {{apiKey}}
-Accep### 3. Ver detalle de solicitud específica
+Accept: {{acceptType}}
+
+### 2. 🆕 Listado de solicitudes NO VERIFICADAS
+GET {{baseUrl}}/construcc/solicitudes-pago/no-verificadas
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 3. Ver detalle de solicitud específica
 GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
@@ -42,7 +49,9 @@ Accept: {{acceptType}}
 ### 4. 🆕 Marcar solicitud como VERIFICADA
 POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/marcar-verificada
 X-API-KEY: {{apiKey}}
-Content-Type: {{contentType}### 5. Descargar comprobante de pago
+Content-Type: {{contentType}}
+
+### 5. Descargar comprobante de pago
 GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/comprobante/download
 X-API-KEY: {{apiKey}}
 
@@ -224,3 +233,115 @@ Content-Type: {{contentType}}
 {
   "proveedor_id": {{proveedorId}}
 }
+
+
+
+###############################################################################
+# PRUEBAS DE VERIFICACIÓN DE SOLICITUDES DE PAGO
+###############################################################################
+
+### 27. 🆕 Listar solo solicitudes NO VERIFICADAS (filtradas)
+GET {{baseUrl}}/construcc/solicitudes-pago/no-verificadas?per_page=20
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 28. 🆕 Listar solicitudes NO VERIFICADAS con filtro por proveedor
+GET {{baseUrl}}/construcc/solicitudes-pago/no-verificadas?proveedor_id=1&per_page=20
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 29. 🆕 Listar solicitudes NO VERIFICADAS con filtro por empresa
+GET {{baseUrl}}/construcc/solicitudes-pago/no-verificadas?empresa_construcc_id={{empresaId}}
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 30. 🆕 Marcar una SP como verificada (exitosa)
+POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/marcar-verificada
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+
+### 31. 🆕 Marcar una SP como RECHAZADA durante verificación
+POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/marcar-rechazada
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+
+{
+  "motivo_rechazo": "La información de la factura no es correcta. Por favor revisa los datos y vuelve a cargar."
+}
+
+### 32. Error: Intentar marcar como verificada una SP ya verificada
+POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/marcar-verificada
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+
+### 33. Error: Intentar rechazar sin motivo
+POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/marcar-rechazada
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+
+{
+  "motivo_rechazo": ""
+}
+
+### 34. Verificar que la SP verificada ya NO aparece en listado no-verificadas
+GET {{baseUrl}}/construcc/solicitudes-pago/no-verificadas
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 35. Verificar que la SP verificada SÍ aparece en listado general
+GET {{baseUrl}}/construcc/solicitudes-pago?per_page=100
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 36. Verificar que SP rechazada tiene estado correcto y verificada=false
+GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 37. 🆕 Flujo completo: Ver SP no verificada -> Marcar como verificada -> Verificar cambio
+# Paso 1: Ver todas las no verificadas
+GET {{baseUrl}}/construcc/solicitudes-pago/no-verificadas
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### Paso 2: Marcar la primera como verificada (usar ID obtenido del paso 1)
+# POST {{baseUrl}}/construcc/solicitudes-pago/{ID_DE_SP}/marcar-verificada
+
+### Paso 3: Confirmar que ya no aparece en no-verificadas
+# GET {{baseUrl}}/construcc/solicitudes-pago/no-verificadas
+
+
+
+###############################################################################
+# FLUJOS DE VERIFICACIÓN Y RECHAZO
+###############################################################################
+
+### 38. 🆕 Flujo de rechazo: Ver SP no verificada -> Rechazar -> Verificar estado
+# Paso 1: Ver SP no verificada
+GET {{baseUrl}}/construcc/solicitudes-pago/no-verificadas
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### Paso 2: Rechazar SP con motivo
+POST {{baseUrl}}/construcc/solicitudes-pago/23/marcar-rechazada
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+
+{
+  "motivo_rechazo": "Los datos de la factura no coinciden con la información proporcionada en la cotización."
+}
+
+### Paso 3: Verificar que la SP rechazada tiene estado correcto
+GET {{baseUrl}}/construcc/solicitudes-pago/23
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### Paso 4: Verificar que NO aparece en listado de SP no verificadas
+GET {{baseUrl}}/construcc/solicitudes-pago/no-verificadas
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### Paso 5: Verificar que NO aparece en listado general (verificadas)
+GET {{baseUrl}}/construcc/solicitudes-pago
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}

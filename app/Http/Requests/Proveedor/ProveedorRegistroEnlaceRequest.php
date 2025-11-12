@@ -25,7 +25,6 @@ class ProveedorRegistroEnlaceRequest extends FormRequest
             'nombre_comercial' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'token' => ['required', 'string'],
-            'recaptcha_token' => ['nullable', 'string'], // Opcional si usas recaptcha
         ];
     }
 

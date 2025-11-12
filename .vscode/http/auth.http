@@ -109,3 +109,138 @@ POST {{baseUrl}}/auth/password/reset
   "password": "nueva_password",
   "password_confirmation": "nueva_password"
 }
+
+
+###############################################################################
+# REGISTRO BÁSICO DE PROVEEDOR CON TELÉFONO
+###############################################################################
+
+### Variables para registro
+@tokenInvitacion = test_token_123
+@telefonoProveedor = 6681234567
+
+### 🆕 Registro básico de proveedor con teléfono
+POST {{baseUrl}}/auth/register-proveedor-basico-sp
+{{commonHeaders}}
+
+{
+  "nombre_comercial": "Mi Empresa de Prueba",
+  "telefono": "{{telefonoProveedor}}",
+  "password": "Pass123!",
+  "password_confirmation": "Pass123!",
+  "token": "{{tokenInvitacion}}",
+  "empresa_construcc_id": 1,
+  "empresa_construcc_nombre": "Empresa Construcción",
+  "usuario_construcc_id": 1,
+  "usuario_construcc_nombre": "Usuario Construcción"
+}
+
+### 🆕 Login con teléfono como usuario
+POST {{baseUrl}}/auth/login
+{{commonHeaders}}
+
+{
+  "email": "{{telefonoProveedor}}",
+  "password": "Pass123!"
+}
+
+### 🆕 Login con teléfono (caso 2)
+POST {{baseUrl}}/auth/login
+{{commonHeaders}}
+
+{
+  "email": "6681234567",
+  "password": "Pass123!"
+}
+
+### Verificar que el usuario se creó correctamente
+GET {{baseUrl}}/auth/me
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+
+###############################################################################
+# FLUJO COMPLETO DE REGISTRO
+###############################################################################
+
+### Paso 1: Registrar proveedor con teléfono
+# @name registroProveedor
+POST {{baseUrl}}/auth/register-proveedor-basico-sp
+{{commonHeaders}}
+
+{
+  "nombre_comercial": "Proveedor Test {{$randomInt}}",
+  "telefono": "668{{$randomInt}}",
+  "password": "Pass123!",
+  "password_confirmation": "Pass123!",
+  "token": "test_token_{{$randomInt}}",
+  "empresa_construcc_id": 1,
+  "usuario_construcc_id": 1,
+  "usuario_construcc_nombre": "Usuario Test"
+}
+
+### Paso 2: Login con el teléfono registrado
+POST {{baseUrl}}/auth/login
+{{commonHeaders}}
+
+{
+  "email": "668{{$randomInt}}",
+  "password": "Pass123!"
+}
+
+### Paso 3: Verificar información del usuario
+GET {{baseUrl}}/auth/me
+{{commonHeaders}}
+Authorization: Bearer {{authToken}}
+
+
+###############################################################################
+# CASOS DE ERROR - REGISTRO CON TELÉFONO
+###############################################################################
+
+### Error: Teléfono inválido (menos de 10 dígitos)
+POST {{baseUrl}}/auth/register-proveedor-basico-sp
+{{commonHeaders}}
+
+{
+  "nombre_comercial": "Test Error",
+  "telefono": "12345",
+  "password": "Pass123!",
+  "password_confirmation": "Pass123!",
+  "token": "test_token"
+}
+
+### Error: Teléfono inválido (más de 10 dígitos)
+POST {{baseUrl}}/auth/register-proveedor-basico-sp
+{{commonHeaders}}
+
+{
+  "nombre_comercial": "Test Error",
+  "telefono": "12345678901",
+  "password": "Pass123!",
+  "password_confirmation": "Pass123!",
+  "token": "test_token"
+}
+
+### Error: Contraseñas no coinciden
+POST {{baseUrl}}/auth/register-proveedor-basico-sp
+{{commonHeaders}}
+
+{
+  "nombre_comercial": "Test Error",
+  "telefono": "6681234567",
+  "password": "Pass123!",
+  "password_confirmation": "DiferentePass!",
+  "token": "test_token"
+}
+
+### Error: Teléfono faltante
+POST {{baseUrl}}/auth/register-proveedor-basico-sp
+{{commonHeaders}}
+
+{
+  "nombre_comercial": "Test Error",
+  "password": "Pass123!",
+  "password_confirmation": "Pass123!",
+  "token": "test_token"
+}

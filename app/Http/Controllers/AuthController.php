@@ -174,13 +174,14 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        // Buscar usuario por email
+        // Buscar usuario por email o teléfono
         $user = User::where('email', $request->email)->first();
         
-        // Si no se encuentra por email, buscar por razón social del proveedor
+        // Si no se encuentra por email, buscar por teléfono, razón social o nombre comercial del proveedor
         if (!$user) {
             $proveedor = Proveedor::where('razon_social', $request->email)
                 ->orWhere('nombre_comercial', $request->email)
+                ->orWhere('telefono', $request->email)
                 ->first();
             
             if ($proveedor) {
@@ -310,6 +311,7 @@ class AuthController extends Controller
         $proveedor = Proveedor::create([
             'nombre_comercial' => $validatedData['nombre_comercial'],
             'razon_social' => $validatedData['nombre_comercial'], // Usar el mismo nombre comercial por defecto
+            'telefono' => $validatedData['telefono'],
             'is_proveedor_sp' => true,
             'is_proveedor_catalogo' => false,
             'cambiar_pass_default' => false,
@@ -319,10 +321,10 @@ class AuthController extends Controller
         // Obtener rol de gerente
         $idRoleProveedor = Role::where('nombre', UserRoleEnumerate::GERENTE->value)->first()->id;
 
-        // Crear usuario
+        // Crear usuario usando el teléfono como identificador
         $user = User::create([
             'name' => $validatedData['nombre_comercial'],
-            'email' => $validatedData['nombre_comercial'] . '_' . $proveedor->id . '@temp.com', // Email temporal
+            'email' => $validatedData['telefono'], // Usar teléfono como email/usuario
             'password' => Hash::make($validatedData['password']),
             'role_id' => $idRoleProveedor,
         ]);
@@ -339,8 +341,8 @@ class AuthController extends Controller
         $proveedor->sucursales()->create([
             'nombre' => 'Matriz',
             'direccion' => 'Dirección pendiente',
-            'telefono' => '0000000000',
-            'email' => $validatedData['nombre_comercial'] . '@temp.com',
+            'telefono' => $validatedData['telefono'],
+            'email' => $validatedData['telefono'] . '@temp.com',
             'encargado' => $validatedData['nombre_comercial'],
             'activa' => true,
             'coordenadas_lat' => null,
@@ -360,10 +362,15 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
         $user->load(User::eagerLodable());
 
+        // Retornar información para el modal (sin mostrar la contraseña)
         return $this->success([
             'user' => new UserAuthenticateResource($user),
             'proveedor' => new ProveedorResource($proveedor->load(Proveedor::eagerLodable())),
             'token' => $token,
+            'credenciales' => [
+                'usuario' => $validatedData['telefono'],
+                'mensaje' => 'Guarda tu usuario para iniciar sesión',
+            ],
         ], 'Registro completado exitosamente', 201);
     }
 

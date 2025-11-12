@@ -17,13 +17,13 @@ class ProveedorRegistroBasicoRequest extends FormRequest
     {
         return [
             'nombre_comercial' => ['required', 'string', 'max:255'],
+            'telefono' => ['required', 'string', 'min:10', 'max:10'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'token' => ['required', 'string'],
             'empresa_construcc_id' => ['nullable', 'integer'],
             'empresa_construcc_nombre' => ['nullable', 'string', 'max:255'],
             'usuario_construcc_id' => ['nullable', 'integer'],
             'usuario_construcc_nombre' => ['nullable', 'string', 'max:255'],
-            'recaptcha_token' => ['nullable', 'string'],
         ];
     }
 
@@ -32,6 +32,9 @@ class ProveedorRegistroBasicoRequest extends FormRequest
         return [
             'nombre_comercial.required' => 'El nombre comercial es obligatorio.',
             'nombre_comercial.max' => 'El nombre comercial no debe exceder los 255 caracteres.',
+            'telefono.required' => 'El teléfono es obligatorio.',
+            'telefono.min' => 'El teléfono debe tener 10 dígitos.',
+            'telefono.max' => 'El teléfono debe tener 10 dígitos.',
             'password.required' => 'La contraseña es obligatoria.',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
