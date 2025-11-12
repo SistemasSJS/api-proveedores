@@ -124,6 +124,61 @@ class ConstruccSolicitudPagoController extends Controller
     }
 
     /**
+     * Marcar una solicitud de pago como rechazada durante verificación
+     * Cambia el estado a RECHAZADA y marca verificada como false
+     * Esto evita que la SP se liste para los directivos
+     */
+    public function marcarComoRechazada(Request $request, SolicitudPago $solicitudPago): JsonResponse
+    {
+        // Validar que se proporcione un motivo de rechazo
+        $request->validate([
+            'motivo_rechazo' => ['required', 'string', 'max:500'],
+        ]);
+
+        // Actualizar el estado de la SP
+        $solicitudPago->update([
+            'estado_solicitud' => EstadoSP::RECHAZADA->value,
+            'verificada' => false,
+            'motivo_rechazo' => $request->motivo_rechazo,
+            'fecha_rechazo' => now(),
+        ]);
+
+        // Enviar notificación al proveedor
+        try {
+            $proveedor = $solicitudPago->proveedor;
+            $usuarioPrincipal = $proveedor->usuarioPrincipal();
+
+            if ($usuarioPrincipal) {
+                $usuarioPrincipal->notify(new SolicitudPagoRechazada(
+                    $solicitudPago->numero_folio_solicitud,
+                    $solicitudPago->id,
+                    $proveedor->id,
+                    $request->motivo_rechazo,
+                    $usuarioPrincipal->id
+                ));
+
+                Log::info('✅ Notificación de SP Rechazada enviada (verificación)', [
+                    'solicitud_pago_id' => $solicitudPago->id,
+                    'folio' => $solicitudPago->numero_folio_solicitud,
+                    'proveedor_id' => $proveedor->id,
+                    'usuario_id' => $usuarioPrincipal->id,
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('❌ Error al enviar notificación de SP Rechazada (verificación)', [
+                'solicitud_pago_id' => $solicitudPago->id,
+                'error' => $e->getMessage(),
+            ]);
+            // No fallar la operación si la notificación falla
+        }
+
+        return $this->success(
+            new ConstruccSolicitudPagoResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
+            'Solicitud de pago rechazada correctamente durante verificación.'
+        );
+    }
+
+    /**
      * Autorizar una solicitud de pago por rol específico
      * Roles: DG, DT, PC, SI
      *
