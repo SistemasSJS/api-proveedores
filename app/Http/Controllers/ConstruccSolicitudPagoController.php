@@ -49,6 +49,7 @@ class ConstruccSolicitudPagoController extends Controller
 
         $query = SolicitudPago::query()
             ->with(SolicitudPago::eagerLodable())
+            ->where('verificada', true)
             ->filter($filters)
             ->orderBy($sortBy, $order);
 
@@ -73,6 +74,52 @@ class ConstruccSolicitudPagoController extends Controller
     {
         return $this->success(
             new ConstruccSolicitudPagoResource($solicitudPago->load(SolicitudPago::eagerLodable()))
+        );
+    }
+
+    /**
+     * Listado de solicitudes de pago no verificadas
+     * Solo muestra las SP que aún no han sido verificadas por el usuario construcción
+     */
+    public function indexNoVerificadas(Request $request): JsonResponse
+    {
+        $filters = $request->only(SolicitudPago::getFilters());
+        $sortBy = $request->input('sort_by', 'created_at');
+        $order = $request->input('order', 'desc');
+        $perPage = $request->input('per_page', 10000);
+
+        $query = SolicitudPago::query()
+            ->with(SolicitudPago::eagerLodable())
+            ->where('verificada', false)
+            ->filter($filters)
+            ->orderBy($sortBy, $order);
+
+        $paginator = $query->paginate($perPage);
+
+        return $this->paginated(
+            $paginator->setCollection(
+                ConstruccSolicitudPagoResource::collection($paginator)->collection
+            )
+        );
+    }
+
+    /**
+     * Marcar una solicitud de pago como verificada
+     * Solo el usuario construcción correspondiente puede marcar su SP como verificada
+     */
+    public function marcarComoVerificada(SolicitudPago $solicitudPago): JsonResponse
+    {
+        // Validar que la SP no esté ya verificada
+        if ($solicitudPago->verificada) {
+            return $this->error('Esta solicitud ya ha sido verificada.', null, 400);
+        }
+
+        // Marcar como verificada
+        $solicitudPago->update(['verificada' => true]);
+
+        return $this->success(
+            new ConstruccSolicitudPagoResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
+            'Solicitud de pago marcada como verificada correctamente.'
         );
     }
 

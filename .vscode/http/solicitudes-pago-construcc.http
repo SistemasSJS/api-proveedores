@@ -31,29 +31,30 @@ Accept: {{acceptType}}
 # RUTAS CONSTRUCC - SOLICITUDES DE PAGO
 ###############################################################################
 
-### 1. Listado general de solicitudes de pago
+### 1. Listado general de solicitudes de pago (solo verificadas)
 GET {{baseUrl}}/construcc/solicitudes-pago
 X-API-KEY: {{apiKey}}
-Accept: {{acceptType}}
-
-### 2. Ver detalle de solicitud específica
+Accep### 3. Ver detalle de solicitud específica
 GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
-### 3. Descargar comprobante de pago
+### 4. 🆕 Marcar solicitud como VERIFICADA
+POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/marcar-verificada
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}### 5. Descargar comprobante de pago
 GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/comprobante/download
 X-API-KEY: {{apiKey}}
 
-### 4. Descargar factura PDF
+### 6. Descargar factura PDF
 GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/factura-pdf/download
 X-API-KEY: {{apiKey}}
 
-### 5. Descargar factura XML
+### 7. Descargar factura XML
 GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/factura-xml/download
 X-API-KEY: {{apiKey}}
 
-### 6. Descargar cotización
+### 8. Descargar cotización
 GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/cotizacion/download
 X-API-KEY: {{apiKey}}
 
@@ -63,7 +64,7 @@ X-API-KEY: {{apiKey}}
 # CAMBIOS DE ESTATUS - CONSTRUCC
 ###############################################################################
 
-### 7. Autorizar solicitud de pago (por rol)
+### 9. Autorizar solicitud de pago (por rol)
 POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/autorizar
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
@@ -72,7 +73,7 @@ Content-Type: {{contentType}}
   "rol": "{{rol}}"
 }
 
-### 8. Rechazar solicitud de pago
+### 10. Rechazar solicitud de pago
 POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/rechazar
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
@@ -82,7 +83,7 @@ Content-Type: {{contentType}}
   "motivo_rechazo": "El monto no corresponde con la cotización original."
 }
 
-### 9. Confirmar pago (solo DA)
+### 11. Confirmar pago (solo DA)
 POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/confirmar-pago
 X-API-KEY: {{apiKey}}
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
@@ -108,12 +109,12 @@ Pago parcial correspondiente a avance de obra del 50%.
 # LISTADOS POR ROL Y ESTADO
 ###############################################################################
 
-### 10. Listar solicitudes pendientes por rol (DG, DT, CO, SI, DA)
+### 12. Listar solicitudes pendientes por rol (DG, DT, CO, SI, DA)
 GET {{baseUrl}}/construcc/solicitudes-pago/por-rol?rol=DT
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
-### 11. Listar solicitudes por estado (PENDIENTE, AUTORIZADA, RECHAZADA, PAGADO)
+### 13. Listar solicitudes por estado (PENDIENTE, AUTORIZADA, RECHAZADA, PAGADO)
 GET {{baseUrl}}/construcc/solicitudes-pago/por-estado?estado=AUTORIZADA
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
@@ -124,16 +125,16 @@ Accept: {{acceptType}}
 # DASHBOARD Y AUXILIARES
 ###############################################################################
 
-### 12. Estadísticas por rol
+### 14. Estadísticas por rol
 GET {{baseUrl}}/construcc/solicitudes-pago/estadisticas-rol?rol=DA
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
-### 13. Buscar empresas constructoras
+### 15. Buscar empresas constructoras
 GET {{baseUrl}}/construcc/solicitudes-pago/empresas-constructoras/search?search=construcciones&limit=10
 X-API-KEY: {{apiKey}}
 
-### 14. Estadísticas generales
+### 16. Estadísticas generales
 GET {{baseUrl}}/construcc/solicitudes-pago/estadisticas
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
@@ -148,17 +149,17 @@ Accept: {{acceptType}}
 @empresaId = 14
 @proveedorId = 1
 
-### 15. Listar proveedores asociados a una empresa constructora
+### 17. Listar proveedores asociados a una empresa constructora
 GET {{baseUrl}}/construcc/solicitudes-pago/empresa/{{empresaId}}/proveedores
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
-### 16. 🆕 Listar proveedores NO asociados a una empresa constructora
+### 18. Listar proveedores NO asociados a una empresa constructora
 GET {{baseUrl}}/construcc/solicitudes-pago/empresa/{{empresaId}}/proveedores/no-asociados
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
-### 17. 🆕 Asociar un proveedor a una empresa constructora
+### 19. Asociar un proveedor a una empresa constructora
 POST {{baseUrl}}/construcc/solicitudes-pago/empresa/{{empresaId}}/proveedores/asociar
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
@@ -167,12 +168,12 @@ Content-Type: {{contentType}}
   "proveedor_id": {{proveedorId}}
 }
 
-### 18. Prueba con empresa diferente (ID 1)
+### 20. Prueba con empresa diferente (ID 1)
 GET {{baseUrl}}/construcc/solicitudes-pago/empresa/1/proveedores/no-asociados
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
-### 19. Asociar múltiples proveedores (cambiar proveedorId)
+### 21. Asociar múltiples proveedores (cambiar proveedorId)
 POST {{baseUrl}}/construcc/solicitudes-pago/empresa/1/proveedores/asociar
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
@@ -181,7 +182,7 @@ Content-Type: {{contentType}}
   "proveedor_id": 2
 }
 
-### 20. Verificar asociación (debería mostrar el proveedor asociado)
+### 22. Verificar asociación (debería mostrar el proveedor asociado)
 GET {{baseUrl}}/construcc/solicitudes-pago/empresa/1/proveedores
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
@@ -192,12 +193,12 @@ Accept: {{acceptType}}
 # CASOS DE ERROR - NUEVOS ENDPOINTS
 ###############################################################################
 
-### 21. Error: Empresa que no existe
+### 23. Error: Empresa que no existe
 GET {{baseUrl}}/construcc/solicitudes-pago/empresa/999999/proveedores/no-asociados
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
-### 22. Error: Proveedor que no existe
+### 24. Error: Proveedor que no existe
 POST {{baseUrl}}/construcc/solicitudes-pago/empresa/{{empresaId}}/proveedores/asociar
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
@@ -206,7 +207,7 @@ Content-Type: {{contentType}}
   "proveedor_id": 999999
 }
 
-### 23. Error: Parámetro faltante
+### 25. Error: Parámetro faltante
 POST {{baseUrl}}/construcc/solicitudes-pago/empresa/{{empresaId}}/proveedores/asociar
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
@@ -215,7 +216,7 @@ Content-Type: {{contentType}}
   "proveedor_id": ""
 }
 
-### 24. Error: Intentar asociar el mismo proveedor dos veces (409 Conflict)
+### 26. Error: Intentar asociar el mismo proveedor dos veces (409 Conflict)
 POST {{baseUrl}}/construcc/solicitudes-pago/empresa/{{empresaId}}/proveedores/asociar
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}

@@ -42,6 +42,7 @@ class SolicitudPago extends BaseModel
         'monto_abonado',
         'saldo_pendiente',
         'pago_completo',
+        'verificada',
         'notas_abono',
         'fecha_rechazo',
         'fecha_pago',
@@ -109,6 +110,9 @@ class SolicitudPago extends BaseModel
         'referencia_oc' => 'ReferenciaOc',
         'origen_oc' => 'OrigenOc',
 
+        // Filtro para verificada
+        'verificada' => 'Verificada',
+
         //
     ];
 
@@ -142,6 +146,7 @@ class SolicitudPago extends BaseModel
         'monto_abonado' => 'decimal:2',
         'saldo_pendiente' => 'decimal:2',
         'pago_completo' => 'boolean',
+        'verificada' => 'boolean',
 
         // Campos de tracking OC
         'origen_oc' => 'boolean',
@@ -237,6 +242,11 @@ class SolicitudPago extends BaseModel
     public function filterByOrigenOc($query, $value)
     {
         return $query->where('origen_oc', (bool) $value);
+    }
+
+    public function filterByVerificada($query, $value)
+    {
+        return $query->where('verificada', (bool) $value);
     }
 
     /** ----------------
