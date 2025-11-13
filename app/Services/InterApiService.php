@@ -104,4 +104,94 @@ class InterApiService
       ];
     }
   }
+
+  /**
+   * Notificar a API Construcciones sobre validación de SP
+   * 
+   * @param int $spId ID de la solicitud de pago
+   * @param string $spFolio Folio de la solicitud de pago
+   * @param string $company ID de la compañía
+   * @param int $validatorUserId ID del usuario validador
+   * @return array
+   */
+  public function spNotifyByValidator($spId, $spFolio, $company, $validatorUserId)
+  {
+    try {
+      Log::channel('inter_api')->info('Iniciando notificación de validación por validador', [
+        'sp_id' => $spId,
+        'sp_folio' => $spFolio,
+        'company' => $company,
+        'validator_user_id' => $validatorUserId
+      ]);
+
+      $payload = [
+        'sp_id' => $spId,
+        'sp_folio' => $spFolio,
+        'company' => $company,
+        'validator_user_id' => $validatorUserId
+      ];
+
+      Log::channel('inter_api')->info('Payload preparado para notificación de validador', [
+        'payload' => $payload
+      ]);
+
+      $url = "{$this->apiContruccUrl}/api/sp-notify-by-validator";
+      Log::channel('inter_api')->info('URL destino para notificación de validador', [
+        'url' => $url
+      ]);
+
+      // Enviar a API Construcciones con ApiKey header
+      $response = Http::withoutVerifying()
+        ->withHeaders([
+          'X-API-KEY' => $this->apiContruccApiKey,
+          'Content-Type' => 'application/json',
+          'Accept' => 'application/json'
+        ])
+        ->timeout($this->timeout)
+        ->post($url, $payload);
+
+      Log::channel('inter_api')->info('Respuesta recibida desde API Construcciones', [
+        'status' => $response->status(),
+        'body' => $response->body()
+      ]);
+
+      if ($response->successful()) {
+        Log::channel('inter_api')->info('Notificación de validador enviada exitosamente', [
+          'sp_id' => $spId,
+          'sp_folio' => $spFolio
+        ]);
+
+        return [
+          'success' => true,
+          'data' => $response->json()
+        ];
+      }
+
+      Log::channel('inter_api')->warning('Fallo en notificación de validador', [
+        'sp_id' => $spId,
+        'status' => $response->status(),
+        'error' => $response->body()
+      ]);
+
+      return [
+        'success' => false,
+        'error' => $response->body()
+      ];
+    } catch (\Exception $e) {
+      Log::channel('inter_api')->error('Excepción al notificar validador', [
+        'sp_id' => $spId ?? null,
+        'sp_folio' => $spFolio ?? null,
+        'company' => $company ?? null,
+        'validator_user_id' => $validatorUserId ?? null,
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString()
+      ]);
+
+      // No lanzamos la excepción para que no afecte el guardado
+      return [
+        'success' => false,
+        'error' => $e->getMessage()
+      ];
+    }
+  }
 }

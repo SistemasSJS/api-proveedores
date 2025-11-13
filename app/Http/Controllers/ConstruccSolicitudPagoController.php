@@ -12,6 +12,7 @@ use App\Models\SolicitudPago;
 use App\Notifications\SolicitudPago\SolicitudPagoPagada;
 use App\Notifications\SolicitudPago\SolicitudPagoRechazada;
 use App\Notifications\SolicitudPago\SolicitudPagoRechazadaSinAutorizacion;
+use App\Services\InterApiService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -129,7 +130,8 @@ class ConstruccSolicitudPagoController extends Controller
         // Validar que se proporcione el usuario_id
         $request->validate([
             'usuario_id' => ['required', 'integer'],
-            'role   _id' => ['required', 'integer'],
+            'role_id' => ['required', 'integer'],
+            'company' => ['required'],
         ]);
 
         // Validar que la SP no esté ya verificada
@@ -143,27 +145,29 @@ class ConstruccSolicitudPagoController extends Controller
             // Marcar como verificada
             $solicitudPago->update(['verificada' => true]);
 
-            // Preparar datos para enviar a la API inter
-            // TODO: Descomentar cuando se implemente el servidor Inter API
-            // $datosParaInterAPI = [
-            //     'solicitud_pago' => [
-            //         'id' => $solicitudPago->id,
-            //         'folio' => $solicitudPago->numero_folio_solicitud,
-            //         'proveedor_id' => $solicitudPago->proveedor_id,
-            //         'proveedor_nombre' => $solicitudPago->proveedor->nombre_comercial ?? null,
-            //         'empresa_construcc_id' => $solicitudPago->empresa_construcc_id,
-            //         'orden_compra_id' => $solicitudPago->orden_compra_id,
-            //         'monto_total' => $solicitudPago->monto_total,
-            //         'estado' => $solicitudPago->estado_solicitud,
-            //         'fecha_creacion' => $solicitudPago->created_at,
-            //     ],
-            //     'usuario_id' => $request->usuario_id,
-            //     'accion' => 'sp_verificada',
-            //     'timestamp' => now()->toISOString(),
-            // ];
+            // Llamar al servicio InterAPI para notificar al validador
+            $interApiService = new InterApiService();
+            $result = $interApiService->spNotifyByValidator(
+                $solicitudPago->id,
+                $solicitudPago->numero_folio_solicitud,
+                $request->company,
+                $request->usuario_id
+            );
 
-            // Llamar al método para enviar a la API inter
-            // $this->enviarDatosAInterAPI($datosParaInterAPI);
+            // Registrar el resultado de la notificación
+            if ($result['success']) {
+                Log::info('✅ Notificación de validador enviada exitosamente', [
+                    'solicitud_pago_id' => $solicitudPago->id,
+                    'folio' => $solicitudPago->numero_folio_solicitud,
+                    'usuario_id' => $request->usuario_id,
+                    'company' => $request->company,
+                ]);
+            } else {
+                Log::warning('⚠️ Fallo al enviar notificación de validador', [
+                    'solicitud_pago_id' => $solicitudPago->id,
+                    'error' => $result['error'] ?? 'Error desconocido',
+                ]);
+            }
 
             DB::commit();
 
