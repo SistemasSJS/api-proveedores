@@ -15,6 +15,8 @@ use App\Notifications\SolicitudPago\SolicitudPagoRechazadaSinAutorizacion;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -22,6 +24,19 @@ use Illuminate\Validation\Rule;
 class ConstruccSolicitudPagoController extends Controller
 {
     use ApiResponse;
+
+    /**
+     * IDs de roles de ConstruccApp
+     */
+    private const ROLES_CONSTRUCC_IDS = [
+        0, // Administrador
+        1, // Director General (DG)
+        2, // Director Técnico (DT)
+        3, // Director Administrativo (DA)
+        4, // Superintendente (SI)
+        5, // Programación y Control (PC)
+        6, // Residente de Obra (RO)
+    ];
 
     /**
      * Roles que pueden autorizar solicitudes de pago
@@ -107,21 +122,120 @@ class ConstruccSolicitudPagoController extends Controller
     /**
      * Marcar una solicitud de pago como verificada
      * Solo el usuario construcción correspondiente puede marcar su SP como verificada
+     * Envía los datos de la SP y el usuario al servidor inter API
      */
-    public function marcarComoVerificada(SolicitudPago $solicitudPago): JsonResponse
+    public function marcarComoVerificada(Request $request, SolicitudPago $solicitudPago): JsonResponse
     {
+        // Validar que se proporcione el usuario_id
+        $request->validate([
+            'usuario_id' => ['required', 'integer'],
+            'role   _id' => ['required', 'integer'],
+        ]);
+
         // Validar que la SP no esté ya verificada
         if ($solicitudPago->verificada) {
             return $this->error('Esta solicitud ya ha sido verificada.', null, 400);
         }
 
-        // Marcar como verificada
-        $solicitudPago->update(['verificada' => true]);
+        DB::beginTransaction();
+        
+        try {
+            // Marcar como verificada
+            $solicitudPago->update(['verificada' => true]);
 
-        return $this->success(
-            new ConstruccSolicitudPagoResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
-            'Solicitud de pago marcada como verificada correctamente.'
-        );
+            // Preparar datos para enviar a la API inter
+            // TODO: Descomentar cuando se implemente el servidor Inter API
+            // $datosParaInterAPI = [
+            //     'solicitud_pago' => [
+            //         'id' => $solicitudPago->id,
+            //         'folio' => $solicitudPago->numero_folio_solicitud,
+            //         'proveedor_id' => $solicitudPago->proveedor_id,
+            //         'proveedor_nombre' => $solicitudPago->proveedor->nombre_comercial ?? null,
+            //         'empresa_construcc_id' => $solicitudPago->empresa_construcc_id,
+            //         'orden_compra_id' => $solicitudPago->orden_compra_id,
+            //         'monto_total' => $solicitudPago->monto_total,
+            //         'estado' => $solicitudPago->estado_solicitud,
+            //         'fecha_creacion' => $solicitudPago->created_at,
+            //     ],
+            //     'usuario_id' => $request->usuario_id,
+            //     'accion' => 'sp_verificada',
+            //     'timestamp' => now()->toISOString(),
+            // ];
+
+            // Llamar al método para enviar a la API inter
+            // $this->enviarDatosAInterAPI($datosParaInterAPI);
+
+            DB::commit();
+
+            return $this->success(
+                new ConstruccSolicitudPagoResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
+                'Solicitud de pago marcada como verificada correctamente.'
+            );
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('❌ Error al marcar SP como verificada', [
+                'solicitud_pago_id' => $solicitudPago->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return $this->error(
+                'Error al procesar la verificación de la solicitud.',
+                ['error' => $e->getMessage()],
+                500
+            );
+        }
+    }
+
+    /**
+     * Enviar datos a la API inter (servidor de notificaciones)
+     * 
+     * @param array $datos
+     * @return void
+     */
+    private function enviarDatosAInterAPI(array $datos): void
+    {
+        try {
+            // Obtener la URL del servidor inter desde el config o .env
+            $interApiUrl = config('services.inter_api.url', env('INTER_API_URL'));
+            $interApiToken = config('services.inter_api.token', env('INTER_API_TOKEN'));
+
+            if (!$interApiUrl) {
+                Log::warning('⚠️ URL de Inter API no configurada, omitiendo envío');
+                return;
+            }
+
+            // Realizar petición HTTP a la API inter
+            $response = Http::timeout(10)
+                ->withHeaders([
+                    'Authorization' => 'Bearer ' . $interApiToken,
+                    'Accept' => 'application/json',
+                ])
+                ->post($interApiUrl . '/api/notificaciones/sp-verificada', $datos);
+
+            if ($response->successful()) {
+                Log::info('✅ Datos enviados correctamente a Inter API', [
+                    'solicitud_pago_id' => $datos['solicitud_pago']['id'],
+                    'usuario_id' => $datos['usuario_id'],
+                    'response_status' => $response->status(),
+                ]);
+            } else {
+                Log::warning('⚠️ Error al enviar datos a Inter API', [
+                    'solicitud_pago_id' => $datos['solicitud_pago']['id'],
+                    'status' => $response->status(),
+                    'response' => $response->body(),
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('❌ Excepción al enviar datos a Inter API', [
+                'error' => $e->getMessage(),
+                'datos' => $datos,
+            ]);
+            // No lanzar excepción para no afectar el flujo principal
+        }
     }
 
     /**
