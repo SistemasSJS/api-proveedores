@@ -25,6 +25,7 @@ Route::prefix('auth')->group(function () {
     Route::post('register_basico_completar', [AuthController::class, 'register_proveedor_basico_completar'])->middleware(['audit']);
     Route::post('verificar-email', [AuthController::class, 'verificarEmailExistente'])->middleware(['audit']);
     Route::post('verificar-razon-social', [AuthController::class, 'verificarRazonSocialExistente'])->middleware(['audit']);
+    Route::post('verificar-telefono', [AuthController::class, 'verificarTelefonoExistente'])->middleware(['audit']);
     
     /**
      * RECUPERACIÓN DE CONTRASEÑA

@@ -11,6 +11,7 @@ use App\Http\Resources\Construcc\ConstruccSolicitudPagoResource;
 use App\Models\SolicitudPago;
 use App\Notifications\SolicitudPago\SolicitudPagoPagada;
 use App\Notifications\SolicitudPago\SolicitudPagoRechazada;
+use App\Notifications\SolicitudPago\SolicitudPagoRechazadaSinAutorizacion;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -149,7 +150,7 @@ class ConstruccSolicitudPagoController extends Controller
             $usuarioPrincipal = $proveedor->usuarioPrincipal();
 
             if ($usuarioPrincipal) {
-                $usuarioPrincipal->notify(new SolicitudPagoRechazada(
+                $usuarioPrincipal->notify(new SolicitudPagoRechazadaSinAutorizacion(
                     $solicitudPago->numero_folio_solicitud,
                     $solicitudPago->id,
                     $proveedor->id,
@@ -157,7 +158,7 @@ class ConstruccSolicitudPagoController extends Controller
                     $usuarioPrincipal->id
                 ));
 
-                Log::info('✅ Notificación de SP Rechazada enviada (verificación)', [
+                Log::info('✅ Notificación de SP Rechazada Sin Autorización enviada', [
                     'solicitud_pago_id' => $solicitudPago->id,
                     'folio' => $solicitudPago->numero_folio_solicitud,
                     'proveedor_id' => $proveedor->id,
@@ -165,7 +166,7 @@ class ConstruccSolicitudPagoController extends Controller
                 ]);
             }
         } catch (\Exception $e) {
-            Log::error('❌ Error al enviar notificación de SP Rechazada (verificación)', [
+            Log::error('❌ Error al enviar notificación de SP Rechazada Sin Autorización', [
                 'solicitud_pago_id' => $solicitudPago->id,
                 'error' => $e->getMessage(),
             ]);

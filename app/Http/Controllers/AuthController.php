@@ -634,4 +634,33 @@ class AuthController extends Controller
             'razon_social' => $request->razon_social,
         ], $existe ? 'La razón social ya está registrada.' : 'La razón social está disponible.', 200);
     }
+
+    /**
+     * Verificar si un teléfono ya está registrado
+     * Busca en proveedores.telefono y users.email
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function verificarTelefonoExistente(Request $request)
+    {
+        $request->validate([
+            'telefono' => ['required', 'string'],
+        ]);
+
+        $telefono = $request->telefono;
+
+        // Verificar si el teléfono existe en la tabla proveedores
+        $existeEnProveedores = Proveedor::where('telefono', $telefono)->exists();
+
+        // Verificar si el teléfono existe como email en users (se usa como username)
+        $existeEnUsers = User::where('email', $telefono)->exists();
+
+        $existe = $existeEnProveedores || $existeEnUsers;
+
+        return $this->success([
+            'existe' => $existe,
+            'telefono' => $telefono,
+        ], $existe ? 'El teléfono ya está registrado.' : 'El teléfono está disponible.', 200);
+    }
 }

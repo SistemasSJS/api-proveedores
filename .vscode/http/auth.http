@@ -198,6 +198,85 @@ Authorization: Bearer {{authToken}}
 # CASOS DE ERROR - REGISTRO CON TELÉFONO
 ###############################################################################
 
+### ❌ Intento de registro con teléfono duplicado
+POST {{baseUrl}}/auth/register-proveedor-basico-sp
+{{commonHeaders}}
+
+{
+  "nombre_comercial": "Otro Proveedor",
+  "telefono": "6681234567",  // Teléfono ya existente
+  "password": "Pass123!",
+  "password_confirmation": "Pass123!",
+  "token": "test_token_456",
+  "empresa_construcc_id": 1
+}
+# Respuesta esperada: 422 - "Este teléfono ya está registrado en el sistema"
+
+### ❌ Teléfono con formato inválido (muy corto)
+POST {{baseUrl}}/auth/register-proveedor-basico-sp
+{{commonHeaders}}
+
+{
+  "nombre_comercial": "Proveedor Test",
+  "telefono": "12345",  // Menos de 10 dígitos
+  "password": "Pass123!",
+  "password_confirmation": "Pass123!",
+  "token": "test_token_789"
+}
+# Respuesta esperada: 422 - "El teléfono debe tener 10 dígitos"
+
+### ❌ Contraseñas no coinciden
+POST {{baseUrl}}/auth/register-proveedor-basico-sp
+{{commonHeaders}}
+
+{
+  "nombre_comercial": "Proveedor Test",
+  "telefono": "6689999999",
+  "password": "Pass123!",
+  "password_confirmation": "Pass456!",  // No coincide
+  "token": "test_token_012"
+}
+# Respuesta esperada: 422 - "Las contraseñas no coinciden"
+
+
+###############################################################################
+# VALIDACIONES PREVIAS AL REGISTRO
+###############################################################################
+
+### ✅ Verificar si un teléfono está disponible
+POST {{baseUrl}}/auth/verificar-telefono
+{{commonHeaders}}
+
+{
+  "telefono": "6681234567"
+}
+# Respuesta: {"existe": true/false, "telefono": "6681234567"}
+
+### ✅ Verificar teléfono disponible (nuevo)
+POST {{baseUrl}}/auth/verificar-telefono
+{{commonHeaders}}
+
+{
+  "telefono": "6689999999"
+}
+# Respuesta esperada: {"existe": false, "telefono": "6689999999"}
+
+### ✅ Verificar email disponible
+POST {{baseUrl}}/auth/verificar-email
+{{commonHeaders}}
+
+{
+  "email": "test@example.com"
+}
+
+### ✅ Verificar razón social disponible
+POST {{baseUrl}}/auth/verificar-razon-social
+{{commonHeaders}}
+
+{
+  "razon_social": "Mi Empresa SA de CV"
+}
+
 ### Error: Teléfono inválido (menos de 10 dígitos)
 POST {{baseUrl}}/auth/register-proveedor-basico-sp
 {{commonHeaders}}

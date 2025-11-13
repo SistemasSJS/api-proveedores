@@ -17,7 +17,14 @@ class ProveedorRegistroBasicoRequest extends FormRequest
     {
         return [
             'nombre_comercial' => ['required', 'string', 'max:255'],
-            'telefono' => ['required', 'string', 'min:10', 'max:10'],
+            'telefono' => [
+                'required', 
+                'string', 
+                'min:10', 
+                'max:10',
+                Rule::unique('proveedores', 'telefono'),
+                Rule::unique('users', 'email'),
+            ],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'token' => ['required', 'string'],
             'empresa_construcc_id' => ['nullable', 'integer'],
@@ -35,6 +42,7 @@ class ProveedorRegistroBasicoRequest extends FormRequest
             'telefono.required' => 'El teléfono es obligatorio.',
             'telefono.min' => 'El teléfono debe tener 10 dígitos.',
             'telefono.max' => 'El teléfono debe tener 10 dígitos.',
+            'telefono.unique' => 'Este teléfono ya está registrado en el sistema.',
             'password.required' => 'La contraseña es obligatoria.',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
