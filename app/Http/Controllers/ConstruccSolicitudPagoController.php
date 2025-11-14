@@ -170,6 +170,15 @@ class ConstruccSolicitudPagoController extends Controller
                 $updateData[$rolField] = EstadoSolicitud::AUTORIZADA->value;
                 $updateData[$fechaField] = now();
 
+                // Si es DG (nivel_id = 1), cambiar el estado general a AUTORIZADA
+                if ($request->nivel_id == 1) {
+                    $updateData['estado_solicitud'] = EstadoSP::AUTORIZADA->value;
+                    Log::info('✅ DG detectado, marcando SP como AUTORIZADA', [
+                        'solicitud_pago_id' => $solicitudPago->id,
+                        'folio' => $solicitudPago->numero_folio_solicitud,
+                    ]);
+                }
+
                 Log::info('📋 Nivel directivo detectado, autorizando para rol', [
                     'nivel_id' => $request->nivel_id,
                     'rol' => strtoupper($rolField),
