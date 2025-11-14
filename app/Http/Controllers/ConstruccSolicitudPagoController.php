@@ -130,8 +130,8 @@ class ConstruccSolicitudPagoController extends Controller
         // Validar que se proporcione el usuario_id
         $request->validate([
             'usuario_id' => ['required', 'integer'],
-            'role_id' => ['required', 'integer'],
-            'company' => ['required'],
+            'nivel_id' => ['required', 'integer'],
+            'empresa_id' => ['required'],
         ]);
 
         // Validar que la SP no esté ya verificada
@@ -150,7 +150,7 @@ class ConstruccSolicitudPagoController extends Controller
             $result = $interApiService->spNotifyByValidator(
                 $solicitudPago->id,
                 $solicitudPago->numero_folio_solicitud,
-                $request->company,
+                $request->empresa_id,
                 $request->usuario_id
             );
 
@@ -160,7 +160,7 @@ class ConstruccSolicitudPagoController extends Controller
                     'solicitud_pago_id' => $solicitudPago->id,
                     'folio' => $solicitudPago->numero_folio_solicitud,
                     'usuario_id' => $request->usuario_id,
-                    'company' => $request->company,
+                    'empresa_id' => $request->empresa_id,
                 ]);
             } else {
                 Log::warning('⚠️ Fallo al enviar notificación de validador', [

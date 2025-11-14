@@ -19,22 +19,22 @@ class InterApiService
   }
   
   /**
-   * Notificar a API Proveedores sobre nueva orden de compra
+   * Notificar a API Construcciones sobre nueva solicitud de pago
    */
   public function notifyNewSolicitudCompra($sp)
   {
     try {
-      Log::channel('inter_api')->info('Iniciando notificación de nueva solicitud de compra', [
+      Log::channel('inter_api')->info('Iniciando notificación de nueva solicitud de pago', [
         'sp_id' => $sp->id ?? null
       ]);
 
       $payload = [
         'sp_id' => $sp->id,
         'sp_folio' => $sp->numero_folio_solicitud,
-        'company' => '14',
+        'company' => $sp->empresa_construcc_id,
         'obra' => '1',
         // 'message' => 'Ahora si lleva mensaje',
-        'user_id' => 75
+        'user_id' => $sp->residente
       ];
 
       Log::channel('inter_api')->info('Payload preparado para notificación SP', [
@@ -57,7 +57,7 @@ class InterApiService
         // ->retry(3, 100) // 3 reintentos con 100ms de delay
         ->post($url, $payload);
 
-      Log::channel('inter_api')->info('Respuesta recibida desde API Proveedores', [
+      Log::channel('inter_api')->info('Respuesta recibida desde API Construcciones', [
         'status' => $response->status(),
         'body' => $response->body()
       ]);
@@ -86,14 +86,11 @@ class InterApiService
     } catch (\Exception $e) {
       Log::channel('inter_api')->error('Excepción al notificar SP', [
         'sp_id' => $sp->id ?? null,
+        'sp_folio' => $sp->numero_folio_solicitud ?? null,
+        'company' => $sp->empresa_construcc_id ?? null,
+        'user_id' => $sp->residente ?? null,
         'error' => $e->getMessage(),
-        'trace' => $e->getTraceAsString(),
-        'sp_id' => $sp->numero_folio_solicitud,
-        'company' => '14',
-        'obra' => '1',
-        'message' => '',
-        'user_id' => 75,
-        'e' => $e
+        'trace' => $e->getTraceAsString()
       ]);
 
 
