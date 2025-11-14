@@ -124,6 +124,8 @@ class ConstruccSolicitudPagoController extends Controller
      * Marcar una solicitud de pago como verificada
      * Solo el usuario construcción correspondiente puede marcar su SP como verificada
      * Envía los datos de la SP y el usuario al servidor inter API
+     * 
+     * Para niveles directivos (1-DG, 2-DT, 3-DA) también marca como autorizada para ese rol
      */
     public function marcarComoVerificada(Request $request, SolicitudPago $solicitudPago): JsonResponse
     {
@@ -142,8 +144,34 @@ class ConstruccSolicitudPagoController extends Controller
         DB::beginTransaction();
         
         try {
-            // Marcar como verificada
-            $solicitudPago->update(['verificada' => true]);
+            // Datos a actualizar
+            $updateData = ['verificada' => true];
+            
+            // Mapeo de nivel_id a rol
+            $nivelToRol = [
+                1 => 'dg',  // Director General
+                2 => 'dt',  // Director Técnico
+                3 => 'da',  // Director Administrativo
+            ];
+            
+            // Si es un nivel directivo (1, 2, 3), también autorizar
+            if (array_key_exists($request->nivel_id, $nivelToRol)) {
+                $rolField = $nivelToRol[$request->nivel_id];
+                $fechaField = $rolField . '_fecha';
+                
+                // Agregar autorización del rol
+                $updateData[$rolField] = EstadoSolicitud::AUTORIZADA->value;
+                $updateData[$fechaField] = now();
+                
+                Log::info('📋 Nivel directivo detectado, autorizando para rol', [
+                    'nivel_id' => $request->nivel_id,
+                    'rol' => strtoupper($rolField),
+                    'solicitud_pago_id' => $solicitudPago->id,
+                ]);
+            }
+            
+            // Actualizar solicitud
+            $solicitudPago->update($updateData);
 
             // Llamar al servicio InterAPI para notificar al validador
             $interApiService = new InterApiService();
@@ -161,6 +189,7 @@ class ConstruccSolicitudPagoController extends Controller
                     'folio' => $solicitudPago->numero_folio_solicitud,
                     'usuario_id' => $request->usuario_id,
                     'empresa_id' => $request->empresa_id,
+                    'nivel_id' => $request->nivel_id,
                 ]);
             } else {
                 Log::warning('⚠️ Fallo al enviar notificación de validador', [
@@ -170,10 +199,16 @@ class ConstruccSolicitudPagoController extends Controller
             }
 
             DB::commit();
+            
+            $mensaje = 'Solicitud de pago marcada como verificada correctamente.';
+            if (array_key_exists($request->nivel_id, $nivelToRol)) {
+                $rolNombre = strtoupper($nivelToRol[$request->nivel_id]);
+                $mensaje .= " Autorizada por {$rolNombre}.";
+            }
 
             return $this->success(
                 new ConstruccSolicitudPagoResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
-                'Solicitud de pago marcada como verificada correctamente.'
+                $mensaje
             );
 
         } catch (\Exception $e) {
