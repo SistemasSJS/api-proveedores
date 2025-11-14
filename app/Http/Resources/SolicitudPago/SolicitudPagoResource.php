@@ -40,6 +40,12 @@ class SolicitudPagoResource extends JsonResource
                     'representante_legal' => $this->empresaConstrucc->representante_legal,
                 ];
             }),
+            
+            // Usuario Construcc que generó la SP
+            'usuario_id' => $this->usuario_id,
+            'usuario_nombre' => $this->usuario_nombre,
+            'sucursal_id' => $this->sucursal_id,
+            'cotizacion_id' => $this->cotizacion_id,
 
             // Archivos
             'ruta_archivo_factura_xml' => $this->ruta_archivo_factura_xml,

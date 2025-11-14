@@ -66,16 +66,19 @@ class OrdenCompraConSPResource extends JsonResource
             // Solicitudes de pago detalladas
             'solicitudes_pago' => $this->whenLoaded('solicitudesPago', function () {
                 return $this->solicitudesPago->map(function ($sp) {
-                    return [
-                        'id' => $sp->id,
-                        'numero_folio_solicitud' => $sp->numero_folio_solicitud,
-                        'descripcion_concepto' => $sp->descripcion_concepto,
-                        'monto_total' => (float) $sp->monto_total,
-                        'estado_solicitud' => $sp->estado_solicitud,
-                        'fecha_creacion' => $sp->created_at?->format('Y-m-d H:i:s'),
-                        'residente' => $sp->residente,
+                return [
+                    'id' => $sp->id,
+                    'numero_folio_solicitud' => $sp->numero_folio_solicitud,
+                    'descripcion_concepto' => $sp->descripcion_concepto,
+                    'monto_total' => (float) $sp->monto_total,
+                    'estado_solicitud' => $sp->estado_solicitud,
+                    'fecha_creacion' => $sp->created_at?->format('Y-m-d H:i:s'),
+                    
+                    // Usuario Construcc que generó la SP
+                    'usuario_id' => $sp->usuario_id,
+                    'usuario_nombre' => $sp->usuario_nombre,
 
-                        // Información de vinculación con OC
+                    // Información de vinculación con OC
                         'vinculacion' => [
                             'monto_asociado' => (float) $sp->pivot->monto_asociado,
                             'fecha_vinculacion' => $sp->pivot->fecha_vinculacion?->format('Y-m-d H:i:s'),

@@ -118,7 +118,8 @@ class OrdenCompraConversionService
         // Mapear campos opcionales desde la solicitud
         $camposOpcionales = [
             'descripcion_concepto',
-            'residente',
+            'usuario_id',
+            'usuario_nombre',
             'sucursal_id',
             'cotizacion_id',
             'observaciones',

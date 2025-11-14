@@ -27,8 +27,10 @@ class SolicitudPago extends BaseModel
         'estado_solicitud',
         'ruta_archivo_comprobante_pago',
         'proveedor_id',
-        'empresa_construcc_id',
-        'residente',
+'empresa_construcc_id',
+        // Datos del usuario que registra la SP en Construcc
+        'usuario_id',
+        'usuario_nombre',
         'cotizacion_id',
         'sucursal_id',
         // 'fecha_registro_pendiente',
@@ -72,8 +74,9 @@ class SolicitudPago extends BaseModel
         'descripcion_concepto' => 'DescripcionConcepto',
         'estado_solicitud' => 'EstadoSolicitud',
         'proveedor_id' => 'ProveedorId',
-        'empresa_construcc_id' => 'EmpresaConstruccId',
-        'residente' => 'Residente',
+'empresa_construcc_id' => 'EmpresaConstruccId',
+        'usuario_id' => 'UsuarioId',
+        'usuario_nombre' => 'UsuarioNombre',
         'cotizacion_id' => 'CotizacionId',
 
         'fecha_registro_pendiente' => 'FechaRegistroPendiente',
@@ -292,9 +295,14 @@ class SolicitudPago extends BaseModel
         return $query->whereIn('empresa_construcc_id', explode(',', $value));
     }
 
-    public function filterByResidente($query, $value)
+    public function filterByUsuarioId($query, $value)
     {
-        return $query->where('residente', 'like', "%$value%");
+        return $query->where('usuario_id', $value);
+    }
+
+    public function filterByUsuarioNombre($query, $value)
+    {
+        return $query->where('usuario_nombre', 'like', "%$value%");
     }
 
     public function filterByCotizacionId($query, $value)

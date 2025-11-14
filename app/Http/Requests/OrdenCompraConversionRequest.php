@@ -36,7 +36,11 @@ class OrdenCompraConversionRequest extends FormRequest
             ],
             'monto_total' => 'required|numeric|min:0.01',
             'descripcion_concepto' => 'nullable|string|max:500',
-            'residente' => 'nullable|string|max:255',
+            
+            // Datos del usuario Construcc que genera la SP
+            'usuario_id' => 'nullable|integer',
+            'usuario_nombre' => 'nullable|string|max:255',
+            
             'sucursal_id' => 'nullable|integer|exists:sucursales,id',
             'cotizacion_id' => 'nullable|integer|exists:cotizaciones,id',
             'notas_vinculacion' => 'nullable|string|max:1000',
@@ -115,7 +119,8 @@ class OrdenCompraConversionRequest extends FormRequest
             'orden_compra_id' => 'orden de compra',
             'monto_total' => 'monto total',
             'descripcion_concepto' => 'descripción del concepto',
-            'residente' => 'residente',
+            'usuario_id' => 'ID de usuario',
+            'usuario_nombre' => 'nombre de usuario',
             'notas_vinculacion' => 'notas de vinculación',
         ];
     }

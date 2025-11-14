@@ -33,7 +33,8 @@ class OrdenCompraSolicitudPagoController extends Controller
             $datosSolicitud = [
                 'monto_total' => $request->monto_total,
                 'descripcion_concepto' => $request->descripcion_concepto,
-                'residente' => $request->residente,
+                'usuario_id' => $request->usuario_id,
+                'usuario_nombre' => $request->usuario_nombre,
                 'sucursal_id' => $request->sucursal_id,
                 'cotizacion_id' => $request->cotizacion_id,
                 'notas_vinculacion' => $request->notas_vinculacion,

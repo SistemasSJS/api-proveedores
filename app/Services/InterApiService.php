@@ -34,7 +34,7 @@ class InterApiService
         'company' => $sp->empresa_construcc_id,
         'obra' => '1',
         // 'message' => 'Ahora si lleva mensaje',
-        'user_id' => $sp->residente
+        'user_id' => $sp->usuario_id
       ];
 
       Log::channel('inter_api')->info('Payload preparado para notificación SP', [
@@ -88,7 +88,7 @@ class InterApiService
         'sp_id' => $sp->id ?? null,
         'sp_folio' => $sp->numero_folio_solicitud ?? null,
         'company' => $sp->empresa_construcc_id ?? null,
-        'user_id' => $sp->residente ?? null,
+        'user_id' => $sp->usuario_id ?? null,
         'error' => $e->getMessage(),
         'trace' => $e->getTraceAsString()
       ]);

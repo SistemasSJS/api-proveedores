@@ -92,7 +92,9 @@ class ProveedorSolicitudPagoController extends Controller
 
         $numeroFolio = SolicitudPago::generarNumeroFolio($proveedor);
         $empresaConstructId = $validated['empresa_construcc_id'] ?? null;
-        $residente = $validated['residente'] ?? null;
+        // Datos del usuario de Construcc que genera la SP
+        $usuarioId = $validated['usuario_id'] ?? $validated['usuario_construcc_id'] ?? null;
+        $usuarioNombre = $validated['usuario_nombre'] ?? $validated['residente'] ?? null;
         $cotizacion_id = $validated['cotizacion_id'] ?? null;
         $montoTotal = $validated['monto_total'];
 
@@ -104,7 +106,8 @@ class ProveedorSolicitudPagoController extends Controller
             'ruta_archivo_factura_xml' => $rutaXml,
             'ruta_archivo_cotizacion' => $rutaCotizacion,
             'empresa_construcc_id' => $empresaConstructId,
-            'residente' => $residente,
+            'usuario_id' => $usuarioId,
+            'usuario_nombre' => $usuarioNombre,
             'cotizacion_id' => $cotizacion_id,
             'estado_solicitud' => 'pendiente',
             'fecha_registro_pendiente' => now(),
@@ -159,7 +162,8 @@ class ProveedorSolicitudPagoController extends Controller
 
         $solicitudPago->update($request->only([
             'descripcion_concepto',
-            'residente',
+            'usuario_id',
+            'usuario_nombre',
             'monto_total',
         ]));
 
@@ -432,7 +436,8 @@ class ProveedorSolicitudPagoController extends Controller
                     'estado_solicitud' => $sp->estado_solicitud,
                     'fecha_creacion' => $sp->created_at,
                     'descripcion_concepto' => $sp->descripcion_concepto,
-                    'residente' => $sp->residente,
+                    'usuario_id' => $sp->usuario_id,
+                    'usuario_nombre' => $sp->usuario_nombre,
                     'origen_oc' => $sp->origen_oc ?? false,
                 ],
                 'orden_compra' => $ordenCompra ? [
