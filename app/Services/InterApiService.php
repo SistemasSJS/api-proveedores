@@ -17,7 +17,7 @@ class InterApiService
     $this->apiContruccApiKey = config('services.api_construcciones.apikey');
     $this->timeout = config('services.api_construcciones.timeout', 10);
   }
-  
+
   /**
    * Notificar a API Construcciones sobre nueva solicitud de pago
    */
@@ -132,7 +132,7 @@ class InterApiService
         'payload' => $payload
       ]);
 
-      $url = "{$this->apiContruccUrl}/api/sp-notify-by-validator";
+      $url = "{$this->apiContruccUrl}/api/notify-sp-validada";
       Log::channel('inter_api')->info('URL destino para notificación de validador', [
         'url' => $url
       ]);
