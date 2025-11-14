@@ -26,6 +26,13 @@ class ConstruccSolicitudPagoController extends Controller
 {
     use ApiResponse;
 
+    protected $interApiService;
+
+    public function __construct(InterApiService $interApiService)
+    {
+        $this->interApiService = $interApiService;
+    }
+
     /**
      * IDs de roles de ConstruccApp
      */
@@ -174,8 +181,7 @@ class ConstruccSolicitudPagoController extends Controller
             $solicitudPago->update($updateData);
 
             // Llamar al servicio InterAPI para notificar al validador
-            $interApiService = new InterApiService();
-            $result = $interApiService->spNotifyByValidator(
+            $result = $this->interApiService->spNotifyByValidator(
                 $solicitudPago->id,
                 $solicitudPago->numero_folio_solicitud,
                 $request->empresa_id,
