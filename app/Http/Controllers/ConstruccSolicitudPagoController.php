@@ -149,34 +149,34 @@ class ConstruccSolicitudPagoController extends Controller
         }
 
         DB::beginTransaction();
-        
+
         try {
             // Datos a actualizar
             $updateData = ['verificada' => true];
-            
+
             // Mapeo de nivel_id a rol
             $nivelToRol = [
                 1 => 'dg',  // Director General
                 2 => 'dt',  // Director Técnico
                 3 => 'da',  // Director Administrativo
             ];
-            
+
             // Si es un nivel directivo (1, 2, 3), también autorizar
             if (array_key_exists($request->nivel_id, $nivelToRol)) {
                 $rolField = $nivelToRol[$request->nivel_id];
                 $fechaField = $rolField . '_fecha';
-                
+
                 // Agregar autorización del rol
                 $updateData[$rolField] = EstadoSolicitud::AUTORIZADA->value;
                 $updateData[$fechaField] = now();
-                
+
                 Log::info('📋 Nivel directivo detectado, autorizando para rol', [
                     'nivel_id' => $request->nivel_id,
                     'rol' => strtoupper($rolField),
                     'solicitud_pago_id' => $solicitudPago->id,
                 ]);
             }
-            
+
             // Actualizar solicitud
             $solicitudPago->update($updateData);
 
@@ -205,7 +205,7 @@ class ConstruccSolicitudPagoController extends Controller
             }
 
             DB::commit();
-            
+
             $mensaje = 'Solicitud de pago marcada como verificada correctamente.';
             if (array_key_exists($request->nivel_id, $nivelToRol)) {
                 $rolNombre = strtoupper($nivelToRol[$request->nivel_id]);
@@ -216,10 +216,9 @@ class ConstruccSolicitudPagoController extends Controller
                 new ConstruccSolicitudPagoResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
                 $mensaje
             );
-
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             Log::error('❌ Error al marcar SP como verificada', [
                 'solicitud_pago_id' => $solicitudPago->id,
                 'error' => $e->getMessage(),
@@ -273,7 +272,6 @@ class ConstruccSolicitudPagoController extends Controller
                     'response' => $response->body(),
                 ]);
             }
-
         } catch (\Exception $e) {
             Log::error('❌ Excepción al enviar datos a Inter API', [
                 'error' => $e->getMessage(),
@@ -290,6 +288,12 @@ class ConstruccSolicitudPagoController extends Controller
      */
     public function marcarComoRechazada(Request $request, SolicitudPago $solicitudPago): JsonResponse
     {
+        Log::info('✅ Antes de validate: ', [
+            'solicitud_pago_id' => $solicitudPago->id,
+            'folio' => $solicitudPago->numero_folio_solicitud,
+            'proveedor_id' => $solicitudPago->proveedor->id,
+        ]);
+
         // Validar que se proporcione un motivo de rechazo
         $request->validate([
             'motivo_rechazo' => ['required', 'string', 'max:500'],
@@ -870,7 +874,7 @@ class ConstruccSolicitudPagoController extends Controller
         $proveedores = \App\Models\Proveedor::query()
             ->whereHas('empresasConstrucc', function ($q) use ($empresaId, $usuarioConstruccId) {
                 $q->where('empresa_construcc_id', $empresaId);
-                
+
                 // Filtrar por usuario si se proporciona el parámetro
                 if ($usuarioConstruccId) {
                     $q->where('usuario_construcc_id', $usuarioConstruccId);
@@ -899,7 +903,7 @@ class ConstruccSolicitudPagoController extends Controller
         $proveedores = \App\Models\Proveedor::query()
             ->whereDoesntHave('empresasConstrucc', function ($q) use ($empresaId, $usuarioConstruccId) {
                 $q->where('empresa_construcc_id', $empresaId);
-                
+
                 // Filtrar por usuario si se proporciona el parámetro
                 if ($usuarioConstruccId) {
                     $q->where('usuario_construcc_id', $usuarioConstruccId);
