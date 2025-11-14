@@ -33,7 +33,12 @@ class CotizacionCreada extends Notification implements ShouldBroadcastNow
 
     public function via(object $notifiable): array
     {
-        $channels = ['mail', 'broadcast', 'database'];
+        $channels = ['broadcast', 'database'];
+
+        // Solo agregar email si el correo es válido
+        if ($notifiable->email && filter_var($notifiable->email, FILTER_VALIDATE_EMAIL)) {
+            $channels[] = 'mail';
+        }
 
         if ($notifiable->activeDeviceTokens()->exists()) {
             $channels[] = FcmChannel::class;

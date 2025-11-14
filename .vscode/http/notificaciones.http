@@ -24,7 +24,7 @@ X-API-KEY: {{apiKey}}
 
 {
   "empresa_id": 14,
-  "proveedor_id": 3,
+  "proveedor_id": 9,
   "orden_compra_id": "OC-TEST-002",
   "estatus": "pendiente"
 }
@@ -37,7 +37,7 @@ Accept: application/json1
 { }
  
 ###
-GET {{baseUrl}}/construcc/solicitudes-pago?estado_solicitud=pendiente&proveedor_id=4
+GET {{baseUrl}}/construcc/solicitudes-pago?estado_solicitud=pendiente&proveedor_id=9
 Content-Type: application/json
 Accept: application/json
 X-API-KEY: /%-!?=T35sT._22<1|:
@@ -50,6 +50,28 @@ X-API-KEY: /%-!?=T35sT._22<1|:
 {
   "rol": "DT",
   "motivo_rechazo": "El monto no corresponde con la cotización original."
+}
+
+### Marcar solicitud de pago como verificada
+POST {{baseUrl}}/construcc/solicitudes-pago/2/marcar-verificada
+Content-Type: application/json
+Accept: application/json
+X-API-KEY: {{apiKey}}
+
+{
+  "usuario_id": 1,
+  "nivel_id": 2,
+  "empresa_id": "14"
+}
+
+### ✅ Rechazar solicitud de pago sin verificar (durante verificación)
+POST {{baseUrl}}/construcc/solicitudes-pago/1/marcar-rechazada
+Content-Type: application/json
+Accept: application/json
+X-API-KEY: /%-!?=T35sT._22<1|:
+
+{
+  "motivo_rechazo": "Factura PDF no coincide con el monto declarado. Por favor corregir y reenviar."
 }
 
 ###
