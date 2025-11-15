@@ -25,7 +25,7 @@ class ConstruccSolicitudPagoResource extends JsonResource
             'ruta_archivo_comprobante_pago' => $this->ruta_archivo_comprobante_pago,
 
             // NUEVO CAMPO
-            'verificada' => (bool) $this->verificada,
+            'verificada' => $this->verificada ? 1 : 0,
 
             // Archivos con URLs correctas
             'url_comprobante_pago' => $this->ruta_archivo_comprobante_pago
