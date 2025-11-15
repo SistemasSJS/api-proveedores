@@ -608,6 +608,7 @@ class ProveedorSolicitudPagoController extends Controller
             'total_sp' => (clone $baseQuery)->count(),
             'sp_pendientes' => (clone $baseQuery)->where('estado_solicitud', 'pendiente')->count(),
             'sp_autorizadas' => (clone $baseQuery)->where('estado_solicitud', 'autorizada')->count(),
+            'sp_en_proceso' => (clone $baseQuery)->where('estado_solicitud', 'autorizada')->count(),
             'sp_rechazadas' => (clone $baseQuery)->where('estado_solicitud', 'rechazada')->count(),
             'sp_pagadas' => (clone $baseQuery)->where('estado_solicitud', 'pagado')->count(),
         ];
