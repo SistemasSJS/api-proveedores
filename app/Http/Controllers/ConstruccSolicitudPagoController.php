@@ -518,7 +518,7 @@ class ConstruccSolicitudPagoController extends Controller
             'da_fecha' => now(),
         ]);
 
-        $mensaje =  'Pago completado correctamente. La solicitud ha sido pagada en su totalidad.'
+        $mensaje =  'Pago completado correctamente. La solicitud ha sido pagada en su totalidad.';
         // : "Abono registrado correctamente. Saldo pendiente: {$solicitudPago->fresh()->saldo_pendiente}";
         // // $pagoCompleto
 
