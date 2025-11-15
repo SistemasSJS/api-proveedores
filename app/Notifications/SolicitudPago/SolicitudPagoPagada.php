@@ -31,7 +31,8 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
      */
     public function via(object $notifiable): array
     {
-        $via = ['broadcast', 'database'];
+        // $via = ['broadcast', 'database'];
+        $via = ['database'];
 
         // Solo agregar email si el correo es válido
         if ($notifiable->email && filter_var($notifiable->email, FILTER_VALIDATE_EMAIL)) {

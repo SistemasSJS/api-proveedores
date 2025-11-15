@@ -242,53 +242,6 @@ class ConstruccSolicitudPagoController extends Controller
         }
     }
 
-    /**
-     * Enviar datos a la API inter (servidor de notificaciones)
-     * 
-     * @param array $datos
-     * @return void
-     */
-    private function enviarDatosAInterAPI(array $datos): void
-    {
-        try {
-            // Obtener la URL del servidor inter desde el config o .env
-            $interApiUrl = config('services.inter_api.url', env('INTER_API_URL'));
-            $interApiToken = config('services.inter_api.token', env('INTER_API_TOKEN'));
-
-            if (!$interApiUrl) {
-                Log::warning('⚠️ URL de Inter API no configurada, omitiendo envío');
-                return;
-            }
-
-            // Realizar petición HTTP a la API inter
-            $response = Http::timeout(10)
-                ->withHeaders([
-                    'Authorization' => 'Bearer ' . $interApiToken,
-                    'Accept' => 'application/json',
-                ])
-                ->post($interApiUrl . '/api/notificaciones/sp-verificada', $datos);
-
-            if ($response->successful()) {
-                Log::info('✅ Datos enviados correctamente a Inter API', [
-                    'solicitud_pago_id' => $datos['solicitud_pago']['id'],
-                    'usuario_id' => $datos['usuario_id'],
-                    'response_status' => $response->status(),
-                ]);
-            } else {
-                Log::warning('⚠️ Error al enviar datos a Inter API', [
-                    'solicitud_pago_id' => $datos['solicitud_pago']['id'],
-                    'status' => $response->status(),
-                    'response' => $response->body(),
-                ]);
-            }
-        } catch (\Exception $e) {
-            Log::error('❌ Excepción al enviar datos a Inter API', [
-                'error' => $e->getMessage(),
-                'datos' => $datos,
-            ]);
-            // No lanzar excepción para no afectar el flujo principal
-        }
-    }
 
     /**
      * Marcar una solicitud de pago como rechazada durante verificación

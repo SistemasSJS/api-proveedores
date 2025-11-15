@@ -31,7 +31,8 @@ class SolicitudPagoRechazadaSinAutorizacion extends Notification implements Shou
      */
     public function via(object $notifiable): array
     {
-        $via = ['broadcast', 'database'];
+        // $via = ['broadcast', 'database'];
+        $via = ['database'];
 
         // Solo agregar email si el correo es válido
         if ($notifiable->email && filter_var($notifiable->email, FILTER_VALIDATE_EMAIL)) {
@@ -52,7 +53,7 @@ class SolicitudPagoRechazadaSinAutorizacion extends Notification implements Shou
     {
         return new BroadcastMessage([
             'tipo' => 'solicitud_pago',   // Categoría base
-            'subtipo' => 'rechazada_sin_autorizacion',     // Tipo específico
+            'subtipo' => 'rechazada',     // Tipo específico
             'titulo' => 'Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
             'mensaje' => "Tu solicitud de pago #{$this->solicitudPagoFolio} ha sido rechazada durante la verificación.",
             'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
@@ -61,7 +62,7 @@ class SolicitudPagoRechazadaSinAutorizacion extends Notification implements Shou
                 'proveedor_id' => $this->proveedorId,
                 'motivo' => $this->motivo,
                 'estatus' => 'rechazada',
-                'razon' => 'rechazada_sin_autorizacion',
+                'razon' => 'rechazada',
             ],
             'timestamp' => now()->toIso8601String(),
         ]);
@@ -89,7 +90,7 @@ class SolicitudPagoRechazadaSinAutorizacion extends Notification implements Shou
     {
         return [
             'tipo' => 'solicitud_pago',   // Categoría base
-            'subtipo' => 'rechazada_sin_autorizacion',     // Tipo específico
+            'subtipo' => 'rechazada',     // Tipo específico
             'titulo' => 'Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
             'mensaje' => "Tu solicitud de pago #{$this->solicitudPagoFolio} ha sido rechazada durante la verificación.",
             'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
@@ -97,7 +98,7 @@ class SolicitudPagoRechazadaSinAutorizacion extends Notification implements Shou
             'proveedor_id' => $this->proveedorId,
             'motivo' => $this->motivo,
             'estatus' => 'rechazada',
-            'razon' => 'rechazada_sin_autorizacion',
+            'razon' => 'rechazada',
             'timestamp' => now()->toIso8601String(),
         ];
     }
@@ -135,23 +136,23 @@ class SolicitudPagoRechazadaSinAutorizacion extends Notification implements Shou
         if (empty($tokens)) {
             return;
         }
-        
+
         $notification = [
             'title' => '⚠️ Solicitud Rechazada #' . $this->solicitudPagoFolio,
             'body' => $this->motivo
                 ? "Tu solicitud de pago fue rechazada durante la verificación. Motivo: {$this->motivo}"
                 : "Tu solicitud de pago fue rechazada durante la verificación.",
         ];
-        
+
         $data = [
             'tipo' => 'solicitud_pago',   // Categoría base
-            'subtipo' => 'rechazada_sin_autorizacion',     // Tipo específico
+            'subtipo' => 'rechazada',     // Tipo específico
             'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
             'solicitud_pago_folio' => $this->solicitudPagoFolio,
             'proveedor_id' => (string) $this->proveedorId,
             'motivo' => $this->motivo,
             'estatus' => 'rechazada',
-            'razon' => 'rechazada_sin_autorizacion',
+            'razon' => 'rechazada',
             'timestamp' => now()->toIso8601String(),
         ];
 
