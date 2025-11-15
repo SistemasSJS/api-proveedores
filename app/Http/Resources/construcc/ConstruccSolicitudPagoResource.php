@@ -24,6 +24,9 @@ class ConstruccSolicitudPagoResource extends JsonResource
             'ruta_archivo_cotizacion' => $this->ruta_archivo_cotizacion,
             'ruta_archivo_comprobante_pago' => $this->ruta_archivo_comprobante_pago,
 
+            // NUEVO CAMPO
+            'verificada' => (bool) $this->verificada,
+
             // Archivos con URLs correctas
             'url_comprobante_pago' => $this->ruta_archivo_comprobante_pago
                 ? route('construcc.solicitudes-pago.descargar-comprobante', $this->id)
