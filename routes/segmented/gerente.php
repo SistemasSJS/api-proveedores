@@ -217,6 +217,7 @@ Route::prefix('proveedores')
             Route::get('/all', [ProveedorSolicitudPagoController::class, 'uindex'])->middleware(['audit']);    // Sin paginación
             Route::get('/historico', [ProveedorSolicitudPagoController::class, 'historico'])->middleware(['audit']); // Histórico OC y SP
             Route::get('/conteo-por-estado', [ProveedorSolicitudPagoController::class, 'conteoPorEstado'])->middleware(['audit']); // Conteo por segmento
+            Route::get('/dashboard/metricas', [ProveedorSolicitudPagoController::class, 'getDashboardMetrics'])->middleware(['audit']); // Métricas dashboard
 
             // Empresas de construcción para búsqueda
             Route::get('/empresas-constructoras', [ProveedorSolicitudPagoController::class, 'empresasConstructoras'])->middleware(['audit']);
