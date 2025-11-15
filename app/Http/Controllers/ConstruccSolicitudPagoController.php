@@ -494,7 +494,7 @@ class ConstruccSolicitudPagoController extends Controller
         $path = $request->file('comprobante')->store('comprobantes', 'private');
 
         // Actualizar saldos
-        $pagoCompleto = $solicitudPago->actualizarSaldos($montoAbono);
+        // $pagoCompleto = $solicitudPago->actualizarSaldos($montoAbono);
 
         // Determinar el estado final
         $estadoFinal = $pagoCompleto ? EstadoSP::PAGADO->value : EstadoSP::AUTORIZADA->value;
