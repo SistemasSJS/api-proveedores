@@ -477,18 +477,18 @@ class ConstruccSolicitudPagoController extends Controller
         // }
 
         // Inicializar saldos si es el primer abono
-        $solicitudPago->inicializarSaldos();
-        $solicitudPago->refresh();
+        // $solicitudPago->inicializarSaldos();
+        // $solicitudPago->refresh();
 
-        // Validar que el monto del abono no exceda el saldo pendiente
-        $montoAbono = $data['monto_pagado'];
-        if ($montoAbono > $solicitudPago->saldo_pendiente) {
-            return $this->error(
-                "El monto del abono ({$montoAbono}) no puede ser mayor al saldo pendiente ({$solicitudPago->saldo_pendiente}).",
-                null,
-                400
-            );
-        }
+        // // Validar que el monto del abono no exceda el saldo pendiente
+        // $montoAbono = $data['monto_pagado'];
+        // if ($montoAbono > $solicitudPago->saldo_pendiente) {
+        //     return $this->error(
+        //         "El monto del abono ({$montoAbono}) no puede ser mayor al saldo pendiente ({$solicitudPago->saldo_pendiente}).",
+        //         null,
+        //         400
+        //     );
+        // }
 
         // Guardar comprobante
         $path = $request->file('comprobante')->store('comprobantes', 'private');
