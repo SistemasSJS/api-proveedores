@@ -497,8 +497,8 @@ class ConstruccSolicitudPagoController extends Controller
         // $pagoCompleto = $solicitudPago->actualizarSaldos($montoAbono);
 
         // Determinar el estado final
-        $estadoFinal = $pagoCompleto ? EstadoSP::PAGADO->value : EstadoSP::AUTORIZADA->value;
-        $estadoDA = $pagoCompleto ? EstadoSolicitud::PAGADO->value : EstadoSolicitud::AUTORIZADA->value;
+        // $estadoFinal = $pagoCompleto ? EstadoSP::PAGADO->value : EstadoSP::AUTORIZADA->value;
+        // $estadoDA = $pagoCompleto ? EstadoSolicitud::PAGADO->value : EstadoSolicitud::AUTORIZADA->value;
 
         // para no dejar comentadas las lineas anteriores se agrega esta linea con el proposito
         //  de parchar la actul funcionalidad. dado un pago ya se parcial o completo el estatus se asumira
@@ -518,9 +518,9 @@ class ConstruccSolicitudPagoController extends Controller
             'da_fecha' => now(),
         ]);
 
-        $mensaje = $pagoCompleto
-            ? 'Pago completado correctamente. La solicitud ha sido pagada en su totalidad.'
-            : "Abono registrado correctamente. Saldo pendiente: {$solicitudPago->fresh()->saldo_pendiente}";
+        $mensaje =  'Pago completado correctamente. La solicitud ha sido pagada en su totalidad.'
+        // : "Abono registrado correctamente. Saldo pendiente: {$solicitudPago->fresh()->saldo_pendiente}";
+        // // $pagoCompleto
 
         // Enviar notificación al proveedor
         try {
@@ -532,7 +532,6 @@ class ConstruccSolicitudPagoController extends Controller
                     $solicitudPago->numero_folio_solicitud,
                     $solicitudPago->id,
                     $proveedor->id,
-                    $montoAbono,
                     $usuarioPrincipal->id
                 ));
 
@@ -541,8 +540,8 @@ class ConstruccSolicitudPagoController extends Controller
                     'folio' => $solicitudPago->numero_folio_solicitud,
                     'proveedor_id' => $proveedor->id,
                     'usuario_id' => $usuarioPrincipal->id,
-                    'monto' => $montoAbono,
-                    'pago_completo' => $pagoCompleto,
+                    // 'monto' => $montoAbono,
+                    // 'pago_completo' => $pagoCompleto,
                 ]);
             }
         } catch (\Exception $e) {
