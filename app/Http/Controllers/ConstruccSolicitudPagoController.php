@@ -459,7 +459,7 @@ class ConstruccSolicitudPagoController extends Controller
         }
 
         // 3. Verificar que esté en estado válido (AUTORIZADA o PAGADO con pagos parciales)
-        if (! in_array($solicitudPago->estado_solicitud, [EstadoSP::PENDIENTE->value, EstadoSP::PAGADO->value])) {
+        if (! in_array($solicitudPago->estado_solicitud, [EstadoSP::PENDIENTE->value, EstadoSP::PAGADO->value, EstadoSP::AUTORIZADA])) {
             return $this->error(
                 'Solo se pueden confirmar pagos de solicitudes AUTORIZADAS o con pagos parciales.',
                 null,
