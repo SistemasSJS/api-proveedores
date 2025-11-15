@@ -169,38 +169,49 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $request->validate([
-            'email' => ['required'], // 'email'],
-            'password' => ['required'],
-        ]);
+        try {
+            $request->validate([
+                'email' => ['required'], // 'email'],
+                'password' => ['required'],
+            ]);
 
-        // Buscar usuario por email o teléfono
-        $user = User::where('email', $request->email)->first();
-        
-        // Si no se encuentra por email, buscar por teléfono, razón social o nombre comercial del proveedor
-        if (!$user) {
-            $proveedor = Proveedor::where('razon_social', $request->email)
-                ->orWhere('nombre_comercial', $request->email)
-                ->orWhere('telefono', $request->email)
-                ->first();
+            // Buscar usuario por email o teléfono
+            $user = User::where('email', $request->email)->first();
             
-            if ($proveedor) {
-                $user = $proveedor->users()->first();
+            // Si no se encuentra por email, buscar por teléfono, razón social o nombre comercial del proveedor
+            if (!$user) {
+                $proveedor = Proveedor::where('razon_social', $request->email)
+                    ->orWhere('nombre_comercial', $request->email)
+                    ->orWhere('telefono', $request->email)
+                    ->first();
+                
+                if ($proveedor) {
+                    $user = $proveedor->users()->first();
+                }
             }
+
+            if (! $user || ! Hash::check($request->password, $user->password)) {
+                throw new UnauthorizedException('Credenciales incorrectas.');
+            }
+
+            $token = $user->createToken('API Token')->plainTextToken;
+
+            $user->load(User::eagerLodable());
+
+            return $this->success([
+                'user' => new UserAuthenticateResource($user),
+                'token' => $token,
+            ], 'Login exitoso.', 201);
+        } catch (ValidationException $e) {
+            // Error en la validación de los datos de entrada
+            return $this->error('Los datos proporcionados no son válidos.', $e->errors(), 422);
+        } catch (UnauthorizedException $e) {
+            // Credenciales incorrectas o acceso no autorizado
+            return $this->error($e->getMessage(), [], 401);
+        } catch (\Exception $e) {
+            // Cualquier otro error inesperado
+            return $this->error('Ocurrió un error al intentar iniciar sesión.', [], 500);
         }
-
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            throw new UnauthorizedException('Credenciales incorrectas.');
-        }
-
-        $token = $user->createToken('API Token')->plainTextToken;
-
-        $user->load(User::eagerLodable());
-
-        return $this->success([
-            'user' => new UserAuthenticateResource($user),
-            'token' => $token,
-        ], 'Login exitoso.', 201);
     }
 
     public function me(Request $request)

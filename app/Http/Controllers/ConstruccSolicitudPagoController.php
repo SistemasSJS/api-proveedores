@@ -986,4 +986,105 @@ class ConstruccSolicitudPagoController extends Controller
 
         return $this->success($stats, 'Estadísticas generales de solicitudes de pago.');
     }
+
+    /**
+     * Métricas del dashboard de SP (verificadas)
+     * Retorna conteo de solicitudes por estado filtrando por usuario, empresa, proveedor y fechas
+     */
+    public function dashboardSpMetricasVerificadas(Request $request): JsonResponse
+    {
+        $filters = $request->only([
+            'fecha_registro_pendiente_desde',
+            'fecha_registro_pendiente_hasta',
+        ]);
+
+        $usuarioId = $request->input('usuario_id');
+        // Alias para compatibilidad: empresa_id o empresa_construcc_id
+        $empresaId = $request->input('empresa_id', $request->input('empresa_construcc_id'));
+        $proveedorId = $request->input('proveedor_id');
+
+        // Base query solo con SP verificadas
+        $baseQuery = SolicitudPago::query()
+            ->where('verificada', true);
+
+        // Filtros obligatorios/condicionales
+        if ($usuarioId !== null && $usuarioId !== '') {
+            $baseQuery->where('usuario_id', $usuarioId); // coincidencia exacta
+        }
+
+        if ($empresaId !== null && $empresaId !== '') {
+            $baseQuery->where('empresa_construcc_id', $empresaId);
+        }
+
+        if ($proveedorId !== null && $proveedorId !== '') {
+            $baseQuery->where('proveedor_id', $proveedorId);
+        }
+
+        // Filtros de fechas (reutilizando el scope filter del modelo)
+        if (! empty($filters)) {
+            $baseQuery->filter($filters);
+        }
+
+        // Conteos por estado
+        $conteos = [
+            'total_sp' => (clone $baseQuery)->count(),
+            'sp_pendientes' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->count(),
+            'sp_autorizadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::AUTORIZADA->value)->count(),
+            'sp_rechazadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::RECHAZADA->value)->count(),
+            'sp_pagadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PAGADO->value)->count(),
+        ];
+
+        return $this->success($conteos, 'Métricas de solicitudes de pago verificadas obtenidas correctamente');
+    }
+
+    /**
+     * Métricas del dashboard de SP (no verificadas)
+     * Retorna conteo de solicitudes por estado filtrando por usuario, empresa, proveedor y fechas
+     * Solo considera SP no verificadas.
+     */
+    public function dashboardSpMetricasNoVerificadas(Request $request): JsonResponse
+    {
+        $filters = $request->only([
+            'fecha_registro_pendiente_desde',
+            'fecha_registro_pendiente_hasta',
+        ]);
+
+        $usuarioId = $request->input('usuario_id');
+        // Alias para compatibilidad: empresa_id o empresa_construcc_id
+        $empresaId = $request->input('empresa_id', $request->input('empresa_construcc_id'));
+        $proveedorId = $request->input('proveedor_id');
+
+        // Base query solo con SP no verificadas
+        $baseQuery = SolicitudPago::query()
+            ->where('verificada', false);
+
+        // Filtros obligatorios/condicionales
+        if ($usuarioId !== null && $usuarioId !== '') {
+            $baseQuery->where('usuario_id', $usuarioId); // coincidencia exacta
+        }
+
+        if ($empresaId !== null && $empresaId !== '') {
+            $baseQuery->where('empresa_construcc_id', $empresaId);
+        }
+
+        if ($proveedorId !== null && $proveedorId !== '') {
+            $baseQuery->where('proveedor_id', $proveedorId);
+        }
+
+        // Filtros de fechas (reutilizando el scope filter del modelo)
+        if (! empty($filters)) {
+            $baseQuery->filter($filters);
+        }
+
+        // Conteos por estado
+        $conteos = [
+            'total_sp' => (clone $baseQuery)->count(),
+            'sp_pendientes' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->count(),
+            'sp_autorizadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::AUTORIZADA->value)->count(),
+            'sp_rechazadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::RECHAZADA->value)->count(),
+            'sp_pagadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PAGADO->value)->count(),
+        ];
+
+        return $this->success($conteos, 'Métricas de solicitudes de pago no verificadas obtenidas correctamente');
+    }
 }

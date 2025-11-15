@@ -175,6 +175,12 @@ Route::prefix('construcc')
             Route::get('por-estado', [ConstruccSolicitudPagoController::class, 'listarPorEstado'])->name('por-estado');
             Route::get('estadisticas-rol', [ConstruccSolicitudPagoController::class, 'estadisticasPorRol'])->name('estadisticas-rol');
 
+            // Segmento de dashboard para métricas de SP verificadas / no verificadas
+            Route::prefix('dashboard-sp-metricas')->name('dashboard-sp-metricas.')->group(function () {
+                Route::get('verificadas', [ConstruccSolicitudPagoController::class, 'dashboardSpMetricasVerificadas'])->name('verificadas');
+                Route::get('no-verificadas', [ConstruccSolicitudPagoController::class, 'dashboardSpMetricasNoVerificadas'])->name('no-verificadas');
+            });
+
             // Endpoints auxiliares
             Route::get('empresas-constructoras/search', [ConstruccSolicitudPagoController::class, 'empresasConstructoras'])->name('empresas-search');
             // ✅ NUEVO: Listar proveedores asociados a una empresa constructora
