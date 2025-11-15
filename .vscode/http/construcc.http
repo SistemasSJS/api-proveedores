@@ -151,6 +151,7 @@ Accept: {{acceptType}}
 ### VARIABLES PARA PRUEBAS DE PROVEEDORES
 @empresaId = 14
 @proveedorId = 1
+@usuarioId = 1234
 
 ### 15. Listar proveedores asociados a una empresa constructora
 GET {{baseUrl}}/construcc/solicitudes-pago/empresa/{{empresaId}}/proveedores
@@ -159,6 +160,16 @@ Accept: {{acceptType}}
 
 ### 16. 🆕 Listar proveedores NO asociados a una empresa constructora
 GET {{baseUrl}}/construcc/solicitudes-pago/empresa/{{empresaId}}/proveedores/no-asociados
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 16.1 🆕 Métricas dashboard SP - VERIFICADAS
+GET {{baseUrl}}/construcc/solicitudes-pago/dashboard-sp-metricas/verificadas?usuario_id={{usuarioId}}&empresa_id={{empresaId}}&proveedor_id={{proveedorId}}&fecha_registro_pendiente_desde=2024-01-01&fecha_registro_pendiente_hasta=2024-12-31
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 16.2 🆕 Métricas dashboard SP - NO VERIFICADAS
+GET {{baseUrl}}/construcc/solicitudes-pago/dashboard-sp-metricas/no-verificadas?usuario_id={{usuarioId}}&empresa_id={{empresaId}}&proveedor_id={{proveedorId}}&fecha_registro_pendiente_desde=2024-01-01&fecha_registro_pendiente_hasta=2024-12-31
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 

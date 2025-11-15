@@ -24,13 +24,13 @@ X-API-KEY: {{apiKey}}
 
 {
   "empresa_id": 14,
-  "proveedor_id": 9,
+  "proveedor_id": 10,
   "orden_compra_id": "OC-TEST-002",
   "estatus": "pendiente"
 }
 
 ###
-POST {{baseUrl}}/proveedores/3/solicitudes-pago/23/autorizar
+POST {{baseUrl}}/proveedores/9/solicitudes-pago/2/autorizar
 Authorization: Bearer 30|o5NXlg8eFmBgwRLkdUEV4acd3KRvC0Sk7Y7FYnxD6d2dd3f0
 Accept: application/json1
 
@@ -56,7 +56,7 @@ X-API-KEY: /%-!?=T35sT._22<1|:
 POST {{baseUrl}}/construcc/solicitudes-pago/2/marcar-verificada
 Content-Type: application/json
 Accept: application/json
-X-API-KEY: {{apiKey}}
+X-API-KEY: /%-!?=T35sT._22<1|:
 
 {
   "usuario_id": 1,
@@ -65,7 +65,7 @@ X-API-KEY: {{apiKey}}
 }
 
 ### ✅ Rechazar solicitud de pago sin verificar (durante verificación)
-POST {{baseUrl}}/construcc/solicitudes-pago/1/marcar-rechazada
+POST {{baseUrl}}/construcc/solicitudes-pago/2/marcar-rechazada
 Content-Type: application/json
 Accept: application/json
 X-API-KEY: /%-!?=T35sT._22<1|:
