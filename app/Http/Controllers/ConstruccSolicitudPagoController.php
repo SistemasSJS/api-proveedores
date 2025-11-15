@@ -468,13 +468,13 @@ class ConstruccSolicitudPagoController extends Controller
         }
 
         // 4. Verificar que no esté completamente pagada
-        if ($solicitudPago->estado_solicitud === EstadoSP::PAGADO->value && $solicitudPago->pago_completo === true) {
-            return $this->error(
-                'Esta solicitud ya ha sido pagada completamente.',
-                null,
-                400
-            );
-        }
+        // if ($solicitudPago->estado_solicitud === EstadoSP::PAGADO->value && $solicitudPago->pago_completo === true) {
+        //     return $this->error(
+        //         'Esta solicitud ya ha sido pagada completamente.',
+        //         null,
+        //         400
+        //     );
+        // }
 
         // Inicializar saldos si es el primer abono
         $solicitudPago->inicializarSaldos();
