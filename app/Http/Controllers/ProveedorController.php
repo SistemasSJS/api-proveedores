@@ -59,22 +59,22 @@ class ProveedorController extends Controller
             throw new ResourceNotFoundException('Proveedor no encontrado.');
         }
 
-        // Eliminar logo anterior si existe físicamente
-        if ($proveedor->logo && Storage::disk('public')->exists($proveedor->logo)) {
-            Storage::disk('public')->delete($proveedor->logo);
-        }
-
         try {
+            // Eliminar logo anterior si existe físicamente
+            if ($proveedor->logo && Storage::disk('public')->exists($proveedor->logo)) {
+                Storage::disk('public')->delete($proveedor->logo);
+            }
+
             // Subir nuevo logo
             $file = $request->file('logo');
             $filename = 'logo_' . $proveedor->id . '_' . time() . '.' . $file->getClientOriginalExtension();
             $path = $file->storeAs('uploads', $filename, 'public');
 
             // Generar URL completa del logo
-            $url = asset("storage/$path");
+            // $url = asset("storage/$path");
 
             // Actualizar proveedor con la URL completa
-            $proveedor->update(['logo' => $url]);
+            $proveedor->update(['logo' => $path]);
         } catch (\Throwable $e) {
             throw new \Exception('Error al subir el logo: ' . $e->getMessage());
         }

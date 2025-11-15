@@ -27,7 +27,7 @@ class SolicitudPago extends BaseModel
         'estado_solicitud',
         'ruta_archivo_comprobante_pago',
         'proveedor_id',
-'empresa_construcc_id',
+        'empresa_construcc_id',
         // Datos del usuario que registra la SP en Construcc
         'usuario_id',
         'usuario_nombre',
@@ -74,7 +74,7 @@ class SolicitudPago extends BaseModel
         'descripcion_concepto' => 'DescripcionConcepto',
         'estado_solicitud' => 'EstadoSolicitud',
         'proveedor_id' => 'ProveedorId',
-'empresa_construcc_id' => 'EmpresaConstruccId',
+        'empresa_construcc_id' => 'EmpresaConstruccId',
         'usuario_id' => 'UsuarioId',
         'usuario_nombre' => 'UsuarioNombre',
         'cotizacion_id' => 'CotizacionId',
@@ -297,7 +297,8 @@ class SolicitudPago extends BaseModel
 
     public function filterByUsuarioId($query, $value)
     {
-        return $query->where('usuario_id', $value);
+        return $query->whereIn('usuario_id', explode(',', $value));
+        // return $query->where('usuario_id', $value);
     }
 
     public function filterByUsuarioNombre($query, $value)
@@ -486,7 +487,7 @@ class SolicitudPago extends BaseModel
     /** ----------------
      * Utilidades s
      * ----------------- */
-    
+
     /**
      * Generar siguiente número de folio para una nueva solicitud de pago para un proveedor
      * nopmeclatura:

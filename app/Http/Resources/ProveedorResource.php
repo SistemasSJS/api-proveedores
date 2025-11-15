@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class ProveedorResource extends JsonResource
 {
@@ -19,7 +20,8 @@ class ProveedorResource extends JsonResource
             'telefono' => $this->telefono,
             'email' => $this->email,
             'direccion' => $this->direccion_empresa,
-            'logo' => $this->logo,
+            // 'logo' => $this->logo,
+            'logo' => $this->logo ? Storage::disk('public')->url($this->logo) : null,
             // ? (preg_match('/^https?:\/\//', $this->logo)
             //     ? $this->logo
             //     : asset('storage/'.$this->logo))
