@@ -104,7 +104,6 @@ class InterApiService
 
   /**
    * Notificar a API Construcciones sobre validación de SP
-   * Validar a los usuarios en Construcciones con rol de director
    * 
    * @param int $spId ID de la solicitud de pago
    * @param string $spFolio Folio de la solicitud de pago
@@ -119,22 +118,21 @@ class InterApiService
         'sp_id' => $spId,
         'sp_folio' => $spFolio,
         'company' => $company,
-        'validator_user_id' => $validatorUserId,
+        'validator_user_id' => $validatorUserId
       ]);
 
       $payload = [
         'sp_id' => $spId,
         'sp_folio' => $spFolio,
         'company' => $company,
-        'validator_user_id' => $validatorUserId,
+        'validator_user_id' => $validatorUserId
       ];
 
       Log::channel('inter_api')->info('Payload preparado para notificación de validador', [
         'payload' => $payload
       ]);
 
-      $url = "{$this->apiContruccUrl}/api/notify-sp";
-      // $url = "{$this->apiContruccUrl}/api/notify-sp-validada";
+      $url = "{$this->apiContruccUrl}/api/notify-sp-validar";
       Log::channel('inter_api')->info('URL destino para notificación de validador', [
         'url' => $url
       ]);
