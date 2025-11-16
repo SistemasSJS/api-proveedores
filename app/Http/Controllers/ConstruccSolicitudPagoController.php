@@ -194,7 +194,6 @@ class ConstruccSolicitudPagoController extends Controller
                 $solicitudPago->numero_folio_solicitud,
                 $request->empresa_id,
                 $request->usuario_id,
-                // $solicitudPago->verificada ? 1 : 0
             );
 
             // Registrar el resultado de la notificación

@@ -104,6 +104,7 @@ class InterApiService
 
   /**
    * Notificar a API Construcciones sobre validación de SP
+   * Validar a los usuarios en Construcciones con rol de director
    * 
    * @param int $spId ID de la solicitud de pago
    * @param string $spFolio Folio de la solicitud de pago
@@ -111,7 +112,7 @@ class InterApiService
    * @param int $validatorUserId ID del usuario validador
    * @return array
    */
-  public function spNotifyByValidator($spId, $spFolio, $company, $validatorUserId, $spVerificada)
+  public function spNotifyByValidator($spId, $spFolio, $company, $validatorUserId)
   {
     try {
       Log::channel('inter_api')->info('Iniciando notificación de validación por validador', [
@@ -119,7 +120,6 @@ class InterApiService
         'sp_folio' => $spFolio,
         'company' => $company,
         'validator_user_id' => $validatorUserId,
-        'verificada' => $spVerificada
       ]);
 
       $payload = [
@@ -127,7 +127,6 @@ class InterApiService
         'sp_folio' => $spFolio,
         'company' => $company,
         'validator_user_id' => $validatorUserId,
-        'verificada' => $spVerificada
       ];
 
       Log::channel('inter_api')->info('Payload preparado para notificación de validador', [
