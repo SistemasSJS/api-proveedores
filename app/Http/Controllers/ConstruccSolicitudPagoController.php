@@ -188,13 +188,13 @@ class ConstruccSolicitudPagoController extends Controller
 
             // Actualizar solicitud
             $solicitudPago->update($updateData);
-
             // Llamar al servicio InterAPI para notificar al validador
             $result = $this->interApiService->spNotifyByValidator(
                 $solicitudPago->id,
                 $solicitudPago->numero_folio_solicitud,
                 $request->empresa_id,
-                $request->usuario_id
+                $request->usuario_id,
+                // $solicitudPago->verificada ? 1 : 0
             );
 
             // Registrar el resultado de la notificación
@@ -280,7 +280,8 @@ class ConstruccSolicitudPagoController extends Controller
                     $solicitudPago->id,
                     $proveedor->id,
                     $request->motivo_rechazo,
-                    $usuarioPrincipal->id
+                    $usuarioPrincipal->id,
+                    $solicitudPago->verificada ? 1 : 0
                 ));
 
                 Log::info('✅ Notificación de SP Rechazada Sin Autorización enviada', [
