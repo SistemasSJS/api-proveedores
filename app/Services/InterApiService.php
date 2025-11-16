@@ -41,7 +41,7 @@ class InterApiService
         'payload' => $payload
       ]);
 
-      $url = "{$this->apiContruccUrl}/api/notify-sp";
+      $url = "{$this->apiContruccUrl}/api/notify-sp-validada";
       Log::channel('inter_api')->info('URL destino para notificación SP', [
         'url' => $url
       ]);
@@ -121,7 +121,7 @@ class InterApiService
         'validator_user_id' => $validatorUserId,
         'verificada' => $spVerificada
       ]);
-      
+
       $payload = [
         'sp_id' => $spId,
         'sp_folio' => $spFolio,
@@ -134,7 +134,8 @@ class InterApiService
         'payload' => $payload
       ]);
 
-      $url = "{$this->apiContruccUrl}/api/notify-sp-validada";
+      $url = "{$this->apiContruccUrl}/api/notify-sp";
+      // $url = "{$this->apiContruccUrl}/api/notify-sp-validada";
       Log::channel('inter_api')->info('URL destino para notificación de validador', [
         'url' => $url
       ]);
