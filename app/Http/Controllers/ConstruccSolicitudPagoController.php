@@ -141,8 +141,9 @@ class ConstruccSolicitudPagoController extends Controller
             'usuario_id' => ['required', 'integer'],
             'nivel_id' => ['required', 'integer'],
             'empresa_id' => ['required'],
-            'obra_id' => ['nullable', 'integer'], //-----------> OPCIONAL
-            'requisicion_id' => ['nullable', 'integer'],//-----> OPCIONAL
+            'obra_id' => ['nullable', 'integer'],
+            'tipo' => ['nullable', 'string'],
+            'tipo_id' => ['nullable', 'integer'],
         ]);
 
         // Validar que la SP no esté ya verificada
@@ -155,6 +156,17 @@ class ConstruccSolicitudPagoController extends Controller
         try {
             // Datos a actualizar
             $updateData = ['verificada' => true];
+
+            // Agregar campos opcionales si están presentes
+            if ($request->has('tipo')) {
+                $updateData['tipo'] = $request->tipo;
+            }
+            if ($request->has('tipo_id')) {
+                $updateData['tipo_id'] = $request->tipo_id;
+            }
+            if ($request->has('obra_id')) {
+                $updateData['obra_id'] = $request->obra_id;
+            }
 
             // Mapeo de nivel_id a rol
             $nivelToRol = [

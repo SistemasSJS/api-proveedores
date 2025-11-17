@@ -45,6 +45,9 @@ class SolicitudPago extends BaseModel
         'saldo_pendiente',
         'pago_completo',
         'verificada',
+        'tipo',
+        'tipo_id',
+        'obra_id',
         'notas_abono',
         'fecha_rechazo',
         'fecha_pago',
@@ -115,6 +118,11 @@ class SolicitudPago extends BaseModel
 
         // Filtro para verificada
         'verificada' => 'Verificada',
+
+        // Filtros para tipo, tipo_id y obra_id
+        'tipo' => 'Tipo',
+        'tipo_id' => 'TipoId',
+        'obra_id' => 'ObraId',
 
         //
     ];
@@ -250,6 +258,21 @@ class SolicitudPago extends BaseModel
     public function filterByVerificada($query, $value)
     {
         return $query->where('verificada', (bool) $value);
+    }
+
+    public function filterByTipo($query, $value)
+    {
+        return $query->where('tipo', $value);
+    }
+
+    public function filterByTipoId($query, $value)
+    {
+        return $query->where('tipo_id', $value);
+    }
+
+    public function filterByObraId($query, $value)
+    {
+        return $query->where('obra_id', $value);
     }
 
     /** ----------------
