@@ -141,6 +141,8 @@ class ConstruccSolicitudPagoController extends Controller
             'usuario_id' => ['required', 'integer'],
             'nivel_id' => ['required', 'integer'],
             'empresa_id' => ['required'],
+            'obra_id' => ['nullable', 'integer'], //-----------> OPCIONAL
+            'requisicion_id' => ['nullable', 'integer'],//-----> OPCIONAL
         ]);
 
         // Validar que la SP no esté ya verificada
