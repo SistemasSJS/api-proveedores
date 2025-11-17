@@ -31,6 +31,7 @@ class CrearSolicitudPagoRequest extends FormRequest
             
             'cotizacion_id' => 'nullable|integer',
             'monto_total' => 'required|numeric|min:0',
+            'observaciones' => 'nullable|string|max:1000',
 
             // Validaciones para cuentas bancarias
             'cuentas_bancarias' => 'nullable|array',

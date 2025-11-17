@@ -48,6 +48,7 @@ class SolicitudPago extends BaseModel
         'tipo',
         'tipo_id',
         'obra_id',
+        'observaciones',
         'notas_abono',
         'fecha_rechazo',
         'fecha_pago',

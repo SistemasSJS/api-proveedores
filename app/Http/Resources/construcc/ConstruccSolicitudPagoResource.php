@@ -14,6 +14,7 @@ class ConstruccSolicitudPagoResource extends JsonResource
             'usuario' => $this->usuario_id,
             'numero_folio_solicitud' => $this->numero_folio_solicitud,
             'descripcion_concepto' => $this->descripcion_concepto,
+            'observaciones' => $this->observaciones,
             'monto_total' => $this->monto_total,
             'proveedor' => new ConstruccProveedorResource($this->whenLoaded('proveedor')),
             'cuentas_bancarias' => ConstruccCuentaBancariaResource::collection(
@@ -32,6 +33,7 @@ class ConstruccSolicitudPagoResource extends JsonResource
             'tipo' => $this->tipo,
             'tipo_id' => $this->tipo_id,
             'obra_id' => $this->obra_id,
+            'observaciones' => $this->observaciones,
 
             // Archivos con URLs correctas
             'url_comprobante_pago' => $this->ruta_archivo_comprobante_pago

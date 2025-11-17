@@ -18,6 +18,7 @@ class SolicitudPagoResource extends JsonResource
             'id' => $this->id,
             'numero_folio_solicitud' => $this->numero_folio_solicitud,
             'descripcion_concepto' => $this->descripcion_concepto,
+            'observaciones' => $this->observaciones,
             'estado_solicitud' => $this->estado_solicitud,
             'cuentas_bancarias' => SolicitudPagoCuentaBancariaResource::collection($this->whenLoaded('cuentasBancarias')),
 

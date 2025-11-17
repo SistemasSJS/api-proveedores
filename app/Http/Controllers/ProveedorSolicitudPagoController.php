@@ -102,6 +102,7 @@ class ProveedorSolicitudPagoController extends Controller
             'proveedor_id' => $proveedor->id,
             'numero_folio_solicitud' => $numeroFolio,
             'descripcion_concepto' => $validated['descripcion_concepto'] ?? '',
+            'observaciones' => $validated['observaciones'] ?? null,
             'ruta_archivo_factura_pdf' => $rutaPdf,
             'ruta_archivo_factura_xml' => $rutaXml,
             'ruta_archivo_cotizacion' => $rutaCotizacion,
@@ -162,6 +163,7 @@ class ProveedorSolicitudPagoController extends Controller
 
         $solicitudPago->update($request->only([
             'descripcion_concepto',
+            'observaciones',
             'usuario_id',
             'usuario_nombre',
             'monto_total',
