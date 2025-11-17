@@ -28,6 +28,11 @@ class ConstruccSolicitudPagoResource extends JsonResource
             // NUEVO CAMPO
             'verificada' => $this->verificada ? 1 : 0,
 
+            // Campos de tipo y origen
+            'tipo' => $this->tipo,
+            'tipo_id' => $this->tipo_id,
+            'obra_id' => $this->obra_id,
+
             // Archivos con URLs correctas
             'url_comprobante_pago' => $this->ruta_archivo_comprobante_pago
                 ? route('construcc.solicitudes-pago.descargar-comprobante', $this->id)
