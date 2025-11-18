@@ -316,12 +316,34 @@ class SolicitudPago extends BaseModel
 
     public function filterByEmpresaConstruccId($query, $value)
     {
-        return $query->whereIn('empresa_construcc_id', explode(',', $value));
+        // Evitar aplicar el filtro cuando el valor viene vacío (",", null, espacios, etc.)
+        $ids = array_filter(
+            is_array($value) ? $value : explode(',', (string) $value),
+            fn ($id) => trim((string) $id) !== ''
+        );
+
+        if (empty($ids)) {
+            // Si no hay IDs válidos, no filtramos para evitar consultas "colgadas"
+            return $query;
+        }
+
+        return $query->whereIn('empresa_construcc_id', $ids);
     }
 
     public function filterByUsuarioId($query, $value)
     {
-        return $query->whereIn('usuario_id', explode(',', $value));
+        // Evitar aplicar el filtro cuando el valor viene vacío (",", null, espacios, etc.)
+        $ids = array_filter(
+            is_array($value) ? $value : explode(',', (string) $value),
+            fn ($id) => trim((string) $id) !== ''
+        );
+
+        if (empty($ids)) {
+            // Si no hay IDs válidos, no filtramos para evitar consultas "colgadas"
+            return $query;
+        }
+
+        return $query->whereIn('usuario_id', $ids);
         // return $query->where('usuario_id', $value);
     }
 

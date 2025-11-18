@@ -317,73 +317,81 @@ class AuthController extends Controller
      */
     public function register_proveedor_basico_sp(ProveedorRegistroBasicoRequest $request)
     {
-        $validatedData = $request->validated();
+        try {
+            $validatedData = $request->validated();
 
-        // Crear proveedor
-        $proveedor = Proveedor::create([
-            'nombre_comercial' => $validatedData['nombre_comercial'],
-            'razon_social' => $validatedData['nombre_comercial'], // Usar el mismo nombre comercial por defecto
-            'telefono' => $validatedData['telefono'],
-            'is_proveedor_sp' => true,
-            'is_proveedor_catalogo' => false,
-            'cambiar_pass_default' => false,
-            'perfil_empresa_completo' => false,
-        ]);
-
-        // Obtener rol de gerente
-        $idRoleProveedor = Role::where('nombre', UserRoleEnumerate::GERENTE->value)->first()->id;
-
-        // Crear usuario usando el teléfono como identificador
-        $user = User::create([
-            'name' => $validatedData['nombre_comercial'],
-            'email' => $validatedData['telefono'], // Usar teléfono como email/usuario
-            'password' => Hash::make($validatedData['password']),
-            'role_id' => $idRoleProveedor,
-        ]);
-
-        // Relacionar usuario con proveedor
-        $user->proveedores()->attach($proveedor->id, [
-            'tipo_relacion' => 'PRINCIPAL',
-            'activo' => true,
-            'fecha_asignacion' => now(),
-            'observaciones' => 'Usuario principal del proveedor - Registro por enlace',
-        ]);
-
-        // Crear sucursal matriz por defecto
-        $proveedor->sucursales()->create([
-            'nombre' => 'Matriz',
-            'direccion' => 'Dirección pendiente',
-            'telefono' => $validatedData['telefono'],
-            'email' => $validatedData['telefono'] . '@temp.com',
-            'encargado' => $validatedData['nombre_comercial'],
-            'activa' => true,
-            'coordenadas_lat' => null,
-            'coordenadas_lng' => null,
-            'estatus' => 'activo',
-        ]);
-
-        // Registrar relación con empresa Construcc si se proporcionaron los datos
-        if (isset($validatedData['empresa_construcc_id'])) {
-            $proveedor->empresasConstrucc()->attach($validatedData['empresa_construcc_id'], [
-                'usuario_construcc_id' => $validatedData['usuario_construcc_id'] ?? null,
-                'usuario_construcc_nombre' => $validatedData['usuario_construcc_nombre'] ?? null,
+            // Crear proveedor
+            $proveedor = Proveedor::create([
+                'nombre_comercial' => $validatedData['nombre_comercial'],
+                'razon_social' => $validatedData['nombre_comercial'], // Usar el mismo nombre comercial por defecto
+                'telefono' => $validatedData['telefono'],
+                'is_proveedor_sp' => true,
+                'is_proveedor_catalogo' => false,
+                'cambiar_pass_default' => false,
+                'perfil_empresa_completo' => false,
             ]);
+
+            // Obtener rol de gerente
+            $idRoleProveedor = Role::where('nombre', UserRoleEnumerate::GERENTE->value)->first()->id;
+
+            // Crear usuario usando el teléfono como identificador
+            $user = User::create([
+                'name' => $validatedData['nombre_comercial'],
+                'email' => $validatedData['telefono'], // Usar teléfono como email/usuario
+                'password' => Hash::make($validatedData['password']),
+                'role_id' => $idRoleProveedor,
+            ]);
+
+            // Relacionar usuario con proveedor
+            $user->proveedores()->attach($proveedor->id, [
+                'tipo_relacion' => 'PRINCIPAL',
+                'activo' => true,
+                'fecha_asignacion' => now(),
+                'observaciones' => 'Usuario principal del proveedor - Registro por enlace',
+            ]);
+
+            // Crear sucursal matriz por defecto
+            $proveedor->sucursales()->create([
+                'nombre' => 'Matriz',
+                'direccion' => 'Dirección pendiente',
+                'telefono' => $validatedData['telefono'],
+                'email' => $validatedData['telefono'] . '@temp.com',
+                'encargado' => $validatedData['nombre_comercial'],
+                'activa' => true,
+                'coordenadas_lat' => null,
+                'coordenadas_lng' => null,
+                'estatus' => 'activo',
+            ]);
+
+            // Registrar relación con empresa Construcc si se proporcionaron los datos
+            if (isset($validatedData['empresa_construcc_id'])) {
+                $proveedor->empresasConstrucc()->attach($validatedData['empresa_construcc_id'], [
+                    'usuario_construcc_id' => $validatedData['usuario_construcc_id'] ?? null,
+                    'usuario_construcc_nombre' => $validatedData['usuario_construcc_nombre'] ?? null,
+                ]);
+            }
+
+            // Crear token de autenticación
+            $token = $user->createToken('auth_token')->plainTextToken;
+            $user->load(User::eagerLodable());
+
+            // Retornar información para el modal (sin mostrar la contraseña)
+            return $this->success([
+                'user' => new UserAuthenticateResource($user),
+                'proveedor' => new ProveedorResource($proveedor->load(Proveedor::eagerLodable())),
+                'token' => $token,
+                'credenciales' => [
+                    'usuario' => $validatedData['telefono'],
+                    'mensaje' => 'Guarda tu usuario para iniciar sesión',
+                ],
+            ], 'Registro completado exitosamente', 201);
+        } catch (ValidationException $e) {
+            // Error en la validación de los datos de entrada
+            return $this->error('Los datos proporcionados no son válidos.', $e->errors(), 422);
+        } catch (\Exception $e) {
+            // Cualquier otro error inesperado
+            return $this->error('Ocurrió un error al intentar completar el registro. Por favor, intenta nuevamente.', [], 500);
         }
-
-        // Crear token de autenticación
-        $token = $user->createToken('auth_token')->plainTextToken;
-        $user->load(User::eagerLodable());
-
-        // Retornar información para el modal (sin mostrar la contraseña)
-        return $this->success([
-            'user' => new UserAuthenticateResource($user),
-            'proveedor' => new ProveedorResource($proveedor->load(Proveedor::eagerLodable())),
-            'token' => $token,
-            'credenciales' => [
-                'usuario' => $validatedData['telefono'],
-                'mensaje' => 'Guarda tu usuario para iniciar sesión',
-            ],
-        ], 'Registro completado exitosamente', 201);
     }
 
     /**
