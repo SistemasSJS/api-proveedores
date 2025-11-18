@@ -2,99 +2,64 @@
 
 namespace App\Models;
 
-use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Model;
 
-class Categoria extends BaseModel
+class Catalogo extends BaseModel
 {
-    use Filterable, HasFactory;
+    use HasFactory;
 
     protected $fillable = [
         'nombre',
         'descripcion',
-        'parent_id',
-        'nivel',
         'proveedor_id',
-        'activo',
-        'estatus',
+        'photo_path',
+
     ];
 
     protected static $filters = [
-        'nombre' => 'Nombre',
-        'descripcion' => 'Descripcion',
-        'estatus' => 'Estatus',
-        'proveedor_id' => 'ProveedorId',
+        'nombre' => 'nombre',
+        'descripcion' => 'descripcion',
+        'estatus' => 'estatus',
     ];
 
-    /** ----------------
-     * Relaciones
-     * ----------------- */
 
-    // Categoría padre
-    public function parent(): BelongsTo
+    /**
+     * Define las relaciones permitidas para cargar con with() (eager loading).
+     * Esto evita el problema N+1 y mejora el rendimiento de las consultas.
+     *
+     * @return string[]
+     */
+    public static function eagerLodable(): array
     {
-        return $this->belongsTo(Categoria::class, 'parent_id');
+        return [
+            'proveedor',
+            'productos'
+        ];
     }
 
-    // Categorías hijas
-    public function children(): HasMany
-    {
-        return $this->hasMany(Categoria::class, 'parent_id');
-    }
-
-    // Productos principales (categoría padre)
-    public function productos(): HasMany
-    {
-        return $this->hasMany(Producto::class, 'categoria_id');
-    }
-
-    // Productos de subcategoría
-    public function productosSubcategoria(): HasMany
-    {
-        return $this->hasMany(Producto::class, 'subcategoria_id');
-    }
-
-    // Proveedor de la categoría
-    public function proveedor(): BelongsTo
-    {
-        return $this->belongsTo(Proveedor::class);
-    }
-
-    /** ----------------
-     * Scopes de filtro
-     * ----------------- */
     public function scopeFilterByNombre($query, $value)
     {
-        return $query->when($value, fn ($q) => $q->where('nombre', 'like', "%$value%"));
-    }
-
-    public function scopeFilterByDescripcion($query, $value)
-    {
-        return $query->when($value, fn ($q) => $q->where('descripcion', 'like', "%$value%"));
+        return $query->where('nombre', 'like', "%$value%");
     }
 
     public function scopeFilterByEstatus($query, $value)
     {
-        return $query->when($value, fn ($q) => $q->where('estatus', $value));
+        return $query->where('estatus', "%$value%");
     }
 
-    public function scopeDelProveedor($query, $proveedorId)
+    public function scopeFilterByDescripcion($query, $value)
     {
-        return $query->when($proveedorId, fn ($q) => $q->where('proveedor_id', $proveedorId));
+        return $query->where('descripcion', "%$value%");
     }
 
-    /** ----------------
-     * Helpers
-     * ----------------- */
-    public function isPrincipal(): bool
+    public function proveedor()
     {
-        return $this->nivel === 0;
+        return $this->belongsTo(Proveedor::class);
     }
 
-    public function isActive(): bool
+    public function productos()
     {
-        return $this->activo;
+        return $this->hasMany(Producto::class);
     }
 }

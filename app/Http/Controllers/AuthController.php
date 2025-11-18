@@ -27,6 +27,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -37,7 +38,7 @@ class AuthController extends Controller
         $validatedData = $request->validated();
         $token = Str::random(60);
         Cache::put("registro_user_construcc{$token}", $validatedData, 60 * 24 * 365);
-        $url = config('services.frontend.url')."/gen-pass?is_user_construcc=true&token={$token}";
+        $url = config('services.frontend.url') . "/gen-pass?is_user_construcc=true&token={$token}";
         Mail::to($validatedData['email'])->send(new CompletaRegistroUsuarioMail($url));
 
         return $this->success(
@@ -82,7 +83,7 @@ class AuthController extends Controller
 
         Cache::put("registro_proveedor_{$token}", $proveedor->id, 60 * 60 * 24 * 7 * 360); // 1 año
 
-        $url = config('services.frontend.url')."/gen-pass?token={$token}";
+        $url = config('services.frontend.url') . "/gen-pass?token={$token}";
         Mail::to($proveedor->email)->send(new CompletaRegistroProveedorMail($url));
 
         return $this->success([
@@ -152,18 +153,18 @@ class AuthController extends Controller
     {
         $file = $request->file('foto_perfil');
 
-        $nombre = uniqid().'.'.$file->getClientOriginalExtension();
+        $nombre = uniqid() . '.' . $file->getClientOriginalExtension();
         $path = $file->storeAs('uploads', $nombre, 'public');
-        $url = asset("storage/$path");
+
         $user = $request->user();
-        $user->foto_perfil_url = $url;
+        $user->foto_perfil_url = $path; // guardamos la ruta
         $user->save();
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
         return $this->success([
-            'user' => new UserAuthenticateResource($user->load(User::eagerLodable())),
-            'token' => $token,
+            'user' => new UserAuthenticateResource(
+                $user->load(User::eagerLodable())
+            ),
+            'url' => Storage::disk('public')->url($path),
         ], 'Registro completado', 201);
     }
 
@@ -177,14 +178,14 @@ class AuthController extends Controller
 
             // Buscar usuario por email o teléfono
             $user = User::where('email', $request->email)->first();
-            
+
             // Si no se encuentra por email, buscar por teléfono, razón social o nombre comercial del proveedor
             if (!$user) {
                 $proveedor = Proveedor::where('razon_social', $request->email)
                     ->orWhere('nombre_comercial', $request->email)
                     ->orWhere('telefono', $request->email)
                     ->first();
-                
+
                 if ($proveedor) {
                     $user = $proveedor->users()->first();
                 }
@@ -317,7 +318,7 @@ class AuthController extends Controller
     public function register_proveedor_basico_sp(ProveedorRegistroBasicoRequest $request)
     {
         $validatedData = $request->validated();
-        
+
         // Crear proveedor
         $proveedor = Proveedor::create([
             'nombre_comercial' => $validatedData['nombre_comercial'],
@@ -510,7 +511,7 @@ class AuthController extends Controller
     {
         $email = $request->email;
         $user = User::where('email', $email)->first();
-        
+
         if (!$user) {
             // Retornar éxito aunque no exista para evitar enumeration attacks
             return $this->success(
@@ -522,7 +523,7 @@ class AuthController extends Controller
 
         // Generar token único
         $token = Str::random(60);
-        
+
         // Guardar en cache con expiración de 1 hora
         Cache::put("password_reset_{$token}", [
             'user_id' => $user->id,
@@ -532,7 +533,7 @@ class AuthController extends Controller
 
         // Generar URL para reset
         $url = config('services.frontend.url') . "/auth/reset-password?token={$token}";
-        
+
         // Enviar email
         Mail::to($user->email)->send(new PasswordResetMail($url, $user->name));
 
@@ -552,7 +553,7 @@ class AuthController extends Controller
     public function resetPassword(PasswordResetCompleteRequest $request)
     {
         $data = Cache::get("password_reset_{$request->token}");
-        
+
         if (!$data) {
             return $this->error(
                 'El enlace de recuperación ha expirado o es inválido. Por favor, solicita uno nuevo.',
@@ -574,7 +575,7 @@ class AuthController extends Controller
 
         // Buscar usuario
         $user = User::find($data['user_id']);
-        
+
         if (!$user) {
             return $this->error(
                 'Usuario no encontrado.',
@@ -593,7 +594,7 @@ class AuthController extends Controller
         // Crear nuevo token de autenticación
         $token = $user->createToken('API Token')->plainTextToken;
         $user->load(User::eagerLodable());
-        
+
         // Obtener proveedor si existe
         $proveedor = $user->proveedorPrincipal();
 
