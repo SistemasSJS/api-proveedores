@@ -14,6 +14,7 @@ use App\Http\Requests\Proveedor\ProveedorRegisterCompleteRequest;
 use App\Http\Requests\Proveedor\ProveedorRegisterRequest;
 use App\Http\Requests\Proveedor\ProveedorRegistroBasicoCompleteRequest;
 use App\Http\Requests\Proveedor\ProveedorRegistroBasicoRequest;
+use App\Http\Requests\Proveedor\ProveedorAsociarEmpresaRequest;
 use App\Http\Resources\ProveedorResource;
 use App\Http\Resources\UserAuthenticateResource;
 use App\Mail\CompletaRegistroProveedorMail;
@@ -391,6 +392,81 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             // Cualquier otro error inesperado
             return $this->error('Ocurrió un error al intentar completar el registro. Por favor, intenta nuevamente.', [], 500);
+        }
+    }
+
+    /**
+     * Asociar proveedor existente a una empresa constructora
+     * Se usa cuando el teléfono ya está registrado y se quiere vincular a una nueva empresa
+     *
+     * @param ProveedorAsociarEmpresaRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function asociar_proveedor_existente(ProveedorAsociarEmpresaRequest $request)
+    {
+        try {
+            $validatedData = $request->validated();
+
+            // Buscar el proveedor por teléfono
+            $proveedor = Proveedor::where('telefono', $validatedData['telefono'])->first();
+
+            if (!$proveedor) {
+                return $this->error('No se encontró un proveedor con este teléfono.', [], 404);
+            }
+
+            // Verificar si ya existe la asociación con ESTE usuario específico
+            $existeAsociacion = \DB::table('empresa_construcc_proveedor')
+                ->where('empresa_construcc_id', $validatedData['empresa_construcc_id'])
+                ->where('proveedor_id', $proveedor->id)
+                ->where('usuario_construcc_id', $validatedData['usuario_construcc_id'])
+                ->exists();
+
+            if ($existeAsociacion) {
+                return $this->error('Este proveedor ya está asociado a esta empresa con este usuario.', [], 400);
+            }
+
+            // Crear la asociación
+            $proveedor->empresasConstrucc()->attach($validatedData['empresa_construcc_id'], [
+                'usuario_construcc_id' => $validatedData['usuario_construcc_id'],
+                'usuario_construcc_nombre' => $validatedData['usuario_construcc_nombre'],
+            ]);
+
+            // Buscar la empresa para enviar notificación
+            $empresa = \App\Models\EmpresaConstrucc::find($validatedData['empresa_construcc_id']);
+
+            // Enviar notificación al proveedor
+            if ($empresa) {
+                try {
+                    $proveedor->notify(new \App\Notifications\SolicitudPago\ProveedorAsociadoAEmpresa(
+                        $proveedor->id,
+                        $proveedor->nombre_comercial ?? $proveedor->razon_social,
+                        $empresa->id,
+                        $empresa->nombre,
+                        $empresa->rfc ?? '',
+                        $validatedData['usuario_construcc_id'],
+                        $validatedData['usuario_construcc_nombre']
+                    ));
+                } catch (\Exception $e) {
+                    \Log::error('Error al enviar notificación de asociación proveedor-empresa', [
+                        'proveedor_id' => $proveedor->id,
+                        'empresa_id' => $validatedData['empresa_construcc_id'],
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            return $this->success([
+                'proveedor' => new ProveedorResource($proveedor->load(Proveedor::eagerLodable())),
+                'asociado' => true,
+                'empresa_id' => $validatedData['empresa_construcc_id'],
+                'empresa_nombre' => $empresa ? $empresa->nombre : null,
+            ], 'Proveedor asociado exitosamente a la empresa.', 200);
+        } catch (\Exception $e) {
+            \Log::error('Error al asociar proveedor existente', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return $this->error('Error al asociar el proveedor. Intenta nuevamente.', [], 500);
         }
     }
 
