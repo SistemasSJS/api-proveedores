@@ -28,7 +28,9 @@ class ConstruccSolicitudPagoResource extends JsonResource
 
             // NUEVO CAMPO
             'verificada' => $this->verificada ? 1 : 0,
-
+            // Usuario Construcc que generó la SP
+            'usuario_id' => $this->usuario_id,
+            'usuario_nombre' => $this->usuario_nombre,
             // Campos de tipo y origen
             'tipo' => $this->tipo,
             'tipo_id' => $this->tipo_id,
