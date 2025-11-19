@@ -1130,6 +1130,7 @@ class ConstruccSolicitudPagoController extends Controller
     {
         $request->validate([
             'estado' => ['required', 'string', Rule::in(['pendiente', 'autorizada', 'PENDIENTE', 'AUTORIZADA'])],
+            'empresa_construcc_id' => ['nullable', 'integer'],
         ]);
 
         $estado = $request->input('estado');
@@ -1137,6 +1138,7 @@ class ConstruccSolicitudPagoController extends Controller
 
         $query = SolicitudPago::query()
             ->where('verificada', true)
+            ->where('empresa_construcc_id', $request->input('empresa_construcc_id'))
             ->filter($filters);
 
         // Filtrar por estado si se proporciona
@@ -1174,7 +1176,7 @@ class ConstruccSolicitudPagoController extends Controller
 
         $query = SolicitudPago::query()
             ->where('verificada', false)
-            ->where('usuario_id', $usuarioId)
+            ->where('estado_solicitud', EstadoSP::PENDIENTE->value)
             ->filter($filters);
 
         $conteo = $query->count();
