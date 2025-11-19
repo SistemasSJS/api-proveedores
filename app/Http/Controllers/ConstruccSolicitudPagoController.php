@@ -1167,20 +1167,60 @@ class ConstruccSolicitudPagoController extends Controller
      */
     public function spPorValidar(Request $request): JsonResponse
     {
-        $request->validate([
-            'usuario_id' => ['required', 'integer'],
+        // 👉 Log de entrada al método
+        Log::info('📥 Ingresando a spPorValidar', [
+            'route' => $request->path(),
+            'ip'    => $request->ip(),
+            'params' => $request->all(),
+            'headers' => [
+                'X-API-KEY' => $request->header('X-API-KEY') ? '(recibida)' : '(no enviada)',
+                'Authorization' => $request->header('Authorization') ? '(recibido)' : '(no enviado)',
+            ],
         ]);
+
+        // 👉 Validación
+        try {
+            $request->validate([
+                'usuario_id' => ['required', 'integer'],
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+
+            Log::warning('⚠️ Error de validación en spPorValidar', [
+                'errors' => $e->errors(),
+                'params' => $request->all(),
+            ]);
+
+            throw $e;
+        }
 
         $usuarioId = $request->input('usuario_id');
         $filters = $request->only(SolicitudPago::getFilters());
 
+        Log::info('🔍 Parámetros procesados', [
+            'usuario_id' => $usuarioId,
+            'filters'    => $filters,
+        ]);
+
+        // 👉 Construcción de la query
         $query = SolicitudPago::query()
             ->where('verificada', false)
             ->where('usuario_id', $usuarioId)
             ->where('estado_solicitud', EstadoSP::PENDIENTE->value)
             ->filter($filters);
 
+        // 👉 Log de SQL generado
+        Log::debug('🧩 Query generada en spPorValidar', [
+            'sql' => $query->toSql(),
+            'bindings' => $query->getBindings(),
+        ]);
+
+        // 👉 Conteo ejecutado
         $conteo = $query->count();
+
+        Log::info('📤 Respuesta spPorValidar', [
+            'conteo' => $conteo,
+            'usuario_id' => $usuarioId,
+        ]);
 
         return $this->success(
             ['conteo' => $conteo],
