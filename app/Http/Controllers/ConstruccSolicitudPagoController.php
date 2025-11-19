@@ -1128,6 +1128,12 @@ class ConstruccSolicitudPagoController extends Controller
      */
     public function spPendienteAutorizar(Request $request): JsonResponse
     {
+        // Reconectar bases de datos
+        DB::purge('mysql');
+        DB::reconnect('mysql');
+        DB::purge('mysql5');
+        DB::reconnect('mysql5');
+
         $request->validate([
             'estado' => ['required', 'string', Rule::in(['pendiente', 'autorizada', 'PENDIENTE', 'AUTORIZADA'])],
             'empresa_construcc_id' => ['nullable', 'integer'],
@@ -1136,7 +1142,7 @@ class ConstruccSolicitudPagoController extends Controller
         $estado = $request->input('estado');
         $filters = $request->only(SolicitudPago::getFilters());
 
-        $query = SolicitudPago::query()
+        $query = SolicitudPago::on('mysql5')
             ->where('verificada', true)
             ->where('empresa_construcc_id', $request->input('empresa_construcc_id'))
             ->filter($filters);
@@ -1167,6 +1173,12 @@ class ConstruccSolicitudPagoController extends Controller
      */
     public function spPorValidar(Request $request): JsonResponse
     {
+        // Reconectar bases de datos
+        DB::purge('mysql');
+        DB::reconnect('mysql');
+        DB::purge('mysql5');
+        DB::reconnect('mysql5');
+
         // 👉 Log de entrada al método
         Log::info('📥 Ingresando a spPorValidar', [
             'route' => $request->path(),
@@ -1202,7 +1214,7 @@ class ConstruccSolicitudPagoController extends Controller
         ]);
 
         // 👉 Construcción de la query
-        $query = SolicitudPago::query()
+        $query = SolicitudPago::on('mysql5')
             ->where('verificada', false)
             ->where('usuario_id', $usuarioId)
             ->where('estado_solicitud', EstadoSP::PENDIENTE->value)
