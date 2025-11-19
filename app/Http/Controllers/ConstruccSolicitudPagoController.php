@@ -12,6 +12,7 @@ use App\Models\SolicitudPago;
 use App\Notifications\SolicitudPago\SolicitudPagoPagada;
 use App\Notifications\SolicitudPago\SolicitudPagoRechazada;
 use App\Notifications\SolicitudPago\SolicitudPagoRechazadaSinAutorizacion;
+use App\Notifications\SolicitudPago\ProveedorAsociadoAEmpresa;
 use App\Services\InterApiService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -939,6 +940,25 @@ class ConstruccSolicitudPagoController extends Controller
             'usuario_construcc_id' => $usuarioConstruccId,
             'usuario_construcc_nombre' => $usuarioConstruccNombre,
         ]);
+
+        // // Enviar notificación al proveedor
+        // try {
+        //     $proveedor->notify(new ProveedorAsociadoAEmpresa(
+        //         $proveedor->id,
+        //         $proveedor->nombre_comercial ?? $proveedor->razon_social,
+        //         $empresa->id,
+        //         $empresa->nombre,
+        //         $empresa->rfc,
+        //         $usuarioConstruccId,
+        //         $usuarioConstruccNombre
+        //     ));
+        // } catch (\Exception $e) {
+        //     Log::error('Error al enviar notificación de asociación empresa-proveedor', [
+        //         'proveedor_id' => $proveedor->id,
+        //         'empresa_id' => $empresa->id,
+        //         'error' => $e->getMessage(),
+        //     ]);
+        // }
 
         return $this->success(
             [

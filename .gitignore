@@ -305,3 +305,7 @@ respaldo_*.zip
 routes/segmented/construcc.php
 docs/
 storage/logs/*.*
+/public/uploads/*
+!/public/uploads/.gitkeep
+/public/storage/*
+!/public/storage/.gitkeep
