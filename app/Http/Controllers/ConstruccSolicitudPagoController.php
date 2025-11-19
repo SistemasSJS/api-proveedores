@@ -941,24 +941,24 @@ class ConstruccSolicitudPagoController extends Controller
             'usuario_construcc_nombre' => $usuarioConstruccNombre,
         ]);
 
-        // // Enviar notificación al proveedor
-        // try {
-        //     $proveedor->notify(new ProveedorAsociadoAEmpresa(
-        //         $proveedor->id,
-        //         $proveedor->nombre_comercial ?? $proveedor->razon_social,
-        //         $empresa->id,
-        //         $empresa->nombre,
-        //         $empresa->rfc,
-        //         $usuarioConstruccId,
-        //         $usuarioConstruccNombre
-        //     ));
-        // } catch (\Exception $e) {
-        //     Log::error('Error al enviar notificación de asociación empresa-proveedor', [
-        //         'proveedor_id' => $proveedor->id,
-        //         'empresa_id' => $empresa->id,
-        //         'error' => $e->getMessage(),
-        //     ]);
-        // }
+        // Enviar notificación al proveedor
+        try {
+            $proveedor->notify(new ProveedorAsociadoAEmpresa(
+                $proveedor->id,
+                $proveedor->nombre_comercial ?? $proveedor->razon_social,
+                $empresa->id,
+                $empresa->nombre,
+                $empresa->rfc,
+                $usuarioConstruccId,
+                $usuarioConstruccNombre
+            ));
+        } catch (\Exception $e) {
+            Log::error('Error al enviar notificación de asociación empresa-proveedor', [
+                'proveedor_id' => $proveedor->id,
+                'empresa_id' => $empresa->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return $this->success(
             [
@@ -1119,5 +1119,69 @@ class ConstruccSolicitudPagoController extends Controller
         ];
 
         return $this->success($conteos, 'Métricas de solicitudes de pago no verificadas obtenidas correctamente');
+    }
+
+
+    /**
+     * Conteo de solicitudes pendientes de autorizar
+     * Validada = 1 y recibe como parámetro: estado - pendiente|autorizada
+     */
+    public function spPendienteAutorizar(Request $request): JsonResponse
+    {
+        $request->validate([
+            'estado' => ['required', 'string', Rule::in(['pendiente', 'autorizada', 'PENDIENTE', 'AUTORIZADA'])],
+        ]);
+
+        $estado = $request->input('estado');
+        $filters = $request->only(SolicitudPago::getFilters());
+
+        $query = SolicitudPago::query()
+            ->where('verificada', true)
+            ->filter($filters);
+
+        // Filtrar por estado si se proporciona
+        if ($estado) {
+            $estadoEnum = EstadoSP::from(strtolower($estado));
+            $query->where('estado_solicitud', $estadoEnum->value);
+        } else {
+            // Por defecto, contar pendientes y autorizadas
+            $query->whereIn('estado_solicitud', [
+                EstadoSP::PENDIENTE->value,
+                EstadoSP::AUTORIZADA->value
+            ]);
+        }
+
+        $conteo = $query->count();
+
+        return $this->success(
+            ['conteo' => $conteo],
+            'Conteo de solicitudes pendientes de autorizar obtenido correctamente'
+        );
+    }
+
+    /**
+     * Conteo de solicitudes por validar
+     * Validada = 0 y recibe parámetro usuario_id: entero no null
+     */
+    public function spPorValidar(Request $request): JsonResponse
+    {
+        $request->validate([
+            'usuario_id' => ['required', 'integer'],
+        ]);
+
+        $usuarioId = $request->input('usuario_id');
+        $filters = $request->only(SolicitudPago::getFilters());
+
+        $query = SolicitudPago::query()
+            ->where('verificada', false)
+            ->where('usuario_id', $usuarioId)
+            ->filter($filters);
+
+        $conteo = $query->count();
+
+        return $this->success(
+            ['conteo' => $conteo],
+            'Conteo de solicitudes por validar obtenido correctamente'
+        );
     }
 }

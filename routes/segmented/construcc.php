@@ -174,6 +174,10 @@ Route::prefix('construcc')
             Route::get('por-rol', [ConstruccSolicitudPagoController::class, 'listarPorRol'])->name('por-rol');
             Route::get('por-estado', [ConstruccSolicitudPagoController::class, 'listarPorEstado'])->name('por-estado');
             Route::get('estadisticas-rol', [ConstruccSolicitudPagoController::class, 'estadisticasPorRol'])->name('estadisticas-rol');
+            // validada - 1  Y recibe cpom parametro: estauts- pendiente|autorizada  
+            Route::get('sp-por-autorizar', [ConstruccSolicitudPagoController::class, 'spPendienteAutorizar'])->name('sp-por-autorizar');
+            // validada - 0 y recibe parametro  usuario_id: entero no null
+            Route::get('sp-por-validar', [ConstruccSolicitudPagoController::class, 'spPorValidar'])->name('sp-por-validar');
 
             // Segmento de dashboard para métricas de SP verificadas / no verificadas
             Route::prefix('dashboard-sp-metricas')->name('dashboard-sp-metricas.')->group(function () {
@@ -203,7 +207,7 @@ Route::prefix('construcc')
             Route::post('{solicitudPago}/autorizar', [ConstruccSolicitudPagoController::class, 'autorizar'])->name('autorizar');
             Route::post('{solicitudPago}/rechazar', [ConstruccSolicitudPagoController::class, 'rechazar'])->name('rechazar');
             Route::post('{solicitudPago}/confirmar-pago', [ConstruccSolicitudPagoController::class, 'confirmarPago'])->name('confirmar-pago');
-            
+
             // Verificación de SP por usuario construcción
             Route::post('{solicitudPago}/marcar-verificada', [ConstruccSolicitudPagoController::class, 'marcarComoVerificada'])->name('marcar-verificada');
             Route::post('{solicitudPago}/marcar-rechazada', [ConstruccSolicitudPagoController::class, 'marcarComoRechazada'])->name('marcar-rechazada');
