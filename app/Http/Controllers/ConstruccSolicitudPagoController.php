@@ -1176,6 +1176,7 @@ class ConstruccSolicitudPagoController extends Controller
 
         $query = SolicitudPago::query()
             ->where('verificada', false)
+            ->where('usuario_id', $usuarioId)
             ->where('estado_solicitud', EstadoSP::PENDIENTE->value)
             ->filter($filters);
 
