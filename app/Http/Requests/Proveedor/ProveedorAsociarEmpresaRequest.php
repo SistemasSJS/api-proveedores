@@ -16,7 +16,7 @@ class ProveedorAsociarEmpresaRequest extends FormRequest
     {
         return [
             'telefono' => ['required', 'string', 'min:10', 'max:10'],
-            'empresa_construcc_id' => ['required', 'integer', 'exists:empresas_construcc,id'],
+            'empresa_construcc_id' => ['required', 'integer'],
             'empresa_construcc_nombre' => ['nullable', 'string', 'max:255'],
             'usuario_construcc_id' => ['required', 'integer'],
             'usuario_construcc_nombre' => ['required', 'string', 'max:255'],

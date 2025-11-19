@@ -422,7 +422,7 @@ class AuthController extends Controller
                 ->exists();
 
             if ($existeAsociacion) {
-                return $this->error('Este proveedor ya está asociado a esta empresa con este usuario.', [], 400);
+                return $this->error('Este usuario ya tiene registrada una invitación para este proveedor.', null, 400);
             }
 
             // Crear la asociación
