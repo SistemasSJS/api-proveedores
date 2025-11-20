@@ -585,7 +585,7 @@ class ConstruccSolicitudPagoController extends Controller
             return $this->error('Comprobante no disponible', null, 404);
         }
 
-        return response()->file(
+        return response()->download(
             Storage::disk('private')->path($solicitudPago->ruta_archivo_comprobante_pago)
         );
     }
@@ -602,7 +602,7 @@ class ConstruccSolicitudPagoController extends Controller
             return $this->error('Factura PDF no disponible', null, 404);
         }
 
-        return response()->file(
+        return response()->download(
             Storage::disk('private')->path($solicitudPago->ruta_archivo_factura_pdf)
         );
     }
@@ -619,7 +619,7 @@ class ConstruccSolicitudPagoController extends Controller
             return $this->error('Factura XML no disponible', null, 404);
         }
 
-        return response()->file(
+        return response()->download(
             Storage::disk('private')->path($solicitudPago->ruta_archivo_factura_xml)
         );
     }
@@ -636,7 +636,7 @@ class ConstruccSolicitudPagoController extends Controller
             return $this->error('Cotización no disponible', null, 404);
         }
 
-        return response()->file(
+        return response()->download(
             Storage::disk('private')->path($solicitudPago->ruta_archivo_cotizacion)
         );
     }
