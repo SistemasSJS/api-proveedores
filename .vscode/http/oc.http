@@ -6,7 +6,7 @@
 @baseUrl = http://localhost:80/api/construcc
 @contentType = application/json
 @acceptType = application/json
-@apiKey = /%-!?=T35sT._22<1|:
+@apiKey = 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
 @ordenId = 1
 @empresaId = 1
 @proveedorId = 3

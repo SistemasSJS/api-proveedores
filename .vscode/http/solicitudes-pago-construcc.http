@@ -3,11 +3,11 @@
 # API Solicitudes de Pago - Los Mochis, Sinaloa, México
 ###
 
-@baseUrl = http://localhost:80/api
-# @baseUrl = https://apicons.ddns.net:8092/api
+# @baseUrl = http://localhost:80/api/
+@baseUrl = https://apicons.ddns.net:8092/api
 @contentType = application/json
 @acceptType = application/json
-@apiKey = /%-!?=T35sT._22<1|:
+@apiKey = 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
 
 ### VARIABLES
 @solicitudId = 23
@@ -16,22 +16,36 @@
 
 
 https://apicons.ddns.net:8092/api/construcc/solicitudes-pago?estado_solicitud=rechazada&proveedor_id=1
-X-API-KEY: {{apiKey}}
-Accept: {{acceptType}}
+X-API-KEY: 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
+Accept:  application/json
 
 
 ### 
 
 GET http://localhost:8080/api/construcc/solicitudes-pago/empresa/14/proveedores
-X-API-KEY: {{apiKey}}
-Accept: {{acceptType}}
+X-API-KEY: 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
+Accept:  application/json
 
 
 ###############################################################################
 # RUTAS CONSTRUCC - SOLICITUDES DE PAGO
 ###############################################################################
 
+###
+GET https://apicons.ddns.net:8092/api/construcc/solicitudes-pago/sp-por-autorizar?estado=autorizada&empresa_construcc_id=14
+X-API-KEY: 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
+Accept:  application/json
+###
+GET https://apicons.ddns.net:8092/api/construcc/solicitudes-pago/sp-por-autorizar?estado=autorizada&empresa_construcc_id=14
+X-API-KEY: 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
+Accept:  application/json
+###
+GET https://apicons.ddns.net:8092/api/construcc/solicitudes-pago/sp-por-validar?usuario_id=75
+X-API-KEY: 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
+Accept:  application/json
 ### 1. Listado general de solicitudes de pago (solo verificadas)
+
+###
 GET {{baseUrl}}/construcc/solicitudes-pago
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}

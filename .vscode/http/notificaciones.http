@@ -40,12 +40,12 @@ Accept: application/json1
 GET {{baseUrl}}/construcc/solicitudes-pago?estado_solicitud=pendiente&proveedor_id=9
 Content-Type: application/json
 Accept: application/json
-X-API-KEY: /%-!?=T35sT._22<1|:
+X-API-KEY: 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
 ###
 POST {{baseUrl}}/construcc/solicitudes-pago/2/rechazar
 Content-Type: application/json
 Accept: application/json
-X-API-KEY: /%-!?=T35sT._22<1|:
+X-API-KEY: 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
 
 {
   "rol": "DT",
@@ -56,7 +56,7 @@ X-API-KEY: /%-!?=T35sT._22<1|:
 POST {{baseUrl}}/construcc/solicitudes-pago/2/marcar-verificada
 Content-Type: application/json
 Accept: application/json
-X-API-KEY: /%-!?=T35sT._22<1|:
+X-API-KEY: 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
 
 {
   "usuario_id": 1,
@@ -68,7 +68,7 @@ X-API-KEY: /%-!?=T35sT._22<1|:
 POST {{baseUrl}}/construcc/solicitudes-pago/2/marcar-rechazada
 Content-Type: application/json
 Accept: application/json
-X-API-KEY: /%-!?=T35sT._22<1|:
+X-API-KEY: 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
 
 {
   "motivo_rechazo": "Factura PDF no coincide con el monto declarado. Por favor corregir y reenviar."

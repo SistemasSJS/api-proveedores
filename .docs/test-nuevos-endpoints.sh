@@ -4,7 +4,7 @@
 
 # Configuración
 BASE_URL="http://localhost:8080/api"
-API_KEY="/%-!?=T35sT._22<1|:"
+API_KEY="7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6"
 EMPRESA_ID=14
 PROVEEDOR_ID=1
 
