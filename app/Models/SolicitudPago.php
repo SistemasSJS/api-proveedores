@@ -74,6 +74,7 @@ class SolicitudPago extends BaseModel
     ];
 
     protected static $filters = [
+        'search' => 'Search',
         'numero_folio_solicitud' => 'NumeroFolioSolicitud',
         'descripcion_concepto' => 'DescripcionConcepto',
         'estado_solicitud' => 'EstadoSolicitud',
@@ -279,6 +280,25 @@ class SolicitudPago extends BaseModel
     /** ----------------
      * Filtros
      * ----------------- */
+    
+    /**
+     * Filtro de búsqueda global
+     * Busca en múltiples campos: folio, concepto, observaciones, usuario, referencia OC y empresa
+     */
+    public function filterBySearch($query, $value)
+    {
+        return $query->where(function ($q) use ($value) {
+            $q->where('numero_folio_solicitud', 'like', "%$value%")
+              ->orWhere('descripcion_concepto', 'like', "%$value%")
+              ->orWhere('observaciones', 'like', "%$value%")
+              ->orWhere('usuario_nombre', 'like', "%$value%")
+              ->orWhere('referencia_oc', 'like', "%$value%")
+              ->orWhereHas('empresaConstrucc', function ($empresa) use ($value) {
+                  $empresa->where('nombre', 'like', "%$value%");
+              });
+        });
+    }
+
     public function filterByNumeroFolioSolicitud($query, $value)
     {
         return $query->where('numero_folio_solicitud', 'like', "%$value%");
