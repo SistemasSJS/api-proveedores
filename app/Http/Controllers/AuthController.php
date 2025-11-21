@@ -22,15 +22,20 @@ use App\Mail\CompletaRegistroUsuarioMail;
 use App\Mail\ValidaCorreoProveedorBasicoMail;
 use App\Mail\PasswordResetMail;
 use App\Models\Proveedor;
+use App\Models\EmpresaConstrucc;
 use App\Models\Role;
 use App\Models\User;
+use App\Notifications\SolicitudPago\ProveedorAsociadoAEmpresa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
+
 
 class AuthController extends Controller
 {
@@ -404,18 +409,32 @@ class AuthController extends Controller
      */
     public function asociar_proveedor_existente(ProveedorAsociarEmpresaRequest $request)
     {
+        /**
+         * PARA ESTA FUNCION SE DEBE:
+         * 1. VALIDAR LA EXISTENCIA DEL REGISTRO DE EMRPESA UISAURIO EN EL MODELO EmpresaConstrucc
+         * 2. VALIUDA EL PROVEEDOR CON EL TELEFONO
+         * 3. REGISTRAR A RELACION
+         * 4. MANMDAR NOTIFICACION AL PROVEEDOR, (DATABASE, PUSH, BRADCAST, MAIL ..)
+         */
         try {
             $validatedData = $request->validated();
 
-            // Buscar el proveedor por teléfono
+            // 1. Validar que la empresa constructora exista en este sistema
+            $empresa = EmpresaConstrucc::find($validatedData['empresa_construcc_id']);
+
+            if (! $empresa) {
+                return $this->error('La empresa constructora no existe o no está registrada.', [], 404);
+            }
+
+            // 2. Buscar el proveedor por teléfono
             $proveedor = Proveedor::where('telefono', $validatedData['telefono'])->first();
 
-            if (!$proveedor) {
+            if (! $proveedor) {
                 return $this->error('No se encontró un proveedor con este teléfono.', [], 404);
             }
 
             // Verificar si ya existe la asociación con ESTE usuario específico
-            $existeAsociacion = \DB::table('empresa_construcc_proveedor')
+            $existeAsociacion = DB::table('empresa_construcc_proveedor')
                 ->where('empresa_construcc_id', $validatedData['empresa_construcc_id'])
                 ->where('proveedor_id', $proveedor->id)
                 ->where('usuario_construcc_id', $validatedData['usuario_construcc_id'])
@@ -425,34 +444,29 @@ class AuthController extends Controller
                 return $this->error('Este usuario ya tiene registrada una invitación para este proveedor.', null, 400);
             }
 
-            // Crear la asociación
+            // 3. Crear la asociación en la tabla pivot
             $proveedor->empresasConstrucc()->attach($validatedData['empresa_construcc_id'], [
                 'usuario_construcc_id' => $validatedData['usuario_construcc_id'],
                 'usuario_construcc_nombre' => $validatedData['usuario_construcc_nombre'],
             ]);
 
-            // Buscar la empresa para enviar notificación
-            $empresa = \App\Models\EmpresaConstrucc::find($validatedData['empresa_construcc_id']);
-
-            // Enviar notificación al proveedor
-            if ($empresa) {
-                try {
-                    $proveedor->notify(new \App\Notifications\SolicitudPago\ProveedorAsociadoAEmpresa(
-                        $proveedor->id,
-                        $proveedor->nombre_comercial ?? $proveedor->razon_social,
-                        $empresa->id,
-                        $empresa->nombre,
-                        $empresa->rfc ?? '',
-                        $validatedData['usuario_construcc_id'],
-                        $validatedData['usuario_construcc_nombre']
-                    ));
-                } catch (\Exception $e) {
-                    \Log::error('Error al enviar notificación de asociación proveedor-empresa', [
-                        'proveedor_id' => $proveedor->id,
-                        'empresa_id' => $validatedData['empresa_construcc_id'],
-                        'error' => $e->getMessage(),
-                    ]);
-                }
+            // 4. Enviar notificación al proveedor
+            try {
+                $proveedor->notify(new ProveedorAsociadoAEmpresa(
+                    $proveedor->id,
+                    $proveedor->nombre_comercial ?? $proveedor->razon_social,
+                    $empresa->id,
+                    $empresa->nombre,
+                    $empresa->rfc ?? '',
+                    $validatedData['usuario_construcc_id'],
+                    $validatedData['usuario_construcc_nombre']
+                ));
+            } catch (\Exception $e) {
+                Log::error('Error al enviar notificación de asociación proveedor-empresa', [
+                    'proveedor_id' => $proveedor->id,
+                    'empresa_id' => $validatedData['empresa_construcc_id'],
+                    'error' => $e->getMessage(),
+                ]);
             }
 
             return $this->success([
@@ -462,7 +476,7 @@ class AuthController extends Controller
                 'empresa_nombre' => $empresa ? $empresa->nombre : null,
             ], 'Proveedor asociado exitosamente a la empresa.', 200);
         } catch (\Exception $e) {
-            \Log::error('Error al asociar proveedor existente', [
+            Log::error('Error al asociar proveedor existente', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
