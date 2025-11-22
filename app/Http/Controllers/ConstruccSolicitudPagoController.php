@@ -145,6 +145,9 @@ class ConstruccSolicitudPagoController extends Controller
             'obra_id' => ['nullable', 'integer'],
             'tipo' => ['nullable', 'string'],
             'tipo_id' => ['nullable', 'integer'],
+            'notas' => ['nullable', 'string'],
+            'utilizara' => ['nullable', 'string'],
+            'equipo' => ['nullable', 'string'],
         ]);
 
         // Validar que la SP no esté ya verificada
@@ -167,6 +170,15 @@ class ConstruccSolicitudPagoController extends Controller
             }
             if ($request->has('obra_id')) {
                 $updateData['obra_id'] = $request->obra_id;
+            }
+            if ($request->has('notas')) {
+                $updateData['notas'] = $request->notas;
+            }
+            if ($request->has('utilizara')) {
+                $updateData['utilizara'] = $request->utilizara;
+            }
+            if ($request->has('equipo')) {
+                $updateData['equipo'] = $request->equipo;
             }
 
             // Mapeo de nivel_id a rol
@@ -219,6 +231,9 @@ class ConstruccSolicitudPagoController extends Controller
                     'usuario_id' => $request->usuario_id,
                     'empresa_id' => $request->empresa_id,
                     'nivel_id' => $request->nivel_id,
+                    'notas' => $request->notas ?? null,
+                    'utilizara' => $request->utilizara ?? null,
+                    'equipo' => $request->equipo ?? null,
                 ]);
             } else {
                 Log::warning('⚠️ Fallo al enviar notificación de validador', [

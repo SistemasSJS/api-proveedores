@@ -36,6 +36,9 @@ class ConstruccSolicitudPagoResource extends JsonResource
             'tipo_id' => $this->tipo_id,
             'obra_id' => $this->obra_id,
             'observaciones' => $this->observaciones,
+            'notas' => $this->notas,
+            'utilizara' => $this->utilizara,
+            'equipo' => $this->equipo,
 
             // Archivos con URLs correctas
             'url_comprobante_pago' => $this->ruta_archivo_comprobante_pago
