@@ -192,10 +192,12 @@ class ConstruccSolicitudPagoController extends Controller
             if (array_key_exists($request->nivel_id, $nivelToRol)) {
                 $rolField = $nivelToRol[$request->nivel_id];
                 $fechaField = $rolField . '_fecha';
-
                 // Agregar autorización del rol
                 $updateData[$rolField] = EstadoSolicitud::AUTORIZADA->value;
                 $updateData[$fechaField] = now();
+
+                // ESTADO GENERAL DE LA SP SE CAMBIA A AUTORIZADA 
+                $updateData['estado_solicitud'] = EstadoSP::AUTORIZADA->value;
 
                 // Si es DG (nivel_id = 1), cambiar el estado general a AUTORIZADA
                 if ($request->nivel_id == 1) {
