@@ -11,8 +11,8 @@
 @pass = "password"
 
 # Configuración general
-# @baseUrl = https://apicons.ddns.net:8092/api
-@baseUrl = http://localhost:8080/api/construcc
+@baseUrl = https://apicons.ddns.net:8092/api
+# @baseUrl = http://localhost:8080/api/construcc
 @contentType = application/json
 @acceptType = application/json
 
@@ -40,8 +40,8 @@ Authorization: Bearer {{proveedorToken}}
 Accept: {{acceptType}}
 
 ### Guardar el token del login en @proveedorToken manualmente:
-@proveedorToken = 2|yfz8W0bpUQf7O5PnGjVQKjeswdEeorauhaCDk11Z0eb0eb9b
-@proveedorId = 4
+@proveedorToken = 6|Hd07deQ6goxAzirJKAmB2tWidKpINZTOInm0OW43458baa7a
+@proveedorId = 10
 
 
 ###############################################################################

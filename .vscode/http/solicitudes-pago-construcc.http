@@ -3,8 +3,8 @@
 # API Solicitudes de Pago - Los Mochis, Sinaloa, México
 ###
 
-# @baseUrl = http://localhost:80/api/
-@baseUrl = https://apicons.ddns.net:8092/api
+@baseUrl = http://localhost:80/api
+# @baseUrl = https://apicons.ddns.net:8092/api
 @contentType = application/json
 @acceptType = application/json
 @apiKey = 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
@@ -45,7 +45,6 @@ X-API-KEY: 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
 Accept:  application/json
 ### 1. Listado general de solicitudes de pago (solo verificadas)
 
-###
 GET {{baseUrl}}/construcc/solicitudes-pago
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
@@ -61,15 +60,21 @@ X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
 ### 4. 🆕 Marcar solicitud como VERIFICADA
-POST {{baseUrl}}/construcc/solicitudes-pago/4/marcar-verificada
+POST {{baseUrl}}/construcc/solicitudes-pago/2/marcar-verificada
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 Accept: {{acceptType}}
 
 {
-  "usuario_id": 1,
-  "nivel_id": 1,
-  "empresa_id": 1
+  "usuario_id":1,
+  "nivel_id":1,
+  "empresa_id":1,
+  "obra_id":1,
+  "tipo":"REQUISICION",
+  "tipo_id":1,
+  "notas":"PRUEBA CON TODOS LOS PARAMETROS LLENOS",
+  "utilizara":"1",
+  "equipo":"1"
 }
 
 ### 5. Descargar comprobante de pago

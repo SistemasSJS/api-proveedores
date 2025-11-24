@@ -77,7 +77,7 @@ class ProveedorEmpresaConstruccController extends Controller
     {
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'rfc' => 'required|string|max:13|unique:empresa_construcc,rfc',
+            'rfc' => 'nullable|string|max:13',
             'razon_social' => 'nullable|string|max:255',
             'direccion' => 'nullable|string',
             'ciudad' => 'nullable|string|max:100',
@@ -145,7 +145,7 @@ class ProveedorEmpresaConstruccController extends Controller
 
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'rfc' => 'required|string|max:13|unique:empresa_construcc,rfc,'.$empresaConstrucc->id,
+            'rfc' => 'nullable|string|max:13',
             'razon_social' => 'nullable|string|max:255',
             'direccion' => 'nullable|string',
             'ciudad' => 'nullable|string|max:100',

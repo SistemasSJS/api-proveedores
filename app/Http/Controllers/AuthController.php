@@ -371,10 +371,14 @@ class AuthController extends Controller
 
             // Registrar relación con empresa Construcc si se proporcionaron los datos
             if (isset($validatedData['empresa_construcc_id'])) {
-                $proveedor->empresasConstrucc()->attach($validatedData['empresa_construcc_id'], [
-                    'usuario_construcc_id' => $validatedData['usuario_construcc_id'] ?? null,
-                    'usuario_construcc_nombre' => $validatedData['usuario_construcc_nombre'] ?? null,
-                ]);
+                $empresa = $this->getOrCreateEmpresaConstruccFromRequestData($validatedData);
+
+                if ($empresa) {
+                    $proveedor->empresasConstrucc()->attach($empresa->id, [
+                        'usuario_construcc_id' => $validatedData['usuario_construcc_id'] ?? null,
+                        'usuario_construcc_nombre' => $validatedData['usuario_construcc_nombre'] ?? null,
+                    ]);
+                }
             }
 
             // Crear token de autenticación
@@ -411,78 +415,137 @@ class AuthController extends Controller
     {
         /**
          * PARA ESTA FUNCION SE DEBE:
-         * 1. VALIDAR LA EXISTENCIA DEL REGISTRO DE EMRPESA UISAURIO EN EL MODELO EmpresaConstrucc
-         * 2. VALIUDA EL PROVEEDOR CON EL TELEFONO
-         * 3. REGISTRAR A RELACION
-         * 4. MANMDAR NOTIFICACION AL PROVEEDOR, (DATABASE, PUSH, BRADCAST, MAIL ..)
+         * 1. VALIDAR LA EXISTENCIA DEL REGISTRO DE EMPRESA USUARIO EN EL MODELO EmpresaConstrucc
+         * 2. VALIDAR EL PROVEEDOR CON EL TELEFONO
+         * 3. REGISTRAR LA RELACION
+         * 4. MANDAR NOTIFICACION AL PROVEEDOR (DATABASE, PUSH, BROADCAST, MAIL ..)
          */
         try {
+            Log::info('Iniciando proceso de asociar proveedor existente.', [
+                'payload_request' => $request->all()
+            ]);
+
             $validatedData = $request->validated();
+            Log::info('Datos validados correctamente.', [
+                'validated' => $validatedData
+            ]);
 
-            // 1. Validar que la empresa constructora exista en este sistema
-            $empresa = EmpresaConstrucc::find($validatedData['empresa_construcc_id']);
+            // 1. Obtener o crear la empresa
+            Log::info('Buscando / creando empresa constructora...', [
+                'empresa_construcc_id' => $validatedData['empresa_construcc_id'] ?? null
+            ]);
 
-            if (! $empresa) {
-                return $this->error('La empresa constructora no existe o no está registrada.', [], 404);
-            }
+            $empresa = $this->getOrCreateEmpresaConstruccFromRequestData($validatedData);
 
-            // 2. Buscar el proveedor por teléfono
+            Log::info('Resultado búsqueda/creación empresa:', [
+                'empresa_id' => $empresa->id ?? null,
+                'empresa_nombre' => $empresa->nombre ?? null
+            ]);
+
+            // 2. Buscar proveedor por teléfono
+            Log::info('Buscando proveedor por teléfono...', [
+                'telefono' => $validatedData['telefono']
+            ]);
+
             $proveedor = Proveedor::where('telefono', $validatedData['telefono'])->first();
 
-            if (! $proveedor) {
+            if (!$proveedor) {
+                Log::warning('Proveedor no encontrado por teléfono.', [
+                    'telefono' => $validatedData['telefono']
+                ]);
                 return $this->error('No se encontró un proveedor con este teléfono.', [], 404);
             }
 
-            // Verificar si ya existe la asociación con ESTE usuario específico
+            Log::info('Proveedor encontrado.', [
+                'proveedor_id' => $proveedor->id,
+                'proveedor_nombre' => $proveedor->nombre_comercial ?? $proveedor->razon_social
+            ]);
+
+            // 3. Validar si ya existe la asociación
+            Log::info('Verificando si ya existe una asociación...', [
+                'empresa_id' => $empresa->id,
+                'proveedor_id' => $proveedor->id,
+                'usuario_construcc_id' => $validatedData['usuario_construcc_id']
+            ]);
+
             $existeAsociacion = DB::table('empresa_construcc_proveedor')
-                ->where('empresa_construcc_id', $validatedData['empresa_construcc_id'])
+                ->where('empresa_construcc_id', $empresa->id)
                 ->where('proveedor_id', $proveedor->id)
                 ->where('usuario_construcc_id', $validatedData['usuario_construcc_id'])
                 ->exists();
 
             if ($existeAsociacion) {
+                Log::warning('Asociación ya existente.', [
+                    'empresa_id' => $empresa->id,
+                    'proveedor_id' => $proveedor->id
+                ]);
+
                 return $this->error('Este usuario ya tiene registrada una invitación para este proveedor.', null, 400);
             }
 
-            // 3. Crear la asociación en la tabla pivot
-            $proveedor->empresasConstrucc()->attach($validatedData['empresa_construcc_id'], [
+            // 4. Crear asociación
+            Log::info('Creando asociación proveedor-empresa...');
+
+            $proveedor->empresasConstrucc()->attach($empresa->id, [
                 'usuario_construcc_id' => $validatedData['usuario_construcc_id'],
                 'usuario_construcc_nombre' => $validatedData['usuario_construcc_nombre'],
             ]);
 
-            // 4. Enviar notificación al proveedor
+            Log::info('Asociación creada exitosamente.', [
+                'empresa_id'    => $empresa->id,
+                'proveedor_id'  => $proveedor->id,
+                'usuario_construcc_id' => $validatedData['usuario_construcc_id']
+            ]);
+
+            // 5. Enviar notificación
             try {
-                $proveedor->notify(new ProveedorAsociadoAEmpresa(
-                    $proveedor->id,
-                    $proveedor->nombre_comercial ?? $proveedor->razon_social,
-                    $empresa->id,
-                    $empresa->nombre,
-                    $empresa->rfc ?? '',
-                    $validatedData['usuario_construcc_id'],
-                    $validatedData['usuario_construcc_nombre']
-                ));
+                Log::info('Intentando enviar notificación al proveedor...');
+
+                $usuario = $proveedor->usuarioPrincipal();
+
+                if ($usuario) {
+                    $usuario->notify(new ProveedorAsociadoAEmpresa(
+                        $proveedor->id,
+                        $proveedor->nombre_comercial ?? $proveedor->razon_social,
+                        $empresa->id,
+                        $empresa->nombre,
+                        $empresa->rfc ?? '',
+                        $validatedData['usuario_construcc_id'],
+                        $validatedData['usuario_construcc_nombre']
+                    ));
+
+                    Log::info('Notificación enviada al proveedor.', [
+                        'usuario_principal' => $usuario->id,
+                    ]);
+                } else {
+                    Log::warning('Proveedor no tiene usuario principal. No se envió notificación.');
+                }
             } catch (\Exception $e) {
                 Log::error('Error al enviar notificación de asociación proveedor-empresa', [
                     'proveedor_id' => $proveedor->id,
-                    'empresa_id' => $validatedData['empresa_construcc_id'],
+                    'empresa_id' => $empresa->id,
                     'error' => $e->getMessage(),
                 ]);
             }
 
+            Log::info('Proceso de asociación completado exitosamente.');
+
             return $this->success([
                 'proveedor' => new ProveedorResource($proveedor->load(Proveedor::eagerLodable())),
                 'asociado' => true,
-                'empresa_id' => $validatedData['empresa_construcc_id'],
-                'empresa_nombre' => $empresa ? $empresa->nombre : null,
+                'empresa_id' => $empresa->id,
+                'empresa_nombre' => $empresa->nombre,
             ], 'Proveedor asociado exitosamente a la empresa.', 200);
         } catch (\Exception $e) {
-            Log::error('Error al asociar proveedor existente', [
+            Log::error('Error general al asociar proveedor existente', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return $this->error('Error al asociar el proveedor. Intenta nuevamente.', [], 500);
         }
     }
+
 
     /**
      * Completar el registro básico del proveedor con contraseña
@@ -709,6 +772,36 @@ class AuthController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
+    /**
+     * Obtener o crear empresa constructora a partir de datos de request de enlace
+     *
+     * @param array $validatedData
+     * @return EmpresaConstrucc|null
+     */
+    private function getOrCreateEmpresaConstruccFromRequestData(array $validatedData): ?EmpresaConstrucc
+    {
+        if (empty($validatedData['empresa_construcc_id'])) {
+            return null;
+        }
+
+        $empresaId = $validatedData['empresa_construcc_id'];
+
+        $empresa = EmpresaConstrucc::find($empresaId);
+
+        if (! $empresa) {
+            $empresa = new EmpresaConstrucc();
+            $empresa->id = $empresaId;
+            $empresa->nombre = $validatedData['empresa_construcc_nombre'] ?? "Empresa {$empresaId}";
+            $empresa->razon_social = $validatedData['empresa_construcc_nombre'] ?? null;
+            // RFC es opcional en esta integración; se deja nulo si no viene
+            $empresa->rfc = null;
+            $empresa->activo = true;
+            $empresa->save();
+        }
+
+        return $empresa;
+    }
+
     public function verificarEmailExistente(Request $request)
     {
         $request->validate([
