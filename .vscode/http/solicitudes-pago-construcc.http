@@ -3,8 +3,8 @@
 # API Solicitudes de Pago - Los Mochis, Sinaloa, México
 ###
 
-@baseUrl = http://localhost:80/api
-# @baseUrl = https://apicons.ddns.net:8092/api
+# @baseUrl = http://localhost:80/api
+@baseUrl = https://apicons.ddns.net:8092/api
 @contentType = application/json
 @acceptType = application/json
 @apiKey = 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
@@ -90,9 +90,10 @@ GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/factura-xml/download
 X-API-KEY: {{apiKey}}
 
 ### 8. Descargar cotización
-GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/cotizacion/download
+GET {{baseUrl}}/construcc/solicitudes-pago/154/cotizacion/download
 X-API-KEY: {{apiKey}}
 
+#  "url_cotizacion": "https:\/\/apicons.ddns.net:8092\/api\/construcc\/solicitudes-pago\/154\/cotizacion\/download",
 
 
 ###############################################################################

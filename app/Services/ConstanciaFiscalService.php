@@ -10,7 +10,7 @@ class ConstanciaFiscalService
 {
     /**
      * Extrae los datos fiscales de una constancia fiscal PDF.
-     * Lee el QR del PDF y obtiene la información del SAT.
+     * Intenta extraer del QR primero, si falla extrae directamente del texto del PDF.
      *
      * @param string $pdfPath Ruta completa al archivo PDF
      * @return array|null Array con los datos fiscales o null si falla
@@ -18,16 +18,31 @@ class ConstanciaFiscalService
     public function extraerDatosFiscales(string $pdfPath): ?array
     {
         try {
-            // 1. Extraer QR del PDF
-            $qrUrl = $this->extraerQRdePDF($pdfPath);
+            // 1. Extraer texto del PDF primero
+            $parser = new \Smalot\PdfParser\Parser();
+            $pdf = $parser->parseFile($pdfPath);
+            $text = $pdf->getText();
             
-            if (!$qrUrl) {
-                Log::warning('No se pudo extraer el código QR del PDF');
-                return null;
-            }
+            Log::info('Texto extraído del PDF (primeros 500 caracteres):', [
+                'texto' => substr($text, 0, 500)
+            ]);
 
-            // 2. Obtener datos del SAT desde la URL del QR
-            $datosFiscales = $this->obtenerDatosDelSAT($qrUrl);
+            // 2. Intentar extraer datos directamente del texto del PDF
+            $datosFiscales = $this->extraerDatosDeTextoPDF($text);
+            
+            // 3. Si faltan datos importantes, intentar con QR
+            if (!$datosFiscales || empty($datosFiscales['rfc'])) {
+                Log::info('Intentando extraer datos del QR...');
+                $qrUrl = $this->extraerQRdePDF($pdfPath, $text);
+                
+                if ($qrUrl) {
+                    $datosQR = $this->obtenerDatosDelSAT($qrUrl);
+                    if ($datosQR) {
+                        // Combinar datos del texto con datos del QR
+                        $datosFiscales = array_merge($datosFiscales ?? [], $datosQR);
+                    }
+                }
+            }
 
             return $datosFiscales;
         } catch (\Exception $e) {
@@ -40,22 +55,18 @@ class ConstanciaFiscalService
      * Extrae la URL del código QR del PDF.
      * 
      * @param string $pdfPath
+     * @param string|null $text Texto ya extraído del PDF (opcional)
      * @return string|null
      */
-    private function extraerQRdePDF(string $pdfPath): ?string
+    private function extraerQRdePDF(string $pdfPath, ?string $text = null): ?string
     {
         try {
-            // Convertir PDF a imágenes y buscar QR
-            // Usaremos una librería de Python o herramienta externa
-            // Por simplicidad, primero intentaremos extraer el texto del PDF
-            
-            $parser = new \Smalot\PdfParser\Parser();
-            $pdf = $parser->parseFile($pdfPath);
-            $text = $pdf->getText();
-            
-            Log::info('Texto extraído del PDF (primeros 500 caracteres):', [
-                'texto' => substr($text, 0, 500)
-            ]);
+            // Si no se proporcionó el texto, extraerlo
+            if (!$text) {
+                $parser = new \Smalot\PdfParser\Parser();
+                $pdf = $parser->parseFile($pdfPath);
+                $text = $pdf->getText();
+            }
 
             // Intentar diferentes patrones de URL del SAT
             $patterns = [
@@ -241,6 +252,182 @@ class ConstanciaFiscalService
 
         } catch (\Exception $e) {
             Log::error('Error al parsear HTML del SAT: ' . $e->getMessage());
+        }
+
+        return $datos;
+    }
+
+    /**
+     * Extrae todos los datos posibles directamente del texto del PDF de la constancia fiscal.
+     *
+     * @param string $text Texto completo del PDF
+     * @return array Array con todos los datos extraídos
+     */
+    private function extraerDatosDeTextoPDF(string $text): array
+    {
+        $datos = [
+            'rfc' => null,
+            'curp' => null,
+            'razon_social' => null,
+            'nombre' => null,
+            'primer_apellido' => null,
+            'segundo_apellido' => null,
+            'nombre_completo' => null,
+            'denominacion_razon_social' => null,
+            'regimen_capital' => null,
+            'fecha_inicio_operaciones' => null,
+            'estatus_padron' => null,
+            'fecha_ultimo_cambio_estado' => null,
+            'entidad_federativa' => null,
+            'municipio_delegacion' => null,
+            'colonia' => null,
+            'tipo_vialidad' => null,
+            'nombre_vialidad' => null,
+            'numero_exterior' => null,
+            'numero_interior' => null,
+            'codigo_postal' => null,
+            'correo_electronico' => null,
+            'al_corriente_obligaciones' => null,
+            'regimenes' => [],
+            'id_cif' => null,
+            'lugar_emision' => null,
+            'fecha_emision' => null,
+        ];
+
+        try {
+            // Extraer RFC
+            if (preg_match('/RFC[:\s]+([A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3})/i', $text, $matches)) {
+                $datos['rfc'] = strtoupper(trim($matches[1]));
+            }
+
+            // Extraer CURP
+            if (preg_match('/CURP[:\s]+([A-Z]{4}\d{6}[HM][A-Z]{5}[0-9A-Z]\d)/i', $text, $matches)) {
+                $datos['curp'] = strtoupper(trim($matches[1]));
+            }
+
+            // Extraer Nombre(s)
+            if (preg_match('/Nombre\(s\)[:\s]+([A-ZÁÉÍÓÚÑ\s]+?)(?=\n|Primer|$)/i', $text, $matches)) {
+                $datos['nombre'] = trim($matches[1]);
+            }
+
+            // Extraer Primer Apellido
+            if (preg_match('/(?:Primer\s*)?Apellido[:\s]+([A-ZÁÉÍÓÚÑ\s]+?)(?=\n|Segundo|$)/i', $text, $matches)) {
+                $datos['primer_apellido'] = trim($matches[1]);
+            }
+
+            // Extraer Segundo Apellido
+            if (preg_match('/Segundo\s*Apellido[:\s]+([A-ZÁÉÍÓÚÑ\s]+?)(?=\n|RFC|Fecha|$)/i', $text, $matches)) {
+                $datos['segundo_apellido'] = trim($matches[1]);
+            }
+
+            // Construir nombre completo
+            if ($datos['nombre'] || $datos['primer_apellido']) {
+                $datos['nombre_completo'] = trim(
+                    ($datos['nombre'] ?? '') . ' ' . 
+                    ($datos['primer_apellido'] ?? '') . ' ' . 
+                    ($datos['segundo_apellido'] ?? '')
+                );
+            }
+
+            // Extraer Denominación o Razón Social (para personas físicas también)
+            if (preg_match('/(?:denominación|razón\s+social)[:\s]+([^\n]+?)(?=\n|Régimen|idCIF|$)/i', $text, $matches)) {
+                $datos['denominacion_razon_social'] = trim($matches[1]);
+            }
+
+            // La razón social puede ser el nombre completo o la denominación
+            $datos['razon_social'] = $datos['denominacion_razon_social'] ?? $datos['nombre_completo'];
+
+            // Extraer idCIF
+            if (preg_match('/idCIF[:\s]+(\d+)/i', $text, $matches)) {
+                $datos['id_cif'] = trim($matches[1]);
+            }
+
+            // Extraer Lugar y Fecha de Emisión
+            if (preg_match('/Lugar y Fecha de Emisión\s*([^\n]+?)\s*A\s*(\d{1,2}\s+DE\s+\w+\s+DE\s+\d{4})/i', $text, $matches)) {
+                $datos['lugar_emision'] = trim($matches[1]);
+                $datos['fecha_emision'] = trim($matches[2]);
+            }
+
+            // Extraer Régimen de Capital (para personas morales)
+            if (preg_match('/Régimen\s+de\s+Capital[:\s]+([^\n]+)/i', $text, $matches)) {
+                $datos['regimen_capital'] = trim($matches[1]);
+            }
+
+            // Extraer Fecha de Inicio de Operaciones
+            if (preg_match('/Fecha\s+de\s+(?:Inicio|inicio)\s+de\s+(?:Operaciones|operaciones)[:\s]+(\d{2}\/\d{2}\/\d{4})/i', $text, $matches)) {
+                $datos['fecha_inicio_operaciones'] = trim($matches[1]);
+            }
+
+            // Extraer Estatus en el Padrón
+            if (preg_match('/Estatus\s+en\s+el\s+padrón[:\s]+([^\n]+)/i', $text, $matches)) {
+                $datos['estatus_padron'] = trim($matches[1]);
+            }
+
+            // Extraer Fecha del Último Cambio de Estado
+            if (preg_match('/Fecha\s+del\s+último\s+cambio\s+de\s+estado[:\s]+(\d{2}\/\d{2}\/\d{4})/i', $text, $matches)) {
+                $datos['fecha_ultimo_cambio_estado'] = trim($matches[1]);
+            }
+
+            // Extraer datos de ubicación
+            if (preg_match('/Entidad\s+Federativa[:\s]+([^\n]+)/i', $text, $matches)) {
+                $datos['entidad_federativa'] = trim($matches[1]);
+            }
+
+            if (preg_match('/Municipio\s+o\s+delegación[:\s]+([^\n]+)/i', $text, $matches)) {
+                $datos['municipio_delegacion'] = trim($matches[1]);
+            }
+
+            if (preg_match('/Colonia[:\s]+([^\n]+)/i', $text, $matches)) {
+                $datos['colonia'] = trim($matches[1]);
+            }
+
+            if (preg_match('/Tipo\s+de\s+vialidad[:\s]+([^\n]+)/i', $text, $matches)) {
+                $datos['tipo_vialidad'] = trim($matches[1]);
+            }
+
+            if (preg_match('/Nombre\s+de\s+la\s+vialidad[:\s]+([^\n]+)/i', $text, $matches)) {
+                $datos['nombre_vialidad'] = trim($matches[1]);
+            }
+
+            if (preg_match('/Número\s+exterior[:\s]+([^\n]+)/i', $text, $matches)) {
+                $numExt = trim($matches[1]);
+                $datos['numero_exterior'] = ($numExt !== 'S/N' && $numExt !== '') ? $numExt : null;
+            }
+
+            if (preg_match('/Número\s+interior[:\s]+([^\n]+)/i', $text, $matches)) {
+                $numInt = trim($matches[1]);
+                $datos['numero_interior'] = ($numInt !== 'S/N' && $numInt !== '') ? $numInt : null;
+            }
+
+            if (preg_match('/(?:CP|Código\s+Postal)[:\s]+(\d{5})/i', $text, $matches)) {
+                $datos['codigo_postal'] = trim($matches[1]);
+            }
+
+            // Extraer Correo Electrónico
+            if (preg_match('/Correo\s+electrónico[:\s]+([^\n]+)/i', $text, $matches)) {
+                $datos['correo_electronico'] = trim($matches[1]);
+            }
+
+            // Extraer información sobre obligaciones
+            if (preg_match('/AL\s+CORRIENTE\s+DE\s+SUS\s+OBLIGACIONES/i', $text)) {
+                $datos['al_corriente_obligaciones'] = true;
+            }
+
+            // Extraer Regímenes (pueden ser múltiples)
+            if (preg_match_all('/Régimen[:\s]+([^\n]+?)(?:\s+Fecha\s+de\s+alta[:\s]+(\d{2}\/\d{2}\/\d{4}))?/i', $text, $matches, PREG_SET_ORDER)) {
+                foreach ($matches as $match) {
+                    $regimen = [
+                        'nombre' => trim($match[1]),
+                        'fecha_alta' => isset($match[2]) ? trim($match[2]) : null,
+                    ];
+                    $datos['regimenes'][] = $regimen;
+                }
+            }
+
+            Log::info('Datos extraídos del texto PDF:', ['datos' => $datos]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al extraer datos del texto PDF: ' . $e->getMessage());
         }
 
         return $datos;

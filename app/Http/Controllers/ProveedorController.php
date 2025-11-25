@@ -67,13 +67,13 @@ class ProveedorController extends Controller
 
             // Subir nuevo logo
             $file = $request->file('logo');
-            
+
             // Formato: {id:6 dígitos}_{randStr:6 dígitos}.extension
             $idPadded = str_pad($proveedor->id, 6, '0', STR_PAD_LEFT);
             $randomStr = strtoupper(substr(bin2hex(random_bytes(3)), 0, 6));
             $extension = $file->getClientOriginalExtension();
             $filename = "{$idPadded}_{$randomStr}.{$extension}";
-            
+
             // Almacenar en carpeta específica logos_empresas
             $path = $file->storeAs('logos_empresas', $filename, 'public');
 
@@ -286,41 +286,72 @@ class ProveedorController extends Controller
         $file = $request->file('constancia_fiscal');
 
         // Borrar constancia anterior si existe
-        if ($proveedor->constancia_fiscal && Storage::disk('private')->exists($proveedor->constancia_fiscal)) {
-            Storage::disk('private')->delete($proveedor->constancia_fiscal);
-        }
+        // if ($proveedor->constancia_fiscal && Storage::disk('private')->exists($proveedor->constancia_fiscal)) {
+        //     Storage::disk('private')->delete($proveedor->constancia_fiscal);
+        // }
 
         // Guardar nueva constancia en private
-        $filename = 'constancia_' . $proveedor->id . '_' . time() . '.pdf';
+
+        // ruta de almacenamiento: constancias/constancia_{proveedor_id:6 dijitos}_{timestamp}.pdf
+        $idFormateado = str_pad($proveedor->id, 6, '0', STR_PAD_LEFT);
+        $filename = 'constancia_' . $idFormateado . '_' . time() . '.pdf';
         $path = $file->storeAs('constancias', $filename, 'private');
 
         $proveedor->update(['constancia_fiscal' => $path]);
 
         // Extraer datos fiscales del QR de la constancia
         $datosFiscales = null;
+        $datosExtraccion = [
+            'exito' => false,
+            'mensaje' => '',
+            'datos' => null,
+        ];
+
         try {
             $fullPath = Storage::disk('private')->path($path);
             Log::info('Intentando extraer datos fiscales de: ' . $fullPath);
 
             $datosFiscales = $constanciaService->extraerDatosFiscales($fullPath);
 
-            Log::info('Datos fiscales extraídos:', ['datos' => $datosFiscales]);
+            if ($datosFiscales && !empty($datosFiscales['rfc'])) {
+                Log::info('Datos fiscales extraídos exitosamente:', ['datos' => $datosFiscales]);
 
-            // Agregar clave de régimen si se obtuvo el nombre
-            if ($datosFiscales && !empty($datosFiscales['regimen_fiscal_nombre'])) {
-                $datosFiscales['regimen_fiscal_clave'] = $constanciaService->obtenerClaveRegimen(
-                    $datosFiscales['regimen_fiscal_nombre']
-                );
-                Log::info('Clave de régimen fiscal agregada: ' . $datosFiscales['regimen_fiscal_clave']);
+                // Procesar regímenes para agregar claves
+                if (!empty($datosFiscales['regimenes'])) {
+                    foreach ($datosFiscales['regimenes'] as &$regimen) {
+                        $regimen['clave'] = $constanciaService->obtenerClaveRegimen($regimen['nombre']);
+                    }
+                    unset($regimen);
+                }
+
+                // Para compatibilidad con el sistema actual, extraer el primer régimen
+                if (!empty($datosFiscales['regimenes']) && count($datosFiscales['regimenes']) > 0) {
+                    $datosFiscales['regimen_fiscal_nombre'] = $datosFiscales['regimenes'][0]['nombre'];
+                    $datosFiscales['regimen_fiscal_clave'] = $datosFiscales['regimenes'][0]['clave'];
+                }
+
+                // Mapear campos para la tabla de proveedores
+                $datosFiscales['calle'] = $datosFiscales['nombre_vialidad'] ?? null;
+                $datosFiscales['ciudad'] = $datosFiscales['municipio_delegacion'] ?? null;
+                $datosFiscales['estado'] = $datosFiscales['entidad_federativa'] ?? null;
+                $datosFiscales['pais'] = 'México';
+
+                $datosExtraccion['exito'] = true;
+                $datosExtraccion['mensaje'] = 'Datos fiscales extraídos exitosamente';
+                $datosExtraccion['datos'] = $datosFiscales;
+            } else {
+                $datosExtraccion['mensaje'] = 'No se pudieron extraer los datos fiscales del PDF';
+                Log::warning('No se extrajeron datos fiscales válidos');
             }
         } catch (\Exception $e) {
+            $datosExtraccion['mensaje'] = 'Error al procesar el PDF: ' . $e->getMessage();
             Log::error('Error al extraer datos fiscales: ' . $e->getMessage());
             Log::error('Stack trace: ' . $e->getTraceAsString());
         }
 
         return $this->success([
             'proveedor' => new ProveedorResource($proveedor->fresh()),
-            'datos_fiscales' => $datosFiscales,
+            'extraccion_datos' => $datosExtraccion['datos'],
             'message' => 'Constancia fiscal actualizada con éxito.',
         ], 200);
     }
