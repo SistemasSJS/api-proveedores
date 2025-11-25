@@ -118,7 +118,7 @@ class ProveedorSolicitudPagoController extends Controller
             'pago_completo' => false,
         ]);
 
-        // $this->interApiService->notifyNewSolicitudCompra($solicitud);
+        $this->interApiService->notifyNewSolicitudCompra($solicitud);
 
         // Sincronizar cuentas bancarias si se enviaron
         if (array_key_exists('cuentas_bancarias', $validated) && is_array($validated['cuentas_bancarias'])) {
