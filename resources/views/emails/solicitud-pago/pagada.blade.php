@@ -212,7 +212,7 @@
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-            <img src="{{ config('app.url') }}/assets/logo-icon-384x384.png" alt="Logo" class="logo">
+            <img src="{{ config('app.url') }}/assets/icon/ms-310.png" alt="Logo" class="logo">
             <h1>✅ Solicitud de Pago Pagada</h1>
             <p>Sistema de Gestión de Proveedores</p>
         </div>

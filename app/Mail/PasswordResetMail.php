@@ -23,7 +23,7 @@ class PasswordResetMail extends Mailable
     {
         return $this->subject('Recuperación de Contraseña - SJS Construcciones')
             ->view('emails.password-reset')
-            ->attach(public_path('/assets/logo-icon-384x384.png'), [
+            ->attach(public_path('/assets/icon/ms-310.png'), [
                 'as' => 'logo.png',
                 'mime' => 'image/png',
             ]);

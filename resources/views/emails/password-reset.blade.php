@@ -129,7 +129,7 @@
     <div class="email-container">
         <!-- Header con logo -->
         <div class="header">
-            <img src="{{ config('app.url') }}/assets/logo-icon-384x384.png" alt="SJS Construcciones Logo" class="logo">
+            <img src="{{ config('app.url') }}/assets/icon/ms-310.png" alt="SJS Construcciones Logo" class="logo">
             <h1 class="header-title">Recuperación de Contraseña</h1>
         </div>
 
