@@ -166,11 +166,13 @@ class AuthController extends Controller
         $user->foto_perfil_url = $path; // guardamos la ruta
         $user->save();
 
+        $proveedor = $user->proveedorPrincipal();
+        $token = $user->createToken('auth_token')->plainTextToken;
+
         return $this->success([
-            'user' => new UserAuthenticateResource(
-                $user->load(User::eagerLodable())
-            ),
-            'url' => Storage::disk('public')->url($path),
+            'user' => new UserAuthenticateResource($user->load(User::eagerLodable())),
+            'proveedor' => new ProveedorResource($proveedor->load(Proveedor::eagerLodable())),
+            'token' => $token,
         ], 'Registro completado', 201);
     }
 
