@@ -176,7 +176,7 @@ Route::prefix('construcc')
             Route::get('estadisticas-rol', [ConstruccSolicitudPagoController::class, 'estadisticasPorRol'])->name('estadisticas-rol');
             // validada - 1  Y recibe cpom parametro: estauts- pendiente|autorizada  
             Route::get('sp-por-autorizar', [ConstruccSolicitudPagoController::class, 'spPendienteAutorizar'])->name('sp-por-autorizar');
-            // validada - 0 y recibe parametro  usuario_id: entero no null
+            // validada - 0 y recibe parametro  usuario_id: entero no null, empresa_construcc_id: entero no null
             Route::get('sp-por-validar', [ConstruccSolicitudPagoController::class, 'spPorValidar'])->name('sp-por-validar');
 
             // Segmento de dashboard para métricas de SP verificadas / no verificadas

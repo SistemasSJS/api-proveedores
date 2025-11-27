@@ -1212,6 +1212,8 @@ class ConstruccSolicitudPagoController extends Controller
         try {
             $request->validate([
                 'usuario_id' => ['required', 'integer'],
+                'empresa_construcc_id' => ['required', 'integer'],
+
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
 
