@@ -185,7 +185,7 @@ class ConstruccSolicitudPagoController extends Controller
             $nivelToRol = [
                 1 => 'dg',  // Director General
                 2 => 'dt',  // Director Técnico
-                3 => 'da',  // Director Administrativo
+                // 3 => 'da',  // Director Administrativo
             ];
 
             // Si es un nivel directivo (1, 2, 3), también autorizar
