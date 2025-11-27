@@ -367,6 +367,7 @@ class ConstruccSolicitudPagoController extends Controller
         $solicitudPago->update([
             $rolField => EstadoSolicitud::AUTORIZADA->value,
             $fechaField => now(),
+            'estado_solicitud' => EstadoSP::AUTORIZADA->value,
         ]);
 
         // Verificar si todos los roles han autorizado para cambiar estado general
