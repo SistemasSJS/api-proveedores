@@ -30,8 +30,8 @@ class CuentaBancariaStoreRequest extends FormRequest
             'tipo_cuenta' => ['required', 'in:clabe,tarjeta,cuenta'],
             'campo_dependiente' => $rulesCampo,
             'referencia' => ['nullable', 'string', 'max:50'],
-            'sucursal' => ['nullable', 'string', 'max:191'],
-            'swift' => ['nullable', 'string', 'max:191'],
+            'sucursal' => ['nullable', 'string', 'max:100'],
+            'swift' => ['nullable', 'string', 'min:8', 'max:11', 'regex:/^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/'],
             'preferida' => ['sometimes', 'boolean'],
         ];
     }
@@ -58,12 +58,20 @@ class CuentaBancariaStoreRequest extends FormRequest
             'tipo_cuenta.required' => 'El tipo de cuenta es obligatorio.',
             'tipo_cuenta.in' => 'El tipo de cuenta debe ser CLABE, tarjeta o cuenta.',
 
-            'campo_dependiente.required' => 'El campo de la cuenta es obligatorio.',
-            'campo_dependiente.size' => 'El campo debe tener exactamente :size caracteres.',
-            'campo_dependiente.min' => 'El campo debe tener al menos :min caracteres.',
-            'campo_dependiente.max' => 'El campo no puede exceder :max caracteres.',
+            'campo_dependiente.required' => 'El número de cuenta es obligatorio.',
+            'campo_dependiente.size' => 'El campo debe tener exactamente :size caracteres según el tipo de cuenta seleccionado.',
+            'campo_dependiente.string' => 'El número de cuenta debe ser una cadena de texto.',
 
+            'referencia.string' => 'La referencia debe ser texto.',
             'referencia.max' => 'La referencia no puede exceder :max caracteres.',
+
+            'sucursal.string' => 'La sucursal debe ser texto.',
+            'sucursal.max' => 'La sucursal no puede exceder :max caracteres.',
+
+            'swift.string' => 'El código SWIFT debe ser texto.',
+            'swift.min' => 'El código SWIFT debe tener al menos :min caracteres.',
+            'swift.max' => 'El código SWIFT no puede exceder :max caracteres.',
+            'swift.regex' => 'El código SWIFT tiene un formato inválido. Debe seguir el formato internacional (ej. BBUXMXMM).',
         ];
     }
 }
