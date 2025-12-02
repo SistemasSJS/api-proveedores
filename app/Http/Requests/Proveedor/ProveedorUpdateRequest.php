@@ -74,7 +74,7 @@ class ProveedorUpdateRequest extends FormRequest
             'rfc' => [
                 'sometimes',
                 'string',
-                'regex:/^[A-ZÑ&]{3,4}\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])[A-Z0-9]{3}$/'
+                // 'regex:/^[A-ZÑ&]{3,4}\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])[A-Z0-9]{3}$/'
             ],
             'regimen_fiscal_clave' => ['sometimes', 'string', 'max:10'],
             'regimen_fiscal_nombre' => ['sometimes', 'string', 'max:255'],
