@@ -71,7 +71,11 @@ class ProveedorUpdateRequest extends FormRequest
 
             // Datos fiscales
             'razon_social' => ['sometimes', 'string', 'min:3', 'max:255'],
-            'rfc' => ['sometimes', 'string', 'regex:/^[A-ZÑ&]{3,4}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])[A-Z0-9]{2}[0-9A]$/'],
+            'rfc' => [
+                'sometimes',
+                'string',
+                'regex:/^[A-ZÑ&]{3,4}\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])[A-Z0-9]{3}$/'
+            ],
             'regimen_fiscal_clave' => ['sometimes', 'string', 'max:10'],
             'regimen_fiscal_nombre' => ['sometimes', 'string', 'max:255'],
             'calle' => ['sometimes', 'string', 'max:255'],
@@ -201,7 +205,7 @@ class ProveedorUpdateRequest extends FormRequest
 
             // Estatus
             'estatus' => 'El estatus seleccionado no es válido.',
-            'estatus.enum' => 'El estatus debe ser uno de los valores permitidos: '.implode(', ', EstadoUsuario::values()),
+            'estatus.enum' => 'El estatus debe ser uno de los valores permitidos: ' . implode(', ', EstadoUsuario::values()),
         ];
     }
 }
