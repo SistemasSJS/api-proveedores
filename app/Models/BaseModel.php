@@ -11,6 +11,7 @@ abstract class BaseModel extends Model
 {
     use AutoSwaggerSchema, Filterable;
 
+    protected $connection = 'mysql5';
     public $timestamps = true;
 
     protected $hidden = [
@@ -36,13 +37,13 @@ abstract class BaseModel extends Model
                 continue;
             }
 
-            $method = 'filterBy'.ucfirst(static::$filters[$filter]);
+            $method = 'filterBy' . ucfirst(static::$filters[$filter]);
             Log::debug("Aplicando método: $method");
 
             if (method_exists($this, $method)) {
                 $query = $this->$method($query, $value); // 👈 importante
             } else {
-                Log::warning("Método $method no existe en ".static::class);
+                Log::warning("Método $method no existe en " . static::class);
             }
         }
 

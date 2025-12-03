@@ -16,6 +16,7 @@ class SolicitudPago extends BaseModel
 {
     use Filterable, HasFactory;
 
+    protected $connection = 'mysql5';
     protected $table = 'solicitudes_pago';
 
     protected $fillable = [
@@ -283,7 +284,7 @@ class SolicitudPago extends BaseModel
     /** ----------------
      * Filtros
      * ----------------- */
-    
+
     /**
      * Filtro de búsqueda global
      * Busca en múltiples campos: folio, concepto, observaciones, usuario, referencia OC y empresa
@@ -292,13 +293,13 @@ class SolicitudPago extends BaseModel
     {
         return $query->where(function ($q) use ($value) {
             $q->where('numero_folio_solicitud', 'like', "%$value%")
-              ->orWhere('descripcion_concepto', 'like', "%$value%")
-              ->orWhere('observaciones', 'like', "%$value%")
-              ->orWhere('usuario_nombre', 'like', "%$value%")
-              ->orWhere('referencia_oc', 'like', "%$value%")
-              ->orWhereHas('empresaConstrucc', function ($empresa) use ($value) {
-                  $empresa->where('nombre', 'like', "%$value%");
-              });
+                ->orWhere('descripcion_concepto', 'like', "%$value%")
+                ->orWhere('observaciones', 'like', "%$value%")
+                ->orWhere('usuario_nombre', 'like', "%$value%")
+                ->orWhere('referencia_oc', 'like', "%$value%")
+                ->orWhereHas('empresaConstrucc', function ($empresa) use ($value) {
+                    $empresa->where('nombre', 'like', "%$value%");
+                });
         });
     }
 
@@ -342,7 +343,7 @@ class SolicitudPago extends BaseModel
         // Evitar aplicar el filtro cuando el valor viene vacío (",", null, espacios, etc.)
         $ids = array_filter(
             is_array($value) ? $value : explode(',', (string) $value),
-            fn ($id) => trim((string) $id) !== ''
+            fn($id) => trim((string) $id) !== ''
         );
 
         if (empty($ids)) {
@@ -358,7 +359,7 @@ class SolicitudPago extends BaseModel
         // Evitar aplicar el filtro cuando el valor viene vacío (",", null, espacios, etc.)
         $ids = array_filter(
             is_array($value) ? $value : explode(',', (string) $value),
-            fn ($id) => trim((string) $id) !== ''
+            fn($id) => trim((string) $id) !== ''
         );
 
         if (empty($ids)) {
