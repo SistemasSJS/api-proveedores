@@ -588,4 +588,39 @@ class ProveedorController extends Controller
 
         return true;
     }
+
+    /**
+     * Valida si el perfil del proveedor está completado.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function validarPerfilCompletado(Request $request, Proveedor $proveedor)
+    {
+        // Cargar relaciones necesarias
+        $proveedor->load(['cuentasBancarias']);
+
+        // Validar información general
+        $generales = $this->validarInformacionGeneral($proveedor) && !empty($proveedor->logo);
+
+        // Validar datos fiscales (incluyendo constancia fiscal)
+        $fiscales = $this->validarDatosFiscales($proveedor) && !empty($proveedor->constancia_fiscal);
+
+        // Validar datos bancarios (al menos una cuenta bancaria activa)
+        $bancarios = $proveedor->cuentasBancarias->where('estatus', EstadoCuentaBancaria::ACTIVA)->count() > 0;
+
+        // El perfil está completado solo cuando todas las secciones están completas
+        $perfilEmpresaCompletado = $generales && $fiscales && $bancarios;
+
+        // Actualizar el campo perfil_empresa_completo en el modelo si ha cambiado
+        if ($proveedor->perfil_empresa_completo !== $perfilEmpresaCompletado) {
+            $proveedor->update(['perfil_empresa_completo' => $perfilEmpresaCompletado]);
+        }
+
+        return $this->success([
+            'fiscales' => $fiscales,
+            'bancarios' => $bancarios,
+            'generales' => $generales,
+            'perfil_empresa_completado' => $perfilEmpresaCompletado,
+        ]);
+    }
 }
