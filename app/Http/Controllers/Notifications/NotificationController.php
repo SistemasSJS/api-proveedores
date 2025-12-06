@@ -209,4 +209,86 @@ class NotificationController extends Controller
             ]
         ]);
     }
+
+    /**
+     * Contar notificaciones de SP por estatus (rechazada, aprobada, pagada, pendiente)
+     * Solo cuenta las notificaciones NO LEÍDAS
+     */
+    public function countsSPByStatus(Request $request, $userId)
+    {
+        $user = User::findOrFail($userId);
+
+        // Obtener todas las notificaciones no leídas del tipo 'solicitud_pago'
+        $notificaciones = $user->unreadNotifications()
+            ->whereRaw("JSON_EXTRACT(data, '$.tipo') = ?", ['solicitud_pago'])
+            ->get();
+
+        // Contar por subtipo (estatus)
+        $counts = [
+            'rechazada' => 0,
+            'pagada' => 0,
+            'pendiente' => 0,
+            'en_proceso' => 0,
+        ];
+
+        foreach ($notificaciones as $notificacion) {
+            $data = json_decode($notificacion->data, true);
+            $subtipo = $data['subtipo'] ?? null;
+            
+            if (isset($counts[$subtipo])) {
+                $counts[$subtipo]++;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $counts,
+        ]);
+    }
+
+    /**
+     * Marcar notificación como leída por tipo y SP específica
+     */
+    public function markAsReadByTipoAndSP(Request $request)
+    {
+        $request->validate([
+            'solicitud_pago_id' => 'required|integer',
+            'subtipo' => 'required|string|in:rechazada,pagada,pendiente,en_proceso',
+        ]);
+
+        $user = Auth::user();
+        $solicitudPagoId = $request->input('solicitud_pago_id');
+        $subtipo = $request->input('subtipo');
+
+        // Buscar la notificación no leída que corresponda a la SP y tipo específico
+        $notificaciones = $user->unreadNotifications()
+            ->whereRaw("JSON_EXTRACT(data, '$.tipo') = ?", ['solicitud_pago'])
+            ->whereRaw("JSON_EXTRACT(data, '$.subtipo') = ?", [$subtipo])
+            ->get();
+
+        // Filtrar por solicitud_pago_id
+        $notificacionId = null;
+        foreach ($notificaciones as $notif) {
+            $data = is_string($notif->data) ? json_decode($notif->data, true) : $notif->data;
+            if (isset($data['solicitud_pago_id']) && $data['solicitud_pago_id'] == $solicitudPagoId) {
+                $notificacionId = $notif->id;
+                break;
+            }
+        }
+
+        if (!$notificacionId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Notificación no encontrada',
+            ], 404);
+        }
+
+        // Marcar como leída directamente usando el ID
+        $user->unreadNotifications()->where('id', $notificacionId)->update(['read_at' => now()]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Notificación marcada como leída',
+        ]);
+    }
 }

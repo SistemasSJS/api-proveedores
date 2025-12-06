@@ -417,6 +417,88 @@ X-API-KEY: {{apiKey}}
 
 ###
 # =========================================================================
+# SECCIÓN 5: ENDPOINTS DE CONTEO Y GESTIÓN DE NOTIFICACIONES SP
+# =========================================================================
+
+### 5.1 - Obtener contadores de notificaciones de SP por estatus
+# Cuenta las notificaciones NO LEÍDAS de SP (rechazada, pagada, pendiente, en_proceso)
+GET {{baseUrl}}/auth/user/30/notifications/counts-sp-by-status
+Content-Type: application/json
+Accept: application/json
+Authorization: {{authToken}}
+
+### 5.2 - Marcar notificación de SP como leída por tipo
+# Marca como leída una notificación específica de SP cuando se abre el detalle
+POST {{baseUrl}}/notifications/marcar-leida/por-tipo-notificacion
+Content-Type: application/json
+Accept: application/json
+Authorization: {{authToken}}
+
+{
+  "solicitud_pago_id": 2,
+  "subtipo": "rechazada"
+}
+
+### 5.3 - Marcar notificación de SP pagada como leída
+POST {{baseUrl}}/notifications/marcar-leida/por-tipo-notificacion
+Content-Type: application/json
+Accept: application/json
+Authorization: {{authToken}}
+
+{
+  "solicitud_pago_id": 3,
+  "subtipo": "pagada"
+}
+
+### 5.4 - Marcar notificación de SP en proceso como leída
+POST {{baseUrl}}/notifications/marcar-leida/por-tipo-notificacion
+Content-Type: application/json
+Accept: application/json
+Authorization: {{authToken}}
+
+{
+  "solicitud_pago_id": 4,
+  "subtipo": "en_proceso"
+}
+
+### 5.5 - Test validación: Subtipo inválido (Debe fallar - 422)
+POST {{baseUrl}}/notifications/marcar-leida/por-tipo-notificacion
+Content-Type: application/json
+Accept: application/json
+Authorization: {{authToken}}
+
+{
+  "solicitud_pago_id": 2,
+  "subtipo": "invalido"
+}
+
+### 5.6 - Test validación: SP inexistente (Debe fallar - 404)
+POST {{baseUrl}}/notifications/marcar-leida/por-tipo-notificacion
+Content-Type: application/json
+Accept: application/json
+Authorization: {{authToken}}
+
+{
+  "solicitud_pago_id": 99999,
+  "subtipo": "rechazada"
+}
+
+### 5.7 - Flujo completo: Obtener contadores después de marcar como leída
+
+# PASO 1: Obtener contadores iniciales
+# GET {{baseUrl}}/auth/user/30/notifications/counts-sp-by-status
+# Authorization: {{authToken}}
+
+# PASO 2: Marcar una notificación como leída
+# POST {{baseUrl}}/notifications/marcar-leida/por-tipo-notificacion
+# Body: {"solicitud_pago_id": 2, "subtipo": "rechazada"}
+
+# PASO 3: Verificar que el contador disminuyó
+# GET {{baseUrl}}/auth/user/30/notifications/counts-sp-by-status
+# Authorization: {{authToken}}
+
+###
+# =========================================================================
 # NOTAS IMPORTANTES
 # =========================================================================
 # 

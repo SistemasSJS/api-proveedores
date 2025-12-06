@@ -97,8 +97,28 @@ class ConstruccSolicitudPagoController extends Controller
      */
     public function show(SolicitudPago $solicitudPago): JsonResponse
     {
+        // Cargar relaciones estándar
+        $solicitudPago->load(SolicitudPago::eagerLodable());
+
+        // Si la SP no tiene cuentas bancarias asociadas, buscar las cuentas del proveedor
+        if ($solicitudPago->cuentasBancarias->isEmpty()) {
+            $proveedor = $solicitudPago->proveedor;
+            
+            // Obtener cuentas bancarias activas del proveedor desde el modelo Proveedor
+            $cuentasProveedor = $proveedor->cuentasBancarias
+                ->where('estatus', 'activa')
+                ->sortByDesc('preferida'); // Primero las favoritas
+
+            // Si el proveedor tiene cuentas, tomar la primera (que sería la favorita si existe)
+            if ($cuentasProveedor->isNotEmpty()) {
+                // Agregar solo la cuenta favorita o la primera a la relación
+                $cuentaAMostrar = $cuentasProveedor->first();
+                $solicitudPago->setRelation('cuentasBancarias', collect([$cuentaAMostrar]));
+            }
+        }
+
         return $this->success(
-            new ConstruccSolicitudPagoResource($solicitudPago->load(SolicitudPago::eagerLodable()))
+            new ConstruccSolicitudPagoResource($solicitudPago)
         );
     }
 

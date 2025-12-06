@@ -95,6 +95,7 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
             'titulo' => 'Solicitud de Pago Pagada #' . $this->solicitudPagoFolio,
             'mensaje' => "Tu solicitud de pago #{$this->solicitudPagoFolio} ha sido pagada.",
             'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
+            'solicitud_pago_id' => $this->solicitudPagoId,
             'solicitud_pago_folio' => $this->solicitudPagoFolio,
             'proveedor_id' => $this->proveedorId,
             // 'empresa_id' => $this->empresaId,

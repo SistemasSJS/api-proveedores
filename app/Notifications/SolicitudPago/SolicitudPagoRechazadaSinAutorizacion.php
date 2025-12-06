@@ -94,6 +94,7 @@ class SolicitudPagoRechazadaSinAutorizacion extends Notification implements Shou
             'titulo' => 'Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
             'mensaje' => "Tu solicitud de pago #{$this->solicitudPagoFolio} ha sido rechazada durante la verificación.",
             'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
+            'solicitud_pago_id' => $this->solicitudPagoId,
             'solicitud_pago_folio' => $this->solicitudPagoFolio,
             'proveedor_id' => $this->proveedorId,
             'motivo' => $this->motivo,

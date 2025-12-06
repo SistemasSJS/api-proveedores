@@ -44,5 +44,10 @@ Route::prefix('auth')->group(function () {
         Route::post('update-credentials', [AuthController::class, 'updateUser'])->middleware(['audit']);
         Route::post('change-password', [AuthController::class, 'updatePassword'])->middleware(['audit']);
         Route::get('logout', [AuthController::class, 'logout'])->middleware(['audit']);
+        
+        /**
+         * NOTIFICACIONES DE SP
+         */
+        Route::get('user/{id}/notifications/counts-sp-by-status', [\App\Http\Controllers\Notifications\NotificationController::class, 'countsSPByStatus'])->middleware(['audit']);
     });
 });

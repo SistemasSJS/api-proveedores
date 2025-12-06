@@ -37,5 +37,6 @@ Route::prefix('notifications')->group(function () {
         Route::post('/send/{userId}', [NotificationController::class, 'sendToUser'])->middleware(['audit']);
         Route::patch('/{notificationId}/read', [NotificationController::class, 'markAsRead'])->middleware(['audit']);
         Route::patch('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->middleware(['audit']);
+        Route::post('/marcar-leida/por-tipo-notificacion', [NotificationController::class, 'markAsReadByTipoAndSP'])->middleware(['audit']);
     });
 });
