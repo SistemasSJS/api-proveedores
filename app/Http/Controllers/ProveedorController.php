@@ -521,8 +521,8 @@ class ProveedorController extends Controller
             'nombre_propietario',
             'nombre_comercial',
             'descripcion_giro_empresa',
-            'pagina_web',
-            'email',
+            // 'pagina_web',
+            // 'email',
             'telefono',
             // 'nombre_de_quien_registra',
             // 'tipos_empresa_id',
@@ -553,7 +553,7 @@ class ProveedorController extends Controller
             'regimen_fiscal_nombre',
             'calle',
             'numero_exterior',
-            'colonia',
+            // 'colonia',
             'ciudad',
             'codigo_postal',
             'pais',
@@ -600,10 +600,14 @@ class ProveedorController extends Controller
         $proveedor->load(['cuentasBancarias']);
 
         // Validar información general
-        $generales = $this->validarInformacionGeneral($proveedor) && !empty($proveedor->logo);
+        $generales = $this->validarInformacionGeneral($proveedor);
+        // el logo no se considerra para perfiul completado
+        // && !empty($proveedor->logo);
 
         // Validar datos fiscales (incluyendo constancia fiscal)
-        $fiscales = $this->validarDatosFiscales($proveedor) && !empty($proveedor->constancia_fiscal);
+        $fiscales = $this->validarDatosFiscales($proveedor);
+        // la constancia no se considerra para perfiul completado
+        //&& !empty($proveedor->constancia_fiscal);
 
         // Validar datos bancarios (al menos una cuenta bancaria activa)
         $bancarios = $proveedor->cuentasBancarias->where('estatus', EstadoCuentaBancaria::ACTIVA)->count() > 0;

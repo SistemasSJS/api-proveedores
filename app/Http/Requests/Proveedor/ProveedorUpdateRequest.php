@@ -42,8 +42,8 @@ class ProveedorUpdateRequest extends FormRequest
         return [
             'pagina_web' => ['nullable', 'string', 'max:255'],
             'nombre_comercial' => ['sometimes', 'string', 'max:255'],
-            'telefono' => ['sometimes', 'required', 'string', 'max:15'],
-            'email' => ['sometimes', 'required', 'email', 'max:255'],
+            'telefono' => ['sometimes', 'string', 'max:15'],
+            'email' => ['nullable', 'email', 'max:255'],
 
             'direccion_empresa' => ['nullable', 'string', 'max:255'],
             'descripcion_giro_empresa' => ['nullable', 'string', 'max:255'],
@@ -88,12 +88,12 @@ class ProveedorUpdateRequest extends FormRequest
     public function messages()
     {
         return [
-            // Logo
+            // -------- LOGO --------
             'logo.image' => 'El archivo debe ser una imagen válida.',
             'logo.mimes' => 'La imagen debe estar en formato JPG o PNG.',
             'logo.max' => 'La imagen no debe pesar más de 2MB.',
 
-            // Generales
+            // -------- GENERALES --------
             'nombre_propietario.string' => 'El nombre del propietario debe ser una cadena de texto.',
             'nombre_propietario.max' => 'El nombre del propietario no debe exceder los 255 caracteres.',
 
@@ -103,8 +103,25 @@ class ProveedorUpdateRequest extends FormRequest
             'nombre_comercial.string' => 'El nombre comercial debe ser una cadena de texto.',
             'nombre_comercial.max' => 'El nombre comercial no debe exceder los 255 caracteres.',
 
-            // ------- FISCALES -------
+            'pagina_web.string' => 'La página web debe ser una cadena de texto.',
+            'pagina_web.max' => 'La página web no debe exceder los 255 caracteres.',
+
+            'telefono.string' => 'El teléfono debe ser una cadena de texto.',
+            'telefono.max' => 'El teléfono no debe exceder los 15 caracteres.',
+
+            'email.email' => 'El correo electrónico debe tener un formato válido.',
+            'email.max' => 'El correo electrónico no debe exceder los 255 caracteres.',
+            'email.unique' => 'El correo electrónico ya está registrado.',
+
+            'direccion_empresa.string' => 'La dirección de la empresa debe ser una cadena de texto.',
+            'direccion_empresa.max' => 'La dirección de la empresa no debe exceder los 255 caracteres.',
+
+            'descripcion_giro_empresa.string' => 'La descripción del giro de la empresa debe ser una cadena de texto.',
+            'descripcion_giro_empresa.max' => 'La descripción del giro de la empresa no debe exceder los 255 caracteres.',
+
+            // -------- DATOS FISCALES --------
             'razon_social.string' => 'La razón social debe ser una cadena de texto.',
+            'razon_social.min' => 'La razón social debe contener al menos 3 caracteres.',
             'razon_social.max' => 'La razón social no debe exceder los 255 caracteres.',
             'razon_social.unique' => 'La razón social ingresada ya está registrada.',
 
@@ -118,16 +135,31 @@ class ProveedorUpdateRequest extends FormRequest
             'regimen_fiscal_nombre.string' => 'El nombre del régimen fiscal debe ser una cadena de texto.',
             'regimen_fiscal_nombre.max' => 'El nombre del régimen fiscal no debe exceder los 255 caracteres.',
 
-            'telefono.string' => 'El teléfono debe ser una cadena de texto.',
-            'telefono.max' => 'El teléfono no debe exceder los 15 caracteres.',
+            'calle.string' => 'La calle debe ser una cadena de texto.',
+            'calle.max' => 'La calle no debe exceder los 255 caracteres.',
 
-            'email.email' => 'El correo electrónico debe tener un formato válido.',
-            'email.max' => 'El correo electrónico no debe exceder los 255 caracteres.',
-            'email.unique' => 'El correo electrónico ya está registrado.',
+            'numero_exterior.string' => 'El número exterior debe ser una cadena de texto.',
+            'numero_exterior.max' => 'El número exterior no debe exceder los 20 caracteres.',
 
+            'numero_interior.string' => 'El número interior debe ser una cadena de texto.',
+            'numero_interior.max' => 'El número interior no debe exceder los 20 caracteres.',
+
+            'colonia.string' => 'La colonia debe ser una cadena de texto.',
+            'colonia.max' => 'La colonia no debe exceder los 255 caracteres.',
+
+            'estado.string' => 'El estado debe ser una cadena de texto.',
+            'estado.max' => 'El estado no debe exceder los 255 caracteres.',
+
+            'ciudad.string' => 'La ciudad debe ser una cadena de texto.',
+            'ciudad.max' => 'La ciudad no debe exceder los 255 caracteres.',
+
+            'codigo_postal.string' => 'El código postal debe ser una cadena de texto.',
             'codigo_postal.regex' => 'El código postal debe contener exactamente 5 dígitos.',
 
-            // ------- CONTACTO -------
+            'pais.string' => 'El país debe ser una cadena de texto.',
+            'pais.max' => 'El país no debe exceder los 255 caracteres.',
+
+            // -------- CONTACTO --------
             'contacto_nombre.string' => 'El nombre del contacto debe ser una cadena de texto.',
             'contacto_nombre.max' => 'El nombre del contacto no debe exceder los 150 caracteres.',
 
@@ -137,10 +169,10 @@ class ProveedorUpdateRequest extends FormRequest
             'contacto_telefono.string' => 'El teléfono del contacto debe ser una cadena de texto.',
             'contacto_telefono.max' => 'El teléfono del contacto no debe exceder los 15 caracteres.',
 
-            'contacto_correo.email' => 'El correo electrónico del contacto debe tener un formato válido.',
-            'contacto_correo.max' => 'El correo electrónico del contacto no debe exceder los 60 caracteres.',
+            'contacto_correo.email' => 'El correo electrónico de contacto debe tener un formato válido.',
+            'contacto_correo.max' => 'El correo electrónico de contacto no debe exceder los 60 caracteres.',
 
-            // Otros
+            // -------- OTROS --------
             'estatus.enum' => 'El estatus debe ser uno de los valores permitidos: ' . implode(', ', EstadoUsuario::values()),
         ];
     }
