@@ -27,6 +27,9 @@ class ProveedorResource extends JsonResource
             //     : asset('storage/'.$this->logo))
             // : null,
 
+            // Constancia fiscal (URL pública completa)
+            'constancia_fiscal' => $this->constancia_fiscal ? Storage::disk('public')->url($this->constancia_fiscal) : null,
+
             'tipo_persona' => $this->tipo_persona,
             'regimen_fiscal_clave' => $this->regimen_fiscal_clave,
             'regimen_fiscal_nombre' => $this->regimen_fiscal_nombre,

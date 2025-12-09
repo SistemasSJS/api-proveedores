@@ -9,25 +9,14 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * @OA\Schema(
  *     schema="ProveedorUpdateRequest",
- *     required={
- *         "nombre_propietario",
- *         "nombre_de_quien_registra",
+ *     sometimes={
  *         "nombre_comercial",
- *         "razon_social",
- *         "tipos_empresa_id",
- *         "descripcion_giro_empresa",
- *         "direccion_empresa",
  *         "email",
  *         "telefono",
- *         "pagina_web",
- *         "estado",
- *         "municipio",
- *         "codigo_postal",
- *         "contacto_nombre",
- *         "contacto_cargo",
- *         "contacto_telefono",
- *         "contacto_correo"
- *     }
+ *         "razon_social",
+ *         "rfc"
+ *     },
+ *     description="Campos requeridos: Nombre comercial, Email, Teléfono, Razón Social y RFC. Además se requiere al menos 1 cuenta bancaria registrada."
  * )
  */
 class ProveedorUpdateRequest extends FormRequest
@@ -40,17 +29,19 @@ class ProveedorUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'pagina_web' => ['nullable', 'string', 'max:255'],
+            // -------- DATOS GENERALES (REQUERIDOS) --------
             'nombre_comercial' => ['sometimes', 'string', 'max:255'],
+            'email' => ['sometimes', 'email', 'max:255'],
             'telefono' => ['sometimes', 'string', 'max:15'],
-            'email' => ['nullable', 'email', 'max:255'],
 
+            // -------- DATOS GENERALES (OPCIONALES) --------
+            'pagina_web' => ['nullable', 'string', 'max:255'],
             'direccion_empresa' => ['nullable', 'string', 'max:255'],
             'descripcion_giro_empresa' => ['nullable', 'string', 'max:255'],
             'nombre_propietario' => ['nullable', 'string', 'max:255'],
             'nombre_de_quien_registra' => ['nullable', 'string', 'max:255'],
 
-            // -------- DATOS FISCALES --------
+            // -------- DATOS FISCALES (REQUERIDOS) --------
             'razon_social' => [
                 'sometimes',
                 'string',
@@ -100,15 +91,18 @@ class ProveedorUpdateRequest extends FormRequest
             'nombre_de_quien_registra.string' => 'El nombre de quien registra debe ser una cadena de texto.',
             'nombre_de_quien_registra.max' => 'El nombre de quien registra no debe exceder los 255 caracteres.',
 
+            'nombre_comercial.sometimes' => 'El nombre comercial es obligatorio.',
             'nombre_comercial.string' => 'El nombre comercial debe ser una cadena de texto.',
             'nombre_comercial.max' => 'El nombre comercial no debe exceder los 255 caracteres.',
 
             'pagina_web.string' => 'La página web debe ser una cadena de texto.',
             'pagina_web.max' => 'La página web no debe exceder los 255 caracteres.',
 
+            'telefono.sometimes' => 'El teléfono es obligatorio.',
             'telefono.string' => 'El teléfono debe ser una cadena de texto.',
             'telefono.max' => 'El teléfono no debe exceder los 15 caracteres.',
 
+            'email.sometimes' => 'El correo electrónico es obligatorio.',
             'email.email' => 'El correo electrónico debe tener un formato válido.',
             'email.max' => 'El correo electrónico no debe exceder los 255 caracteres.',
             'email.unique' => 'El correo electrónico ya está registrado.',
@@ -120,11 +114,13 @@ class ProveedorUpdateRequest extends FormRequest
             'descripcion_giro_empresa.max' => 'La descripción del giro de la empresa no debe exceder los 255 caracteres.',
 
             // -------- DATOS FISCALES --------
+            'razon_social.sometimes' => 'La razón social es obligatoria.',
             'razon_social.string' => 'La razón social debe ser una cadena de texto.',
             'razon_social.min' => 'La razón social debe contener al menos 3 caracteres.',
             'razon_social.max' => 'La razón social no debe exceder los 255 caracteres.',
             'razon_social.unique' => 'La razón social ingresada ya está registrada.',
 
+            'rfc.sometimes' => 'El RFC es obligatorio.',
             'rfc.string' => 'El RFC debe ser una cadena de texto.',
             'rfc.regex' => 'El RFC no tiene un formato válido según el SAT.',
             'rfc.unique' => 'El RFC ingresado ya está registrado.',

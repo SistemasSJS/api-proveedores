@@ -286,16 +286,15 @@ class ProveedorController extends Controller
         $file = $request->file('constancia_fiscal');
 
         // Borrar constancia anterior si existe
-        // if ($proveedor->constancia_fiscal && Storage::disk('private')->exists($proveedor->constancia_fiscal)) {
-        //     Storage::disk('private')->delete($proveedor->constancia_fiscal);
-        // }
+        if ($proveedor->constancia_fiscal && Storage::disk('public')->exists($proveedor->constancia_fiscal)) {
+            Storage::disk('public')->delete($proveedor->constancia_fiscal);
+        }
 
-        // Guardar nueva constancia en private
-
+        // Guardar nueva constancia en public
         // ruta de almacenamiento: constancias/constancia_{proveedor_id:6 dijitos}_{timestamp}.pdf
         $idFormateado = str_pad($proveedor->id, 6, '0', STR_PAD_LEFT);
         $filename = 'constancia_' . $idFormateado . '_' . time() . '.pdf';
-        $path = $file->storeAs('constancias', $filename, 'private');
+        $path = $file->storeAs('constancias', $filename, 'public');
 
         $proveedor->update(['constancia_fiscal' => $path]);
 
@@ -308,7 +307,7 @@ class ProveedorController extends Controller
         ];
 
         try {
-            $fullPath = Storage::disk('private')->path($path);
+            $fullPath = Storage::disk('public')->path($path);
             Log::info('Intentando extraer datos fiscales de: ' . $fullPath);
 
             $datosFiscales = $constanciaService->extraerDatosFiscales($fullPath);
@@ -370,13 +369,13 @@ class ProveedorController extends Controller
             ], Response::HTTP_FORBIDDEN);
         }
 
-        if (! $proveedor->constancia_fiscal || ! Storage::disk('private')->exists($proveedor->constancia_fiscal)) {
+        if (! $proveedor->constancia_fiscal || ! Storage::disk('public')->exists($proveedor->constancia_fiscal)) {
             return response()->json([
                 'message' => 'La constancia fiscal no está disponible.',
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $path = Storage::disk('private')->path($proveedor->constancia_fiscal);
+        $path = Storage::disk('public')->path($proveedor->constancia_fiscal);
 
         // Mostrar inline en navegador (preview)
         return response()->file($path, [
@@ -518,12 +517,12 @@ class ProveedorController extends Controller
     private function validarInformacionGeneral(Proveedor $proveedor): bool
     {
         $camposRequeridos = [
-            'nombre_propietario',
+            // 'nombre_propietario',
             'nombre_comercial',
-            'descripcion_giro_empresa',
+            // 'descripcion_giro_empresa',
             // 'pagina_web',
-            // 'email',
-            'telefono',
+            'email',
+            // 'telefono',
             // 'nombre_de_quien_registra',
             // 'tipos_empresa_id',
             // 'direccion_empresa',
@@ -549,14 +548,14 @@ class ProveedorController extends Controller
         $camposFiscales = [
             'razon_social',
             'rfc',
-            'regimen_fiscal_clave',
-            'regimen_fiscal_nombre',
-            'calle',
-            'numero_exterior',
+            // 'regimen_fiscal_clave',
+            // 'regimen_fiscal_nombre',
+            // 'calle',
+            // 'numero_exterior',
             // 'colonia',
-            'ciudad',
-            'codigo_postal',
-            'pais',
+            // 'ciudad',
+            // 'codigo_postal',
+            // 'pais',
         ];
 
         foreach ($camposFiscales as $campo) {
