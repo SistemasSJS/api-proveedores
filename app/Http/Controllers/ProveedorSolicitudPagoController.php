@@ -10,6 +10,7 @@ use App\Models\SolicitudPago;
 use App\Services\InterApiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class ProveedorSolicitudPagoController extends Controller
@@ -140,6 +141,25 @@ class ProveedorSolicitudPagoController extends Controller
     {
         if ($solicitudPago->proveedor_id !== $proveedor->id) {
             return $this->error('Solicitud no pertenece a este proveedor', 403);
+        }
+
+        // Marcar notificación como leída si existe
+        if ($solicitudPago->notification_id && auth()->check()) {
+            $notification = auth()->user()->notifications()
+                ->where('id', $solicitudPago->notification_id)
+                ->first();
+
+            if ($notification && !$notification->read_at) {
+                $notification->markAsRead();
+                Log::info('✅ Notificación marcada como leída', [
+                    'notification_id' => $solicitudPago->notification_id,
+                    'solicitud_pago_id' => $solicitudPago->id,
+                    'usuario_id' => auth()->id(),
+                ]);
+            }
+
+            // Limpiar referencia de notification_id
+            $solicitudPago->update(['notification_id' => null]);
         }
 
         // Cargar relaciones estándar

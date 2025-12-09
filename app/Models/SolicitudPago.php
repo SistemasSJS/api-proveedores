@@ -56,6 +56,7 @@ class SolicitudPago extends BaseModel
         'notas_abono',
         'fecha_rechazo',
         'fecha_pago',
+        'notification_id',
 
         // Nuevos campos
         'dg',

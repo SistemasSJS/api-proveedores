@@ -326,6 +326,10 @@ class ConstruccSolicitudPagoController extends Controller
             $usuarioPrincipal = $proveedor->usuarioPrincipal();
 
             if ($usuarioPrincipal) {
+                // Contar notificaciones antes de enviar
+                $countBefore = $usuarioPrincipal->notifications()->count();
+                
+                // Enviar notificación
                 $usuarioPrincipal->notify(new SolicitudPagoRechazadaSinAutorizacion(
                     $solicitudPago->numero_folio_solicitud,
                     $solicitudPago->id,
@@ -334,6 +338,17 @@ class ConstruccSolicitudPagoController extends Controller
                     $usuarioPrincipal->id,
                     $solicitudPago->verificada ? 1 : 0
                 ));
+
+                // Obtener la notificación recién creada (debe ser la única nueva)
+                $notificationId = $usuarioPrincipal->notifications()
+                    ->skip($countBefore)
+                    ->take(1)
+                    ->value('id');
+
+                // Guardar notification_id en la SP
+                if ($notificationId) {
+                    $solicitudPago->update(['notification_id' => $notificationId]);
+                }
 
                 Log::info('✅ Notificación de SP Rechazada Sin Autorización enviada', [
                     'solicitud_pago_id' => $solicitudPago->id,
@@ -452,6 +467,10 @@ class ConstruccSolicitudPagoController extends Controller
             $usuarioPrincipal = $proveedor->usuarioPrincipal();
 
             if ($usuarioPrincipal) {
+                // Contar notificaciones antes de enviar
+                $countBefore = $usuarioPrincipal->notifications()->count();
+                
+                // Enviar notificación
                 $usuarioPrincipal->notify(new SolicitudPagoRechazada(
                     $solicitudPago->numero_folio_solicitud,
                     $solicitudPago->id,
@@ -459,6 +478,17 @@ class ConstruccSolicitudPagoController extends Controller
                     $data['motivo_rechazo'],
                     $usuarioPrincipal->id
                 ));
+
+                // Obtener la notificación recién creada (debe ser la única nueva)
+                $notificationId = $usuarioPrincipal->notifications()
+                    ->skip($countBefore)
+                    ->take(1)
+                    ->value('id');
+
+                // Guardar notification_id en la SP
+                if ($notificationId) {
+                    $solicitudPago->update(['notification_id' => $notificationId]);
+                }
 
                 Log::info('✅ Notificación de SP Rechazada enviada', [
                     'solicitud_pago_id' => $solicitudPago->id,

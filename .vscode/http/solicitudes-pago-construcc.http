@@ -55,7 +55,7 @@ X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
 ### 3. Ver detalle de solicitud específica
-GET {{baseUrl}}/construcc/solicitudes-pago/17
+GET {{baseUrl}}/construcc/solicitudes-pago/6
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
@@ -288,7 +288,7 @@ X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 
 ### 31. 🆕 Marcar una SP como RECHAZADA durante verificación
-POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/marcar-rechazada
+POST {{baseUrl}}/construcc/solicitudes-pago/6/marcar-rechazada
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 
