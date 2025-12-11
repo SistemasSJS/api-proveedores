@@ -28,9 +28,15 @@ class ProveedorUsuairoStoreRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            // 'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'email' => ['required', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'], // espera password_confirmation
             'role_id' => ['required', 'integer', 'exists:roles,id'],
+
+            // Campos de la relación pivot
+            'tipo_relacion' => ['sometimes', 'string', 'in:PRINCIPAL,SECUNDARIO'],
+            'activo' => ['sometimes', 'boolean'],
+            'observaciones' => ['nullable', 'string', 'max:500'],
         ];
     }
 
@@ -39,13 +45,16 @@ class ProveedorUsuairoStoreRequest extends FormRequest
         return [
             'name.required' => 'El nombre es obligatorio.',
             'email.required' => 'El correo electrónico es obligatorio.',
-            'email.email' => 'El correo electrónico debe ser válido.',
+            // 'email.email' => 'El correo electrónico debe ser válido.',
             'email.unique' => 'Este correo ya está registrado.',
             'password.required' => 'La contraseña es obligatoria.',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
             'password.confirmed' => 'La confirmación de la contraseña no coincide.',
-            'rol_id.required' => 'El rol es obligatorio.',
-            'rol_id.exists' => 'El rol seleccionado no es válido.',
+            'role_id.required' => 'El rol es obligatorio.',
+            'role_id.exists' => 'El rol seleccionado no es válido.',
+            'tipo_relacion.in' => 'El tipo de relación debe ser PRINCIPAL o SECUNDARIO.',
+            'activo.boolean' => 'El campo activo debe ser verdadero o falso.',
+            'observaciones.max' => 'Las observaciones no pueden exceder los 500 caracteres.',
         ];
     }
 }

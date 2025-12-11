@@ -47,6 +47,8 @@ Route::prefix('proveedores')
          */
         Route::prefix('{proveedor}/cuentas-bancarias')->middleware(['proveedor.access'])->group(function () {
             Route::get('/', [ProveedorCuentaBancariaController::class, 'index'])->middleware(['api.access', 'audit']);
+            Route::get('/preferida', [ProveedorCuentaBancariaController::class, 'getPreferida'])->middleware(['api.access', 'audit']);
+            Route::post('/preferida', [ProveedorCuentaBancariaController::class, 'setPreferida'])->middleware(['api.access', 'audit']);
             Route::post('/', [ProveedorCuentaBancariaController::class, 'store'])->middleware(['api.access', 'audit']);
             Route::middleware(['api.access', 'proveedor.cuenta', 'audit'])->group(function () {
                 Route::get('{cuenta}', [ProveedorCuentaBancariaController::class, 'show']);
@@ -72,6 +74,8 @@ Route::prefix('proveedores')
                 Route::patch('{user}', [ProveedorUsuarioController::class, 'update']);
                 Route::delete('{user}', [ProveedorUsuarioController::class, 'destroy']);
                 Route::post('{user}/logo', [ProveedorUsuarioController::class, 'updateLogo']);
+                Route::patch('{user}/relacion', [ProveedorUsuarioController::class, 'updateRelacion']);
+                Route::patch('{user}/estado', [ProveedorUsuarioController::class, 'cambiarEstado']);
             });
         });
 

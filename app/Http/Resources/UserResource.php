@@ -46,8 +46,8 @@ class UserResource extends JsonResource
             'updated_at' => optional($this->updated_at)->toDateTimeString(),
             'extra_data' => $pivot ? [
                 'tipo_relacion' => $pivot->tipo_relacion,
-                'is_main' => $pivot->is_main ?? false,
                 'activo' => $pivot->activo,
+                'estado' => $pivot->estado ?? 'registrado',
                 'fecha_asignacion' => optional($pivot->fecha_asignacion)->toDateTimeString(),
                 'fecha_desasignacion' => optional($pivot->fecha_desasignacion)->toDateTimeString(),
                 'observaciones' => $pivot->observaciones,

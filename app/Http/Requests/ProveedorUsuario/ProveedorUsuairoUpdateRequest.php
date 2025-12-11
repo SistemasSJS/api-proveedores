@@ -34,7 +34,7 @@ class ProveedorUsuairoUpdateRequest extends FormRequest
             ],
             'email' => [
                 'sometimes',
-                'email',
+                // 'email',
                 'max:255',
                 Rule::unique('users', 'email')->ignore($userId),
             ],
@@ -44,7 +44,7 @@ class ProveedorUsuairoUpdateRequest extends FormRequest
                 'min:8',
                 'confirmed', // espera password_confirmation
             ],
-            'rol_id' => [
+            'role_id' => [
                 'sometimes',
                 'integer',
                 'exists:roles,id',
@@ -57,7 +57,7 @@ class ProveedorUsuairoUpdateRequest extends FormRequest
         return [
             'name.required' => 'El nombre es obligatorio.',
             'email.required' => 'El correo electrónico es obligatorio.',
-            'email.email' => 'El correo electrónico debe ser válido.',
+            // 'email.email' => 'El correo electrónico debe ser válido.',
             'email.unique' => 'Este correo ya está registrado.',
             'is_main.boolean' => 'El campo "is_main" debe ser verdadero o falso.',
         ];

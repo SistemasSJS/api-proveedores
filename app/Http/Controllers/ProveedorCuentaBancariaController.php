@@ -38,6 +38,67 @@ class ProveedorCuentaBancariaController extends Controller
     }
 
     /**
+     * Obtiene las cuentas bancarias preferidas del proveedor
+     */
+    public function getPreferida(Proveedor $proveedor)
+    {
+        $cuentasPreferidas = $proveedor->cuentasBancarias()
+            ->where('preferida', true)
+            ->where('estatus', 1) // Solo cuentas activas
+            ->get();
+
+        if ($cuentasPreferidas->isEmpty()) {
+            return $this->error('No hay cuentas bancarias preferidas para este proveedor.', 404);
+        }
+
+        return $this->success(
+            CuentaBancariaResource::collection($cuentasPreferidas),
+            'Cuentas bancarias preferidas obtenidas correctamente'
+        );
+    }
+
+    /**
+     * Establece una o varias cuentas bancarias como preferidas
+     */
+    public function setPreferida(Request $request, Proveedor $proveedor)
+    {
+        $request->validate([
+            'cuenta_ids' => 'required|array|min:1',
+            'cuenta_ids.*' => 'required|integer|exists:cuentas_bancarias,id',
+        ]);
+
+        $cuentaIds = $request->input('cuenta_ids');
+
+        // Verificar que todas las cuentas pertenecen al proveedor
+        $cuentasDelProveedor = $proveedor->cuentasBancarias()
+            ->whereIn('id', $cuentaIds)
+            ->pluck('id')
+            ->toArray();
+
+        if (count($cuentasDelProveedor) !== count($cuentaIds)) {
+            return $this->error('Una o más cuentas bancarias no pertenecen al proveedor.', 403);
+        }
+
+        // Desmarcar todas las cuentas como preferidas
+        $proveedor->cuentasBancarias()->update(['preferida' => false]);
+
+        // Marcar las cuentas seleccionadas como preferidas
+        $proveedor->cuentasBancarias()
+            ->whereIn('id', $cuentaIds)
+            ->update(['preferida' => true]);
+
+        // Obtener las cuentas actualizadas
+        $cuentasPreferidas = $proveedor->cuentasBancarias()
+            ->whereIn('id', $cuentaIds)
+            ->get();
+
+        return $this->success(
+            CuentaBancariaResource::collection($cuentasPreferidas),
+            'Cuentas bancarias preferidas establecidas correctamente.'
+        );
+    }
+
+    /**
      * Muestra una cuenta bancaria específica del proveedor
      */
     public function show(Proveedor $proveedor, CuentaBancaria $cuenta)

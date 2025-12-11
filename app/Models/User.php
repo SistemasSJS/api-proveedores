@@ -143,7 +143,8 @@ class User extends Authenticatable
     {
         return $this->userProveedores()
             ->where('activo', true)
-            ->where('tipo_relacion', 'PRINCIPAL')
+            ->whereIn('tipo_relacion', ['PRINCIPAL', 'SECUNDARIO'])
+            ->orderByRaw("FIELD(tipo_relacion, 'PRINCIPAL', 'SECUNDARIO')") // prioridad
             ->with('proveedor')
             ->first()?->proveedor;
     }
