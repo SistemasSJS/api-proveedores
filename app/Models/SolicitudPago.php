@@ -135,6 +135,7 @@ class SolicitudPago extends BaseModel
         'obra_id' => 'ObraId',
 
         //
+        'visto_rechazada' => 'VistoRechazada',
     ];
 
     protected $casts = [
@@ -507,6 +508,11 @@ class SolicitudPago extends BaseModel
                 'pago_completo' => false,
             ]);
         }
+    }
+
+    public function filterByVistoRechazada($query, $value)
+    {
+        return $query->where('visto_rechazada', (bool) $value);
     }
 
     /**
