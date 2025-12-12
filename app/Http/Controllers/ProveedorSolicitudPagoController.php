@@ -38,7 +38,7 @@ class ProveedorSolicitudPagoController extends Controller
             ->filter($filters);
 
         // 📌 Aplicar filtro default última semana
-        $query = $this->aplicarFiltroUltimaSemana($query, $request);
+        // $query = $this->aplicarFiltroUltimaSemana($query, $request);
 
         // Orden y paginación
         $originalPaginator = $query
@@ -65,7 +65,7 @@ class ProveedorSolicitudPagoController extends Controller
             ->filter($filters);
 
         // 📌 Aplicar filtro default última semana
-        $query = $this->aplicarFiltroUltimaSemana($query, $request);
+        // $query = $this->aplicarFiltroUltimaSemana($query, $request);
 
         $items = $query
             ->orderBy($sortBy, $order)
@@ -474,13 +474,13 @@ class ProveedorSolicitudPagoController extends Controller
         $perPage = $request->input('per_page', 15);
 
         // Fecha por defecto: última semana (pero si el cliente envía fecha_desde/fecha_hasta se usan)
-        $fechaDesde = $request->input('fecha_desde', now()->subDays(7)->startOfDay());
-        $fechaHasta = $request->input('fecha_hasta', now()->endOfDay());
+        // $fechaDesde = $request->input('fecha_desde', now()->subDays(7)->startOfDay());
+        // $fechaHasta = $request->input('fecha_hasta', now()->endOfDay());
 
         // Base query
         $query = SolicitudPago::where('proveedor_id', $proveedor->id)
             ->with(['empresaConstrucc', 'ordenesCompra'])
-            ->whereBetween('created_at', [$fechaDesde, $fechaHasta])
+            // ->whereBetween('created_at', [$fechaDesde, $fechaHasta])
             ->orderBy('created_at', 'desc');
 
         // Excluir las solicitudes RECHAZADAS que ya fueron marcadas como vistas
@@ -664,14 +664,14 @@ class ProveedorSolicitudPagoController extends Controller
     {
         $filters = $request->only(['fecha_registro_pendiente_desde', 'fecha_registro_pendiente_hasta', 'empresa_construcc_id']);
 
-        // Filtro por defecto: última semana (si el cliente no envía fechas)
-        $fechaDesde = $request->input('fecha_registro_pendiente_desde', now()->subDays(7)->startOfDay());
-        $fechaHasta = $request->input('fecha_registro_pendiente_hasta', now()->endOfDay());
+        // // Filtro por defecto: última semana (si el cliente no envía fechas)
+        // $fechaDesde = $request->input('fecha_registro_pendiente_desde', now()->subDays(7)->startOfDay());
+        // $fechaHasta = $request->input('fecha_registro_pendiente_hasta', now()->endOfDay());
 
         // Base query
         $baseQuery = SolicitudPago::query()
-            ->where('proveedor_id', $proveedor->id)
-            ->whereBetween('created_at', [$fechaDesde, $fechaHasta]);
+            ->where('proveedor_id', $proveedor->id);
+            // ->whereBetween('created_at', [$fechaDesde, $fechaHasta]);
 
         // Aplicar filtros del sistema si existen
         if (!empty($filters)) {
