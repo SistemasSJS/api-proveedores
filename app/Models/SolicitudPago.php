@@ -76,6 +76,9 @@ class SolicitudPago extends BaseModel
         'referencia_oc',
         'origen_oc',
         'monto_oc_original',
+
+        // 
+        'visto_rechazada',
     ];
 
     protected static $filters = [
@@ -169,6 +172,8 @@ class SolicitudPago extends BaseModel
         // Campos de tracking OC
         'origen_oc' => 'boolean',
         'monto_oc_original' => 'decimal:2',
+
+        'visto_rechazada' => 'boolean',
     ];
 
     /** ----------------

@@ -21,6 +21,7 @@ class ProveedorSolicitudPagoController extends Controller
     {
         $this->interApiService = $interApiService;
     }
+
     /**
      * Listado con paginación, filtrando por proveedor
      */
@@ -31,10 +32,16 @@ class ProveedorSolicitudPagoController extends Controller
         $order = $request->input('order', 'desc');
         $perPage = $request->input('per_page', 10);
 
-        $originalPaginator = SolicitudPago::query()
+        $query = SolicitudPago::query()
             ->with(SolicitudPago::eagerLodable())
             ->where('proveedor_id', $proveedor->id)
-            ->filter($filters)
+            ->filter($filters);
+
+        // 📌 Aplicar filtro default última semana
+        $query = $this->aplicarFiltroUltimaSemana($query, $request);
+
+        // Orden y paginación
+        $originalPaginator = $query
             ->orderBy($sortBy, $order)
             ->paginate($perPage);
 
@@ -52,10 +59,15 @@ class ProveedorSolicitudPagoController extends Controller
         $sortBy = $request->input('sort_by', 'created_at');
         $order = $request->input('order', 'desc');
 
-        $items = SolicitudPago::query()
+        $query = SolicitudPago::query()
             ->with(['proveedor', 'empresaConstrucc', 'cuentasBancarias'])
             ->where('proveedor_id', $proveedor->id)
-            ->filter($filters)
+            ->filter($filters);
+
+        // 📌 Aplicar filtro default última semana
+        $query = $this->aplicarFiltroUltimaSemana($query, $request);
+
+        $items = $query
             ->orderBy($sortBy, $order)
             ->get();
 
@@ -141,6 +153,12 @@ class ProveedorSolicitudPagoController extends Controller
     {
         if ($solicitudPago->proveedor_id !== $proveedor->id) {
             return $this->error('Solicitud no pertenece a este proveedor', 403);
+        }
+
+        if ($solicitudPago->estado_solicitud === 'rechazada' && !$solicitudPago->visto_rechazada) {
+            $solicitudPago->update([
+                'visto_rechazada' => true,
+            ]);
         }
 
         // Marcar notificación como leída si existe
@@ -453,20 +471,30 @@ class ProveedorSolicitudPagoController extends Controller
      */
     public function historico(Request $request, Proveedor $proveedor): JsonResponse
     {
-        $fechaDesde = $request->input('fecha_desde', now()->subMonths(3)->format('Y-m-d'));
-        $fechaHasta = $request->input('fecha_hasta', now()->format('Y-m-d'));
         $perPage = $request->input('per_page', 15);
 
-        // Obtener SP con OC vinculadas
-        $solicitudes = SolicitudPago::where('proveedor_id', $proveedor->id)
-            ->whereBetween('created_at', [$fechaDesde, $fechaHasta])
+        // Fecha por defecto: última semana (pero si el cliente envía fecha_desde/fecha_hasta se usan)
+        $fechaDesde = $request->input('fecha_desde', now()->subDays(7)->startOfDay());
+        $fechaHasta = $request->input('fecha_hasta', now()->endOfDay());
+
+        // Base query
+        $query = SolicitudPago::where('proveedor_id', $proveedor->id)
             ->with(['empresaConstrucc', 'ordenesCompra'])
-            ->orderBy('created_at', 'desc')
-            ->paginate($perPage);
+            ->whereBetween('created_at', [$fechaDesde, $fechaHasta])
+            ->orderBy('created_at', 'desc');
+
+        // Excluir las solicitudes RECHAZADAS que ya fueron marcadas como vistas
+        // (Queremos mantener: registros que NO sean rechazados OR si lo son, que NO estén vistos)
+        $query->where(function ($q) {
+            $q->where('estado_solicitud', '<>', 'rechazada')
+                ->orWhere('visto_rechazada', false);
+        });
+
+        $solicitudes = $query->paginate($perPage);
 
         // Mapear datos con información de OC vinculada
         $data = $solicitudes->getCollection()->map(function ($sp) {
-            $ordenCompra = $sp->ordenesCompra->first();
+            $ordenCompra = $sp->ordenesCompra->first() ?? null;
 
             return [
                 'solicitud_pago' => [
@@ -479,6 +507,7 @@ class ProveedorSolicitudPagoController extends Controller
                     'usuario_id' => $sp->usuario_id,
                     'usuario_nombre' => $sp->usuario_nombre,
                     'origen_oc' => $sp->origen_oc ?? false,
+                    'visto_rechazada' => $sp->visto_rechazada ?? false,
                 ],
                 'orden_compra' => $ordenCompra ? [
                     'id' => $ordenCompra->id,
@@ -487,17 +516,18 @@ class ProveedorSolicitudPagoController extends Controller
                     'estado' => $ordenCompra->estado,
                     'fecha_orden' => $ordenCompra->fecha_orden,
                     'monto_asociado' => $ordenCompra->pivot->monto_asociado ?? 0,
-                    'fecha_vinculacion' => $ordenCompra->pivot->fecha_vinculacion,
+                    'fecha_vinculacion' => $ordenCompra->pivot->fecha_vinculacion ?? null,
                 ] : null,
-                'empresa' => [
+                'empresa' => $sp->empresaConstrucc ? [
                     'id' => $sp->empresaConstrucc->id,
                     'nombre' => $sp->empresaConstrucc->nombre,
                     'rfc' => $sp->empresaConstrucc->rfc,
-                ],
+                ] : null,
                 'timeline' => $this->getTimelineSP($sp),
             ];
         });
 
+        // Reemplazamos la colección paginada por la nueva colección mapeada
         return $this->paginated($solicitudes->setCollection($data));
     }
 
@@ -573,7 +603,7 @@ class ProveedorSolicitudPagoController extends Controller
             'pendientes' => (clone $baseQuery)->where('estado_solicitud', 'pendiente')->count(),
             'autorizadas' => (clone $baseQuery)->where('estado_solicitud', 'autorizada')->count(),
             'rechazadas' => (clone $baseQuery)->where('estado_solicitud', 'rechazada')->count(),
-            'pagadas' => (clone $baseQuery)->where('estado_solicitud', 'pagado')->count(),
+            'pagadas' => (clone $baseQuery)->where('estado_solicitud', 'pagada')->count(),
         ];
 
         return $this->success($conteos, 'Conteo por estado obtenido correctamente');
@@ -634,25 +664,47 @@ class ProveedorSolicitudPagoController extends Controller
     {
         $filters = $request->only(['fecha_registro_pendiente_desde', 'fecha_registro_pendiente_hasta', 'empresa_construcc_id']);
 
-        // Base query con filtros opcionales
-        $baseQuery = SolicitudPago::query()
-            ->where('proveedor_id', $proveedor->id);
+        // Filtro por defecto: última semana (si el cliente no envía fechas)
+        $fechaDesde = $request->input('fecha_registro_pendiente_desde', now()->subDays(7)->startOfDay());
+        $fechaHasta = $request->input('fecha_registro_pendiente_hasta', now()->endOfDay());
 
-        // Aplicar filtros si existen
+        // Base query
+        $baseQuery = SolicitudPago::query()
+            ->where('proveedor_id', $proveedor->id)
+            ->whereBetween('created_at', [$fechaDesde, $fechaHasta]);
+
+        // Aplicar filtros del sistema si existen
         if (!empty($filters)) {
             $baseQuery->filter($filters);
         }
 
-        // Conteos por estado
+        // Rechazadas NO vistas
+        $rechazadasNoVistas = (clone $baseQuery)
+            ->where('estado_solicitud', 'rechazada')
+            ->where('visto_rechazada', false);
+
+        // Conteos por estado (RESPETANDO lo que ya retornas)
         $conteos = [
             'total_sp' => (clone $baseQuery)->count(),
             'sp_pendientes' => (clone $baseQuery)->where('estado_solicitud', 'pendiente')->count(),
             'sp_autorizadas' => (clone $baseQuery)->where('estado_solicitud', 'autorizada')->count(),
-            'sp_en_proceso' => (clone $baseQuery)->where('estado_solicitud', 'autorizada')->count(),
-            'sp_rechazadas' => (clone $baseQuery)->where('estado_solicitud', 'rechazada')->count(),
-            'sp_pagadas' => (clone $baseQuery)->where('estado_solicitud', 'pagado')->count(),
+            'sp_en_proceso' => (clone $baseQuery)->where('estado_solicitud', 'procesando')->count(),
+            'sp_rechazadas' => $rechazadasNoVistas->count(),
+            'sp_pagadas' => (clone $baseQuery)->where('estado_solicitud', 'pagada')->count(),
         ];
 
         return $this->success($conteos, 'Métricas del dashboard obtenidas correctamente');
+    }
+
+
+    /**
+     * Filtrara 1 semana atras 
+     */
+    private function aplicarFiltroUltimaSemana($query, Request $request)
+    {
+        $fechaDesde = $request->input('fecha_desde', now()->subDays(7)->startOfDay());
+        $fechaHasta = $request->input('fecha_hasta', now()->endOfDay());
+
+        return $query->whereBetween('created_at', [$fechaDesde, $fechaHasta]);
     }
 }
