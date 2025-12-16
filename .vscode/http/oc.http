@@ -98,3 +98,9 @@ Accept: {{acceptType}}
 GET {{baseUrl}}/ordenes-compra/empresa/{{empresaId}}
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
+
+###
+
+GET https://apicons.ddns.net:8091/api/ordenes-compra
+X-API-KEY: /%-!?=T35sT._22<1|:
+Accept:  application/json

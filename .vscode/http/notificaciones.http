@@ -24,7 +24,7 @@ X-API-KEY: {{apiKey}}
 
 {
   "empresa_id": 14,
-  "proveedor_id": 10,
+  "proveedor_id": 8,
   "orden_compra_id": "OC-TEST-002",
   "estatus": "pendiente"
 }
