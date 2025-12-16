@@ -9,16 +9,19 @@ use Illuminate\Http\Request;
 
 class EmpresaConstruccController extends Controller
 {
-    /**
-     * Obtener todas las empresas asociadas a un proveedor (sin paginación)
-     */
     public function all(Proveedor $proveedor): JsonResponse
     {
         $empresas = $proveedor->empresasConstrucc()
+            ->with('usuarios') // carga los usuarios de cada empresa
             ->orderBy('nombre')
-            ->get();
+            ->get()
+            ->unique('id')     // elimina empresas duplicadas
+            ->values();        // reindexa el array
 
-        return $this->success($empresas, 'Listado completo de empresas asociadas al proveedor.');
+        return $this->success(
+            $empresas,
+            'Listado completo de empresas asociadas al proveedor; con usuarios.'
+        );
     }
 
     /**
@@ -104,7 +107,7 @@ class EmpresaConstruccController extends Controller
 
         return $this->success($empresaConstrucc);
     }
-    
+
     /**
      * Obtener usuarios asociados a una empresa en la tabla pivot
      */
@@ -113,7 +116,7 @@ class EmpresaConstruccController extends Controller
         if (! $proveedor->empresasConstrucc->contains('id', $empresaConstrucc->id)) {
             return $this->error('La empresa no pertenece a este proveedor', 403);
         }
-        
+
         // Obtener todos los registros de la pivot table para esta empresa y proveedor
         $usuarios = \DB::table('empresa_construcc_proveedor')
             ->where('empresa_construcc_id', $empresaConstrucc->id)
@@ -121,7 +124,7 @@ class EmpresaConstruccController extends Controller
             ->select('usuario_construcc_id', 'usuario_construcc_nombre')
             ->distinct()
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 return [
                     'id' => $item->usuario_construcc_id,
                     'nombre' => $item->usuario_construcc_nombre
