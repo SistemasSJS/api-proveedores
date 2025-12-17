@@ -1,0 +1,5 @@
+1. Archivo .env add variable 
+  API_CONSTRUCCIONES_URL=https://apicons.ddns.net:8091 // URL construcc
+
+
+2. Registrar variables en config.services

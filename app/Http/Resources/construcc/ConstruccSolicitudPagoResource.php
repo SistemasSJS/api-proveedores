@@ -25,7 +25,7 @@ class ConstruccSolicitudPagoResource extends JsonResource
             'ruta_archivo_factura_pdf' => $this->ruta_archivo_factura_pdf,
             'ruta_archivo_cotizacion' => $this->ruta_archivo_cotizacion,
             'ruta_archivo_comprobante_pago' => $this->ruta_archivo_comprobante_pago,
-
+            'folio_factura' => $this->folio_factura,
             // NUEVO CAMPO
             'verificada' => $this->verificada ? 1 : 0,
             // Usuario Construcc que generó la SP

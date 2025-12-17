@@ -15,6 +15,7 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Enums\UserRoleEnumerate;
 use App\Http\Controllers\AdminPedidosController;
 use App\Http\Controllers\AdminProveedorController;
+use App\Http\Controllers\ProveedorUsuarioController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +30,11 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
      * GESTIÓN GENERAL DE USUARIOS
      */
     Route::apiResource('usuarios', UserController::class)->middleware(['audit']);
+    
+    /**
+     * REASIGNACIÓN DE USUARIOS A PROVEEDORES
+     */
+    Route::post('usuarios/{user}/reasignar', [ProveedorUsuarioController::class, 'reasignarUsuario'])->middleware(['audit']);
 
     /**
      * GESTIÓN DE CATÁLOGOS MAESTROS

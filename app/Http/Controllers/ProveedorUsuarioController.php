@@ -11,6 +11,7 @@ use App\Http\Requests\ProveedorUsuario\ProveedorUsuairoUpdateLogoRequest;
 use App\Http\Requests\ProveedorUsuario\ProveedorUsuairoUpdateRequest;
 use App\Http\Requests\ProveedorUsuario\ProveedorUsuarioUpdateRelacionRequest;
 use App\Http\Requests\ProveedorUsuario\ProveedorUsuarioCambiarEstadoRequest;
+use App\Http\Requests\ProveedorUsuario\ReasignarUsuarioRequest;
 use App\Http\Resources\UserResource;
 use App\Models\Proveedor;
 use App\Models\User;
@@ -262,6 +263,142 @@ class ProveedorUsuarioController extends Controller
             new UserResource($user->fresh()->load(User::eagerLodable())),
             'Estado actualizado correctamente.'
         );
+    }
+
+    /**
+     * Reasigna un usuario de un proveedor origen a un proveedor destino
+     * Actualiza todas las referencias en tablas relacionadas y notifica al gerente del proveedor destino
+     */
+    public function reasignarUsuario(ReasignarUsuarioRequest $request, $user_id)
+    {
+        $validated = $request->validated();
+
+        return \DB::transaction(function () use ($user_id, $validated) {
+            // 1. Obtener el usuario a reasignar
+            $user = User::findOrFail($user_id);
+
+            // 2. Validar que el usuario pertenece al proveedor origen
+            $proveedorOrigen = Proveedor::findOrFail($validated['proveedor_origen_id']);
+            $proveedorDestino = Proveedor::findOrFail($validated['proveedor_destino_id']);
+
+            $relacionOrigen = $proveedorOrigen->users()->find($user->id);
+            if (!$relacionOrigen) {
+                throw new NotFoundRelationException('El usuario no pertenece al proveedor de origen.');
+            }
+
+            // 3. Validar restricciones de usuario PRINCIPAL
+            if ($relacionOrigen->pivot->tipo_relacion === 'PRINCIPAL') {
+                $countPrincipales = $proveedorOrigen->users()
+                    ->wherePivot('tipo_relacion', 'PRINCIPAL')
+                    ->wherePivot('activo', true)
+                    ->count();
+
+                if ($countPrincipales <= 1) {
+                    return $this->error(
+                        'No se puede reasignar al único usuario principal activo del proveedor de origen. Asigne otro usuario principal primero.',
+                        null,
+                        409
+                    );
+                }
+            }
+
+            // 4. Si el tipo destino es PRINCIPAL, validar que no exista otro principal activo en el destino
+            if ($validated['tipo_relacion'] === 'PRINCIPAL') {
+                $existePrincipalEnDestino = $proveedorDestino->users()
+                    ->wherePivot('tipo_relacion', 'PRINCIPAL')
+                    ->wherePivot('activo', true)
+                    ->exists();
+
+                if ($existePrincipalEnDestino) {
+                    return $this->error(
+                        'El proveedor de destino ya tiene un usuario principal activo.',
+                        null,
+                        409
+                    );
+                }
+            }
+
+            // 5. Actualizar referencias en tablas relacionadas
+            $contadores = [
+                'solicitudes_pago' => \DB::table('solicitudes_pago')
+                    ->where('user_id', $user_id)
+                    ->where('proveedor_id', $validated['proveedor_origen_id'])
+                    ->update(['proveedor_id' => $validated['proveedor_destino_id']]),
+
+                'ordenes_compra' => \DB::table('ordenes_compra')
+                    ->where('user_id', $user_id)
+                    ->where('proveedor_id', $validated['proveedor_origen_id'])
+                    ->update(['proveedor_id' => $validated['proveedor_destino_id']]),
+
+                'pedidos' => \DB::table('pedidos')
+                    ->where('user_id', $user_id)
+                    ->where('proveedor_id', $validated['proveedor_origen_id'])
+                    ->update(['proveedor_id' => $validated['proveedor_destino_id']]),
+
+                'oc_construcc' => \DB::table('oc_construcc')
+                    ->where('proveedor_id', $validated['proveedor_origen_id'])
+                    ->update(['proveedor_id' => $validated['proveedor_destino_id']]),
+            ];
+
+            // 6. Eliminar relación con proveedor origen
+            $proveedorOrigen->users()->detach($user->id);
+
+            // 7. Crear nueva relación con proveedor destino
+            $observacion = $validated['observaciones'] ?? "Usuario reasignado desde {$proveedorOrigen->nombre_comercial}";
+            $proveedorDestino->users()->attach($user->id, [
+                'tipo_relacion' => $validated['tipo_relacion'],
+                'activo' => true,
+                'estado' => 'registrado',
+                'fecha_asignacion' => now(),
+                'observaciones' => "[" . now()->format('Y-m-d H:i:s') . "] {$observacion}",
+            ]);
+
+            // 8. Actualizar rol del usuario si es diferente
+            if ($user->role_id !== $validated['role_id']) {
+                $user->update(['role_id' => $validated['role_id']]);
+            }
+
+            // 9. Obtener rol para la notificación
+            $rol = \App\Models\Role::find($validated['role_id']);
+
+            // 10. Notificar al usuario principal del proveedor destino
+            $usuarioPrincipalDestino = $proveedorDestino->usuarioPrincipal();
+            if ($usuarioPrincipalDestino) {
+                $usuarioPrincipalDestino->notify(
+                    new \App\Notifications\Usuario\UsuarioReasignadoNotification(
+                        $user->name,
+                        $user->email,
+                        $rol->name ?? 'N/A',
+                        $validated['tipo_relacion'],
+                        $proveedorDestino->nombre_comercial
+                    )
+                );
+            }
+
+            // 11. Registrar en logs
+            \Log::info('Usuario reasignado', [
+                'usuario_id' => $user_id,
+                'proveedor_origen' => $validated['proveedor_origen_id'],
+                'proveedor_destino' => $validated['proveedor_destino_id'],
+                'role_id' => $validated['role_id'],
+                'tipo_relacion' => $validated['tipo_relacion'],
+                'registros_actualizados' => $contadores,
+            ]);
+
+            // 12. Retornar respuesta con resumen
+            return $this->success([
+                'usuario' => new UserResource($user->fresh()->load(User::eagerLodable())),
+                'proveedor_origen' => [
+                    'id' => $proveedorOrigen->id,
+                    'nombre_comercial' => $proveedorOrigen->nombre_comercial,
+                ],
+                'proveedor_destino' => [
+                    'id' => $proveedorDestino->id,
+                    'nombre_comercial' => $proveedorDestino->nombre_comercial,
+                ],
+                'registros_actualizados' => $contadores,
+            ], 'Usuario reasignado correctamente.');
+        });
     }
 
     protected function authorizeAccess(User $currentUser, Proveedor $proveedor)

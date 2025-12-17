@@ -11,8 +11,8 @@
 @pass = "password"
 
 # Configuración general
-@baseUrl = https://apicons.ddns.net:8092/api
-# @baseUrl = http://localhost:8080/api/construcc
+# @baseUrl = https://apicons.ddns.net:8092/api
+@baseUrl = http://localhost:8080/api/construcc
 @contentType = application/json
 @acceptType = application/json
 
