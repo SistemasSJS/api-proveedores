@@ -24,42 +24,42 @@ use Illuminate\Support\Facades\Request;
 
 
 Route::get('status', function (Request $request) {
-    $userId = $request->query('id'); // o $request->get('id')
-    $user = User::find($userId);
+    // $userId = $request->query('id'); // o $request->get('id')
+    // $user = User::find($userId);
 
 
-    if (!$user) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Usuario no encontrado',
-        ], 404);
-    }
+    // if (!$user) {
+    //     return response()->json([
+    //         'status' => 'error',
+    //         'message' => 'Usuario no encontrado',
+    //     ], 404);
+    // }
 
-    // Crear la notificación CON el canal push
-    $notification = new PushNotification(
-        'Título de prueba',
-        'Este es un mensaje de prueba',
-        'info',
-        [
-            'channel' => 'push',  // ← AGREGAR ESTO
-            'extra' => 'datos opcionales',
-            // Opcional: agregar deep-link
-            'type' => 'product',
-            'entityId' => '123',
-            'action' => 'view'
-        ]
-    );
+    // // Crear la notificación CON el canal push
+    // $notification = new PushNotification(
+    //     'Título de prueba',
+    //     'Este es un mensaje de prueba',
+    //     'info',
+    //     [
+    //         'channel' => 'push',  // ← AGREGAR ESTO
+    //         'extra' => 'datos opcionales',
+    //         // Opcional: agregar deep-link
+    //         'type' => 'product',
+    //         'entityId' => '123',
+    //         'action' => 'view'
+    //     ]
+    // );
 
-    // Enviar la notificación
-    $user->notify($notification);
+    // // Enviar la notificación
+    // $user->notify($notification);
 
     return response()->json([
         'status' => 'ok',
         'message' => 'Notificación push enviada al usuario 14',
-        'user' => [
-            'id' => $user->id,
-            'name' => $user->name
-        ]
+        // 'user' => [
+        //     'id' => $user->id,
+        //     'name' => $user->name
+        // ]
     ]);
 });
 

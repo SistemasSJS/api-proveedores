@@ -23,7 +23,7 @@ class ProveedorOrdenCompraController extends Controller
         $user = $request->user();
 
         // Verificar que el usuario tenga un proveedor asociado
-        if (!$user->proveedor_id) {
+        if (!$user->proveedorPrincipal()) {
             return $this->error('Usuario no tiene un proveedor asociado', 403);
         }
 
@@ -31,7 +31,7 @@ class ProveedorOrdenCompraController extends Controller
         $params = $request->only(['page', 'per_page', 'estatus', 'fecha_desde', 'fecha_hasta', 'sort_by', 'order']);
 
         // Obtener órdenes de compra desde la API de Construcciones
-        $result = $this->construccionesApi->getOrdenesCompraByProveedor($user->proveedor_id, $params);
+        $result = $this->construccionesApi->getOrdenesCompraByProveedor($user->proveedorPrincipal()->id, $params);
 
         if (!$result['success']) {
             return $this->error(

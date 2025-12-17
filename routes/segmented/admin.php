@@ -16,6 +16,7 @@ use App\Enums\UserRoleEnumerate;
 use App\Http\Controllers\AdminPedidosController;
 use App\Http\Controllers\AdminProveedorController;
 use App\Http\Controllers\ProveedorUsuarioController;
+use App\Http\Controllers\Admin\ProveedorHomologacionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,7 +31,7 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
      * GESTIÓN GENERAL DE USUARIOS
      */
     Route::apiResource('usuarios', UserController::class)->middleware(['audit']);
-    
+
     /**
      * REASIGNACIÓN DE USUARIOS A PROVEEDORES
      */
@@ -144,6 +145,37 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
         Route::get('catalogos-resumen', [AdminHomeControler::class, 'getCatalogosCountItems'])->middleware(['audit']);
         Route::get('stats-completas', [AdminDashboardController::class, 'getStatsCompletas'])->middleware(['audit']);
         Route::get('metricas-rendimiento', [AdminDashboardController::class, 'getMetricasRendimiento'])->middleware(['audit']);
+    });
+
+    /**
+     * HOMOLOGACIÓN DE PROVEEDORES DUPLICADOS
+     * Sistema para reasignar usuarios entre proveedores con la misma razón social
+     */
+    Route::prefix('homologacion')->group(function () {
+        // Listar proveedores para homologación
+        Route::get('proveedores', [ProveedorHomologacionController::class, 'listarProveedores'])
+            ->middleware(['audit'])
+            ->name('admin.homologacion.proveedores.index');
+
+        // Obtener detalle de un proveedor específico
+        Route::get('proveedores/{id}', [ProveedorHomologacionController::class, 'obtenerDetalleProveedor'])
+            ->middleware(['audit'])
+            ->name('admin.homologacion.proveedores.show');
+
+        // Obtener usuarios de múltiples proveedores para reasignar
+        Route::post('usuarios-para-reasignar', [ProveedorHomologacionController::class, 'obtenerUsuariosParaReasignar'])
+            ->middleware(['audit'])
+            ->name('admin.homologacion.usuarios-para-reasignar');
+
+        // Previsualizar la homologación (sin ejecutar)
+        Route::post('previsualizar', [ProveedorHomologacionController::class, 'previsualizarHomologacion'])
+            ->middleware(['audit'])
+            ->name('admin.homologacion.previsualizar');
+
+        // Ejecutar la homologación
+        Route::post('ejecutar', [ProveedorHomologacionController::class, 'ejecutarHomologacion'])
+            ->middleware(['audit'])
+            ->name('admin.homologacion.ejecutar');
     });
 
     /**
