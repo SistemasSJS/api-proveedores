@@ -97,6 +97,14 @@ class ProveedorSolicitudPagoController extends Controller
         $rutaPdf = $facturaPdf->store('facturas/pdf', 'private');
         $rutaXml = $facturaXml->store('facturas/xml', 'private');
 
+        // Extraer datos del XML
+        $datosXml = $this->extraerDatosXML($facturaXml);
+        
+        // Combinar serie y folio para formar el folio_factura
+        $serie = $datosXml['serie'] ?? '';
+        $folio = $datosXml['folio'] ?? '';
+        $folioFactura = trim($serie . ($serie && $folio ? '-' : '') . $folio) ?: null;
+
         // Procesar archivo de cotización si existe
         $rutaCotizacion = null;
         if ($cotizacionFile) {
@@ -114,6 +122,8 @@ class ProveedorSolicitudPagoController extends Controller
         $solicitud = SolicitudPago::create([
             'proveedor_id' => $proveedor->id,
             'numero_folio_solicitud' => $numeroFolio,
+            'folio_factura' => $folioFactura,
+            'datos_factura_xml' => $datosXml,
             'descripcion_concepto' => $validated['descripcion_concepto'] ?? '',
             'observaciones' => $validated['observaciones'] ?? null,
             'ruta_archivo_factura_pdf' => $rutaPdf,
@@ -144,7 +154,7 @@ class ProveedorSolicitudPagoController extends Controller
             'Solicitud de pago creada correctamente.',
             201
         );
-    }
+    } 
 
     /**
      * Mostrar detalle
@@ -706,5 +716,111 @@ class ProveedorSolicitudPagoController extends Controller
         $fechaHasta = $request->input('fecha_hasta', now()->endOfDay());
 
         return $query->whereBetween('created_at', [$fechaDesde, $fechaHasta]);
+    }
+
+    /**
+     * Extraer datos del XML de la factura
+     */
+    private function extraerDatosXML($archivoXml): array
+    {
+        try {
+            $contenidoXml = file_get_contents($archivoXml->getRealPath());
+            $xml = simplexml_load_string($contenidoXml);
+            
+            if ($xml === false) {
+                Log::warning('No se pudo parsear el XML de la factura');
+                return [];
+            }
+
+            // Registrar namespaces del CFDI
+            $namespaces = $xml->getNamespaces(true);
+            $cfdi = $namespaces['cfdi'] ?? $namespaces[''] ?? 'http://www.sat.gob.mx/cfd/4';
+            
+            // Extraer datos principales del comprobante
+            $atributos = $xml->attributes();
+            
+            $datos = [
+                'version' => (string) ($atributos->Version ?? ''),
+                'serie' => (string) ($atributos->Serie ?? ''),
+                'folio' => (string) ($atributos->Folio ?? ''),
+                'fecha' => (string) ($atributos->Fecha ?? ''),
+                'sello' => (string) ($atributos->Sello ?? ''),
+                'no_certificado' => (string) ($atributos->NoCertificado ?? ''),
+                'certificado' => (string) ($atributos->Certificado ?? ''),
+                'subtotal' => (string) ($atributos->SubTotal ?? ''),
+                'total' => (string) ($atributos->Total ?? ''),
+                'moneda' => (string) ($atributos->Moneda ?? 'MXN'),
+                'tipo_comprobante' => (string) ($atributos->TipoDeComprobante ?? ''),
+                'metodo_pago' => (string) ($atributos->MetodoPago ?? ''),
+                'forma_pago' => (string) ($atributos->FormaPago ?? ''),
+                'lugar_expedicion' => (string) ($atributos->LugarExpedicion ?? ''),
+            ];
+
+            // Extraer emisor
+            if (isset($xml->Emisor)) {
+                $emisor = $xml->Emisor->attributes();
+                $datos['emisor'] = [
+                    'rfc' => (string) ($emisor->Rfc ?? ''),
+                    'nombre' => (string) ($emisor->Nombre ?? ''),
+                    'regimen_fiscal' => (string) ($emisor->RegimenFiscal ?? ''),
+                ];
+            }
+
+            // Extraer receptor
+            if (isset($xml->Receptor)) {
+                $receptor = $xml->Receptor->attributes();
+                $datos['receptor'] = [
+                    'rfc' => (string) ($receptor->Rfc ?? ''),
+                    'nombre' => (string) ($receptor->Nombre ?? ''),
+                    'uso_cfdi' => (string) ($receptor->UsoCFDI ?? ''),
+                    'domicilio_fiscal_receptor' => (string) ($receptor->DomicilioFiscalReceptor ?? ''),
+                    'regimen_fiscal_receptor' => (string) ($receptor->RegimenFiscalReceptor ?? ''),
+                ];
+            }
+
+            // Extraer conceptos
+            $conceptos = [];
+            if (isset($xml->Conceptos)) {
+                foreach ($xml->Conceptos->Concepto as $concepto) {
+                    $conceptoAttr = $concepto->attributes();
+                    $conceptos[] = [
+                        'clave_prod_serv' => (string) ($conceptoAttr->ClaveProdServ ?? ''),
+                        'cantidad' => (string) ($conceptoAttr->Cantidad ?? ''),
+                        'clave_unidad' => (string) ($conceptoAttr->ClaveUnidad ?? ''),
+                        'unidad' => (string) ($conceptoAttr->Unidad ?? ''),
+                        'descripcion' => (string) ($conceptoAttr->Descripcion ?? ''),
+                        'valor_unitario' => (string) ($conceptoAttr->ValorUnitario ?? ''),
+                        'importe' => (string) ($conceptoAttr->Importe ?? ''),
+                    ];
+                }
+            }
+            $datos['conceptos'] = $conceptos;
+
+            // Extraer UUID del timbre fiscal
+            if (isset($xml->Complemento)) {
+                foreach ($xml->Complemento->children() as $complemento) {
+                    if ($complemento->getName() === 'TimbreFiscalDigital') {
+                        $timbre = $complemento->attributes();
+                        $datos['timbre_fiscal'] = [
+                            'uuid' => (string) ($timbre->UUID ?? ''),
+                            'fecha_timbrado' => (string) ($timbre->FechaTimbrado ?? ''),
+                            'rfc_prov_certif' => (string) ($timbre->RfcProvCertif ?? ''),
+                            'sello_cfd' => (string) ($timbre->SelloCFD ?? ''),
+                            'no_certificado_sat' => (string) ($timbre->NoCertificadoSAT ?? ''),
+                            'sello_sat' => (string) ($timbre->SelloSAT ?? ''),
+                        ];
+                        break;
+                    }
+                }
+            }
+
+            return $datos;
+        } catch (\Exception $e) {
+            Log::error('Error al extraer datos del XML', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return [];
+        }
     }
 }

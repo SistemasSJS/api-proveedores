@@ -79,11 +79,16 @@ class SolicitudPago extends BaseModel
 
         // 
         'visto_rechazada',
+
+        // 
+        'folio_factura',
+        'datos_factura_xml',
     ];
 
     protected static $filters = [
         'search' => 'Search',
         'numero_folio_solicitud' => 'NumeroFolioSolicitud',
+        'folio_factura' => 'FolioFactura',
         'descripcion_concepto' => 'DescripcionConcepto',
         'estado_solicitud' => 'EstadoSolicitud',
         'proveedor_id' => 'ProveedorId',
@@ -109,7 +114,7 @@ class SolicitudPago extends BaseModel
         'fecha_aprobado_hasta' => 'FechaAprobadoHasta',
         'fecha_rechazo' => 'FechaRechazo',
         'fecha_rechazo_desde' => 'FechaRechazoDesde',
-        'fecha_rechazo_hasta' => 'FechaRechazoHasta',
+        'fecha_rechazo_hasta' => 'FechaRechazo1Hasta',
         'fecha_pago' => 'FechaPago',
         'fecha_pago_desde' => 'FechaPagoDesde',
         'fecha_pago_hasta' => 'FechaPagoHasta',
@@ -175,6 +180,9 @@ class SolicitudPago extends BaseModel
         'monto_oc_original' => 'decimal:2',
 
         'visto_rechazada' => 'boolean',
+        
+        // Datos XML como JSON
+        'datos_factura_xml' => 'array',
     ];
 
     /** ----------------
@@ -300,6 +308,7 @@ class SolicitudPago extends BaseModel
     {
         return $query->where(function ($q) use ($value) {
             $q->where('numero_folio_solicitud', 'like', "%$value%")
+                ->orWhere('folio_factura', 'like', "%$value%")
                 ->orWhere('descripcion_concepto', 'like', "%$value%")
                 ->orWhere('observaciones', 'like', "%$value%")
                 ->orWhere('usuario_nombre', 'like', "%$value%")
@@ -513,6 +522,11 @@ class SolicitudPago extends BaseModel
     public function filterByVistoRechazada($query, $value)
     {
         return $query->where('visto_rechazada', (bool) $value);
+    }
+
+    public function filterByFolioFactura($query, $value)
+    {
+        return $query->where('folio_factura', 'like', "%{$value}%");
     }
 
     /**

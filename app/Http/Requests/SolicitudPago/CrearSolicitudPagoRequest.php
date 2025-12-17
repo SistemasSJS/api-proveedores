@@ -21,14 +21,14 @@ class CrearSolicitudPagoRequest extends FormRequest
             'proveedor_id' => 'required|exists:proveedores,id',
             'empresa_construcc_id' => 'nullable|exists:empresa_construcc,id',
             'empresa' => 'nullable|string|max:255',
-            
+
             // Datos del usuario Construcc que genera la SP
             'usuario_id' => 'nullable|integer',
             'usuario_nombre' => 'nullable|string|max:255',
-            
+
             // Legacy support - residente maps to usuario_nombre
             'residente' => 'nullable|string|max:255',
-            
+
             'cotizacion_id' => 'nullable|integer',
             'monto_total' => 'required|numeric|min:0',
             'observaciones' => 'nullable|string|max:1000',
@@ -70,14 +70,14 @@ class CrearSolicitudPagoRequest extends FormRequest
             'empresa_construcc_id.exists' => 'La empresa de construcción seleccionada no existe',
             'empresa.required' => 'El nombre de la empresa es obligatorio',
             'empresa.max' => 'El nombre de la empresa no debe exceder 255 caracteres',
-            
+
             // Mensajes para usuario Construcc
             'usuario_id.integer' => 'El ID del usuario debe ser un número entero',
             'usuario_nombre.max' => 'El nombre del usuario no debe exceder 255 caracteres',
-            
+
             // Legacy
             'residente.max' => 'El nombre del residente no debe exceder 255 caracteres',
-            
+
             'cotizacion_id.integer' => 'El ID de cotización debe ser un número entero',
             'monto_total.required' => 'El monto total es obligatorio',
             'monto_total.numeric' => 'El monto total debe ser un número válido',

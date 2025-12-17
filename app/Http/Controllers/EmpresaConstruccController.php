@@ -12,7 +12,6 @@ class EmpresaConstruccController extends Controller
     public function all(Proveedor $proveedor): JsonResponse
     {
         $empresas = $proveedor->empresasConstrucc()
-            ->with('usuarios') // carga los usuarios de cada empresa
             ->orderBy('nombre')
             ->get()
             ->unique('id')     // elimina empresas duplicadas

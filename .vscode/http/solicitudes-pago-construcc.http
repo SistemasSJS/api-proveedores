@@ -55,7 +55,7 @@ X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
 ### 3. Ver detalle de solicitud específica
-GET {{baseUrl}}/construcc/solicitudes-pago/8
+GET {{baseUrl}}/construcc/solicitudes-pago/2
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 

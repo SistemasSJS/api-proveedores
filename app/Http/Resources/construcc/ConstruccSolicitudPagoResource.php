@@ -12,6 +12,8 @@ class ConstruccSolicitudPagoResource extends JsonResource
         return [
             'id' => $this->id,
             'usuario' => $this->usuario_id,
+            'folio_factura' => $this->folio_factura,
+            // 'datos_factura_xml' => $this->datos_factura_xml,
             'numero_folio_solicitud' => $this->numero_folio_solicitud,
             'descripcion_concepto' => $this->descripcion_concepto,
             'observaciones' => $this->observaciones,
