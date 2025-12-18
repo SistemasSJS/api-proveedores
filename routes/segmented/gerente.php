@@ -264,28 +264,37 @@ Route::prefix('proveedores')
                 // Route::post('/registro/check-existence', [OrdenCompraRegistroController::class, 'checkExistence'])->middleware(['audit']);
 
                 // === NUEVAS RUTAS: CONSULTA DESDE API CONSTRUCCIONES ===
-                Route::get('/consultar', [ProveedorOrdenCompraController::class, 'index'])->middleware(['audit']); // Listado de OC del proveedor
-                Route::get('/consultar/{ordenCompraId}', [ProveedorOrdenCompraController::class, 'show'])->middleware(['audit']); // Detalle de OC
+                // Listado de OC del proveedor
+                Route::get('/consultar', [ProveedorOrdenCompraController::class, 'index'])->middleware(['audit']);
+                // Detalle de OC
+                Route::get('/consultar/{ordenCompraId}', [ProveedorOrdenCompraController::class, 'show'])->middleware(['audit']);
+                // Detalle de OC con las SP enlazadas
+                Route::get('/consultar/{ordenCompraId}/solicitud-pago', [ProveedorOrdenCompraController::class, 'show-con-sp'])->middleware(['audit']);
 
-                // === DASHBOARD Y ESTADÍSTICAS ===
-                Route::get('/dashboard', [ProveedorOrdenCompraDashboardController::class, 'dashboard'])->middleware(['audit']); // Dashboard completo
-                Route::get('/dashboard/estado-general', [ProveedorOrdenCompraDashboardController::class, 'estadoGeneral'])->middleware(['audit']); // Estado OC/SP
-                Route::get('/dashboard/actividad-reciente', [ProveedorOrdenCompraDashboardController::class, 'actividadReciente'])->middleware(['audit']); // Actividad
-                Route::get('/dashboard/metricas', [ProveedorOrdenCompraDashboardController::class, 'metricas'])->middleware(['audit']); // Métricas rendimiento
-                Route::get('/dashboard/estadisticas', [ProveedorOrdenCompraDashboardController::class, 'estadisticas'])->middleware(['audit']); // Legacy (compatibilidad)
-                Route::get('/alertas/sin-solicitudes', [ProveedorOrdenCompraDashboardController::class, 'ordenesSinSolicitudes'])->middleware(['audit']);
-                Route::get('/contadores/sp', [ProveedorOrdenCompraDashboardController::class, 'contadores'])->middleware(['audit']);
+                /**
+                 * LAS OC ESTAN ALMACENADAS EN LA API DE CONSTRUCCIONES
+                 * ESTAS RUTAS SON SOLO DE CONSULTA, Y SE HACE MEDIATE API_KEY
+                 * NO SE PERMITE CREAR, ACTUALIZAR O ELIMINAR DESDE AQUI
+                 */
+                // // === DASHBOARD Y ESTADÍSTICAS ===
+                // Route::get('/dashboard', [ProveedorOrdenCompraDashboardController::class, 'dashboard'])->middleware(['audit']); // Dashboard completo
+                // Route::get('/dashboard/estado-general', [ProveedorOrdenCompraDashboardController::class, 'estadoGeneral'])->middleware(['audit']); // Estado OC/SP
+                // Route::get('/dashboard/actividad-reciente', [ProveedorOrdenCompraDashboardController::class, 'actividadReciente'])->middleware(['audit']); // Actividad
+                // Route::get('/dashboard/metricas', [ProveedorOrdenCompraDashboardController::class, 'metricas'])->middleware(['audit']); // Métricas rendimiento
+                // Route::get('/dashboard/estadisticas', [ProveedorOrdenCompraDashboardController::class, 'estadisticas'])->middleware(['audit']); // Legacy (compatibilidad)
+                // Route::get('/alertas/sin-solicitudes', [ProveedorOrdenCompraDashboardController::class, 'ordenesSinSolicitudes'])->middleware(['audit']);
+                // Route::get('/contadores/sp', [ProveedorOrdenCompraDashboardController::class, 'contadores'])->middleware(['audit']);
 
-                // === RUTAS PRINCIPALES DE CONSULTA ===
-                Route::get('/', [ProveedorOrdenCompraDashboardController::class, 'index'])->middleware(['audit']); // Dashboard con listado y filtros
-                Route::get('/disponibles/conversion', [ProveedorOrdenCompraDashboardController::class, 'getOrdenesDisponibles'])->middleware(['audit']);
-                Route::get('/{ordenCompra}', [ProveedorOrdenCompraDashboardController::class, 'show'])->middleware(['audit']); // Detalle OC
-                Route::get('/{ordenCompra}/solicitudes-pago', [ProveedorOrdenCompraDashboardController::class, 'getSolicitudesPago'])->middleware(['audit']); // SP enlazadas
+                // // === RUTAS PRINCIPALES DE CONSULTA ===
+                // Route::get('/', [ProveedorOrdenCompraDashboardController::class, 'index'])->middleware(['audit']); // Dashboard con listado y filtros
+                // Route::get('/disponibles/conversion', [ProveedorOrdenCompraDashboardController::class, 'getOrdenesDisponibles'])->middleware(['audit']);
+                // Route::get('/{ordenCompra}', [ProveedorOrdenCompraDashboardController::class, 'show'])->middleware(['audit']); // Detalle OC
+                // Route::get('/{ordenCompra}/solicitudes-pago', [ProveedorOrdenCompraDashboardController::class, 'getSolicitudesPago'])->middleware(['audit']); // SP enlazadas
 
-                // === RUTAS DIRECTAS CON CONTEXTO DE PROVEEDOR ===
-                Route::get('/id/{ordenCompra}', [ProveedorOrdenCompraDashboardController::class, 'showDirecto'])->middleware(['audit']); // Detalle OC por ID
-                Route::get('/id/{ordenCompra}/solicitudes-pago', [ProveedorOrdenCompraDashboardController::class, 'getSolicitudesPagoDirecto'])->middleware(['audit']); // SP de OC por ID
-                Route::get('/general', [ProveedorOrdenCompraDashboardController::class, 'indexGeneral'])->middleware(['audit']); // Listado general
+                // // === RUTAS DIRECTAS CON CONTEXTO DE PROVEEDOR ===
+                // Route::get('/id/{ordenCompra}', [ProveedorOrdenCompraDashboardController::class, 'showDirecto'])->middleware(['audit']); // Detalle OC por ID
+                // Route::get('/id/{ordenCompra}/solicitudes-pago', [ProveedorOrdenCompraDashboardController::class, 'getSolicitudesPagoDirecto'])->middleware(['audit']); // SP de OC por ID
+                // Route::get('/general', [ProveedorOrdenCompraDashboardController::class, 'indexGeneral'])->middleware(['audit']); // Listado general
             });
 
         /**
@@ -332,7 +341,7 @@ Route::prefix('proveedores')
 
                 // 📝 Obtener detalle de una empresa
                 Route::get('/{empresaConstrucc}', [EmpresaConstruccController::class, 'show'])->middleware(['audit']);
-                
+
                 // 👥 Obtener usuarios de una empresa
                 Route::get('/{empresaConstrucc}/usuarios', [EmpresaConstruccController::class, 'usuarios'])->middleware(['audit']);
 

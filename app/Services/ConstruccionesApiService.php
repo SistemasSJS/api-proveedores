@@ -24,7 +24,7 @@ class ConstruccionesApiService
     public function getOrdenesCompraByProveedor(int $proveedorId, array $params = [])
     {
         try {
-            $response = Http::withHeaders([
+            $response = Http::withoutVerifying([
                 'X-API-KEY' => $this->apiKey,
                 'Content-Type' => 'application/json',
 
@@ -71,7 +71,7 @@ class ConstruccionesApiService
     public function getOrdenCompraById(string $ordenCompraId)
     {
         try {
-            $response = Http::withHeaders([
+            $response = Http::withoutVerifying([
                 'X-API-KEY' => $this->apiKey,
                 'Accept' => 'application/json'
             ])
