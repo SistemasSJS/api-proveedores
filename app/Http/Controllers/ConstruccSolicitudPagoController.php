@@ -431,7 +431,8 @@ class ConstruccSolicitudPagoController extends Controller
      * Rechazar una solicitud de pago por rol específico
      *
      * Reglas:
-     * - DT, PC, SI, DA solo pueden rechazar si está PENDIENTE
+     * -  <esta ya bi aoplica>DT, PC, SI, DA solo pueden rechazar si está PENDIENTE
+     * - La SP se puede rechazar eb cualquier momento antes de PAGADO por los roles: DG, DT, PC, SI, DA
      * - DG puede rechazar en cualquier momento antes de PAGADO
      */
     public function rechazar(SolicitudPagoRechazarRequest $request, SolicitudPago $solicitudPago): JsonResponse
@@ -441,17 +442,24 @@ class ConstruccSolicitudPagoController extends Controller
         $rol = strtoupper($data['rol']);
         $estadoActual = $solicitudPago->estado_solicitud;
 
+        if ($estadoActual === EstadoSP::RECHAZADA->value) {
+            return $this->success($solicitudPago, 'La solicitud ya está rechazada.');
+        }
+        
         // Validaciones según el rol
-        if ($rol !== 'DG') {
-            // DT, PC, SI, DA solo pueden rechazar si está PENDIENTE
-            if ($estadoActual !== EstadoSP::PENDIENTE->value) {
-                return $this->error('Solo se pueden rechazar solicitudes en estado PENDIENTE.', null, 400);
-            }
-        } else {
-            // DG puede rechazar antes de PAGADO
-            if ($estadoActual === EstadoSP::PAGADO->value) {
-                return $this->error('No se pueden rechazar solicitudes ya pagadas.', null, 400);
-            }
+        $rolesPermitidos = ['DG', 'DT', 'PC', 'SI', 'DA'];
+
+        if (!in_array($rol, $rolesPermitidos, true)) {
+            return $this->error('Rol no autorizado para rechazar la solicitud.', null, 403);
+        }
+
+        // Ningún rol puede rechazar si ya está PAGADO
+        if ($estadoActual === EstadoSP::PAGADO->value) {
+            return $this->error(
+                'No se pueden rechazar solicitudes en estado PAGADO.',
+                null,
+                400
+            );
         }
 
         // Actualizar estado y registrar quién rechazó
@@ -998,7 +1006,7 @@ class ConstruccSolicitudPagoController extends Controller
         }
 
         // Verificar si ya existe la asociación con ESTE usuario específico
-        $existeConUsuario = \DB::table('empresa_construcc_proveedor')
+        $existeConUsuario = DB::table('empresa_construcc_proveedor')
             ->where('empresa_construcc_id', $empresaId)
             ->where('proveedor_id', $proveedorId)
             ->where('usuario_construcc_id', $usuarioConstruccId)
