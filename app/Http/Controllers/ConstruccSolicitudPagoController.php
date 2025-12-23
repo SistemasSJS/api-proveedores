@@ -557,7 +557,7 @@ class ConstruccSolicitudPagoController extends Controller
         // 3. Verificar que esté en estado válido (AUTORIZADA o PAGADO con pagos parciales)
         if (! in_array($solicitudPago->estado_solicitud, [EstadoSP::PENDIENTE->value, EstadoSP::PAGADO->value, EstadoSP::AUTORIZADA->value])) {
             return $this->error(
-                'Solo se pueden confirmar pagos de solicitudes AUTORIZADAS o con pagos parciales.',
+                'Solo se pueden confirmar pagos de solicitudes AUTORIZADAS.',
                 null,
                 400
             );
@@ -630,6 +630,8 @@ class ConstruccSolicitudPagoController extends Controller
                     $proveedor->id,
                     $usuarioPrincipal->id
                 ));
+
+                // TODO: Para notificar al usuario que valido la SP en ncesario tener la notificacion en construcc. Y un endpoint para invocarla.
 
                 Log::info('✅ Notificación de SP Pagada enviada', [
                     'solicitud_pago_id' => $solicitudPago->id,

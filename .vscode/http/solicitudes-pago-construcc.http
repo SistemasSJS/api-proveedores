@@ -10,8 +10,8 @@
 @apiKey = 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
 
 ### VARIABLES
-@solicitudId = 23
-@rol = DG
+@solicitudId = 6
+@rol = PC
 
 
 
@@ -55,19 +55,19 @@ X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
 ### 3. Ver detalle de solicitud específica
-GET {{baseUrl}}/construcc/solicitudes-pago/2
+GET {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
 ### 4. 🆕 Marcar solicitud como VERIFICADA
-POST {{baseUrl}}/construcc/solicitudes-pago/2/marcar-verificada
+POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/marcar-verificada
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 Accept: {{acceptType}}
 
 {
   "usuario_id":1,
-  "nivel_id":1,
+  "nivel_id":2,
   "empresa_id":1,
   "obra_id":1,
   "tipo":"REQUISICION",
@@ -110,12 +110,13 @@ Content-Type: {{contentType}}
 }
 
 ### 10. Rechazar solicitud de pago
-POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/rechazar
+# POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/rechazar
+POST {{baseUrl}}/construcc/solicitudes-pago/6/rechazar
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 
 {
-  "rol": "DT",
+  "rol": "PC",
   "motivo_rechazo": "El monto no corresponde con la cotización original."
 }
 

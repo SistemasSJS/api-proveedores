@@ -114,12 +114,19 @@ class ProveedorCuentaBancariaController extends Controller
      */
     public function store(CuentaBancariaStoreRequest $request, Proveedor $proveedor)
     {
-        // Si se marca como preferida, desmarcamos las demás
-        if ($request->filled('preferida') && $request->preferida) {
-            $proveedor->cuentasBancarias()->update(['preferida' => false]);
+        $data = $request->validated();
+
+        // 🔹 Verificar si es la primera cuenta bancaria del proveedor
+        $esPrimeraCuenta = !$proveedor->cuentasBancarias()->exists();
+
+        if ($esPrimeraCuenta) {
+            $data['preferida'] = true;
+        } else {
+            // Si no es la primera, por defecto no es preferida
+            $data['preferida'] = false;
         }
 
-        $cuenta = $proveedor->cuentasBancarias()->create($request->validated());
+        $cuenta = $proveedor->cuentasBancarias()->create($data);
 
         return $this->success(
             new CuentaBancariaResource($cuenta),
