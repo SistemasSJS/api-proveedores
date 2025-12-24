@@ -18,6 +18,7 @@ class UserAuthenticateResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
+            'telefono' => $this->telefono,
             'foto_perfil_url' => $this->foto_perfil_url
                 ? (
                     preg_match('/^https?:\/\//', $this->foto_perfil_url)

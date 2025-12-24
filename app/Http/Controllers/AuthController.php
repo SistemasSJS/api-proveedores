@@ -185,19 +185,24 @@ class AuthController extends Controller
             ]);
 
             // Buscar usuario por email o teléfono
-            $user = User::where('email', $request->email)->first();
+            $user = User::where('email', $request->email)
+                ->orWhere('telefono', $request->email)
+                ->first();
 
             // Si no se encuentra por email, buscar por teléfono, razón social o nombre comercial del proveedor
-            if (!$user) {
-                $proveedor = Proveedor::where('razon_social', $request->email)
-                    ->orWhere('nombre_comercial', $request->email)
-                    ->orWhere('telefono', $request->email)
-                    ->first();
+            /**
+             * El proveedor no debe formar parte ede la logica de autenticación del usuario.
+             */
+            // if (!$user) {
+            //     $proveedor = Proveedor::where('razon_social', $request->email)
+            //         ->orWhere('nombre_comercial', $request->email)
+            //         ->orWhere('telefono', $request->email)
+            //         ->first();
 
-                if ($proveedor) {
-                    $user = $proveedor->users()->first();
-                }
-            }
+            //     if ($proveedor) {
+            //         $user = $proveedor->users()->first();
+            //     }
+            // }
 
             if (! $user || ! Hash::check($request->password, $user->password)) {
                 throw new UnauthorizedException('Credenciales incorrectas.');
