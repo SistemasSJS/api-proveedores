@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Validator;
 
 class ConstruccSolicitudPagoController extends Controller
 {
@@ -100,18 +101,30 @@ class ConstruccSolicitudPagoController extends Controller
         // Cargar relaciones estándar
         $solicitudPago->load(SolicitudPago::eagerLodable());
 
+        if (! $solicitudPago->folio_factura && $solicitudPago->ruta_archivo_factura_xml) {
+
+            // Obtener ruta física real del XML
+            $rutaXmlFisica = Storage::disk('private')
+                ->path($solicitudPago->ruta_archivo_factura_xml);
+
+            // Pasar la ruta real al extractor
+            $datosXml = $this->extraerDatosXML($rutaXmlFisica);
+
+            if ($datosXml && isset($datosXml['folio'])) {
+                $solicitudPago->folio_factura = $datosXml['folio'];
+                $solicitudPago->save();
+            }
+        }
+
         // Si la SP no tiene cuentas bancarias asociadas, buscar las cuentas del proveedor
         if ($solicitudPago->cuentasBancarias->isEmpty()) {
             $proveedor = $solicitudPago->proveedor;
 
-            // Obtener cuentas bancarias activas del proveedor desde el modelo Proveedor
             $cuentasProveedor = $proveedor->cuentasBancarias
                 ->where('estatus', 'activa')
-                ->sortByDesc('preferida'); // Primero las favoritas
+                ->sortByDesc('preferida');
 
-            // Si el proveedor tiene cuentas, tomar la primera (que sería la favorita si existe)
             if ($cuentasProveedor->isNotEmpty()) {
-                // Agregar solo la cuenta favorita o la primera a la relación
                 $cuentaAMostrar = $cuentasProveedor->first();
                 $solicitudPago->setRelation('cuentasBancarias', collect([$cuentaAMostrar]));
             }
@@ -121,6 +134,7 @@ class ConstruccSolicitudPagoController extends Controller
             new ConstruccSolicitudPagoResource($solicitudPago)
         );
     }
+
 
     /**
      * Listado de solicitudes de pago no verificadas
@@ -430,8 +444,7 @@ class ConstruccSolicitudPagoController extends Controller
     /**
      * Rechazar una solicitud de pago por rol específico
      *
-     * Reglas:
-     * -  <esta ya bi aoplica>DT, PC, SI, DA solo pueden rechazar si está PENDIENTE
+     * Reglas:x
      * - La SP se puede rechazar eb cualquier momento antes de PAGADO por los roles: DG, DT, PC, SI, DA
      * - DG puede rechazar en cualquier momento antes de PAGADO
      */
@@ -445,7 +458,7 @@ class ConstruccSolicitudPagoController extends Controller
         if ($estadoActual === EstadoSP::RECHAZADA->value) {
             return $this->success($solicitudPago, 'La solicitud ya está rechazada.');
         }
-        
+
         // Validaciones según el rol
         $rolesPermitidos = ['DG', 'DT', 'PC', 'SI', 'DA'];
 
@@ -655,6 +668,120 @@ class ConstruccSolicitudPagoController extends Controller
             $mensaje
         );
     }
+
+
+    /**
+     * Confirmar pago de una solicitud (sin comprobante)
+     * Solo DA puede confirmar pagos
+     */
+    public function confirmarPagoSinComprobante(
+        Request $request,
+        SolicitudPago $solicitudPago
+    ): JsonResponse {
+
+        // 🔹 Validación manual
+        $validator = Validator::make($request->all(), [
+            'rol' => ['required', 'string', Rule::in(['DA'])],
+            'monto_pagado' => ['required', 'numeric', 'min:0.01'],
+            'observaciones' => ['nullable', 'string', 'max:500'],
+        ], [
+            'rol.required' => 'Debe especificar el rol que realiza la confirmación.',
+            'rol.in' => 'Solo el rol DA (Dirección Administrativa) puede confirmar pagos.',
+
+            'monto_pagado.required' => 'Debe ingresar el monto pagado.',
+            'monto_pagado.numeric' => 'El monto pagado debe ser un número válido.',
+            'monto_pagado.min' => 'El monto pagado debe ser mayor a cero.',
+
+            'observaciones.max' => 'Las observaciones no deben exceder los 500 caracteres.',
+        ]);
+
+        // ❌ Validación extra: NO debe venir archivo
+        $validator->after(function ($validator) use ($request) {
+            if ($request->hasFile('comprobante')) {
+                $validator->errors()->add(
+                    'comprobante',
+                    'No debe adjuntarse comprobante en esta operación.'
+                );
+            }
+        });
+
+        if ($validator->fails()) {
+            return $this->error(
+                'Error de validación.',
+                $validator->errors(),
+                422
+            );
+        }
+
+        $data = $validator->validated();
+
+        // 1. Verificar que no esté rechazada
+        if ($solicitudPago->estado_solicitud === EstadoSP::RECHAZADA->value) {
+            return $this->error(
+                'No se puede confirmar el pago porque uno o más roles han rechazado la solicitud.',
+                null,
+                400
+            );
+        }
+
+        // 2. Verificar estado válido
+        if (! in_array($solicitudPago->estado_solicitud, [
+            EstadoSP::PENDIENTE->value,
+            EstadoSP::AUTORIZADA->value,
+            EstadoSP::PAGADO->value,
+        ])) {
+            return $this->error(
+                'Solo se pueden confirmar pagos de solicitudes AUTORIZADAS.',
+                null,
+                400
+            );
+        }
+
+        /**
+         * Parche actual:
+         * Todo pago confirmado se asume como pago completo
+         */
+        $estadoFinal = EstadoSP::PAGADO->value;
+        $estadoDA = EstadoSolicitud::PAGADO->value;
+
+        // 3. Actualizar solicitud (sin comprobante)
+        $solicitudPago->update([
+            'estado_solicitud' => $estadoFinal,
+            'fecha_pago' => now(),
+            'da' => $estadoDA,
+            'da_fecha' => now(),
+            'observaciones_pago' => $data['observaciones'] ?? null,
+        ]);
+
+        // 4. Notificar proveedor
+        try {
+            $proveedor = $solicitudPago->proveedor;
+            $usuarioPrincipal = $proveedor?->usuarioPrincipal();
+
+            if ($usuarioPrincipal) {
+                $usuarioPrincipal->notify(new SolicitudPagoPagada(
+                    $solicitudPago->numero_folio_solicitud,
+                    $solicitudPago->id,
+                    $proveedor->id,
+                    $usuarioPrincipal->id
+                ));
+            }
+        } catch (\Exception $e) {
+            Log::error('❌ Error al enviar notificación de SP Pagada', [
+                'solicitud_pago_id' => $solicitudPago->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return $this->success(
+            new ConstruccSolicitudPagoResource(
+                $solicitudPago->fresh()->load(SolicitudPago::eagerLodable())
+            ),
+            'Pago confirmado correctamente sin comprobante.'
+        );
+    }
+
+
 
     /**
      * Descargar comprobante de pago
@@ -1323,5 +1450,133 @@ class ConstruccSolicitudPagoController extends Controller
             ['conteo' => $conteo],
             'Conteo de solicitudes por validar obtenido correctamente'
         );
+    }
+
+
+    /**
+     * METODOS PRIVADOS: solo para uso interno del controlador
+     * EXTRAER DATOS DEL XML DE LA FACTURA --> REVISAR LA FUNCION TAMBIEN SE USA EN pROVEEWDORsOLICITUDcOMPRAcONTROLLER.PHP
+     */
+    private function extraerDatosXML($archivoXml): array
+    {
+        try {
+            // ✅ Validar que el archivo exista y sea legible
+            if (! $archivoXml || ! file_exists($archivoXml) || ! is_readable($archivoXml)) {
+                Log::warning('⚠️ Archivo XML no existe o no es legible', [
+                    'ruta' => $archivoXml,
+                ]);
+                return [];
+            }
+
+            // Leer contenido del XML
+            $contenidoXml = file_get_contents($archivoXml);
+
+            if ($contenidoXml === false) {
+                Log::warning('⚠️ No se pudo leer el contenido del XML', [
+                    'ruta' => $archivoXml,
+                ]);
+                return [];
+            }
+
+            // Parsear XML
+            $xml = simplexml_load_string($contenidoXml);
+
+            if ($xml === false) {
+                Log::warning('⚠️ No se pudo parsear el XML de la factura', [
+                    'ruta' => $archivoXml,
+                ]);
+                return [];
+            }
+
+            // Registrar namespaces del CFDI
+            $namespaces = $xml->getNamespaces(true);
+            $cfdi = $namespaces['cfdi'] ?? $namespaces[''] ?? 'http://www.sat.gob.mx/cfd/4';
+
+            // Extraer datos principales del comprobante
+            $atributos = $xml->attributes();
+
+            $datos = [
+                'version' => (string) ($atributos->Version ?? ''),
+                'serie' => (string) ($atributos->Serie ?? ''),
+                'folio' => (string) ($atributos->Folio ?? ''),
+                'fecha' => (string) ($atributos->Fecha ?? ''),
+                'sello' => (string) ($atributos->Sello ?? ''),
+                'no_certificado' => (string) ($atributos->NoCertificado ?? ''),
+                'certificado' => (string) ($atributos->Certificado ?? ''),
+                'subtotal' => (string) ($atributos->SubTotal ?? ''),
+                'total' => (string) ($atributos->Total ?? ''),
+                'moneda' => (string) ($atributos->Moneda ?? 'MXN'),
+                'tipo_comprobante' => (string) ($atributos->TipoDeComprobante ?? ''),
+                'metodo_pago' => (string) ($atributos->MetodoPago ?? ''),
+                'forma_pago' => (string) ($atributos->FormaPago ?? ''),
+                'lugar_expedicion' => (string) ($atributos->LugarExpedicion ?? ''),
+            ];
+
+            // Extraer emisor
+            if (isset($xml->Emisor)) {
+                $emisor = $xml->Emisor->attributes();
+                $datos['emisor'] = [
+                    'rfc' => (string) ($emisor->Rfc ?? ''),
+                    'nombre' => (string) ($emisor->Nombre ?? ''),
+                    'regimen_fiscal' => (string) ($emisor->RegimenFiscal ?? ''),
+                ];
+            }
+
+            // Extraer receptor
+            if (isset($xml->Receptor)) {
+                $receptor = $xml->Receptor->attributes();
+                $datos['receptor'] = [
+                    'rfc' => (string) ($receptor->Rfc ?? ''),
+                    'nombre' => (string) ($receptor->Nombre ?? ''),
+                    'uso_cfdi' => (string) ($receptor->UsoCFDI ?? ''),
+                    'domicilio_fiscal_receptor' => (string) ($receptor->DomicilioFiscalReceptor ?? ''),
+                    'regimen_fiscal_receptor' => (string) ($receptor->RegimenFiscalReceptor ?? ''),
+                ];
+            }
+
+            // Extraer conceptos
+            $conceptos = [];
+            if (isset($xml->Conceptos)) {
+                foreach ($xml->Conceptos->Concepto as $concepto) {
+                    $conceptoAttr = $concepto->attributes();
+                    $conceptos[] = [
+                        'clave_prod_serv' => (string) ($conceptoAttr->ClaveProdServ ?? ''),
+                        'cantidad' => (string) ($conceptoAttr->Cantidad ?? ''),
+                        'clave_unidad' => (string) ($conceptoAttr->ClaveUnidad ?? ''),
+                        'unidad' => (string) ($conceptoAttr->Unidad ?? ''),
+                        'descripcion' => (string) ($conceptoAttr->Descripcion ?? ''),
+                        'valor_unitario' => (string) ($conceptoAttr->ValorUnitario ?? ''),
+                        'importe' => (string) ($conceptoAttr->Importe ?? ''),
+                    ];
+                }
+            }
+            $datos['conceptos'] = $conceptos;
+
+            // Extraer UUID del timbre fiscal
+            if (isset($xml->Complemento)) {
+                foreach ($xml->Complemento->children() as $complemento) {
+                    if ($complemento->getName() === 'TimbreFiscalDigital') {
+                        $timbre = $complemento->attributes();
+                        $datos['timbre_fiscal'] = [
+                            'uuid' => (string) ($timbre->UUID ?? ''),
+                            'fecha_timbrado' => (string) ($timbre->FechaTimbrado ?? ''),
+                            'rfc_prov_certif' => (string) ($timbre->RfcProvCertif ?? ''),
+                            'sello_cfd' => (string) ($timbre->SelloCFD ?? ''),
+                            'no_certificado_sat' => (string) ($timbre->NoCertificadoSAT ?? ''),
+                            'sello_sat' => (string) ($timbre->SelloSAT ?? ''),
+                        ];
+                        break;
+                    }
+                }
+            }
+
+            return $datos;
+        } catch (\Exception $e) {
+            Log::error('Error al extraer datos del XML', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return [];
+        }
     }
 }

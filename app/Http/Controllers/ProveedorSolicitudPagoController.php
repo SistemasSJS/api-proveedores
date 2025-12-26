@@ -99,7 +99,7 @@ class ProveedorSolicitudPagoController extends Controller
 
         // Extraer datos del XML
         $datosXml = $this->extraerDatosXML($facturaXml);
-        
+
         // Combinar serie y folio para formar el folio_factura
         $serie = $datosXml['serie'] ?? '';
         $folio = $datosXml['folio'] ?? '';
@@ -154,7 +154,7 @@ class ProveedorSolicitudPagoController extends Controller
             'Solicitud de pago creada correctamente.',
             201
         );
-    } 
+    }
 
     /**
      * Mostrar detalle
@@ -681,7 +681,7 @@ class ProveedorSolicitudPagoController extends Controller
         // Base query
         $baseQuery = SolicitudPago::query()
             ->where('proveedor_id', $proveedor->id);
-            // ->whereBetween('created_at', [$fechaDesde, $fechaHasta]);
+        // ->whereBetween('created_at', [$fechaDesde, $fechaHasta]);
 
         // Aplicar filtros del sistema si existen
         if (!empty($filters)) {
@@ -726,7 +726,7 @@ class ProveedorSolicitudPagoController extends Controller
         try {
             $contenidoXml = file_get_contents($archivoXml->getRealPath());
             $xml = simplexml_load_string($contenidoXml);
-            
+
             if ($xml === false) {
                 Log::warning('No se pudo parsear el XML de la factura');
                 return [];
@@ -735,10 +735,10 @@ class ProveedorSolicitudPagoController extends Controller
             // Registrar namespaces del CFDI
             $namespaces = $xml->getNamespaces(true);
             $cfdi = $namespaces['cfdi'] ?? $namespaces[''] ?? 'http://www.sat.gob.mx/cfd/4';
-            
+
             // Extraer datos principales del comprobante
             $atributos = $xml->attributes();
-            
+
             $datos = [
                 'version' => (string) ($atributos->Version ?? ''),
                 'serie' => (string) ($atributos->Serie ?? ''),

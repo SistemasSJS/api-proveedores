@@ -45,7 +45,7 @@ X-API-KEY: 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
 Accept:  application/json
 ### 1. Listado general de solicitudes de pago (solo verificadas)
 
-GET {{baseUrl}}/construcc/solicitudes-pago
+GET {{baseUrl}}/construcc/solicitudes-pago/4
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
@@ -118,6 +118,21 @@ Content-Type: {{contentType}}
 {
   "rol": "PC",
   "motivo_rechazo": "El monto no corresponde con la cotización original."
+}
+
+### 11. Confirmar pago sin comprobante (solo DA)
+# 'rol' => ['required', 'string', Rule::in(['DA'])],
+# 'monto_pagado' => ['required', 'numeric', 'min:0.01'],
+# 'comprobante' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+# 'observaciones' => ['nullable', 'string', 'max:500'],
+POST {{baseUrl}}/construcc/solicitudes-pago/3/confirmar-pago-sin-comprobante
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+
+{
+  "rol": "DA",
+  "monto_pagado": 4350.00,
+  "observaciones": "Pago realizado sin comprobante por motivos administrativos."
 }
 
 ### 11. Confirmar pago (solo DA)
