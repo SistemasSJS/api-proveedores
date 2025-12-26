@@ -207,7 +207,7 @@ Route::prefix('construcc')
             Route::post('{solicitudPago}/autorizar', [ConstruccSolicitudPagoController::class, 'autorizar'])->name('autorizar');
             Route::post('{solicitudPago}/rechazar', [ConstruccSolicitudPagoController::class, 'rechazar'])->name('rechazar');
             Route::post('{solicitudPago}/confirmar-pago', [ConstruccSolicitudPagoController::class, 'confirmarPago'])->name('confirmar-pago');
-            Route::post('{solicitudPago}/confirmar-pago-sin-comprobante', [ConstruccSolicitudPagoController::class, 'confirmarPagoSinComprobante'])->name('confirmar-pago-sin-comprobante');
+            // Route::post('{solicitudPago}/confirmar-pago-sin-comprobante', [ConstruccSolicitudPagoController::class, 'confirmarPagoSinComprobante'])->name('confirmar-pago-sin-comprobante');
 
             // Verificación de SP por usuario construcción
             Route::post('{solicitudPago}/marcar-verificada', [ConstruccSolicitudPagoController::class, 'marcarComoVerificada'])->name('marcar-verificada');
