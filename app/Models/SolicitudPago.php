@@ -47,6 +47,8 @@ class SolicitudPago extends BaseModel
         'pago_completo',
         'verificada',
         'tipo',
+        // FIXME: tipo_id se migrara a una tabla y este almacenara el id asignado al tipo de SP
+        // valores actuales que se aklmacenana en tipo como string: 1: DIRECTA, 2: REQUISICION
         'tipo_id',
         'obra_id',
         'observaciones',
@@ -180,7 +182,7 @@ class SolicitudPago extends BaseModel
         'monto_oc_original' => 'decimal:2',
 
         'visto_rechazada' => 'boolean',
-        
+
         // Datos XML como JSON
         'datos_factura_xml' => 'array',
     ];

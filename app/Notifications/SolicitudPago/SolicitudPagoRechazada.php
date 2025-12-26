@@ -2,6 +2,7 @@
 
 namespace App\Notifications\SolicitudPago;
 
+use App\Notifications\Traits\NotificationStyleTrait;
 use App\Services\FcmService;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Messages\BroadcastMessage;
@@ -11,6 +12,8 @@ use Illuminate\Notifications\Notification;
 
 class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
 {
+    use NotificationStyleTrait;
+
     public $solicitudPagoId;
     public $solicitudPagoFolio;
     public $proveedorId;
@@ -51,7 +54,7 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
      */
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
-        return new BroadcastMessage([
+        $data = [
             'tipo' => 'solicitud_pago',   // Categoría base
             'subtipo' => 'rechazada',     // Tipo específico
             'titulo' => 'Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
@@ -64,7 +67,9 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
                 'estatus' => 'rechazada',
             ],
             'timestamp' => now()->toIso8601String(),
-        ]);
+        ];
+
+        return new BroadcastMessage($this->addStylesToData($data));
     }
 
     public function broadcastType(): string
@@ -87,7 +92,7 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
      */
     public function toArray(object $notifiable): array
     {
-        return [
+        $data = [
             'tipo' => 'solicitud_pago',   // Categoría base
             'subtipo' => 'rechazada',     // Tipo específico
             'titulo' => 'Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
@@ -101,6 +106,8 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
             'estatus' => 'rechazada',
             'timestamp' => now()->toIso8601String(),
         ];
+
+        return $this->addStylesToData($data);
     }
 
     /**
@@ -153,6 +160,20 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
             'timestamp' => now()->toIso8601String(),
         ];
 
+        $data = $this->addStylesToData($data);
         app(FcmService::class)->sendToTokens($tokens, $notification, $data);
+    }
+
+    /**
+     * Implementación de métodos abstractos del trait
+     */
+    protected function getNotificationTipo(): string
+    {
+        return 'solicitud_pago';
+    }
+
+    protected function getNotificationSubtipo(): string
+    {
+        return 'rechazada';
     }
 }

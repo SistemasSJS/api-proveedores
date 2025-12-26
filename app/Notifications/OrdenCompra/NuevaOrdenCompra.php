@@ -2,6 +2,7 @@
 
 namespace App\Notifications\OrdenCompra;
 
+use App\Notifications\Traits\NotificationStyleTrait;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -11,6 +12,8 @@ use App\Services\FcmService;
 
 class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
 {
+    use NotificationStyleTrait;
+
     public $ordenCompraId;
     public $proveedorId;
     public $empresaId;
@@ -49,7 +52,7 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
      */
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
-        return new BroadcastMessage([
+        $data = [
             'tipo' => 'orden_compra',  // Categoría base
             'subtipo' => 'nueva',       // Tipo específico
             'titulo' => 'Nueva Orden de Compra #' . $this->ordenCompraId,
@@ -62,7 +65,9 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
                 'estatus' => $this->estatus,
             ],
             'timestamp' => now()->toIso8601String(),
-        ]);
+        ];
+
+        return new BroadcastMessage($this->addStylesToData($data));
     }
 
     public function broadcastType(): string
@@ -86,7 +91,7 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
      */
     public function toArray(object $notifiable): array
     {
-        return [
+        $data = [
             'tipo' => 'orden_compra',  // Categoría base
             'subtipo' => 'nueva',       // Tipo específico
             'titulo' => 'Nueva Orden de Compra #' . $this->ordenCompraId,
@@ -98,6 +103,8 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
             'estatus' => $this->estatus,
             'timestamp' => now()->toIso8601String(),
         ];
+
+        return $this->addStylesToData($data);
     }
 
     /**
@@ -150,6 +157,20 @@ class NuevaOrdenCompra extends Notification implements ShouldBroadcastNow
             'timestamp' => now()->toIso8601String(),
         ];
 
+        $data = $this->addStylesToData($data);
         app(FcmService::class)->sendToTokens($tokens, $notification, $data);
+    }
+
+    /**
+     * Implementación de métodos abstractos del trait
+     */
+    protected function getNotificationTipo(): string
+    {
+        return 'orden_compra';
+    }
+
+    protected function getNotificationSubtipo(): string
+    {
+        return 'nueva';
     }
 }

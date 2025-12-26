@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\EstadoSP;
 use App\Http\Requests\SolicitudPago\CrearSolicitudPagoRequest;
 use App\Http\Resources\SolicitudPago\SolicitudPagoResource;
 use App\Models\EmpresaConstrucc;
@@ -550,7 +551,7 @@ class ProveedorSolicitudPagoController extends Controller
 
         if ($sp->fecha_registro_pendiente) {
             $timeline[] = [
-                'estado' => 'pendiente',
+                'estado' => EstadoSP::PENDIENTE->value,
                 'fecha' => $sp->fecha_registro_pendiente,
                 'descripcion' => 'Solicitud creada',
             ];
@@ -566,7 +567,7 @@ class ProveedorSolicitudPagoController extends Controller
 
         if ($sp->fecha_aprobado) {
             $timeline[] = [
-                'estado' => 'autorizada',
+                'estado' => EstadoSP::AUTORIZADA->value,
                 'fecha' => $sp->fecha_aprobado,
                 'descripcion' => 'Solicitud autorizada',
             ];
@@ -574,7 +575,7 @@ class ProveedorSolicitudPagoController extends Controller
 
         if ($sp->fecha_rechazado) {
             $timeline[] = [
-                'estado' => 'rechazada',
+                'estado' => EstadoSP::RECHAZADA->value,
                 'fecha' => $sp->fecha_rechazado,
                 'descripcion' => 'Solicitud rechazada: ' . ($sp->motivo_rechazo ?? 'Sin motivo especificado'),
             ];
@@ -582,7 +583,7 @@ class ProveedorSolicitudPagoController extends Controller
 
         if ($sp->fecha_confirmacion_pago) {
             $timeline[] = [
-                'estado' => 'pagada',
+                'estado' => EstadoSP::PAGADO->value,
                 'fecha' => $sp->fecha_confirmacion_pago,
                 'descripcion' => 'Pago confirmado',
             ];
@@ -610,10 +611,14 @@ class ProveedorSolicitudPagoController extends Controller
         // Conteos por estado (usando STRINGS - el campo estado_solicitud NO usa el enum)
         $conteos = [
             'total' => (clone $baseQuery)->count(),
-            'pendientes' => (clone $baseQuery)->where('estado_solicitud', 'pendiente')->count(),
-            'autorizadas' => (clone $baseQuery)->where('estado_solicitud', 'autorizada')->count(),
-            'rechazadas' => (clone $baseQuery)->where('estado_solicitud', 'rechazada')->count(),
-            'pagadas' => (clone $baseQuery)->where('estado_solicitud', 'pagada')->count(),
+            'pendientes' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->count(),
+            // => (clone $baseQuery)->where('estado_solicitud', 'pendiente')->count(),
+            'autorizadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::AUTORIZADA->value)->count(),
+            // => (clone $baseQuery)->where('estado_solicitud', 'autorizada')->count(),
+            'rechazadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::RECHAZADA->value)->count(),
+            // => (clone $baseQuery)->where('estado_solicitud', 'rechazada')->count(),
+            'pagadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PAGADO->value)->count(),
+            // => (clone $baseQuery)->where('estado_solicitud', 'pagada')->count(),
         ];
 
         return $this->success($conteos, 'Conteo por estado obtenido correctamente');
@@ -690,17 +695,17 @@ class ProveedorSolicitudPagoController extends Controller
 
         // Rechazadas NO vistas
         $rechazadasNoVistas = (clone $baseQuery)
-            ->where('estado_solicitud', 'rechazada')
+            ->where('estado_solicitud', EstadoSP::RECHAZADA->value)
             ->where('visto_rechazada', false);
 
         // Conteos por estado (RESPETANDO lo que ya retornas)
         $conteos = [
             'total_sp' => (clone $baseQuery)->count(),
-            'sp_pendientes' => (clone $baseQuery)->where('estado_solicitud', 'pendiente')->count(),
-            'sp_autorizadas' => (clone $baseQuery)->where('estado_solicitud', 'autorizada')->count(),
-            'sp_en_proceso' => (clone $baseQuery)->where('estado_solicitud', 'procesando')->count(),
+            'sp_pendientes' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->count(),
+            'sp_autorizadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::AUTORIZADA->value)->count(),
+            'sp_en_proceso' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->count(),
             'sp_rechazadas' => $rechazadasNoVistas->count(),
-            'sp_pagadas' => (clone $baseQuery)->where('estado_solicitud', 'pagada')->count(),
+            'sp_pagadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PAGADO->value)->count(),
         ];
 
         return $this->success($conteos, 'Métricas del dashboard obtenidas correctamente');

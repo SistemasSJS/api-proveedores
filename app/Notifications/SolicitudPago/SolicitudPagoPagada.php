@@ -2,6 +2,7 @@
 
 namespace App\Notifications\SolicitudPago;
 
+use App\Notifications\Traits\NotificationStyleTrait;
 use App\Services\FcmService;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Messages\BroadcastMessage;
@@ -11,6 +12,8 @@ use Illuminate\Notifications\Notification;
 
 class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
 {
+    use NotificationStyleTrait;
+
     public $solicitudPagoId;
     public $solicitudPagoFolio;
     public $proveedorId;
@@ -51,7 +54,7 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
      */
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
-        return new BroadcastMessage([
+        $data = [
             'tipo' => 'solicitud_pago',  // Categoría base
             'subtipo' => 'pagada',        // Tipo específico
             'titulo' => 'Solicitud de Pago Pagada #' . $this->solicitudPagoFolio,
@@ -65,7 +68,9 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
                 'estatus' => 'pagada',
             ],
             'timestamp' => now()->toIso8601String(),
-        ]);
+        ];
+
+        return new BroadcastMessage($this->addStylesToData($data));
     }
 
     public function broadcastType(): string
@@ -89,7 +94,7 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
      */
     public function toArray(object $notifiable): array
     {
-        return [
+        $data = [
             'tipo' => 'solicitud_pago',  // Categoría base
             'subtipo' => 'pagada',        // Tipo específico
             'titulo' => 'Solicitud de Pago Pagada #' . $this->solicitudPagoFolio,
@@ -103,6 +108,8 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
             'estatus' => 'pagada',
             'timestamp' => now()->toIso8601String(),
         ];
+
+        return $this->addStylesToData($data);
     }
 
     /**
@@ -139,7 +146,6 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
             return;
         }
 
-        // return [
         $notification = [
             'title' => '✅ Solicitud de Pago Pagada #' . $this->solicitudPagoFolio,
             'body' => "Tu solicitud de pago ha sido pagada exitosamente.",
@@ -154,7 +160,21 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
             'estatus' => 'pagada',
             'timestamp' => now()->toIso8601String(),
         ];
-        // ];
+
+        $data = $this->addStylesToData($data);
         app(FcmService::class)->sendToTokens($tokens, $notification, $data);
+    }
+
+    /**
+     * Implementación de métodos abstractos del trait
+     */
+    protected function getNotificationTipo(): string
+    {
+        return 'solicitud_pago';
+    }
+
+    protected function getNotificationSubtipo(): string
+    {
+        return 'pagada';
     }
 }

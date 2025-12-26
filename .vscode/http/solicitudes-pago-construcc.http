@@ -10,7 +10,7 @@
 @apiKey = 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
 
 ### VARIABLES
-@solicitudId = 6
+@solicitudId = 1
 @rol = PC
 
 
@@ -31,7 +31,7 @@ Accept:  application/json
 # RUTAS CONSTRUCC - SOLICITUDES DE PAGO
 ###############################################################################
 
-###
+###1
 GET https://apicons.ddns.net:8092/api/construcc/solicitudes-pago/sp-por-autorizar?estado=autorizada&empresa_construcc_id=14
 X-API-KEY: 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
 Accept:  application/json
@@ -45,7 +45,7 @@ X-API-KEY: 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
 Accept:  application/json
 ### 1. Listado general de solicitudes de pago (solo verificadas)
 
-GET {{baseUrl}}/construcc/solicitudes-pago/4
+GET {{baseUrl}}/construcc/solicitudes-pago/1
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
@@ -60,7 +60,7 @@ X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
 ### 4. 🆕 Marcar solicitud como VERIFICADA
-POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/marcar-verificada
+POST {{baseUrl}}/construcc/solicitudes-pago/1/marcar-verificada
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 Accept: {{acceptType}}
@@ -111,7 +111,7 @@ Content-Type: {{contentType}}
 
 ### 10. Rechazar solicitud de pago
 # POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/rechazar
-POST {{baseUrl}}/construcc/solicitudes-pago/6/rechazar
+POST {{baseUrl}}/construcc/solicitudes-pago/4/rechazar
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 
@@ -125,7 +125,7 @@ Content-Type: {{contentType}}
 # 'monto_pagado' => ['required', 'numeric', 'min:0.01'],
 # 'comprobante' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
 # 'observaciones' => ['nullable', 'string', 'max:500'],
-POST {{baseUrl}}/construcc/solicitudes-pago/3/confirmar-pago-sin-comprobante
+POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/confirmar-pago-sin-comprobante
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 
@@ -304,7 +304,7 @@ X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 
 ### 31. 🆕 Marcar una SP como RECHAZADA durante verificación
-POST {{baseUrl}}/construcc/solicitudes-pago/8/marcar-rechazada
+POST {{baseUrl}}/construcc/solicitudes-pago/2/marcar-rechazada
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 
@@ -318,12 +318,12 @@ X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 
 ### 33. Error: Intentar rechazar sin motivo
-POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/marcar-rechazada
+POST {{baseUrl}}/construcc/solicitudes-pago/1/marcar-rechazada
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 
 {
-  "motivo_rechazo": ""
+  "motivo_rechazo": "rechazada"
 }
 
 ### 34. Verificar que la SP verificada ya NO aparece en listado no-verificadas
