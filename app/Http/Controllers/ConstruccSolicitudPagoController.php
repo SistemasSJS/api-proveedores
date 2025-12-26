@@ -171,7 +171,7 @@ class ConstruccSolicitudPagoController extends Controller
      */
     public function marcarComoVerificada(Request $request, SolicitudPago $solicitudPago): JsonResponse
     {
-        Log::info('📥 Iniciando verificación de Solicitud de Pago', [
+        Log::info('SP-marcarComoVerificada: ', [
             'solicitud_pago_id' => $solicitudPago->id,
             'payload' => $request->all(),
         ]);
@@ -189,7 +189,7 @@ class ConstruccSolicitudPagoController extends Controller
             'equipo' => ['nullable', 'string'],
         ]);
 
-        Log::info('✅ Validación exitosa', [
+        Log::info('✅ SP-marcarComoVerificada: Validación exitosa', [
             'solicitud_pago_id' => $solicitudPago->id,
             'usuario_id' => $request->usuario_id,
             'nivel_id' => $request->nivel_id,
@@ -204,7 +204,7 @@ class ConstruccSolicitudPagoController extends Controller
         }
 
         DB::beginTransaction();
-        Log::info('🔐 Transacción iniciada', [
+        Log::info('SP-marcarComoVerificada: Transacción iniciada', [
             'solicitud_pago_id' => $solicitudPago->id,
         ]);
 
@@ -217,7 +217,7 @@ class ConstruccSolicitudPagoController extends Controller
                 }
             }
 
-            Log::info('📝 Datos preparados para actualización', [
+            Log::info('SP-marcarComoVerificada:  Datos preparados para actualización', [
                 'solicitud_pago_id' => $solicitudPago->id,
                 'update_data' => $updateData,
             ]);
@@ -237,7 +237,7 @@ class ConstruccSolicitudPagoController extends Controller
                 $updateData['estado_solicitud'] = EstadoSP::AUTORIZADA->value;
                 $updateData[$fechaField] = now();
 
-                Log::info('✍️ Autorización aplicada por rol', [
+                Log::info('SP-marcarComoVerificada: Autorización aplicada por rol', [
                     'solicitud_pago_id' => $solicitudPago->id,
                     'nivel_id' => $request->nivel_id,
                     'rol' => strtoupper($rolField),
@@ -245,7 +245,6 @@ class ConstruccSolicitudPagoController extends Controller
 
                 // if (in_array($request->nivel_id, [0, 1])) {
                 //     $updateData['estado_solicitud'] = EstadoSP::AUTORIZADA->value;
-
                 //     Log::info('🚨 Fuerza mayor aplicada: SP autorizada automáticamente', [
                 //         'solicitud_pago_id' => $solicitudPago->id,
                 //         'nivel_id' => $request->nivel_id,
@@ -255,11 +254,11 @@ class ConstruccSolicitudPagoController extends Controller
 
             $solicitudPago->update($updateData);
 
-            Log::info('💾 Solicitud de pago actualizada', [
+            Log::info('SP-marcarComoVerificada: Solicitud de pago actualizada', [
                 'solicitud_pago_id' => $solicitudPago->id,
             ]);
 
-            Log::info('📡 Enviando notificación a InterAPI', [
+            Log::info('SP-marcarComoVerificada: Enviando notificación a InterAPI', [
                 'solicitud_pago_id' => $solicitudPago->id,
                 'empresa_id' => $request->empresa_id,
                 'usuario_id' => $request->usuario_id,
@@ -286,7 +285,7 @@ class ConstruccSolicitudPagoController extends Controller
 
             DB::commit();
 
-            Log::info('🎉 Transacción confirmada exitosamente', [
+            Log::info('SP-marcarComoVerificada: Transacción confirmada exitosamente', [
                 'solicitud_pago_id' => $solicitudPago->id,
                 'estado' => $solicitudPago->fresh()->estado_solicitud,
             ]);
@@ -329,11 +328,11 @@ class ConstruccSolicitudPagoController extends Controller
      */
     public function marcarComoRechazada(Request $request, SolicitudPago $solicitudPago): JsonResponse
     {
-        Log::info('✅ Antes de validate: ', [
-            'solicitud_pago_id' => $solicitudPago->id,
-            'folio' => $solicitudPago->numero_folio_solicitud,
-            'proveedor_id' => $solicitudPago->proveedor->id,
-        ]);
+        // Log::info('✅ Antes de validate: ', [
+        //     'solicitud_pago_id' => $solicitudPago->id,
+        //     'folio' => $solicitudPago->numero_folio_solicitud,
+        //     'proveedor_id' => $solicitudPago->proveedor->id,
+        // ]);
 
         // Validar que se proporcione un motivo de rechazo
         $request->validate([
@@ -378,12 +377,12 @@ class ConstruccSolicitudPagoController extends Controller
                     $solicitudPago->update(['notification_id' => $notificationId]);
                 }
 
-                Log::info('✅ Notificación de SP Rechazada Sin Autorización enviada', [
-                    'solicitud_pago_id' => $solicitudPago->id,
-                    'folio' => $solicitudPago->numero_folio_solicitud,
-                    'proveedor_id' => $proveedor->id,
-                    'usuario_id' => $usuarioPrincipal->id,
-                ]);
+                // Log::info('✅ Notificación de SP Rechazada Sin Autorización enviada', [
+                //     'solicitud_pago_id' => $solicitudPago->id,
+                //     'folio' => $solicitudPago->numero_folio_solicitud,
+                //     'proveedor_id' => $proveedor->id,
+                //     'usuario_id' => $usuarioPrincipal->id,
+                // ]);
             }
         } catch (\Exception $e) {
             Log::error('❌ Error al enviar notificación de SP Rechazada Sin Autorización', [
@@ -534,12 +533,12 @@ class ConstruccSolicitudPagoController extends Controller
                     $solicitudPago->update(['notification_id' => $notificationId]);
                 }
 
-                Log::info('✅ Notificación de SP Rechazada enviada', [
-                    'solicitud_pago_id' => $solicitudPago->id,
-                    'folio' => $solicitudPago->numero_folio_solicitud,
-                    'proveedor_id' => $proveedor->id,
-                    'usuario_id' => $usuarioPrincipal->id,
-                ]);
+                // Log::info('✅ Notificación de SP Rechazada enviada', [
+                //     'solicitud_pago_id' => $solicitudPago->id,
+                //     'folio' => $solicitudPago->numero_folio_solicitud,
+                //     'proveedor_id' => $proveedor->id,
+                //     'usuario_id' => $usuarioPrincipal->id,
+                // ]);
             }
         } catch (\Exception $e) {
             Log::error('❌ Error al enviar notificación de SP Rechazada', [
