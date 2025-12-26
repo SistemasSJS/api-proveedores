@@ -234,6 +234,7 @@ class ConstruccSolicitudPagoController extends Controller
                 $fechaField = "{$rolField}_fecha";
 
                 $updateData[$rolField] = EstadoSolicitud::AUTORIZADA->value;
+                $updateData['estado_solicitud'] = EstadoSP::AUTORIZADA->value;
                 $updateData[$fechaField] = now();
 
                 Log::info('✍️ Autorización aplicada por rol', [
@@ -242,14 +243,14 @@ class ConstruccSolicitudPagoController extends Controller
                     'rol' => strtoupper($rolField),
                 ]);
 
-                if (in_array($request->nivel_id, [0, 1])) {
-                    $updateData['estado_solicitud'] = EstadoSP::AUTORIZADA->value;
+                // if (in_array($request->nivel_id, [0, 1])) {
+                //     $updateData['estado_solicitud'] = EstadoSP::AUTORIZADA->value;
 
-                    Log::info('🚨 Fuerza mayor aplicada: SP autorizada automáticamente', [
-                        'solicitud_pago_id' => $solicitudPago->id,
-                        'nivel_id' => $request->nivel_id,
-                    ]);
-                }
+                //     Log::info('🚨 Fuerza mayor aplicada: SP autorizada automáticamente', [
+                //         'solicitud_pago_id' => $solicitudPago->id,
+                //         'nivel_id' => $request->nivel_id,
+                //     ]);
+                // }
             }
 
             $solicitudPago->update($updateData);
