@@ -171,8 +171,13 @@ class ConstruccSolicitudPagoController extends Controller
      */
     public function marcarComoVerificada(Request $request, SolicitudPago $solicitudPago): JsonResponse
     {
-        // Validar que se proporcione el usuario_id
-        $request->validate([
+        Log::info('📥 Iniciando verificación de Solicitud de Pago', [
+            'solicitud_pago_id' => $solicitudPago->id,
+            'payload' => $request->all(),
+        ]);
+
+        // Validación
+        $validated = $request->validate([
             'usuario_id' => ['required', 'integer'],
             'nivel_id' => ['required', 'integer'],
             'empresa_id' => ['required'],
@@ -184,71 +189,81 @@ class ConstruccSolicitudPagoController extends Controller
             'equipo' => ['nullable', 'string'],
         ]);
 
-        // Validar que la SP no esté ya verificada
+        Log::info('✅ Validación exitosa', [
+            'solicitud_pago_id' => $solicitudPago->id,
+            'usuario_id' => $request->usuario_id,
+            'nivel_id' => $request->nivel_id,
+        ]);
+
         if ($solicitudPago->verificada) {
+            Log::warning('⚠️ Intento de verificar SP ya verificada', [
+                'solicitud_pago_id' => $solicitudPago->id,
+            ]);
+
             return $this->error('Esta solicitud ya ha sido verificada.', null, 400);
         }
 
         DB::beginTransaction();
+        Log::info('🔐 Transacción iniciada', [
+            'solicitud_pago_id' => $solicitudPago->id,
+        ]);
 
         try {
-            // Datos a actualizar
             $updateData = ['verificada' => true];
 
-            // Agregar campos opcionales si están presentes
-            if ($request->has('tipo')) {
-                $updateData['tipo'] = $request->tipo;
-            }
-            if ($request->has('tipo_id')) {
-                $updateData['tipo_id'] = $request->tipo_id;
-            }
-            if ($request->has('obra_id')) {
-                $updateData['obra_id'] = $request->obra_id;
-            }
-            if ($request->has('notas')) {
-                $updateData['notas'] = $request->notas;
-            }
-            if ($request->has('utilizara')) {
-                $updateData['utilizara'] = $request->utilizara;
-            }
-            if ($request->has('equipo')) {
-                $updateData['equipo'] = $request->equipo;
+            foreach (['tipo', 'tipo_id', 'obra_id', 'notas', 'utilizara', 'equipo'] as $field) {
+                if ($request->has($field)) {
+                    $updateData[$field] = $request->$field;
+                }
             }
 
-            // Mapeo de nivel_id a rol
+            Log::info('📝 Datos preparados para actualización', [
+                'solicitud_pago_id' => $solicitudPago->id,
+                'update_data' => $updateData,
+            ]);
+
             $nivelToRol = [
-                0 => 'dg', // Administrador
-                1 => 'dg',  // Director General
-                2 => 'dt',  // Director Técnico
-                5 => 'pc',  // Presupuesto y control
-                // 3 => 'da',  // Director Administrativo
+                0 => 'dg',
+                1 => 'dg',
+                2 => 'dt',
+                5 => 'pc',
             ];
 
-            // Si es un nivel directivo (1, 2, 3), también autorizar
             if (array_key_exists($request->nivel_id, $nivelToRol)) {
-
                 $rolField = $nivelToRol[$request->nivel_id];
-                $fechaField = $rolField . '_fecha';
+                $fechaField = "{$rolField}_fecha";
 
-                // Autoriza el rol
                 $updateData[$rolField] = EstadoSolicitud::AUTORIZADA->value;
                 $updateData[$fechaField] = now();
 
-                // Nivel 0 (Admin) y 1 (DG) tienen fuerza mayor
+                Log::info('✍️ Autorización aplicada por rol', [
+                    'solicitud_pago_id' => $solicitudPago->id,
+                    'nivel_id' => $request->nivel_id,
+                    'rol' => strtoupper($rolField),
+                ]);
+
                 if (in_array($request->nivel_id, [0, 1])) {
                     $updateData['estado_solicitud'] = EstadoSP::AUTORIZADA->value;
 
-                    Log::info('✅ Nivel con fuerza mayor detectado, SP autorizada automáticamente', [
-                        'nivel_id' => $request->nivel_id,
-                        'rol' => strtoupper($rolField),
+                    Log::info('🚨 Fuerza mayor aplicada: SP autorizada automáticamente', [
                         'solicitud_pago_id' => $solicitudPago->id,
+                        'nivel_id' => $request->nivel_id,
                     ]);
                 }
             }
 
-            // Actualizar solicitud
             $solicitudPago->update($updateData);
-            // Llamar al servicio InterAPI para notificar al validador
+
+            Log::info('💾 Solicitud de pago actualizada', [
+                'solicitud_pago_id' => $solicitudPago->id,
+            ]);
+
+            Log::info('📡 Enviando notificación a InterAPI', [
+                'solicitud_pago_id' => $solicitudPago->id,
+                'empresa_id' => $request->empresa_id,
+                'usuario_id' => $request->usuario_id,
+            ]);
+
             $result = $this->interApiService->spNotifyByValidator(
                 $solicitudPago->id,
                 $solicitudPago->numero_folio_solicitud,
@@ -256,44 +271,44 @@ class ConstruccSolicitudPagoController extends Controller
                 $request->usuario_id,
             );
 
-            // Registrar el resultado de la notificación
             if ($result['success']) {
-                Log::info('✅ Notificación de validador enviada exitosamente', [
+                Log::info('✅ InterAPI respondió correctamente', [
                     'solicitud_pago_id' => $solicitudPago->id,
-                    'folio' => $solicitudPago->numero_folio_solicitud,
-                    'usuario_id' => $request->usuario_id,
-                    'empresa_id' => $request->empresa_id,
-                    'nivel_id' => $request->nivel_id,
-                    'notas' => $request->notas ?? null,
-                    'utilizara' => $request->utilizara ?? null,
-                    'equipo' => $request->equipo ?? null,
+                    'response' => $result,
                 ]);
             } else {
-                Log::warning('⚠️ Fallo al enviar notificación de validador', [
+                Log::warning('⚠️ InterAPI respondió con error', [
                     'solicitud_pago_id' => $solicitudPago->id,
-                    'error' => $result['error'] ?? 'Error desconocido',
+                    'response' => $result,
                 ]);
             }
 
             DB::commit();
 
+            Log::info('🎉 Transacción confirmada exitosamente', [
+                'solicitud_pago_id' => $solicitudPago->id,
+                'estado' => $solicitudPago->fresh()->estado_solicitud,
+            ]);
+
             $mensaje = 'Solicitud de pago marcada como verificada correctamente.';
             if (array_key_exists($request->nivel_id, $nivelToRol)) {
-                $rolNombre = strtoupper($nivelToRol[$request->nivel_id]);
-                $mensaje .= " Autorizada por {$rolNombre}.";
+                $mensaje .= ' Autorizada por ' . strtoupper($nivelToRol[$request->nivel_id]) . '.';
             }
 
             return $this->success(
-                new ConstruccSolicitudPagoResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
+                new ConstruccSolicitudPagoResource(
+                    $solicitudPago->fresh()->load(SolicitudPago::eagerLodable())
+                ),
                 $mensaje
             );
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
 
-            Log::error('❌ Error al marcar SP como verificada', [
+            Log::error('❌ Error crítico al verificar SP', [
                 'solicitud_pago_id' => $solicitudPago->id,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
             ]);
 
             return $this->error(
@@ -303,6 +318,7 @@ class ConstruccSolicitudPagoController extends Controller
             );
         }
     }
+
 
 
     /**
