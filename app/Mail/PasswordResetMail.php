@@ -12,20 +12,26 @@ class PasswordResetMail extends Mailable
 
     public $url;
     public $userName;
+    public $logoUrl;
 
     public function __construct($url, $userName = null)
     {
         $this->url = $url;
         $this->userName = $userName;
+        $this->logoUrl = config('app.frontend_url') . '/assets/icon/ms-310.png';
     }
 
     public function build()
     {
-        return $this->subject('Recuperación de Contraseña - SJS Construcciones')
+        return $this
+            ->subject('Recuperación de Contraseña - SJS Construcciones')
             ->view('emails.password-reset')
-            ->attach(public_path('/assets/icon/ms-310.png'), [
-                'as' => 'logo.png',
-                'mime' => 'image/png',
-            ]);
+            ->attach(
+                $this->logoUrl,
+                [
+                    'as' => 'logo.png',
+                    'mime' => 'image/png',
+                ]
+            );
     }
 }

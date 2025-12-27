@@ -18,7 +18,7 @@ class User extends Authenticatable
     use AutoSwaggerSchema, Filterable;
     use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
-    protected $fillable = ['name', 'email', 'foto_perfil_url', 'password', 'role_id', 'status'];
+    protected $fillable = ['name', 'email', 'telefono', 'foto_perfil_url', 'password', 'role_id', 'status'];
 
     protected $hidden = ['password', 'remember_token'];
 

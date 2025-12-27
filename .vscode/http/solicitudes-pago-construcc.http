@@ -3,8 +3,8 @@
 # API Solicitudes de Pago - Los Mochis, Sinaloa, México
 ###
 
-@baseUrl = http://localhost:80/api
-# @baseUrl = https://apicons.ddns.net:8092/api
+# @baseUrl = http://localhost:80/api
+@baseUrl = https://apicons.ddns.net:8092/api
 @contentType = application/json
 @acceptType = application/json
 @apiKey = 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
@@ -111,7 +111,7 @@ Content-Type: {{contentType}}
 
 ### 10. Rechazar solicitud de pago
 # POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/rechazar
-POST {{baseUrl}}/construcc/solicitudes-pago/4/rechazar
+POST {{baseUrl}}/construcc/solicitudes-pago/189/rechazar
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 
