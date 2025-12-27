@@ -222,7 +222,7 @@ class ConstruccSolicitudPagoController extends Controller
 
 
             $solicitudPago->update($updateData);
-1
+
             $result = $this->interApiService->spNotifyByValidator(
                 $solicitudPago->id,
                 $solicitudPago->numero_folio_solicitud,
