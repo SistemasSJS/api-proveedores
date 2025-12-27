@@ -3,14 +3,14 @@
 # API Solicitudes de Pago - Los Mochis, Sinaloa, México
 ###
 
-# @baseUrl = http://localhost:80/api
-@baseUrl = https://apicons.ddns.net:8092/api
+@baseUrl = http://localhost:80/api
+# @baseUrl = https://apicons.ddns.net:8092/api
 @contentType = application/json
 @acceptType = application/json
 @apiKey = 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
 
 ### VARIABLES
-@solicitudId = 1
+@solicitudId = 4
 @rol = PC
 
 
@@ -60,14 +60,14 @@ X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
 ### 4. 🆕 Marcar solicitud como VERIFICADA
-POST {{baseUrl}}/construcc/solicitudes-pago/1/marcar-verificada
+POST {{baseUrl}}/construcc/solicitudes-pago/11/marcar-verificada
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 Accept: {{acceptType}}
 
 {
   "usuario_id":1,
-  "nivel_id":2,
+  "nivel_id":4,
   "empresa_id":1,
   "obra_id":1,
   "tipo":"REQUISICION",
@@ -101,12 +101,12 @@ X-API-KEY: {{apiKey}}
 ###############################################################################
 
 ### 9. Autorizar solicitud de pago (por rol)
-POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/autorizar
+POST {{baseUrl}}/construcc/solicitudes-pago/7/autorizar
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 
 {
-  "rol": "{{rol}}"
+  "rol": "PC"
 }
 
 ### 10. Rechazar solicitud de pago
@@ -304,7 +304,7 @@ X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 
 ### 31. 🆕 Marcar una SP como RECHAZADA durante verificación
-POST {{baseUrl}}/construcc/solicitudes-pago/2/marcar-rechazada
+POST {{baseUrl}}/construcc/solicitudes-pago/3/marcar-rechazada
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 
@@ -313,7 +313,7 @@ Content-Type: {{contentType}}
 }
 
 ### 32. Error: Intentar marcar como verificada una SP ya verificada
-POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/marcar-verificada
+POST {{baseUrl}}/construcc/solicitudes-pago//marcar-verificada
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 

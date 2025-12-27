@@ -189,25 +189,13 @@ class ConstruccSolicitudPagoController extends Controller
             'equipo' => ['nullable', 'string'],
         ]);
 
-        Log::info('✅ SP-marcarComoVerificada: Validación exitosa', [
-            'solicitud_pago_id' => $solicitudPago->id,
-            'usuario_id' => $request->usuario_id,
-            'nivel_id' => $request->nivel_id,
-        ]);
-
         if ($solicitudPago->verificada) {
-            Log::warning('⚠️ Intento de verificar SP ya verificada', [
-                'solicitud_pago_id' => $solicitudPago->id,
-            ]);
-
+            Log::warning('⚠️ Intento de verificar SP ya verificada', ['solicitud_pago_id' => $solicitudPago->id,]);
             return $this->error('Esta solicitud ya ha sido verificada.', null, 400);
         }
 
-        DB::beginTransaction();
-        Log::info('SP-marcarComoVerificada: Transacción iniciada', [
-            'solicitud_pago_id' => $solicitudPago->id,
-        ]);
 
+        DB::beginTransaction();
         try {
             $updateData = ['verificada' => true];
 
@@ -217,53 +205,24 @@ class ConstruccSolicitudPagoController extends Controller
                 }
             }
 
-            Log::info('SP-marcarComoVerificada:  Datos preparados para actualización', [
-                'solicitud_pago_id' => $solicitudPago->id,
-                'update_data' => $updateData,
-            ]);
-
-            $nivelToRol = [
-                0 => 'dg',
-                1 => 'dg',
-                2 => 'dt',
-                5 => 'pc',
-            ];
+            // Niveles que al validar pasan la SP a autorizada.
+            $nivelToRol = [0 => 'dg', 1 => 'dg', 2 => 'dt', 3 => 'da', 4 => 'si', 5 => 'pc',];
 
             if (array_key_exists($request->nivel_id, $nivelToRol)) {
                 $rolField = $nivelToRol[$request->nivel_id];
                 $fechaField = "{$rolField}_fecha";
 
-                $updateData[$rolField] = EstadoSolicitud::AUTORIZADA->value;
-                $updateData['estado_solicitud'] = EstadoSP::AUTORIZADA->value;
-                $updateData[$fechaField] = now();
-
-                Log::info('SP-marcarComoVerificada: Autorización aplicada por rol', [
-                    'solicitud_pago_id' => $solicitudPago->id,
-                    'nivel_id' => $request->nivel_id,
-                    'rol' => strtoupper($rolField),
-                ]);
-
-                // if (in_array($request->nivel_id, [0, 1])) {
-                //     $updateData['estado_solicitud'] = EstadoSP::AUTORIZADA->value;
-                //     Log::info('🚨 Fuerza mayor aplicada: SP autorizada automáticamente', [
-                //         'solicitud_pago_id' => $solicitudPago->id,
-                //         'nivel_id' => $request->nivel_id,
-                //     ]);
-                // }
+                // SI (nivel 4) solo verifica, no autoriza
+                if ($request->nivel_id !== 4) {
+                    $updateData[$rolField] = EstadoSolicitud::AUTORIZADA->value;
+                    $updateData[$fechaField] = now();
+                    $updateData['estado_solicitud'] = EstadoSP::AUTORIZADA->value;
+                }
             }
 
+
             $solicitudPago->update($updateData);
-
-            Log::info('SP-marcarComoVerificada: Solicitud de pago actualizada', [
-                'solicitud_pago_id' => $solicitudPago->id,
-            ]);
-
-            Log::info('SP-marcarComoVerificada: Enviando notificación a InterAPI', [
-                'solicitud_pago_id' => $solicitudPago->id,
-                'empresa_id' => $request->empresa_id,
-                'usuario_id' => $request->usuario_id,
-            ]);
-
+1
             $result = $this->interApiService->spNotifyByValidator(
                 $solicitudPago->id,
                 $solicitudPago->numero_folio_solicitud,
@@ -272,23 +231,12 @@ class ConstruccSolicitudPagoController extends Controller
             );
 
             if ($result['success']) {
-                Log::info('✅ InterAPI respondió correctamente', [
-                    'solicitud_pago_id' => $solicitudPago->id,
-                    'response' => $result,
-                ]);
+                Log::info('✅ InterAPI respondió correctamente', ['solicitud_pago_id' => $solicitudPago->id, 'response' => $result,]);
             } else {
-                Log::warning('⚠️ InterAPI respondió con error', [
-                    'solicitud_pago_id' => $solicitudPago->id,
-                    'response' => $result,
-                ]);
+                Log::warning('⚠️ InterAPI respondió con error', ['solicitud_pago_id' => $solicitudPago->id, 'response' => $result,]);
             }
 
             DB::commit();
-
-            Log::info('SP-marcarComoVerificada: Transacción confirmada exitosamente', [
-                'solicitud_pago_id' => $solicitudPago->id,
-                'estado' => $solicitudPago->fresh()->estado_solicitud,
-            ]);
 
             $mensaje = 'Solicitud de pago marcada como verificada correctamente.';
             if (array_key_exists($request->nivel_id, $nivelToRol)) {
