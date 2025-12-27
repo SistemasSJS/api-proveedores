@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Notifications\Traits;
+namespace App\Traits;
 
 trait NotificationStyleTrait
 {
@@ -66,37 +66,53 @@ trait NotificationStyleTrait
                     'color' => 'medium',
                     'icon' => 'close-circle-outline',
                     'style_class' => 'medium-notification',
+                    'is_payment' => false,
+                ],
+                'rechazada-sin-autorizacion' => [
+                    'color' => 'medium',
+                    'icon' => 'close-circle-outline',
+                    'style_class' => 'medium-notification',
+                    'is_payment' => false,
                 ],
                 'pendiente' => [
                     'color' => 'primary',
                     'icon' => 'time-outline',
                     'style_class' => 'primary-notification',
-                ],
-                'en_proceso' => [
-                    'color' => 'primary',
-                    'icon' => 'hourglass-outline',
-                    'style_class' => 'primary-notification',
-                ],
-                'nueva_asociacion' => [
-                    'color' => 'primary',
-                    'icon' => 'link-outline',
-                    'style_class' => 'primary-notification',
+                    'is_payment' => false,
                 ],
                 'autorizada' => [
                     'color' => 'success',
                     'icon' => 'checkmark-circle-outline',
                     'style_class' => 'success-notification',
+                    'is_payment' => false,
+                ],
+                'default' => [
+                    'color' => 'primary',
+                    'icon' => 'document-text-outline',
+                    'style_class' => 'primary-notification',
+                    'is_payment' => false,
+                ],
+
+                //
+                'en_proceso' => [
+                    'color' => 'primary',
+                    'icon' => 'hourglass-outline',
+                    'style_class' => 'primary-notification',
                 ],
                 'cancelada' => [
                     'color' => 'medium',
                     'icon' => 'ban-outline',
                     'style_class' => 'medium-notification',
                 ],
-                'default' => [
+
+
+                // tipo de noitificacion empresa-proveedor:
+                'nueva_asociacion' => [
                     'color' => 'primary',
-                    'icon' => 'document-text-outline',
+                    'icon' => 'link-outline',
                     'style_class' => 'primary-notification',
                 ],
+
             ],
             'orden_compra' => [
                 'nueva' => [
@@ -218,7 +234,7 @@ trait NotificationStyleTrait
     protected function addStylesToData(array $data): array
     {
         $styles = $this->getNotificationStyles();
-        
+
         return array_merge($data, [
             'color' => $styles['color'],
             'icon' => $styles['icon'],

@@ -2,6 +2,7 @@
 
 namespace App\Notifications\SolicitudPago;
 
+use App\Traits\NotificationStyleTrait;
 use App\Services\FcmService;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Messages\BroadcastMessage;
@@ -11,6 +12,8 @@ use Illuminate\Notifications\Notification;
 
 class SolicitudPagoRechazadaSinAutorizacion extends Notification implements ShouldBroadcastNow
 {
+    use NotificationStyleTrait;
+
     public $solicitudPagoId;
     public $solicitudPagoFolio;
     public $proveedorId;
@@ -51,9 +54,9 @@ class SolicitudPagoRechazadaSinAutorizacion extends Notification implements Shou
      */
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
-        return new BroadcastMessage([
+        $data  = [
             'tipo' => 'solicitud_pago',   // Categoría base
-            'subtipo' => 'rechazada',     // Tipo específico
+            'subtipo' => 'rechazada-sin-autorizacion',     // Tipo específico
             'titulo' => 'Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
             'mensaje' => "Tu solicitud de pago #{$this->solicitudPagoFolio} ha sido rechazada durante la verificación.",
             'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
@@ -65,7 +68,9 @@ class SolicitudPagoRechazadaSinAutorizacion extends Notification implements Shou
                 'razon' => 'rechazada',
             ],
             'timestamp' => now()->toIso8601String(),
-        ]);
+        ];
+
+        return new BroadcastMessage($this->addStylesToData($data));
     }
 
     public function broadcastType(): string
@@ -90,7 +95,7 @@ class SolicitudPagoRechazadaSinAutorizacion extends Notification implements Shou
     {
         return [
             'tipo' => 'solicitud_pago',   // Categoría base
-            'subtipo' => 'rechazada',     // Tipo específico
+            'subtipo' => 'rechazada-sin-autorizacion',     // Tipo específico
             'titulo' => 'Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
             'mensaje' => "Tu solicitud de pago #{$this->solicitudPagoFolio} ha sido rechazada durante la verificación.",
             'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
@@ -147,7 +152,7 @@ class SolicitudPagoRechazadaSinAutorizacion extends Notification implements Shou
 
         $data = [
             'tipo' => 'solicitud_pago',   // Categoría base
-            'subtipo' => 'rechazada',     // Tipo específico
+            'subtipo' => 'rechazada-sin-autorizacion',     // Tipo específico
             'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
             'solicitud_pago_folio' => $this->solicitudPagoFolio,
             'proveedor_id' => (string) $this->proveedorId,
@@ -158,5 +163,19 @@ class SolicitudPagoRechazadaSinAutorizacion extends Notification implements Shou
         ];
 
         app(FcmService::class)->sendToTokens($tokens, $notification, $data);
+    }
+
+
+    /**
+     * Implementación de métodos abstractos del trait
+     */
+    protected function getNotificationTipo(): string
+    {
+        return 'solicitud_pago';
+    }
+
+    protected function getNotificationSubtipo(): string
+    {
+        return 'rechazada-sin-autorizacion';
     }
 }

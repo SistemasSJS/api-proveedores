@@ -2,7 +2,7 @@
 
 namespace App\Notifications\SolicitudPago;
 
-use App\Notifications\Traits\NotificationStyleTrait;
+use App\Traits\NotificationStyleTrait;
 use App\Services\FcmService;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Messages\BroadcastMessage;
