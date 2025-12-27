@@ -189,21 +189,6 @@ class AuthController extends Controller
                 ->orWhere('telefono', $request->email)
                 ->first();
 
-            // Si no se encuentra por email, buscar por teléfono, razón social o nombre comercial del proveedor
-            /**
-             * El proveedor no debe formar parte ede la logica de autenticación del usuario.
-             */
-            // if (!$user) {
-            //     $proveedor = Proveedor::where('razon_social', $request->email)
-            //         ->orWhere('nombre_comercial', $request->email)
-            //         ->orWhere('telefono', $request->email)
-            //         ->first();
-
-            //     if ($proveedor) {
-            //         $user = $proveedor->users()->first();
-            //     }
-            // }
-
             if (! $user || ! Hash::check($request->password, $user->password)) {
                 throw new UnauthorizedException('Credenciales incorrectas.');
             }
@@ -676,9 +661,14 @@ class AuthController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function requestPasswordReset(PasswordResetRequest $request)
+
     {
         $email = $request->email;
-        $user = User::where('email', $email)->first();
+        // Buscar usuario por email o teléfono
+        $user = User::where('email', $request->email)
+            ->orWhere('telefono', $request->email)
+            ->first();
+
 
         if (!$user) {
             // Retornar éxito aunque no exista para evitar enumeration attacks
