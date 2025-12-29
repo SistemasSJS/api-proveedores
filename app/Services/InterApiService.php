@@ -219,12 +219,11 @@ class InterApiService
         'sp_id' => $data['sp_id'],
         'sp_folio' => $data['sp_folio'],
         'company_id' => $data['company_id'],
-        'obra' => $data['obra'],
+        'folio_factura' => $data['folio_factura'],
         'proveedor' => $data['proveedor'],
         'monto' => $data['monto'] ?? null,
         'fecha_pago' => $data['fecha_pago'] ?? null,
         'user_id' => $data['user_id'] ?? null,
-        'folio_factura' => $data['folio_factura'],
       ];
 
       Log::channel('inter_api')->info('Payload preparado para notificación de pago', [
