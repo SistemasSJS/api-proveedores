@@ -587,6 +587,7 @@ class ConstruccSolicitudPagoController extends Controller
             'estado_solicitud' => $estadoFinal,
             'ruta_archivo_comprobante_pago' => $path,
             // 'notas_abono' => $request->notas_abono,
+            'monto_pagado' => $request->monto_pagado,
             'fecha_pago' => now(),
             'da' => $estadoDA,
             'da_fecha' => now(),
@@ -609,7 +610,26 @@ class ConstruccSolicitudPagoController extends Controller
                     $usuarioPrincipal->id
                 ));
 
-                // TODO: Para notificar al usuario que valido la SP en ncesario tener la notificacion en construcc. Y un endpoint para invocarla.
+                // Notificacion de SP Pagada
+                $data = [
+                    'sp_id' => $solicitudPago->id,
+                    'sp_folio' => $solicitudPago->folio_factura,
+                    'company_id' => $solicitudPago->empresa_construcc_id,
+                    'obra' => $solicitudPago->obra_id,
+                    'proveedor' => $proveedor->nombre_comercial,
+                    'monto' => $solicitudPago->monto_total,
+                    'fecha_pago' => $solicitudPago->fecha_pago,
+                    'user_id' => $solicitudPago->usuario_id,
+                    'folio_factura' => $solicitudPago->folio_factura,
+                ];
+
+                $result = $this->interApiService->spPagoNotify($data);
+
+                if ($result['success']) {
+                    Log::info('✅ InterAPI respondió correctamente', ['solicitud_pago_id' => $solicitudPago->id, 'response' => $result,]);
+                } else {
+                    Log::warning('⚠️ InterAPI respondió con error', ['solicitud_pago_id' => $solicitudPago->id, 'response' => $result,]);
+                }
 
                 Log::info('✅ Notificación de SP Pagada enviada', [
                     'solicitud_pago_id' => $solicitudPago->id,

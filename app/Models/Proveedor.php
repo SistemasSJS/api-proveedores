@@ -25,7 +25,7 @@ class Proveedor extends BaseModel
         'user_id',
         'nombre_propietario',
         'nombre_de_quien_registra',
-
+        'monto_pagado',
         // NOTA: El UNIQUE de razon_social se desactivó en una migración para permitir el registro manual de Manuel.
         'razon_social',
         'tipos_empresa_id',
