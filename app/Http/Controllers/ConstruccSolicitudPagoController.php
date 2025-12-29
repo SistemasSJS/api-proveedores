@@ -513,6 +513,14 @@ class ConstruccSolicitudPagoController extends Controller
      */
     public function confirmarPago(SolicitudPagoConfirmarPagoRequest $request, SolicitudPago $solicitudPago): JsonResponse
     {
+        Log::info('🟢 PAGO-SP: Solicitud de confirmación de pago recibida', [
+            'solicitud_pago_id' => $solicitudPago->id,
+            'folio' => $solicitudPago->numero_folio_solicitud,
+            'estado_actual' => $solicitudPago->estado_solicitud,
+            'usuario_id' => $solicitudPago->usuario_id,
+            'empresa_id' => $solicitudPago->empresa_construcc_id,
+        ]);
+
         $data = $request->validated();
         // 1. Verificar que tenga autorización suficiente (DG o al menos uno de DT/PC/SI)
         // if (!$this->verificarAutorizacionDeAlmenosUno($solicitudPago)) {
@@ -582,6 +590,20 @@ class ConstruccSolicitudPagoController extends Controller
         $estadoFinal = EstadoSP::PAGADO->value;
         $estadoDA = EstadoSolicitud::PAGADO->value;
 
+
+        Log::info(
+            '🟢 PAGO-SP: SP actualizada',
+            [
+                'estado_solicitud' => $estadoFinal,
+                'ruta_archivo_comprobante_pago' => $path,
+                // 'notas_abono' => $request->notas_abono,
+                'monto_pagado' => $request->monto_pagado,
+                'fecha_pago' => now(),
+                'da' => $estadoDA,
+                'da_fecha' => now(),
+            ]
+        );
+
         // Actualizar solicitud
         $solicitudPago->update([
             'estado_solicitud' => $estadoFinal,
@@ -592,10 +614,6 @@ class ConstruccSolicitudPagoController extends Controller
             'da' => $estadoDA,
             'da_fecha' => now(),
         ]);
-
-        $mensaje =  'Pago completado correctamente. La solicitud ha sido pagada en su totalidad.';
-        // : "Abono registrado correctamente. Saldo pendiente: {$solicitudPago->fresh()->saldo_pendiente}";
-        // // $pagoCompleto
 
         // Enviar notificación al proveedor
         try {
@@ -613,15 +631,16 @@ class ConstruccSolicitudPagoController extends Controller
                 // Notificacion de SP Pagada
                 $data = [
                     'sp_id' => $solicitudPago->id,
-                    'sp_folio' => $solicitudPago->folio_factura,
+                    'sp_folio' => $solicitudPago->numero_folio_solicitud,
                     'company_id' => $solicitudPago->empresa_construcc_id,
-                    'obra' => $solicitudPago->obra_id,
+                    'folio_factura' => $solicitudPago->folio_factura,
                     'proveedor' => $proveedor->nombre_comercial,
                     'monto' => $solicitudPago->monto_total,
                     'fecha_pago' => $solicitudPago->fecha_pago,
                     'user_id' => $solicitudPago->usuario_id,
-                    'folio_factura' => $solicitudPago->folio_factura,
                 ];
+
+                Log::info('🟢 PAGO-SP: Notificación de SP Pagada - Datos preparados', $data);
 
                 $result = $this->interApiService->spPagoNotify($data);
 
@@ -650,7 +669,7 @@ class ConstruccSolicitudPagoController extends Controller
 
         return $this->success(
             new ConstruccSolicitudPagoResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
-            $mensaje
+           'Pago completado correctamente. La solicitud ha sido pagada en su totalidad.'
         );
     }
 
