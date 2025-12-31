@@ -1375,7 +1375,7 @@ class ConstruccSolicitudPagoController extends Controller
 
         // 👉 Construcción de la query
         $query = SolicitudPago::on('mysql5')
-            ->where('verificada', 0)
+            ->where('verificada', false)
             ->where('usuario_id', '!=', $usuarioId) // excluye el usuario
             ->where('empresa_construcc_id', $empresaConstruccId)
             ->where('estado_solicitud', EstadoSP::PENDIENTE->value)
