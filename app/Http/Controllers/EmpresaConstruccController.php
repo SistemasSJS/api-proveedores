@@ -9,19 +9,35 @@ use Illuminate\Http\Request;
 
 class EmpresaConstruccController extends Controller
 {
-    public function all(Proveedor $proveedor): JsonResponse
+    public function all(Request $request, Proveedor $proveedor): JsonResponse
     {
-        $empresas = $proveedor->empresasConstrucc()
-            ->orderBy('nombre')
-            ->get()
-            ->unique('id')     // elimina empresas duplicadas
-            ->values();        // reindexa el array
+        // Filtros dinámicos según los definidos en el modelo
+        $filters = $request->only(EmpresaConstrucc::getFilters());
+
+        // Búsqueda por término
+        $search = $request->input('search', '');
+
+        // Columnas para ordenar, con valores por defecto
+        $sortBy = $request->input('sort_by', 'nombre');
+        $order = $request->input('order', 'asc');
+
+        // Consulta base: empresas asociadas al proveedor
+        $query = $proveedor->empresasConstrucc()
+            ->filter($filters)
+            ->search($search) // usa scopeSearch en el modelo
+            ->orderBy($sortBy, $order);
+
+        // Obtener todas las empresas (sin paginación por defecto)
+        $empresas = $query->get()
+            ->unique('id') // eliminar duplicados
+            ->values();    // reindexar array
 
         return $this->success(
             $empresas,
-            'Listado completo de empresas asociadas al proveedor; con usuarios.'
+            'Listado completo de empresas asociadas al proveedor.'
         );
     }
+
 
     /**
      * Buscar empresas de construcción asociadas a un proveedor
@@ -51,23 +67,46 @@ class EmpresaConstruccController extends Controller
      */
     public function index(Request $request, Proveedor $proveedor): JsonResponse
     {
+        // Filtros dinámicos según los definidos en el modelo
+        $filters = $request->only(EmpresaConstrucc::getFilters());
+
+        // Columnas para ordenar, con valores por defecto
+        $sortBy = $request->input('sort_by', 'nombre');
+        $order = $request->input('order', 'asc');
         $perPage = $request->input('per_page', 15);
-        $search = $request->input('search', '');
 
-        $query = $proveedor->empresasConstrucc();
+        // Consulta base: empresas asociadas al proveedor
+        $query = $proveedor->empresasConstrucc()->filter($filters);
 
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('nombre', 'LIKE', "%{$search}%")
-                    ->orWhere('razon_social', 'LIKE', "%{$search}%")
-                    ->orWhere('rfc', 'LIKE', "%{$search}%");
-            });
-        }
+        // Aplicar ordenamiento dinámico
+        $query->orderBy($sortBy, $order);
 
-        $empresas = $query->orderBy('nombre')->paginate($perPage);
+        // Paginación
+        $empresas = $query->paginate($perPage);
 
+        // Devolver paginación en el formato esperado
         return $this->paginated($empresas);
     }
+
+    // public function index(Request $request, Proveedor $proveedor): JsonResponse
+    // {
+    //     $perPage = $request->input('per_page', 15);
+    //     $search = $request->input('search', '');
+
+    //     $query = $proveedor->empresasConstrucc();
+
+    //     if ($search) {
+    //         $query->where(function ($q) use ($search) {
+    //             $q->where('nombre', 'LIKE', "%{$search}%")
+    //                 ->orWhere('razon_social', 'LIKE', "%{$search}%")
+    //                 ->orWhere('rfc', 'LIKE', "%{$search}%");
+    //         });
+    //     }
+
+    //     $empresas = $query->orderBy('nombre')->paginate($perPage);
+
+    //     return $this->paginated($empresas);
+    // }
 
     /**
      * Crear empresa y asociar a proveedor

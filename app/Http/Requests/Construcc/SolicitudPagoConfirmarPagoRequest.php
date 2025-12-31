@@ -20,6 +20,8 @@ class SolicitudPagoConfirmarPagoRequest extends FormRequest
             'monto_pagado' => ['required', 'numeric', 'min:0.01'],
             'comprobante' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
             'observaciones' => ['nullable', 'string', 'max:500'],
+            'cuenta_bancaria_empresa_construcc_id' => ['nullable', 'numeric'],
+
         ];
     }
 
@@ -39,6 +41,8 @@ class SolicitudPagoConfirmarPagoRequest extends FormRequest
             'comprobante.max' => 'El comprobante no debe superar los 5 MB.',
 
             'observaciones.max' => 'Las observaciones no deben exceder los 500 caracteres.',
+
+            'cuenta_bancaria_empresa_construcc_id.numeric' => 'El id de la cuenta bancaria debe ser numerico.',
         ];
     }
 

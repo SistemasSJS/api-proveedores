@@ -6,18 +6,19 @@ use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class EmpresaConstrucc extends Model
 {
     use Filterable, HasFactory;
 
     /**
-     * Nombre de la tabla
+     * Tabla asociada
      */
     protected $table = 'empresa_construcc';
 
     /**
-     * Los atributos que se pueden asignar masivamente.
+     * Atributos asignables
      */
     protected $fillable = [
         'nombre',
@@ -32,10 +33,13 @@ class EmpresaConstrucc extends Model
         'representante_legal',
         'proveedor_id',
         'activo',
+
+        // Consecutivo interno para Solicitudes de Pago
+        'consecutivo_sp',
     ];
 
     /**
-     * Filtros disponibles
+     * Filtros dinámicos
      */
     protected static $filters = [
         'nombre' => 'Nombre',
@@ -44,117 +48,120 @@ class EmpresaConstrucc extends Model
         'ciudad' => 'Ciudad',
         'estado' => 'Estado',
         'proveedor_id' => 'ProveedorId',
-        'proveedores' => 'Proveedores', // 👈 nuevo filtro
+        'proveedores' => 'Proveedores',
         'activo' => 'Activo',
+        'search' => 'Search',
     ];
 
     /**
-     * Los atributos que deben ser convertidos a tipos nativos.
+     * Casts
      */
     protected $casts = [
         'activo' => 'boolean',
+        'consecutivo_sp' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
 
+    /* -----------------------------------------------------------------
+     | Scopes
+     |------------------------------------------------------------------*/
+
     /**
-     * Scopes
+     * Solo empresas activas
      */
     public function scopeActivo($query)
     {
         return $query->where('activo', true);
     }
 
-    public function scopePorNombre($query, $nombre)
+    /**
+     * Búsqueda general
+     */
+    public function scopeSearch($query, ?string $termino)
     {
-        return $query->where('nombre', 'LIKE', "%{$nombre}%")
-            ->orWhere('razon_social', 'LIKE', "%{$nombre}%")
-            ->orWhere('rfc', 'LIKE', "%{$nombre}%");
+        if (! $termino) {
+            return $query;
+        }
+
+        return $query->where(function ($q) use ($termino) {
+            $q->where('nombre', 'like', "%{$termino}%")
+                ->orWhere('razon_social', 'like', "%{$termino}%")
+                ->orWhere('rfc', 'like', "%{$termino}%");
+        });
     }
 
+    /* -----------------------------------------------------------------
+     | Relaciones
+     |------------------------------------------------------------------*/
+
     /**
-     * Relaciones
+     * Solicitudes de Pago de la empresa
      */
     public function solicitudesPago(): HasMany
     {
         return $this->hasMany(SolicitudPago::class, 'empresa_construcc_id');
     }
 
+    /**
+     * Proveedores asociados (pivot)
+     */
     public function proveedores()
     {
-        return $this->belongsToMany(Proveedor::class, 'empresa_construcc_proveedor');
+        return $this->belongsToMany(
+            Proveedor::class,
+            'empresa_construcc_proveedor'
+        );
     }
 
+    /* -----------------------------------------------------------------
+     | Accessors
+     |------------------------------------------------------------------*/
+
     /**
-     * Accessors
+     * Nombre completo (razón social o nombre)
      */
     public function getNombreCompletoAttribute(): string
     {
         return $this->razon_social ?: $this->nombre;
     }
 
-    /**
-     * Métodos de búsqueda
-     */
-    public static function buscar(string $termino)
-    {
-        return static::where(function ($query) use ($termino) {
-            $query->where('nombre', 'LIKE', "%{$termino}%")
-                ->orWhere('razon_social', 'LIKE', "%{$termino}%")
-                ->orWhere('rfc', 'LIKE', "%{$termino}%");
-        })->activo();
-    }
+    /* -----------------------------------------------------------------
+     | Solicitudes de Pago – Consecutivo y Folio
+     |------------------------------------------------------------------*/
 
     /**
-     * Filtros
+     * Incrementa y devuelve el siguiente consecutivo de SP
+     * 🔒 Seguro ante concurrencia
      */
-    public function filterByProveedores($query, $value)
+    public function obtenerConsecutivoSiguienteSP(): int
     {
-        $proveedores = explode(',', $value);
+        return DB::transaction(function () {
+            $this->refresh();
 
-        return $query->whereHas('proveedores', function ($q) use ($proveedores) {
-            $q->whereIn('proveedores.id', $proveedores);
+            $this->consecutivo_sp = ($this->consecutivo_sp ?? 0) + 1;
+            $this->save();
+
+            return $this->consecutivo_sp;
         });
     }
 
-    public function filterByNombre($query, $value)
-    {
-        return $query->where('nombre', 'like', "%$value%");
-    }
-
-    public function filterByRfc($query, $value)
-    {
-        return $query->where('rfc', 'like', "%$value%");
-    }
-
-    public function filterByRazonSocial($query, $value)
-    {
-        return $query->where('razon_social', 'like', "%$value%");
-    }
-
-    public function filterByCiudad($query, $value)
-    {
-        return $query->where('ciudad', 'like', "%$value%");
-    }
-
-    public function filterByEstado($query, $value)
-    {
-        return $query->where('estado', 'like', "%$value%");
-    }
-
-    public function filterByProveedorId($query, $value)
-    {
-        return $query->whereIn('proveedor_id', explode(',', $value));
-    }
-
-    public function filterByActivo($query, $value)
-    {
-        return $query->where('activo', $value);
-    }
-
     /**
-     * Relaciones disponibles para carga anticipada (eager loading)
+     * Obtiene el folio formateado de la siguiente SP
+     *
+     * Formato: 0001, 0002, 0003...
      */
+    public function obtenerFolioSiguienteSP(): string
+    {
+        $consecutivo = $this->obtenerConsecutivoSiguienteSP();
+
+        return str_pad($consecutivo, 4, '0', STR_PAD_LEFT);
+    }
+
+    /* -----------------------------------------------------------------
+     | Eager loading permitido
+     |------------------------------------------------------------------*/
+
     public static function eagerLodable(): array
     {
         return [

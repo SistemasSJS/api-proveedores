@@ -513,14 +513,6 @@ class ConstruccSolicitudPagoController extends Controller
      */
     public function confirmarPago(SolicitudPagoConfirmarPagoRequest $request, SolicitudPago $solicitudPago): JsonResponse
     {
-        Log::info('🟢 PAGO-SP Carga util de la peticion: ', [
-            'rol' => $request->rol,
-            'monto_pagado' => $request->monto_pagado,
-            'comprobante' => $request->comprobante,
-            'observaciones' => $request->observaciones,
-            'cuenta_bancaria_empresa_construcc_id' => $request->cuenta_bancaria_empresa_construcc_id,
-        ]);
-
         Log::info('🟢 PAGO-SP: Solicitud de confirmación de pago recibida', [
             'solicitud_pago_id' => $solicitudPago->id,
             'folio' => $solicitudPago->numero_folio_solicitud,
@@ -538,6 +530,14 @@ class ConstruccSolicitudPagoController extends Controller
          *  - cuenta_bancaria_empresa_construcc_id
          */
         $data = $request->validated();
+        // 1. Verificar que tenga autorización suficiente (DG o al menos uno de DT/PC/SI)
+        // if (!$this->verificarAutorizacionDeAlmenosUno($solicitudPago)) {
+        //     return $this->error(
+        //         'La solicitud no tiene autorización suficiente. Requiere aprobación de DG o al menos uno de DT/PC/SI.',
+        //         null,
+        //         400
+        //     );
+        // }
 
         // 2. Verificar que no tenga roles rechazados
         if ($solicitudPago->estado_solicitud === EstadoSP::RECHAZADA->value) {
@@ -549,14 +549,7 @@ class ConstruccSolicitudPagoController extends Controller
         }
 
         // 3. Verificar que esté en estado válido (AUTORIZADA o PAGADO con pagos parciales)
-        if (! in_array(
-            $solicitudPago->estado_solicitud,
-            [
-                // EstadoSP::PENDIENTE->value,
-                // EstadoSP::PAGADO->value,
-                EstadoSP::AUTORIZADA->value
-            ]
-        )) {
+        if (! in_array($solicitudPago->estado_solicitud, [EstadoSP::PENDIENTE->value, EstadoSP::PAGADO->value, EstadoSP::AUTORIZADA->value])) {
             return $this->error(
                 'Solo se pueden confirmar pagos de solicitudes AUTORIZADAS.',
                 null,
@@ -564,12 +557,47 @@ class ConstruccSolicitudPagoController extends Controller
             );
         }
 
+        // 4. Verificar que no esté completamente pagada
+        // if ($solicitudPago->estado_solicitud === EstadoSP::PAGADO->value && $solicitudPago->pago_completo === true) {
+        //     return $this->error(
+        //         'Esta solicitud ya ha sido pagada completamente.',
+        //         null,
+        //         400
+        //     );
+        // }
+
+        // Inicializar saldos si es el primer abono
+        // $solicitudPago->inicializarSaldos();
+        // $solicitudPago->refresh();
+
+        // // Validar que el monto del abono no exceda el saldo pendiente
+        // $montoAbono = $data['monto_pagado'];
+        // if ($montoAbono > $solicitudPago->saldo_pendiente) {
+        //     return $this->error(
+        //         "El monto del abono ({$montoAbono}) no puede ser mayor al saldo pendiente ({$solicitudPago->saldo_pendiente}).",
+        //         null,
+        //         400
+        //     );
+        // }
+
         // Guardar comprobante
         $path = $request->file('comprobante')->store('comprobantes', 'private');
 
+        // Actualizar saldos
+        // $pagoCompleto = $solicitudPago->actualizarSaldos($montoAbono);
+
+        // Determinar el estado final
+        // $estadoFinal = $pagoCompleto ? EstadoSP::PAGADO->value : EstadoSP::AUTORIZADA->value;
+        // $estadoDA = $pagoCompleto ? EstadoSolicitud::PAGADO->value : EstadoSolicitud::AUTORIZADA->value;
+
+        // para no dejar comentadas las lineas anteriores se agrega esta linea con el proposito
+        //  de parchar la actul funcionalidad. dado un pago ya se parcial o completo el estatus se asumira
+        //  como pagada.
+        //
         //  Falta realizar revision del tema.
         $estadoFinal = EstadoSP::PAGADO->value;
         $estadoDA = EstadoSolicitud::PAGADO->value;
+
 
         Log::info(
             '🟢 PAGO-SP: SP actualizada',
@@ -581,7 +609,6 @@ class ConstruccSolicitudPagoController extends Controller
                 'fecha_pago' => now(),
                 'da' => $estadoDA,
                 'da_fecha' => now(),
-                'cuenta_bancaria_empresa_construcc_id' => $request->cuenta_bancaria_empresa_construcc_id G
             ]
         );
 
@@ -637,7 +664,6 @@ class ConstruccSolicitudPagoController extends Controller
                     'folio' => $solicitudPago->numero_folio_solicitud,
                     'proveedor_id' => $proveedor->id,
                     'usuario_id' => $usuarioPrincipal->id,
-                    'usuario_idcuenta_bancaria_empresa_construcc_id' => $solicitudPago->cuenta_bancaria_empresa_construcc_id,
                     // 'monto' => $montoAbono,
                     // 'pago_completo' => $pagoCompleto,
                 ]);
@@ -647,6 +673,7 @@ class ConstruccSolicitudPagoController extends Controller
                 'solicitud_pago_id' => $solicitudPago->id,
                 'error' => $e->getMessage(),
             ]);
+            // No fallar la operación si la notificación falla
         }
 
         return $this->success(

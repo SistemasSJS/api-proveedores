@@ -17,6 +17,7 @@ class SolicitudPagoResource extends JsonResource
         return [
             'id' => $this->id,
             'numero_folio_solicitud' => $this->numero_folio_solicitud,
+            'folio_sp_consecutivo' => $this->numero_folio_solicitud,
             'folio_factura' => $this->folio_factura,
             // 'datos_factura_xml' => $this->datos_factura_xml,
             'descripcion_concepto' => $this->descripcion_concepto,
@@ -46,7 +47,7 @@ class SolicitudPagoResource extends JsonResource
                     'representante_legal' => $this->empresaConstrucc->representante_legal,
                 ];
             }),
-            
+
             // Usuario Construcc que generó la SP
             'usuario_id' => $this->usuario_id,
             'usuario_nombre' => $this->usuario_nombre,

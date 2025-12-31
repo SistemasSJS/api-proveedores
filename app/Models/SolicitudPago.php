@@ -20,7 +20,8 @@ class SolicitudPago extends BaseModel
     protected $table = 'solicitudes_pago';
 
     protected $fillable = [
-        'numero_folio_solicitud',
+        'numero_folio_solicitud', // CONSECUTIVO POR PROVEEDOR
+        'folio_sp_consecutivo', // MANEJO INTERNO cONSTRUCC
         'descripcion_concepto',
         'ruta_archivo_factura_xml',
         'ruta_archivo_factura_pdf',
@@ -28,10 +29,12 @@ class SolicitudPago extends BaseModel
         'estado_solicitud',
         'ruta_archivo_comprobante_pago',
         'proveedor_id',
-        'empresa_construcc_id',
         // Datos del usuario que registra la SP en Construcc
+        'empresa_construcc_id',
         'usuario_id',
         'usuario_nombre',
+        'cuenta_bancaria_empresa_construcc_id',
+        // 
         'cotizacion_id',
         'sucursal_id',
         // 'fecha_registro_pendiente',

@@ -11,13 +11,17 @@ class ConstruccSolicitudPagoResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'usuario' => $this->usuario_id,
-            'folio_factura' => $this->folio_factura,
-            // 'datos_factura_xml' => $this->datos_factura_xml,
             'numero_folio_solicitud' => $this->numero_folio_solicitud,
+            'folio_sp_consecutivo' => $this->folio_sp_consecutivo,
+            'folio_factura' => $this->folio_factura,
+            'usuario' => $this->usuario_id, //???   
+            // 'datos_factura_xml' => $this->datos_factura_xml,
             'descripcion_concepto' => $this->descripcion_concepto,
             'observaciones' => $this->observaciones,
-            'monto_total' => $this->monto_total,
+            'notas' => $this->notas,
+            'utilizara' => $this->utilizara,
+            'equipo' => $this->equipo,
+            'estado_solicitud' => $this->estado_solicitud,
             'proveedor' => new ConstruccProveedorResource($this->whenLoaded('proveedor')),
             'cuentas_bancarias' => ConstruccCuentaBancariaResource::collection(
                 $this->whenLoaded('cuentasBancarias')
@@ -27,12 +31,16 @@ class ConstruccSolicitudPagoResource extends JsonResource
             'ruta_archivo_factura_pdf' => $this->ruta_archivo_factura_pdf,
             'ruta_archivo_cotizacion' => $this->ruta_archivo_cotizacion,
             'ruta_archivo_comprobante_pago' => $this->ruta_archivo_comprobante_pago,
-            'folio_factura' => $this->folio_factura,
+
             // NUEVO CAMPO
             'verificada' => $this->verificada ? 1 : 0,
+
             // Usuario Construcc que generó la SP
             'usuario_id' => $this->usuario_id,
             'usuario_nombre' => $this->usuario_nombre,
+            'empresa_construcc_id' => $this->empresa_construcc_id,
+            'cuenta_bancaria_empresa_construcc_id' => $this->cuenta_bancaria_empresa_construcc_id,
+
             // Campos de tipo y origen
             'tipo' => $this->tipo,
             'tipo_id' => $this->tipo_id,

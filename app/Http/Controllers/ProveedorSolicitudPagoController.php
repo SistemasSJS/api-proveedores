@@ -114,8 +114,12 @@ class ProveedorSolicitudPagoController extends Controller
 
         $numeroFolio = SolicitudPago::generarNumeroFolio($proveedor);
         $empresaConstructId = $validated['empresa_construcc_id'] ?? null;
+
         // Datos del usuario de Construcc que genera la SP
         $usuarioId = $validated['usuario_id'] ?? $validated['usuario_construcc_id'] ?? null;
+        $empresaConstrucc = $proveedor->empresasConstrucc()->where('empresa_construcc.id', $empresaConstructId)->firstOrFail();
+        $folio_consecutivo_construcc = $empresaConstrucc->obtenerFolioSiguienteSP();
+
         $usuarioNombre = $validated['usuario_nombre'] ?? $validated['residente'] ?? null;
         $cotizacion_id = $validated['cotizacion_id'] ?? null;
         $montoTotal = $validated['monto_total'];
@@ -130,6 +134,8 @@ class ProveedorSolicitudPagoController extends Controller
             'ruta_archivo_factura_pdf' => $rutaPdf,
             'ruta_archivo_factura_xml' => $rutaXml,
             'ruta_archivo_cotizacion' => $rutaCotizacion,
+            // 
+            'folio_sp_consecutivo' => $folio_consecutivo_construcc,
             'empresa_construcc_id' => $empresaConstructId,
             'usuario_id' => $usuarioId,
             'usuario_nombre' => $usuarioNombre,

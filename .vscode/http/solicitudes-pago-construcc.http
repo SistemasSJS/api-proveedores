@@ -10,7 +10,7 @@
 @apiKey = 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
 
 ### VARIABLES
-@solicitudId = 4
+@solicitudId = 1
 @rol = PC
 
 
@@ -36,19 +36,23 @@ GET https://apicons.ddns.net:8092/api/construcc/solicitudes-pago/sp-por-autoriza
 X-API-KEY: 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
 Accept:  application/json
 ###
-GET https://apicons.ddns.net:8092/api/construcc/solicitudes-pago/sp-por-autorizar?estado=autorizada&empresa_construcc_id=14
+GET https://apicons.ddns.net:8092/api/construcc/solicitudes-pago/sp-por-autorizar?estado=pendie&empresa_construcc_id=14
 X-API-KEY: 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
 Accept:  application/json
 ###
-GET https://apicons.ddns.net:8092/api/construcc/solicitudes-pago/sp-por-validar?usuario_id=75
+GET https://apicons.ddns.net:8092/api/construcc/solicitudes-pago/sp-por-validar?usuario_id=75&empresa_construcc_id=14
 X-API-KEY: 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
+Accept:  application/json
+###
+GET https://apicons.ddns.net:8092/api/construcc/solicitudes-pago/sp-por-validar-otros?usuario_id=75&empresa_construcc_id=14
+X-API-KEY: 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6 
 Accept:  application/json
 ### 1. Listado general de solicitudes de pago (solo verificadas)
 
 GET {{baseUrl}}/construcc/solicitudes-pago/1
 X-API-KEY: {{apiKey}}
-Accept: {{acceptType}}
 
+Accept: {{acceptType}}
 ### 2. 🆕 Listado de solicitudes NO VERIFICADAS
 GET {{baseUrl}}/construcc/solicitudes-pago/no-verificadas
 X-API-KEY: {{apiKey}}
@@ -125,14 +129,15 @@ Content-Type: {{contentType}}
 # 'monto_pagado' => ['required', 'numeric', 'min:0.01'],
 # 'comprobante' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
 # 'observaciones' => ['nullable', 'string', 'max:500'],
-POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/confirmar-pago-sin-comprobante
+POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/confirmar-pago
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 
 {
   "rol": "DA",
   "monto_pagado": 4350.00,
-  "observaciones": "Pago realizado sin comprobante por motivos administrativos."
+  "observaciones": "Pago realizado sin comprobante por motivos administrativos.",
+  "cuenta_bancaria_empresa_construcc_id":1
 }
 
 ### 11. Confirmar pago (solo DA)
