@@ -1361,7 +1361,6 @@ class ConstruccSolicitudPagoController extends Controller
             $request->validate([
                 'usuario_id' => ['required', 'integer'],
                 'empresa_construcc_id' => ['required', 'integer'],
-
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::warning('⚠️ Error de validación en spPorValidar', ['errors' => $e->errors(), 'params' => $request->all()]);
@@ -1372,12 +1371,16 @@ class ConstruccSolicitudPagoController extends Controller
         $empresaConstruccId = $request->input('empresa_construcc_id');
         $filters = $request->only(SolicitudPago::getFilters());
 
+        // 75 --- 14
+
         // 👉 Construcción de la query
         $query = SolicitudPago::on('mysql5')
             ->where('verificada', false)
+            ->where('usuario_id', '!=', $usuarioId) // excluye el usuario
             ->where('empresa_construcc_id', $empresaConstruccId)
             ->where('estado_solicitud', EstadoSP::PENDIENTE->value)
             ->filter($filters);
+
 
         // 👉 Conteo ejecutado
         $conteo = $query->count();
