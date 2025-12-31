@@ -669,7 +669,7 @@ class ConstruccSolicitudPagoController extends Controller
 
         return $this->success(
             new ConstruccSolicitudPagoResource($solicitudPago->fresh()->load(SolicitudPago::eagerLodable())),
-           'Pago completado correctamente. La solicitud ha sido pagada en su totalidad.'
+            'Pago completado correctamente. La solicitud ha sido pagada en su totalidad.'
         );
     }
 
@@ -1267,6 +1267,7 @@ class ConstruccSolicitudPagoController extends Controller
         );
     }
 
+
     /**
      * Conteo de solicitudes por validar
      * Validada = 0 y recibe parámetro usuario_id: entero no null
@@ -1342,6 +1343,55 @@ class ConstruccSolicitudPagoController extends Controller
         );
     }
 
+
+    /**
+     * Conteo de solicitudes por validar filtrado por empresasConstructoras
+     * Validada = 0 y recibe parámetro usuario_id: entero no null
+     */
+    public function spPorValidarOtros(Request $request): JsonResponse
+    {
+        // Reconectar bases de datos
+        DB::purge('mysql');
+        DB::reconnect('mysql');
+        DB::purge('mysql5');
+        DB::reconnect('mysql5');
+
+        // 👉 Validación
+        try {
+            $request->validate([
+                'usuario_id' => ['required', 'integer'],
+                'empresa_construcc_id' => ['required', 'integer'],
+
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('⚠️ Error de validación en spPorValidar', ['errors' => $e->errors(), 'params' => $request->all()]);
+            throw $e;
+        }
+
+        $usuarioId = $request->input('usuario_id');
+        $empresaConstruccId = $request->input('empresa_construcc_id');
+        $filters = $request->only(SolicitudPago::getFilters());
+
+        // 👉 Construcción de la query
+        $query = SolicitudPago::on('mysql5')
+            ->where('verificada', false)
+            ->where('empresa_construcc_id', $empresaConstruccId)
+            ->where('estado_solicitud', EstadoSP::PENDIENTE->value)
+            ->filter($filters);
+
+        // 👉 Conteo ejecutado
+        $conteo = $query->count();
+
+        Log::info('📤 Respuesta spPorValidar', [
+            'conteo' => $conteo,
+            'usuario_id' => $usuarioId,
+        ]);
+
+        return $this->success(
+            ['conteo' => $conteo],
+            'Conteo de solicitudes por validar, filtradas para la empresa.'
+        );
+    }
 
     /**
      * METODOS PRIVADOS: solo para uso interno del controlador

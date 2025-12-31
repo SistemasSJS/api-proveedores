@@ -178,6 +178,7 @@ Route::prefix('construcc')
             Route::get('sp-por-autorizar', [ConstruccSolicitudPagoController::class, 'spPendienteAutorizar'])->name('sp-por-autorizar');
             // validada - 0 y recibe parametro  usuario_id: entero no null, empresa_construcc_id: entero no null
             Route::get('sp-por-validar', [ConstruccSolicitudPagoController::class, 'spPorValidar'])->name('sp-por-validar');
+            Route::get('sp-por-validar-otros', [ConstruccSolicitudPagoController::class, 'spPorValidarOtros'])->name('sp-por-validar-otros');
 
             // Segmento de dashboard para métricas de SP verificadas / no verificadas
             Route::prefix('dashboard-sp-metricas')->name('dashboard-sp-metricas.')->group(function () {
