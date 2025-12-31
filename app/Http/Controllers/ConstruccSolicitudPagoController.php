@@ -581,7 +581,7 @@ class ConstruccSolicitudPagoController extends Controller
                 'fecha_pago' => now(),
                 'da' => $estadoDA,
                 'da_fecha' => now(),
-                'cuenta_bancaria_empresa_construcc_id' => $request->cuenta_bancaria_empresa_construcc_id G
+                'cuenta_bancaria_empresa_construcc_id' => $request->cuenta_bancaria_empresa_construcc_id
             ]
         );
 
