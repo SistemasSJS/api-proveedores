@@ -431,7 +431,8 @@ class AuthController extends Controller
 
             Log::info('Resultado búsqueda/creación empresa:', [
                 'empresa_id' => $empresa->id ?? null,
-                'empresa_nombre' => $empresa->nombre ?? null
+                'empresa_nombre' => $empresa->nombre ?? null,
+                'empresa_rfc' => $empresa->rfc ?? null
             ]);
 
             // 2. Buscar proveedor por teléfono
@@ -791,7 +792,7 @@ class AuthController extends Controller
             $empresa->nombre = $validatedData['empresa_construcc_nombre'] ?? "Empresa {$empresaId}";
             $empresa->razon_social = $validatedData['empresa_construcc_nombre'] ?? null;
             // RFC es opcional en esta integración; se deja nulo si no viene
-            $empresa->rfc = null;
+            $empresa->rfc = $validatedData['rfc'] ?? null;
             $empresa->activo = true;
             $empresa->save();
         }
@@ -851,10 +852,11 @@ class AuthController extends Controller
         $telefono = $request->telefono;
 
         // Verificar si el teléfono existe en la tabla proveedores
+        // FIXME: Realizar revision de la validacion para el telefono del proveedor, ¿1aqui no se debe validar el proveedor???
         $existeEnProveedores = Proveedor::where('telefono', $telefono)->exists();
 
         // Verificar si el teléfono existe como email en users (se usa como username)
-        $existeEnUsers = User::where('email', $telefono)->exists();
+        $existeEnUsers = User::where('telefono', $telefono)->exists();
 
         $existe = $existeEnProveedores || $existeEnUsers;
 
