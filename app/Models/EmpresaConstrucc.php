@@ -138,11 +138,11 @@ class EmpresaConstrucc extends Model
     {
         return DB::transaction(function () {
             $this->refresh();
-
+            $folioSiguiente = $this->consecutivo_sp;
             $this->consecutivo_sp = ($this->consecutivo_sp ?? 0) + 1;
             $this->save();
 
-            return $this->consecutivo_sp;
+            return $folioSiguiente;
         });
     }
 

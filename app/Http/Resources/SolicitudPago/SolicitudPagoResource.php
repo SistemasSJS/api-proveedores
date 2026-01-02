@@ -17,7 +17,7 @@ class SolicitudPagoResource extends JsonResource
         return [
             'id' => $this->id,
             'numero_folio_solicitud' => $this->numero_folio_solicitud,
-            'folio_sp_consecutivo' => $this->numero_folio_solicitud,
+            'folio_sp_consecutivo' => $this->folio_sp_consecutivo,
             'folio_factura' => $this->folio_factura,
             // 'datos_factura_xml' => $this->datos_factura_xml,
             'descripcion_concepto' => $this->descripcion_concepto,

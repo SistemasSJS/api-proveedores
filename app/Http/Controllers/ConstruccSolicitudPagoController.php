@@ -119,7 +119,7 @@ class ConstruccSolicitudPagoController extends Controller
         // Si la SP no tiene cuentas bancarias asociadas, buscar las cuentas del proveedor
         if ($solicitudPago->cuentasBancarias->isEmpty()) {
             $proveedor = $solicitudPago->proveedor;
-
+            
             $cuentasProveedor = $proveedor->cuentasBancarias
                 ->where('estatus', 'activa')
                 ->sortByDesc('preferida');

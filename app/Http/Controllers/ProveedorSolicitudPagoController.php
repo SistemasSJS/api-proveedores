@@ -114,7 +114,7 @@ class ProveedorSolicitudPagoController extends Controller
 
         $numeroFolio = SolicitudPago::generarNumeroFolio($proveedor);
         $empresaConstructId = $validated['empresa_construcc_id'] ?? null;
-
+    
         // Datos del usuario de Construcc que genera la SP
         $usuarioId = $validated['usuario_id'] ?? $validated['usuario_construcc_id'] ?? null;
         $empresaConstrucc = $proveedor->empresasConstrucc()->where('empresa_construcc.id', $empresaConstructId)->firstOrFail();
