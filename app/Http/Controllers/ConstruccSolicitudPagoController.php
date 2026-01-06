@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use App\Http\Requests\Construcc\SolicitudPagoUpdateConprobantePagoRequest;
+use App\Notifications\SolicitudPago\SolicitudPagoComprobanteActualizado;
 
 class ConstruccSolicitudPagoController extends Controller
 {
@@ -1520,7 +1521,7 @@ class ConstruccSolicitudPagoController extends Controller
      * - La Solicitud de Pago debe estar en estado PAGADO.
      * - El archivo de comprobante es obligatorio.
      * - Se elimina el comprobante anterior antes de guardar el nuevo.
-     * - Se notifica la actualización del comprobante vía InterAPI.
+     * - Se notifica la actualización del comprobante al proveedor.
      *
      * Flujo del proceso:
      * 1. Valida que el rol del usuario sea DA.
@@ -1537,11 +1538,8 @@ class ConstruccSolicitudPagoController extends Controller
      * @throws \Illuminate\Validation\ValidationException
      * @throws \Exception
      */
-    public function actualizarComprobantePago(
-        SolicitudPagoUpdateConprobantePagoRequest $request,
-        SolicitudPago $solicitudPago
-    ): JsonResponse {
-
+    public function actualizarComprobantePago(SolicitudPagoUpdateConprobantePagoRequest $request, SolicitudPago $solicitudPago): JsonResponse
+    {
         /** 🔒 Validar rol */
         if ($request->rol !== 'DA') {
             return $this->error(
@@ -1585,8 +1583,36 @@ class ConstruccSolicitudPagoController extends Controller
         /**
          * NOTIFICAR AL PROVEEDOR
          */
-        // $this->interApiService
-        //     ->notificarActualizacionComprobante($solicitudPago);
+        // Enviar notificación al proveedor por actualización de comprobante
+        try {
+            $proveedor = $solicitudPago->proveedor;
+            $usuarioPrincipal = $proveedor->usuarioPrincipal();
+
+            if ($usuarioPrincipal) {
+
+                /** 🔔 Notificación interna (Laravel Notifications) */
+                $usuarioPrincipal->notify(
+                    new SolicitudPagoComprobanteActualizado(
+                        $solicitudPago->numero_folio_solicitud,
+                        $solicitudPago->id,
+                        $proveedor->id,
+                        $usuarioPrincipal->id
+                    )
+                );
+
+                Log::info('🟢 SP-COMPROBANTE: Notificación local enviada', [
+                    'solicitud_pago_id' => $solicitudPago->id,
+                    'folio' => $solicitudPago->numero_folio_solicitud,
+                    'proveedor_id' => $proveedor->id,
+                    'usuario_id' => $usuarioPrincipal->id,
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('❌ Error al enviar notificación de comprobante actualizado', [
+                'solicitud_pago_id' => $solicitudPago->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return $this->success(
             new ConstruccSolicitudPagoResource(

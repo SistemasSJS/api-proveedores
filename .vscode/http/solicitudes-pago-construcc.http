@@ -64,7 +64,7 @@ X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
 ### 4. 🆕 Marcar solicitud como VERIFICADA
-POST {{baseUrl}}/construcc/solicitudes-pago/11/marcar-verificada
+POST {{baseUrl}}/construcc/solicitudes-pago/1/marcar-verificada
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 Accept: {{acceptType}}
@@ -105,12 +105,12 @@ X-API-KEY: {{apiKey}}
 ###############################################################################
 
 ### 9. Autorizar solicitud de pago (por rol)
-POST {{baseUrl}}/construcc/solicitudes-pago/7/autorizar
+POST {{baseUrl}}/construcc/solicitudes-pago/1/autorizar
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 
 {
-  "rol": "PC"
+  "rol": "DG"
 }
 
 ### 10. Rechazar solicitud de pago
