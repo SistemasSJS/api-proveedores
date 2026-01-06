@@ -30,18 +30,34 @@ class InterApiService
 
       $payload = [
         'sp_id' => $sp->id,
-        'sp_folio' => $sp->numero_folio_solicitud,
+        // 'sp_folio' => $sp->numero_folio_solicitud,
+        'sp_folio' => $sp->folio_sp_consecutivo,
         'company' => $sp->empresa_construcc_id,
-        'obra' => '1',
-        // 'message' => 'Ahora si lleva mensaje',
         'user_id' => $sp->usuario_id
+        // 'obra' => '1', // la obra se indica despues de validar la SP... a este punto este valor es desconocido
+        // 'message' => 'Ahora si lleva mensaje',
       ];
 
       Log::channel('inter_api')->info('Payload preparado para notificación SP', [
         'payload' => $payload
       ]);
 
-      $url = "{$this->apiContruccUrl}/api/notify-sp-validada";
+
+      /**
+       * unicamente para el caso del usuario: Julio Salazar se realiara la notificacion especial
+       * se geenerara una nueva notioficacion que consiste en notificar a todos los usuarios directores
+       * DT, PC, DA...
+       */
+      // $USUARIO_ID_JULIO_SALAZAR = 41;
+      $USUARIO_ID_JULIO_SALAZAR = 75;
+
+      if ($sp->usuario_id == $USUARIO_ID_JULIO_SALAZAR) {
+        // nuevo end point para notificar a todos los directivos.
+        $url = "{$this->apiContruccUrl}/api/notify-sp-directores";
+      } else {
+        $url = "{$this->apiContruccUrl}/api/notify-sp-validada";
+      }
+
       Log::channel('inter_api')->info('URL destino para notificación SP', [
         'url' => $url
       ]);

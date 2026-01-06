@@ -14,6 +14,7 @@ use App\Http\Controllers\PedidoController;
 use App\Notifications\PushNotification;
 use App\Models\User;
 use Illuminate\Support\Facades\Request;
+use App\Http\Controllers\ProveedorPublicController;
 
 /*
 |--------------------------------------------------------------------------
@@ -91,3 +92,10 @@ Route::middleware(['throttle:60,1'])->group(function () {
     Route::get('pedidos/{pedido}/status/{token}', [PedidoController::class, 'publicStatus'])
         ->name('pedidos.public-status');
 });
+
+
+
+Route::get(
+    'public/proveedor/{id}/compartir-constancia',
+    [ProveedorPublicController::class, 'compartirConstancia']
+);
