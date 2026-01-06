@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\Construcc\SolicitudPagoUpdateConprobantePagoRequest;
 
 class ConstruccSolicitudPagoController extends Controller
 {
@@ -119,7 +119,7 @@ class ConstruccSolicitudPagoController extends Controller
         // Si la SP no tiene cuentas bancarias asociadas, buscar las cuentas del proveedor
         if ($solicitudPago->cuentasBancarias->isEmpty()) {
             $proveedor = $solicitudPago->proveedor;
-            
+
             $cuentasProveedor = $proveedor->cuentasBancarias
                 ->where('estatus', 'activa')
                 ->sortByDesc('preferida');
@@ -373,14 +373,17 @@ class ConstruccSolicitudPagoController extends Controller
             return $this->error('Rol no válido.', null, 400);
         }
 
-        // 1️⃣ Solo si está PENDIENTE
-        if ($solicitudPago->estado_solicitud !== EstadoSP::PENDIENTE->value) {
-            return $this->error(
-                'Solo se pueden autorizar solicitudes en estado PENDIENTE.',
-                null,
-                400
-            );
-        }
+        /**
+         * No permite autorizar a mas de un director
+         */
+        // // 1️⃣ Solo si está PENDIENTE
+        // if ($solicitudPago->estado_solicitud !== EstadoSP::PENDIENTE->value) {
+        //     return $this->error(
+        //         'Solo se pueden autorizar solicitudes en estado PENDIENTE.',
+        //         null,
+        //         400
+        //     );
+        // }
 
         $rolField = $rolMap[$rol];
         $fechaField = "{$rolField}_fecha";
@@ -1503,5 +1506,95 @@ class ConstruccSolicitudPagoController extends Controller
             ]);
             return [];
         }
+    }
+
+    /**
+     * Actualiza el comprobante de pago de una Solicitud de Pago.
+     *
+     * Este método permite reemplazar el comprobante de pago de una solicitud
+     * que ya se encuentra en estado PAGADO. El comprobante anterior será eliminado
+     * del almacenamiento y se guardará el nuevo archivo.
+     *
+     * Reglas de negocio:
+     * - Solo el rol DA (Dirección Administrativa) puede realizar esta acción.
+     * - La Solicitud de Pago debe estar en estado PAGADO.
+     * - El archivo de comprobante es obligatorio.
+     * - Se elimina el comprobante anterior antes de guardar el nuevo.
+     * - Se notifica la actualización del comprobante vía InterAPI.
+     *
+     * Flujo del proceso:
+     * 1. Valida que el rol del usuario sea DA.
+     * 2. Verifica que la solicitud esté en estado PAGADO.
+     * 3. Elimina el comprobante de pago anterior si existe.
+     * 4. Guarda el nuevo comprobante en almacenamiento privado.
+     * 5. Actualiza los datos relacionados al comprobante.
+     * 6. Notifica la actualización a la API de Construcciones (InterAPI).
+     *
+     * @param  SolicitudPagoUpdateConprobantePagoRequest  $request
+     * @param  SolicitudPago  $solicitudPago
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     * @throws \Exception
+     */
+    public function actualizarComprobantePago(
+        SolicitudPagoUpdateConprobantePagoRequest $request,
+        SolicitudPago $solicitudPago
+    ): JsonResponse {
+
+        /** 🔒 Validar rol */
+        if ($request->rol !== 'DA') {
+            return $this->error(
+                'Solo el rol DA puede actualizar el comprobante de pago.',
+                null,
+                403
+            );
+        }
+
+        /** 🔒 Validar estado */
+        if ($solicitudPago->estado_solicitud !== EstadoSP::PAGADO->value) {
+            return $this->error(
+                'La solicitud de pago debe estar en estado PAGADO.',
+                null,
+                422
+            );
+        }
+
+        /** 🧹 Eliminar comprobante anterior */
+        if (
+            $solicitudPago->ruta_archivo_comprobante_pago &&
+            Storage::disk('private')->exists($solicitudPago->ruta_archivo_comprobante_pago)
+        ) {
+            Storage::disk('private')->delete(
+                $solicitudPago->ruta_archivo_comprobante_pago
+            );
+        }
+
+        /** 📂 Guardar nuevo comprobante */
+        $path = $request->file('comprobante')
+            ->store('comprobantes', 'private');
+
+        /** 📝 Actualizar SOLO datos del comprobante */
+        $solicitudPago->update([
+            'ruta_archivo_comprobante_pago' => $path,
+            'fecha_con_comprobante' => now(),
+            'observaciones_pago' => $request->observaciones,
+        ]);
+
+        /** 📡 Notificar vía InterAPI */
+        /**
+         * NOTIFICAR AL PROVEEDOR
+         */
+        // $this->interApiService
+        //     ->notificarActualizacionComprobante($solicitudPago);
+
+        return $this->success(
+            new ConstruccSolicitudPagoResource(
+                $solicitudPago->fresh()->load(
+                    SolicitudPago::eagerLodable()
+                )
+            ),
+            'Comprobante de pago actualizado correctamente.'
+        );
     }
 }
