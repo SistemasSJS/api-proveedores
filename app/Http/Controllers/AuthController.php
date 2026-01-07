@@ -25,7 +25,7 @@ use App\Models\Proveedor;
 use App\Models\EmpresaConstrucc;
 use App\Models\Role;
 use App\Models\User;
-use App\Notifications\SolicitudPago\ProveedorAsociadoAEmpresa;
+use App\Notifications\ProveedorEmpresa\ProveedorAsociadoAEmpresa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;

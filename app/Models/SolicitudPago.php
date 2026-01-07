@@ -88,6 +88,7 @@ class SolicitudPago extends BaseModel
         // 
         'folio_factura',
         'datos_factura_xml',
+        'tiene_factura', // define a las sp sin factura. en cualquier fase de la SP se puede subir la factura
     ];
 
     protected static $filters = [
@@ -146,6 +147,9 @@ class SolicitudPago extends BaseModel
 
         //
         'visto_rechazada' => 'VistoRechazada',
+
+        // Filtro para sp sin factura 
+        'tiene_factura' => 'TieneFactura',
     ];
 
     protected $casts = [
@@ -527,6 +531,11 @@ class SolicitudPago extends BaseModel
     public function filterByVistoRechazada($query, $value)
     {
         return $query->where('visto_rechazada', (bool) $value);
+    }
+
+    public function filterByTieneFactura($query, $value)
+    {
+        return $query->where('tiene_factura', (bool) $value);
     }
 
     public function filterByFolioFactura($query, $value)

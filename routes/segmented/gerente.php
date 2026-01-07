@@ -229,6 +229,7 @@ Route::prefix('proveedores')
 
             // Crear solicitud
             Route::post('/', [ProveedorSolicitudPagoController::class, 'store'])->middleware(['audit']);
+            Route::post('/sin-factura', [ProveedorSolicitudPagoController::class, 'storeSinFactura'])->middleware(['audit']);
 
             // Operaciones sobre una solicitud específica
             Route::get('/{solicitudPago}', [ProveedorSolicitudPagoController::class, 'show'])->middleware(['audit']);       // Detalle
@@ -237,6 +238,7 @@ Route::prefix('proveedores')
 
             // Subir comprobante
             Route::post('/{solicitudPago}/subir-comprobante', [ProveedorSolicitudPagoController::class, 'subirComprobantePago'])->middleware(['audit']);
+            Route::post('/{solicitudPago}/subir-factura', [ProveedorSolicitudPagoController::class, 'uploadFacturaPdfXml'])->middleware(['audit']);
 
             // Descargar archivos (solo usuarios autorizados)
             Route::get('/{solicitudPago}/descargar-comprobante', [ProveedorSolicitudPagoController::class, 'descargarComprobantePago'])->middleware(['audit']);

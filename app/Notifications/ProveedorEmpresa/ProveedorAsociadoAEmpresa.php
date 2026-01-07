@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Notifications\SolicitudPago;
+namespace App\Notifications\ProveedorEmpresa;
 
 use App\Services\FcmService;
 use Illuminate\Bus\Queueable;

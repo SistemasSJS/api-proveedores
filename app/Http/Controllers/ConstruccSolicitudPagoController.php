@@ -12,7 +12,7 @@ use App\Models\SolicitudPago;
 use App\Notifications\SolicitudPago\SolicitudPagoPagada;
 use App\Notifications\SolicitudPago\SolicitudPagoRechazada;
 use App\Notifications\SolicitudPago\SolicitudPagoRechazadaSinAutorizacion;
-use App\Notifications\SolicitudPago\ProveedorAsociadoAEmpresa;
+use App\Notifications\ProveedorEmpresa\ProveedorAsociadoAEmpresa;
 use App\Services\InterApiService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
