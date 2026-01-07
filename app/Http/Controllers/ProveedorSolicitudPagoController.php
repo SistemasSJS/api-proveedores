@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\EstadoSP;
 use App\Http\Requests\SolicitudPago\CrearSolicitudPagoRequest;
+use App\Http\Requests\SolicitudPago\CrearSolicitudPagoSinFacturaRequest;
 use App\Http\Resources\SolicitudPago\SolicitudPagoResource;
 use App\Models\EmpresaConstrucc;
 use App\Models\Proveedor;
@@ -114,7 +115,7 @@ class ProveedorSolicitudPagoController extends Controller
 
         $numeroFolio = SolicitudPago::generarNumeroFolio($proveedor);
         $empresaConstructId = $validated['empresa_construcc_id'] ?? null;
-    
+
         // Datos del usuario de Construcc que genera la SP
         $usuarioId = $validated['usuario_id'] ?? $validated['usuario_construcc_id'] ?? null;
         $empresaConstrucc = $proveedor->empresasConstrucc()->where('empresa_construcc.id', $empresaConstructId)->firstOrFail();
@@ -146,6 +147,66 @@ class ProveedorSolicitudPagoController extends Controller
             'saldo_pendiente' => $montoTotal,
             'monto_abonado' => 0,
             'pago_completo' => false,
+            'tiene_factura' => true,
+        ]);
+
+        $this->interApiService->notifyNewSolicitudCompra($solicitud);
+
+        // Sincronizar cuentas bancarias si se enviaron
+        if (array_key_exists('cuentas_bancarias', $validated) && is_array($validated['cuentas_bancarias'])) {
+            $solicitud->sincronizarCuentasBancarias($validated['cuentas_bancarias']);
+        }
+
+
+        return $this->success(
+            new SolicitudPagoResource($solicitud->load(['proveedor', 'empresaConstrucc', 'cuentasBancarias'])),
+            'Solicitud de pago creada correctamente.',
+            201
+        );
+    }
+
+    /**
+     * Crear nueva solicitud
+     */
+    public function storeSinFactura(CrearSolicitudPagoSinFacturaRequest $request, Proveedor $proveedor): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $cotizacionFile = $request->file('cotizacion');
+        $rutaCotizacion = $cotizacionFile->store('cotizaciones', 'private');
+
+        $numeroFolio = SolicitudPago::generarNumeroFolio($proveedor);
+        $empresaConstructId = $validated['empresa_construcc_id'] ?? null;
+
+        // Datos del usuario de Construcc que genera la SP
+        $usuarioId = $validated['usuario_id'] ?? $validated['usuario_construcc_id'] ?? null;
+        $empresaConstrucc = $proveedor->empresasConstrucc()->where('empresa_construcc.id', $empresaConstructId)->firstOrFail();
+        $folio_consecutivo_construcc = $empresaConstrucc->obtenerFolioSiguienteSP();
+
+        $usuarioNombre = $validated['usuario_nombre'] ?? $validated['residente'] ?? null;
+        $cotizacion_id = $validated['cotizacion_id'] ?? null;
+        $montoTotal = $validated['monto_total'];
+
+        $solicitud = SolicitudPago::create([
+            'proveedor_id' => $proveedor->id,
+            'numero_folio_solicitud' => $numeroFolio,
+            'folio_factura' => '',
+            'descripcion_concepto' => $validated['descripcion_concepto'] ?? '',
+            'observaciones' => $validated['observaciones'] ?? null,
+            'ruta_archivo_cotizacion' => $rutaCotizacion,
+            // 
+            'folio_sp_consecutivo' => $folio_consecutivo_construcc,
+            'empresa_construcc_id' => $empresaConstructId,
+            'usuario_id' => $usuarioId,
+            'usuario_nombre' => $usuarioNombre,
+            'cotizacion_id' => $cotizacion_id,
+            'estado_solicitud' => 'pendiente',
+            'fecha_registro_pendiente' => now(),
+            'monto_total' => $montoTotal,
+            'saldo_pendiente' => $montoTotal,
+            'monto_abonado' => 0,
+            'pago_completo' => false,
+            'tiene_factura' => false,
         ]);
 
         $this->interApiService->notifyNewSolicitudCompra($solicitud);
@@ -833,5 +894,68 @@ class ProveedorSolicitudPagoController extends Controller
             ]);
             return [];
         }
+    }
+
+    /**
+     * Subir archivos de factura (PDF y XML) a una Solicitud de Pago existente
+     */
+    public function uploadFacturaPdfXml(
+        Request $request,
+        Proveedor $proveedor,
+        SolicitudPago $solicitudPago
+    ): JsonResponse {
+        // Validación de archivos
+        $request->validate([
+            'factura_pdf' => 'required|file|mimes:pdf|max:10240',
+            'factura_xml' => 'required|file|mimes:xml|max:5120',
+        ]);
+
+        $facturaPdf = $request->file('factura_pdf');
+        $facturaXml = $request->file('factura_xml');
+
+        // Guardar archivos
+        $rutaPdf = $facturaPdf->store('facturas/pdf', 'private');
+        $rutaXml = $facturaXml->store('facturas/xml', 'private');
+
+        // Extraer datos del XML
+        $datosXml = $this->extraerDatosXML($facturaXml);
+
+        // Construir folio de factura (serie-folio)
+        $serie = $datosXml['serie'] ?? '';
+        $folio = $datosXml['folio'] ?? '';
+        $folioFactura = trim(
+            $serie . ($serie && $folio ? '-' : '') . $folio
+        ) ?: null;
+
+        // Actualizar Solicitud de Pago
+        $solicitudPago->update([
+            'folio_factura' => $folioFactura,
+            'datos_factura_xml' => $datosXml,
+            'ruta_archivo_factura_pdf' => $rutaPdf,
+            'ruta_archivo_factura_xml' => $rutaXml,
+            'tiene_factura' => true
+        ]);
+
+        /**
+         *--------------------------------------------------------------------------
+         * ESPACIO RESERVADO PARA LÓGICA FUTURA
+         *--------------------------------------------------------------------------
+         * - Validar UUID duplicado
+         * - Validar RFC emisor vs proveedor
+         * - Validar total vs monto_total
+         * - Cambiar estado automáticamente
+         * - Disparar eventos / notificaciones
+         *
+         * Ejemplo:
+         * event(new FacturaAsociadaASolicitudPago($solicitudPago));
+         */
+
+        return $this->success(
+            new SolicitudPagoResource(
+                $solicitudPago->load(SolicitudPago::eagerLodable())
+            ),
+            'Factura cargada correctamente.',
+            201
+        );
     }
 }
