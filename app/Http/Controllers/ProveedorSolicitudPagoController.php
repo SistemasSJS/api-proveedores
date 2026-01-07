@@ -193,7 +193,10 @@ class ProveedorSolicitudPagoController extends Controller
             'folio_factura' => '',
             'descripcion_concepto' => $validated['descripcion_concepto'] ?? '',
             'observaciones' => $validated['observaciones'] ?? null,
+            'ruta_archivo_factura_pdf' => null,
+            'ruta_archivo_factura_xml' => null,
             'ruta_archivo_cotizacion' => $rutaCotizacion,
+
             // 
             'folio_sp_consecutivo' => $folio_consecutivo_construcc,
             'empresa_construcc_id' => $empresaConstructId,
@@ -210,6 +213,11 @@ class ProveedorSolicitudPagoController extends Controller
         ]);
 
         $this->interApiService->notifyNewSolicitudCompra($solicitud);
+
+        /**
+         * notificacion apra los contadores aqui
+         */
+        
 
         // Sincronizar cuentas bancarias si se enviaron
         if (array_key_exists('cuentas_bancarias', $validated) && is_array($validated['cuentas_bancarias'])) {
