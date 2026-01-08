@@ -48,8 +48,8 @@ class InterApiService
        * se geenerara una nueva notioficacion que consiste en notificar a todos los usuarios directores
        * DT, PC, DA...
        */
-      // $USUARIO_ID_JULIO_SALAZAR = 41;
-      $USUARIO_ID_JULIO_SALAZAR = 75;
+      $USUARIO_ID_JULIO_SALAZAR = 41;
+      // $USUARIO_ID_JULIO_SALAZAR = 75;
 
       if ($sp->usuario_id == $USUARIO_ID_JULIO_SALAZAR) {
         // nuevo end point para notificar a todos los directivos.
