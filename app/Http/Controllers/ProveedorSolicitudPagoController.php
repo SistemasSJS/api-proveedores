@@ -150,6 +150,8 @@ class ProveedorSolicitudPagoController extends Controller
             'tiene_factura' => true,
         ]);
 
+        $solicitud->addNotification();
+
         $this->interApiService->notifyNewSolicitudCompra($solicitud);
 
         // Sincronizar cuentas bancarias si se enviaron
@@ -217,6 +219,7 @@ class ProveedorSolicitudPagoController extends Controller
         /**
          * notificacion apra los contadores aqui
          */
+        $solicitud->addNotification();
 
 
         // Sincronizar cuentas bancarias si se enviaron
@@ -251,27 +254,7 @@ class ProveedorSolicitudPagoController extends Controller
         }
 
         // 🔹 Marcar notificación como leída (integración con Laravel Notifications)
-        if ($solicitudPago->isRead() && auth()->check()) {
-
-            $notification = auth()->user()
-                ->notifications()
-                ->find($solicitudPago->notificacion_id);
-
-            if ($notification && is_null($notification->read_at)) {
-                $notification->markAsRead();
-
-                Log::info('✅ Notificación marcada como leída', [
-                    'notification_id' => $notification->id,
-                    'solicitud_pago_id' => $solicitudPago->id,
-                    'usuario_id' => auth()->id(),
-                ]);
-            }
-
-            // 🔹 Consumida → limpiar referencia
-            $solicitudPago->update([
-                'notificacion_id' => null,
-            ]);
-        }
+        $solicitudPago->markRead();
 
         // Cargar relaciones estándar
         $solicitudPago->load(SolicitudPago::eagerLodable());
@@ -691,15 +674,12 @@ class ProveedorSolicitudPagoController extends Controller
 
         // Conteos por estado (usando STRINGS - el campo estado_solicitud NO usa el enum)
         $conteos = [
-            'total' => (clone $baseQuery)->count(),
-            'pendientes' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->count(),
-            // => (clone $baseQuery)->where('estado_solicitud', 'pendiente')->count(),
-            'autorizadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::AUTORIZADA->value)->count(),
-            // => (clone $baseQuery)->where('estado_solicitud', 'autorizada')->count(),
-            'rechazadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::RECHAZADA->value)->count(),
-            // => (clone $baseQuery)->where('estado_solicitud', 'rechazada')->count(),
-            'pagadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PAGADO->value)->count(),
-            // => (clone $baseQuery)->where('estado_solicitud', 'pagada')->count(),
+            'total_sp' => (clone $baseQuery)->count(),
+            'sp_pendientes' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->where('item_visto', false)->count(),
+            'sp_autorizadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::AUTORIZADA->value)->where('item_visto', false)->count(),
+            'sp_en_proceso' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->where('item_visto', false)->count(),
+            'sp_rechazadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::RECHAZADA->value)->where('item_visto', false)->count(),
+            'sp_pagadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PAGADO->value)->where('item_visto', false)->count(),
         ];
 
         return $this->success($conteos, 'Conteo por estado obtenido correctamente');
@@ -782,11 +762,11 @@ class ProveedorSolicitudPagoController extends Controller
         // Conteos por estado (RESPETANDO lo que ya retornas)
         $conteos = [
             'total_sp' => (clone $baseQuery)->count(),
-            'sp_pendientes' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->count(),
-            'sp_autorizadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::AUTORIZADA->value)->whereNot('notification_id', null)->count(),
-            'sp_en_proceso' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->whereNot('notification_id', null)->count(),
-            'sp_rechazadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::RECHAZADA->value)->whereNot('notification_id', null)->count(),
-            'sp_pagadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PAGADO->value)->whereNot('notification_id', null)->count(),
+            'sp_pendientes' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->where('item_visto', false)->count(),
+            'sp_autorizadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::AUTORIZADA->value)->where('item_visto', false)->count(),
+            'sp_en_proceso' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->where('item_visto', false)->count(),
+            'sp_rechazadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::RECHAZADA->value)->where('item_visto', false)->count(),
+            'sp_pagadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PAGADO->value)->where('item_visto', false)->count(),
         ];
 
         return $this->success($conteos, 'Métricas del dashboard obtenidas correctamente');

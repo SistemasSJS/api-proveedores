@@ -2,28 +2,89 @@
 
 namespace App\Traits;
 
+use Illuminate\Foundation\Auth\User;
+
 /**
- * SE usa para mnarcar como visto el item y marcar la notificaicon leida.
+ * Marca el item como visto (SP)
+ * y sincroniza la notificación Laravel si existe.
+ *
+ * Convención:
+ * -----------
+ * - item_visto = false → pendiente
+ * - item_visto = true  → visto
+ *
+ * La notificación es OPCIONAL.
  */
 trait MarksAsNotified
 {
+  /**
+   * Indica si el item ya fue visto.
+   */
   public function isRead(): bool
   {
-    return $this->notificacion_id !== null;
+    return (bool) $this->item_visto;
   }
 
-  public function markRead(int $notificationId): void
+  /**
+   * Asocia una notificación (opcional)
+   * y deja el item como NO visto.
+   */
+  public function addNotification(?int $notificationId = null): void
+  {
+    $this->item_visto = false;
+    $this->notification_id = $notificationId;
+    $this->save();
+  }
+
+  /**
+   * Marca el item como visto.
+   * Si existe notificación, la marca como leída.
+   *
+   * @param User|null $user
+   */
+  public function markRead(?User $user = null): void
   {
     if ($this->isRead()) {
       return;
     }
 
-    $this->notificacion_id = $notificationId;
+    // 1️⃣ Marcar como visto (SIEMPRE)
+    $this->item_visto = true;
     $this->save();
-  }
 
-  public function addNotification(int $notificationId): void
-  {
-    $this->markRead($notificationId);
+    // 2️⃣ Marcar notificación Laravel como leída (SI EXISTE)
+    if (
+      $user &&
+      $this->notification_id
+    ) {
+      $notification = $user->notifications()
+        ->find($this->notification_id);
+
+      if ($notification && is_null($notification->read_at)) {
+        $notification->markAsRead();
+      }
+    }
   }
 }
+
+
+/**
+ * 🔹 Con notificación
+$notification = $user->notify(new SolicitudPagoCreada($sp));
+$sp->addNotification($notification->id);
+
+// luego...
+$sp->markRead(auth()->user());
+
+🔹 Sin notificación
+$sp->addNotification(); // notification_id = null
+
+// luego...
+$sp->markRead(); // SOLO marca item_visto
+
+🔹 Controller limpio
+$solicitudPago->markRead(auth()->user());
+
+ * 
+ * 
+ */

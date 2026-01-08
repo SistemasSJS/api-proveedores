@@ -92,6 +92,7 @@ class SolicitudPago extends BaseModel
         'folio_factura',
         'datos_factura_xml',
         'tiene_factura', // define a las sp sin factura. en cualquier fase de la SP se puede subir la factura
+        'item_visto'
     ];
 
     protected static $filters = [
@@ -153,6 +154,7 @@ class SolicitudPago extends BaseModel
 
         // Filtro para sp sin factura 
         'tiene_factura' => 'TieneFactura',
+        'item_visto' => 'SPVista',
     ];
 
     protected $casts = [
@@ -195,6 +197,7 @@ class SolicitudPago extends BaseModel
 
         // Datos XML como JSON
         'datos_factura_xml' => 'array',
+        'item_visto' => 'boolean',
     ];
 
     /** ----------------
@@ -539,6 +542,11 @@ class SolicitudPago extends BaseModel
     public function filterByTieneFactura($query, $value)
     {
         return $query->where('tiene_factura', (bool) $value);
+    }
+
+    public function filterBySPVista($query, $value)
+    {
+        return $query->where('item_visto', (bool) $value);
     }
 
     public function filterByFolioFactura($query, $value)

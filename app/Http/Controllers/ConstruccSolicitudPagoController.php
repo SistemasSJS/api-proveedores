@@ -231,6 +231,10 @@ class ConstruccSolicitudPagoController extends Controller
                 $request->usuario_id,
             );
 
+            /**
+             * TODO: Notioficar si la PS no tiene fgactura
+             */
+
             if ($result['success']) {
                 Log::info('✅ InterAPI respondió correctamente', ['solicitud_pago_id' => $solicitudPago->id, 'response' => $result,]);
             } else {
