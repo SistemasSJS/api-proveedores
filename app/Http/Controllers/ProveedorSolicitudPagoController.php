@@ -217,7 +217,7 @@ class ProveedorSolicitudPagoController extends Controller
         /**
          * notificacion apra los contadores aqui
          */
-        
+
 
         // Sincronizar cuentas bancarias si se enviaron
         if (array_key_exists('cuentas_bancarias', $validated) && is_array($validated['cuentas_bancarias'])) {
@@ -241,46 +241,52 @@ class ProveedorSolicitudPagoController extends Controller
             return $this->error('Solicitud no pertenece a este proveedor', 403);
         }
 
-        if ($solicitudPago->estado_solicitud === 'rechazada' && !$solicitudPago->visto_rechazada) {
+        if (
+            $solicitudPago->estado_solicitud === 'rechazada' &&
+            ! $solicitudPago->visto_rechazada
+        ) {
             $solicitudPago->update([
                 'visto_rechazada' => true,
             ]);
         }
 
-        // Marcar notificación como leída si existe
-        if ($solicitudPago->notification_id && auth()->check()) {
-            $notification = auth()->user()->notifications()
-                ->where('id', $solicitudPago->notification_id)
-                ->first();
+        // 🔹 Marcar notificación como leída (integración con Laravel Notifications)
+        if ($solicitudPago->isRead() && auth()->check()) {
 
-            if ($notification && !$notification->read_at) {
+            $notification = auth()->user()
+                ->notifications()
+                ->find($solicitudPago->notificacion_id);
+
+            if ($notification && is_null($notification->read_at)) {
                 $notification->markAsRead();
+
                 Log::info('✅ Notificación marcada como leída', [
-                    'notification_id' => $solicitudPago->notification_id,
+                    'notification_id' => $notification->id,
                     'solicitud_pago_id' => $solicitudPago->id,
                     'usuario_id' => auth()->id(),
                 ]);
             }
 
-            // Limpiar referencia de notification_id
-            $solicitudPago->update(['notification_id' => null]);
+            // 🔹 Consumida → limpiar referencia
+            $solicitudPago->update([
+                'notificacion_id' => null,
+            ]);
         }
 
         // Cargar relaciones estándar
         $solicitudPago->load(SolicitudPago::eagerLodable());
 
-        // Si la SP no tiene cuentas bancarias asociadas, buscar las cuentas del proveedor
+        // Fallback cuentas bancarias
         if ($solicitudPago->cuentasBancarias->isEmpty()) {
-            // Obtener cuentas bancarias activas del proveedor desde el modelo Proveedor
             $cuentasProveedor = $proveedor->cuentasBancarias
                 ->where('estatus', 'activa')
-                ->sortByDesc('preferida'); // Primero las favoritas
+                ->sortByDesc('preferida');
 
-            // Si el proveedor tiene cuentas, tomar la primera (que sería la favorita si existe)
             if ($cuentasProveedor->isNotEmpty()) {
-                // Agregar solo la cuenta favorita o la primera a la relación
-                $cuentaAMostrar = $cuentasProveedor->first();
-                $solicitudPago->setRelation('cuentasBancarias', collect([$cuentaAMostrar]));
+                $solicitudPago->setRelation(
+                    'cuentasBancarias',
+                    collect([$cuentasProveedor->first()])
+                );
             }
         }
 
@@ -769,18 +775,18 @@ class ProveedorSolicitudPagoController extends Controller
         }
 
         // Rechazadas NO vistas
-        $rechazadasNoVistas = (clone $baseQuery)
-            ->where('estado_solicitud', EstadoSP::RECHAZADA->value)
-            ->where('visto_rechazada', false);
+        // $rechazadasNoVistas = (clone $baseQuery)
+        //     ->where('estado_solicitud', EstadoSP::RECHAZADA->value)
+        //     ->where('visto_rechazada', false);
 
         // Conteos por estado (RESPETANDO lo que ya retornas)
         $conteos = [
             'total_sp' => (clone $baseQuery)->count(),
             'sp_pendientes' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->count(),
-            'sp_autorizadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::AUTORIZADA->value)->count(),
-            'sp_en_proceso' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->count(),
-            'sp_rechazadas' => $rechazadasNoVistas->count(),
-            'sp_pagadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PAGADO->value)->count(),
+            'sp_autorizadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::AUTORIZADA->value)->whereNot('notification_id', null)->count(),
+            'sp_en_proceso' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->whereNot('notification_id', null)->count(),
+            'sp_rechazadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::RECHAZADA->value)->whereNot('notification_id', null)->count(),
+            'sp_pagadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PAGADO->value)->whereNot('notification_id', null)->count(),
         ];
 
         return $this->success($conteos, 'Métricas del dashboard obtenidas correctamente');
