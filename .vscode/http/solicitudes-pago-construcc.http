@@ -49,7 +49,7 @@ X-API-KEY: 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
 Accept:  application/json
 ### 1. Listado general de solicitudes de pago (solo verificadas)
 
-GET {{baseUrl}}/construcc/solicitudes-pago/1
+GET {{baseUrl}}/construcc/solicitudes-pago/
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
@@ -64,7 +64,7 @@ X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
 
 ### 4. 🆕 Marcar solicitud como VERIFICADA
-POST {{baseUrl}}/construcc/solicitudes-pago/3/marcar-verificada
+POST {{baseUrl}}/construcc/solicitudes-pago/5/marcar-verificada
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 Accept: {{acceptType}}
@@ -115,7 +115,7 @@ Content-Type: {{contentType}}
 
 ### 10. Rechazar solicitud de pago
 # POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/rechazar
-POST {{baseUrl}}/construcc/solicitudes-pago/2/rechazar
+POST {{baseUrl}}/construcc/solicitudes-pago/5/rechazar
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 

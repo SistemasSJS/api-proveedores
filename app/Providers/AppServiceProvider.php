@@ -5,8 +5,10 @@ namespace App\Providers;
 use App\Channels\FcmChannel;
 use App\Exceptions\Handler;
 use App\Models\Producto;
+use App\Models\SolicitudPago;
 use App\Models\Sucursal;
 use App\Observers\ProductoObserver;
+use App\Observers\SolicitudPagoObserver;
 use App\Policies\SucursalPolicy;
 use App\Services\DashboardService;
 use App\Services\ProductoSearchService;
@@ -57,6 +59,8 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
         // Registrar Observers
         Producto::observe(ProductoObserver::class);
+        SolicitudPago::observe(SolicitudPagoObserver::class);
+
 
         // Configurar timezone si es necesario
         if (config('app.timezone')) {

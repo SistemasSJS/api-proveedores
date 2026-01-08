@@ -4,10 +4,9 @@ namespace App\Models;
 
 use App\Enums\EstadoCuentaBancaria;
 use App\Enums\EstadoSolicitud;
+use App\Events\SpChangeEstadoGeneralEvent;
 use App\Traits\Filterable;
 use App\Traits\MarksAsNotified;
-use App\Traits\MarksAsRead;
-use App\Traits\MarksAsRead as TraitsMarksAsRead;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +17,10 @@ use Illuminate\Support\Str;
 class SolicitudPago extends BaseModel
 {
     use Filterable, HasFactory, MarksAsNotified;
+
+    // protected $dispatchesEvents = [
+    //     'updated' => SpChangeEstadoGeneralEvent::class,
+    // ];
 
     protected $connection = 'mysql5';
     protected $table = 'solicitudes_pago';

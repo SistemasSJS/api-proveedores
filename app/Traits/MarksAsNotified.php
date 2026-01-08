@@ -31,9 +31,11 @@ trait MarksAsNotified
    */
   public function addNotification(?int $notificationId = null): void
   {
-    $this->item_visto = false;
-    $this->notification_id = $notificationId;
-    $this->save();
+    $this->withoutEvents(function () use ($notificationId) {
+      $this->item_visto = false;
+      $this->notification_id = $notificationId;
+      $this->save();
+    });
   }
 
   /**
@@ -48,15 +50,14 @@ trait MarksAsNotified
       return;
     }
 
-    // 1️⃣ Marcar como visto (SIEMPRE)
-    $this->item_visto = true;
-    $this->save();
+    $this->withoutEvents(function () use ($user) {
+      // 1️⃣ Marcar como visto (SIEMPRE)
+      $this->item_visto = true;
+      $this->save();
+    });
 
     // 2️⃣ Marcar notificación Laravel como leída (SI EXISTE)
-    if (
-      $user &&
-      $this->notification_id
-    ) {
+    if ($user && $this->notification_id) {
       $notification = $user->notifications()
         ->find($this->notification_id);
 

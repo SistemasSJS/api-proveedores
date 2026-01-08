@@ -254,7 +254,8 @@ class ProveedorSolicitudPagoController extends Controller
         }
 
         // 🔹 Marcar notificación como leída (integración con Laravel Notifications)
-        $solicitudPago->markRead();
+        $solicitudPago->markRead(auth()->user());
+
 
         // Cargar relaciones estándar
         $solicitudPago->load(SolicitudPago::eagerLodable());
@@ -655,7 +656,7 @@ class ProveedorSolicitudPagoController extends Controller
 
         return $timeline;
     }
-
+    
     /**
      * Obtener conteo de solicitudes por estado
      */
@@ -674,12 +675,15 @@ class ProveedorSolicitudPagoController extends Controller
 
         // Conteos por estado (usando STRINGS - el campo estado_solicitud NO usa el enum)
         $conteos = [
-            'total_sp' => (clone $baseQuery)->count(),
-            'sp_pendientes' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->where('item_visto', false)->count(),
-            'sp_autorizadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::AUTORIZADA->value)->where('item_visto', false)->count(),
-            'sp_en_proceso' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->where('item_visto', false)->count(),
-            'sp_rechazadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::RECHAZADA->value)->where('item_visto', false)->count(),
-            'sp_pagadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PAGADO->value)->where('item_visto', false)->count(),
+            'total' => (clone $baseQuery)->count(),
+            'pendientes' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->count(),
+            // => (clone $baseQuery)->where('estado_solicitud', 'pendiente')->count(),
+            'autorizadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::AUTORIZADA->value)->count(),
+            // => (clone $baseQuery)->where('estado_solicitud', 'autorizada')->count(),
+            'rechazadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::RECHAZADA->value)->count(),
+            // => (clone $baseQuery)->where('estado_solicitud', 'rechazada')->count(),
+            'pagadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PAGADO->value)->count(),
+            // => (clone $baseQuery)->where('estado_solicitud', 'pagada')->count(),
         ];
 
         return $this->success($conteos, 'Conteo por estado obtenido correctamente');
