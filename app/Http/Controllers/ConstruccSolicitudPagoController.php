@@ -596,14 +596,18 @@ class ConstruccSolicitudPagoController extends Controller
         Log::info(
             '🟢 PAGO-SP: SP actualizada',
             [
+                'cuenta_bancaria_empresa_construcc_id' => $request->cuenta_bancaria_empresa_construcc_id,
                 'estado_solicitud' => $estadoFinal,
                 'ruta_archivo_comprobante_pago' => $path,
                 // 'notas_abono' => $request->notas_abono,
                 'monto_pagado' => $request->monto_pagado,
-                'fecha_pago' => now(),
                 'da' => $estadoDA,
                 'da_fecha' => now(),
-                'cuenta_bancaria_empresa_construcc_id' => $request->cuenta_bancaria_empresa_construcc_id
+                // datos comprobante
+                'fecha_pago' => $fechaPago,
+                'nombre_beneficiario_pago' => $request->nombre_beneficiario,
+                'clave_rastreo_pago' => $request->clave_rastreo,
+                'banco_pago' => $request->banco,
             ]
         );
 
@@ -1613,6 +1617,17 @@ class ConstruccSolicitudPagoController extends Controller
             trim($request->fecha . ' ' . $request->hora)
         );
 
+        Log::info(
+            '🟢 PAGO-SP: SP actualizada',
+            [
+                'ruta_archivo_comprobante_pago' => $path,
+                'observaciones_pago' => $request->observaciones,
+                'fecha_pago' => $fechaPago,
+                'nombre_beneficiario_pago' => $request->nombre_beneficiario,
+                'clave_rastreo_pago' => $request->clave_rastreo,
+                'banco_pago' => $request->banco,
+            ]
+        );
         /** 📝 Actualizar SOLO datos del comprobante */
         $solicitudPago->update([
             'ruta_archivo_comprobante_pago' => $path,
