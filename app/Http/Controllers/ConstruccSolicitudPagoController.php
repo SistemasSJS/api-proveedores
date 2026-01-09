@@ -528,6 +528,13 @@ class ConstruccSolicitudPagoController extends Controller
             'comprobante' => $request->comprobante,
             'observaciones' => $request->observaciones,
             'cuenta_bancaria_empresa_construcc_id' => $request->cuenta_bancaria_empresa_construcc_id,
+            // 
+            'fecha' => $request->fecha,
+            'hora' => $request->hora,
+            'nombre_beneficiario' => $request->nombre_beneficiario,
+            'clave_rastreo' => $request->clave_rastreo,
+            'banco' => $request->banco,
+
         ]);
 
         Log::info('🟢 PAGO-SP: Solicitud de confirmación de pago recibida', [
@@ -1557,6 +1564,18 @@ class ConstruccSolicitudPagoController extends Controller
      */
     public function actualizarComprobantePago(SolicitudPagoUpdateConprobantePagoRequest $request, SolicitudPago $solicitudPago): JsonResponse
     {
+        Log::info('🟢 PAGO-SP Carga util de la peticion: ', [
+            'rol' => $request->rol,
+            'comprobante' => $request->comprobante,
+            'observaciones' => $request->observaciones,
+            'fecha' => $request->fecha,
+            'hora' => $request->hora,
+            'nombre_beneficiario' => $request->nombre_beneficiario,
+            'clave_rastreo' => $request->clave_rastreo,
+            'banco' => $request->banco,
+
+        ]);
+
         /** 🔒 Validar rol */
         if ($request->rol !== 'DA') {
             return $this->error(
