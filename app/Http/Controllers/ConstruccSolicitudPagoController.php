@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use App\Http\Requests\Construcc\SolicitudPagoUpdateConprobantePagoRequest;
 use App\Notifications\SolicitudPago\SolicitudPagoComprobanteActualizado;
+use Carbon\Carbon;
 
 class ConstruccSolicitudPagoController extends Controller
 {
@@ -579,6 +580,12 @@ class ConstruccSolicitudPagoController extends Controller
         $estadoFinal = EstadoSP::PAGADO->value;
         $estadoDA = EstadoSolicitud::PAGADO->value;
 
+
+        $fechaPago = Carbon::createFromFormat(
+            'Y-m-d H:i',
+            "{$request->fecha} {$request->hora}"
+        );
+
         Log::info(
             '🟢 PAGO-SP: SP actualizada',
             [
@@ -600,9 +607,15 @@ class ConstruccSolicitudPagoController extends Controller
             'ruta_archivo_comprobante_pago' => $path,
             // 'notas_abono' => $request->notas_abono,
             'monto_pagado' => $request->monto_pagado,
-            'fecha_pago' => now(),
             'da' => $estadoDA,
             'da_fecha' => now(),
+
+            // datos comprobante
+            'fecha_pago' => $fechaPago,
+            'nombre_beneficiario_pago' => $request->nombre_beneficiario,
+            'clave_rastreo_pago' => $request->clave_rastreo,
+            'banco_pago' => $request->banco,
+
         ]);
 
         // Enviar notificación al proveedor
@@ -1576,11 +1589,19 @@ class ConstruccSolicitudPagoController extends Controller
         $path = $request->file('comprobante')
             ->store('comprobantes', 'private');
 
+        $fechaPago = Carbon::createFromFormat(
+            'Y-m-d H:i',
+            "{$request->fecha} {$request->hora}"
+        );
+
         /** 📝 Actualizar SOLO datos del comprobante */
         $solicitudPago->update([
             'ruta_archivo_comprobante_pago' => $path,
-            'fecha_con_comprobante' => now(),
             'observaciones_pago' => $request->observaciones,
+            'fecha_pago' => $fechaPago,
+            'nombre_beneficiario_pago' => $request->nombre_beneficiario,
+            'clave_rastreo_pago' => $request->clave_rastreo,
+            'banco_pago' => $request->banco,
         ]);
 
         /** 📡 Notificar vía InterAPI */
