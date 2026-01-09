@@ -23,9 +23,10 @@ class SolicitudPagoConfirmarPagoRequest extends FormRequest
             'cuenta_bancaria_empresa_construcc_id' => ['nullable', 'numeric'],
 
             // Datos del pago
-            'fecha' => ['required', 'string'],
+            // 'fecha' => ['required', 'string'],
             // 'fecha' => ['required','string','regex:/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/' ],
-            'hora' => ['required', 'string', 'regex:/^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/'],
+            // 'hora' => ['required', 'string', 'regex:/^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/'],
+            'fecha_hora_pago' => ['required', 'date_format:Y-m-d H:i:s'],
             'nombre_beneficiario' => ['required', 'string', 'max:255'],
             'clave_rastreo' => ['required', 'string', 'max:50'],
             'banco' => ['required', 'string', 'max:50'],
@@ -51,12 +52,11 @@ class SolicitudPagoConfirmarPagoRequest extends FormRequest
             'comprobante.max' => 'El comprobante no debe superar los 5 MB.',
 
             // Fecha
-            'fecha.required' => 'Debe indicar la fecha del pago.',
-            'fecha.regex' => 'La fecha debe tener el formato AAAA-MM-DD.',
+            // 'fecha.required' => 'Debe indicar la fecha del pago.',
+            // 'fecha.regex' => 'La fecha debe tener el formato AAAA-MM-DD.',
 
             // Hora
-            'hora.required' => 'Debe indicar la hora del pago.',
-            'hora.regex' => 'La hora debe tener el formato de 24 horas HH:MM.',
+            'fecha_hora_pago.required' => 'Debe indicar la hora del pago.',
 
             // Beneficiario
             'nombre_beneficiario.required' => 'Debe indicar el nombre del beneficiario.',
