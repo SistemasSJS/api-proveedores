@@ -529,7 +529,8 @@ class ConstruccSolicitudPagoController extends Controller
             'observaciones' => $request->observaciones,
             'cuenta_bancaria_empresa_construcc_id' => $request->cuenta_bancaria_empresa_construcc_id,
             // 
-            'fecha' => $request->fecha,
+            'fecha_comprobante_pago' => $request->fecha,
+            'fecha_pago' =>  now(),
             'hora' => $request->hora,
             'nombre_beneficiario' => $request->nombre_beneficiario,
             'clave_rastreo' => $request->clave_rastreo,
@@ -599,12 +600,13 @@ class ConstruccSolicitudPagoController extends Controller
                 'cuenta_bancaria_empresa_construcc_id' => $request->cuenta_bancaria_empresa_construcc_id,
                 'estado_solicitud' => $estadoFinal,
                 'ruta_archivo_comprobante_pago' => $path,
-                // 'notas_abono' => $request->notas_abono,
+                'notas_abono' => $request->observaciones,
                 'monto_pagado' => $request->monto_pagado,
                 'da' => $estadoDA,
                 'da_fecha' => now(),
                 // datos comprobante
-                'fecha_pago' => $request->fecha_hora_pago,
+                'fecha_comprobante_pago' => $request->fecha_hora_pago,
+                'fecha_pago' =>  now(),
                 'nombre_beneficiario_pago' => $request->nombre_beneficiario,
                 'clave_rastreo_pago' => $request->clave_rastreo,
                 'banco_pago' => $request->banco,
@@ -616,13 +618,15 @@ class ConstruccSolicitudPagoController extends Controller
             'cuenta_bancaria_empresa_construcc_id' => $request->cuenta_bancaria_empresa_construcc_id,
             'estado_solicitud' => $estadoFinal,
             'ruta_archivo_comprobante_pago' => $path,
-            // 'notas_abono' => $request->notas_abono,
+            'fecha_pago' =>  now(),
+            'notas_abono' => $request->observaciones,
             'monto_pagado' => $request->monto_pagado,
             'da' => $estadoDA,
             'da_fecha' => now(),
 
             // datos comprobante
-            'fecha_pago' => $request->fecha_hora_pago,
+            'fecha_comprobante_pago' => $request->fecha_hora_pago,
+
             'nombre_beneficiario_pago' => $request->nombre_beneficiario,
             'clave_rastreo_pago' => $request->clave_rastreo,
             'banco_pago' => $request->banco,
@@ -1621,8 +1625,10 @@ class ConstruccSolicitudPagoController extends Controller
             '🟢 PAGO-SP: SP actualizada',
             [
                 'ruta_archivo_comprobante_pago' => $path,
-                'observaciones_pago' => $request->observaciones,
-                'fecha_pago' => $request->fecha_hora_pago,
+                'notas_abono' => $request->observaciones,
+                'fecha_comprobante_pago' => $request->fecha_hora_pago,
+                'fecha_pago' =>  now(),
+
                 'nombre_beneficiario_pago' => $request->nombre_beneficiario,
                 'clave_rastreo_pago' => $request->clave_rastreo,
                 'banco_pago' => $request->banco,
@@ -1631,8 +1637,9 @@ class ConstruccSolicitudPagoController extends Controller
         /** 📝 Actualizar SOLO datos del comprobante */
         $solicitudPago->update([
             'ruta_archivo_comprobante_pago' => $path,
-            'observaciones_pago' => $request->observaciones,
-            'fecha_pago' => $request->fecha_hora_pago,
+            'notas_abono' => $request->observaciones,
+            'fecha_pago' =>  now(),
+            'fecha_comprobante_pago' => $request->fecha_hora_pago,
             'nombre_beneficiario_pago' => $request->nombre_beneficiario,
             'clave_rastreo_pago' => $request->clave_rastreo,
             'banco_pago' => $request->banco,

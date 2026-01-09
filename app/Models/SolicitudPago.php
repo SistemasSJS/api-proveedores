@@ -43,12 +43,16 @@ class SolicitudPago extends BaseModel
         // 
         'cotizacion_id',
         'sucursal_id',
+
+        // 
+        // 'fecha_confirmacion_pago',
         // 'fecha_registro_pendiente',
         // 'fecha_inicio_procesamiento',
-        // 'fecha_confirmacion_pago',
         // 'fecha_con_comprobante',
         // 'fecha_rechazado',
         // 'fecha_aprobado',
+
+        //
         'motivo_rechazo',
         'monto_total',
         'monto_abonado',
@@ -101,6 +105,7 @@ class SolicitudPago extends BaseModel
         'nombre_beneficiario_pago',
         'clave_rastreo_pago',
         'banco_pago',
+        'fecha_comprobante_pago',
     ];
 
     protected static $filters = [
