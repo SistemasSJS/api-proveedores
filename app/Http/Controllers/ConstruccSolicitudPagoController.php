@@ -589,8 +589,8 @@ class ConstruccSolicitudPagoController extends Controller
 
 
         $fechaPago = Carbon::createFromFormat(
-            'Y-m-d H:i',
-            "{$request->fecha} {$request->hora}"
+            'Y-m-d H:i:s',
+            trim($request->fecha . ' ' . $request->hora)
         );
 
         Log::info(
@@ -1609,8 +1609,8 @@ class ConstruccSolicitudPagoController extends Controller
             ->store('comprobantes', 'private');
 
         $fechaPago = Carbon::createFromFormat(
-            'Y-m-d H:i',
-            "{$request->fecha} {$request->hora}"
+            'Y-m-d H:i:s',
+            trim($request->fecha . ' ' . $request->hora)
         );
 
         /** 📝 Actualizar SOLO datos del comprobante */

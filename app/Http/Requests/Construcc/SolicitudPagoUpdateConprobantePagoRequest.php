@@ -22,7 +22,6 @@ class SolicitudPagoUpdateConprobantePagoRequest extends FormRequest
 
             // Datos del pago
             'fecha' => ['required', 'string'],
-            // 'fecha' => ['required','string','regex:/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/' ],
             'hora' => ['required', 'string', 'regex:/^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/'],
             'nombre_beneficiario' => ['required', 'string', 'max:255'],
             'clave_rastreo' => ['required', 'string', 'max:50'],
