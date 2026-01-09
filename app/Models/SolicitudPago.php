@@ -95,7 +95,12 @@ class SolicitudPago extends BaseModel
         'folio_factura',
         'datos_factura_xml',
         'tiene_factura', // define a las sp sin factura. en cualquier fase de la SP se puede subir la factura
-        'item_visto'
+        'item_visto',
+
+        // CAMPOS 
+        'nombre_beneficiario_pago',
+        'clave_rastreo_pago',
+        'banco_pago',
     ];
 
     protected static $filters = [
