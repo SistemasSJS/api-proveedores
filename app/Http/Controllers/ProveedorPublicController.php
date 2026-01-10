@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ProveedorPublicResource;
 use App\Models\Proveedor;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -36,9 +37,9 @@ class ProveedorPublicController extends Controller
       );
     }
 
-    // ✅ Proveedor válido con constancia
+    // ✅ Proveedor válido con constancia (usa Resource para URLs completas)
     return $this->success(
-      $proveedor,
+      new ProveedorPublicResource($proveedor),
       'Proveedor disponible.',
       200
     );
