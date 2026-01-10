@@ -26,10 +26,10 @@ class SolicitudPagoConfirmarPagoRequest extends FormRequest
             // 'fecha' => ['required', 'string'],
             // 'fecha' => ['required','string','regex:/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/' ],
             // 'hora' => ['required', 'string', 'regex:/^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/'],
-            'fecha_hora_pago' => ['sometimes', 'date_format:Y-m-d H:i:s'],
-            'nombre_beneficiario' => ['sometimes', 'string', 'max:255'],
-            'clave_rastreo' => ['sometimes', 'string', 'max:50'],
-            'banco' => ['sometimes', 'string', 'max:50'],
+            'fecha_hora_pago' => ['required', 'date_format:Y-m-d H:i:s'],
+            'nombre_beneficiario' => ['required', 'string', 'max:255'],
+            'clave_rastreo' => ['required', 'string', 'max:50'],
+            'banco' => ['required', 'string', 'max:50'],
         ];
     }
 
