@@ -656,7 +656,7 @@ class ProveedorSolicitudPagoController extends Controller
 
         return $timeline;
     }
-    
+
     /**
      * Obtener conteo de solicitudes por estado
      */
@@ -766,7 +766,7 @@ class ProveedorSolicitudPagoController extends Controller
         // Conteos por estado (RESPETANDO lo que ya retornas)
         $conteos = [
             'total_sp' => (clone $baseQuery)->count(),
-            'sp_pendientes' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->where('item_visto', false)->count(),
+            'sp_pendientes' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->count(),
             'sp_autorizadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::AUTORIZADA->value)->where('item_visto', false)->count(),
             'sp_en_proceso' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->where('item_visto', false)->count(),
             'sp_rechazadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::RECHAZADA->value)->where('item_visto', false)->count(),
@@ -945,7 +945,7 @@ class ProveedorSolicitudPagoController extends Controller
          * - Disparar eventos / notificaciones
          *
          * Ejemplo:
-         * event(new FacturaAsociadaASolicitudPago($solicitudPago));
+        //  * event(new FacturaAsociadaASolicitudPago($solicitudPago));
          */
 
         return $this->success(
@@ -955,5 +955,102 @@ class ProveedorSolicitudPagoController extends Controller
             'Factura cargada correctamente.',
             201
         );
+    }
+
+
+
+    /**
+     * Subir únicamente el PDF de la factura
+     */
+    public function uploadFacturaPdf(Request $request, Proveedor $proveedor, SolicitudPago $solicitudPago): JsonResponse
+    {
+        $request->validate([
+            'factura_pdf' => 'required|file|mimes:pdf|max:10240',
+        ]);
+
+        $facturaPdf = $request->file('factura_pdf');
+
+        $rutaPdf = $facturaPdf->store('facturas/pdf', 'private');
+
+        $solicitudPago->update([
+            'ruta_archivo_factura_pdf' => $rutaPdf,
+            'tiene_factura' => true,
+        ]);
+
+        /**
+         * TODO: aqio se dispara la ntofiocacion  
+         *  event(new FacturaAsociadaASolicitudPago($solicitudPago, 'xml'));
+         */
+        $this->solicitudTieneFacturaCompleta($solicitudPago);
+
+
+        return $this->success(
+            new SolicitudPagoResource(
+                $solicitudPago->load(SolicitudPago::eagerLodable())
+            ),
+            'Factura PDF cargada correctamente.',
+            201
+        );
+    }
+
+    /**
+     * Subir únicamente el XML de la factura
+     */
+    public function uploadFacturaXml(Request $request, Proveedor $proveedor, SolicitudPago $solicitudPago): JsonResponse
+    {
+
+        $request->validate([
+            'factura_xml' => 'required|file|mimes:xml|max:5120',
+        ]);
+
+        $facturaXml = $request->file('factura_xml');
+
+        $rutaXml = $facturaXml->store('facturas/xml', 'private');
+
+        $datosXml = $this->extraerDatosXML($facturaXml);
+
+        $serie = $datosXml['serie'] ?? '';
+        $folio = $datosXml['folio'] ?? '';
+        $folioFactura = trim(
+            $serie . ($serie && $folio ? '-' : '') . $folio
+        ) ?: null;
+
+        $solicitudPago->update([
+            'folio_factura' => $folioFactura,
+            'datos_factura_xml' => $datosXml,
+            'ruta_archivo_factura_xml' => $rutaXml,
+        ]);
+
+        /**
+         * TODO: aqio se dispara la ntofiocacion  
+         *  event(new FacturaAsociadaASolicitudPago($solicitudPago, 'xml'));
+         */
+        $this->solicitudTieneFacturaCompleta($solicitudPago);
+
+        return $this->success(
+            new SolicitudPagoResource(
+                $solicitudPago->load(SolicitudPago::eagerLodable())
+            ),
+            'Factura XML cargada correctamente.',
+            201
+        );
+    }
+
+    /**
+     * Verifica si la Solicitud de Pago ya tiene PDF y XML
+     * y envía la notificación SOLO una vez.
+     */
+    private function solicitudTieneFacturaCompleta(SolicitudPago $solicitudPago): bool
+    {
+        $tienePdf = !empty($solicitudPago->ruta_archivo_factura_pdf);
+        $tieneXml = !empty($solicitudPago->ruta_archivo_factura_xml);
+
+        if (! $tienePdf || ! $tieneXml) {
+            return false;
+        }
+
+        $solicitudPago->update(['tiene_factura' => true,]);
+
+        return true;
     }
 }
