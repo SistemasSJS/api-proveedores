@@ -49,13 +49,12 @@ class InterApiService
        * DT, PC, DA...
        */
       $USUARIO_ID_JULIO_SALAZAR = 41;
-      // $USUARIO_ID_JULIO_SALAZAR = 75;
+      // $USUARIO_ID_JULIO_SALAZAR = 75; // only test
 
+      $url = "{$this->apiContruccUrl}/api/notify-sp-validada";
       if ($sp->usuario_id == $USUARIO_ID_JULIO_SALAZAR) {
         // nuevo end point para notificar a todos los directivos.
         $url = "{$this->apiContruccUrl}/api/notify-sp-directores";
-      } else {
-        $url = "{$this->apiContruccUrl}/api/notify-sp-validada";
       }
 
       Log::channel('inter_api')->info('URL destino para notificación SP', [
