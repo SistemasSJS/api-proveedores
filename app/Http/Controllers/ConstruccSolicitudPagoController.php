@@ -202,7 +202,7 @@ class ConstruccSolicitudPagoController extends Controller
         try {
             $updateData = ['verificada' => true];
 
-            foreach (['tipo', 'tipo_id', 'obra_id', 'notas', 'utilizara', 'equipo'] as $field) {
+            foreach (['tipo', 'tipo_id', 'obra_id', 'notas', 'utilizara', 'equipo', 'equipo_id'] as $field) {
                 if ($request->has($field)) {
                     $updateData[$field] = $request->$field;
                 }
