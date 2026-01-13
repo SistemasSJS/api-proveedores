@@ -68,6 +68,7 @@ class SolicitudPago extends BaseModel
         'notas',
         'utilizara',
         'equipo',
+        'equipo_id',
         'notas_abono',
         'fecha_rechazo',
         'fecha_pago',

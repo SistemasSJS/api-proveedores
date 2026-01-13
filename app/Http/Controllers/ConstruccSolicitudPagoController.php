@@ -169,7 +169,7 @@ class ConstruccSolicitudPagoController extends Controller
      * Solo el usuario construcción correspondiente puede marcar su SP como verificada
      * Envía los datos de la SP y el usuario al servidor inter API
      * 
-     * Para niveles directivos (1-DG, 2-DT, 3-DA) también marca como autorizada para ese rol
+     * Para niveles directivos (1-DG, 2-DT, 3-DA, 5-PC) también marca como autorizada para ese rol
      */
     public function marcarComoVerificada(Request $request, SolicitudPago $solicitudPago): JsonResponse
     {
@@ -189,6 +189,7 @@ class ConstruccSolicitudPagoController extends Controller
             'notas' => ['nullable', 'string'],
             'utilizara' => ['nullable', 'string'],
             'equipo' => ['nullable', 'string'],
+            'equipo_id' => ['nullable', 'integer'],
         ]);
 
         if ($solicitudPago->verificada) {

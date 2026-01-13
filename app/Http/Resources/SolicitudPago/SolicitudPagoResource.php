@@ -25,6 +25,7 @@ class SolicitudPagoResource extends JsonResource
             'notas' => $this->notas,
             'utilizara' => $this->utilizara,
             'equipo' => $this->equipo,
+            'equipo_id' => $this->equipo_id,
             'estado_solicitud' => $this->estado_solicitud,
             'cuentas_bancarias' => SolicitudPagoCuentaBancariaResource::collection($this->whenLoaded('cuentasBancarias')),
 
