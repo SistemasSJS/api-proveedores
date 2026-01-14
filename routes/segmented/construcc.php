@@ -166,6 +166,9 @@ Route::prefix('construcc')
          */
         Route::prefix('solicitudes-pago')->name('solicitudes-pago.')->group(function () {
 
+            // ✅ NUEVO: Generar solicitud de pago desde construcción (crea proveedor, cuenta bancaria y SPP)
+            Route::post('generar-spp-construcc', [ConstruccSolicitudPagoController::class, 'generarSolicitudPagoConstrucc'])->name('generar-spp-construcc');
+
             // Listado y detalle (solo lectura en ConstruccApp)
             Route::get('/', [ConstruccSolicitudPagoController::class, 'index'])->name('index');
             // Listado de SP no verificadas

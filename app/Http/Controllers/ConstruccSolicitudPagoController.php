@@ -7,8 +7,13 @@ use App\Enums\EstadoSP;
 use App\Http\Requests\Construcc\SolicitudPagoAutorizarRequest;
 use App\Http\Requests\Construcc\SolicitudPagoConfirmarPagoRequest;
 use App\Http\Requests\Construcc\SolicitudPagoRechazarRequest;
+use App\Http\Requests\Construcc\GenerarSolicitudPagoConstruccRequest;
 use App\Http\Resources\Construcc\ConstruccSolicitudPagoResource;
+use App\Http\Resources\Construcc\ConstruccGenerarSppResource;
 use App\Models\SolicitudPago;
+use App\Models\Proveedor;
+use App\Models\CuentaBancaria;
+use App\Enums\EstadoCuentaBancaria;
 use App\Notifications\SolicitudPago\SolicitudPagoPagada;
 use App\Notifications\SolicitudPago\SolicitudPagoRechazada;
 use App\Notifications\SolicitudPago\SolicitudPagoRechazadaSinAutorizacion;
@@ -1413,6 +1418,334 @@ class ConstruccSolicitudPagoController extends Controller
             ['conteo' => $conteo],
             'Conteo de solicitudes por validar, filtradas para la empresa.'
         );
+    }
+
+    /**
+     * Generar nueva solicitud de pago desde construcción
+     * Este endpoint crea un proveedor nuevo, registra su cuenta bancaria y genera la SPP
+     * 
+     * Flujo:
+     * 1. Validar datos del proveedor (RFC, email, teléfono, celular)
+     * 2. Crear proveedor con tipo_alta = 2 (UserConstrucc)
+     * 3. Registrar cuenta bancaria (primera cuenta se marca como preferida)
+     * 3.1. Asociar proveedor a empresa de construcción
+     * 4. Almacenar archivos (factura PDF, XML, cotización)
+     * 5. Crear solicitud de pago según nivel del usuario:
+     *    - Directores (DG, DT, DA, PC, Admin): verificada=true, estado=autorizada
+     *    - Otros (SI, RO): verificada=false, estado=pendiente
+     * 6. Sincronizar cuenta bancaria con SP mediante tabla pivote
+     * 7. Notificar a directores si fue auto-aprobada (TODO: implementar)
+     */
+    public function generarSolicitudPagoConstrucc(GenerarSolicitudPagoConstruccRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        DB::beginTransaction();
+        try {
+            // ============================================
+            // PASO 1: Validar y buscar proveedor existente
+            // ============================================
+            $proveedorExistente = Proveedor::where('rfc', $validated['proveedor_rfc'])
+                ->orWhere('email', $validated['proveedor_email'])
+                ->orWhere('telefono', $validated['proveedor_telefono'])
+                ->when(isset($validated['proveedor_celular']), function ($query) use ($validated) {
+                    return $query->orWhere('telefono', $validated['proveedor_celular']);
+                })
+                ->first();
+
+            if ($proveedorExistente) {
+                DB::rollBack();
+                return $this->error(
+                    'El proveedor ya existe en el sistema.',
+                    [
+                        'proveedor_id' => $proveedorExistente->id,
+                        'razon_social' => $proveedorExistente->razon_social,
+                        'rfc' => $proveedorExistente->rfc,
+                        'email' => $proveedorExistente->email,
+                        'telefono' => $proveedorExistente->telefono,
+                    ],
+                    409
+                );
+            }
+
+            // ============================================
+            // PASO 2: Crear proveedor con tipo_alta = 2 (UserConstrucc)
+            // ============================================
+            $proveedor = Proveedor::create([
+                'rfc' => strtoupper($validated['proveedor_rfc']),
+                'razon_social' => $validated['proveedor_razon_social'],
+                'nombre_comercial' => $validated['proveedor_nombre_comercial'],
+                'email' => $validated['proveedor_email'],
+                'telefono' => $validated['proveedor_telefono'],
+                'estatus' => 'activo',
+                'is_proveedor_sp' => true,
+                'is_proveedor_catalogo' => false,
+                'tipo_alta' => 2, // 1: Proveedor, 2: UserConstrucc
+                'perfil_empresa_completo' => false,
+            ]);
+
+            Log::info('✅ Proveedor creado desde construcción', [
+                'proveedor_id' => $proveedor->id,
+                'rfc' => $proveedor->rfc,
+                'razon_social' => $proveedor->razon_social,
+            ]);
+
+            // ============================================
+            // PASO 3: Registrar cuenta bancaria
+            // ============================================
+            // 🔹 Verificar si es la primera cuenta bancaria del proveedor
+            $esPrimeraCuenta = !$proveedor->cuentasBancarias()->exists();
+
+            $cuentaBancaria = CuentaBancaria::create([
+                'proveedor_id' => $proveedor->id,
+                'alias' => $validated['cuenta_bancaria_alias'],
+                'banco_clave' => $validated['cuenta_bancaria_banco_clave'],
+                'banco_nombre' => $validated['cuenta_bancaria_banco_nombre'],
+                'tipo_cuenta' => $validated['cuenta_bancaria_tipo_cuenta'],
+                'campo_dependiente' => $validated['cuenta_bancaria_campo_dependiente'],
+                'titular_cuenta' => $validated['cuenta_bancaria_titular_cuenta'],
+                'referencia' => $validated['cuenta_bancaria_referencia'] ?? null,
+                'estatus' => EstadoCuentaBancaria::ACTIVA,
+                'sucursal' => $validated['cuenta_bancaria_sucursal'] ?? null,
+                'swift' => $validated['cuenta_bancaria_swift'] ?? null,
+                'preferida' => $esPrimeraCuenta, // Solo la primera cuenta es preferida automáticamente
+            ]);
+
+            Log::info('✅ Cuenta bancaria registrada', [
+                'cuenta_bancaria_id' => $cuentaBancaria->id,
+                'proveedor_id' => $proveedor->id,
+                'alias' => $cuentaBancaria->alias,
+                'preferida' => $cuentaBancaria->preferida,
+            ]);
+
+            // ============================================
+            // PASO 3.1: Asociar proveedor a empresa de construcción (si aplica)
+            // ============================================
+            $empresaConstructId = $validated['empresa_construcc_id'] ?? null;
+            $usuarioId = $validated['usuario_id'] ?? null;
+            $usuarioNombre = $validated['usuario_nombre'] ?? null;
+
+            if ($empresaConstructId && $usuarioId) {
+                $proveedor->empresasConstrucc()->attach($empresaConstructId, [
+                    'usuario_construcc_id' => $usuarioId,
+                    'usuario_construcc_nombre' => $usuarioNombre,
+                ]);
+
+                Log::info('✅ Proveedor asociado a empresa de construcción', [
+                    'proveedor_id' => $proveedor->id,
+                    'empresa_construcc_id' => $empresaConstructId,
+                    'usuario_id' => $usuarioId,
+                ]);
+            }
+
+            // ============================================
+            // PASO 4: Almacenar archivos
+            // ============================================
+            $facturaPdf = $request->file('factura_pdf');
+            $facturaXml = $request->file('factura_xml');
+            $cotizacionFile = $request->file('cotizacion');
+
+            if (!$facturaPdf || !$facturaXml) {
+                DB::rollBack();
+                return $this->error('Los archivos PDF y XML son obligatorios.', null, 422);
+            }
+
+            $rutaPdf = $facturaPdf->store('facturas/pdf', 'private');
+            $rutaXml = $facturaXml->store('facturas/xml', 'private');
+
+            // Extraer datos del XML
+            $datosXml = $this->extraerDatosXML($facturaXml->getRealPath());
+
+            // Combinar serie y folio para formar el folio_factura
+            $serie = $datosXml['serie'] ?? '';
+            $folio = $datosXml['folio'] ?? '';
+            $folioFactura = trim($serie . ($serie && $folio ? '-' : '') . $folio) ?: null;
+
+            // Procesar archivo de cotización si existe
+            $rutaCotizacion = null;
+            if ($cotizacionFile) {
+                $rutaCotizacion = $cotizacionFile->store('cotizaciones', 'private');
+            }
+
+            Log::info('✅ Archivos almacenados', [
+                'factura_pdf' => $rutaPdf,
+                'factura_xml' => $rutaXml,
+                'cotizacion' => $rutaCotizacion,
+                'folio_factura' => $folioFactura,
+            ]);
+
+            // ============================================
+            // PASO 5: Crear solicitud de pago
+            // ============================================
+            $numeroFolio = SolicitudPago::generarNumeroFolio($proveedor);
+            $montoTotal = $validated['monto_total'];
+
+            // Obtener folio consecutivo si hay empresa (ya asociada en paso 3.1)
+            $folio_consecutivo_construcc = null;
+            if ($empresaConstructId) {
+                $empresaConstrucc = \App\Models\EmpresaConstrucc::find($empresaConstructId);
+
+                if ($empresaConstrucc) {
+                    $folio_consecutivo_construcc = $empresaConstrucc->obtenerFolioSiguienteSP();
+                }
+            }
+
+            // Determinar estado inicial según el nivel del usuario
+            // 0: Admin, 1: DG, 2: DT, 3: DA, 5: PC - Auto-aprueban
+            // 4: SI, 6: RO - Requieren aprobación
+            $nivelId = $validated['nivel_id'] ?? null;
+            $nivelesDirectores = [0, 1, 2, 3, 5]; // Admin, DG, DT, DA, PC
+
+            $esDirector = $nivelId !== null && in_array($nivelId, $nivelesDirectores);
+
+            // Mapeo de nivel a campo de rol
+            $nivelToRol = [
+                0 => 'dg', // Admin se trata como DG
+                1 => 'dg', // Director General
+                2 => 'dt', // Director Técnico
+                3 => 'da', // Director Administrativo
+                5 => 'pc', // Programación y Control
+            ];
+
+            // Datos base de la SP
+            $datosSP = [
+                'proveedor_id' => $proveedor->id,
+                'numero_folio_solicitud' => $numeroFolio,
+                'folio_factura' => $folioFactura,
+                'datos_factura_xml' => $datosXml,
+                'descripcion_concepto' => $validated['descripcion_concepto'],
+                'observaciones' => $validated['observaciones'] ?? null,
+                'ruta_archivo_factura_pdf' => $rutaPdf,
+                'ruta_archivo_factura_xml' => $rutaXml,
+                'ruta_archivo_cotizacion' => $rutaCotizacion,
+                'folio_sp_consecutivo' => $folio_consecutivo_construcc,
+                'empresa_construcc_id' => $empresaConstructId,
+                'usuario_id' => $usuarioId,
+                'usuario_nombre' => $usuarioNombre,
+                'monto_total' => $montoTotal,
+                'saldo_pendiente' => $montoTotal,
+                'monto_abonado' => 0,
+                'pago_completo' => false,
+                'tiene_factura' => true,
+            ];
+
+            if ($esDirector) {
+                // Director: Auto-aprueba (verificada = true, autorizada)
+                $rolField = $nivelToRol[$nivelId];
+                $fechaField = "{$rolField}_fecha";
+
+                $datosSP['verificada'] = true;
+                $datosSP['estado_solicitud'] = EstadoSP::AUTORIZADA->value;
+                $datosSP['fecha_registro_pendiente'] = now();
+                $datosSP['fecha_aprobado'] = now();
+                $datosSP[$rolField] = EstadoSolicitud::AUTORIZADA->value;
+                $datosSP[$fechaField] = now();
+            } else {
+                // Residente/otro: Requiere validación y aprobación
+                $datosSP['verificada'] = true;
+                $datosSP['estado_solicitud'] = EstadoSP::PENDIENTE->value;
+                $datosSP['fecha_registro_pendiente'] = now();
+            }
+
+            $solicitud = SolicitudPago::create($datosSP);
+
+            Log::info('✅ Solicitud de pago creada', [
+                'solicitud_pago_id' => $solicitud->id,
+                'numero_folio' => $solicitud->numero_folio_solicitud,
+                'proveedor_id' => $proveedor->id,
+                'monto_total' => $montoTotal,
+                'verificada' => $solicitud->verificada,
+                'estado_solicitud' => $solicitud->estado_solicitud,
+                'auto_aprobada_por_director' => $esDirector,
+            ]);
+
+            // ============================================
+            // NOTIFICACIÓN: Si es director, notificar a otros directores
+            // ============================================
+            if ($esDirector) {
+                // TODO: Implementar notificación a directores (DG, DT, DA, PC)
+                // cuando un director crea y auto-aprueba una SP
+                // 
+                // Datos para la notificación:
+                // - solicitud_pago_id: $solicitud->id
+                // - numero_folio: $solicitud->numero_folio_solicitud
+                // - empresa_construcc_id: $empresaConstructId
+                // - usuario_que_creo_id: $usuarioId
+                // - usuario_que_creo_nombre: $usuarioNombre
+                // - nivel_id: $nivelId (rol del director que creó)
+                // - monto_total: $montoTotal
+                // - proveedor: $proveedor->nombre_comercial
+                // 
+                // Ejemplo de uso:
+                // $this->interApiService->notifyDirectoresSPAutoAprobada($solicitud, $nivelId);
+
+                Log::info('📧 [PENDIENTE] Notificar a directores sobre SP auto-aprobada', [
+                    'solicitud_pago_id' => $solicitud->id,
+                    'creada_por_nivel' => $nivelId,
+                    'empresa_construcc_id' => $empresaConstructId,
+                ]);
+            }
+
+            // ============================================
+            // PASO 6: Sincronizar cuenta bancaria con la SP
+            // ============================================
+            $solicitud->sincronizarCuentasBancarias([
+                [
+                    'cuenta_bancaria_id' => $cuentaBancaria->id,
+                    'datos_especificos' => [
+                        'alias' => $cuentaBancaria->alias,
+                        'banco_clave' => $cuentaBancaria->banco_clave,
+                        'banco_nombre' => $cuentaBancaria->banco_nombre,
+                        'tipo_cuenta' => $cuentaBancaria->tipo_cuenta,
+                        'campo_dependiente' => $cuentaBancaria->campo_dependiente,
+                        'titular_cuenta' => $cuentaBancaria->titular_cuenta,
+                        'referencia' => $cuentaBancaria->referencia,
+                        'sucursal' => $cuentaBancaria->sucursal,
+                        'swift' => $cuentaBancaria->swift,
+                        'preferida' => true,
+                    ],
+                ],
+            ]);
+
+            Log::info('✅ Cuenta bancaria sincronizada con SP', [
+                'solicitud_pago_id' => $solicitud->id,
+                'cuenta_bancaria_id' => $cuentaBancaria->id,
+            ]);
+
+            // Agregar notificación
+            $solicitud->addNotification();
+
+            // Notificar a través de InterAPI
+            $this->interApiService->notifyNewSolicitudCompra($solicitud);
+
+            DB::commit();
+
+            return $this->success(
+                new ConstruccGenerarSppResource(
+                    $solicitud->load(['proveedor', 'empresaConstrucc', 'cuentasBancarias'])
+                ),
+                'Solicitud de pago generada correctamente desde construcción.',
+                201
+            );
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('❌ Error al generar SPP desde construcción', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return $this->error(
+                'Error al generar la solicitud de pago. Por favor, intente nuevamente.',
+                [
+                    'error' => $e->getMessage(),
+                    'linea' => $e->getLine(),
+                ],
+                500
+            );
+        }
     }
 
     /**

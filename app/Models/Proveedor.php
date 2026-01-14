@@ -65,6 +65,7 @@ class Proveedor extends BaseModel
         'estado',
         'codigo_postal',
         'pais',
+        'tipo_alta',    // 1: Proveedor  2: UserConstrucc
     ];
 
     protected $casts = [
