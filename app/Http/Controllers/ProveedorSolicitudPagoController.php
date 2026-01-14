@@ -655,14 +655,15 @@ class ProveedorSolicitudPagoController extends Controller
         }
 
         return $timeline;
-    }
+  } 
 
     /**
      * Obtener conteo de solicitudes por estado
      */
     public function conteoPorEstado(Request $request, Proveedor $proveedor): JsonResponse
     {
-        $filters = $request->only(['fecha_registro_pendiente_desde', 'fecha_registro_pendiente_hasta', 'empresa_construcc_id']);
+        // Obtener TODOS los filtros disponibles del modelo
+        $filters = $request->only(SolicitudPago::getFilters());
 
         // Base query con filtros opcionales
         $baseQuery = SolicitudPago::query()
@@ -684,6 +685,7 @@ class ProveedorSolicitudPagoController extends Controller
             // => (clone $baseQuery)->where('estado_solicitud', 'rechazada')->count(),
             'pagadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PAGADO->value)->count(),
             // => (clone $baseQuery)->where('estado_solicitud', 'pagada')->count(),
+            // 'sin_factura' => (clone $baseQuery)->where('tiene_factura', false)->count(),
         ];
 
         return $this->success($conteos, 'Conteo por estado obtenido correctamente');
@@ -742,7 +744,8 @@ class ProveedorSolicitudPagoController extends Controller
      */
     public function getDashboardMetrics(Request $request, Proveedor $proveedor): JsonResponse
     {
-        $filters = $request->only(['fecha_registro_pendiente_desde', 'fecha_registro_pendiente_hasta', 'empresa_construcc_id']);
+        // Obtener TODOS los filtros disponibles del modelo
+        $filters = $request->only(SolicitudPago::getFilters());
 
         // // Filtro por defecto: última semana (si el cliente no envía fechas)
         // $fechaDesde = $request->input('fecha_registro_pendiente_desde', now()->subDays(7)->startOfDay());
@@ -771,6 +774,7 @@ class ProveedorSolicitudPagoController extends Controller
             'sp_en_proceso' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->where('item_visto', false)->count(),
             'sp_rechazadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::RECHAZADA->value)->where('item_visto', false)->count(),
             'sp_pagadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PAGADO->value)->where('item_visto', false)->count(),
+            'sp_sin_factura' => (clone $baseQuery)->where('tiene_factura', false)->count(),
         ];
 
         return $this->success($conteos, 'Métricas del dashboard obtenidas correctamente');

@@ -211,6 +211,7 @@ class SolicitudPago extends BaseModel
 
         // Datos XML como JSON
         'datos_factura_xml' => 'array',
+        'tiene_factura' => 'boolean',
         'item_visto' => 'boolean',
     ];
 
