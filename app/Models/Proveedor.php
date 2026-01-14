@@ -66,6 +66,7 @@ class Proveedor extends BaseModel
         'codigo_postal',
         'pais',
         'tipo_alta',    // 1: Proveedor  2: UserConstrucc
+        'user_construcc_alta',
     ];
 
     protected $casts = [
@@ -74,6 +75,7 @@ class Proveedor extends BaseModel
         'is_proveedor_catalogo' => 'boolean',
         'cambiar_pass_default' => 'boolean',
         'perfil_empresa_completo' => 'boolean',
+        'user_construcc_alta' => 'integer',
     ];
 
     protected static $filters = [
@@ -92,6 +94,7 @@ class Proveedor extends BaseModel
         'pagina_web' => 'pagina_web',
         // 👇 Nuevo filtro
         'empresas_construcc' => 'EmpresasConstrucc',
+        // 'search' => 'Search',
     ];
 
     public static function eagerLodable(): array
@@ -103,6 +106,8 @@ class Proveedor extends BaseModel
             'sucursales',
             'productos',
             'cuentasBancarias',
+            'empresasConstrucc',
+            'solicitudesPago',
         ];
     }
 
@@ -250,6 +255,25 @@ class Proveedor extends BaseModel
         });
     }
 
+    /**
+     * Filtro de búsqueda global
+     * Busca en múltiples campos: folio, concepto, observaciones, usuario, referencia OC y empresa
+     */
+    // public function filterBySearch($query, $value)
+    // {
+    //     return $query->where(function ($q) use ($value) {
+    //         $q->where('numero_folio_solicitud', 'like', "%$value%")
+    //             ->orWhere('folio_factura', 'like', "%$value%")
+    //             ->orWhere('descripcion_concepto', 'like', "%$value%")
+    //             ->orWhere('observaciones', 'like', "%$value%")
+    //             ->orWhere('usuario_nombre', 'like', "%$value%")
+    //             ->orWhere('referencia_oc', 'like', "%$value%")
+    //             ->orWhereHas('empresaConstrucc', function ($empresa) use ($value) {
+    //                 $empresa->where('nombre', 'like', "%$value%");
+    //             });
+    //     });
+    // }
+
     // ================== CUENTAS BANCARIAS ==================
 
     public function cuentasBancarias(): HasMany
@@ -287,6 +311,20 @@ class Proveedor extends BaseModel
 
     public function empresasConstrucc()
     {
-        return $this->belongsToMany(EmpresaConstrucc::class, 'empresa_construcc_proveedor');
+        return $this->belongsToMany(EmpresaConstrucc::class, 'empresa_construcc_proveedor')
+            ->withPivot('usuario_construcc_id', 'usuario_construcc_nombre')
+            ->withTimestamps();
+    }
+
+    // ================== SOLICITUDES DE PAGO ==================
+
+    public function solicitudesPago(): HasMany
+    {
+        return $this->hasMany(SolicitudPago::class);
+    }
+
+    public function solicitudesPagoActivas(): HasMany
+    {
+        return $this->solicitudesPago()->whereIn('estado_solicitud', ['pendiente', 'autorizada', 'procesando']);
     }
 }

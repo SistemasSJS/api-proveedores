@@ -1,0 +1,162 @@
+# Rutas API Construcción - Proveedores (tipo_alta = 2)
+
+## 📍 PROVEEDORES
+
+### `GET /construcc/proveedor`
+Listar proveedores
+
+### `GET /construcc/proveedor/{proveedor}`
+Detalle de proveedor
+
+### `POST /construcc/proveedor`
+Crear proveedor con cuenta bancaria
+
+**Body**:
+```json
+{
+  "razon_social": "Proveedor Ejemplo SA",
+  "rfc": "PEJ850101ABC",
+  "email": "contacto@proveedor.com",
+  "telefono": "5512345678",
+  "celular": "5598765432",
+  "nombre_comercial": "Proveedor Ejemplo",
+  "empresa_construcc_id": 5,
+  "usuario_id": 10,
+  "usuario_nombre": "Juan Pérez",
+  "cuenta": {
+    "alias": "Cuenta Principal",
+    "banco_clave": "012",
+    "banco_nombre": "BBVA Bancomer",
+    "tipo_cuenta": "Cheques",
+    "campo_dependiente": "012180001234567890",
+    "titular_cuenta": "Proveedor Ejemplo SA",
+    "referencia": "Ref123",
+    "sucursal": "001",
+    "swift": "BCMRMXMMPYM"
+  }
+}
+```
+
+### `PUT /construcc/proveedor/{proveedor}`
+Actualizar proveedor
+
+**Body**:
+```json
+{
+  "razon_social": "Proveedor Actualizado SA",
+  "email": "nuevo@proveedor.com",
+  "telefono": "5512345679",
+  "celular": "5598765433",
+  "usuario_id": 10,
+  "nivel_id": 1
+}
+```
+
+### `DELETE /construcc/proveedor/{proveedor}`
+Dar de baja proveedor
+
+**Body**:
+```json
+{
+  "usuario_id": 10,
+  "nivel_id": 1,
+  "motivo_baja": "Proveedor inactivo"
+}
+```
+
+---
+
+## 💳 CUENTAS BANCARIAS
+
+### `GET /construcc/proveedor/{proveedor}/cuentas`
+Listar cuentas del proveedor
+
+### `GET /construcc/proveedor/{proveedor}/cuentas/{cuenta}`
+Detalle de cuenta
+
+### `POST /construcc/proveedor/{proveedor}/cuentas`
+Crear cuenta bancaria
+
+**Body**:
+```json
+{
+  "alias": "Cuenta HSBC",
+  "banco_clave": "021",
+  "banco_nombre": "HSBC",
+  "tipo_cuenta": "Cheques",
+  "campo_dependiente": "021180005555555555",
+  "titular_cuenta": "Proveedor SA",
+  "referencia": "RefHSBC",
+  "sucursal": "005",
+  "swift": "BIMEMXMM"
+}
+```
+
+### `PUT /construcc/proveedor/{proveedor}/cuentas/{cuenta}`
+Actualizar cuenta
+
+**Body**:
+```json
+{
+  "alias": "Cuenta HSBC Actualizada",
+  "referencia": "Nueva Referencia",
+  "sucursal": "010"
+}
+```
+
+### `DELETE /construcc/proveedor/{proveedor}/cuentas/{cuenta}`
+Eliminar cuenta
+
+### `POST /construcc/proveedor/{proveedor}/cuentas/{cuenta}/set-favorita`
+Marcar cuenta como favorita
+
+---
+
+## 📄 SOLICITUDES DE PAGO
+
+### `POST /construcc/proveedor/{proveedor}/solicitudes-pago`
+Generar solicitud de pago (multipart/form-data)
+
+**Body**:
+```json
+{
+  "descripcion_concepto": "Pago de materiales de construcción",
+  "monto_total": 25000.50,
+  "observaciones": "Urgente - Proyecto Torre A",
+  "factura_pdf": [archivo PDF],
+  "factura_xml": [archivo XML],
+  "cotizacion": [archivo opcional],
+  "cuenta_bancaria_id": 50,
+  "empresa_construcc_id": 5,
+  "usuario_id": 10,
+  "usuario_nombre": "Juan Pérez",
+  "nivel_id": 6
+}
+```
+
+---
+
+## 🔗 Código de Rutas
+
+```php
+Route::prefix('proveedor')->name('proveedor.')->group(function () {
+    
+    // Proveedores
+    Route::get('/', [ConstruccProveedorController::class, 'index'])->name('index');
+    Route::get('/{proveedor}', [ConstruccProveedorController::class, 'show'])->name('show');
+    Route::post('/', [ConstruccProveedorController::class, 'store'])->name('store');
+    Route::put('/{proveedor}', [ConstruccProveedorController::class, 'update'])->name('update');
+    Route::delete('/{proveedor}', [ConstruccProveedorController::class, 'destroy'])->name('destroy');
+    
+    // Cuentas Bancarias
+    Route::get('/{proveedor}/cuentas', [ConstruccProveedorCuentaBancariaController::class, 'index'])->name('cuentas.index');
+    Route::get('/{proveedor}/cuentas/{cuenta}', [ConstruccProveedorCuentaBancariaController::class, 'show'])->name('cuentas.show');
+    Route::post('/{proveedor}/cuentas', [ConstruccProveedorCuentaBancariaController::class, 'store'])->name('cuentas.store');
+    Route::put('/{proveedor}/cuentas/{cuenta}', [ConstruccProveedorCuentaBancariaController::class, 'update'])->name('cuentas.update');
+    Route::delete('/{proveedor}/cuentas/{cuenta}', [ConstruccProveedorCuentaBancariaController::class, 'destroy'])->name('cuentas.destroy');
+    Route::post('/{proveedor}/cuentas/{cuenta}/set-favorita', [ConstruccProveedorCuentaBancariaController::class, 'setFavorita'])->name('cuentas.set-favorita');
+    
+    // Solicitudes de Pago
+    Route::post('/{proveedor}/solicitudes-pago', [ConstruccProveedorSolicitudPagoController::class, 'store'])->name('solicitudes-pago.store');
+});
+```

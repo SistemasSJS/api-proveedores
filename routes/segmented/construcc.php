@@ -5,6 +5,9 @@ use App\Http\Controllers\ConstruccController;
 use App\Http\Controllers\ConstruccCotizacionController;
 use App\Http\Controllers\ConstruccSolicitudPagoController;
 use App\Http\Controllers\ConstruccOrdenCompraController;
+use App\Http\Controllers\ConstruccProveedorController;
+use App\Http\Controllers\ConstruccProveedorCuentaBancariaController;
+use App\Http\Controllers\ConstruccProveedorSolicitudPagoController;
 use App\Http\Middleware\CheckApiKey;
 use Illuminate\Support\Facades\Route;
 
@@ -246,6 +249,34 @@ Route::prefix('construcc')
             Route::get('/empresa/{empresa}', [ConstruccOrdenCompraController::class, 'porEmpresa'])->middleware(['audit'])->name('por-empresa');
         });
 
+
+        /**
+         *--------------------------------------------------------------------------
+         * GESTIÓN DE PROVEEDORES CONSTRUCCIÓN (tipo_alta = 2)
+         *--------------------------------------------------------------------------
+         * CRUD completo de proveedores registrados por usuarios construcción,
+         * sus cuentas bancarias y generación de solicitudes de pago
+         */
+        Route::prefix('proveedor')->name('proveedor.')->group(function () {
+
+            // ===== PROVEEDORES tipo_alta=2 =====
+            Route::get('/', [ConstruccProveedorController::class, 'index'])->name('index');
+            Route::get('/{proveedor}', [ConstruccProveedorController::class, 'show'])->name('show');
+            Route::post('/', [ConstruccProveedorController::class, 'store'])->name('store');
+            Route::put('/{proveedor}', [ConstruccProveedorController::class, 'update'])->name('update');
+            Route::delete('/{proveedor}', [ConstruccProveedorController::class, 'destroy'])->name('destroy');
+
+            // ===== CUENTAS BANCARIAS =====
+            Route::get('/{proveedor}/cuentas', [ConstruccProveedorCuentaBancariaController::class, 'index'])->name('cuentas.index');
+            Route::get('/{proveedor}/cuentas/{cuenta}', [ConstruccProveedorCuentaBancariaController::class, 'show'])->name('cuentas.show');
+            Route::post('/{proveedor}/cuentas', [ConstruccProveedorCuentaBancariaController::class, 'store'])->name('cuentas.store');
+            Route::put('/{proveedor}/cuentas/{cuenta}', [ConstruccProveedorCuentaBancariaController::class, 'update'])->name('cuentas.update');
+            Route::delete('/{proveedor}/cuentas/{cuenta}', [ConstruccProveedorCuentaBancariaController::class, 'destroy'])->name('cuentas.destroy');
+            Route::post('/{proveedor}/cuentas/{cuenta}/set-favorita', [ConstruccProveedorCuentaBancariaController::class, 'setFavorita'])->name('cuentas.set-favorita');
+
+            // ===== SOLICITUDES DE PAGO =====
+            Route::post('/{proveedor}/solicitudes-pago', [ConstruccProveedorSolicitudPagoController::class, 'store'])->name('solicitudes-pago.store');
+        });
         /**
          *--------------------------------------------------------------------------
          * NOTAS DE IMPLEMENTACIÓN

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\EstadoCuentaBancaria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CuentaBancaria extends BaseModel
 {
@@ -53,6 +54,14 @@ class CuentaBancaria extends BaseModel
     public function proveedor(): BelongsTo
     {
         return $this->belongsTo(Proveedor::class);
+    }
+
+    /**
+     * Relación con solicitudes de pago (a través de tabla pivot)
+     */
+    public function solicitudesPago(): HasMany
+    {
+        return $this->hasMany(SolicitudPagoCuentaBancaria::class, 'cuenta_bancaria_id');
     }
 
     // ================== SCOPES ==================

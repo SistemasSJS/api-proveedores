@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('proveedores', function (Blueprint $table) {
-            $table->integer('tipo_alta')->nullable();
+            $table->integer('user_construcc_alta')->nullable();
         });
     }
 
@@ -21,10 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-
-        // eliminar la columna tipo_alta    
         Schema::table('proveedores', function (Blueprint $table) {
-            $table->dropColumn('tipo_alta');
+            $table->dropColumn('user_construcc_alta');
         });
     }
 };
