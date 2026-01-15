@@ -253,11 +253,13 @@ class ConstruccProveedorController extends Controller
             $proveedor->update($dataToUpdate);
 
             // Procesar cuentas bancarias (si vienen)
+            $cuentasActualizadas = [];
             if ($request->filled('cuentas_bancarias')) {
                 $cuentas = $request->cuentas_bancarias;
 
+                // Si alguna cuenta tiene preferida=true, desmarcar todas las demás
                 $hayPreferida = collect($cuentas)->contains(
-                    fn($c) => isset($c['preferida']) && $c['preferida']
+                    fn($c) => isset($c['preferida']) && $c['preferida'] === true
                 );
 
                 if ($hayPreferida) {
@@ -265,12 +267,22 @@ class ConstruccProveedorController extends Controller
                 }
 
                 foreach ($cuentas as $cuentaData) {
-                    if (!empty($cuentaData['id'])) {
-                        $proveedor->cuentasBancarias()
+                    // Si tiene ID, actualizar cuenta existente
+                    if (isset($cuentaData['id']) && !empty($cuentaData['id'])) {
+                        $cuenta = $proveedor->cuentasBancarias()
                             ->where('id', $cuentaData['id'])
-                            ->update(collect($cuentaData)->except('id')->toArray());
+                            ->first();
+
+                        if ($cuenta) {
+                            // Extraer solo los campos actualizables (sin el id)
+                            $datosActualizar = collect($cuentaData)->except('id')->toArray();
+                            $cuenta->update($datosActualizar);
+                            $cuentasActualizadas[] = $cuenta->fresh();
+                        }
                     } else {
-                        $proveedor->cuentasBancarias()->create($cuentaData);
+                        // Crear nueva cuenta bancaria
+                        $nuevaCuenta = $proveedor->cuentasBancarias()->create($cuentaData);
+                        $cuentasActualizadas[] = $nuevaCuenta;
                     }
                 }
             }
@@ -280,7 +292,6 @@ class ConstruccProveedorController extends Controller
             // Recargar relaciones
             $proveedor->load(['cuentasBancarias', 'empresasConstrucc']);
 
-            // 🔵 RESPUESTA EXACTAMENTE IGUAL A LA QUE TENÍAS
             return $this->success(
                 [
                     'proveedor' => [
@@ -297,23 +308,22 @@ class ConstruccProveedorController extends Controller
                         'updated_at' => $proveedor->updated_at->format('Y-m-d H:i:s'),
                     ],
                     'cuenta_bancaria' => $proveedor->cuentasBancarias
-                        ->where('preferida', true)
-                        ->map(function ($cuenta) {
-                            return [
-                                'id' => $cuenta->id,
-                                'alias' => $cuenta->alias,
-                                'banco_clave' => $cuenta->banco_clave,
-                                'banco_nombre' => $cuenta->banco_nombre,
-                                'tipo_cuenta' => $cuenta->tipo_cuenta,
-                                'campo_dependiente' => $cuenta->campo_dependiente,
-                                'titular_cuenta' => $cuenta->titular_cuenta,
-                                'preferida' => (bool) $cuenta->preferida,
-                                'referencia' => $cuenta->referencia,
-                                'sucursal' => $cuenta->sucursal,
-                                'swift' => $cuenta->swift,
-                            ];
-                        })
-                        ->first(),
+                    ->where('preferida', true)
+                    ->map(function ($cuenta) {
+                        return [
+                            'id' => $cuenta->id,
+                            'alias' => $cuenta->alias,
+                            'banco_clave' => $cuenta->banco_clave,
+                            'banco_nombre' => $cuenta->banco_nombre,
+                            'tipo_cuenta' => $cuenta->tipo_cuenta,
+                            'campo_dependiente' => $cuenta->campo_dependiente,
+                            'titular_cuenta' => $cuenta->titular_cuenta,
+                            'preferida' => (bool) $cuenta->preferida,
+                            'referencia' => $cuenta->referencia,
+                            'sucursal' => $cuenta->sucursal,
+                            'swift' => $cuenta->swift,
+                        ];
+                    })->toArray(),
                 ],
                 'Proveedor actualizado exitosamente.'
             );
