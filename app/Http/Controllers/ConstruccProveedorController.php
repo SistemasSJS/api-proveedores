@@ -250,6 +250,9 @@ class ConstruccProveedorController extends Controller
             $proveedor->fill($dataToUpdate);
             $proveedor->save();
 
+            // Cargar relaciones actualizadas
+            $proveedor->load(['cuentasBancarias', 'empresasConstrucc']);
+
             return $this->success(
                 [
                     'proveedor' => [
@@ -259,26 +262,35 @@ class ConstruccProveedorController extends Controller
                         'rfc' => $proveedor->rfc,
                         'email' => $proveedor->email,
                         'telefono' => $proveedor->telefono,
+                        'celular' => $proveedor->celular,
                         'estatus' => $proveedor->estatus,
                         'tipo_alta' => $proveedor->tipo_alta,
                         'created_at' => $proveedor->created_at->format('Y-m-d H:i:s'),
+                        'updated_at' => $proveedor->updated_at->format('Y-m-d H:i:s'),
                     ],
-                    'cuenta_bancaria' => [
-                        'id' => $proveedor->cuentasBancarias->id,
-                        'alias' => $proveedor->cuentasBancarias->alias,
-                        'banco_nombre' => $proveedor->cuentasBancarias->banco_nombre,
-                        'preferida' => $proveedor->cuentasBancarias->preferida,
-                        'referencia' => $proveedor->cuentasBancarias->referencia,
-                        'sucursal' => $proveedor->cuentasBancarias->sucursal,
-                        'swift' => $proveedor->cuentasBancarias->swift,
-                        'tipo_cuenta' => $proveedor->cuentasBancarias->tipo_cuenta,
-                        'campo_dependiente' => $proveedor->cuentasBancarias->campo_dependiente,
-                        'titular_cuenta' => $proveedor->cuentasBancarias->titular_cuenta,
-                        'banco_clave' => $proveedor->cuentasBancarias->banco_clave,
-                        // 'banco_nombre' => $proveedor->cuentasBancarias->banco_nombre,
-                        // 'tipo_cuenta' => $proveedor->cuentasBancarias->tipo_cuenta,
-                        // 'estatus' => $cuenta->estatus,
-                    ],
+                    'cuentas_bancarias' => $proveedor->cuentasBancarias->map(function($cuenta) {
+                        return [
+                            'id' => $cuenta->id,
+                            'alias' => $cuenta->alias,
+                            'banco_clave' => $cuenta->banco_clave,
+                            'banco_nombre' => $cuenta->banco_nombre,
+                            'tipo_cuenta' => $cuenta->tipo_cuenta,
+                            'campo_dependiente' => $cuenta->campo_dependiente,
+                            'titular_cuenta' => $cuenta->titular_cuenta,
+                            'preferida' => (bool) $cuenta->preferida,
+                            'referencia' => $cuenta->referencia,
+                            'sucursal' => $cuenta->sucursal,
+                            'swift' => $cuenta->swift,
+                        ];
+                    }),
+                    'empresas_construccion' => $proveedor->empresasConstrucc->map(function($empresa) {
+                        return [
+                            'id' => $empresa->id,
+                            'razon_social' => $empresa->razon_social,
+                            'usuario_construcc_id' => $empresa->pivot->usuario_construcc_id,
+                            'usuario_construcc_nombre' => $empresa->pivot->usuario_construcc_nombre,
+                        ];
+                    }),
                 ],
                 'Proveedor actualizado exitosamente.'
             );
