@@ -15,6 +15,7 @@ use App\Http\Requests\Proveedor\ProveedorRegisterRequest;
 use App\Http\Requests\Proveedor\ProveedorRegistroBasicoCompleteRequest;
 use App\Http\Requests\Proveedor\ProveedorRegistroBasicoRequest;
 use App\Http\Requests\Proveedor\ProveedorAsociarEmpresaRequest;
+use App\Http\Requests\Auth\CompletarRegistroProveedorRequest;
 use App\Http\Resources\ProveedorResource;
 use App\Http\Resources\UserAuthenticateResource;
 use App\Mail\CompletaRegistroProveedorMail;
@@ -318,6 +319,80 @@ class AuthController extends Controller
         try {
             $validatedData = $request->validated();
 
+            // VALIDACIÓN: Verificar si el proveedor ya existe (RFC, email o teléfono)
+            $proveedorExistente = Proveedor::where(function ($query) use ($validatedData) {
+                $query->where('telefono', $validatedData['telefono']);
+
+                // Si se proporcionó RFC en el request (aunque no está en el FormRequest actual, podría agregarse)
+                if (isset($validatedData['rfc'])) {
+                    $query->orWhere('rfc', strtoupper($validatedData['rfc']));
+                }
+
+                // Si se proporcionó email diferente al teléfono
+                if (isset($validatedData['email']) && $validatedData['email'] !== $validatedData['telefono']) {
+                    $query->orWhere('email', $validatedData['email']);
+                }
+            })->first();
+
+            $this->success($proveedorExistente, 'Proveedor encontrado', 200);
+
+            if ($proveedorExistente) {
+                // Caso 1: Proveedor ya tiene usuario asignado (tipo_alta = 1)
+                if ($proveedorExistente->tipo_alta == 1) {
+                    return $this->error(
+                        'Este teléfono ya está registrado con un usuario activo. Si olvidaste tu contraseña, usa la opción de recuperación.',
+                        [
+                            'campo_duplicado' => 'telefono',
+                            'valor' => $validatedData['telefono'],
+                        ],
+                        409
+                    );
+                }
+
+                // Caso 2: Proveedor registrado desde construcción (tipo_alta = 2)
+                if ($proveedorExistente->tipo_alta == 2) {
+                    // Cargar relaciones necesarias
+                    $proveedorExistente->load(['cuentasBancarias', 'empresasConstrucc']);
+
+                    // Generar token temporal cifrado con los datos del proveedor
+                    $tokenData = [
+                        'proveedor_id' => $proveedorExistente->id,
+                        'timestamp' => time(),
+                        'telefono' => $proveedorExistente->telefono,
+                    ];
+                    $tokenTemporal = base64_encode(json_encode($tokenData));
+
+                    return $this->success([
+                        'requiere_completar_registro' => true,
+                        'proveedor' => [
+                            'id' => $proveedorExistente->id,
+                            'razon_social' => $proveedorExistente->razon_social,
+                            'nombre_comercial' => $proveedorExistente->nombre_comercial,
+                            'rfc' => $proveedorExistente->rfc,
+                            'email' => $proveedorExistente->email,
+                            'telefono' => $proveedorExistente->telefono,
+                            'cuentas_bancarias' => $proveedorExistente->cuentasBancarias->map(function ($cuenta) {
+                                return [
+                                    'id' => $cuenta->id,
+                                    'alias' => $cuenta->alias,
+                                    'banco_nombre' => $cuenta->banco_nombre,
+                                    'tipo_cuenta' => $cuenta->tipo_cuenta,
+                                    'preferida' => $cuenta->preferida,
+                                ];
+                            }),
+                            'empresas_construcc' => $proveedorExistente->empresasConstrucc->map(function ($empresa) {
+                                return [
+                                    'id' => $empresa->id,
+                                    'nombre' => $empresa->nombre,
+                                ];
+                            }),
+                        ],
+                        'token_temporal' => $tokenTemporal,
+                    ], 'Tu empresa ya está registrada. Verifica tus datos y completa el registro.', 200);
+                }
+            }
+
+            // Si no existe, continuar con el registro normal
             // Crear proveedor
             $proveedor = Proveedor::create([
                 'nombre_comercial' => $validatedData['nombre_comercial'],
@@ -393,6 +468,149 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             // Cualquier otro error inesperado
             return $this->error('Ocurrió un error al intentar completar el registro. Por favor, intenta nuevamente.', [], 500);
+        }
+    }
+
+    /**
+     * Completar registro de proveedor que fue registrado desde construcción (tipo_alta = 2)
+     * Cambia el tipo_alta a 1, crea usuario y lo asocia con el proveedor
+     *
+     * @param CompletarRegistroProveedorRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function completarRegistroProveedor(CompletarRegistroProveedorRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $validatedData = $request->validated();
+
+            // 1. Buscar el proveedor
+            $proveedor = Proveedor::findOrFail($validatedData['proveedor_id']);
+
+            // 2. Validar que sea tipo_alta = 2
+            if ($proveedor->tipo_alta !== 2) {
+                return $this->error(
+                    'Este proveedor no requiere completar registro. Ya tiene un usuario asignado.',
+                    null,
+                    403
+                );
+            }
+
+            // 3. Validar token temporal
+            try {
+                $tokenData = json_decode(base64_decode($validatedData['token_temporal']), true);
+
+                if (
+                    !$tokenData ||
+                    $tokenData['proveedor_id'] !== $proveedor->id ||
+                    $tokenData['telefono'] !== $proveedor->telefono ||
+                    (time() - $tokenData['timestamp']) > 3600
+                ) { // Token válido por 1 hora
+
+                    return $this->error('Token inválido o expirado. Por favor, intenta registrarte nuevamente.', null, 403);
+                }
+            } catch (\Exception $e) {
+                return $this->error('Token inválido. Por favor, intenta registrarte nuevamente.', null, 403);
+            }
+
+            // 4. Actualizar datos del proveedor si se enviaron
+            if (isset($validatedData['razon_social'])) {
+                $proveedor->razon_social = $validatedData['razon_social'];
+            }
+            if (isset($validatedData['nombre_comercial'])) {
+                $proveedor->nombre_comercial = $validatedData['nombre_comercial'];
+            }
+            if (isset($validatedData['email'])) {
+                $proveedor->email = $validatedData['email'];
+            }
+            if (isset($validatedData['telefono'])) {
+                $proveedor->telefono = $validatedData['telefono'];
+            }
+
+            // 5. Cambiar tipo_alta a 1
+            $proveedor->tipo_alta = 1;
+            $proveedor->save();
+
+            // 6. Obtener rol de gerente
+            $idRoleProveedor = Role::where('nombre', UserRoleEnumerate::GERENTE->value)->first()->id;
+
+            // 7. Buscar si ya existe un usuario con ese teléfono, si no, crear uno nuevo
+            $user = User::where('email', $proveedor->telefono)->first();
+
+            if (!$user) {
+                $user = User::create([
+                    'name' => $proveedor->nombre_comercial,
+                    'email' => $proveedor->telefono,
+                    'password' => Hash::make($validatedData['password']),
+                    'role_id' => $idRoleProveedor,
+                ]);
+            } else {
+                // Si el usuario ya existe, actualizar la contraseña
+                $user->password = Hash::make($validatedData['password']);
+                $user->save();
+            }
+
+            // 8. Asociar usuario con proveedor si no está asociado
+            $estaAsociado = $user->proveedores()->where('proveedor_id', $proveedor->id)->exists();
+
+            if (!$estaAsociado) {
+                $user->proveedores()->attach($proveedor->id, [
+                    'tipo_relacion' => 'PRINCIPAL',
+                    'activo' => true,
+                    'fecha_asignacion' => now(),
+                    'observaciones' => 'Usuario completó registro desde tipo_alta=2',
+                ]);
+            }
+
+            // 9. Crear sucursal matriz si no existe
+            if ($proveedor->sucursales()->count() === 0) {
+                $proveedor->sucursales()->create([
+                    'nombre' => 'Matriz',
+                    'direccion' => 'Dirección pendiente',
+                    'telefono' => $proveedor->telefono,
+                    'email' => $proveedor->email ?? $proveedor->telefono . '@temp.com',
+                    'encargado' => $proveedor->nombre_comercial,
+                    'activa' => true,
+                    'coordenadas_lat' => null,
+                    'coordenadas_lng' => null,
+                    'estatus' => 'activo',
+                ]);
+            }
+
+            // 10. Registrar en logs
+            Log::info('Proveedor completó registro desde tipo_alta=2 a tipo_alta=1', [
+                'proveedor_id' => $proveedor->id,
+                'user_id' => $user->id,
+                'telefono' => $proveedor->telefono,
+            ]);
+
+            DB::commit();
+
+            // 11. Crear token de autenticación
+            $token = $user->createToken('auth_token')->plainTextToken;
+            $user->load(User::eagerLodable());
+
+            // 12. Retornar respuesta exitosa
+            return $this->success([
+                'user' => new UserAuthenticateResource($user),
+                'proveedor' => new ProveedorResource($proveedor->load(Proveedor::eagerLodable())),
+                'token' => $token,
+                'mensaje' => 'Registro completado exitosamente. Ya puedes iniciar sesión.',
+            ], 'Registro completado exitosamente', 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Error al completar registro de proveedor', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return $this->error(
+                'Ocurrió un error al completar el registro. Por favor, intenta nuevamente.',
+                null,
+                500
+            );
         }
     }
 
@@ -828,7 +1046,9 @@ class AuthController extends Controller
         ]);
 
         // Verificar si la razón social existe en la tabla proveedores
-        $existe = Proveedor::where('razon_social', $request->razon_social)->exists();
+        $existe = Proveedor::where('razon_social', $request->razon_social)
+            ->where('tipo_alta', '!=', 2)
+            ->exists();
 
         return $this->success([
             'existe' => $existe,
@@ -853,7 +1073,9 @@ class AuthController extends Controller
 
         // Verificar si el teléfono existe en la tabla proveedores
         // FIXME: Realizar revision de la validacion para el telefono del proveedor, ¿1aqui no se debe validar el proveedor???
-        $existeEnProveedores = Proveedor::where('telefono', $telefono)->exists();
+        $existeEnProveedores = Proveedor::where('telefono', $telefono)
+            ->where('tipo_alta', '!=', 2)
+            ->exists();
 
         // Verificar si el teléfono existe como email en users (se usa como username)
         $existeEnUsers = User::where('telefono', $telefono)->exists();

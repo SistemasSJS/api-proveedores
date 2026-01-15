@@ -22,8 +22,8 @@ class ProveedorRegistroBasicoRequest extends FormRequest
                 'string', 
                 'min:10', 
                 'max:10',
-                Rule::unique('proveedores', 'telefono'),
-                Rule::unique('users', 'email'),
+                // NOTE: No validamos unique aquí porque la lógica de negocio
+                // del controlador necesita verificar el tipo_alta del proveedor existente
             ],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'token' => ['required', 'string'],
@@ -31,6 +31,8 @@ class ProveedorRegistroBasicoRequest extends FormRequest
             'empresa_construcc_nombre' => ['nullable', 'string', 'max:255'],
             'usuario_construcc_id' => ['nullable', 'integer'],
             'usuario_construcc_nombre' => ['nullable', 'string', 'max:255'],
+            'rfc' => ['nullable', 'string', 'min:12', 'max:13'],
+            'email' => ['nullable', 'email', 'max:255'],
         ];
     }
 
