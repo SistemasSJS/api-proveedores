@@ -123,6 +123,7 @@ class ConstruccProveedorController extends Controller
                 'rfc' => strtoupper($data['rfc']),
                 'email' => $data['email'],
                 'telefono' => $data['telefono'],
+                'celular' => $data['celular'] ?? null,
                 'tipo_alta' => 2, // UserConstrucc
                 'is_proveedor_sp' => true,
                 'is_proveedor_catalogo' => false,
@@ -154,7 +155,7 @@ class ConstruccProveedorController extends Controller
                 [
                     'proveedor' => [
                         'id' => $proveedor->id,
-                        'nombre_comercial' => $proveedor->nombre_comercial,
+                        'nombre_comercial' => $proveedor->nombre_comerc1ial,
                         'razon_social' => $proveedor->razon_social,
                         'rfc' => $proveedor->rfc,
                         'email' => $proveedor->email,
@@ -229,6 +230,7 @@ class ConstruccProveedorController extends Controller
                 'nombre_comercial',
                 'email',
                 'telefono',
+                'celular',
             ]);
 
             // Convertir RFC a mayúsculas si se está actualizando
@@ -246,6 +248,7 @@ class ConstruccProveedorController extends Controller
                     'nombre_comercial' => $proveedor->nombre_comercial,
                     'email' => $proveedor->email,
                     'telefono' => $proveedor->telefono,
+                    'celular' => $proveedor->celular,
                     'updated_at' => $proveedor->updated_at->format('Y-m-d H:i:s'),
                 ],
                 'Proveedor actualizado exitosamente.'

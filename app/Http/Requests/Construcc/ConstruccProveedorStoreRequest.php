@@ -42,10 +42,11 @@ class ConstruccProveedorStoreRequest extends FormRequest
             // Datos opcionales del proveedor
             'nombre_comercial' => 'nullable|string|max:255',
 
-            // Datos de la empresa de construcción
+            // Datos de la empresa de construcción y usuario
             'empresa_construcc_id' => 'required|exists:empresa_construcc,id',
             'usuario_id' => 'required|integer',
             'usuario_nombre' => 'required|string|max:255',
+            'nivel_id' => 'nullable|integer|in:0,1,2,3,4,5,6', // 0=Admin, 1=DG, 2=DT, 3=DA, 4=SI, 5=PC, 6=RO
 
             // Cuenta bancaria (solo una cuenta)
             'cuenta' => 'required|array',
@@ -96,6 +97,10 @@ class ConstruccProveedorStoreRequest extends FormRequest
 
             'usuario_nombre.required' => 'El nombre del usuario es obligatorio',
             'usuario_nombre.max' => 'El nombre del usuario no debe exceder 255 caracteres',
+
+            'nivel_id.required' => 'El nivel del usuario es obligatorio',
+            'nivel_id.integer' => 'El nivel del usuario debe ser un número entero',
+            'nivel_id.in' => 'El nivel del usuario no es válido',
 
             // Mensajes para cuenta bancaria
             'cuenta.required' => 'Los datos de la cuenta bancaria son obligatorios',

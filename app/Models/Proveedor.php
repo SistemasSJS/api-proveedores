@@ -19,6 +19,7 @@ class Proveedor extends BaseModel
         'pagina_web',
         'email',
         'telefono',
+        'celular',
         'estatus',
         'notas',
         'validado_por',

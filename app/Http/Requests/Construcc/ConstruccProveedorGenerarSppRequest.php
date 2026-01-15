@@ -31,7 +31,7 @@ class ConstruccProveedorGenerarSppRequest extends FormRequest
             'empresa_construcc_id' => 'required|exists:empresa_construcc,id',
             'usuario_id' => 'required|integer',
             'usuario_nombre' => 'required|string|max:255',
-            'nivel_id' => 'nullable|integer|min:0|max:6', // 0: Admin, 1: DG, 2: DT, 3: DA, 4: SI, 5: PC, 6: RO
+            'nivel_id' => 'required|integer|in:0,1,2,3,4,5,6', // 0=Admin, 1=DG, 2=DT, 3=DA, 4=SI, 5=PC, 6=RO
         ];
     }
 
@@ -68,9 +68,9 @@ class ConstruccProveedorGenerarSppRequest extends FormRequest
             'usuario_id.integer' => 'El ID del usuario debe ser un número entero',
             'usuario_nombre.required' => 'El nombre del usuario es obligatorio',
             'usuario_nombre.max' => 'El nombre del usuario no debe exceder 255 caracteres',
+            'nivel_id.required' => 'El nivel del usuario es obligatorio',
             'nivel_id.integer' => 'El nivel del usuario debe ser un número entero',
-            'nivel_id.min' => 'El nivel del usuario debe ser mayor o igual a 0',
-            'nivel_id.max' => 'El nivel del usuario no debe exceder 6',
+            'nivel_id.in' => 'El nivel del usuario no es válido',
         ];
     }
 }
