@@ -204,55 +204,83 @@ class ConstruccProveedorController extends Controller
      * Actualiza un proveedor con tipo_alta = 2
      * Solo pueden actualizar: Directores (DG, DT, DA, PC) o el usuario que lo registrรณ
      */
-    public function update(ConstruccProveedorUpdateRequest $request, Proveedor $proveedor): JsonResponse
-    {
+    public function update(
+        ConstruccProveedorUpdateRequest $request,
+        Proveedor $proveedor
+    ): JsonResponse {
+        DB::beginTransaction();
+
         try {
-            // Validar que sea un proveedor de construcciรณn
+            // Validar tipo_alta
             if ($proveedor->tipo_alta !== 2) {
                 return $this->error(
-                    'Solo se pueden actualizar proveedores registrados por usuarios construcciรณn (tipo_alta = 2).',
+                    'Solo se pueden actualizar proveedores registrados por usuarios construcción (tipo_alta = 2).',
                     null,
                     403
                 );
             }
 
-            // Validar autorizaciรณn
+            // Validar autorización
             $nivelesDirectores = [1, 2, 3, 5]; // DG, DT, DA, PC
             $esDirector = in_array($request->nivel_id, $nivelesDirectores);
 
-            // Obtener el usuario que registrรณ el proveedor desde la tabla pivot
             $pivotData = $proveedor->empresasConstrucc()->first();
-            $usuarioCreadorId = $pivotData ? $pivotData->pivot->usuario_construcc_id : null;
+            $usuarioCreadorId = $pivotData?->pivot->usuario_construcc_id;
             $esCreador = $request->usuario_id == $usuarioCreadorId;
 
             if (!$esDirector && !$esCreador) {
                 return $this->error(
-                    'No tiene permisos para actualizar este proveedor. Solo directores (DG, DT, DA, PC) o el usuario que lo registrรณ pueden actualizarlo.',
+                    'No tiene permisos para actualizar este proveedor.',
                     null,
                     403
                 );
             }
 
-            // Actualizar solo los campos recibidos (sometimes)
+            // Actualizar proveedor
             $dataToUpdate = $request->only([
                 'razon_social',
+                'rfc',
                 'nombre_comercial',
                 'email',
                 'telefono',
                 'celular',
             ]);
 
-            // Convertir RFC a mayúsculas si se está actualizando
             if (isset($dataToUpdate['rfc'])) {
                 $dataToUpdate['rfc'] = strtoupper($dataToUpdate['rfc']);
             }
 
-            $proveedor->fill($dataToUpdate);
-            $proveedor->save();
+            $proveedor->update($dataToUpdate);
 
-            // Cargar relaciones actualizadas
+            // Procesar cuentas bancarias (si vienen)
+            if ($request->filled('cuentas_bancarias')) {
+                $cuentas = $request->cuentas_bancarias;
+
+                $hayPreferida = collect($cuentas)->contains(
+                    fn($c) => isset($c['preferida']) && $c['preferida']
+                );
+
+                if ($hayPreferida) {
+                    $proveedor->cuentasBancarias()->update(['preferida' => false]);
+                }
+
+                foreach ($cuentas as $cuentaData) {
+                    if (!empty($cuentaData['id'])) {
+                        $proveedor->cuentasBancarias()
+                            ->where('id', $cuentaData['id'])
+                            ->update(collect($cuentaData)->except('id')->toArray());
+                    } else {
+                        $proveedor->cuentasBancarias()->create($cuentaData);
+                    }
+                }
+            }
+
+            DB::commit();
+
+            // Recargar relaciones
             $proveedor->load(['cuentasBancarias', 'empresasConstrucc']);
 
+            // 🔵 RESPUESTA EXACTAMENTE IGUAL A LA QUE TENÍAS
             return $this->success(
                 [
                     'proveedor' => [
@@ -268,36 +296,33 @@ class ConstruccProveedorController extends Controller
                         'created_at' => $proveedor->created_at->format('Y-m-d H:i:s'),
                         'updated_at' => $proveedor->updated_at->format('Y-m-d H:i:s'),
                     ],
-                    'cuentas_bancarias' => $proveedor->cuentasBancarias->map(function($cuenta) {
-                        return [
-                            'id' => $cuenta->id,
-                            'alias' => $cuenta->alias,
-                            'banco_clave' => $cuenta->banco_clave,
-                            'banco_nombre' => $cuenta->banco_nombre,
-                            'tipo_cuenta' => $cuenta->tipo_cuenta,
-                            'campo_dependiente' => $cuenta->campo_dependiente,
-                            'titular_cuenta' => $cuenta->titular_cuenta,
-                            'preferida' => (bool) $cuenta->preferida,
-                            'referencia' => $cuenta->referencia,
-                            'sucursal' => $cuenta->sucursal,
-                            'swift' => $cuenta->swift,
-                        ];
-                    }),
-                    'empresas_construccion' => $proveedor->empresasConstrucc->map(function($empresa) {
-                        return [
-                            'id' => $empresa->id,
-                            'razon_social' => $empresa->razon_social,
-                            'usuario_construcc_id' => $empresa->pivot->usuario_construcc_id,
-                            'usuario_construcc_nombre' => $empresa->pivot->usuario_construcc_nombre,
-                        ];
-                    }),
+                    'cuenta_bancaria' => $proveedor->cuentasBancarias
+                        ->where('preferida', true)
+                        ->map(function ($cuenta) {
+                            return [
+                                'id' => $cuenta->id,
+                                'alias' => $cuenta->alias,
+                                'banco_clave' => $cuenta->banco_clave,
+                                'banco_nombre' => $cuenta->banco_nombre,
+                                'tipo_cuenta' => $cuenta->tipo_cuenta,
+                                'campo_dependiente' => $cuenta->campo_dependiente,
+                                'titular_cuenta' => $cuenta->titular_cuenta,
+                                'preferida' => (bool) $cuenta->preferida,
+                                'referencia' => $cuenta->referencia,
+                                'sucursal' => $cuenta->sucursal,
+                                'swift' => $cuenta->swift,
+                            ];
+                        })
+                        ->first(),
                 ],
                 'Proveedor actualizado exitosamente.'
             );
         } catch (\Exception $e) {
-            Log::error('Error al actualizar proveedor construcciรณn: ' . $e->getMessage(), [
+            DB::rollBack();
+
+            Log::error('Error al actualizar proveedor construcción', [
                 'proveedor_id' => $proveedor->id,
-                'trace' => $e->getTraceAsString(),
+                'error' => $e->getMessage(),
             ]);
 
             return $this->error(
