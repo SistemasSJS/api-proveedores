@@ -155,7 +155,7 @@ class ConstruccProveedorController extends Controller
                 [
                     'proveedor' => [
                         'id' => $proveedor->id,
-                        'nombre_comercial' => $proveedor->nombre_comerc1ial,
+                        'nombre_comercial' => $proveedor->nombre_comercial,
                         'razon_social' => $proveedor->razon_social,
                         'rfc' => $proveedor->rfc,
                         'email' => $proveedor->email,
@@ -195,7 +195,7 @@ class ConstruccProveedorController extends Controller
      * Actualiza un proveedor con tipo_alta = 2
      * Solo pueden actualizar: Directores (DG, DT, DA, PC) o el usuario que lo registrรณ
      */
-    public function update(Proveedor $proveedor, ConstruccProveedorUpdateRequest $request): JsonResponse
+    public function update(ConstruccProveedorUpdateRequest $request, Proveedor $proveedor): JsonResponse
     {
         try {
             // Validar que sea un proveedor de construcciรณn
