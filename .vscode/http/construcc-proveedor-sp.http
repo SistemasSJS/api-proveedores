@@ -6,9 +6,11 @@
 ###############################################################################
 
 @baseUrl = http://localhost:80/api
-@apiKey =  7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
+# @baseUrl = https://apicons.ddns.net:8092/api
+@apiKey = 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
 @proveedorId = 8
 @cuentaId = 1
+
 
 ###############################################################################
 # 1. PROVEEDORES (tipo_alta = 2)
@@ -20,7 +22,7 @@ X-API-KEY: {{apiKey}}
 Content-Type: application/json
 
 ### 1.2 Listar Proveedores con Paginación y Filtros
-GET {{baseUrl}}/construcc/proveedor?page=1&per_page=10&sort_by=nombre_comercial&order=asc
+GET {{baseUrl}}/construcc/proveedor?page=1&per_page=10&sort_by=nombre_comercial&order=asc&search=constructora
 X-API-KEY: {{apiKey}}
 Content-Type: application/json
 
@@ -29,7 +31,7 @@ GET {{baseUrl}}/construcc/proveedor/{{proveedorId}}
 X-API-KEY: {{apiKey}} 
 Content-Type: application/json
 
-### 1.4 Crear Proveedor con Cuenta Bancaria
+### 1.4 Crear Proveedor con Cuenta Bancaria (nivel_id opcional)
 POST {{baseUrl}}/construcc/proveedor
 X-API-KEY: {{apiKey}}
 Content-Type: application/json
@@ -44,6 +46,7 @@ Content-Type: application/json
   "empresa_construcc_id": 1,
   "usuario_id": 10,
   "usuario_nombre": "Juan Pérez Residente",
+  "nivel_id": 6,
   "cuenta": {
     "alias": "Cuenta Principal BBVA",
     "banco_clave": "012",
@@ -57,7 +60,7 @@ Content-Type: application/json
   }
 }
 
-### 1.5 Actualizar Proveedor (Requiere ser Director o Creador)
+### 1.5 Actualizar Solo Datos del Proveedor (sin cuentas)
 PUT {{baseUrl}}/construcc/proveedor/{{proveedorId}}
 X-API-KEY: {{apiKey}}
 Content-Type: application/json
@@ -72,7 +75,48 @@ Content-Type: application/json
   "nivel_id": 1
 }
 
-### 1.6 Dar de Baja Proveedor (Requiere ser Director o Creador)
+### 1.6 Actualizar Proveedor CON Cuentas Bancarias
+PUT {{baseUrl}}/construcc/proveedor/{{proveedorId}}
+X-API-KEY: {{apiKey}}
+Content-Type: application/json
+
+{
+  "razon_social": "Constructora XYZ Modificada SA de CV",
+  "email": "contacto_nuevo@constructoraxyz.com",
+  "celular": "5512349999",
+  "usuario_id": 5,
+  "nivel_id": 1,
+  "cuentas_bancarias": [
+    {
+      "id": 1,
+      "alias": "Cuenta BBVA Actualizada",
+      "preferida": true
+    }
+  ]
+}
+
+### 1.7 Actualizar Proveedor y Crear Nueva Cuenta
+PUT {{baseUrl}}/construcc/proveedor/{{proveedorId}}
+X-API-KEY: {{apiKey}}
+Content-Type: application/json
+
+{
+  "usuario_id": 5,
+  "nivel_id": 1,
+  "cuentas_bancarias": [
+    {
+      "alias": "Nueva Cuenta Santander",
+      "banco_clave": "014",
+      "banco_nombre": "Santander",
+      "tipo_cuenta": "Cheques",
+      "campo_dependiente": "014180009876543210",
+      "titular_cuenta": "Constructora Ejemplo SA de CV",
+      "preferida": false
+    }
+  ]
+}
+
+### 1.8 Dar de Baja Proveedor (Requiere ser Director o Creador)
 DELETE {{baseUrl}}/construcc/proveedor/{{proveedorId}}
 X-API-KEY: {{apiKey}}
 Content-Type: application/json
@@ -144,8 +188,8 @@ Content-Type: application/json
 # 3. SOLICITUDES DE PAGO (Con Proveedor Existente)
 ###############################################################################
 
-### 3.1 Generar SPP con Proveedor Existente - Usuario Residente (nivel_id = 6)
-# Estado: verificada = true, estado = pendiente
+### 3.1 Generar SPP - Usuario Residente (nivel_id = 6)
+# Resultado: verificada = true, estado = PENDIENTE
 POST {{baseUrl}}/construcc/proveedor/{{proveedorId}}/solicitudes-pago
 X-API-KEY: {{apiKey}}
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
@@ -199,8 +243,8 @@ Content-Disposition: form-data; name="nivel_id"
 6
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
 
-### 3.2 Generar SPP con Proveedor Existente - Director General (nivel_id = 1)
-# Estado: verificada = true, estado = autorizada
+### 3.2 Generar SPP - Director General (nivel_id = 1)
+# Resultado: verificada = true, estado = AUTORIZADA
 POST {{baseUrl}}/construcc/proveedor/{{proveedorId}}/solicitudes-pago
 X-API-KEY: {{apiKey}}
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
@@ -221,6 +265,15 @@ Autorizado por Director General
 Content-Disposition: form-data; name="factura_pdf"; filename="factura.pdf"
 Content-Type: application/pdf
 
+< C:\repositorio\app\api-proveedores\.vscode\http\tests\facturas\Cfdi-4539.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="factura_xml"; filename="factura.xml"
+Content-Type: application/xml
+
+< C:\repositorio\app\api-proveedores\.vscode\http\tests\facturas\Cfdi-4539.xml
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="cuenta_bancaria_id"
+
 1
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
 Content-Disposition: form-data; name="empresa_construcc_id"
@@ -240,38 +293,488 @@ Content-Disposition: form-data; name="nivel_id"
 1
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
 
+### 3.3 Generar SPP - Director Técnico (nivel_id = 2)
+# Resultado: verificada = true, estado = AUTORIZADA
+POST {{baseUrl}}/construcc/proveedor/{{proveedorId}}/solicitudes-pago
+X-API-KEY: {{apiKey}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="descripcion_concepto"
+
+Pago de mano de obra especializada
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="monto_total"
+
+35000.00
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="factura_pdf"; filename="factura.pdf"
+Content-Type: application/pdf
+
+< C:\repositorio\app\api-proveedores\.vscode\http\tests\facturas\Cfdi-4539.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="factura_xml"; filename="factura.xml"
+Content-Type: application/xml
+
+< C:\repositorio\app\api-proveedores\.vscode\http\tests\facturas\Cfdi-4539.xml
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="cuenta_bancaria_id"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="empresa_construcc_id"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="usuario_id"
+
+7
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="usuario_nombre"
+
+María López Director Técnico
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="nivel_id"
+
+2
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 3.4 Generar SPP - Director Administrativo (nivel_id = 3) ⭐ DIRECTO A PAGO
+# Resultado: verificada = true, estado = AUTORIZADA, da = autorizada, pc = autorizada
+POST {{baseUrl}}/construcc/proveedor/{{proveedorId}}/solicitudes-pago
+X-API-KEY: {{apiKey}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="descripcion_concepto"
+
+Pago urgente de equipamiento - Autorizado directo por DA
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="monto_total"
+
+75000.00
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="observaciones"
+
+Pago urgente - Directo a pago por Director Administrativo
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="factura_pdf"; filename="factura.pdf"
+Content-Type: application/pdf
+
+< C:\repositorio\app\api-proveedores\.vscode\http\tests\facturas\Cfdi-4539.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="factura_xml"; filename="factura.xml"
+Content-Type: application/xml
+
+< C:\repositorio\app\api-proveedores\.vscode\http\tests\facturas\Cfdi-4539.xml
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="cuenta_bancaria_id"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="empresa_construcc_id"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="usuario_id"
+
+8
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="usuario_nombre"
+
+Roberto Sánchez Director Administrativo
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="nivel_id"
+
+3
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 3.5 Generar SPP - Programación y Control (nivel_id = 5)
+# Resultado: verificada = true, estado = AUTORIZADA
+POST {{baseUrl}}/construcc/proveedor/{{proveedorId}}/solicitudes-pago
+X-API-KEY: {{apiKey}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="descripcion_concepto"
+
+Pago de suministros según programación
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="monto_total"
+
+18500.00
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="factura_pdf"; filename="factura.pdf"
+Content-Type: application/pdf
+
+< C:\repositorio\app\api-proveedores\.vscode\http\tests\facturas\Cfdi-4539.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="factura_xml"; filename="factura.xml"
+Content-Type: application/xml
+
+< C:\repositorio\app\api-proveedores\.vscode\http\tests\facturas\Cfdi-4539.xml
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="cuenta_bancaria_id"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="empresa_construcc_id"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="usuario_id"
+
+12
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="usuario_nombre"
+
+Ana Martínez Programación y Control
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="nivel_id"
+
+5
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
 ###############################################################################
-# 4. NOTAS DE USO
+# 3.6 GENERAR SPP CREANDO NUEVO PROVEEDOR + CUENTA + SPP
+###############################################################################
+
+### 3.6.1 Crear Proveedor Nuevo + Cuenta + SPP - Usuario Residente (nivel_id = 6)
+# Crea proveedor (tipo_alta=2), cuenta bancaria y SPP en una sola operación
+# Resultado: verificada = true, estado = PENDIENTE
+POST {{baseUrl}}/construcc/solicitud-pago/generar-spp-construcc
+X-API-KEY: {{apiKey}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryNuevoProveedor
+
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="descripcion_concepto"
+
+Materiales de construcción - Proyecto Residencial Fase 1
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="monto_total"
+
+45000.00
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="observaciones"
+
+Primera solicitud de pago para nuevo proveedor
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="factura_pdf"; filename="factura.pdf"
+Content-Type: application/pdf
+
+< C:\repositorio\app\api-proveedores\.vscode\http\tests\facturas\Cfdi-4539.pdf
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="factura_xml"; filename="factura.xml"
+Content-Type: application/xml
+
+< C:\repositorio\app\api-proveedores\.vscode\http\tests\facturas\Cfdi-4539.xml
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="cotizacion"; filename="cotizacion.pdf"
+Content-Type: application/pdf
+
+< C:\repositorio\app\api-proveedores\.vscode\http\tests\facturas\Cfdi-4539.pdf
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="proveedor_rfc"
+
+NPR240101XYZ
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="proveedor_razon_social"
+
+Nuevo Proveedor SA de CV
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="proveedor_nombre_comercial"
+
+Nuevo Proveedor
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="proveedor_email"
+
+contacto@nuevoproveedor.com
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="proveedor_telefono"
+
+5599887766
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="proveedor_celular"
+
+5599887767
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="cuenta_bancaria_alias"
+
+Cuenta Principal Nuevo Proveedor
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="cuenta_bancaria_banco_clave"
+
+012
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="cuenta_bancaria_banco_nombre"
+
+BBVA Bancomer
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="cuenta_bancaria_tipo_cuenta"
+
+tarjeta
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="cuenta_bancaria_campo_dependiente"
+
+012180009988776655
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="cuenta_bancaria_titular_cuenta"
+
+Nuevo Proveedor SA de CV
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="cuenta_bancaria_referencia"
+
+REF-NP-001
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="empresa_construcc_id"
+
+1
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="usuario_id"
+
+10
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="usuario_nombre"
+
+Juan Pérez Residente
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="nivel_id"
+
+6
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="obra_id"
+
+5
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="tipo"
+
+Material
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="tipo_id"
+
+3
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="notas"
+
+Materiales para construcción de muros perimetrales
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="utilizara"
+
+Construcción
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="equipo"
+
+Cuadrilla A
+------WebKitFormBoundaryNuevoProveedor
+Content-Disposition: form-data; name="equipo_id"
+
+1
+------WebKitFormBoundaryNuevoProveedor--
+
+### 3.6.2 Crear Proveedor Nuevo + Cuenta + SPP - Director General (nivel_id = 1)
+# Crea proveedor (tipo_alta=2), cuenta bancaria y SPP auto-aprobada
+# Resultado: verificada = true, estado = AUTORIZADA
+POST {{baseUrl}}/construcc/solicitud-pago/generar-spp-construcc
+X-API-KEY: {{apiKey}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryNuevoProveedorDG
+
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="descripcion_concepto"
+
+Servicios especializados - Consultoría técnica
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="monto_total"
+
+85000.00
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="observaciones"
+
+Autorizado directamente por Director General
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="factura_pdf"; filename="factura.pdf"
+Content-Type: application/pdf
+
+< C:\repositorio\app\api-proveedores\.vscode\http\tests\facturas\Cfdi-4539.pdf
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="factura_xml"; filename="factura.xml"
+Content-Type: application/xml
+
+< C:\repositorio\app\api-proveedores\.vscode\http\tests\facturas\Cfdi-4539.xml
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="proveedor_rfc"
+
+CST250101ABC
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="proveedor_razon_social"
+
+Consultoría Estructural SA de CV
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="proveedor_nombre_comercial"
+
+ConsEst
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="proveedor_email"
+
+info@consest.com
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="proveedor_telefono"
+
+5544332211
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="cuenta_bancaria_alias"
+
+Cuenta Principal ConsEst
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="cuenta_bancaria_banco_clave"
+
+021
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="cuenta_bancaria_banco_nombre"
+
+HSBC
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="cuenta_bancaria_tipo_cuenta"
+
+Cheques
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="cuenta_bancaria_campo_dependiente"
+
+021180001122334455
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="cuenta_bancaria_titular_cuenta"
+
+Consultoría Estructural SA de CV
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="empresa_construcc_id"
+
+1
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="usuario_id"
+
+5
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="usuario_nombre"
+
+Carlos García Director General
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="nivel_id"
+
+1
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="obra_id"
+
+5
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="tipo"
+
+Servicio
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="tipo_id"
+
+2
+------WebKitFormBoundaryNuevoProveedorDG
+Content-Disposition: form-data; name="notas"
+
+Servicios de consultoría para proyecto Torre A
+------WebKitFormBoundaryNuevoProveedorDG--
+
+###############################################################################
+# 4. FLUJO COMPLETO - REGISTRO Y VALIDACIÓN
+###############################################################################
+
+### 4.1 Registrar Proveedor Nuevo (tipo_alta = 1)
+POST {{baseUrl}}/auth/register_basico
+X-API-KEY: {{apiKey}}
+Content-Type: application/json
+
+{
+  "nombre_comercial": "Proveedor Test Nuevo",
+  "telefono": "5511112222",
+  "password": "password123",
+  "password_confirmation": "password123",
+  "token": "ABC123",
+  "rfc": "PTN900101XYZ",
+  "email": "test@proveedor.com"
+}
+
+### 4.2 Intentar Registrar con Teléfono de Proveedor tipo_alta=1 (Error 409)
+POST {{baseUrl}}/auth/register_basico
+X-API-KEY: {{apiKey}}
+Content-Type: application/json
+
+{
+  "nombre_comercial": "Proveedor Duplicado",
+  "telefono": "5511112222",
+  "password": "password123",
+  "password_confirmation": "password123",
+  "token": "ABC123"
+}
+
+### 4.3 Intentar Registrar con Teléfono de Proveedor tipo_alta=2 (Redirige a Cotejo)
+# Respuesta: requiere_completar_registro = true, proveedor = {...}, token_temporal = "..."
+POST {{baseUrl}}/auth/register_basico
+X-API-KEY: {{apiKey}}
+Content-Type: application/json
+
+{
+  "nombre_comercial": "Proveedor Test",
+  "telefono": "5512345678",
+  "password": "password123",
+  "password_confirmation": "password123",
+  "token": "ABC123"
+}
+
+### 4.4 Completar Registro de Proveedor tipo_alta=2
+# Cambia tipo_alta de 2 a 1, crea usuario, retorna token
+POST {{baseUrl}}/auth/completar-registro-proveedor
+X-API-KEY: {{apiKey}}
+Content-Type: application/json
+
+{
+  "proveedor_id": 1,
+  "token_temporal": "eyJwcm92ZWVkb3JfaWQiOjEsInRpbWVzdGFtcCI6MTcwNTI1MDAwMH0=",
+  "password": "nuevaPassword123",
+  "password_confirmation": "nuevaPassword123",
+  "razon_social": "Constructora Ejemplo Actualizada SA de CV",
+  "email": "nuevo@constructoraejemplo.com",
+  "telefono": "5512345679"
+}
+
+###############################################################################
+# 5. NOTAS DE USO
 ###############################################################################
 
 # NIVELES DE USUARIO (nivel_id):
-# 0 - Admin (Auto-aprueba como DG)
-# 1 - DG (Director General) - Auto-aprueba
-# 2 - DT (Director Técnico) - Auto-aprueba
-# 3 - DA (Director Administrativo) - Auto-aprueba
-# 4 - SI (Superintendente) - Solo verifica
-# 5 - PC (Programación y Control) - Auto-aprueba
-# 6 - RO (Residente de Obra) - Requiere aprobación
+# 0 - Admin (Requiere aprobación como residente)
+# 1 - DG (Director General) → Auto-aprueba SPP → estado: AUTORIZADA
+# 2 - DT (Director Técnico) → Auto-aprueba SPP → estado: AUTORIZADA  
+# 3 - DA (Director Administrativo) → Directo a pago → estado: AUTORIZADA + da/pc marcados
+# 4 - SI (Superintendente) → Solo verifica
+# 5 - PC (Programación y Control) → Auto-aprueba SPP → estado: AUTORIZADA
+# 6 - RO (Residente de Obra) → Requiere aprobación → estado: PENDIENTE
 
 # VALIDACIONES IMPORTANTES:
 # - tipo_alta = 2: Solo proveedores de construcción
-# - Campos únicos: RFC, email, telefono, celular
+# - Campos únicos: RFC, email, telefono
 # - Primera cuenta bancaria es automáticamente preferida
 # - No se puede eliminar la única cuenta de un proveedor
 # - No se puede eliminar cuenta con SPP asociadas
 # - Solo directores (1,2,3,5) o creador pueden actualizar/eliminar proveedores
+# - nivel_id es REQUERIDO en ConstruccProveedorGenerarSppRequest
+# - nivel_id es NULLABLE en ConstruccProveedorStoreRequest
+# - Campos adicionales en SPP: obra_id, tipo, tipo_id, notas, utilizara, equipo, equipo_id (todos nullable)
 
 # CÓDIGOS DE RESPUESTA:
-# 200 - OK (GET, PUT, DELETE exitosos)
+# 200 - OK (GET, PUT exitosos / Info proveedor existente tipo_alta=2)
 # 201 - Created (POST exitosos)
 # 403 - Forbidden (Sin permisos, tipo_alta incorrecto)
 # 404 - Not Found (Recurso no encontrado)
-# 409 - Conflict (RFC/email/telefono duplicado)
+# 409 - Conflict (RFC/email/telefono duplicado con tipo_alta=1)
 # 422 - Unprocessable Entity (Validación fallida, restricciones)
 # 500 - Internal Server Error
 
 ###############################################################################
-# 5. EJEMPLOS DE RESPUESTAS
+# 6. EJEMPLOS DE RESPUESTAS
 ###############################################################################
 
 ### Respuesta Exitosa - Crear Proveedor (201)
@@ -287,8 +790,7 @@ Content-Disposition: form-data; name="nivel_id"
 #       "rfc": "CEJ850101ABC",
 #       "email": "contacto@constructoraejemplo.com",
 #       "telefono": "5512345678",
-#       "celular": "5598765432",
-#       "estatus": "activo",
+#       "estatus": "registrado",
 #       "tipo_alta": 2,
 #       "created_at": "2026-01-14 10:30:00"
 #     },
@@ -296,40 +798,162 @@ Content-Disposition: form-data; name="nivel_id"
 #       "id": 50,
 #       "alias": "Cuenta Principal BBVA",
 #       "banco_nombre": "BBVA Bancomer",
-#       "preferida": true,
-#       "estatus": "activa"
+#       "preferida": true
 #     }
-#   },
-#   "errors": null
+#   }
+# }
+
+### Respuesta Exitosa - Actualizar Proveedor con Cuentas (200)
+# {
+#   "status": "SUCCESS",
+#   "code": 200,
+#   "message": "Proveedor actualizado exitosamente.",
+#   "data": {
+#     "proveedor": {
+#       "id": 25,
+#       "nombre_comercial": "Constructora XYZ Modificada",
+#       "razon_social": "Constructora XYZ Modificada SA de CV",
+#       "rfc": "CEJ850101ABC",
+#       "email": "contacto_nuevo@constructoraxyz.com",
+#       "telefono": "5512345679",
+#       "celular": "5512349999",
+#       "estatus": "registrado",
+#       "tipo_alta": 2,
+#       "created_at": "2026-01-14 10:30:00",
+#       "updated_at": "2026-01-14 11:45:00"
+#     },
+#     "cuenta_bancaria": {
+#       "id": 50,
+#       "alias": "Cuenta BBVA Actualizada",
+#       "banco_clave": "012",
+#       "banco_nombre": "BBVA Bancomer",
+#       "tipo_cuenta": "tarjeta",
+#       "campo_dependiente": "012180001234567890",
+#       "titular_cuenta": "Constructora Ejemplo SA de CV",
+#       "preferida": true,
+#       "referencia": "REF-001",
+#       "sucursal": "0001",
+#       "swift": "BCMRMXMMPYM"
+#     }
+#   }
+# }
+
+### Respuesta - Proveedor Existente tipo_alta=2 (200) - Requiere Completar Registro
+# {
+#   "status": "SUCCESS",
+#   "code": 200,
+#   "message": "El proveedor ya está registrado desde construcción. Debe completar su registro.",
+#   "data": {
+#     "requiere_completar_registro": true,
+#     "proveedor": {
+#       "id": 25,
+#       "razon_social": "Constructora Ejemplo SA de CV",
+#       "rfc": "CEJ850101ABC",
+#       "email": "contacto@constructoraejemplo.com",
+#       "telefono": "5512345678",
+#       "celular": "5598765432",
+#       "tipo_alta": 2,
+#       "cuentas_bancarias": [...],
+#       "empresas_construccion": [...]
+#     },
+#     "token_temporal": "eyJwcm92ZWVkb3JfaWQiOjI1LCJ0aW1lc3RhbXAiOjE3MDUyNTAwMDB9"
+#   }
+# }
+
+### Respuesta Exitosa - SPP Generada por Director (201)
+# {
+#   "status": "SUCCESS",
+#   "code": 201,
+#   "message": "Solicitud de pago generada exitosamente.",
+#   "data": {
+#     "solicitud_pago": {
+#       "id": 150,
+#       "numero_folio_solicitud": "SP-2026-001-CEJ850101ABC",
+#       "estado_solicitud": "autorizada",
+#       "verificada": true,
+#       "monto_total": 50000.00
+#     },
+#     "proveedor": {...},
+#     "cuenta_bancaria": {...}
+#   }
+# }
+
+### Respuesta Exitosa - SPP Generada por DA (201) - Directo a Pago
+# {
+#   "status": "SUCCESS",
+#   "code": 201,
+#   "message": "Solicitud de pago generada exitosamente.",
+#   "data": {
+#     "solicitud_pago": {
+#       "id": 151,
+#       "numero_folio_solicitud": "SP-2026-002-CEJ850101ABC",
+#       "estado_solicitud": "autorizada",
+#       "verificada": true,
+#       "monto_total": 75000.00,
+#       "da": "autorizada",
+#       "da_fecha": "2026-01-14 12:00:00",
+#       "pc": "autorizada",
+#       "pc_fecha": "2026-01-14 12:00:00"
+#     },
+#     "proveedor": {...},
+#     "cuenta_bancaria": {...}
+#   }
 # }
 
 ### Error - RFC Duplicado (409)
 # {
 #   "status": "ERROR",
 #   "code": 409,
-#   "message": "El rfc ya está registrado en el sistema.",
+#   "message": "El proveedor ya tiene un usuario activo registrado.",
 #   "data": {
 #     "campo": "rfc",
 #     "valor": "CEJ850101ABC",
-#     "proveedor_existente_id": 15
-#   },
-#   "errors": null
+#     "proveedor_existente_id": 15,
+#     "tipo_alta": 1
+#   }
 # }
 
 ### Error - Sin Permisos (403)
 # {
 #   "status": "ERROR",
 #   "code": 403,
-#   "message": "No tiene permisos para actualizar este proveedor. Solo directores (DG, DT, DA, PC) o el usuario que lo registró pueden actualizarlo.",
-#   "data": null,
-#   "errors": null
+#   "message": "No tiene permisos para actualizar este proveedor.",
+#   "data": null
 # }
 
 ### Error - Validación (422)
 # {
 #   "status": "ERROR",
 #   "code": 422,
-#   "message": "No se puede eliminar la única cuenta bancaria del proveedor.",
+#   "message": "Error de validación",
 #   "data": null,
-#   "errors": null
+#   "errors": {
+#     "rfc": ["El rfc ya está registrado en el sistema."],
+#     "email": ["El email debe ser una dirección válida"]
+#   }
 # }
+
+###############################################################################
+# 7. FLUJO DE PRUEBAS RECOMENDADO
+###############################################################################
+
+# PASO 1: Crear proveedor de construcción (1.4)
+# PASO 2: Verificar que se creó (1.3)
+# PASO 3: Listar cuentas bancarias (2.1)
+# PASO 4: Crear cuenta adicional (2.4)
+# PASO 5: Actualizar proveedor y cuentas (1.6 o 1.7)
+# PASO 6: Generar SPP según nivel de usuario (3.1 a 3.5)
+# PASO 7: Probar flujo de registro:
+#   - Intentar registro con mismo teléfono (4.3)
+#   - Completar registro (4.4)
+# PASO 8: Dar de baja proveedor (1.8)
+
+###############################################################################
+# 8. VARIABLES DE ENTORNO PARA POSTMAN
+###############################################################################
+
+# Si usas este archivo en Postman, configura estas variables:
+# - baseUrl: http://localhost:80/api
+# - apiKey: 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
+# - proveedorId: (ID del proveedor a probar)
+# - cuentaId: (ID de la cuenta bancaria a probar)

@@ -258,7 +258,6 @@ Route::prefix('construcc')
          * sus cuentas bancarias y generación de solicitudes de pago
          */
         Route::prefix('proveedor')->name('proveedor.')->group(function () {
-
             // ===== PROVEEDORES tipo_alta=2 =====
             Route::get('/', [ConstruccProveedorController::class, 'index'])->name('index');
             Route::get('/{proveedor}', [ConstruccProveedorController::class, 'show'])->name('show');
