@@ -41,6 +41,8 @@ class ConstruccProveedorSolicitudPagoController extends Controller
     public function store(ConstruccProveedorGenerarSppRequest $request, Proveedor $proveedor): JsonResponse
     {
 
+        Log::info('✅ Iniciando inserción de SPP desde appConstrucc.');
+
         try {
             $validated = $request->validated();
 
@@ -214,7 +216,7 @@ class ConstruccProveedorSolicitudPagoController extends Controller
             }
 
             DB::beginTransaction();
-            
+
             $solicitud = SolicitudPago::create($datosSP);
 
             Log::info('✅ Solicitud de pago creada con proveedor existente', [
