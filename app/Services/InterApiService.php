@@ -33,7 +33,8 @@ class InterApiService
         // 'sp_folio' => $sp->numero_folio_solicitud,
         'sp_folio' => $sp->folio_sp_consecutivo,
         'company' => $sp->empresa_construcc_id,
-        'user_id' => $sp->usuario_id
+        'user_id' => $sp->usuario_id,
+        'obra' => $sp->obra_id,
         // 'obra' => '1', // la obra se indica despues de validar la SP... a este punto este valor es desconocido
         // 'message' => 'Ahora si lleva mensaje',
       ];
