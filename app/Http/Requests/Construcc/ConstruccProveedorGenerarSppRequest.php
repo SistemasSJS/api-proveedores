@@ -13,15 +13,15 @@ class ConstruccProveedorGenerarSppRequest extends FormRequest
 
     public function rules()
     {
-        return [
+        $rules = [
             // Datos generales de la SPP
             'descripcion_concepto' => 'required|string|min:1|max:500',
             'monto_total' => 'required|numeric|min:0',
             'observaciones' => 'nullable|string|max:1000',
 
-            // Archivos
-            'factura_pdf' => 'required|file|mimes:pdf|max:10240',
-            'factura_xml' => 'required|file|mimes:xml|max:5120',
+            // Archivos - Validación condicional
+            // Si hay cotización, factura no es obligatoria
+            // Si NO hay cotización, factura SÍ es obligatoria
             'cotizacion' => 'nullable|file|mimes:pdf,jpg,jpeg,png,bmp,gif,webp,doc,docx,xls,xlsx|max:10240',
 
             // Cuenta bancaria del proveedor (debe existir y pertenecer al proveedor)
@@ -42,6 +42,19 @@ class ConstruccProveedorGenerarSppRequest extends FormRequest
             'equipo' => 'nullable|string|max:255',
             'equipo_id' => 'nullable|integer',
         ];
+
+        // Validación condicional de factura
+        if ($this->hasFile('cotizacion')) {
+            // Si hay cotización, la factura es opcional
+            $rules['factura_pdf'] = 'nullable|file|mimes:pdf|max:10240';
+            $rules['factura_xml'] = 'nullable|file|mimes:xml|max:5120';
+        } else {
+            // Si NO hay cotización, la factura es obligatoria
+            $rules['factura_pdf'] = 'required|file|mimes:pdf|max:10240';
+            $rules['factura_xml'] = 'required|file|mimes:xml|max:5120';
+        }
+
+        return $rules;
     }
 
     public function messages()
@@ -57,12 +70,15 @@ class ConstruccProveedorGenerarSppRequest extends FormRequest
             'observaciones.max' => 'Las observaciones no deben exceder los 1000 caracteres',
 
             // Mensajes para archivos
-            'factura_pdf.required' => 'El archivo PDF de la factura es obligatorio',
+            'factura_pdf.required' => 'El archivo PDF de la factura es obligatorio cuando no se adjunta cotización',
+            'factura_pdf.file' => 'La factura PDF debe ser un archivo válido',
             'factura_pdf.mimes' => 'El archivo debe ser un PDF válido',
             'factura_pdf.max' => 'El archivo PDF no debe superar los 10MB',
-            'factura_xml.required' => 'El archivo XML de la factura es obligatorio',
+            'factura_xml.required' => 'El archivo XML de la factura es obligatorio cuando no se adjunta cotización',
+            'factura_xml.file' => 'La factura XML debe ser un archivo válido',
             'factura_xml.mimes' => 'El archivo debe ser un XML válido',
             'factura_xml.max' => 'El archivo XML no debe superar los 5MB',
+            'cotizacion.file' => 'La cotización debe ser un archivo válido',
             'cotizacion.mimes' => 'El archivo de cotización debe ser un formato válido (PDF, imagen o documento)',
             'cotizacion.max' => 'El archivo de cotización no debe superar los 10MB',
 

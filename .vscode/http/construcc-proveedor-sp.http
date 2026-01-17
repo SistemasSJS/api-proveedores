@@ -621,8 +621,58 @@ Content-Disposition: form-data; name="nivel_id"
 5
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
 
+### 3.6 Generar SPP - Solo con Cotización (sin factura)
+# Resultado: tiene_factura = false
+# Nota: Si hay cotización, la factura PDF y XML NO son obligatorias
+POST {{baseUrl}}/construcc/proveedor/{{proveedorId}}/solicitudes-pago
+X-API-KEY: {{apiKey}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="descripcion_concepto"
+
+Anticipo de materiales - Solo cotización
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="monto_total"
+
+12000.00
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="observaciones"
+
+Anticipo del 50% - Factura pendiente
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="cotizacion"; filename="cotizacion.pdf"
+Content-Type: application/pdf
+
+< C:\repositorio\app\api-proveedores\.vscode\http\tests\facturas\Cfdi-4539.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="cuenta_bancaria_id"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="empresa_construcc_id"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="usuario_id"
+
+10
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="usuario_nombre"
+
+Juan Pérez Residente
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="nivel_id"
+
+6
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="notas"
+
+Anticipo para compra de materiales
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
 ###############################################################################
-# 3.6 GENERAR SPP CREANDO NUEVO PROVEEDOR + CUENTA + SPP
+# 3.7 GENERAR SPP CREANDO NUEVO PROVEEDOR + CUENTA + SPP
 ###############################################################################
 
 ### 3.6.1 Crear Proveedor Nuevo + Cuenta + SPP - Usuario Residente (nivel_id = 6)
@@ -949,6 +999,11 @@ Content-Type: application/json
 # - nivel_id es REQUERIDO en ConstruccProveedorGenerarSppRequest
 # - nivel_id es NULLABLE en ConstruccProveedorStoreRequest
 # - Campos adicionales en SPP: obra_id, tipo, tipo_id, notas, utilizara, equipo, equipo_id (todos nullable)
+# 
+# ARCHIVOS EN SPP (Validación Condicional):
+# - Si se adjunta COTIZACIÓN → Factura PDF y XML son OPCIONALES
+# - Si NO se adjunta COTIZACIÓN → Factura PDF y XML son OBLIGATORIAS
+# - Mínimo debe haber: Factura (PDF+XML) O Cotización
 
 # CÓDIGOS DE RESPUESTA:
 # 200 - OK (GET, PUT exitosos / Info proveedor existente tipo_alta=2)

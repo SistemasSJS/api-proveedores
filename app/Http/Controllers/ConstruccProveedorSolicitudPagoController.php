@@ -79,28 +79,32 @@ class ConstruccProveedorSolicitudPagoController extends Controller
             // ============================================
             // PASO 3: Almacenar archivos
             // ============================================
-
-
-
             $facturaPdf = $request->file('factura_pdf');
             $facturaXml = $request->file('factura_xml');
             $cotizacionFile = $request->file('cotizacion');
 
-            // si no se envio factura pdf y xml, se debe enviar cotizacion
-            if ((!$facturaPdf || !$facturaXml) &&  !$cotizacionFile) {
-                return $this->error('Los archivos PDF y XML son obligatorios o se debe enviar cotizacion.', null, 422);
+            // Validación ya hecha en FormRequest:
+            // - Si hay cotización → factura opcional
+            // - Si NO hay cotización → factura obligatoria
+
+            $rutaPdf = null;
+            $rutaXml = null;
+            $datosXml = [];
+            $folioFactura = null;
+
+            // Procesar factura si existe
+            if ($facturaPdf && $facturaXml) {
+                $rutaPdf = $facturaPdf->store('facturas/pdf', 'private');
+                $rutaXml = $facturaXml->store('facturas/xml', 'private');
+
+                // Extraer datos del XML
+                $datosXml = $this->extraerDatosXML($facturaXml->getRealPath());
+
+                // Combinar serie y folio para formar el folio_factura
+                $serie = $datosXml['serie'] ?? '';
+                $folio = $datosXml['folio'] ?? '';
+                $folioFactura = trim($serie . ($serie && $folio ? '-' : '') . $folio) ?: null;
             }
-
-            $rutaPdf = $facturaPdf->store('facturas/pdf', 'private');
-            $rutaXml = $facturaXml->store('facturas/xml', 'private');
-
-            // Extraer datos del XML
-            $datosXml = $this->extraerDatosXML($facturaXml->getRealPath());
-
-            // Combinar serie y folio para formar el folio_factura
-            $serie = $datosXml['serie'] ?? '';
-            $folio = $datosXml['folio'] ?? '';
-            $folioFactura = trim($serie . ($serie && $folio ? '-' : '') . $folio) ?: null;
 
             // Procesar archivo de cotización si existe
             $rutaCotizacion = null;
@@ -114,6 +118,7 @@ class ConstruccProveedorSolicitudPagoController extends Controller
                 'factura_xml' => $rutaXml,
                 'cotizacion' => $rutaCotizacion,
                 'folio_factura' => $folioFactura,
+                'tiene_factura' => $rutaPdf !== null,
             ]);
 
             // ============================================
@@ -176,7 +181,7 @@ class ConstruccProveedorSolicitudPagoController extends Controller
                 'saldo_pendiente' => $montoTotal,
                 'monto_abonado' => 0,
                 'pago_completo' => false,
-                'tiene_factura' => true,
+                'tiene_factura' => $rutaPdf !== null && $rutaXml !== null, // true si tiene factura, false si solo tiene cotización
 
                 // Campos adicionales de la solicitud
                 'obra_id' => $validated['obra_id'] ?? null,
@@ -229,6 +234,8 @@ class ConstruccProveedorSolicitudPagoController extends Controller
                 'estado_solicitud' => $solicitud->estado_solicitud,
                 'nivel_id' => $nivelId,
                 'auto_aprobada_por_director' => $esDirectorAprobador,
+                'tiene_factura' => $solicitud->tiene_factura,
+                'solo_cotizacion' => !$solicitud->tiene_factura && $rutaCotizacion !== null,
                 // 'directo_a_pago_por_da' => $esDA,
             ]);
 
