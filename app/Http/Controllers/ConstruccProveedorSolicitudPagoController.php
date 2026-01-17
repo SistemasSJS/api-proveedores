@@ -271,15 +271,6 @@ class ConstruccProveedorSolicitudPagoController extends Controller
                 'cuenta_bancaria_id' => $cuentaBancaria->id,
             ]);
 
-            // ============================================
-            // PASO 6: Agregar notificación y llamar a InterAPI
-            // ============================================
-            $solicitud->addNotification([
-                'titulo' => 'Nueva solicitud de pago generada',
-                'mensaje' => "Se ha generado la solicitud de pago #{$solicitud->numero_folio_solicitud}",
-                'proveedor_id' => $proveedor->id,
-            ]);
-
             DB::commit();
 
             // Notificar al sistema de compras sobre la nueva SP
