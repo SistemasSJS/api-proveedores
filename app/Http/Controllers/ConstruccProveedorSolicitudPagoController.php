@@ -86,8 +86,9 @@ class ConstruccProveedorSolicitudPagoController extends Controller
             $facturaXml = $request->file('factura_xml');
             $cotizacionFile = $request->file('cotizacion');
 
-            if (!$facturaPdf || !$facturaXml) {
-                return $this->error('Los archivos PDF y XML son obligatorios.', null, 422);
+            // si no se envio factura pdf y xml, se debe enviar cotizacion
+            if ((!$facturaPdf || !$facturaXml) &&  !$cotizacionFile) {
+                return $this->error('Los archivos PDF y XML son obligatorios o se debe enviar cotizacion.', null, 422);
             }
 
             $rutaPdf = $facturaPdf->store('facturas/pdf', 'private');
@@ -198,16 +199,16 @@ class ConstruccProveedorSolicitudPagoController extends Controller
                 $datosSP['fecha_aprobado'] = now();
                 $datosSP[$rolField] = EstadoSolicitud::AUTORIZADA->value;
                 $datosSP[$fechaField] = now();
-            // } elseif ($esDA) {
-            //     // Director Administrativo: Va directo a PARA_PAGO
-            //     $datosSP['verificada'] = true;
-            //     $datosSP['estado_solicitud'] = EstadoSP::AUTORIZADA->value;
-            //     $datosSP['fecha_registro_pendiente'] = now();
-            //     $datosSP['fecha_aprobado'] = now();
-            //     $datosSP['da'] = EstadoSolicitud::AUTORIZADA->value;
-            //     $datosSP['da_fecha'] = now();
-            //     // $datosSP['pc'] = EstadoSolicitud::AUTORIZADA->value;
-            //     // $datosSP['pc_fecha'] = now();
+                // } elseif ($esDA) {
+                //     // Director Administrativo: Va directo a PARA_PAGO
+                //     $datosSP['verificada'] = true;
+                //     $datosSP['estado_solicitud'] = EstadoSP::AUTORIZADA->value;
+                //     $datosSP['fecha_registro_pendiente'] = now();
+                //     $datosSP['fecha_aprobado'] = now();
+                //     $datosSP['da'] = EstadoSolicitud::AUTORIZADA->value;
+                //     $datosSP['da_fecha'] = now();
+                //     // $datosSP['pc'] = EstadoSolicitud::AUTORIZADA->value;
+                //     // $datosSP['pc_fecha'] = now();
             } else {
                 // Residentes, Superintendentes, Admin, otros: Requiere validación y aprobación
                 $datosSP['verificada'] = true;
@@ -218,7 +219,7 @@ class ConstruccProveedorSolicitudPagoController extends Controller
             DB::beginTransaction();
 
             $solicitud = SolicitudPago::create($datosSP);
- 
+
             Log::info('✅ Solicitud de pago creada con proveedor existente', [
                 'solicitud_pago_id' => $solicitud->id,
                 'numero_folio' => $solicitud->numero_folio_solicitud,
@@ -234,7 +235,7 @@ class ConstruccProveedorSolicitudPagoController extends Controller
             // ============================================
             // NOTIFICACIÓN: Si es director aprobador o DA, notificar a otros directores
             // ============================================
-            if ($esDirectorAprobador ) {
+            if ($esDirectorAprobador) {
                 // TODO: Implementar notificación a directores (DG, DT, DA, PC)
                 // cuando un director crea y auto-aprueba una SP o DA la envía directo a pago
                 // 

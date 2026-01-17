@@ -15,8 +15,8 @@ class CrearSolicitudPagoRequest extends FormRequest
     {
         return [
             'descripcion_concepto' => 'required|string|min:1|max:500',
-            'factura_pdf' => 'required|file|mimes:pdf|max:10240',
-            'factura_xml' => 'required|file|mimes:xml|max:5120',
+            'factura_pdf' => 'nullable|file|mimes:pdf|max:10240',
+            'factura_xml' => 'nullable|file|mimes:xml|max:5120',
             'cotizacion' => 'nullable|file|mimes:pdf,jpg,jpeg,png,bmp,gif,webp,doc,docx,xls,xlsx|max:10240',
             'proveedor_id' => 'required|exists:proveedores,id',
             'empresa_construcc_id' => 'nullable|exists:empresa_construcc,id',
