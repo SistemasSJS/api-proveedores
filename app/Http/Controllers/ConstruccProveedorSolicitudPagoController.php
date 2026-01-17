@@ -139,10 +139,10 @@ class ConstruccProveedorSolicitudPagoController extends Controller
             $nivelId = $validated['nivel_id'];
 
             // Niveles que aprueban: DG, DT, PC
-            $nivelesAprobadores = [1, 2, 5]; // DG, DT, PC
+            $nivelesAprobadores = [0, 1, 2, 3, 5]; // Admin, DG, DT, DA, PC
 
-            // Director Administrativo: va directo a pago
-            $esDA = $nivelId === 3;
+            // // Director Administrativo: va directo a pago
+            // $esDA = $nivelId === 3;
 
             // Director que auto-aprueba: DG, DT, PC
             $esDirectorAprobador = in_array($nivelId, $nivelesAprobadores);
@@ -198,16 +198,16 @@ class ConstruccProveedorSolicitudPagoController extends Controller
                 $datosSP['fecha_aprobado'] = now();
                 $datosSP[$rolField] = EstadoSolicitud::AUTORIZADA->value;
                 $datosSP[$fechaField] = now();
-            } elseif ($esDA) {
-                // Director Administrativo: Va directo a PARA_PAGO
-                $datosSP['verificada'] = true;
-                $datosSP['estado_solicitud'] = EstadoSP::AUTORIZADA->value;
-                $datosSP['fecha_registro_pendiente'] = now();
-                $datosSP['fecha_aprobado'] = now();
-                $datosSP['da'] = EstadoSolicitud::AUTORIZADA->value;
-                $datosSP['da_fecha'] = now();
-                $datosSP['pc'] = EstadoSolicitud::AUTORIZADA->value;
-                $datosSP['pc_fecha'] = now();
+            // } elseif ($esDA) {
+            //     // Director Administrativo: Va directo a PARA_PAGO
+            //     $datosSP['verificada'] = true;
+            //     $datosSP['estado_solicitud'] = EstadoSP::AUTORIZADA->value;
+            //     $datosSP['fecha_registro_pendiente'] = now();
+            //     $datosSP['fecha_aprobado'] = now();
+            //     $datosSP['da'] = EstadoSolicitud::AUTORIZADA->value;
+            //     $datosSP['da_fecha'] = now();
+            //     // $datosSP['pc'] = EstadoSolicitud::AUTORIZADA->value;
+            //     // $datosSP['pc_fecha'] = now();
             } else {
                 // Residentes, Superintendentes, Admin, otros: Requiere validación y aprobación
                 $datosSP['verificada'] = true;
@@ -218,7 +218,7 @@ class ConstruccProveedorSolicitudPagoController extends Controller
             DB::beginTransaction();
 
             $solicitud = SolicitudPago::create($datosSP);
-
+ 
             Log::info('✅ Solicitud de pago creada con proveedor existente', [
                 'solicitud_pago_id' => $solicitud->id,
                 'numero_folio' => $solicitud->numero_folio_solicitud,
@@ -228,13 +228,13 @@ class ConstruccProveedorSolicitudPagoController extends Controller
                 'estado_solicitud' => $solicitud->estado_solicitud,
                 'nivel_id' => $nivelId,
                 'auto_aprobada_por_director' => $esDirectorAprobador,
-                'directo_a_pago_por_da' => $esDA,
+                // 'directo_a_pago_por_da' => $esDA,
             ]);
 
             // ============================================
             // NOTIFICACIÓN: Si es director aprobador o DA, notificar a otros directores
             // ============================================
-            if ($esDirectorAprobador || $esDA) {
+            if ($esDirectorAprobador ) {
                 // TODO: Implementar notificación a directores (DG, DT, DA, PC)
                 // cuando un director crea y auto-aprueba una SP o DA la envía directo a pago
                 // 
@@ -252,8 +252,7 @@ class ConstruccProveedorSolicitudPagoController extends Controller
                 // Llamar al servicio de notificaciones inter-API cuando esté implementado:
                 // $this->interApiService->notifyDirectoresSpAutoaprobada($solicitud, $nivelId, $empresaConstructId);
 
-                $tipoAccion = $esDA ? 'directo a pago (DA)' : 'auto-aprobada';
-                Log::info('📬 TODO: Enviar notificación a otros directores sobre SP ' . $tipoAccion, [
+                Log::info('📬 TODO: Enviar notificación a otros directores sobre SP ', [
                     'solicitud_pago_id' => $solicitud->id,
                     'director_nivel_id' => $nivelId,
                     'rol_autoaprobacion' => $nivelToRol[$nivelId] ?? 'desconocido',
