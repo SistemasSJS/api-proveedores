@@ -40,7 +40,6 @@ class ConstruccProveedorSolicitudPagoController extends Controller
      */
     public function store(ConstruccProveedorGenerarSppRequest $request, Proveedor $proveedor): JsonResponse
     {
-        DB::beginTransaction();
 
         try {
             $validated = $request->validated();
@@ -49,7 +48,6 @@ class ConstruccProveedorSolicitudPagoController extends Controller
             // PASO 1: Validar que el proveedor sea tipo_alta = 2
             // ============================================
             if ($proveedor->tipo_alta !== 2) {
-                DB::rollBack();
                 return $this->error(
                     'Solo se pueden generar SPP con proveedores registrados por usuarios construcción (tipo_alta = 2).',
                     [
@@ -66,7 +64,6 @@ class ConstruccProveedorSolicitudPagoController extends Controller
             $cuentaBancaria = CuentaBancaria::find($validated['cuenta_bancaria_id']);
 
             if (!$cuentaBancaria || $cuentaBancaria->proveedor_id !== $proveedor->id) {
-                DB::rollBack();
                 return $this->error(
                     'La cuenta bancaria seleccionada no pertenece a este proveedor.',
                     [
@@ -80,12 +77,14 @@ class ConstruccProveedorSolicitudPagoController extends Controller
             // ============================================
             // PASO 3: Almacenar archivos
             // ============================================
+
+
+
             $facturaPdf = $request->file('factura_pdf');
             $facturaXml = $request->file('factura_xml');
             $cotizacionFile = $request->file('cotizacion');
 
             if (!$facturaPdf || !$facturaXml) {
-                DB::rollBack();
                 return $this->error('Los archivos PDF y XML son obligatorios.', null, 422);
             }
 
@@ -175,7 +174,7 @@ class ConstruccProveedorSolicitudPagoController extends Controller
                 'monto_abonado' => 0,
                 'pago_completo' => false,
                 'tiene_factura' => true,
-                
+
                 // Campos adicionales de la solicitud
                 'obra_id' => $validated['obra_id'] ?? null,
                 'tipo' => $validated['tipo'] ?? null,
@@ -214,6 +213,8 @@ class ConstruccProveedorSolicitudPagoController extends Controller
                 $datosSP['fecha_registro_pendiente'] = now();
             }
 
+            DB::beginTransaction();
+            
             $solicitud = SolicitudPago::create($datosSP);
 
             Log::info('✅ Solicitud de pago creada con proveedor existente', [
@@ -277,6 +278,8 @@ class ConstruccProveedorSolicitudPagoController extends Controller
                 'proveedor_id' => $proveedor->id,
             ]);
 
+            DB::commit();
+
             // Notificar al sistema de compras sobre la nueva SP
             try {
                 $this->interApiService->notifyNewSolicitudCompra($solicitud, $proveedor);
@@ -290,8 +293,6 @@ class ConstruccProveedorSolicitudPagoController extends Controller
                 ]);
                 // No fallar la operación si la notificación externa falla
             }
-
-            DB::commit();
 
             // Cargar relaciones para el resource
             $solicitud->load(['proveedor', 'cuentasBancarias', 'empresaConstrucc']);
