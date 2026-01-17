@@ -1627,6 +1627,15 @@ class ConstruccSolicitudPagoController extends Controller
                 'monto_abonado' => 0,
                 'pago_completo' => false,
                 'tiene_factura' => true,
+                
+                // Campos adicionales de la solicitud
+                'obra_id' => $validated['obra_id'] ?? null,
+                'tipo' => $validated['tipo'] ?? null,
+                'tipo_id' => $validated['tipo_id'] ?? null,
+                'notas' => $validated['notas'] ?? null,
+                'utilizara' => $validated['utilizara'] ?? null,
+                'equipo' => $validated['equipo'] ?? null,
+                'equipo_id' => $validated['equipo_id'] ?? null,
             ];
 
             if ($esDirector) {

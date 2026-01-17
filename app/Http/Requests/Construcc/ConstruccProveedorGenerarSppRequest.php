@@ -32,6 +32,15 @@ class ConstruccProveedorGenerarSppRequest extends FormRequest
             'usuario_id' => 'required|integer',
             'usuario_nombre' => 'required|string|max:255',
             'nivel_id' => 'required|integer|in:0,1,2,3,4,5,6', // 0=Admin, 1=DG, 2=DT, 3=DA, 4=SI, 5=PC, 6=RO
+
+            // Campos adicionales de la solicitud de pago
+            'obra_id' => 'nullable|integer',
+            'tipo' => 'nullable|string|max:255',
+            'tipo_id' => 'nullable|integer',
+            'notas' => 'nullable|string|max:1000',
+            'utilizara' => 'nullable|string|max:255',
+            'equipo' => 'nullable|string|max:255',
+            'equipo_id' => 'nullable|integer',
         ];
     }
 
@@ -71,6 +80,16 @@ class ConstruccProveedorGenerarSppRequest extends FormRequest
             'nivel_id.required' => 'El nivel del usuario es obligatorio',
             'nivel_id.integer' => 'El nivel del usuario debe ser un número entero',
             'nivel_id.in' => 'El nivel del usuario no es válido',
+
+            // Mensajes para campos adicionales de la solicitud de pago
+            'obra_id.integer' => 'El ID de la obra debe ser un número entero',
+            'tipo.max' => 'El tipo no debe exceder los 255 caracteres',
+            'tipo_id.integer' => 'El ID del tipo debe ser un número entero',
+            'notas.max' => 'Las notas no deben exceder los 1000 caracteres',
+            'utilizara.max' => 'El campo utilizara no debe exceder los 255 caracteres',
+            'equipo.max' => 'El equipo no debe exceder los 255 caracteres',
+            'equipo_id.integer' => 'El ID del equipo debe ser un número entero',
         ];
     }
 }
+ 

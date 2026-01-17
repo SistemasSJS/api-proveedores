@@ -308,22 +308,22 @@ class ConstruccProveedorController extends Controller
                         'updated_at' => $proveedor->updated_at->format('Y-m-d H:i:s'),
                     ],
                     'cuenta_bancaria' => $proveedor->cuentasBancarias
-                    ->where('preferida', true)
-                    ->map(function ($cuenta) {
-                        return [
-                            'id' => $cuenta->id,
-                            'alias' => $cuenta->alias,
-                            'banco_clave' => $cuenta->banco_clave,
-                            'banco_nombre' => $cuenta->banco_nombre,
-                            'tipo_cuenta' => $cuenta->tipo_cuenta,
-                            'campo_dependiente' => $cuenta->campo_dependiente,
-                            'titular_cuenta' => $cuenta->titular_cuenta,
-                            'preferida' => (bool) $cuenta->preferida,
-                            'referencia' => $cuenta->referencia,
-                            'sucursal' => $cuenta->sucursal,
-                            'swift' => $cuenta->swift,
-                        ];
-                    })->toArray(),
+                        ->where('preferida', true)
+                        ->map(function ($cuenta) {
+                            return [
+                                'id' => $cuenta->id,
+                                'alias' => $cuenta->alias,
+                                'banco_clave' => $cuenta->banco_clave,
+                                'banco_nombre' => $cuenta->banco_nombre,
+                                'tipo_cuenta' => $cuenta->tipo_cuenta,
+                                'campo_dependiente' => $cuenta->campo_dependiente,
+                                'titular_cuenta' => $cuenta->titular_cuenta,
+                                'preferida' => (bool) $cuenta->preferida,
+                                'referencia' => $cuenta->referencia,
+                                'sucursal' => $cuenta->sucursal,
+                                'swift' => $cuenta->swift,
+                            ];
+                        })->toArray(),
                 ],
                 'Proveedor actualizado exitosamente.'
             );

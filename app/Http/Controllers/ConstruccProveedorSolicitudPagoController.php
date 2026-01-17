@@ -38,7 +38,7 @@ class ConstruccProveedorSolicitudPagoController extends Controller
      * 6. Sincronizar cuenta bancaria con SP
      * 7. Agregar notificación y llamar InterApiService
      */
-    public function store(Proveedor $proveedor, ConstruccProveedorGenerarSppRequest $request): JsonResponse
+    public function store(ConstruccProveedorGenerarSppRequest $request, Proveedor $proveedor): JsonResponse
     {
         DB::beginTransaction();
 
@@ -124,7 +124,7 @@ class ConstruccProveedorSolicitudPagoController extends Controller
             $empresaConstructId = $validated['empresa_construcc_id'];
             $usuarioId = $validated['usuario_id'];
             $usuarioNombre = $validated['usuario_nombre'];
-            
+
             $folio_consecutivo_construcc = null;
             if ($empresaConstructId) {
                 $empresaConstrucc = \App\Models\EmpresaConstrucc::find($empresaConstructId);
@@ -136,13 +136,13 @@ class ConstruccProveedorSolicitudPagoController extends Controller
 
             // Determinar estado inicial según el nivel del usuario
             $nivelId = $validated['nivel_id'];
-            
+
             // Niveles que aprueban: DG, DT, PC
             $nivelesAprobadores = [1, 2, 5]; // DG, DT, PC
-            
+
             // Director Administrativo: va directo a pago
             $esDA = $nivelId === 3;
-            
+
             // Director que auto-aprueba: DG, DT, PC
             $esDirectorAprobador = in_array($nivelId, $nivelesAprobadores);
 
@@ -175,6 +175,15 @@ class ConstruccProveedorSolicitudPagoController extends Controller
                 'monto_abonado' => 0,
                 'pago_completo' => false,
                 'tiene_factura' => true,
+                
+                // Campos adicionales de la solicitud
+                'obra_id' => $validated['obra_id'] ?? null,
+                'tipo' => $validated['tipo'] ?? null,
+                'tipo_id' => $validated['tipo_id'] ?? null,
+                'notas' => $validated['notas'] ?? null,
+                'utilizara' => $validated['utilizara'] ?? null,
+                'equipo' => $validated['equipo'] ?? null,
+                'equipo_id' => $validated['equipo_id'] ?? null,
             ];
 
             if ($esDirectorAprobador) {
