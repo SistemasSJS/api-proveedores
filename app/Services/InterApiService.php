@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\SolicitudPago;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -208,6 +209,80 @@ class InterApiService
     }
   }
 
+  /**
+   * Notificar a API Construcciones sobre autorización de SP
+   * 
+   * @param int $spId ID de la solicitud de pago
+   * @param string $spFolio Folio de la solicitud de pago
+   * @param string $company ID de la compañía
+   * @param int $validatorUserId ID del usuario validador
+   * @return array
+   */
+  public function spAutorizarNotify(SolicitudPago $solicitudPago)
+  {
+    try {
+      Log::channel('inter_api')->info('Iniciando notificación de SP autorizada', [
+        'sp_id' => $solicitudPago->id ?? null,
+        'sp_folio' => $solicitudPago->numero_folio_solicitud ?? null,
+        'company' => $solicitudPago->empresa_construcc_id ?? null,
+        'user_id' => $solicitudPago->usuario_id ?? null,
+      ]);
+
+      $payload = [
+        'sp_id' => $solicitudPago->id,
+        'sp_folio' => $solicitudPago->numero_folio_solicitud,
+        'company' => $solicitudPago->empresa_construcc_id,
+        'user_id' => $solicitudPago->usuario_id,
+      ];
+
+      $url = "{$this->apiContruccUrl}/api/notify-sp-autorizada";
+      Log::channel('inter_api')->info('URL destino para notificación de SP autorizada', [
+        'url' => $url
+      ]);
+
+      $response = Http::withoutVerifying()
+        ->withHeaders([
+          'X-API-KEY' => $this->apiContruccApiKey,
+          'Content-Type' => 'application/json',
+          'Accept' => 'application/json'
+        ])
+        ->timeout($this->timeout)
+        ->post($url, $payload);
+
+      Log::channel('inter_api')->info('Respuesta recibida desde API Construcciones', [
+        'status' => $response->status(),
+        'body' => $response->body()
+      ]);
+
+      if ($response->successful()) {
+        Log::channel('inter_api')->info('Notificación de SP autorizada enviada exitosamente', [
+          'sp_id' => $solicitudPago->id,
+          'sp_folio' => $solicitudPago->numero_folio_solicitud
+        ]);
+
+        return [
+          'success' => true,
+          'data' => $response->json()
+        ];
+      }
+    } catch (\Exception $e) {
+      Log::channel('inter_api')->error('Excepción al notificar SP autorizada', [
+        'sp_id' => $solicitudPago->id ?? null,
+        'sp_folio' => $solicitudPago->numero_folio_solicitud ?? null,
+        'company' => $solicitudPago->empresa_construcc_id ?? null,
+        'user_id' => $solicitudPago->usuario_id ?? null,
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString()
+      ]);
+
+
+      // No lanzamos la excepción para que no afecte el guardado
+      return [
+        'success' => false,
+        'error' => $e->getMessage()
+      ];
+    }
+  }
 
   /**
    * Notificacion de pago para el usuario validador

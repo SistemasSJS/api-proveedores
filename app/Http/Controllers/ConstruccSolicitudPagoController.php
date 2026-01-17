@@ -412,6 +412,9 @@ class ConstruccSolicitudPagoController extends Controller
             'estado_solicitud' => EstadoSP::AUTORIZADA->value,
         ]);
 
+
+        $this->interApiService->spAutorizarNotify($solicitudPago);
+
         return $this->success(
             new ConstruccSolicitudPagoResource(
                 $solicitudPago->fresh()->load(SolicitudPago::eagerLodable())
@@ -1627,7 +1630,7 @@ class ConstruccSolicitudPagoController extends Controller
                 'monto_abonado' => 0,
                 'pago_completo' => false,
                 'tiene_factura' => true,
-                
+
                 // Campos adicionales de la solicitud
                 'obra_id' => $validated['obra_id'] ?? null,
                 'tipo' => $validated['tipo'] ?? null,
