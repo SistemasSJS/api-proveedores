@@ -172,7 +172,7 @@ class AuthController extends Controller
 
         return $this->success([
             'user' => new UserAuthenticateResource($user->load(User::eagerLodable())),
-            'proveedor' => new ProveedorResource($proveedor->load(Proveedor::eagerLodable())),
+            'proveedor' => $proveedor ? new ProveedorResource($proveedor->load(Proveedor::eagerLodable())) : null,
             'token' => $token,
         ], 'Registro completado', 201);
     }
