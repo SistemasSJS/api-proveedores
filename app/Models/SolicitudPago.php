@@ -10,6 +10,7 @@ use App\Traits\MarksAsNotified;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
@@ -261,6 +262,28 @@ class SolicitudPago extends BaseModel
     public function ordenCompra(): BelongsTo
     {
         return $this->belongsTo(OrdenCompra::class, 'referencia_oc', 'numero_orden');
+    }
+
+    /**
+     * Relación muchos a muchos con PagoSPP.
+     * Una solicitud de pago puede recibir múltiples pagos.
+     */
+    public function pagos(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            PagoSPP::class,
+            'pago_solicitud_pago',
+            'solicitud_pago_id',
+            'pago_spp_id'
+        )
+        ->withPivot([
+            'monto_aplicado',
+            'estado_pago',
+            'notas',
+            'fecha_aplicacion'
+        ])
+        ->withTimestamps()
+        ->using(PagoSolicitudPago::class);
     }
 
     /** ----------------

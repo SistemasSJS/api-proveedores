@@ -8,6 +8,7 @@ use App\Http\Controllers\ConstruccOrdenCompraController;
 use App\Http\Controllers\ConstruccProveedorController;
 use App\Http\Controllers\ConstruccProveedorCuentaBancariaController;
 use App\Http\Controllers\ConstruccProveedorSolicitudPagoController;
+use App\Http\Controllers\ConstruccPagosSPPController;
 use App\Http\Middleware\CheckApiKey;
 use Illuminate\Support\Facades\Route;
 
@@ -275,6 +276,34 @@ Route::prefix('construcc')
 
             // ===== SOLICITUDES DE PAGO =====
             Route::post('/{proveedor}/solicitudes-pago', [ConstruccProveedorSolicitudPagoController::class, 'store'])->name('solicitudes-pago.store');
+        });
+
+        /**
+         *--------------------------------------------------------------------------
+         * PAGOS DE SOLICITUDES DE PAGO (SPP) - CRUD Completo
+         *--------------------------------------------------------------------------
+         * Gestión de pagos realizados a proveedores.
+         * Un pago puede aplicar a múltiples solicitudes de pago.
+         * Una solicitud de pago puede recibir múltiples pagos.
+         */
+        Route::prefix('pagos-spp')->name('pagos-spp.')->group(function () {
+            // CRUD básico de pagos
+            Route::get('/', [ConstruccPagosSPPController::class, 'index'])->middleware(['audit'])->name('index');
+            Route::get('/{pago}', [ConstruccPagosSPPController::class, 'show'])->middleware(['audit'])->name('show');
+            Route::post('/', [ConstruccPagosSPPController::class, 'store'])->middleware(['audit'])->name('store');
+            Route::put('/{pago}', [ConstruccPagosSPPController::class, 'update'])->middleware(['audit'])->name('update');
+            Route::delete('/{pago}', [ConstruccPagosSPPController::class, 'destroy'])->middleware(['audit'])->name('destroy');
+
+            // Descarga de comprobante
+            Route::get('/{pago}/comprobante/download', [ConstruccPagosSPPController::class, 'descargarComprobante'])->middleware(['audit'])->name('descargar-comprobante');
+
+            // Gestión de relaciones con solicitudes de pago
+            Route::post('/{pago}/solicitudes-pago', [ConstruccPagosSPPController::class, 'agregarSolicitudPago'])->middleware(['audit'])->name('agregar-solicitud-pago');
+            Route::put('/{pago}/solicitudes-pago/{solicitudPago}', [ConstruccPagosSPPController::class, 'actualizarSolicitudPago'])->middleware(['audit'])->name('actualizar-solicitud-pago');
+            Route::delete('/{pago}/solicitudes-pago/{solicitudPago}', [ConstruccPagosSPPController::class, 'eliminarSolicitudPago'])->middleware(['audit'])->name('eliminar-solicitud-pago');
+
+            // Estadísticas
+            Route::get('estadisticas', [ConstruccPagosSPPController::class, 'estadisticas'])->middleware(['audit'])->name('estadisticas');
         });
         /**
          *--------------------------------------------------------------------------
