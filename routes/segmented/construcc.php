@@ -212,6 +212,7 @@ Route::prefix('construcc')
 
             // Cambios de estatus con validaciones por rol
             Route::post('{solicitudPago}/autorizar', [ConstruccSolicitudPagoController::class, 'autorizar'])->name('autorizar');
+            Route::post('{solicitudPago}/autorizar-parcial', [ConstruccSolicitudPagoController::class, 'autorizarParcial'])->name('autorizar-parcial');
             Route::post('{solicitudPago}/rechazar', [ConstruccSolicitudPagoController::class, 'rechazar'])->name('rechazar');
             Route::post('{solicitudPago}/confirmar-pago', [ConstruccSolicitudPagoController::class, 'confirmarPago'])->name('confirmar-pago');
             Route::post('{solicitudPago}/actualizar-comprobante-pago', [ConstruccSolicitudPagoController::class, 'actualizarComprobantePago'])->name('actualizar-comprobante-pago');
