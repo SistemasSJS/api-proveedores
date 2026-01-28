@@ -107,6 +107,14 @@ class SolicitudPago extends BaseModel
         'clave_rastreo_pago',
         'banco_pago',
         'fecha_comprobante_pago',
+
+
+        // Campos para autorización parcial
+        'monto_autorizado',
+        'usuario_autorizo_parcial_id',
+        'usuario_autorizo_parcial_nombre',
+        'motivo_autorizacion_parcial',
+        'fecha_autorizacion_parcial',
     ];
 
     protected static $filters = [
