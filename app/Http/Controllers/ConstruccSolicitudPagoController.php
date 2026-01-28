@@ -456,7 +456,7 @@ class ConstruccSolicitudPagoController extends Controller
             'DG' => 'dg',
             'DT' => 'dt',
             'PC' => 'pc',
-            'SI' => 'si',
+            'DA' => 'da',
         ];
 
         if (! isset($rolMap[$rol])) {
@@ -489,7 +489,7 @@ class ConstruccSolicitudPagoController extends Controller
             $rolField => EstadoSolicitud::AUTORIZADA->value,
             $fechaField => now(),
             'estado_solicitud' => EstadoSP::AUTORIZADA->value,
-            
+
             // Registrar datos de autorización parcial
             'monto_autorizado' => $montoAutorizado,
             'usuario_autorizo_parcial_id' => $usuarioId,
