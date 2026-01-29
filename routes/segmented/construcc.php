@@ -303,8 +303,27 @@ Route::prefix('construcc')
             Route::put('/{pago}/solicitudes-pago/{solicitudPago}', [ConstruccPagosSPPController::class, 'actualizarSolicitudPago'])->middleware(['audit'])->name('actualizar-solicitud-pago');
             Route::delete('/{pago}/solicitudes-pago/{solicitudPago}', [ConstruccPagosSPPController::class, 'eliminarSolicitudPago'])->middleware(['audit'])->name('eliminar-solicitud-pago');
 
+            // ===== GESTIÓN DE SPP POR PROVEEDOR =====
+            // Listar SPP de un proveedor específico
+            Route::get('/proveedor/{proveedor}/spp', [ConstruccPagosSPPController::class, 'sppPorProveedor'])->middleware(['audit'])->name('proveedor.spp.index');
+
+            // Ver SPP específica con sus pagos
+            Route::get('/proveedor/{proveedor}/spp/{spp}', [ConstruccPagosSPPController::class, 'showSppProveedor'])->middleware(['audit'])->name('proveedor.spp.show');
+
+            // Listar pagos de una SPP específica
+            Route::get('/proveedor/{proveedor}/spp/{spp}/pagos', [ConstruccPagosSPPController::class, 'pagosDeSpp'])->middleware(['audit'])->name('proveedor.spp.pagos');
+
+            // Ver pago específico de una SPP
+            Route::get('/proveedor/{proveedor}/spp/{spp}/pagos/{pago}', [ConstruccPagosSPPController::class, 'showPagoDeSpp'])->middleware(['audit'])->name('proveedor.spp.pagos.show');
+
+            // Subir comprobante de un pago
+            Route::post('/proveedor/{proveedor}/spp/{spp}/pagos/{pago}/subir-comprobante', [ConstruccPagosSPPController::class, 'subirComprobanteSpp'])->middleware(['audit'])->name('proveedor.spp.pagos.subir-comprobante');
+
+            // Registrar un pago para múltiples SPP del proveedor
+            Route::post('/proveedor/{proveedor}/pagos', [ConstruccPagosSPPController::class, 'registrarPagoProveedor'])->middleware(['audit'])->name('proveedor.pagos.registrar');
+
             // Estadísticas
-            Route::get('estadisticas', [ConstruccPagosSPPController::class, 'estadisticas'])->middleware(['audit'])->name('estadisticas');
+            Route::get('/estadisticas', [ConstruccPagosSPPController::class, 'estadisticas'])->middleware(['audit'])->name('estadisticas');
         });
 
         /**

@@ -1,0 +1,469 @@
+{
+	"info": {
+		"_postman_id": "nuevas-rutas-construcc-2026",
+		"name": "🆕 Nuevas Rutas - Construcción Proveedores",
+		"description": "Colección con ÚNICAMENTE las nuevas rutas implementadas para el módulo de construcción.\n\n**Incluye:**\n- CRUD Proveedores (tipo_alta=2)\n- CRUD Cuentas Bancarias\n- Generar SPP con proveedor existente\n- Crear Proveedor + Cuenta + SPP en una operación\n- Flujo de registro y validación\n\n**Fecha:** Enero 2026\n**Versión:** 1.0",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:80/api",
+			"type": "string"
+		},
+		{
+			"key": "apiKey",
+			"value": "7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6",
+			"type": "string"
+		},
+		{
+			"key": "proveedorId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "cuentaId",
+			"value": "1",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "🆕 PROVEEDORES tipo_alta=2",
+			"item": [
+				{
+					"name": "GET - Listar Proveedores Construcción",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/construcc/proveedor",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "proveedor"]
+						},
+						"description": "Lista todos los proveedores con tipo_alta=2 (registrados por construcción)"
+					}
+				},
+				{
+					"name": "GET - Detalle de Proveedor + Estadísticas",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/construcc/proveedor/{{proveedorId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "proveedor", "{{proveedorId}}"]
+						},
+						"description": "Obtiene detalle del proveedor con estadísticas de SPP:\n- total_solicitudes_pago\n- total_sp_pendientes\n- total_sp_autorizadas\n- total_sp_pagadas\n- monto_total_solicitado\n- monto_total_pagado"
+					}
+				},
+				{
+					"name": "POST - Crear Proveedor + Cuenta",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"razon_social\": \"Nueva Constructora SA de CV\",\n  \"nombre_comercial\": \"Nueva Constructora\",\n  \"rfc\": \"NCO240101XYZ\",\n  \"email\": \"contacto@nuevaconstructora.com\",\n  \"telefono\": \"5598765432\",\n  \"celular\": \"5598765433\",\n  \"empresa_construcc_id\": 1,\n  \"usuario_id\": 10,\n  \"usuario_nombre\": \"Juan Pérez Residente\",\n  \"nivel_id\": 6,\n  \"cuenta\": {\n    \"alias\": \"Cuenta Principal\",\n    \"banco_clave\": \"012\",\n    \"banco_nombre\": \"BBVA Bancomer\",\n    \"tipo_cuenta\": \"tarjeta\",\n    \"campo_dependiente\": \"012180001234567890\",\n    \"titular_cuenta\": \"Nueva Constructora SA de CV\",\n    \"referencia\": \"REF-001\",\n    \"sucursal\": \"0001\",\n    \"swift\": \"BCMRMXMMPYM\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/proveedor",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "proveedor"]
+						},
+						"description": "Crea proveedor tipo_alta=2 con su primera cuenta bancaria (automáticamente preferida)"
+					}
+				},
+				{
+					"name": "PUT - Actualizar Proveedor + Cuentas",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"razon_social\": \"Constructora Actualizada SA de CV\",\n  \"email\": \"nuevo@constructora.com\",\n  \"celular\": \"5599887766\",\n  \"usuario_id\": 5,\n  \"nivel_id\": 1,\n  \"cuentas_bancarias\": [\n    {\n      \"id\": 1,\n      \"alias\": \"Cuenta BBVA Actualizada\",\n      \"preferida\": true\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/proveedor/{{proveedorId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "proveedor", "{{proveedorId}}"]
+						},
+						"description": "Actualiza proveedor y opcionalmente sus cuentas bancarias. Retorna TODAS las cuentas del proveedor en la respuesta."
+					}
+				},
+				{
+					"name": "DELETE - Dar de Baja Proveedor",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"usuario_id\": 10,\n  \"nivel_id\": 1,\n  \"motivo_baja\": \"Proveedor inactivo\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/proveedor/{{proveedorId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "proveedor", "{{proveedorId}}"]
+						},
+						"description": "Marca el proveedor como inactivo (soft delete). Solo directores o creador."
+					}
+				}
+			]
+		},
+		{
+			"name": "🆕 CUENTAS BANCARIAS",
+			"item": [
+				{
+					"name": "GET - Listar Cuentas del Proveedor",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/construcc/proveedor/{{proveedorId}}/cuentas",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "proveedor", "{{proveedorId}}", "cuentas"]
+						}
+					}
+				},
+				{
+					"name": "POST - Crear Cuenta Bancaria",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"alias\": \"Cuenta HSBC Secundaria\",\n  \"banco_clave\": \"021\",\n  \"banco_nombre\": \"HSBC\",\n  \"tipo_cuenta\": \"Cheques\",\n  \"campo_dependiente\": \"021180005555555555\",\n  \"titular_cuenta\": \"Constructora SA de CV\",\n  \"referencia\": \"REF-HSBC-002\",\n  \"sucursal\": \"0005\",\n  \"swift\": \"BIMEMXMM\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/proveedor/{{proveedorId}}/cuentas",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "proveedor", "{{proveedorId}}", "cuentas"]
+						}
+					}
+				},
+				{
+					"name": "PUT - Actualizar Cuenta Bancaria",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"alias\": \"Cuenta HSBC Actualizada\",\n  \"referencia\": \"REF-HSBC-003\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/proveedor/{{proveedorId}}/cuentas/{{cuentaId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "proveedor", "{{proveedorId}}", "cuentas", "{{cuentaId}}"]
+						}
+					}
+				},
+				{
+					"name": "POST - Marcar como Favorita",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/construcc/proveedor/{{proveedorId}}/cuentas/{{cuentaId}}/set-favorita",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "proveedor", "{{proveedorId}}", "cuentas", "{{cuentaId}}", "set-favorita"]
+						}
+					}
+				},
+				{
+					"name": "DELETE - Eliminar Cuenta",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/construcc/proveedor/{{proveedorId}}/cuentas/{{cuentaId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "proveedor", "{{proveedorId}}", "cuentas", "{{cuentaId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🆕 SPP - Proveedor Existente",
+			"item": [
+				{
+					"name": "POST - SPP Residente (PENDIENTE)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{"key": "descripcion_concepto", "value": "Materiales de construcción", "type": "text"},
+								{"key": "monto_total", "value": "25000.50", "type": "text"},
+								{"key": "observaciones", "value": "Urgente para avance de obra", "type": "text"},
+								{"key": "factura_pdf", "type": "file", "src": ""},
+								{"key": "factura_xml", "type": "file", "src": ""},
+								{"key": "cotizacion", "type": "file", "src": ""},
+								{"key": "cuenta_bancaria_id", "value": "1", "type": "text"},
+								{"key": "empresa_construcc_id", "value": "1", "type": "text"},
+								{"key": "usuario_id", "value": "10", "type": "text"},
+								{"key": "usuario_nombre", "value": "Juan Pérez Residente", "type": "text"},
+								{"key": "nivel_id", "value": "6", "type": "text"},
+								{"key": "obra_id", "value": "5", "type": "text"},
+								{"key": "tipo", "value": "Material", "type": "text"},
+								{"key": "tipo_id", "value": "3", "type": "text"},
+								{"key": "notas", "value": "Materiales para muros", "type": "text"},
+								{"key": "utilizara", "value": "Construcción", "type": "text"},
+								{"key": "equipo", "value": "Cuadrilla A", "type": "text"},
+								{"key": "equipo_id", "value": "1", "type": "text"}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/proveedor/{{proveedorId}}/solicitudes-pago",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "proveedor", "{{proveedorId}}", "solicitudes-pago"]
+						},
+						"description": "Genera SPP con proveedor existente. Residente → estado: PENDIENTE\n\n⚠️ ARCHIVOS CONDICIONALES:\n- Si adjuntas cotización → factura PDF/XML son opcionales\n- Si NO adjuntas cotización → factura PDF/XML son obligatorias"
+					}
+				},
+				{
+					"name": "POST - SPP Director (AUTORIZADA)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{"key": "descripcion_concepto", "value": "Servicios profesionales", "type": "text"},
+								{"key": "monto_total", "value": "50000.00", "type": "text"},
+								{"key": "factura_pdf", "type": "file", "src": ""},
+								{"key": "factura_xml", "type": "file", "src": ""},
+								{"key": "cuenta_bancaria_id", "value": "1", "type": "text"},
+								{"key": "empresa_construcc_id", "value": "1", "type": "text"},
+								{"key": "usuario_id", "value": "5", "type": "text"},
+								{"key": "usuario_nombre", "value": "Carlos García DG", "type": "text"},
+								{"key": "nivel_id", "value": "1", "type": "text"},
+								{"key": "obra_id", "value": "5", "type": "text"},
+								{"key": "tipo", "value": "Servicio", "type": "text"}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/proveedor/{{proveedorId}}/solicitudes-pago",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "proveedor", "{{proveedorId}}", "solicitudes-pago"]
+						},
+						"description": "Director General auto-aprueba → estado: AUTORIZADA"
+					}
+				},
+				{
+					"name": "POST - SPP Solo con Cotización",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{"key": "descripcion_concepto", "value": "Anticipo materiales - Solo cotización", "type": "text"},
+								{"key": "monto_total", "value": "12000.00", "type": "text"},
+								{"key": "observaciones", "value": "Anticipo 50% - Factura pendiente", "type": "text"},
+								{"key": "cotizacion", "type": "file", "src": ""},
+								{"key": "cuenta_bancaria_id", "value": "1", "type": "text"},
+								{"key": "empresa_construcc_id", "value": "1", "type": "text"},
+								{"key": "usuario_id", "value": "10", "type": "text"},
+								{"key": "usuario_nombre", "value": "Juan Pérez", "type": "text"},
+								{"key": "nivel_id", "value": "6", "type": "text"},
+								{"key": "notas", "value": "Anticipo para compra", "type": "text"}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/proveedor/{{proveedorId}}/solicitudes-pago",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "proveedor", "{{proveedorId}}", "solicitudes-pago"]
+						},
+						"description": "✨ NUEVO: SPP solo con cotización (sin factura)\n\ntiene_factura = false\nEstado según nivel de usuario"
+					}
+				}
+			]
+		},
+		{
+			"name": "🆕 SPP - Crear Todo en Uno",
+			"item": [
+				{
+					"name": "POST - Crear Proveedor + Cuenta + SPP (Residente)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{"key": "descripcion_concepto", "value": "Materiales - Proyecto Residencial", "type": "text"},
+								{"key": "monto_total", "value": "45000.00", "type": "text"},
+								{"key": "observaciones", "value": "Primera SPP nuevo proveedor", "type": "text"},
+								{"key": "factura_pdf", "type": "file", "src": ""},
+								{"key": "factura_xml", "type": "file", "src": ""},
+								{"key": "proveedor_rfc", "value": "NPR240101XYZ", "type": "text"},
+								{"key": "proveedor_razon_social", "value": "Nuevo Proveedor SA de CV", "type": "text"},
+								{"key": "proveedor_nombre_comercial", "value": "Nuevo Proveedor", "type": "text"},
+								{"key": "proveedor_email", "value": "contacto@nuevoproveedor.com", "type": "text"},
+								{"key": "proveedor_telefono", "value": "5599887766", "type": "text"},
+								{"key": "proveedor_celular", "value": "5599887767", "type": "text"},
+								{"key": "cuenta_bancaria_alias", "value": "Cuenta Principal", "type": "text"},
+								{"key": "cuenta_bancaria_banco_clave", "value": "012", "type": "text"},
+								{"key": "cuenta_bancaria_banco_nombre", "value": "BBVA", "type": "text"},
+								{"key": "cuenta_bancaria_tipo_cuenta", "value": "tarjeta", "type": "text"},
+								{"key": "cuenta_bancaria_campo_dependiente", "value": "012180009988776655", "type": "text"},
+								{"key": "cuenta_bancaria_titular_cuenta", "value": "Nuevo Proveedor SA", "type": "text"},
+								{"key": "empresa_construcc_id", "value": "1", "type": "text"},
+								{"key": "usuario_id", "value": "10", "type": "text"},
+								{"key": "usuario_nombre", "value": "Juan Pérez", "type": "text"},
+								{"key": "nivel_id", "value": "6", "type": "text"},
+								{"key": "obra_id", "value": "5", "type": "text"},
+								{"key": "tipo", "value": "Material", "type": "text"},
+								{"key": "tipo_id", "value": "3", "type": "text"}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/solicitud-pago/generar-spp-construcc",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "solicitud-pago", "generar-spp-construcc"]
+						},
+						"description": "Crea proveedor (tipo_alta=2) + cuenta bancaria + SPP en una sola operación\n\nResultado:\n- Proveedor nuevo\n- Cuenta bancaria (preferida)\n- SPP estado: PENDIENTE (residente)"
+					}
+				},
+				{
+					"name": "POST - Crear Proveedor + Cuenta + SPP (Director)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{"key": "descripcion_concepto", "value": "Consultoría técnica especializada", "type": "text"},
+								{"key": "monto_total", "value": "85000.00", "type": "text"},
+								{"key": "factura_pdf", "type": "file", "src": ""},
+								{"key": "factura_xml", "type": "file", "src": ""},
+								{"key": "proveedor_rfc", "value": "CST250101ABC", "type": "text"},
+								{"key": "proveedor_razon_social", "value": "Consultoría SA de CV", "type": "text"},
+								{"key": "proveedor_nombre_comercial", "value": "ConsEst", "type": "text"},
+								{"key": "proveedor_email", "value": "info@consest.com", "type": "text"},
+								{"key": "proveedor_telefono", "value": "5544332211", "type": "text"},
+								{"key": "cuenta_bancaria_alias", "value": "Cuenta Principal", "type": "text"},
+								{"key": "cuenta_bancaria_banco_clave", "value": "021", "type": "text"},
+								{"key": "cuenta_bancaria_banco_nombre", "value": "HSBC", "type": "text"},
+								{"key": "cuenta_bancaria_tipo_cuenta", "value": "Cheques", "type": "text"},
+								{"key": "cuenta_bancaria_campo_dependiente", "value": "021180001122334455", "type": "text"},
+								{"key": "cuenta_bancaria_titular_cuenta", "value": "Consultoría SA", "type": "text"},
+								{"key": "empresa_construcc_id", "value": "1", "type": "text"},
+								{"key": "usuario_id", "value": "5", "type": "text"},
+								{"key": "usuario_nombre", "value": "Carlos García DG", "type": "text"},
+								{"key": "nivel_id", "value": "1", "type": "text"}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/solicitud-pago/generar-spp-construcc",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "solicitud-pago", "generar-spp-construcc"]
+						},
+						"description": "Crea proveedor + cuenta + SPP auto-aprobada por director\n\nResultado:\n- SPP estado: AUTORIZADA"
+					}
+				}
+			]
+		},
+		{
+			"name": "🆕 Registro y Validación",
+			"item": [
+				{
+					"name": "POST - Registro Nuevo Proveedor",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre_comercial\": \"Proveedor Test Nuevo\",\n  \"telefono\": \"5511112222\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"token\": \"ABC123\",\n  \"rfc\": \"PTN900101XYZ\",\n  \"email\": \"test@proveedor.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register_basico",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "register_basico"]
+						}
+					}
+				},
+				{
+					"name": "POST - Registro con Proveedor tipo_alta=2",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre_comercial\": \"Proveedor Test\",\n  \"telefono\": \"5512345678\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"token\": \"ABC123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register_basico",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "register_basico"]
+						},
+						"description": "Si el proveedor existe con tipo_alta=2:\n\nRespuesta:\n- requiere_completar_registro: true\n- proveedor: {...datos}\n- token_temporal: \"...\""
+					}
+				},
+				{
+					"name": "POST - Completar Registro",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"proveedor_id\": 1,\n  \"token_temporal\": \"eyJwcm92ZWVkb3JfaWQiOjEsInRpbWVzdGFtcCI6MTcwNTI1MDAwMH0=\",\n  \"password\": \"nuevaPassword123\",\n  \"password_confirmation\": \"nuevaPassword123\",\n  \"razon_social\": \"Constructora Actualizada SA de CV\",\n  \"email\": \"nuevo@constructora.com\",\n  \"telefono\": \"5512345679\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/completar-registro-proveedor",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "completar-registro-proveedor"]
+						},
+						"description": "Completa el registro de proveedor tipo_alta=2\n\nResultado:\n- Cambia tipo_alta de 2 a 1\n- Crea usuario\n- Retorna token de sesión"
+					}
+				}
+			]
+		}
+	]
+}

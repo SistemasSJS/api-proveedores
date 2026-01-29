@@ -1,0 +1,365 @@
+{
+	"info": {
+		"_postman_id": "spp-construcc-2026",
+		"name": "💰 SPP - Solicitudes de Pago Construcción",
+		"description": "Colección exclusiva para Solicitudes de Pago del módulo de construcción.\n\n**Dos flujos principales:**\n1. Generar SPP con proveedor EXISTENTE\n2. Crear proveedor + cuenta + SPP en una sola operación\n\n**Validación condicional de archivos:**\n- Con cotización → Factura opcional\n- Sin cotización → Factura obligatoria\n\n**Niveles de usuario:**\n- DG(1), DT(2), PC(5) → Auto-aprueban (AUTORIZADA)\n- DA(3) → Directo a pago (AUTORIZADA + da/pc)\n- RO(6), SI(4), Admin(0) → Requieren aprobación (PENDIENTE)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:80/api",
+			"type": "string"
+		},
+		{
+			"key": "apiKey",
+			"value": "7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6",
+			"type": "string"
+		},
+		{
+			"key": "proveedorId",
+			"value": "1",
+			"type": "string",
+			"description": "ID del proveedor existente (para flujo 1)"
+		}
+	],
+	"item": [
+		{
+			"name": "📋 FLUJO 1: SPP con Proveedor Existente",
+			"description": "Genera SPP para un proveedor que YA existe en el sistema (tipo_alta=2)",
+			"item": [
+				{
+					"name": "1.1 SPP - Residente (PENDIENTE)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{"key": "descripcion_concepto", "value": "Materiales de construcción - Torre A", "type": "text", "description": "Requerido: min 1, max 500"},
+								{"key": "monto_total", "value": "25000.50", "type": "text", "description": "Requerido: numeric, min 0"},
+								{"key": "observaciones", "value": "Urgente para avance de obra", "type": "text", "description": "Opcional: max 1000"},
+								{"key": "factura_pdf", "type": "file", "src": "", "description": "Requerido SI no hay cotización"},
+								{"key": "factura_xml", "type": "file", "src": "", "description": "Requerido SI no hay cotización"},
+								{"key": "cotizacion", "type": "file", "src": "", "description": "Opcional: Si se adjunta, factura no es obligatoria"},
+								{"key": "cuenta_bancaria_id", "value": "1", "type": "text", "description": "Requerido: ID de cuenta del proveedor"},
+								{"key": "empresa_construcc_id", "value": "1", "type": "text", "description": "Requerido"},
+								{"key": "usuario_id", "value": "10", "type": "text", "description": "Requerido"},
+								{"key": "usuario_nombre", "value": "Juan Pérez Residente", "type": "text", "description": "Requerido"},
+								{"key": "nivel_id", "value": "6", "type": "text", "description": "Requerido: 0-6"},
+								{"key": "obra_id", "value": "5", "type": "text", "description": "Opcional"},
+								{"key": "tipo", "value": "Material", "type": "text", "description": "Opcional: max 255"},
+								{"key": "tipo_id", "value": "3", "type": "text", "description": "Opcional"},
+								{"key": "notas", "value": "Materiales para construcción de muros", "type": "text", "description": "Opcional: max 1000"},
+								{"key": "utilizara", "value": "Construcción", "type": "text", "description": "Opcional: max 255"},
+								{"key": "equipo", "value": "Cuadrilla A", "type": "text", "description": "Opcional: max 255"},
+								{"key": "equipo_id", "value": "1", "type": "text", "description": "Opcional"}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/proveedor/{{proveedorId}}/solicitudes-pago",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "proveedor", "{{proveedorId}}", "solicitudes-pago"]
+						},
+						"description": "**Endpoint:** POST /construcc/proveedor/{proveedor}/solicitudes-pago\n\n**Resultado:**\n- verificada: true\n- estado_solicitud: PENDIENTE\n- tiene_factura: true/false\n\n**Usuario:** Residente (nivel_id=6) - Requiere aprobación"
+					}
+				},
+				{
+					"name": "1.2 SPP - Director General (AUTORIZADA)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{"key": "descripcion_concepto", "value": "Servicios profesionales - Consultoría", "type": "text"},
+								{"key": "monto_total", "value": "50000.00", "type": "text"},
+								{"key": "observaciones", "value": "Autorizado por Director General", "type": "text"},
+								{"key": "factura_pdf", "type": "file", "src": ""},
+								{"key": "factura_xml", "type": "file", "src": ""},
+								{"key": "cuenta_bancaria_id", "value": "1", "type": "text"},
+								{"key": "empresa_construcc_id", "value": "1", "type": "text"},
+								{"key": "usuario_id", "value": "5", "type": "text"},
+								{"key": "usuario_nombre", "value": "Carlos García DG", "type": "text"},
+								{"key": "nivel_id", "value": "1", "type": "text"},
+								{"key": "obra_id", "value": "5", "type": "text"},
+								{"key": "tipo", "value": "Servicio", "type": "text"},
+								{"key": "tipo_id", "value": "2", "type": "text"},
+								{"key": "notas", "value": "Consultoría estructural Torre A", "type": "text"}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/proveedor/{{proveedorId}}/solicitudes-pago",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "proveedor", "{{proveedorId}}", "solicitudes-pago"]
+						},
+						"description": "**Resultado:**\n- verificada: true\n- estado_solicitud: AUTORIZADA ✅\n- dg: autorizada\n- dg_fecha: timestamp\n- fecha_aprobado: timestamp\n\n**Usuario:** Director General - Auto-aprueba"
+					}
+				},
+				{
+					"name": "1.3 SPP - Director Técnico (AUTORIZADA)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{"key": "descripcion_concepto", "value": "Mano de obra especializada", "type": "text"},
+								{"key": "monto_total", "value": "35000.00", "type": "text"},
+								{"key": "factura_pdf", "type": "file", "src": ""},
+								{"key": "factura_xml", "type": "file", "src": ""},
+								{"key": "cuenta_bancaria_id", "value": "1", "type": "text"},
+								{"key": "empresa_construcc_id", "value": "1", "type": "text"},
+								{"key": "usuario_id", "value": "7", "type": "text"},
+								{"key": "usuario_nombre", "value": "María López DT", "type": "text"},
+								{"key": "nivel_id", "value": "2", "type": "text"}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/proveedor/{{proveedorId}}/solicitudes-pago",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "proveedor", "{{proveedorId}}", "solicitudes-pago"]
+						},
+						"description": "**Usuario:** Director Técnico (nivel_id=2) - Auto-aprueba\n\n**Resultado:** estado_solicitud: AUTORIZADA"
+					}
+				},
+				{
+					"name": "1.4 SPP - Director Administrativo (DIRECTO A PAGO)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{"key": "descripcion_concepto", "value": "Pago urgente equipamiento - DA", "type": "text"},
+								{"key": "monto_total", "value": "75000.00", "type": "text"},
+								{"key": "observaciones", "value": "Directo a pago por DA", "type": "text"},
+								{"key": "factura_pdf", "type": "file", "src": ""},
+								{"key": "factura_xml", "type": "file", "src": ""},
+								{"key": "cuenta_bancaria_id", "value": "1", "type": "text"},
+								{"key": "empresa_construcc_id", "value": "1", "type": "text"},
+								{"key": "usuario_id", "value": "8", "type": "text"},
+								{"key": "usuario_nombre", "value": "Roberto Sánchez DA", "type": "text"},
+								{"key": "nivel_id", "value": "3", "type": "text"}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/proveedor/{{proveedorId}}/solicitudes-pago",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "proveedor", "{{proveedorId}}", "solicitudes-pago"]
+						},
+						"description": "⭐ ESPECIAL - Director Administrativo\n\n**Resultado:**\n- estado_solicitud: AUTORIZADA\n- da: autorizada\n- pc: autorizada\n- Ambos con timestamp\n- Va directo a pago"
+					}
+				},
+				{
+					"name": "1.5 SPP - Programación y Control (AUTORIZADA)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{"key": "descripcion_concepto", "value": "Suministros según programación", "type": "text"},
+								{"key": "monto_total", "value": "18500.00", "type": "text"},
+								{"key": "factura_pdf", "type": "file", "src": ""},
+								{"key": "factura_xml", "type": "file", "src": ""},
+								{"key": "cuenta_bancaria_id", "value": "1", "type": "text"},
+								{"key": "empresa_construcc_id", "value": "1", "type": "text"},
+								{"key": "usuario_id", "value": "12", "type": "text"},
+								{"key": "usuario_nombre", "value": "Ana Martínez PC", "type": "text"},
+								{"key": "nivel_id", "value": "5", "type": "text"}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/proveedor/{{proveedorId}}/solicitudes-pago",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "proveedor", "{{proveedorId}}", "solicitudes-pago"]
+						},
+						"description": "**Usuario:** Programación y Control - Auto-aprueba\n\n**Resultado:** estado_solicitud: AUTORIZADA"
+					}
+				},
+				{
+					"name": "1.6 SPP - SOLO con Cotización (sin factura)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{"key": "descripcion_concepto", "value": "Anticipo materiales - Solo cotización", "type": "text"},
+								{"key": "monto_total", "value": "12000.00", "type": "text"},
+								{"key": "observaciones", "value": "Anticipo 50% - Factura pendiente", "type": "text"},
+								{"key": "cotizacion", "type": "file", "src": "", "description": "✅ SOLO COTIZACIÓN"},
+								{"key": "cuenta_bancaria_id", "value": "1", "type": "text"},
+								{"key": "empresa_construcc_id", "value": "1", "type": "text"},
+								{"key": "usuario_id", "value": "10", "type": "text"},
+								{"key": "usuario_nombre", "value": "Juan Pérez", "type": "text"},
+								{"key": "nivel_id", "value": "6", "type": "text"},
+								{"key": "notas", "value": "Anticipo para compra de materiales", "type": "text"}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/proveedor/{{proveedorId}}/solicitudes-pago",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "proveedor", "{{proveedorId}}", "solicitudes-pago"]
+						},
+						"description": "✨ CASO ESPECIAL: SPP solo con cotización\n\n⚠️ NO adjuntar factura_pdf ni factura_xml\n✅ Solo adjuntar cotización\n\n**Resultado:**\n- tiene_factura: false\n- ruta_archivo_cotizacion: [path]\n- Estado según nivel de usuario"
+					}
+				}
+			]
+		},
+		{
+			"name": "📦 FLUJO 2: Crear Proveedor + Cuenta + SPP",
+			"description": "Crea proveedor (tipo_alta=2), cuenta bancaria y SPP en UNA sola operación",
+			"item": [
+				{
+					"name": "2.1 Crear TODO - Residente (SPP PENDIENTE)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{"key": "descripcion_concepto", "value": "Materiales - Proyecto Residencial Fase 1", "type": "text"},
+								{"key": "monto_total", "value": "45000.00", "type": "text"},
+								{"key": "observaciones", "value": "Primera SPP de nuevo proveedor", "type": "text"},
+								{"key": "factura_pdf", "type": "file", "src": ""},
+								{"key": "factura_xml", "type": "file", "src": ""},
+								{"key": "cotizacion", "type": "file", "src": ""},
+								{"key": "proveedor_rfc", "value": "NPR240101XYZ", "type": "text", "description": "Requerido: 12-13 chars"},
+								{"key": "proveedor_razon_social", "value": "Nuevo Proveedor SA de CV", "type": "text", "description": "Requerido: max 255"},
+								{"key": "proveedor_nombre_comercial", "value": "Nuevo Proveedor", "type": "text", "description": "Requerido: max 255"},
+								{"key": "proveedor_email", "value": "contacto@nuevoproveedor.com", "type": "text", "description": "Requerido: email válido"},
+								{"key": "proveedor_telefono", "value": "5599887766", "type": "text", "description": "Requerido: max 20"},
+								{"key": "proveedor_celular", "value": "5599887767", "type": "text", "description": "Opcional: max 20"},
+								{"key": "cuenta_bancaria_alias", "value": "Cuenta Principal NP", "type": "text", "description": "Requerido"},
+								{"key": "cuenta_bancaria_banco_clave", "value": "012", "type": "text", "description": "Requerido: max 10"},
+								{"key": "cuenta_bancaria_banco_nombre", "value": "BBVA Bancomer", "type": "text", "description": "Requerido: max 255"},
+								{"key": "cuenta_bancaria_tipo_cuenta", "value": "tarjeta", "type": "text", "description": "Requerido"},
+								{"key": "cuenta_bancaria_campo_dependiente", "value": "012180009988776655", "type": "text", "description": "Requerido: CLABE o núm cuenta"},
+								{"key": "cuenta_bancaria_titular_cuenta", "value": "Nuevo Proveedor SA de CV", "type": "text", "description": "Requerido"},
+								{"key": "cuenta_bancaria_referencia", "value": "REF-NP-001", "type": "text", "description": "Opcional"},
+								{"key": "cuenta_bancaria_sucursal", "value": "0001", "type": "text", "description": "Opcional"},
+								{"key": "cuenta_bancaria_swift", "value": "BCMRMXMMPYM", "type": "text", "description": "Opcional"},
+								{"key": "empresa_construcc_id", "value": "1", "type": "text"},
+								{"key": "usuario_id", "value": "10", "type": "text"},
+								{"key": "usuario_nombre", "value": "Juan Pérez Residente", "type": "text"},
+								{"key": "nivel_id", "value": "6", "type": "text"},
+								{"key": "obra_id", "value": "5", "type": "text"},
+								{"key": "tipo", "value": "Material", "type": "text"},
+								{"key": "tipo_id", "value": "3", "type": "text"},
+								{"key": "notas", "value": "Materiales para muros perimetrales", "type": "text"},
+								{"key": "utilizara", "value": "Construcción", "type": "text"},
+								{"key": "equipo", "value": "Cuadrilla A", "type": "text"},
+								{"key": "equipo_id", "value": "1", "type": "text"}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/solicitud-pago/generar-spp-construcc",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "solicitud-pago", "generar-spp-construcc"]
+						},
+						"description": "**Endpoint:** POST /construcc/solicitud-pago/generar-spp-construcc\n\n**Crea en una operación:**\n1. Proveedor (tipo_alta=2)\n2. Cuenta bancaria (preferida=true)\n3. SPP (estado: PENDIENTE)\n4. Asociación proveedor-empresa construcción\n\n**Validación:**\n- RFC, email, teléfono NO deben existir\n- Si existe → Error 409"
+					}
+				},
+				{
+					"name": "2.2 Crear TODO - Director General (SPP AUTORIZADA)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{"key": "descripcion_concepto", "value": "Consultoría técnica especializada", "type": "text"},
+								{"key": "monto_total", "value": "85000.00", "type": "text"},
+								{"key": "observaciones", "value": "Autorizado por DG", "type": "text"},
+								{"key": "factura_pdf", "type": "file", "src": ""},
+								{"key": "factura_xml", "type": "file", "src": ""},
+								{"key": "proveedor_rfc", "value": "CST250101ABC", "type": "text"},
+								{"key": "proveedor_razon_social", "value": "Consultoría Estructural SA de CV", "type": "text"},
+								{"key": "proveedor_nombre_comercial", "value": "ConsEst", "type": "text"},
+								{"key": "proveedor_email", "value": "info@consest.com", "type": "text"},
+								{"key": "proveedor_telefono", "value": "5544332211", "type": "text"},
+								{"key": "cuenta_bancaria_alias", "value": "Cuenta Principal ConsEst", "type": "text"},
+								{"key": "cuenta_bancaria_banco_clave", "value": "021", "type": "text"},
+								{"key": "cuenta_bancaria_banco_nombre", "value": "HSBC", "type": "text"},
+								{"key": "cuenta_bancaria_tipo_cuenta", "value": "Cheques", "type": "text"},
+								{"key": "cuenta_bancaria_campo_dependiente", "value": "021180001122334455", "type": "text"},
+								{"key": "cuenta_bancaria_titular_cuenta", "value": "Consultoría Estructural SA", "type": "text"},
+								{"key": "empresa_construcc_id", "value": "1", "type": "text"},
+								{"key": "usuario_id", "value": "5", "type": "text"},
+								{"key": "usuario_nombre", "value": "Carlos García DG", "type": "text"},
+								{"key": "nivel_id", "value": "1", "type": "text"},
+								{"key": "obra_id", "value": "5", "type": "text"},
+								{"key": "tipo", "value": "Servicio", "type": "text"},
+								{"key": "tipo_id", "value": "2", "type": "text"},
+								{"key": "notas", "value": "Consultoría para Torre A", "type": "text"}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/solicitud-pago/generar-spp-construcc",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "solicitud-pago", "generar-spp-construcc"]
+						},
+						"description": "**Crea TODO + Auto-aprueba:**\n1. Proveedor nuevo (tipo_alta=2)\n2. Cuenta bancaria\n3. SPP estado: AUTORIZADA ✅\n4. Asociación empresa\n\n**Director auto-aprueba la SPP directamente**"
+					}
+				},
+				{
+					"name": "2.3 Crear TODO - Solo con Cotización",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "X-API-KEY", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{"key": "descripcion_concepto", "value": "Anticipo de materiales - Cotización", "type": "text"},
+								{"key": "monto_total", "value": "30000.00", "type": "text"},
+								{"key": "observaciones", "value": "Anticipo sin factura", "type": "text"},
+								{"key": "cotizacion", "type": "file", "src": "", "description": "✅ SOLO COTIZACIÓN (sin factura)"},
+								{"key": "proveedor_rfc", "value": "ANT260101XYZ", "type": "text"},
+								{"key": "proveedor_razon_social", "value": "Anticipos SA de CV", "type": "text"},
+								{"key": "proveedor_nombre_comercial", "value": "Anticipos", "type": "text"},
+								{"key": "proveedor_email", "value": "anticipos@test.com", "type": "text"},
+								{"key": "proveedor_telefono", "value": "5500998877", "type": "text"},
+								{"key": "cuenta_bancaria_alias", "value": "Cuenta Santander", "type": "text"},
+								{"key": "cuenta_bancaria_banco_clave", "value": "014", "type": "text"},
+								{"key": "cuenta_bancaria_banco_nombre", "value": "Santander", "type": "text"},
+								{"key": "cuenta_bancaria_tipo_cuenta", "value": "Cheques", "type": "text"},
+								{"key": "cuenta_bancaria_campo_dependiente", "value": "014180001122334455", "type": "text"},
+								{"key": "cuenta_bancaria_titular_cuenta", "value": "Anticipos SA", "type": "text"},
+								{"key": "empresa_construcc_id", "value": "1", "type": "text"},
+								{"key": "usuario_id", "value": "10", "type": "text"},
+								{"key": "usuario_nombre", "value": "Juan Pérez", "type": "text"},
+								{"key": "nivel_id", "value": "6", "type": "text"}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/solicitud-pago/generar-spp-construcc",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "solicitud-pago", "generar-spp-construcc"]
+						},
+						"description": "✨ NUEVO: Crear proveedor + cuenta + SPP SOLO con cotización\n\n⚠️ NO adjuntar factura_pdf ni factura_xml\n✅ Solo adjuntar cotización\n\n**Resultado:**\n- Proveedor creado\n- Cuenta creada\n- SPP: tiene_factura = false"
+					}
+				}
+			]
+		}
+	]
+}

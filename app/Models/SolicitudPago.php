@@ -10,6 +10,7 @@ use App\Traits\MarksAsNotified;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
@@ -271,6 +272,33 @@ class SolicitudPago extends BaseModel
         return $this->belongsTo(OrdenCompra::class, 'referencia_oc', 'numero_orden');
     }
 
+    // [2026-01-28 19:35:14] local.ERROR: Error al listar SPP del proveedor {"proveedor_id":8,"error":"Call to undefined relationship [pagos] on model [App\\Models\\SolicitudPago].","trace":"#0 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(939): Illuminate\\Database\\Eloquent\\RelationNotFoundException::make(Object(App\\Models\\SolicitudPago), 'pagos')
+
+    public function pagos(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            PagoSPP::class,
+            'pago_solicitud_pago',
+            'solicitud_pago_id',
+            'pago_spp_id'
+        )
+        ->withPivot([
+            'monto_aplicado',
+            'estado_pago',
+            'notas',
+            'fecha_aplicacion'
+        ])
+        ->withTimestamps();
+    }
+    
+    /**
+     * Relación con el modelo pivot para acceso directo
+     */
+    public function pagosSolicitudPago(): HasMany
+    {
+        return $this->hasMany(PagoSolicitudPago::class, 'solicitud_pago_id');
+    }
+    
     /** ----------------
      * Filtros básicos (ejemplo nuevos)
      * ----------------- */

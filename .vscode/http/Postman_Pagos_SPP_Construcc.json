@@ -1,0 +1,702 @@
+{
+	"info": {
+		"_postman_id": "pagos-spp-construcc-2026",
+		"name": "Módulo Pagos SPP - Construcción",
+		"description": "Colección completa para gestión de pagos de solicitudes de pago (SPP) en el módulo de construcción.\n\n**Características:**\n- CRUD completo de pagos\n- Gestión de relaciones pago-solicitud\n- Consulta de SPP por proveedor\n- Gestión de comprobantes\n- Estadísticas",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "CRUD Pagos",
+			"item": [
+				{
+					"name": "Listar Pagos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/construcc/pagos-spp?per_page=20&page=1",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "pagos-spp"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "20"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "fecha_pago",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "empresa_construcc_id",
+									"value": "",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Lista todos los pagos SPP con paginación y filtros opcionales."
+					},
+					"response": []
+				},
+				{
+					"name": "Ver Pago",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/construcc/pagos-spp/{{pagoId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "pagos-spp", "{{pagoId}}"]
+						},
+						"description": "Obtiene el detalle de un pago específico con sus solicitudes asociadas."
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Pago",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "comprobante_pago",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "fecha_pago",
+									"value": "2026-01-13",
+									"type": "text"
+								},
+								{
+									"key": "referencia_pago",
+									"value": "REF-2026-001",
+									"type": "text"
+								},
+								{
+									"key": "banco_pago",
+									"value": "BBVA Bancomer",
+									"type": "text"
+								},
+								{
+									"key": "cuenta_origen",
+									"value": "1234567890",
+									"type": "text"
+								},
+								{
+									"key": "tipo_cuenta_origen",
+									"value": "Cheques",
+									"type": "text"
+								},
+								{
+									"key": "clabe_interbancaria_origen",
+									"value": "012345678901234567",
+									"type": "text"
+								},
+								{
+									"key": "banco_destino",
+									"value": "Santander",
+									"type": "text"
+								},
+								{
+									"key": "cuenta_destino",
+									"value": "9876543210",
+									"type": "text"
+								},
+								{
+									"key": "tipo_cuenta_destino",
+									"value": "Cheques",
+									"type": "text"
+								},
+								{
+									"key": "clabe_interbancaria_destino",
+									"value": "098765432109876543",
+									"type": "text"
+								},
+								{
+									"key": "titular_cuenta_destino",
+									"value": "Juan Pérez Proveedor",
+									"type": "text"
+								},
+								{
+									"key": "monto_total",
+									"value": "25000.00",
+									"type": "text"
+								},
+								{
+									"key": "observaciones",
+									"value": "Pago parcial de múltiples solicitudes",
+									"type": "text"
+								},
+								{
+									"key": "usuario_registro_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "usuario_registro_nombre",
+									"value": "Director General",
+									"type": "text"
+								},
+								{
+									"key": "empresa_construcc_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "solicitudes_pago[0][solicitud_pago_id]",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "solicitudes_pago[0][monto_aplicado]",
+									"value": "15000.00",
+									"type": "text"
+								},
+								{
+									"key": "solicitudes_pago[0][estado_pago]",
+									"value": "aplicado",
+									"type": "text"
+								},
+								{
+									"key": "solicitudes_pago[0][notas]",
+									"value": "Primer pago parcial",
+									"type": "text"
+								},
+								{
+									"key": "solicitudes_pago[1][solicitud_pago_id]",
+									"value": "2",
+									"type": "text"
+								},
+								{
+									"key": "solicitudes_pago[1][monto_aplicado]",
+									"value": "10000.00",
+									"type": "text"
+								},
+								{
+									"key": "solicitudes_pago[1][estado_pago]",
+									"value": "aplicado",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/pagos-spp",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "pagos-spp"]
+						},
+						"description": "Crea un nuevo pago y lo aplica a una o más solicitudes de pago."
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Pago",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "comprobante_pago",
+									"type": "file",
+									"src": [],
+									"disabled": true
+								},
+								{
+									"key": "fecha_pago",
+									"value": "2026-01-13",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "referencia_pago",
+									"value": "REF-2026-001-MOD",
+									"type": "text"
+								},
+								{
+									"key": "observaciones",
+									"value": "Pago modificado",
+									"type": "text"
+								},
+								{
+									"key": "monto_total",
+									"value": "26000.00",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/pagos-spp/{{pagoId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "pagos-spp", "{{pagoId}}"]
+						},
+						"description": "Actualiza los datos de un pago existente."
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Pago",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/construcc/pagos-spp/{{pagoId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "pagos-spp", "{{pagoId}}"]
+						},
+						"description": "Elimina un pago y su comprobante asociado."
+					},
+					"response": []
+				},
+				{
+					"name": "Descargar Comprobante",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/construcc/pagos-spp/{{pagoId}}/comprobante/download",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "pagos-spp", "{{pagoId}}", "comprobante", "download"]
+						},
+						"description": "Descarga el archivo del comprobante de pago."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Relaciones Pago-Solicitud",
+			"item": [
+				{
+					"name": "Agregar Solicitud a Pago",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"solicitud_pago_id\": 3,\n    \"monto_aplicado\": 5000.00,\n    \"estado_pago\": \"aplicado\",\n    \"notas\": \"Pago adicional\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/pagos-spp/{{pagoId}}/solicitudes-pago",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "pagos-spp", "{{pagoId}}", "solicitudes-pago"]
+						},
+						"description": "Agrega una solicitud de pago adicional a un pago existente."
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Relación Pago-Solicitud",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"monto_aplicado\": 6000.00,\n    \"estado_pago\": \"completado\",\n    \"notas\": \"Pago completado\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/pagos-spp/{{pagoId}}/solicitudes-pago/{{solicitudPagoId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "pagos-spp", "{{pagoId}}", "solicitudes-pago", "{{solicitudPagoId}}"]
+						},
+						"description": "Actualiza los datos de la relación entre un pago y una solicitud."
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Relación Pago-Solicitud",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/construcc/pagos-spp/{{pagoId}}/solicitudes-pago/{{solicitudPagoId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "pagos-spp", "{{pagoId}}", "solicitudes-pago", "{{solicitudPagoId}}"]
+						},
+						"description": "Desvincula una solicitud de pago de un pago."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "SPP por Proveedor",
+			"item": [
+				{
+					"name": "Listar SPP del Proveedor",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/construcc/pagos-spp/proveedor/{{proveedorId}}/spp?per_page=20&page=1",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "pagos-spp", "proveedor", "{{proveedorId}}", "spp"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "20"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "estado_solicitud",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "verificada",
+									"value": "",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Lista todas las SPP de un proveedor específico."
+					},
+					"response": []
+				},
+				{
+					"name": "Ver SPP del Proveedor",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/construcc/pagos-spp/proveedor/{{proveedorId}}/spp/{{sppId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "pagos-spp", "proveedor", "{{proveedorId}}", "spp", "{{sppId}}"]
+						},
+						"description": "Obtiene el detalle de una SPP específica con todos sus pagos."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Pagos de una SPP",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/construcc/pagos-spp/proveedor/{{proveedorId}}/spp/{{sppId}}/pagos",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "pagos-spp", "proveedor", "{{proveedorId}}", "spp", "{{sppId}}", "pagos"]
+						},
+						"description": "Lista todos los pagos parciales aplicados a una SPP."
+					},
+					"response": []
+				},
+				{
+					"name": "Ver Pago de una SPP",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/construcc/pagos-spp/proveedor/{{proveedorId}}/spp/{{sppId}}/pagos/{{pagoId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "pagos-spp", "proveedor", "{{proveedorId}}", "spp", "{{sppId}}", "pagos", "{{pagoId}}"]
+						},
+						"description": "Obtiene el detalle de un pago específico asociado a una SPP."
+					},
+					"response": []
+				},
+				{
+					"name": "Subir Comprobante a Pago de SPP",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "comprobante_pago",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/pagos-spp/proveedor/{{proveedorId}}/spp/{{sppId}}/pagos/{{pagoId}}/subir-comprobante",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "pagos-spp", "proveedor", "{{proveedorId}}", "spp", "{{sppId}}", "pagos", "{{pagoId}}", "subir-comprobante"]
+						},
+						"description": "Sube o actualiza el comprobante de pago para un pago específico."
+					},
+					"response": []
+				},
+				{
+					"name": "Registrar Pago para SPPs del Proveedor",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "comprobante_pago",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "fecha_pago",
+									"value": "2026-01-13",
+									"type": "text"
+								},
+								{
+									"key": "referencia_pago",
+									"value": "REF-PROV-001",
+									"type": "text"
+								},
+								{
+									"key": "banco_pago",
+									"value": "BBVA Bancomer",
+									"type": "text"
+								},
+								{
+									"key": "monto_total",
+									"value": "50000.00",
+									"type": "text"
+								},
+								{
+									"key": "observaciones",
+									"value": "Pago múltiple a proveedor",
+									"type": "text"
+								},
+								{
+									"key": "usuario_registro_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "usuario_registro_nombre",
+									"value": "Director General",
+									"type": "text"
+								},
+								{
+									"key": "empresa_construcc_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "solicitudes_pago[0][solicitud_pago_id]",
+									"value": "1",
+									"type": "text",
+									"description": "ID de SPP que pertenece al proveedor"
+								},
+								{
+									"key": "solicitudes_pago[0][monto_aplicado]",
+									"value": "30000.00",
+									"type": "text"
+								},
+								{
+									"key": "solicitudes_pago[0][estado_pago]",
+									"value": "aplicado",
+									"type": "text"
+								},
+								{
+									"key": "solicitudes_pago[0][notas]",
+									"value": "Pago completo de SPP 1",
+									"type": "text"
+								},
+								{
+									"key": "solicitudes_pago[1][solicitud_pago_id]",
+									"value": "2",
+									"type": "text",
+									"description": "ID de SPP que pertenece al proveedor"
+								},
+								{
+									"key": "solicitudes_pago[1][monto_aplicado]",
+									"value": "20000.00",
+									"type": "text"
+								},
+								{
+									"key": "solicitudes_pago[1][estado_pago]",
+									"value": "aplicado",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/construcc/pagos-spp/proveedor/{{proveedorId}}/pagos",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "pagos-spp", "proveedor", "{{proveedorId}}", "pagos"]
+						},
+						"description": "Registra un nuevo pago y lo aplica a múltiples SPP del mismo proveedor."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Estadísticas",
+			"item": [
+				{
+					"name": "Estadísticas de Pagos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/construcc/pagos-spp/estadisticas?empresa_construcc_id=",
+							"host": ["{{baseUrl}}"],
+							"path": ["construcc", "pagos-spp", "estadisticas"],
+							"query": [
+								{
+									"key": "empresa_construcc_id",
+									"value": "",
+									"description": "ID de empresa para filtrar (opcional)"
+								}
+							]
+						},
+						"description": "Obtiene estadísticas generales de pagos SPP."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8000/api",
+			"type": "string"
+		},
+		{
+			"key": "apiKey",
+			"value": "tu_api_key_aqui",
+			"type": "string"
+		},
+		{
+			"key": "proveedorId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "pagoId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "sppId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "solicitudPagoId",
+			"value": "1",
+			"type": "string"
+		}
+	]
+}

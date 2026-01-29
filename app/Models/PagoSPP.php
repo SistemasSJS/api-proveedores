@@ -23,26 +23,26 @@ class PagoSPP extends BaseModel
         'comprobante_pago',
         'fecha_pago',
         'fecha_registro',
-        
+
         // Referencia de pago
         'referencia_pago',
-        
+
         // Datos bancarios del pago (cuenta origen)
         'banco_pago',
         'cuenta_origen',
         'tipo_cuenta_origen',
         'clabe_interbancaria_origen',
-        
+
         // Datos bancarios del proveedor (cuenta destino)
         'banco_destino',
         'cuenta_destino',
         'tipo_cuenta_destino',
         'clabe_interbancaria_destino',
         'titular_cuenta_destino',
-        
+
         // Montos
         'monto_total',
-        
+
         // Metadatos
         'observaciones',
         'usuario_registro_id',
@@ -75,10 +75,19 @@ class PagoSPP extends BaseModel
         'monto_max' => 'MontoMax',
     ];
 
+
+    public static function eagerLodable(): array
+    {
+        return [
+            'solicitudesPago',
+            'empresaConstrucc',
+        ];
+    }
+
     /** ----------------
      * Relaciones
      * ----------------- */
-    
+
     /**
      * Relación muchos a muchos con SolicitudPago a través de la tabla pivot.
      * Un pago puede aplicar a múltiples solicitudes de pago.
@@ -91,14 +100,14 @@ class PagoSPP extends BaseModel
             'pago_spp_id',
             'solicitud_pago_id'
         )
-        ->withPivot([
-            'monto_aplicado',
-            'estado_pago',
-            'notas',
-            'fecha_aplicacion'
-        ])
-        ->withTimestamps()
-        ->using(PagoSolicitudPago::class);
+            ->withPivot([
+                'monto_aplicado',
+                'estado_pago',
+                'notas',
+                'fecha_aplicacion'
+            ])
+            ->withTimestamps()
+            ->using(PagoSolicitudPago::class);
     }
 
     /**
@@ -112,7 +121,7 @@ class PagoSPP extends BaseModel
     /** ----------------
      * Scopes
      * ----------------- */
-    
+
     /**
      * Scope para filtrar pagos por empresa constructora.
      */
@@ -140,7 +149,7 @@ class PagoSPP extends BaseModel
     /** ----------------
      * Filtros
      * ----------------- */
-    
+
     /**
      * Filtro de búsqueda global.
      * Busca en: referencia, banco, observaciones, titular cuenta.
@@ -234,7 +243,7 @@ class PagoSPP extends BaseModel
     /** ----------------
      * Métodos de negocio
      * ----------------- */
-    
+
     /**
      * Calcula el monto total aplicado de este pago a todas las SPP.
      */

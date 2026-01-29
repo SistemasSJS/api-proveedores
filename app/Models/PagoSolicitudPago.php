@@ -35,6 +35,22 @@ class PagoSolicitudPago extends Pivot
         'updated_at' => 'datetime',
     ];
 
+
+    protected static $filters = [
+        'search' => 'Search',
+        'estado_pago' => 'EstadoPago',
+        'fecha_aplicacion' => 'FechaAplicacion',
+        'fecha_aplicacion_desde' => 'FechaAplicacionDesde',
+        'fecha_aplicacion_hasta' => 'FechaAplicacionHasta',
+    ];
+    public static function eagerLodable(): array
+    {
+        return [
+            'pagoSPP',
+            'solicitudPago',
+        ];
+    }
+
     /**
      * Estados válidos para el pago en relación a una SPP.
      */
@@ -47,7 +63,7 @@ class PagoSolicitudPago extends Pivot
     /** ----------------
      * Relaciones
      * ----------------- */
-    
+
     /**
      * Relación con el pago.
      */
@@ -67,7 +83,7 @@ class PagoSolicitudPago extends Pivot
     /** ----------------
      * Scopes
      * ----------------- */
-    
+
     /**
      * Scope para filtrar por estado.
      */
@@ -103,7 +119,7 @@ class PagoSolicitudPago extends Pivot
     /** ----------------
      * Métodos auxiliares
      * ----------------- */
-    
+
     /**
      * Verifica si el pago está aplicado.
      */
