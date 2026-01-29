@@ -305,6 +305,7 @@ Route::prefix('construcc')
 
             // ===== GESTIÓN DE SPP POR PROVEEDOR =====
             // Listar SPP de un proveedor específico
+            // COMPLETADO
             Route::get('/proveedor/{proveedor}/spp', [ConstruccPagosSPPController::class, 'sppPorProveedor'])->middleware(['audit'])->name('proveedor.spp.index');
 
             // Ver SPP específica con sus pagos
@@ -322,8 +323,9 @@ Route::prefix('construcc')
             // Registrar un pago para múltiples SPP del proveedor
             Route::post('/proveedor/{proveedor}/pagos', [ConstruccPagosSPPController::class, 'registrarPagoProveedor'])->middleware(['audit'])->name('proveedor.pagos.registrar');
 
-            // Estadísticas
-            Route::get('/estadisticas', [ConstruccPagosSPPController::class, 'estadisticas'])->middleware(['audit'])->name('estadisticas');
+            // Estadísticas-
+        
+            // Route::get('/estadisticas', [ConstruccPagosSPPController::class, 'estadisticas'])->middleware(['audit'])->name('estadisticas');
         });
 
         /**

@@ -638,7 +638,6 @@ class ConstruccSolicitudPagoController extends Controller
             'nombre_beneficiario' => $request->nombre_beneficiario,
             'clave_rastreo' => $request->clave_rastreo,
             'banco' => $request->banco,
-
         ]);
 
         Log::info('🟢 PAGO-SP: Solicitud de confirmación de pago recibida', [

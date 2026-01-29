@@ -23,10 +23,13 @@ class ConstruccProveedorSppResource extends JsonResource
                 'descripcion_concepto' => $this->descripcion_concepto,
                 'observaciones' => $this->observaciones,
                 'estado_solicitud' => $this->estado_solicitud,
+                // 
                 'monto_total' => (float) $this->monto_total,
                 'saldo_pendiente' => (float) $this->saldo_pendiente,
                 'monto_abonado' => (float) $this->monto_abonado,
                 'pago_completo' => (bool) $this->pago_completo,
+
+                // 
                 'tiene_factura' => (bool) $this->tiene_factura,
                 'verificada' => (bool) $this->verificada,
 
