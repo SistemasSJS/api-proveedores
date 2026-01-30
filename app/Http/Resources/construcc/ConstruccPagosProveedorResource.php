@@ -21,9 +21,7 @@ class ConstruccPagosProveedorResource extends JsonResource
     return [
       'id' => $this->id,
 
-      'nombre_comercial' => $count > 0
-        ? "{$this->nombre_comercial} ({$count})"
-        : $this->nombre_comercial,
+      'nombre_comercial' =>  $this->nombre_comercial,
 
       // Contadores
       'spp_autorizadas_count' => (int) ($this->spp_autorizadas_count ?? 0),
