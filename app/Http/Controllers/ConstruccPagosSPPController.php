@@ -772,12 +772,18 @@ class ConstruccPagosSPPController extends Controller
 
     /**
      * listado de proveedores con informacion de las SPP activas.
+     * 
+     *  GET /api/construcc/pagos-spp/proveedores?empresas_construcc={id_empresa_construcc}
      */
     public function indexProveedor(Request $request): JsonResponse
     {
         try {
-            $filters = $request->only(Proveedor::getFilters());
-            $sortBy  = $request->input('sort_by', 'razon_social');
+            $fields  = Proveedor::getFilters();
+            $filters = $request->only($fields);
+
+            $empresaConstruccId = $request->integer('empresa_construcc_id');
+
+            $sortBy  = $request->input('sort_by', 'nombre_comercial');
             $order   = $request->input('order', 'asc');
             $perPage = $request->input('per_page', 1000);
 
@@ -788,14 +794,26 @@ class ConstruccPagosSPPController extends Controller
                     }
                 ])
                 ->filter($filters)
-                ->orderBy($sortBy, $order);
+                ->having('spp_autorizadas_count', '>', 0);
+
+            // 🔥 FILTRO EXPLÍCITO POR EMPRESA CONSTRUCC
+            if ($empresaConstruccId) {
+                $query->whereHas('empresasConstrucc', function ($q) use ($empresaConstruccId) {
+                    $q->where(
+                        'empresa_construcc_proveedor.empresa_construcc_id',
+                        $empresaConstruccId
+                    );
+                });
+            }
+
+            $query->orderBy($sortBy, $order);
 
             $paginator = $query->paginate($perPage);
 
+            $data = ConstruccPagosProveedorResource::collection($paginator)->resolve();
+
             return $this->paginated(
-                $paginator->setCollection(
-                    ConstruccPagosProveedorResource::collection($paginator)->collection
-                )
+                $paginator->setCollection(collect($data))
             );
         } catch (\Exception $e) {
             Log::error('Error al listar proveedores con SPP autorizadas', [

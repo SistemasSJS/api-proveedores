@@ -16,30 +16,14 @@ class ConstruccPagosProveedorResource extends JsonResource
    */
   public function toArray($request): array
   {
+    $count = (int) ($this->spp_autorizadas_count ?? 0);
+
     return [
-
-      /* =========================
-             * Identificación
-             * ========================= */
       'id' => $this->id,
-      'nombre' => $this->nombre_comercial,
-      'razon_social' => $this->razon_social,
-      'nombre_comercial' => $this->nombre_comercial,
-      'rfc' => $this->rfc,
 
-      /* =========================
-             * Contacto general
-             * ========================= */
-      'telefono' => $this->telefono,
-      'email' => $this->email,
-      'pagina_web' => $this->pagina_web,
-
-      /* =========================
-             * Archivos
-             * ========================= */
-      'logo' => $this->logo
-        ? Storage::disk('public')->url($this->logo)
-        : null,
+      'nombre_comercial' => $count > 0
+        ? "{$this->nombre_comercial} ({$count})"
+        : $this->nombre_comercial,
 
       // Contadores
       'spp_autorizadas_count' => (int) ($this->spp_autorizadas_count ?? 0),
