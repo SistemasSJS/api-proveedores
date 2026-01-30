@@ -772,6 +772,7 @@ class ConstruccPagosSPPController extends Controller
 
     /**
      * listado de proveedores con informacion de las SPP activas.
+     * El listado se realiza en base a las SPP autorizadas y se agrupan por proveedor.
      * 
      *  GET /api/construcc/pagos-spp/proveedores?empresas_construcc={id_empresa_construcc}
      */
@@ -824,29 +825,37 @@ class ConstruccPagosSPPController extends Controller
     /**
      * Lista todas las SPP de un proveedor específico con filtros y paginación.
      *
-     * GET /api/construcc/pagos-spp/proveedor/{proveedor}/spp
+     * GET /api/construcc/pagos-spp/proveedor/{proveedor}/spp?empresas_construcc={id_empresa_construcc}
      */
-    public function sppPorProveedor(Request $request, Proveedor $proveedor): JsonResponse
+    public function sppPorProveedor(Request $request, int $proveedorId): JsonResponse
     {
         try {
-            $filters = $request->only(SolicitudPago::getFilters());
-            $sortBy  = $request->input('sort_by', 'created_at');
-            $order   = $request->input('order', 'desc');
-            $perPage = $request->input('per_page', 20);
+            $proveedor = Proveedor::find($proveedorId);
+
+            if (! $proveedor) {
+                return $this->error(
+                    'Proveedor no encontrado.',
+                    null,
+                    404
+                );
+            }
+
+            $empresaConstruccId = $request->integer('empresa_construcc_id');
+            $perPage = $request->input('per_page', 1000);
 
             $query = SolicitudPago::query()
                 ->where('proveedor_id', $proveedor->id)
+                ->when($empresaConstruccId, function ($q) use ($empresaConstruccId) {
+                    $q->where('empresa_construcc_id', $empresaConstruccId);
+                })
                 ->with(array_merge(
                     SolicitudPago::eagerLodable(),
                     [
-                        // Pagos aplicados a la SPP
                         'pagos' => function ($q) {
                             $q->orderBy('pago_solicitud_pago.fecha_aplicacion', 'desc');
                         }
                     ]
-                ))
-                ->filter($filters)
-                ->orderBy($sortBy, $order);
+                ));
 
             $paginator = $query->paginate($perPage);
 
@@ -857,9 +866,8 @@ class ConstruccPagosSPPController extends Controller
             );
         } catch (\Exception $e) {
             Log::error('Error al listar SPP del proveedor', [
-                'proveedor_id' => $proveedor->id,
+                'proveedor_id' => $proveedorId,
                 'error'        => $e->getMessage(),
-                'trace'        => $e->getTraceAsString(),
             ]);
 
             return $this->error(
