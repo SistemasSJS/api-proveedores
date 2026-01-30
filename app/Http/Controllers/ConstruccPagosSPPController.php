@@ -778,37 +778,29 @@ class ConstruccPagosSPPController extends Controller
     public function indexProveedor(Request $request): JsonResponse
     {
         try {
-            $fields  = Proveedor::getFilters();
-            $filters = $request->only($fields);
-
             $empresaConstruccId = $request->integer('empresa_construcc_id');
-
-            $sortBy  = $request->input('sort_by', 'nombre_comercial');
-            $order   = $request->input('order', 'asc');
             $perPage = $request->input('per_page', 1000);
 
-            $query = Proveedor::query()
-                ->withCount([
-                    'solicitudesPago as spp_autorizadas_count' => function ($q) {
-                        $q->where('estado_solicitud', EstadoSP::AUTORIZADA);
-                    }
-                ])
-                ->filter($filters)
-                ->having('spp_autorizadas_count', '>', 0);
-
-            // 🔥 FILTRO EXPLÍCITO POR EMPRESA CONSTRUCC
-            if ($empresaConstruccId) {
-                $query->whereHas('empresasConstrucc', function ($q) use ($empresaConstruccId) {
-                    $q->where(
-                        'empresa_construcc_proveedor.empresa_construcc_id',
-                        $empresaConstruccId
-                    );
-                });
-            }
-
-            $query->orderBy($sortBy, $order);
+            $query = SolicitudPago::query()
+                ->selectRaw('proveedor_id, COUNT(*) as spp_autorizadas_count')
+                ->where('estado_solicitud', EstadoSP::AUTORIZADA)
+                ->when($empresaConstruccId, function ($q) use ($empresaConstruccId) {
+                    $q->where('empresa_construcc_id', $empresaConstruccId);
+                })
+                ->groupBy('proveedor_id')
+                ->with([
+                    'proveedor:id,nombre_comercial'
+                ]);
 
             $paginator = $query->paginate($perPage);
+
+            // 🔥 Adaptamos la colección para que el resource reciba el proveedor
+            $paginator->getCollection()->transform(function ($row) {
+                $proveedor = $row->proveedor;
+                $proveedor->spp_autorizadas_count = $row->spp_autorizadas_count;
+                return $proveedor;
+            });
+
 
             $data = ConstruccPagosProveedorResource::collection($paginator)->resolve();
 
