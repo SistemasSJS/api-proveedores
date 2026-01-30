@@ -306,6 +306,9 @@ Route::prefix('construcc')
             // ===== GESTIÓN DE SPP POR PROVEEDOR =====
             // Listar SPP de un proveedor específico
             // COMPLETADO
+            Route::get('/proveedor', [ConstruccPagosSPPController::class, 'indexProveedor'])->name('proveedor.spp.index');
+
+
             Route::get('/proveedor/{proveedor}/spp', [ConstruccPagosSPPController::class, 'sppPorProveedor'])->name('proveedor.spp.index');
 
             // Ver SPP específica con sus pagos

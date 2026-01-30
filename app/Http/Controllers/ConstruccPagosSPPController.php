@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\EstadoSP;
 use App\Http\Requests\Construcc\ConstruccPagosSPPRegistrarPago;
+use App\Http\Resources\Construcc\ConstruccPagosProveedorResource;
 use App\Http\Resources\Construcc\ConstruccProveedorSppResource;
 use App\Http\Resources\Construcc\ConstruccPagosSPPResource;
 use App\Models\PagoSPP;
@@ -766,6 +768,47 @@ class ConstruccPagosSPPController extends Controller
      * Estos métodos permiten listar y consultar las SPP de un proveedor específico
      * y sus pagos asociados.
      */
+
+
+    /**
+     * listado de proveedores con informacion de las SPP activas.
+     */
+    public function indexProveedor(Request $request): JsonResponse
+    {
+        try {
+            $filters = $request->only(Proveedor::getFilters());
+            $sortBy  = $request->input('sort_by', 'razon_social');
+            $order   = $request->input('order', 'asc');
+            $perPage = $request->input('per_page', 1000);
+
+            $query = Proveedor::query()
+                ->withCount([
+                    'solicitudesPago as spp_autorizadas_count' => function ($q) {
+                        $q->where('estado_solicitud', EstadoSP::AUTORIZADA);
+                    }
+                ])
+                ->filter($filters)
+                ->orderBy($sortBy, $order);
+
+            $paginator = $query->paginate($perPage);
+
+            return $this->paginated(
+                $paginator->setCollection(
+                    ConstruccPagosProveedorResource::collection($paginator)->collection
+                )
+            );
+        } catch (\Exception $e) {
+            Log::error('Error al listar proveedores con SPP autorizadas', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->error(
+                'No se pudieron obtener los proveedores.',
+                null,
+                500
+            );
+        }
+    }
 
 
     /**
