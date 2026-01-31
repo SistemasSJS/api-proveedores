@@ -3,21 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Enums\EstadoSP;
-use App\Http\Requests\Construcc\ConstruccPagosSPPRegistrarPago;
+use App\Http\Requests\Construcc\ConstruccPagosSPPRegistrarPagoRequest;
 use App\Http\Resources\Construcc\ConstruccPagosProveedorResource;
 use App\Http\Resources\Construcc\ConstruccProveedorSppResource;
 use App\Http\Resources\Construcc\ConstruccPagosSPPResource;
 use App\Models\PagoSPP;
 use App\Models\Proveedor;
-use App\Models\SolicitudPago;;
+use App\Models\SolicitudPago;
+use Database\Factories\ProveedorFactory;;
 
-use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 
 /**
  * Controlador para gestionar los pagos de solicitudes de pago (SPP).
@@ -25,7 +24,6 @@ use Illuminate\Validation\Rule;
  */
 class ConstruccPagosSPPController extends Controller
 {
-    use ApiResponse;
 
     /**
      * listado de proveedores con informacion de las SPP activas.
@@ -134,9 +132,6 @@ class ConstruccPagosSPPController extends Controller
      * @param Proveedor $proveedor
      * @param SolicitudPago $spp
      * @return JsonResponse
-     * 
-     * 
-     * FIXME: Revisar el como resolver la respuestas en hytml 
      */
     public function showSppProveedor(Request $request, Proveedor $proveedor, SolicitudPago $spp): JsonResponse
     {
@@ -414,116 +409,142 @@ class ConstruccPagosSPPController extends Controller
      * @param Proveedor $proveedor
      * @return JsonResponse
      */
-    public function registrarPagoProveedor(ConstruccPagosSPPRegistrarPago $request, Proveedor $proveedor): JsonResponse
+    public function registrarPagoProveedor(ConstruccPagosSPPRegistrarPagoRequest $request, Proveedor $proveedor): JsonResponse
     {
 
-        // TODO: Falta validar que la propiedad de las SPP pertenezca al proveedor y a la empresa de construcción
 
-        try {
-            $validated = $request->validated();
-            $empresaConstruccId = $request->integer('empresa_construcc_id');
+        Log::info('PAGO Registro Inicio');
 
-            // validar que las SPP existen y pertenecen al proveedor
-            $listSPPIds = collect($validated['solicitudes_pago'])->pluck('solicitud_pago_id');
-            $invalidSPPs = SolicitudPago::whereIn('id', $listSPPIds)
-                ->where(function ($q) use ($proveedor, $empresaConstruccId) {
-                    $q->where('proveedor_id', '!=', $proveedor->id)
-                        ->orWhere('empresa_construcc_id', '!=', $empresaConstruccId);
-                })
-                ->pluck('id');
+        // try {
+        $validated = $request->validated();
+        $empresaConstruccId = $validated['empresa_id'];
 
-            $montoTotalAplicado = collect($validated['solicitudes_pago'])->sum('monto_aplicado');
-            if ($montoTotalAplicado > $validated['monto_total']) {
-                return $this->error(
-                    'El monto total aplicado a las solicitudes excede el monto del pago registrado.',
-                    [
-                        'monto_total' => $validated['monto_total'],
-                        'monto_aplicado' => $montoTotalAplicado,
-                    ],
-                    422
-                );
-            }
+        // =========================
+        // Validar que las SPP pertenecen al proveedor y a la empresa
+        // =========================
+        $listSPPIds = collect($validated['solicitudes'])->pluck('solicitud_id');
 
-            DB::beginTransaction();
+        $invalidSPPs = SolicitudPago::whereIn('id', $listSPPIds)
+            ->where(function ($q) use ($proveedor, $empresaConstruccId) {
+                $q->where('proveedor_id', '!=', $proveedor->id)
+                    ->orWhere('empresa_construcc_id', '!=', $empresaConstruccId);
+            })
+            ->pluck('id');
 
-            // Guardar el comprobante de pago
-            $file = $comprobantePath = $request->file('comprobante_pago');
-
-            $file->store('comprobantes', 'private');
-
-            // Crear el pago
-            $pago = PagoSPP::create([
-                'comprobante_pago' => $comprobantePath,
-                'monto_total' => $validated['monto_total'],
-                'fecha_pago' => $validated['fecha_pago'],
-                'fecha_registro' => now(),
-                // 
-                'referencia_pago' => $validated['referencia_pago'],
-                'banco_pago' => $validated['banco_pago'] ?? null,
-                'cuenta_origen' => $validated['cuenta_origen'] ?? null,
-                'tipo_cuenta_origen' => $validated['tipo_cuenta_origen'] ?? null,
-                'clabe_interbancaria_origen' => $validated['clabe_interbancaria_origen'] ?? null,
-                // 
-                'banco_destino' => $validated['banco_destino'] ?? null,
-                'cuenta_destino' => $validated['cuenta_destino'] ?? null,
-                'tipo_cuenta_destino' => $validated['tipo_cuenta_destino'] ?? null,
-                'clabe_interbancaria_destino' => $validated['clabe_interbancaria_destino'] ?? null,
-                'titular_cuenta_destino' => $validated['titular_cuenta_destino'] ?? null,
-                // 
-                'observaciones' => $validated['observaciones'] ?? null,
-                'usuario_registro_id' => $validated['usuario_registro_id'] ?? null,
-                'usuario_registro_nombre' => $validated['usuario_registro_nombre'] ?? null,
-                'empresa_construcc_id' => $validated['empresa_construcc_id'] ?? null,
-            ]);
-
-            // Aplicar el pago a las solicitudes
-            foreach ($validated['solicitudes_pago'] as $solicitudData) {
-                $solicitudPago = SolicitudPago::where('id', $solicitudData['solicitud_pago_id'])
-                    ->where('proveedor_id', $proveedor->id)
-                    ->firstOrFail();
-
-                // Registrar la relacion el la tabla pibote
-                $pago->solicitudesPago()->attach($solicitudPago->id, [
-                    'monto_aplicado' => $solicitudData['monto_aplicado'],
-                    'estado_pago' => $solicitudData['estado_pago'],
-                    'notas' => $solicitudData['notas'] ?? null,
-                    'fecha_aplicacion' => now(),
-                ]);
-
-                if (in_array($solicitudData['estado_pago'], ['aplicado', 'completado'])) {
-                    $solicitudPago->actualizarSaldos(
-                        $solicitudData['monto_aplicado']
-                    );
-                }
-            }
-
-            DB::commit();
-
-            $pago->load(['solicitudesPago', 'empresaConstrucc']);
-
-            return $this->success($pago, 'Pago registrado y aplicado exitosamente.',  201);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            DB::rollBack();
-
+        if ($invalidSPPs->isNotEmpty()) {
             return $this->error(
-                'El proveedor o alguna solicitud de pago no existe.',
-                null,
-                404
-            );
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            Log::error('Error al registrar pago del proveedor', [
-                'proveedor_id' => $proveedor->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return $this->error(
-                'No se pudo registrar el pago.',
-                null,
-                500
+                'Una o más solicitudes de pago no pertenecen al proveedor o a la empresa indicada.',
+                [
+                    'solicitudes_invalidas' => $invalidSPPs,
+                ],
+                422
             );
         }
+
+        // =========================
+        // Validar montos
+        // =========================
+        $montoTotalAplicado = collect($validated['solicitudes'])->sum('monto_pago');
+
+        if ($montoTotalAplicado > $validated['total_pago']) {
+            return $this->error(
+                'El monto total aplicado a las solicitudes excede el monto del pago registrado.',
+                [
+                    'monto_total' => $validated['total_pago'],
+                    'monto_aplicado' => $montoTotalAplicado,
+                ],
+                422
+            );
+        }
+
+        DB::beginTransaction();
+
+        // =========================
+        // Guardar comprobante
+        // =========================
+        $file = $request->file('comprobante');
+        $comprobantePath = $file->store('comprobantes', 'private');
+
+        // =========================
+        // Crear el pago
+        // =========================
+        $pago = PagoSPP::create([
+            'comprobante_pago' => $comprobantePath,
+            'monto_total' => $validated['total_pago'],
+            'fecha_pago' => $validated['info_comprobante']['fecha'],
+            'fecha_registro' => now(),
+
+            'referencia_pago' => $validated['info_comprobante']['referencia'],
+            'banco_pago' => $validated['banco_pago'] ?? null,
+            'cuenta_origen' => $validated['cuenta_origen'] ?? null,
+            'tipo_cuenta_origen' => $validated['tipo_cuenta_origen'] ?? null,
+            'clabe_interbancaria_origen' => $validated['clabe_interbancaria_origen'] ?? null,
+
+            'banco_destino' => $validated['banco_destino'] ?? null,
+            'cuenta_destino' => $validated['cuenta_destino'] ?? null,
+            'tipo_cuenta_destino' => $validated['tipo_cuenta_destino'] ?? null,
+            'clabe_interbancaria_destino' => $validated['clabe_interbancaria_destino'] ?? null,
+            'titular_cuenta_destino' => $validated['titular_cuenta_destino'] ?? null,
+
+            'observaciones' => $validated['observaciones'] ?? null,
+            'usuario_registro_id' => $validated['usuario_id'],
+            'usuario_registro_nombre' => $validated['usuario_nombre'],
+            'empresa_construcc_id' => $empresaConstruccId,
+        ]);
+
+        // =========================
+        // Aplicar el pago a las SPP
+        // =========================
+        foreach ($validated['solicitudes'] as $solicitudData) {
+
+            $solicitudPago = SolicitudPago::where('id', $solicitudData['solicitud_id'])
+                ->where('proveedor_id', $proveedor->id)
+                ->where('empresa_construcc_id', $empresaConstruccId)
+                ->firstOrFail();
+
+            // Defaults si no vienen en el request
+            $estadoPago = $solicitudData['estado_pago'] ?? 'pendiente';
+            $notas = $solicitudData['notas'] ?? null;
+
+            $pago->solicitudesPago()->attach($solicitudPago->id, [
+                'monto_aplicado' => $solicitudData['monto_pago'],
+                'estado_pago' => $estadoPago,
+                'notas' => $notas,
+                'fecha_aplicacion' => now(),
+            ]);
+
+            if (in_array($estadoPago, ['aplicado', 'completado', 'parcial'])) {
+                $solicitudPago->actualizarSaldos($solicitudData['monto_pago']);
+            }
+        }
+
+        DB::commit();
+
+        $pago->load(['solicitudesPago', 'empresaConstrucc']);
+
+        return $this->success($pago, 'Pago registrado y aplicado exitosamente.', 201);
+        // } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        //     DB::rollBack();
+
+        //     return $this->error(
+        //         'El proveedor o alguna solicitud de pago no existe.',
+        //         null,
+        //         404
+        //     );
+        // } catch (\Exception $e) {
+        //     DB::rollBack();
+
+        //     Log::error('Error al registrar pago del proveedor', [
+        //         'proveedor_id' => $proveedor->id,
+        //         'error' => $e->getMessage(),
+        //     ]);
+
+        //     return $this->error(
+        //         'No se pudo registrar el pago.',
+        //         null,
+        //         500
+        //     );
+        // }
     }
 }
 

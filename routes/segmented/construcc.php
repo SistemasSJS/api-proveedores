@@ -308,6 +308,7 @@ Route::prefix('construcc')
             // COMPLETADO
             Route::get('/proveedor', [ConstruccPagosSPPController::class, 'indexProveedor'])->name('proveedor.spp.index');
 
+
             Route::get('/proveedor/{proveedor}/spp', [ConstruccPagosSPPController::class, 'sppPorProveedor'])->name('proveedor.spp.index');
 
             // Ver SPP específica con sus pagos
@@ -318,7 +319,6 @@ Route::prefix('construcc')
 
             // Ver pago específico de una SPP
             Route::get('/proveedor/{proveedor}/spp/{spp}/pagos/{pago}', [ConstruccPagosSPPController::class, 'showPagoDeSpp'])->name('proveedor.spp.pagos.show');
-
             // Subir comprobante de un pago
             Route::post('/proveedor/{proveedor}/spp/{spp}/pagos/{pago}/subir-comprobante', [ConstruccPagosSPPController::class, 'subirComprobanteSpp'])->name('proveedor.spp.pagos.subir-comprobante');
 
