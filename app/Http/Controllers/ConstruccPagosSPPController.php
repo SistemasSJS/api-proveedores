@@ -408,7 +408,7 @@ class ConstruccPagosSPPController extends Controller
      * Registra un pago y lo aplica a una o varias SPP de un proveedor.
      * Este endpoint permite crear un pago con comprobante y asociarlo a múltiples SPP.
      * 
-     * POST /api/construcc/pagos-spp/proveedor/{proveedor}/pagos
+     * POST /api/construcc/pagos-spp/proveedor/{proveedor}/pagos?empresas_construcc={id_empresa_construcc}
      * 
      * @param Request $request
      * @param Proveedor $proveedor
@@ -416,8 +416,22 @@ class ConstruccPagosSPPController extends Controller
      */
     public function registrarPagoProveedor(ConstruccPagosSPPRegistrarPago $request, Proveedor $proveedor): JsonResponse
     {
+
+        // TODO: Falta validar que la propiedad de las SPP pertenezca al proveedor y a la empresa de construcción
+
         try {
             $validated = $request->validated();
+            $empresaConstruccId = $request->integer('empresa_construcc_id');
+
+            // validar que las SPP existen y pertenecen al proveedor
+            $listSPPIds = collect($validated['solicitudes_pago'])->pluck('solicitud_pago_id');
+            $invalidSPPs = SolicitudPago::whereIn('id', $listSPPIds)
+                ->where(function ($q) use ($proveedor, $empresaConstruccId) {
+                    $q->where('proveedor_id', '!=', $proveedor->id)
+                        ->orWhere('empresa_construcc_id', '!=', $empresaConstruccId);
+                })
+                ->pluck('id');
+
             $montoTotalAplicado = collect($validated['solicitudes_pago'])->sum('monto_aplicado');
             if ($montoTotalAplicado > $validated['monto_total']) {
                 return $this->error(
@@ -487,18 +501,7 @@ class ConstruccPagosSPPController extends Controller
 
             $pago->load(['solicitudesPago', 'empresaConstrucc']);
 
-            Log::info('Pago registrado exitosamente', [
-                'proveedor_id' => $proveedor->id,
-                'pago_id' => $pago->id,
-                'monto_total' => $pago->monto_total,
-                'cantidad_spp' => count($validated['solicitudes_pago']),
-            ]);
-
-            return $this->success(
-                $pago,
-                'Pago registrado y aplicado exitosamente.',
-                201
-            );
+            return $this->success($pago, 'Pago registrado y aplicado exitosamente.',  201);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             DB::rollBack();
 
