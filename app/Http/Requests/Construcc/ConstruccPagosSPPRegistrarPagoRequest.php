@@ -47,11 +47,7 @@ class ConstruccPagosSPPRegistrarPagoRequest extends FormRequest
       // Solicitudes de pago
       // =========================
       'solicitudes'                => ['required', 'array', 'min:1'],
-      'solicitudes.*.solicitud_id' => [
-        'required',
-        'integer',
-        Rule::exists('solicitudes_pago', 'id')
-      ],
+      'solicitudes.*.solicitud_id' => ['required', 'integer', Rule::exists('solicitudes_pago', 'id')],
       'solicitudes.*.monto_pago'   => ['required', 'numeric', 'min:0.01'],
     ];
   }
