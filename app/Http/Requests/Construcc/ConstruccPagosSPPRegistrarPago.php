@@ -69,7 +69,8 @@ class ConstruccPagosSPPRegistrarPago extends FormRequest
       'solicitudes_pago' => 'required|array|min:1',
       'solicitudes_pago.*.solicitud_pago_id' => ['required', 'integer', Rule::exists('solicitudes_pago', 'id')->where('proveedor_id', $proveedor?->id)],
       'solicitudes_pago.*.monto_aplicado' => 'required|numeric|min:0.01',
-      'solicitudes_pago.*.estado_pago' => ['required', Rule::in(['aplicado',  'pendiente',  'rechazado',  'parcial',  'completado',])],
+      // El estado de las SPP no es necesario ioncluirlo en esta seccionm pero se deja para futuras expansiones
+      'solicitudes_pago.*.estado_pago' => ['nullable', Rule::in(['aplicado',  'pendiente',  'rechazado',  'parcial',  'completado',])],
       'solicitudes_pago.*.notas' => 'nullable|string',
     ];
   }

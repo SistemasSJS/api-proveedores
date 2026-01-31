@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\EstadoCuentaBancaria;
 use App\Enums\EstadoSolicitud;
+use App\Enums\EstadoSP;
 use App\Events\SpChangeEstadoGeneralEvent;
 use App\Traits\Filterable;
 use App\Traits\MarksAsNotified;
@@ -282,15 +283,15 @@ class SolicitudPago extends BaseModel
             'solicitud_pago_id',
             'pago_spp_id'
         )
-        ->withPivot([
-            'monto_aplicado',
-            'estado_pago',
-            'notas',
-            'fecha_aplicacion'
-        ])
-        ->withTimestamps();
+            ->withPivot([
+                'monto_aplicado',
+                'estado_pago',
+                'notas',
+                'fecha_aplicacion'
+            ])
+            ->withTimestamps();
     }
-    
+
     /**
      * Relación con el modelo pivot para acceso directo
      */
@@ -298,7 +299,7 @@ class SolicitudPago extends BaseModel
     {
         return $this->hasMany(PagoSolicitudPago::class, 'solicitud_pago_id');
     }
-    
+
     /** ----------------
      * Filtros básicos (ejemplo nuevos)
      * ----------------- */
@@ -559,6 +560,14 @@ class SolicitudPago extends BaseModel
     /** ----------------
      * Métodos para manejo de pagos parciales
      * ----------------- */
+
+
+    /**
+     * Actualiza los montos abonados y saldos pendientes de la solicitud de pago y ajusta el estado de la solicitud: 
+     *  Si el monto toltal abonado es igual o mayor al monto total, la solicitud se marca como PAGADO.
+     * @param float $montoAbono Monto que se va a abonar a la solicitud de pago
+     * @return bool Indica si la solicitud de pago ha sido completamente pagada 
+     */
     public function actualizarSaldos($montoAbono)
     {
         $nuevoMontoAbonado = $this->monto_abonado + $montoAbono;
@@ -568,7 +577,7 @@ class SolicitudPago extends BaseModel
         $this->update([
             'monto_abonado' => $nuevoMontoAbonado,
             'saldo_pendiente' => max(0, $nuevoSaldoPendiente),
-            'pago_completo' => $pagoCompleto,
+            'estado_solicitud' => $pagoCompleto ? EstadoSP::PAGADO->value : EstadoSP::AUTORIZADA->value,
         ]);
 
         return $pagoCompleto;

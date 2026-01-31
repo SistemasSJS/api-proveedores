@@ -86,21 +86,18 @@ class ConstruccPagosSPPController extends Controller
     public function sppPorProveedor(Request $request, int $proveedorId): JsonResponse
     {
         try {
-            $proveedor = Proveedor::find($proveedorId);
-
-            if (! $proveedor) {
-                return $this->error('Proveedor no encontrado.', null, 404);
-            }
+            $proveedor = Proveedor::findOrFail($proveedorId);
 
             $empresaConstruccId = $request->integer('empresa_construcc_id');
             $perPage = $request->input('per_page', 1000);
 
             $query = SolicitudPago::query()
                 ->where('proveedor_id', $proveedor->id)
+                ->where('estado_solicitud', EstadoSP::AUTORIZADA)
                 ->when($empresaConstruccId, function ($q) use ($empresaConstruccId) {
                     $q->where('empresa_construcc_id', $empresaConstruccId);
                 })
-                ->withSum('pagos as total_pagado', 'pago_solicitud_pago.monto_aplicado') // 👈 AQUÍ
+                ->withSum('pagos as total_pagado', 'pago_solicitud_pago.monto_aplicado')
                 ->with(array_merge(
                     SolicitudPago::eagerLodable(),
                     [
@@ -403,11 +400,7 @@ class ConstruccPagosSPPController extends Controller
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return $this->error(
-                'No se pudo guardar el comprobante. Por favor, intente nuevamente.',
-                null,
-                500
-            );
+            return $this->error('No se pudo guardar el comprobante. Por favor, intente nuevamente.', null, 500);
         }
     }
 
@@ -424,13 +417,8 @@ class ConstruccPagosSPPController extends Controller
     public function registrarPagoProveedor(ConstruccPagosSPPRegistrarPago $request, Proveedor $proveedor): JsonResponse
     {
         try {
-            // ✅ Validación del FormRequest
             $validated = $request->validated();
-
-            // ✅ VALIDACIÓN ANTES DE BD (sin throw)
-            $montoTotalAplicado = collect($validated['solicitudes_pago'])
-                ->sum('monto_aplicado');
-
+            $montoTotalAplicado = collect($validated['solicitudes_pago'])->sum('monto_aplicado');
             if ($montoTotalAplicado > $validated['monto_total']) {
                 return $this->error(
                     'El monto total aplicado a las solicitudes excede el monto del pago registrado.',
@@ -452,19 +440,22 @@ class ConstruccPagosSPPController extends Controller
             // Crear el pago
             $pago = PagoSPP::create([
                 'comprobante_pago' => $comprobantePath,
+                'monto_total' => $validated['monto_total'],
                 'fecha_pago' => $validated['fecha_pago'],
                 'fecha_registro' => now(),
+                // 
                 'referencia_pago' => $validated['referencia_pago'],
                 'banco_pago' => $validated['banco_pago'] ?? null,
                 'cuenta_origen' => $validated['cuenta_origen'] ?? null,
                 'tipo_cuenta_origen' => $validated['tipo_cuenta_origen'] ?? null,
                 'clabe_interbancaria_origen' => $validated['clabe_interbancaria_origen'] ?? null,
+                // 
                 'banco_destino' => $validated['banco_destino'] ?? null,
                 'cuenta_destino' => $validated['cuenta_destino'] ?? null,
                 'tipo_cuenta_destino' => $validated['tipo_cuenta_destino'] ?? null,
                 'clabe_interbancaria_destino' => $validated['clabe_interbancaria_destino'] ?? null,
                 'titular_cuenta_destino' => $validated['titular_cuenta_destino'] ?? null,
-                'monto_total' => $validated['monto_total'],
+                // 
                 'observaciones' => $validated['observaciones'] ?? null,
                 'usuario_registro_id' => $validated['usuario_registro_id'] ?? null,
                 'usuario_registro_nombre' => $validated['usuario_registro_nombre'] ?? null,
@@ -477,6 +468,7 @@ class ConstruccPagosSPPController extends Controller
                     ->where('proveedor_id', $proveedor->id)
                     ->firstOrFail();
 
+                // Registrar la relacion el la tabla pibote
                 $pago->solicitudesPago()->attach($solicitudPago->id, [
                     'monto_aplicado' => $solicitudData['monto_aplicado'],
                     'estado_pago' => $solicitudData['estado_pago'],
