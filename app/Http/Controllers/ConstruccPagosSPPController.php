@@ -28,749 +28,6 @@ class ConstruccPagosSPPController extends Controller
     use ApiResponse;
 
     /**
-     * Lista de pagos con filtros y paginación.
-     * 
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function index(Request $request): JsonResponse
-    {
-        try {
-            // $perPage = $request->get('per_page', 20);
-            // $filters = $request->except(['page', 'per_page']);
-
-            $filters = $request->only(PagoSPP::getFilters());
-            $sortBy = $request->input('sort_by', 'fecha_pago');
-            $order = $request->input('order', 'desc');
-            $perPage = $request->input('per_page', 10000);
-
-            $query = PagoSPP::query()
-                ->with(PagoSPP::eagerLodable())
-                ->filter($filters)
-                ->orderBy($sortBy, $order);
-
-
-
-            $pagos = $query->paginate($perPage);
-
-            return $this->success([
-                'pagos' => $pagos->items(),
-                'pagination' => [
-                    'total' => $pagos->total(),
-                    'per_page' => $pagos->perPage(),
-                    'current_page' => $pagos->currentPage(),
-                    'last_page' => $pagos->lastPage(),
-                ],
-            ], 'Pagos obtenidos exitosamente.');
-        } catch (\Exception $e) {
-            Log::error('Error al listar pagos SPP', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return $this->error(
-                'No se pudieron obtener los pagos. Por favor, intente nuevamente.',
-                null,
-                500
-            );
-        }
-    }
-
-    /**
-     * Muestra un pago específico con sus solicitudes de pago asociadas.
-     * 
-     * @param int $id
-     * @return JsonResponse
-     */
-    public function show($id): JsonResponse
-    {
-        try {
-            $pago = PagoSPP::with([
-                'solicitudesPago' => function ($query) {
-                    $query->withPivot(['monto_aplicado', 'estado_pago', 'notas', 'fecha_aplicacion']);
-                },
-                'solicitudesPago.proveedor',
-                'solicitudesPago.empresaConstrucc',
-                'empresaConstrucc',
-            ])->findOrFail($id);
-
-            return $this->success(
-                $pago,
-                'Pago obtenido exitosamente.'
-            );
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            Log::error('Pago no encontrado', [
-                'id' => $id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return $this->error(
-                'El pago no existe.',
-                null,
-                404
-            );
-        } catch (\Exception $e) {
-            Log::error('Error al obtener pago SPP', [
-                'id' => $id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return $this->error(
-                'No se pudo obtener el detalle del pago. Por favor, intente nuevamente.',
-                null,
-                500
-            );
-        }
-    }
-
-    /**
-     * Registra un nuevo pago y lo aplica a una o más solicitudes de pago.
-     * 
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function store(Request $request): JsonResponse
-    {
-        try {
-            // Validación
-            $validated = $request->validate([
-                // Datos del pago
-                'comprobante_pago' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'fecha_pago' => 'required|date',
-                'referencia_pago' => 'required|string|max:100',
-
-                // Datos bancarios del pago (origen)
-                'banco_pago' => 'nullable|string|max:100',
-                'cuenta_origen' => 'nullable|string|max:50',
-                'tipo_cuenta_origen' => 'nullable|string|max:50',
-                'clabe_interbancaria_origen' => 'nullable|string|max:18',
-
-                // Datos bancarios del proveedor (destino)
-                'banco_destino' => 'nullable|string|max:100',
-                'cuenta_destino' => 'nullable|string|max:50',
-                'tipo_cuenta_destino' => 'nullable|string|max:50',
-                'clabe_interbancaria_destino' => 'nullable|string|max:18',
-                'titular_cuenta_destino' => 'nullable|string|max:255',
-
-                // Montos
-                'monto_total' => 'required|numeric|min:0.01',
-
-                // Metadatos
-                'observaciones' => 'nullable|string',
-                'usuario_registro_id' => 'nullable|integer',
-                'usuario_registro_nombre' => 'nullable|string|max:255',
-                'empresa_construcc_id' => 'nullable|integer',
-
-                // Solicitudes de pago a las que se aplica (obligatorio)
-                'solicitudes_pago' => 'required|array|min:1',
-                'solicitudes_pago.*.solicitud_pago_id' => 'required|integer|exists:solicitudes_pago,id',
-                'solicitudes_pago.*.monto_aplicado' => 'required|numeric|min:0.01',
-                'solicitudes_pago.*.estado_pago' => [
-                    'required',
-                    Rule::in(['aplicado', 'pendiente', 'rechazado', 'parcial', 'completado'])
-                ],
-                'solicitudes_pago.*.notas' => 'nullable|string',
-            ], [
-                'comprobante_pago.required' => 'El comprobante de pago es obligatorio.',
-                'comprobante_pago.mimes' => 'El comprobante debe ser PDF, JPG o PNG.',
-                'comprobante_pago.max' => 'El comprobante no debe superar los 10MB.',
-                'fecha_pago.required' => 'La fecha de pago es obligatoria.',
-                'referencia_pago.required' => 'La referencia de pago es obligatoria.',
-                'monto_total.required' => 'El monto total es obligatorio.',
-                'monto_total.min' => 'El monto debe ser mayor a cero.',
-                'solicitudes_pago.required' => 'Debe especificar al menos una solicitud de pago.',
-                'solicitudes_pago.*.solicitud_pago_id.exists' => 'Una o más solicitudes de pago no existen.',
-            ]);
-
-            DB::beginTransaction();
-
-            // Guardar el comprobante de pago
-            $comprobantePath = null;
-            if ($request->hasFile('comprobante_pago')) {
-                $comprobantePath = $request->file('comprobante_pago')->store(
-                    'comprobantes_pago',
-                    'public'
-                );
-            }
-
-            // Crear el pago
-            $pago = PagoSPP::create([
-                'comprobante_pago' => $comprobantePath,
-                'fecha_pago' => $validated['fecha_pago'],
-                'fecha_registro' => now(),
-                'referencia_pago' => $validated['referencia_pago'],
-                'banco_pago' => $validated['banco_pago'] ?? null,
-                'cuenta_origen' => $validated['cuenta_origen'] ?? null,
-                'tipo_cuenta_origen' => $validated['tipo_cuenta_origen'] ?? null,
-                'clabe_interbancaria_origen' => $validated['clabe_interbancaria_origen'] ?? null,
-                'banco_destino' => $validated['banco_destino'] ?? null,
-                'cuenta_destino' => $validated['cuenta_destino'] ?? null,
-                'tipo_cuenta_destino' => $validated['tipo_cuenta_destino'] ?? null,
-                'clabe_interbancaria_destino' => $validated['clabe_interbancaria_destino'] ?? null,
-                'titular_cuenta_destino' => $validated['titular_cuenta_destino'] ?? null,
-                'monto_total' => $validated['monto_total'],
-                'observaciones' => $validated['observaciones'] ?? null,
-                'usuario_registro_id' => $validated['usuario_registro_id'] ?? null,
-                'usuario_registro_nombre' => $validated['usuario_registro_nombre'] ?? null,
-                'empresa_construcc_id' => $validated['empresa_construcc_id'] ?? null,
-            ]);
-
-            // Verificar que el monto total aplicado no exceda el monto del pago
-            $montoTotalAplicado = collect($validated['solicitudes_pago'])->sum('monto_aplicado');
-            if ($montoTotalAplicado > $validated['monto_total']) {
-                throw new \Exception('El monto total aplicado a las solicitudes excede el monto del pago registrado.');
-            }
-
-            // Aplicar el pago a las solicitudes de pago
-            foreach ($validated['solicitudes_pago'] as $solicitudData) {
-                $solicitudPago = SolicitudPago::findOrFail($solicitudData['solicitud_pago_id']);
-
-                // Adjuntar la relación con los datos del pivot
-                $pago->solicitudesPago()->attach($solicitudPago->id, [
-                    'monto_aplicado' => $solicitudData['monto_aplicado'],
-                    'estado_pago' => $solicitudData['estado_pago'],
-                    'notas' => $solicitudData['notas'] ?? null,
-                    'fecha_aplicacion' => now(),
-                ]);
-
-                // Actualizar los saldos de la solicitud de pago si el estado es aplicado
-                if ($solicitudData['estado_pago'] === 'aplicado' || $solicitudData['estado_pago'] === 'completado') {
-                    $solicitudPago->actualizarSaldos($solicitudData['monto_aplicado']);
-                }
-            }
-
-            DB::commit();
-
-            // Cargar las relaciones para la respuesta
-            $pago->load(['solicitudesPago', 'empresaConstrucc']);
-
-            Log::info('Pago registrado exitosamente', [
-                'pago_id' => $pago->id,
-                'monto_total' => $pago->monto_total,
-                'cantidad_spp' => count($validated['solicitudes_pago']),
-            ]);
-
-            return $this->success(
-                $pago,
-                'Pago registrado y aplicado exitosamente.',
-                201
-            );
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            DB::rollBack();
-            return $this->error(
-                'Error de validación en los datos del pago.',
-                $e->errors(),
-                422
-            );
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            DB::rollBack();
-            Log::error('Solicitud de pago no encontrada al registrar pago', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return $this->error(
-                'Una o más solicitudes de pago no existen.',
-                null,
-                404
-            );
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error al crear pago SPP', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return $this->error(
-                'No se pudo registrar el pago. ' . $e->getMessage(),
-                null,
-                500
-            );
-        }
-    }
-
-    /**
-     * Actualiza un pago existente.
-     * 
-     * @param Request $request
-     * @param int $id
-     * @return JsonResponse
-     */
-    public function update(Request $request, $id): JsonResponse
-    {
-        try {
-            $pago = PagoSPP::findOrFail($id);
-
-            // Validación
-            $validated = $request->validate([
-                'comprobante_pago' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'fecha_pago' => 'nullable|date',
-                'referencia_pago' => 'nullable|string|max:100',
-                'banco_pago' => 'nullable|string|max:100',
-                'cuenta_origen' => 'nullable|string|max:50',
-                'tipo_cuenta_origen' => 'nullable|string|max:50',
-                'clabe_interbancaria_origen' => 'nullable|string|max:18',
-                'banco_destino' => 'nullable|string|max:100',
-                'cuenta_destino' => 'nullable|string|max:50',
-                'tipo_cuenta_destino' => 'nullable|string|max:50',
-                'clabe_interbancaria_destino' => 'nullable|string|max:18',
-                'titular_cuenta_destino' => 'nullable|string|max:255',
-                'monto_total' => 'nullable|numeric|min:0.01',
-                'observaciones' => 'nullable|string',
-            ]);
-
-            DB::beginTransaction();
-
-            // Actualizar comprobante si se proporciona uno nuevo
-            if ($request->hasFile('comprobante_pago')) {
-                // Eliminar el comprobante anterior
-                if ($pago->comprobante_pago && Storage::disk('public')->exists($pago->comprobante_pago)) {
-                    Storage::disk('public')->delete($pago->comprobante_pago);
-                }
-
-                // Guardar el nuevo comprobante
-                $validated['comprobante_pago'] = $request->file('comprobante_pago')->store(
-                    'comprobantes_pago',
-                    'public'
-                );
-            }
-
-            // Actualizar el pago
-            $pago->update(array_filter($validated));
-
-            DB::commit();
-
-            $pago->load(['solicitudesPago', 'empresaConstrucc']);
-
-            return $this->success(
-                $pago,
-                'Pago actualizado exitosamente.'
-            );
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            Log::error('Pago no encontrado al actualizar', [
-                'id' => $id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return $this->error(
-                'El pago no existe.',
-                null,
-                404
-            );
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error al actualizar pago SPP', [
-                'id' => $id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return $this->error(
-                'No se pudo actualizar el pago. Por favor, intente nuevamente.',
-                null,
-                500
-            );
-        }
-    }
-
-    /**
-     * Elimina un pago.
-     * 
-     * @param int $id
-     * @return JsonResponse
-     */
-    public function destroy($id): JsonResponse
-    {
-        try {
-            $pago = PagoSPP::findOrFail($id);
-
-            DB::beginTransaction();
-
-            // Eliminar el archivo del comprobante
-            if ($pago->comprobante_pago && Storage::disk('public')->exists($pago->comprobante_pago)) {
-                Storage::disk('public')->delete($pago->comprobante_pago);
-            }
-
-            // Eliminar el pago (esto también eliminará las relaciones en la tabla pivot por cascade)
-            $pago->delete();
-
-            DB::commit();
-
-            return $this->success(
-                null,
-                'Pago eliminado exitosamente.'
-            );
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            Log::error('Pago no encontrado al eliminar', [
-                'id' => $id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return $this->error(
-                'El pago no existe.',
-                null,
-                404
-            );
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error al eliminar pago SPP', [
-                'id' => $id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return $this->error(
-                'No se pudo eliminar el pago. Por favor, intente nuevamente.',
-                null,
-                500
-            );
-        }
-    }
-
-    /**
-     * Descarga el comprobante de pago.
-     * 
-     * @param int $id
-     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|JsonResponse
-     */
-    public function descargarComprobante($id)
-    {
-        try {
-            $pago = PagoSPP::findOrFail($id);
-
-            if (!$pago->comprobante_pago || !Storage::disk('public')->exists($pago->comprobante_pago)) {
-                return $this->error(
-                    'El comprobante de pago no está disponible.',
-                    null,
-                    404
-                );
-            }
-
-            return Storage::disk('public')->download($pago->comprobante_pago);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            Log::error('Pago no encontrado al descargar comprobante', [
-                'id' => $id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return $this->error(
-                'El pago no existe.',
-                null,
-                404
-            );
-        } catch (\Exception $e) {
-            Log::error('Error al descargar comprobante de pago', [
-                'id' => $id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return $this->error(
-                'No se pudo descargar el comprobante. Por favor, intente nuevamente.',
-                null,
-                500
-            );
-        }
-    }
-
-    /**
-     * Agrega una solicitud de pago adicional a un pago existente.
-     * 
-     * @param Request $request
-     * @param int $id
-     * @return JsonResponse
-     */
-    public function agregarSolicitudPago(Request $request, $id): JsonResponse
-    {
-        try {
-            $pago = PagoSPP::findOrFail($id);
-
-            // Validación
-            $validated = $request->validate([
-                'solicitud_pago_id' => 'required|integer|exists:solicitudes_pago,id',
-                'monto_aplicado' => 'required|numeric|min:0.01',
-                'estado_pago' => [
-                    'required',
-                    Rule::in(['aplicado', 'pendiente', 'rechazado', 'parcial', 'completado'])
-                ],
-                'notas' => 'nullable|string',
-            ]);
-
-            DB::beginTransaction();
-
-            // Verificar que hay monto disponible
-            $montoDisponible = $pago->montoDisponible();
-            if ($montoDisponible < $validated['monto_aplicado']) {
-                throw new \Exception("No hay monto suficiente disponible. Disponible: " . number_format($montoDisponible, 2));
-            }
-
-            $solicitudPago = SolicitudPago::findOrFail($validated['solicitud_pago_id']);
-
-            // Verificar que no esté ya relacionada
-            if ($pago->solicitudesPago()->where('solicitud_pago_id', $solicitudPago->id)->exists()) {
-                throw new \Exception('Esta solicitud de pago ya está asociada a este pago.');
-            }
-
-            // Adjuntar la solicitud de pago
-            $pago->solicitudesPago()->attach($solicitudPago->id, [
-                'monto_aplicado' => $validated['monto_aplicado'],
-                'estado_pago' => $validated['estado_pago'],
-                'notas' => $validated['notas'] ?? null,
-                'fecha_aplicacion' => now(),
-            ]);
-
-            // Actualizar saldos si el estado es aplicado
-            if ($validated['estado_pago'] === 'aplicado' || $validated['estado_pago'] === 'completado') {
-                $solicitudPago->actualizarSaldos($validated['monto_aplicado']);
-            }
-
-            DB::commit();
-
-            $pago->load(['solicitudesPago']);
-
-            return $this->success(
-                $pago,
-                'Solicitud de pago agregada exitosamente.'
-            );
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            DB::rollBack();
-            Log::error('Pago o solicitud de pago no encontrada', [
-                'pago_id' => $id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return $this->error(
-                'El pago o la solicitud de pago no existe.',
-                null,
-                404
-            );
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error al agregar solicitud de pago', [
-                'pago_id' => $id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return $this->error(
-                'No se pudo agregar la solicitud de pago. ' . $e->getMessage(),
-                null,
-                500
-            );
-        }
-    }
-
-    /**
-     * Actualiza la relación entre un pago y una solicitud de pago.
-     * 
-     * @param Request $request
-     * @param int $pagoId
-     * @param int $solicitudPagoId
-     * @return JsonResponse
-     */
-    public function actualizarSolicitudPago(Request $request, $pagoId, $solicitudPagoId): JsonResponse
-    {
-        try {
-            $pago = PagoSPP::findOrFail($pagoId);
-
-            // Validación
-            $validated = $request->validate([
-                'monto_aplicado' => 'nullable|numeric|min:0.01',
-                'estado_pago' => [
-                    'nullable',
-                    Rule::in(['aplicado', 'pendiente', 'rechazado', 'parcial', 'completado'])
-                ],
-                'notas' => 'nullable|string',
-            ]);
-
-            DB::beginTransaction();
-
-            // Verificar que la relación existe
-            $relacion = $pago->solicitudesPago()->where('solicitud_pago_id', $solicitudPagoId)->first();
-            if (!$relacion) {
-                throw new \Exception('Esta solicitud de pago no está asociada a este pago.');
-            }
-
-            // Actualizar la relación
-            $pago->solicitudesPago()->updateExistingPivot($solicitudPagoId, array_filter([
-                'monto_aplicado' => $validated['monto_aplicado'] ?? null,
-                'estado_pago' => $validated['estado_pago'] ?? null,
-                'notas' => $validated['notas'] ?? null,
-            ]));
-
-            DB::commit();
-
-            $pago->load(['solicitudesPago']);
-
-            return $this->success(
-                $pago,
-                'Relación actualizada exitosamente.'
-            );
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            DB::rollBack();
-            Log::error('Pago o solicitud de pago no encontrada', [
-                'pago_id' => $pagoId,
-                'solicitud_pago_id' => $solicitudPagoId,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return $this->error(
-                'El pago o la solicitud de pago no existe.',
-                null,
-                404
-            );
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error al actualizar relación pago-solicitud', [
-                'pago_id' => $pagoId,
-                'solicitud_pago_id' => $solicitudPagoId,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return $this->error(
-                'No se pudo actualizar la relación. ' . $e->getMessage(),
-                null,
-                500
-            );
-        }
-    }
-
-    /**
-     * Elimina la relación entre un pago y una solicitud de pago.
-     * 
-     * @param int $pagoId
-     * @param int $solicitudPagoId
-     * @return JsonResponse
-     */
-    public function eliminarSolicitudPago($pagoId, $solicitudPagoId): JsonResponse
-    {
-        try {
-            $pago = PagoSPP::findOrFail($pagoId);
-
-            DB::beginTransaction();
-
-            // Obtener el monto aplicado antes de desconectar
-            $relacion = $pago->solicitudesPago()
-                ->where('solicitud_pago_id', $solicitudPagoId)
-                ->first();
-
-            if (!$relacion) {
-                throw new \Exception('Esta solicitud de pago no está asociada a este pago.');
-            }
-
-            $montoAplicado = $relacion->pivot->monto_aplicado;
-
-            // Desconectar la solicitud de pago
-            $pago->solicitudesPago()->detach($solicitudPagoId);
-
-            // Revertir el monto en la solicitud de pago
-            $solicitudPago = SolicitudPago::findOrFail($solicitudPagoId);
-            $solicitudPago->update([
-                'monto_abonado' => max(0, $solicitudPago->monto_abonado - $montoAplicado),
-                'saldo_pendiente' => $solicitudPago->saldo_pendiente + $montoAplicado,
-                'pago_completo' => false,
-            ]);
-
-            DB::commit();
-
-            return $this->success(
-                null,
-                'Solicitud de pago desvinculada exitosamente.'
-            );
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            DB::rollBack();
-            Log::error('Pago o solicitud de pago no encontrada al eliminar relación', [
-                'pago_id' => $pagoId,
-                'solicitud_pago_id' => $solicitudPagoId,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return $this->error(
-                'El pago o la solicitud de pago no existe.',
-                null,
-                404
-            );
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error al eliminar relación pago-solicitud', [
-                'pago_id' => $pagoId,
-                'solicitud_pago_id' => $solicitudPagoId,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return $this->error(
-                'No se pudo desvincular la solicitud de pago. ' . $e->getMessage(),
-                null,
-                500
-            );
-        }
-    }
-
-    /**
-     * Obtiene estadísticas de pagos.
-     * 
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function estadisticas(Request $request): JsonResponse
-    {
-        try {
-            $empresaId = $request->get('empresa_construcc_id');
-
-            $query = PagoSPP::query();
-
-            if ($empresaId) {
-                $query->where('empresa_construcc_id', $empresaId);
-            }
-
-            $totalPagos = $query->count();
-            $montoTotalPagado = $query->sum('monto_total');
-            $pagosPorEmpresa = PagoSPP::select('empresa_construcc_id')
-                ->selectRaw('COUNT(*) as total_pagos')
-                ->selectRaw('SUM(monto_total) as monto_total')
-                ->groupBy('empresa_construcc_id')
-                ->with('empresaConstrucc')
-                ->get();
-
-            return $this->success([
-                'total_pagos' => $totalPagos,
-                'monto_total_pagado' => (float) $montoTotalPagado,
-                'pagos_por_empresa' => $pagosPorEmpresa,
-            ], 'Estadísticas obtenidas exitosamente.');
-        } catch (\Exception $e) {
-            Log::error('Error al obtener estadísticas de pagos', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return $this->error(
-                'No se pudieron obtener las estadísticas. Por favor, intente nuevamente.',
-                null,
-                500
-            );
-        }
-    }
-
-    /**
-     *--------------------------------------------------------------------------
-     * MÉTODOS PARA GESTIONAR SPP POR PROVEEDOR
-     *--------------------------------------------------------------------------
-     * Estos métodos permiten listar y consultar las SPP de un proveedor específico
-     * y sus pagos asociados.
-     */
-
-
-    /**
      * listado de proveedores con informacion de las SPP activas.
      * El listado se realiza en base a las SPP autorizadas y se agrupan por proveedor.
      * 
@@ -821,7 +78,6 @@ class ConstruccPagosSPPController extends Controller
         }
     }
 
-
     /**
      * Lista todas las SPP de un proveedor específico con filtros y paginación.
      *
@@ -833,11 +89,7 @@ class ConstruccPagosSPPController extends Controller
             $proveedor = Proveedor::find($proveedorId);
 
             if (! $proveedor) {
-                return $this->error(
-                    'Proveedor no encontrado.',
-                    null,
-                    404
-                );
+                return $this->error('Proveedor no encontrado.', null, 404);
             }
 
             $empresaConstruccId = $request->integer('empresa_construcc_id');
@@ -848,6 +100,7 @@ class ConstruccPagosSPPController extends Controller
                 ->when($empresaConstruccId, function ($q) use ($empresaConstruccId) {
                     $q->where('empresa_construcc_id', $empresaConstruccId);
                 })
+                ->withSum('pagos as total_pagado', 'pago_solicitud_pago.monto_aplicado') // 👈 AQUÍ
                 ->with(array_merge(
                     SolicitudPago::eagerLodable(),
                     [
@@ -860,9 +113,7 @@ class ConstruccPagosSPPController extends Controller
             $paginator = $query->paginate($perPage);
 
             return $this->paginated(
-                $paginator->setCollection(
-                    ConstruccPagosSPPResource::collection($paginator)->collection
-                )
+                $paginator->setCollection(ConstruccPagosSPPResource::collection($paginator)->collection)
             );
         } catch (\Exception $e) {
             Log::error('Error al listar SPP del proveedor', [
@@ -878,7 +129,6 @@ class ConstruccPagosSPPController extends Controller
         }
     }
 
-
     /**
      * Muestra una SPP específica de un proveedor con todos sus pagos parciales.
      * 
@@ -887,8 +137,11 @@ class ConstruccPagosSPPController extends Controller
      * @param Proveedor $proveedor
      * @param SolicitudPago $spp
      * @return JsonResponse
+     * 
+     * 
+     * FIXME: Revisar el como resolver la respuestas en hytml 
      */
-    public function showSppProveedor(Proveedor $proveedor, SolicitudPago $spp): JsonResponse
+    public function showSppProveedor(Request $request, Proveedor $proveedor, SolicitudPago $spp): JsonResponse
     {
         try {
             // Verificar que la SPP pertenece al proveedor
@@ -1278,3 +531,740 @@ class ConstruccPagosSPPController extends Controller
         }
     }
 }
+
+
+
+
+    // /**
+    //  * Lista de pagos con filtros y paginación.
+    //  * 
+    //  * @param Request $request
+    //  * @return JsonResponse
+    //  */
+    // public function index(Request $request): JsonResponse
+    // {
+    //     try {
+    //         // $perPage = $request->get('per_page', 20);
+    //         // $filters = $request->except(['page', 'per_page']);
+
+    //         $filters = $request->only(PagoSPP::getFilters());
+    //         $sortBy = $request->input('sort_by', 'fecha_pago');
+    //         $order = $request->input('order', 'desc');
+    //         $perPage = $request->input('per_page', 10000);
+
+    //         $query = PagoSPP::query()
+    //             ->with(PagoSPP::eagerLodable())
+    //             ->filter($filters)
+    //             ->orderBy($sortBy, $order);
+
+
+
+    //         $pagos = $query->paginate($perPage);
+
+    //         return $this->success([
+    //             'pagos' => $pagos->items(),
+    //             'pagination' => [
+    //                 'total' => $pagos->total(),
+    //                 'per_page' => $pagos->perPage(),
+    //                 'current_page' => $pagos->currentPage(),
+    //                 'last_page' => $pagos->lastPage(),
+    //             ],
+    //         ], 'Pagos obtenidos exitosamente.');
+    //     } catch (\Exception $e) {
+    //         Log::error('Error al listar pagos SPP', [
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //         ]);
+
+    //         return $this->error(
+    //             'No se pudieron obtener los pagos. Por favor, intente nuevamente.',
+    //             null,
+    //             500
+    //         );
+    //     }
+    // }
+
+    // /**
+    //  * Muestra un pago específico con sus solicitudes de pago asociadas.
+    //  * 
+    //  * @param int $id
+    //  * @return JsonResponse
+    //  */
+    // public function show($id): JsonResponse
+    // {
+    //     try {
+    //         $pago = PagoSPP::with([
+    //             'solicitudesPago' => function ($query) {
+    //                 $query->withPivot(['monto_aplicado', 'estado_pago', 'notas', 'fecha_aplicacion']);
+    //             },
+    //             'solicitudesPago.proveedor',
+    //             'solicitudesPago.empresaConstrucc',
+    //             'empresaConstrucc',
+    //         ])->findOrFail($id);
+
+    //         return $this->success(
+    //             $pago,
+    //             'Pago obtenido exitosamente.'
+    //         );
+    //     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+    //         Log::error('Pago no encontrado', [
+    //             'id' => $id,
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //         ]);
+
+    //         return $this->error(
+    //             'El pago no existe.',
+    //             null,
+    //             404
+    //         );
+    //     } catch (\Exception $e) {
+    //         Log::error('Error al obtener pago SPP', [
+    //             'id' => $id,
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //         ]);
+
+    //         return $this->error(
+    //             'No se pudo obtener el detalle del pago. Por favor, intente nuevamente.',
+    //             null,
+    //             500
+    //         );
+    //     }
+    // }
+
+    // /**
+    //  * Registra un nuevo pago y lo aplica a una o más solicitudes de pago.
+    //  * 
+    //  * @param Request $request
+    //  * @return JsonResponse
+    //  */
+    // public function store(Request $request): JsonResponse
+    // {
+    //     try {
+    //         // Validación
+    //         $validated = $request->validate([
+    //             // Datos del pago
+    //             'comprobante_pago' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
+    //             'fecha_pago' => 'required|date',
+    //             'referencia_pago' => 'required|string|max:100',
+
+    //             // Datos bancarios del pago (origen)
+    //             'banco_pago' => 'nullable|string|max:100',
+    //             'cuenta_origen' => 'nullable|string|max:50',
+    //             'tipo_cuenta_origen' => 'nullable|string|max:50',
+    //             'clabe_interbancaria_origen' => 'nullable|string|max:18',
+
+    //             // Datos bancarios del proveedor (destino)
+    //             'banco_destino' => 'nullable|string|max:100',
+    //             'cuenta_destino' => 'nullable|string|max:50',
+    //             'tipo_cuenta_destino' => 'nullable|string|max:50',
+    //             'clabe_interbancaria_destino' => 'nullable|string|max:18',
+    //             'titular_cuenta_destino' => 'nullable|string|max:255',
+
+    //             // Montos
+    //             'monto_total' => 'required|numeric|min:0.01',
+
+    //             // Metadatos
+    //             'observaciones' => 'nullable|string',
+    //             'usuario_registro_id' => 'nullable|integer',
+    //             'usuario_registro_nombre' => 'nullable|string|max:255',
+    //             'empresa_construcc_id' => 'nullable|integer',
+
+    //             // Solicitudes de pago a las que se aplica (obligatorio)
+    //             'solicitudes_pago' => 'required|array|min:1',
+    //             'solicitudes_pago.*.solicitud_pago_id' => 'required|integer|exists:solicitudes_pago,id',
+    //             'solicitudes_pago.*.monto_aplicado' => 'required|numeric|min:0.01',
+    //             'solicitudes_pago.*.estado_pago' => [
+    //                 'required',
+    //                 Rule::in(['aplicado', 'pendiente', 'rechazado', 'parcial', 'completado'])
+    //             ],
+    //             'solicitudes_pago.*.notas' => 'nullable|string',
+    //         ], [
+    //             'comprobante_pago.required' => 'El comprobante de pago es obligatorio.',
+    //             'comprobante_pago.mimes' => 'El comprobante debe ser PDF, JPG o PNG.',
+    //             'comprobante_pago.max' => 'El comprobante no debe superar los 10MB.',
+    //             'fecha_pago.required' => 'La fecha de pago es obligatoria.',
+    //             'referencia_pago.required' => 'La referencia de pago es obligatoria.',
+    //             'monto_total.required' => 'El monto total es obligatorio.',
+    //             'monto_total.min' => 'El monto debe ser mayor a cero.',
+    //             'solicitudes_pago.required' => 'Debe especificar al menos una solicitud de pago.',
+    //             'solicitudes_pago.*.solicitud_pago_id.exists' => 'Una o más solicitudes de pago no existen.',
+    //         ]);
+
+    //         DB::beginTransaction();
+
+    //         // Guardar el comprobante de pago
+    //         $comprobantePath = null;
+    //         if ($request->hasFile('comprobante_pago')) {
+    //             $comprobantePath = $request->file('comprobante_pago')->store(
+    //                 'comprobantes_pago',
+    //                 'public'
+    //             );
+    //         }
+
+    //         // Crear el pago
+    //         $pago = PagoSPP::create([
+    //             'comprobante_pago' => $comprobantePath,
+    //             'fecha_pago' => $validated['fecha_pago'],
+    //             'fecha_registro' => now(),
+    //             'referencia_pago' => $validated['referencia_pago'],
+    //             'banco_pago' => $validated['banco_pago'] ?? null,
+    //             'cuenta_origen' => $validated['cuenta_origen'] ?? null,
+    //             'tipo_cuenta_origen' => $validated['tipo_cuenta_origen'] ?? null,
+    //             'clabe_interbancaria_origen' => $validated['clabe_interbancaria_origen'] ?? null,
+    //             'banco_destino' => $validated['banco_destino'] ?? null,
+    //             'cuenta_destino' => $validated['cuenta_destino'] ?? null,
+    //             'tipo_cuenta_destino' => $validated['tipo_cuenta_destino'] ?? null,
+    //             'clabe_interbancaria_destino' => $validated['clabe_interbancaria_destino'] ?? null,
+    //             'titular_cuenta_destino' => $validated['titular_cuenta_destino'] ?? null,
+    //             'monto_total' => $validated['monto_total'],
+    //             'observaciones' => $validated['observaciones'] ?? null,
+    //             'usuario_registro_id' => $validated['usuario_registro_id'] ?? null,
+    //             'usuario_registro_nombre' => $validated['usuario_registro_nombre'] ?? null,
+    //             'empresa_construcc_id' => $validated['empresa_construcc_id'] ?? null,
+    //         ]);
+
+    //         // Verificar que el monto total aplicado no exceda el monto del pago
+    //         $montoTotalAplicado = collect($validated['solicitudes_pago'])->sum('monto_aplicado');
+    //         if ($montoTotalAplicado > $validated['monto_total']) {
+    //             throw new \Exception('El monto total aplicado a las solicitudes excede el monto del pago registrado.');
+    //         }
+
+    //         // Aplicar el pago a las solicitudes de pago
+    //         foreach ($validated['solicitudes_pago'] as $solicitudData) {
+    //             $solicitudPago = SolicitudPago::findOrFail($solicitudData['solicitud_pago_id']);
+
+    //             // Adjuntar la relación con los datos del pivot
+    //             $pago->solicitudesPago()->attach($solicitudPago->id, [
+    //                 'monto_aplicado' => $solicitudData['monto_aplicado'],
+    //                 'estado_pago' => $solicitudData['estado_pago'],
+    //                 'notas' => $solicitudData['notas'] ?? null,
+    //                 'fecha_aplicacion' => now(),
+    //             ]);
+
+    //             // Actualizar los saldos de la solicitud de pago si el estado es aplicado
+    //             if ($solicitudData['estado_pago'] === 'aplicado' || $solicitudData['estado_pago'] === 'completado') {
+    //                 $solicitudPago->actualizarSaldos($solicitudData['monto_aplicado']);
+    //             }
+    //         }
+
+    //         DB::commit();
+
+    //         // Cargar las relaciones para la respuesta
+    //         $pago->load(['solicitudesPago', 'empresaConstrucc']);
+
+    //         Log::info('Pago registrado exitosamente', [
+    //             'pago_id' => $pago->id,
+    //             'monto_total' => $pago->monto_total,
+    //             'cantidad_spp' => count($validated['solicitudes_pago']),
+    //         ]);
+
+    //         return $this->success(
+    //             $pago,
+    //             'Pago registrado y aplicado exitosamente.',
+    //             201
+    //         );
+    //     } catch (\Illuminate\Validation\ValidationException $e) {
+    //         DB::rollBack();
+    //         return $this->error(
+    //             'Error de validación en los datos del pago.',
+    //             $e->errors(),
+    //             422
+    //         );
+    //     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+    //         DB::rollBack();
+    //         Log::error('Solicitud de pago no encontrada al registrar pago', [
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //         ]);
+
+    //         return $this->error(
+    //             'Una o más solicitudes de pago no existen.',
+    //             null,
+    //             404
+    //         );
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         Log::error('Error al crear pago SPP', [
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //         ]);
+
+    //         return $this->error(
+    //             'No se pudo registrar el pago. ' . $e->getMessage(),
+    //             null,
+    //             500
+    //         );
+    //     }
+    // }
+
+    // /**
+    //  * Actualiza un pago existente.
+    //  * 
+    //  * @param Request $request
+    //  * @param int $id
+    //  * @return JsonResponse
+    //  */
+    // public function update(Request $request, $id): JsonResponse
+    // {
+    //     try {
+    //         $pago = PagoSPP::findOrFail($id);
+
+    //         // Validación
+    //         $validated = $request->validate([
+    //             'comprobante_pago' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+    //             'fecha_pago' => 'nullable|date',
+    //             'referencia_pago' => 'nullable|string|max:100',
+    //             'banco_pago' => 'nullable|string|max:100',
+    //             'cuenta_origen' => 'nullable|string|max:50',
+    //             'tipo_cuenta_origen' => 'nullable|string|max:50',
+    //             'clabe_interbancaria_origen' => 'nullable|string|max:18',
+    //             'banco_destino' => 'nullable|string|max:100',
+    //             'cuenta_destino' => 'nullable|string|max:50',
+    //             'tipo_cuenta_destino' => 'nullable|string|max:50',
+    //             'clabe_interbancaria_destino' => 'nullable|string|max:18',
+    //             'titular_cuenta_destino' => 'nullable|string|max:255',
+    //             'monto_total' => 'nullable|numeric|min:0.01',
+    //             'observaciones' => 'nullable|string',
+    //         ]);
+
+    //         DB::beginTransaction();
+
+    //         // Actualizar comprobante si se proporciona uno nuevo
+    //         if ($request->hasFile('comprobante_pago')) {
+    //             // Eliminar el comprobante anterior
+    //             if ($pago->comprobante_pago && Storage::disk('public')->exists($pago->comprobante_pago)) {
+    //                 Storage::disk('public')->delete($pago->comprobante_pago);
+    //             }
+
+    //             // Guardar el nuevo comprobante
+    //             $validated['comprobante_pago'] = $request->file('comprobante_pago')->store(
+    //                 'comprobantes_pago',
+    //                 'public'
+    //             );
+    //         }
+
+    //         // Actualizar el pago
+    //         $pago->update(array_filter($validated));
+
+    //         DB::commit();
+
+    //         $pago->load(['solicitudesPago', 'empresaConstrucc']);
+
+    //         return $this->success(
+    //             $pago,
+    //             'Pago actualizado exitosamente.'
+    //         );
+    //     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+    //         Log::error('Pago no encontrado al actualizar', [
+    //             'id' => $id,
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //         ]);
+
+    //         return $this->error(
+    //             'El pago no existe.',
+    //             null,
+    //             404
+    //         );
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         Log::error('Error al actualizar pago SPP', [
+    //             'id' => $id,
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //         ]);
+
+    //         return $this->error(
+    //             'No se pudo actualizar el pago. Por favor, intente nuevamente.',
+    //             null,
+    //             500
+    //         );
+    //     }
+    // }
+
+    // /**
+    //  * Elimina un pago.
+    //  * 
+    //  * @param int $id
+    //  * @return JsonResponse
+    //  */
+    // public function destroy($id): JsonResponse
+    // {
+    //     try {
+    //         $pago = PagoSPP::findOrFail($id);
+
+    //         DB::beginTransaction();
+
+    //         // Eliminar el archivo del comprobante
+    //         if ($pago->comprobante_pago && Storage::disk('public')->exists($pago->comprobante_pago)) {
+    //             Storage::disk('public')->delete($pago->comprobante_pago);
+    //         }
+
+    //         // Eliminar el pago (esto también eliminará las relaciones en la tabla pivot por cascade)
+    //         $pago->delete();
+
+    //         DB::commit();
+
+    //         return $this->success(
+    //             null,
+    //             'Pago eliminado exitosamente.'
+    //         );
+    //     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+    //         Log::error('Pago no encontrado al eliminar', [
+    //             'id' => $id,
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //         ]);
+
+    //         return $this->error(
+    //             'El pago no existe.',
+    //             null,
+    //             404
+    //         );
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         Log::error('Error al eliminar pago SPP', [
+    //             'id' => $id,
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //         ]);
+
+    //         return $this->error(
+    //             'No se pudo eliminar el pago. Por favor, intente nuevamente.',
+    //             null,
+    //             500
+    //         );
+    //     }
+    // }
+
+    // /**
+    //  * Descarga el comprobante de pago.
+    //  * 
+    //  * @param int $id
+    //  * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|JsonResponse
+    //  */
+    // public function descargarComprobante($id)
+    // {
+    //     try {
+    //         $pago = PagoSPP::findOrFail($id);
+
+    //         if (!$pago->comprobante_pago || !Storage::disk('public')->exists($pago->comprobante_pago)) {
+    //             return $this->error(
+    //                 'El comprobante de pago no está disponible.',
+    //                 null,
+    //                 404
+    //             );
+    //         }
+
+    //         return Storage::disk('public')->download($pago->comprobante_pago);
+    //     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+    //         Log::error('Pago no encontrado al descargar comprobante', [
+    //             'id' => $id,
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //         ]);
+
+    //         return $this->error(
+    //             'El pago no existe.',
+    //             null,
+    //             404
+    //         );
+    //     } catch (\Exception $e) {
+    //         Log::error('Error al descargar comprobante de pago', [
+    //             'id' => $id,
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //         ]);
+
+    //         return $this->error(
+    //             'No se pudo descargar el comprobante. Por favor, intente nuevamente.',
+    //             null,
+    //             500
+    //         );
+    //     }
+    // }
+
+    // /**
+    //  * Agrega una solicitud de pago adicional a un pago existente.
+    //  * 
+    //  * @param Request $request
+    //  * @param int $id
+    //  * @return JsonResponse
+    //  */
+    // public function agregarSolicitudPago(Request $request, $id): JsonResponse
+    // {
+    //     try {
+    //         $pago = PagoSPP::findOrFail($id);
+
+    //         // Validación
+    //         $validated = $request->validate([
+    //             'solicitud_pago_id' => 'required|integer|exists:solicitudes_pago,id',
+    //             'monto_aplicado' => 'required|numeric|min:0.01',
+    //             'estado_pago' => [
+    //                 'required',
+    //                 Rule::in(['aplicado', 'pendiente', 'rechazado', 'parcial', 'completado'])
+    //             ],
+    //             'notas' => 'nullable|string',
+    //         ]);
+
+    //         DB::beginTransaction();
+
+    //         // Verificar que hay monto disponible
+    //         $montoDisponible = $pago->montoDisponible();
+    //         if ($montoDisponible < $validated['monto_aplicado']) {
+    //             throw new \Exception("No hay monto suficiente disponible. Disponible: " . number_format($montoDisponible, 2));
+    //         }
+
+    //         $solicitudPago = SolicitudPago::findOrFail($validated['solicitud_pago_id']);
+
+    //         // Verificar que no esté ya relacionada
+    //         if ($pago->solicitudesPago()->where('solicitud_pago_id', $solicitudPago->id)->exists()) {
+    //             throw new \Exception('Esta solicitud de pago ya está asociada a este pago.');
+    //         }
+
+    //         // Adjuntar la solicitud de pago
+    //         $pago->solicitudesPago()->attach($solicitudPago->id, [
+    //             'monto_aplicado' => $validated['monto_aplicado'],
+    //             'estado_pago' => $validated['estado_pago'],
+    //             'notas' => $validated['notas'] ?? null,
+    //             'fecha_aplicacion' => now(),
+    //         ]);
+
+    //         // Actualizar saldos si el estado es aplicado
+    //         if ($validated['estado_pago'] === 'aplicado' || $validated['estado_pago'] === 'completado') {
+    //             $solicitudPago->actualizarSaldos($validated['monto_aplicado']);
+    //         }
+
+    //         DB::commit();
+
+    //         $pago->load(['solicitudesPago']);
+
+    //         return $this->success(
+    //             $pago,
+    //             'Solicitud de pago agregada exitosamente.'
+    //         );
+    //     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+    //         DB::rollBack();
+    //         Log::error('Pago o solicitud de pago no encontrada', [
+    //             'pago_id' => $id,
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //         ]);
+
+    //         return $this->error(
+    //             'El pago o la solicitud de pago no existe.',
+    //             null,
+    //             404
+    //         );
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         Log::error('Error al agregar solicitud de pago', [
+    //             'pago_id' => $id,
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //         ]);
+
+    //         return $this->error(
+    //             'No se pudo agregar la solicitud de pago. ' . $e->getMessage(),
+    //             null,
+    //             500
+    //         );
+    //     }
+    // }
+
+    // /**
+    //  * Actualiza la relación entre un pago y una solicitud de pago.
+    //  * 
+    //  * @param Request $request
+    //  * @param int $pagoId
+    //  * @param int $solicitudPagoId
+    //  * @return JsonResponse
+    //  */
+    // public function actualizarSolicitudPago(Request $request, $pagoId, $solicitudPagoId): JsonResponse
+    // {
+    //     try {
+    //         $pago = PagoSPP::findOrFail($pagoId);
+
+    //         // Validación
+    //         $validated = $request->validate([
+    //             'monto_aplicado' => 'nullable|numeric|min:0.01',
+    //             'estado_pago' => [
+    //                 'nullable',
+    //                 Rule::in(['aplicado', 'pendiente', 'rechazado', 'parcial', 'completado'])
+    //             ],
+    //             'notas' => 'nullable|string',
+    //         ]);
+
+    //         DB::beginTransaction();
+
+    //         // Verificar que la relación existe
+    //         $relacion = $pago->solicitudesPago()->where('solicitud_pago_id', $solicitudPagoId)->first();
+    //         if (!$relacion) {
+    //             throw new \Exception('Esta solicitud de pago no está asociada a este pago.');
+    //         }
+
+    //         // Actualizar la relación
+    //         $pago->solicitudesPago()->updateExistingPivot($solicitudPagoId, array_filter([
+    //             'monto_aplicado' => $validated['monto_aplicado'] ?? null,
+    //             'estado_pago' => $validated['estado_pago'] ?? null,
+    //             'notas' => $validated['notas'] ?? null,
+    //         ]));
+
+    //         DB::commit();
+
+    //         $pago->load(['solicitudesPago']);
+
+    //         return $this->success(
+    //             $pago,
+    //             'Relación actualizada exitosamente.'
+    //         );
+    //     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+    //         DB::rollBack();
+    //         Log::error('Pago o solicitud de pago no encontrada', [
+    //             'pago_id' => $pagoId,
+    //             'solicitud_pago_id' => $solicitudPagoId,
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //         ]);
+
+    //         return $this->error(
+    //             'El pago o la solicitud de pago no existe.',
+    //             null,
+    //             404
+    //         );
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         Log::error('Error al actualizar relación pago-solicitud', [
+    //             'pago_id' => $pagoId,
+    //             'solicitud_pago_id' => $solicitudPagoId,
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //         ]);
+
+    //         return $this->error(
+    //             'No se pudo actualizar la relación. ' . $e->getMessage(),
+    //             null,
+    //             500
+    //         );
+    //     }
+    // }
+
+    // /**
+    //  * Elimina la relación entre un pago y una solicitud de pago.
+    //  * 
+    //  * @param int $pagoId
+    //  * @param int $solicitudPagoId
+    //  * @return JsonResponse
+    //  */
+    // public function eliminarSolicitudPago($pagoId, $solicitudPagoId): JsonResponse
+    // {
+    //     try {
+    //         $pago = PagoSPP::findOrFail($pagoId);
+
+    //         DB::beginTransaction();
+
+    //         // Obtener el monto aplicado antes de desconectar
+    //         $relacion = $pago->solicitudesPago()
+    //             ->where('solicitud_pago_id', $solicitudPagoId)
+    //             ->first();
+
+    //         if (!$relacion) {
+    //             throw new \Exception('Esta solicitud de pago no está asociada a este pago.');
+    //         }
+
+    //         $montoAplicado = $relacion->pivot->monto_aplicado;
+
+    //         // Desconectar la solicitud de pago
+    //         $pago->solicitudesPago()->detach($solicitudPagoId);
+
+    //         // Revertir el monto en la solicitud de pago
+    //         $solicitudPago = SolicitudPago::findOrFail($solicitudPagoId);
+    //         $solicitudPago->update([
+    //             'monto_abonado' => max(0, $solicitudPago->monto_abonado - $montoAplicado),
+    //             'saldo_pendiente' => $solicitudPago->saldo_pendiente + $montoAplicado,
+    //             'pago_completo' => false,
+    //         ]);
+
+    //         DB::commit();
+
+    //         return $this->success(
+    //             null,
+    //             'Solicitud de pago desvinculada exitosamente.'
+    //         );
+    //     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+    //         DB::rollBack();
+    //         Log::error('Pago o solicitud de pago no encontrada al eliminar relación', [
+    //             'pago_id' => $pagoId,
+    //             'solicitud_pago_id' => $solicitudPagoId,
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //         ]);
+
+    //         return $this->error(
+    //             'El pago o la solicitud de pago no existe.',
+    //             null,
+    //             404
+    //         );
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         Log::error('Error al eliminar relación pago-solicitud', [
+    //             'pago_id' => $pagoId,
+    //             'solicitud_pago_id' => $solicitudPagoId,
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //         ]);
+
+    //         return $this->error(
+    //             'No se pudo desvincular la solicitud de pago. ' . $e->getMessage(),
+    //             null,
+    //             500
+    //         );
+    //     }
+    // }
+
+    // /**
+    //  * Obtiene estadísticas de pagos.
+    //  * 
+    //  * @param Request $request
+    //  * @return JsonResponse
+    //  */
+    // public function estadisticas(Request $request): JsonResponse
+    // {
+    //     try {
+    //         $empresaId = $request->get('empresa_construcc_id');
+
+    //         $query = PagoSPP::query();
+
+    //         if ($empresaId) {
+    //             $query->where('empresa_construcc_id', $empresaId);
+    //         }
+
+    //         $totalPagos = $query->count();
+    //         $montoTotalPagado = $query->sum('monto_total');
+    //         $pagosPorEmpresa = PagoSPP::select('empresa_construcc_id')
+    //             ->selectRaw('COUNT(*) as total_pagos')
+    //             ->selectRaw('SUM(monto_total) as monto_total')
+    //             ->groupBy('empresa_construcc_id')
+    //             ->with('empresaConstrucc')
+    //             ->get();
+
+    //         return $this->success([
+    //             'total_pagos' => $totalPagos,
+    //             'monto_total_pagado' => (float) $montoTotalPagado,
+    //             'pagos_por_empresa' => $pagosPorEmpresa,
+    //         ], 'Estadísticas obtenidas exitosamente.');
+    //     } catch (\Exception $e) {
+    //         Log::error('Error al obtener estadísticas de pagos', [
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //         ]);
+
+    //         return $this->error(
+    //             'No se pudieron obtener las estadísticas. Por favor, intente nuevamente.',
+    //             null,
+    //             500
+    //         );
+    //     }
+    // }
