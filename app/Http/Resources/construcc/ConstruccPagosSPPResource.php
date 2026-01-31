@@ -12,49 +12,37 @@ class ConstruccPagosSPPResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $montoTotal     = (float) $this->monto_total;
+        $montoPagado    = (float) ($this->total_pagado ?? 0);
+        $montoAutorizado = (float) ($this->monto_autorizado ?? 0);
+
         return [
-            // Dataos básicos de la SPP
             'id' => $this->id,
-            // 'numero_folio_solicitud' => $this->numero_folio_solicitud,
-            'folio_sp_consecutivo' => $this->folio_sp_consecutivo,
-            'folio_factura' => $this->folio_factura,
-            'descripcion_concepto' => $this->descripcion_concepto,
-            'estado_solicitud' => $this->estado_solicitud,
+            'folio_sp_consecutivo'   => $this->folio_sp_consecutivo,
+            'numero_folio_solicitud' => $this->numero_folio_solicitud,
+            'descripcion_concepto'   => $this->descripcion_concepto,
 
-            // Campos de tipo y origen
-            // 'tipo' => $this->tipo,
-            // 'tipo_id' => $this->tipo_id,
-            // 'obra_id' => $this->obra_id,
-            // 'observaciones' => $this->observaciones,
-            // 'notas' => $this->notas,
-            // 'utilizara' => $this->utilizara,
-            // 'equipo' => $this->equipo,
+            // Montos (nombres EXACTOS como en tu interface)
+            'monto_total'      => $montoTotal,
+            'monto_pagado'     => $montoPagado,
+            'monto_pendiente'  => max(0, $montoTotal - $montoPagado),
+            'monto_autorizado' => $montoAutorizado,
 
-            // Montos
-            'monto_total'     => (float) $this->monto_total, // total de la factura 
-            'monto_abonado'   => (float) $this->total_pagado ?? 0, // total abonado hasta la fecha... Para calcular el saldo pendiente sumar pagos
-            'monto_pendiente' => (float) $this->saldo_pendiente ?? 0, // monto_total - monto_abonado
-            'monto_autorizado' => (float)  $this->monto_autorizado ?? 0,
+            // Campos de autorización parcial (si existen)
+            'usuario_autorizo_parcial_id'     => $this->usuario_autorizo_parcial_id ?? null,
+            'usuario_autorizo_parcial_nombre' => $this->usuario_autorizo_parcial_nombre ?? null,
+            'motivo_autorizacion_parcial'     => $this->motivo_autorizacion_parcial ?? null,
+            'fecha_autorizacion_parcial'      => optional($this->fecha_autorizacion_parcial)?->format('Y-m-d H:i:s'),
 
-            // Fechas clave
-            'fecha_registro' => $this->created_at->format('Y-m-d H:i:s'),
+            // Extra útiles para UI
+            'proveedor' => $this->whenLoaded('proveedor', function () {
+                return [
+                    'id' => $this->proveedor->id,
+                    'nombre' => $this->proveedor->nombre_comercial,
+                ];
+            }),
 
-            // // Pagos aplicados a esta SPP
-            // 'pagos' => $this->whenLoaded('pagos', function () {
-            //     return $this->pagos->map(function ($pago) {
-            //         return [
-            //             'id' => $pago->id,
-            //             'referencia_pago' => $pago->referencia_pago,
-            //             'fecha_pago' => $pago->fecha_pago,
-
-            //             // Pivot
-            //             'monto_aplicado' => $pago->pivot->monto_aplicado,
-            //             'estado_pago'    => $pago->pivot->estado_pago,
-            //             'notas'          => $pago->pivot->notas,
-            //             'fecha_aplicacion' => $pago->pivot->fecha_aplicacion,
-            //         ];
-            //     });
-            // }),
+            'fecha_registro' => optional($this->created_at)?->format('Y-m-d H:i:s'),
         ];
     }
 }
