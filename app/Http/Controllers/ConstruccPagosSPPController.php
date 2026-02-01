@@ -2,23 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\EstadoSP;
-use App\Http\Requests\Construcc\ConstruccPagosSPPRegistrarPagoRequest;
-use App\Http\Resources\Construcc\ConstruccPagoProveedorResource;
-use App\Http\Resources\Construcc\ConstruccPagoResource;
-use App\Http\Resources\Construcc\ConstruccProveedorSppResource;
-use App\Http\Resources\Construcc\ConstruccPagoSPPResource;
-use App\Models\PagoSPP;
-use App\Models\Proveedor;
-use App\Models\SolicitudPago;
-use Database\Factories\ProveedorFactory;;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
+
+use App\Enums\EstadoSP;
+
+use App\Http\Requests\Construcc\ConstruccPagosSPPRegistrarPagoRequest;
+use App\Http\Resources\Construcc\ConstruccPagoProveedorResource;
+use App\Http\Resources\Construcc\ConstruccPagoResource;
+use App\Http\Resources\Construcc\ConstruccPagoSPPResource;
+
+use App\Models\PagoSPP;
+use App\Models\Proveedor;
+use App\Models\SolicitudPago;
 
 /**
  * Controlador para gestionar los pagos de solicitudes de pago (SPP).
@@ -278,6 +278,9 @@ class ConstruccPagosSPPController extends Controller
      * El listado se realiza en base a las SPP autorizadas y se agrupan por proveedor.
      * 
      *  GET /api/construcc/pagos-spp/proveedores?empresas_construcc={id_empresa_construcc}
+     * 
+     * @param Request $request
+     * @return ConstruccPagoProveedorResource[]
      */
     public function indexProveedor(Request $request): JsonResponse
     {
@@ -377,14 +380,11 @@ class ConstruccPagosSPPController extends Controller
      * Muestra una SPP específica de un proveedor con todos sus pagos parciales.
      * 
      * GET /api/construcc/pagos-spp/proveedor/{proveedor}/spp/{spp}
-     * 
-     * @param Proveedor $proveedor
-     * @param SolicitudPago $spp
-     * @return JsonResponse
      */
     public function showSppProveedor(Request $request, Proveedor $proveedor, SolicitudPago $spp): JsonResponse
     {
         try {
+            // 🔐 Validación de pertenencia
             if ($spp->proveedor_id !== $proveedor->id) {
                 return $this->error(
                     'La solicitud de pago no pertenece a este proveedor.',
@@ -393,22 +393,39 @@ class ConstruccPagosSPPController extends Controller
                 );
             }
 
-            // Cargar relaciones necesarias para el resource
+            // 📦 Cargar relaciones necesarias para el resource
             $spp->load([
                 'proveedor',
                 'empresaConstrucc',
                 'cuentasBancarias',
                 'pagos' => function ($query) {
-                    $query->with(['empresaConstrucc', 'proveedor'])->orderByPivot('fecha_aplicacion', 'desc');
-                }
+                    $query->with([
+                        'empresaConstrucc',
+                        'proveedor',
+                    ])
+                        ->withPivot([
+                            'solicitud_pago_id',
+                            'monto_aplicado',
+                            'fecha_aplicacion',
+                        ])
+                        ->orderByPivot('fecha_aplicacion', 'desc');
+                },
             ]);
 
-            return $this->success(new ConstruccProveedorSppResource($spp), 'Solicitud de pago obtenida exitosamente.');
+            // ✅ Respuesta con resource específico de SPP (que ya incluye pagos)
+            return $this->success(
+                [
+
+                    'solicitud_pago' => new ConstruccPagoSPPResource($spp),
+                    'pagos' => ConstruccPagoResource::collection($spp->pagos),
+                ],
+                'Solicitud de pago obtenida exitosamente.'
+            );
         } catch (\Throwable $e) {
             Log::error('Error al obtener SPP del proveedor', [
                 'proveedor_id' => $proveedor->id,
-                'spp_id' => $spp->id,
-                'error' => $e->getMessage(),
+                'spp_id'       => $spp->id,
+                'error'        => $e->getMessage(),
             ]);
 
             return $this->error(

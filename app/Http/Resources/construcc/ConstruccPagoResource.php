@@ -12,26 +12,45 @@ class ConstruccPagoResource extends JsonResource
    */
   public function toArray(Request $request): array
   {
+    // Obtener proveedor desde relación cargada (no desde columna directa)
+    $proveedorId = $this->whenLoaded('proveedor', fn() => $this->proveedor->id);
+
+    // Obtener spp_id desde el pivot cuando el pago viene en contexto de SPP
+    $sppId = $this->whenPivotLoaded('pago_solicitud_pago', function () {
+      return $this->pivot->solicitud_pago_id;
+    });
+
     return [
       'id' => $this->id,
+
       // datos de empresa construcc
       'empresa_construcc_id' => $this->empresa_construcc_id,
       'empresa_construcc_nombre' => $this->whenLoaded('empresaConstrucc', fn() => $this->empresaConstrucc->nombre),
+
+      // usuario
       'usuario_id' => $this->usuario_registro_id,
       'usuario_nombre' => $this->usuario_registro_nombre,
+
       // proveedor
-      'proveedor_id' => $this->whenLoaded('proveedor', fn() => $this->proveedor->id),
+      'proveedor_id' => $proveedorId,
       'proveedor_nombre_comercial' => $this->whenLoaded('proveedor', fn() => $this->proveedor->nombre_comercial),
       'proveedor_razon_social' => $this->whenLoaded('proveedor', fn() => $this->proveedor->razon_social),
       'proveedor_rfc' => $this->whenLoaded('proveedor', fn() => $this->proveedor->rfc),
 
       // datos del comprobante de pago
       'datos_comprobante' => [
-        // usnado la ruta de descarga del comprobante
-        'comprobante_url' => $this->when($this->comprobante_pago, fn() => route('construcc.pagos-spp.proveedor.spp.descargar-comprobante', ['proveedor' => $this->proveedor_id, 'pago' => $this->id])),
-        'monto_total' => $this->monto_total,
-        'fecha_registro' => $this->fecha_registro,
-        'fecha_pago' => $this->fecha_pago,
+        'comprobante_url' => $this->when(
+          $this->comprobante_pago && $proveedorId && $sppId,
+          fn() => route('construcc.pagos-spp.proveedor.spp.descargar-comprobante', [
+            'proveedor' => $proveedorId,
+            'spp'       => $sppId,
+            'pago'      => $this->id,
+          ])
+        ),
+
+        'monto_total' => (float) $this->monto_total,
+        'fecha_registro' => optional($this->fecha_registro)?->toDateTimeString(),
+        'fecha_pago' => optional($this->fecha_pago)?->toDateTimeString(),
         'referencia_pago' => $this->referencia_pago,
         'banco_destino' => $this->banco_destino,
         'titular_cuenta_destino' => $this->titular_cuenta_destino,

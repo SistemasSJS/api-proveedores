@@ -42,6 +42,8 @@ class ConstruccPagoSPPResource extends JsonResource
                 ];
             }),
 
+
+
             'fecha_registro' => optional($this->created_at)?->format('Y-m-d H:i:s'),
         ];
     }
