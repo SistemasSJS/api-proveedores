@@ -5,7 +5,7 @@ namespace App\Http\Resources\Construcc;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ConstruccPagosSPPResource extends JsonResource
+class ConstruccPagoSPPResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

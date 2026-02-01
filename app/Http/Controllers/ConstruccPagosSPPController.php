@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Enums\EstadoSP;
 use App\Http\Requests\Construcc\ConstruccPagosSPPRegistrarPagoRequest;
-use App\Http\Resources\Construcc\ConstruccPagosProveedorResource;
+use App\Http\Resources\Construcc\ConstruccPagoProveedorResource;
 use App\Http\Resources\Construcc\ConstruccProveedorSppResource;
-use App\Http\Resources\Construcc\ConstruccPagosSPPResource;
+use App\Http\Resources\Construcc\ConstruccPagoSPPResource;
 use App\Models\PagoSPP;
 use App\Models\Proveedor;
 use App\Models\SolicitudPago;
@@ -58,7 +58,7 @@ class ConstruccPagosSPPController extends Controller
             });
 
 
-            $data = ConstruccPagosProveedorResource::collection($paginator)->resolve();
+            $data = ConstruccPagoProveedorResource::collection($paginator)->resolve();
 
             return $this->paginated(
                 $paginator->setCollection(collect($data))
@@ -108,7 +108,7 @@ class ConstruccPagosSPPController extends Controller
             $paginator = $query->paginate($perPage);
 
             return $this->paginated(
-                $paginator->setCollection(ConstruccPagosSPPResource::collection($paginator)->collection)
+                $paginator->setCollection(ConstruccPagoSPPResource::collection($paginator)->collection)
             );
         } catch (\Exception $e) {
             Log::error('Error al listar SPP del proveedor', [
@@ -136,7 +136,6 @@ class ConstruccPagosSPPController extends Controller
     public function showSppProveedor(Request $request, Proveedor $proveedor, SolicitudPago $spp): JsonResponse
     {
         try {
-            // Verificar que la SPP pertenece al proveedor
             if ($spp->proveedor_id !== $proveedor->id) {
                 return $this->error(
                     'La solicitud de pago no pertenece a este proveedor.',
@@ -145,25 +144,22 @@ class ConstruccPagosSPPController extends Controller
                 );
             }
 
+            // Cargar relaciones necesarias para el resource
             $spp->load([
                 'proveedor',
                 'empresaConstrucc',
                 'cuentasBancarias',
                 'pagos' => function ($query) {
-                    $query->with(['pagoSPP', 'solicitudPago'])->orderBy('fecha_aplicacion', 'desc');
+                    $query->with(['empresaConstrucc', 'proveedor'])->orderByPivot('fecha_aplicacion', 'desc');
                 }
             ]);
 
-            return $this->success(
-                new ConstruccProveedorSppResource($spp),
-                'Solicitud de pago obtenida exitosamente.'
-            );
-        } catch (\Exception $e) {
+            return $this->success(new ConstruccProveedorSppResource($spp), 'Solicitud de pago obtenida exitosamente.');
+        } catch (\Throwable $e) {
             Log::error('Error al obtener SPP del proveedor', [
                 'proveedor_id' => $proveedor->id,
                 'spp_id' => $spp->id,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
 
             return $this->error(
@@ -173,6 +169,7 @@ class ConstruccPagosSPPController extends Controller
             );
         }
     }
+
 
     /**
      * Lista todos los pagos parciales de una SPP específica.
@@ -409,25 +406,22 @@ class ConstruccPagosSPPController extends Controller
      * @param Proveedor $proveedor
      * @return JsonResponse
      */
-    public function registrarPagoProveedor(
-        ConstruccPagosSPPRegistrarPagoRequest $request,
-        Proveedor $proveedor
-    ): JsonResponse {
-
-        Log::info('PAGO Registro Inicio');
-
+    public function registrarPagoProveedor(ConstruccPagosSPPRegistrarPagoRequest $request, Proveedor $proveedor): JsonResponse
+    {
         $validated = $request->validated();
         $empresaConstruccId = $validated['empresa_id'];
 
-        // =========================
-        // Validar que las SPP pertenecen al proveedor y a la empresa
-        // =========================
-        $listSPPIds = collect($validated['solicitudes'])->pluck('solicitud_id');
+        /************************************************************
+         * Validar que las SPP pertenecen al proveedor y a la empresa
+         ************************************************************/
+        $listSPPIds = collect($validated['solicitudes'])->pluck('solicitud_id'); // --> [{solicitud_pago_id, ...}]
 
+        // This method genera: [ {id}, ...] con las SPP que no pertenecen al Proveedor ni a la empresa
         $invalidSPPs = SolicitudPago::whereIn('id', $listSPPIds)
             ->where(function ($q) use ($proveedor, $empresaConstruccId) {
                 $q->where('proveedor_id', '!=', $proveedor->id)
-                    ->orWhere('empresa_construcc_id', '!=', $empresaConstruccId);
+                    ->orWhere('empresa_construcc_id', '!=', $empresaConstruccId)
+                    ->orWhere('estado_solicitud', '!=', EstadoSP::AUTORIZADA);
             })
             ->pluck('id');
 
@@ -441,9 +435,9 @@ class ConstruccPagosSPPController extends Controller
             );
         }
 
-        // =========================
-        // Validar montos
-        // =========================
+        /************************************************************
+         * Validar montos
+         ************************************************************/
         $montoTotalAplicado = collect($validated['solicitudes'])->sum('monto_pago');
 
         if ($montoTotalAplicado > $validated['monto_total']) {
@@ -457,63 +451,61 @@ class ConstruccPagosSPPController extends Controller
             );
         }
 
-        DB::beginTransaction();
 
         try {
+            DB::beginTransaction();
 
-            // =========================
-            // Guardar comprobante
-            // =========================
+            /************************************************************
+             * Guardar comprobante
+             ************************************************************/
             $file = $request->file('comprobante_pago');
             $comprobantePath = $file->store('comprobantes', 'private');
 
-            // =========================
-            // Crear el pago
-            // =========================
+            /************************************************************
+             * Crear el pago
+             ************************************************************/
             $infoComprobante = $validated['info_comprobante'] ?? [];
 
             $pago = PagoSPP::create([
+                // Comprobante File
                 'comprobante_pago' => $comprobantePath,
+
+                // Informacion basica del pago
+                'empresa_construcc_id' => $empresaConstruccId,
+                'proveedor_id' => $validated['proveedor_id'],
+                'usuario_registro_id' => $validated['usuario_id'],
+                'usuario_registro_nombre' => $validated['usuario_nombre'],
+                // nivel_usuario
+
+                // Informacion del comprobante de pago OCR
                 'monto_total'      => $validated['monto_total'],
-                'fecha_pago'       => $validated['fecha_pago'],
                 'fecha_registro'   => now(),
-
+                'fecha_pago'       => $validated['fecha_pago'],
                 'referencia_pago'  => $validated['referencia_pago'],
-
-                // Si vienen del OCR
                 'banco_destino'    => $infoComprobante['bancoDestino'] ?? null,
                 'titular_cuenta_destino' => $infoComprobante['nombreBeneficiario'] ?? null,
                 'clave_rastreo'    => $infoComprobante['claveRastreo'] ?? null,
 
-                'observaciones' => $validated['observaciones'] ?? null,
-                'usuario_registro_id' => $validated['usuario_id'],
-                'usuario_registro_nombre' => $validated['usuario_nombre'],
-                'empresa_construcc_id' => $empresaConstruccId,
+
             ]);
 
-            // =========================
-            // Aplicar el pago a las SPP
-            // =========================
-            foreach ($validated['solicitudes'] as $solicitudData) {
+            /************************************************************
+             * Aplicar el pago a las SPP
+             ************************************************************/
 
+            foreach ($validated['solicitudes'] as $solicitudData) {
+                /** @var SolicitudPago */
                 $solicitudPago = SolicitudPago::where('id', $solicitudData['solicitud_id'])
                     ->where('proveedor_id', $proveedor->id)
                     ->where('empresa_construcc_id', $empresaConstruccId)
                     ->firstOrFail();
 
-                $estadoPago = $solicitudData['estado_pago'] ?? 'aplicado';
-                $notas = $solicitudData['notas'] ?? null;
-
                 $pago->solicitudesPago()->attach($solicitudPago->id, [
                     'monto_aplicado'   => $solicitudData['monto_pago'],
-                    'estado_pago'     => $estadoPago,
-                    'notas'           => $notas,
                     'fecha_aplicacion' => now(),
                 ]);
 
-                if (in_array($estadoPago, ['aplicado', 'completado', 'parcial'])) {
-                    $solicitudPago->actualizarSaldos($solicitudData['monto_pago']);
-                }
+                $solicitudPago->actualizarSaldos($solicitudData['monto_pago']);
             }
 
             DB::commit();
@@ -600,8 +592,8 @@ class ConstruccPagosSPPController extends Controller
     // {
     //     try {
     //         $pago = PagoSPP::with([
-    //             'solicitudesPago' => function ($query) {
-    //                 $query->withPivot(['monto_aplicado', 'estado_pago', 'notas', 'fecha_aplicacion']);
+        //                 $query->withPivot(['monto_aplicado', 'estado_pago', 'notas', 'fecha_aplicacion']);
+        //             'solicitudesPago' => function ($query) {
     //             },
     //             'solicitudesPago.proveedor',
     //             'solicitudesPago.empresaConstrucc',

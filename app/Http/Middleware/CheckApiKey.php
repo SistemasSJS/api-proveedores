@@ -20,18 +20,18 @@ class CheckApiKey
         $providedKey = $request->header('X-API-KEY');
 
         // 🔍 Registrar las claves para depuración
-        Log::info('🔑 Verificación de API Key', [
-            'provided_key' => $providedKey ?? 'N/A',
-            'valid_key' => $validKey ?? 'N/A',
-            'ip' => $request->ip(),
-            'route' => $request->path(),
-        ]);
+        // Log::info('🔑 Verificación de API Key', [
+        //     'provided_key' => $providedKey ?? 'N/A',
+        //     'valid_key' => $validKey ?? 'N/A',
+        //     'ip' => $request->ip(),
+        //     'route' => $request->path(),
+        // ]);
 
         if ($providedKey !== $validKey) {
-            Log::warning('❌ API Key inválida o faltante', [
-                'provided_key' => $providedKey,
-                'ip' => $request->ip(),
-            ]);
+            // Log::warning('❌ API Key inválida o faltante', [
+            //     'provided_key' => $providedKey,
+            //     'ip' => $request->ip(),
+            // ]);
 
             return response()->json([
                 'error' => 'API Key inválida o faltante',
@@ -39,10 +39,10 @@ class CheckApiKey
             ], 401);
         }
 
-        Log::info('✅ API Key válida', [
-            'ip' => $request->ip(),
-            'route' => $request->path(),
-        ]);
+        // Log::info('✅ API Key válida', [
+        //     'ip' => $request->ip(),
+        //     'route' => $request->path(),
+        // ]);
 
         return $next($request);
     }

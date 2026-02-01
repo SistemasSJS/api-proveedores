@@ -118,6 +118,14 @@ class PagoSPP extends BaseModel
         return $this->belongsTo(EmpresaConstrucc::class, 'empresa_construcc_id');
     }
 
+    /**
+     * Relación con el proveedor al que se realizó el pago.
+     */
+    public function proveedor(): BelongsTo
+    {
+        return $this->belongsTo(Proveedor::class);
+    }
+
     /** ----------------
      * Scopes
      * ----------------- */

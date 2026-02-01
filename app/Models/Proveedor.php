@@ -166,6 +166,14 @@ class Proveedor extends BaseModel
 
     // ================== RELACIONES ==================
 
+    /**
+     * Relación con los pagos SPP realizados al proveedor.
+     */
+    public function pagosSPP(): HasMany
+    {
+        return $this->hasMany(PagoSPP::class);
+    }
+
     public function categorias(): HasMany
     {
         return $this->hasMany(Categoria::class);

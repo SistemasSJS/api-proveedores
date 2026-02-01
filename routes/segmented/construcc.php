@@ -304,11 +304,11 @@ Route::prefix('construcc')
             // Route::delete('/{pago}/solicitudes-pago/{solicitudPago}', [ConstruccPagosSPPController::class, 'eliminarSolicitudPago'])->middleware(['audit'])->name('eliminar-solicitud-pago');
 
             // ===== GESTIÓN DE SPP POR PROVEEDOR =====
-            // Listar SPP de un proveedor específico
-            // COMPLETADO
+
+            // Listado de proveedores con contador de spp autorizadas
             Route::get('/proveedor', [ConstruccPagosSPPController::class, 'indexProveedor'])->name('proveedor.spp.index');
-
-
+            
+            // Listar SPP de un proveedor específico
             Route::get('/proveedor/{proveedor}/spp', [ConstruccPagosSPPController::class, 'sppPorProveedor'])->name('proveedor.spp.index');
 
             // Ver SPP específica con sus pagos

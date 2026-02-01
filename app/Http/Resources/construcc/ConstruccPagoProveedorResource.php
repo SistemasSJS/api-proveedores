@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
 
-class ConstruccPagosProveedorResource extends JsonResource
+class ConstruccPagoProveedorResource extends JsonResource
 {
   /**
    * Transform the resource into an array.

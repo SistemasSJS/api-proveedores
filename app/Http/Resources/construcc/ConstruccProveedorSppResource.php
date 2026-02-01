@@ -16,6 +16,7 @@ class ConstruccProveedorSppResource extends JsonResource
     {
         return [
             'solicitud_pago' => [
+                // datos generales
                 'id' => $this->id,
                 'numero_folio_solicitud' => $this->numero_folio_solicitud,
                 'folio_sp_consecutivo' => $this->folio_sp_consecutivo,
@@ -23,25 +24,25 @@ class ConstruccProveedorSppResource extends JsonResource
                 'descripcion_concepto' => $this->descripcion_concepto,
                 'observaciones' => $this->observaciones,
                 'estado_solicitud' => $this->estado_solicitud,
-                // 
+
+                // Montos de las solicitudes de pago
                 'monto_total' => (float) $this->monto_total,
                 'saldo_pendiente' => (float) $this->saldo_pendiente,
                 'monto_abonado' => (float) $this->monto_abonado,
                 'pago_completo' => (bool) $this->pago_completo,
 
-                // 
-                'tiene_factura' => (bool) $this->tiene_factura,
-                'verificada' => (bool) $this->verificada,
+                // Archivos con URLs correctas
+                'url_factura_pdf' => $this->ruta_archivo_factura_pdf ? route('construcc.solicitudes-pago.descargar-factura-pdf', $this->id) : null,
+                'url_factura_xml' => $this->ruta_archivo_factura_xml ? route('construcc.solicitudes-pago.descargar-factura-xml', $this->id) : null,
+                'url_cotizacion' => $this->ruta_archivo_cotizacion ? route('construcc.solicitudes-pago.descargar-cotizacion', $this->id) : null,
 
-                // Archivos
-                'ruta_archivo_factura_pdf' => $this->ruta_archivo_factura_pdf,
-                'ruta_archivo_factura_xml' => $this->ruta_archivo_factura_xml,
-                'ruta_archivo_cotizacion' => $this->ruta_archivo_cotizacion,
-
-                // Construcción
-                'empresa_construcc_id' => $this->empresa_construcc_id,
+                // Datos de la empresa construcc
+                'empresa_construcc_id' => $this->empresaConstrucc->id,
+                'empresa_construcc_nombre' => $this->empresaConstrucc->nombre,
                 'usuario_id' => $this->usuario_id,
                 'usuario_nombre' => $this->usuario_nombre,
+
+                'pagos' => ConstruccPagoResource::collection($this->whenLoaded('pagos')),
 
                 // Fechas
                 'fecha_registro_pendiente' => $this->fecha_registro_pendiente?->format('Y-m-d H:i:s'),
@@ -49,50 +50,43 @@ class ConstruccProveedorSppResource extends JsonResource
                 'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
             ],
 
-            'proveedor' => $this->whenLoaded('proveedor', function () {
-                return [
-                    'id' => $this->proveedor->id,
-                    'nombre_comercial' => $this->proveedor->nombre_comercial,
-                    'razon_social' => $this->proveedor->razon_social,
-                    'rfc' => $this->proveedor->rfc,
-                    'email' => $this->proveedor->email,
-                    'telefono' => $this->proveedor->telefono,
-                    'estatus' => $this->proveedor->estatus,
-                    'tipo_alta' => $this->proveedor->tipo_alta,
-                ];
-            }),
+            // 'proveedor' => $this->whenLoaded('proveedor', function () {
+            //     return [
+            //         'id' => $this->proveedor->id,
+            //         'nombre_comercial' => $this->proveedor->nombre_comercial,
+            //         'razon_social' => $this->proveedor->razon_social,
+            //         'rfc' => $this->proveedor->rfc,
+            //         'email' => $this->proveedor->email,
+            //         'telefono' => $this->proveedor->telefono,
+            //         'estatus' => $this->proveedor->estatus,
+            //         'tipo_alta' => $this->proveedor->tipo_alta,
+            //     ];
+            // }),
 
-            'cuenta_bancaria' => $this->whenLoaded('cuentasBancarias', function () {
-                $cuenta = $this->cuentasBancarias->first();
+            // 'cuenta_bancaria' => $this->whenLoaded('cuentasBancarias', function () {
+            //     $cuenta = $this->cuentasBancarias->first();
 
-                if (!$cuenta) {
-                    return null;
-                }
+            //     if (!$cuenta) {
+            //         return null;
+            //     }
 
-                return [
-                    'id' => $cuenta->id,
-                    'alias' => $cuenta->alias,
-                    'banco_clave' => $cuenta->banco_clave,
-                    'banco_nombre' => $cuenta->banco_nombre,
-                    'tipo_cuenta' => $cuenta->tipo_cuenta,
-                    'campo_dependiente' => $cuenta->campo_dependiente,
-                    'titular_cuenta' => $cuenta->titular_cuenta,
-                    'referencia' => $cuenta->referencia,
-                    'estatus' => $cuenta->estatus,
-                    'sucursal' => $cuenta->sucursal,
-                    'swift' => $cuenta->swift,
-                    'preferida' => (bool) $cuenta->preferida,
-                ];
-            }),
+            //     return [
+            //         'id' => $cuenta->id,
+            //         'alias' => $cuenta->alias,
+            //         'banco_clave' => $cuenta->banco_clave,
+            //         'banco_nombre' => $cuenta->banco_nombre,
+            //         'tipo_cuenta' => $cuenta->tipo_cuenta,
+            //         'campo_dependiente' => $cuenta->campo_dependiente,
+            //         'titular_cuenta' => $cuenta->titular_cuenta,
+            //         'referencia' => $cuenta->referencia,
+            //         'estatus' => $cuenta->estatus,
+            //         'sucursal' => $cuenta->sucursal,
+            //         'swift' => $cuenta->swift,
+            //         'preferida' => (bool) $cuenta->preferida,
+            //     ];
+            // }),
 
-            'empresa_construcc' => $this->whenLoaded('empresaConstrucc', function () {
-                return [
-                    'id' => $this->empresaConstrucc->id,
-                    'nombre' => $this->empresaConstrucc->nombre,
-                    'razon_social' => $this->empresaConstrucc->razon_social,
-                    'rfc' => $this->empresaConstrucc->rfc,
-                ];
-            }),
+
         ];
     }
 }
