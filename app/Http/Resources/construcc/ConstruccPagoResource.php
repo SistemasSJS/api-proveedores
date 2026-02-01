@@ -27,6 +27,8 @@ class ConstruccPagoResource extends JsonResource
 
       // datos del comprobante de pago
       'datos_comprobante' => [
+        // usnado la ruta de descarga del comprobante
+        'comprobante_url' => $this->when($this->comprobante_pago, fn() => route('construcc.pagos-spp.proveedor.spp.descargar-comprobante', ['proveedor' => $this->proveedor_id, 'pago' => $this->id])),
         'monto_total' => $this->monto_total,
         'fecha_registro' => $this->fecha_registro,
         'fecha_pago' => $this->fecha_pago,
