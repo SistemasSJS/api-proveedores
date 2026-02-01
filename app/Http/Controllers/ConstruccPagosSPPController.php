@@ -459,7 +459,12 @@ class ConstruccPagosSPPController extends Controller
             }
 
             $pagos = $spp->pagos()
+                ->with([
+                    'empresaConstrucc',
+                    'proveedor', // 👈 NECESARIO para armar la URL
+                ])
                 ->withPivot([
+                    'solicitud_pago_id', // 👈 NECESARIO para el parámetro {spp}
                     'monto_aplicado',
                     'estado_pago',
                     'notas',
@@ -472,12 +477,11 @@ class ConstruccPagosSPPController extends Controller
                 'solicitud_pago' => ConstruccPagoSPPResource::make($spp),
                 'pagos' => ConstruccPagoResource::collection($pagos),
             ], 'Pagos obtenidos exitosamente.');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Error al listar pagos de SPP', [
                 'proveedor_id' => $proveedor->id,
                 'spp_id' => $spp->id,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
 
             return $this->error(
@@ -487,6 +491,7 @@ class ConstruccPagosSPPController extends Controller
             );
         }
     }
+
 
     /**
      * Muestra un pago específico de una SPP.
