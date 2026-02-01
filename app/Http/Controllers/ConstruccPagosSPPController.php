@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Enums\EstadoSP;
 
 use App\Http\Requests\Construcc\ConstruccPagosSPPRegistrarPagoRequest;
+use App\Http\Resources\Construcc\ConstruccPagoEnSppResource;
 use App\Http\Resources\Construcc\ConstruccPagoProveedorResource;
 use App\Http\Resources\Construcc\ConstruccPagoResource;
 use App\Http\Resources\Construcc\ConstruccPagoSPPResource;
@@ -490,6 +491,55 @@ class ConstruccPagosSPPController extends Controller
                 500
             );
         }
+    }
+
+    /**
+     * Lista todas las SPP asociadas a un pago específico de un proveedor.
+     * 
+     * GET /api/construcc/pagos-spp/proveedor/{proveedor}/pagos/{pago}/spps
+     * 
+     * @param Proveedor $proveedor
+     * @param ConstruccPago $pago
+     * @return JsonResponse
+     */
+    public function sppDePago(Proveedor $proveedor, PagoSPP $pago): JsonResponse
+    {
+        // try {
+        // Validar que el pago pertenece al proveedor
+        // FIXME: revisar esto porque un pago puede involucrar varios proveedores
+        // if ($pago->proveedor_id !== $proveedor->id) {
+        //     return $this->error(
+        //         'El pago no pertenece a este proveedor.',
+        //         null,
+        //         403
+        //     );
+        // }
+
+        $spps = $pago->solicitudesPago()
+            ->with([
+                'empresaConstrucc',
+            ])
+            ->orderBy('pago_solicitud_pago.fecha_aplicacion', 'desc')
+            ->get();
+
+        return $this->success([
+            ConstruccPagoEnSppResource::collection($spps),
+            // 'pago' => ConstruccPagoResource::make($pago),
+            // 'solicitudes_pago' => ConstruccPagoSPPResource::collection($spps),
+        ], 'Solicitudes de pago obtenidas exitosamente.');
+        // } catch (\Throwable $e) {
+        //     Log::error('Error al listar SPP de un pago', [
+        //         'proveedor_id' => $proveedor->id,
+        //         'pago_id' => $pago->id,
+        //         'error' => $e->getMessage(),
+        //     ]);
+
+        //     return $this->error(
+        //         'No se pudieron obtener las solicitudes de pago del pago.',
+        //         null,
+        //         500
+        //     );
+        // }
     }
 
 

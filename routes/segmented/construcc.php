@@ -316,6 +316,9 @@ Route::prefix('construcc')
 
             // Registrar un pago para múltiples SPP del proveedor
             Route::post('/proveedor/{proveedor}/pagos', [ConstruccPagosSPPController::class, 'registrarPagoProveedor'])->name('proveedor.pagos.registrar');
+
+            // Listar SPP aplicadas a un pago específico
+            Route::get('/proveedor/{proveedor}/pagos/{pago}/spp', [ConstruccPagosSPPController::class, 'sppDePago'])->name('proveedor.pagos.spp');
             /**
              * FIXME: Rutas que podrían ser necesarias en el futuro en el admin de construcción 
              * 
