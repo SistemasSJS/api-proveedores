@@ -30,7 +30,6 @@ class ConstruccPagosSPPRegistrarPagoRequest extends FormRequest
       'proveedor_id'   => ['required', 'integer'],
       'usuario_id'     => ['required', 'integer'],
       'usuario_nombre' => ['required', 'string', 'max:255'],
-      // FIXME: monto_tatol se duplica en la informacion del comprobante OCR
       'monto_total'    => ['required', 'numeric', 'min:0.01'],
       'nivel_usuario'  => ['required', 'integer', Rule::in([$NIVEL_USUARIO_CONSTRUCC_DA])],
 

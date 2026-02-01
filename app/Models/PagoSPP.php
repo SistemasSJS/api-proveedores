@@ -23,7 +23,7 @@ class PagoSPP extends BaseModel
         'comprobante_pago',
         'fecha_pago',
         'fecha_registro',
-
+        'proveedor_id',
         // Referencia de pago
         'referencia_pago',
 

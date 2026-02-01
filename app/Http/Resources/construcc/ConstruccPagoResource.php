@@ -17,10 +17,10 @@ class ConstruccPagoResource extends JsonResource
       // datos de empresa construcc
       'empresa_construcc_id' => $this->empresa_construcc_id,
       'empresa_construcc_nombre' => $this->whenLoaded('empresaConstrucc', fn() => $this->empresaConstrucc->nombre),
-      'usuario_id' => $this->usuario_id,
-      'usuario_nombre' => $this->usuario_nombre,
+      'usuario_id' => $this->usuario_registro_id,
+      'usuario_nombre' => $this->usuario_registro_nombre,
       // proveedor
-      'proveedor_id' => $this->proveedor_id,
+      'proveedor_id' => $this->whenLoaded('proveedor', fn() => $this->proveedor->id),
       'proveedor_nombre_comercial' => $this->whenLoaded('proveedor', fn() => $this->proveedor->nombre_comercial),
       'proveedor_razon_social' => $this->whenLoaded('proveedor', fn() => $this->proveedor->razon_social),
       'proveedor_rfc' => $this->whenLoaded('proveedor', fn() => $this->proveedor->rfc),
@@ -35,34 +35,6 @@ class ConstruccPagoResource extends JsonResource
         'titular_cuenta_destino' => $this->titular_cuenta_destino,
         'clave_rastreo' => $this->clave_rastreo,
       ],
-
-      // Fechas
-      'fecha_pago' => optional($this->fecha_pago)?->toDateTimeString(),
-      'fecha_registro' => optional($this->fecha_registro)?->toDateTimeString(),
-
-      // Datos bancarios origen
-      'banco_pago' => $this->banco_pago,
-      'cuenta_origen' => $this->cuenta_origen,
-      'tipo_cuenta_origen' => $this->tipo_cuenta_origen,
-      'clabe_interbancaria_origen' => $this->clabe_interbancaria_origen,
-
-      // Datos bancarios destino
-      'banco_destino' => $this->banco_destino,
-      'cuenta_destino' => $this->cuenta_destino,
-      'tipo_cuenta_destino' => $this->tipo_cuenta_destino,
-      'clabe_interbancaria_destino' => $this->clabe_interbancaria_destino,
-      'titular_cuenta_destino' => $this->titular_cuenta_destino,
-
-      // Montos
-      'monto_aplicado' => (float) $this->montoTotalAplicado(),
-      'monto_disponible' => (float) $this->montoDisponible(),
-      'esta_completamente_aplicado' => $this->estaCompletamenteAplicado(),
-
-      // Metadatos
-      'observaciones' => $this->observaciones,
-      'usuario_registro_id' => $this->usuario_registro_id,
-      'usuario_registro_nombre' => $this->usuario_registro_nombre,
-
 
       // Solicitudes de pago aplicadas (detalle del pivot)
       'solicitudes_pago' => $this->whenLoaded('solicitudesPago', function () {
@@ -79,7 +51,9 @@ class ConstruccPagoResource extends JsonResource
         });
       }),
 
-      // Timestamps
+      // Fechas
+      'fecha_pago' => optional($this->fecha_pago)?->toDateTimeString(),
+      'fecha_registro' => optional($this->fecha_registro)?->toDateTimeString(),
       'created_at' => optional($this->created_at)?->toDateTimeString(),
       'updated_at' => optional($this->updated_at)?->toDateTimeString(),
     ];
