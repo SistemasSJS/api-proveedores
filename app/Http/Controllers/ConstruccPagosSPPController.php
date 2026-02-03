@@ -13,6 +13,7 @@ use App\Enums\EstadoSP;
 
 use App\Http\Requests\Construcc\ConstruccPagosSPPRegistrarPagoRequest;
 use App\Http\Resources\Construcc\ConstruccPagoEnSppResource;
+use App\Http\Resources\Construcc\ConstruccPagoIndexResource;
 use App\Http\Resources\Construcc\ConstruccPagoProveedorResource;
 use App\Http\Resources\Construcc\ConstruccPagoResource;
 use App\Http\Resources\Construcc\ConstruccPagoSPPResource;
@@ -35,43 +36,41 @@ class ConstruccPagosSPPController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
+
     public function index(Request $request): JsonResponse
     {
         try {
-            // $perPage = $request->get('per_page', 20);
-            // $filters = $request->except(['page', 'per_page']);
-
             $filters = $request->only(PagoSPP::getFilters());
-            $sortBy = $request->input('sort_by', 'fecha_pago');
-            $order = $request->input('order', 'desc');
+            $sortBy  = $request->input('sort_by', 'fecha_pago');
+            $order   = $request->input('order', 'desc');
             $perPage = $request->input('per_page', 10000);
 
             $query = PagoSPP::query()
-                ->with(PagoSPP::eagerLodable())
+                ->with([
+                    'proveedor',
+                    'empresaConstrucc',
+                    // Opcional: si quieres ver las solicitudes relacionadas en el index
+                    'solicitudesPago',
+                ])
                 ->filter($filters)
                 ->orderBy($sortBy, $order);
 
+            $paginator = $query->paginate($perPage);
 
-
-            $pagos = $query->paginate($perPage);
-
-            return $this->success([
-                'pagos' => $pagos->items(),
-                'pagination' => [
-                    'total' => $pagos->total(),
-                    'per_page' => $pagos->perPage(),
-                    'current_page' => $pagos->currentPage(),
-                    'last_page' => $pagos->lastPage(),
-                ],
-            ], 'Pagos obtenidos exitosamente.');
-        } catch (\Exception $e) {
+            return $this->paginated(
+                $paginator->setCollection(
+                    ConstruccPagoIndexResource::collection($paginator)->collection
+                ),
+                'Pagos SPP obtenidos exitosamente.'
+            );
+        } catch (\Throwable $e) {
             Log::error('Error al listar pagos SPP', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
             return $this->error(
-                'No se pudieron obtener los pagos. Por favor, intente nuevamente.',
+                'No se pudieron obtener los pagos SPP. Por favor, intente nuevamente.',
                 null,
                 500
             );

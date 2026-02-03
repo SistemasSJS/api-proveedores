@@ -291,6 +291,12 @@ Route::prefix('construcc')
 
             // ===== GESTIÓN DE SPP POR PROVEEDOR =====
 
+            Route::get('/', [ConstruccPagosSPPController::class, 'index'])->middleware(['audit'])->name('index');
+            Route::get('/{pago}', [ConstruccPagosSPPController::class, 'show'])->middleware(['audit'])->name('show');
+            // Route::post('/', [ConstruccPagosSPPController::class, 'store'])->middleware(['audit'])->name('store');
+            // Route::put('/{pago}', [ConstruccPagosSPPController::class, 'update'])->middleware(['audit'])->name('update');
+            // Route::delete('/{pago}', [ConstruccPagosSPPController::class, 'destroy'])->middleware(['audit'])->name('destroy');
+
             // Listado de proveedores con contador de spp autorizadas
             Route::get('/proveedor', [ConstruccPagosSPPController::class, 'indexProveedor'])->name('proveedor.spp.index');
 
@@ -323,11 +329,6 @@ Route::prefix('construcc')
              * FIXME: Rutas que podrían ser necesarias en el futuro en el admin de construcción 
              * 
              * // CRUD básico de pagos
-             * Route::get('/', [ConstruccPagosSPPController::class, 'index'])->middleware(['audit'])->name('index');
-             * Route::get('/{pago}', [ConstruccPagosSPPController::class, 'show'])->middleware(['audit'])->name('show');
-             * Route::post('/', [ConstruccPagosSPPController::class, 'store'])->middleware(['audit'])->name('store');
-             * Route::put('/{pago}', [ConstruccPagosSPPController::class, 'update'])->middleware(['audit'])->name('update');
-             * Route::delete('/{pago}', [ConstruccPagosSPPController::class, 'destroy'])->middleware(['audit'])->name('destroy');
              * 
              * // Descarga de comprobante
              * Route::get('/{pago}/comprobante/download', [ConstruccPagosSPPController::class, 'descargarComprobante'])->middleware(['audit'])->name('descargar-comprobante');
