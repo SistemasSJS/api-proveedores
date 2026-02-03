@@ -25,6 +25,7 @@ class ConstruccPagoIndexResource extends JsonResource
       'folio_pago_spp_consecutivo' => $this->folio_pago_spp_consecutivo,
       'empresa_construcc_id' => $this->empresa_construcc_id,
       'empresa_construcc_nombre' => $this->whenLoaded('empresaConstrucc', fn() => $this->empresaConstrucc?->nombre),
+      'cuenta_construcc_id' => $this->cuenta_bancaria_empresa_construcc_id,
 
       // usuario
       'usuario_id' => $this->usuario_registro_id,
