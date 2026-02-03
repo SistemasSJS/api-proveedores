@@ -82,13 +82,20 @@ class ConstruccPagosSPPController extends Controller
      */
     public function show(PagoSPP $pago): JsonResponse
     {
-        $pago->load(['empresaConstrucc', 'proveedor', 'solicitudesPago']);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Pago obtenido correctamente',
-            'data' => new ConstruccPagoResource($pago),
+        $pago->load([
+            'empresaConstrucc',
+            'proveedor',
+            'solicitudesPago', // esta relación ya tiene pivot + orden definido
         ]);
+
+        return $this->success([
+            'pago' => new ConstruccPagoResource($pago),
+        ], 'Pago obtenido correctamente.');
+        // return response()->json([
+        //     'success' => true,
+        //     'message' => 'Pago obtenido correctamente',
+        //     'data' => new ConstruccPagoResource($pago),
+        // ]);
     }
 
     /**
@@ -816,12 +823,21 @@ class ConstruccPagosSPPController extends Controller
              ************************************************************/
             $infoComprobante = $validated['info_comprobante'] ?? [];
 
+            $folio_consecutivo_construcc = null;
+            if ($empresaConstruccId) {
+                $empresaConstrucc = \App\Models\EmpresaConstrucc::find($empresaConstruccId);
+
+                if ($empresaConstrucc) {
+                    $folio_consecutivo_construcc = $empresaConstrucc->obtenerFolioSiguientePagoSPP();
+                }
+            }
             $pago = PagoSPP::create([
                 // Comprobante File
                 'comprobante_pago' => $comprobantePath,
 
                 // Informacion basica del pago
                 'empresa_construcc_id' => $empresaConstruccId,
+                'folio_pago_spp_consecutivo' => $folio_consecutivo_construcc,
                 'proveedor_id' => $validated['proveedor_id'],
                 'usuario_registro_id' => $validated['usuario_id'],
                 'usuario_registro_nombre' => $validated['usuario_nombre'],
@@ -839,6 +855,10 @@ class ConstruccPagosSPPController extends Controller
 
             ]);
 
+            Log::info('Pago SPP registrado', [
+                'pago_id' => $pago->id,
+                'proveedor_id' => $proveedor->id,
+            ]);
             /************************************************************
              * Aplicar el pago a las SPP
              ************************************************************/
@@ -860,7 +880,11 @@ class ConstruccPagosSPPController extends Controller
 
             DB::commit();
 
-            $pago->load(['solicitudesPago', 'empresaConstrucc']);
+            $pago->load([
+                'empresaConstrucc',
+                'proveedor',
+                'solicitudesPago', // esta relación ya tiene pivot + orden definido
+            ]);
 
             // return $this->success($pago, 'Pago registrado y aplicado exitosamente.', 201);
             return $this->success(

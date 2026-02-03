@@ -24,6 +24,7 @@ class ConstruccPagoResource extends JsonResource
       'id' => $this->id,
 
       // datos de empresa construcc
+      'folio_pago_spp_consecutivo' => $this->folio_pago_spp_consecutivo,
       'empresa_construcc_id' => $this->empresa_construcc_id,
       'empresa_construcc_nombre' => $this->whenLoaded('empresaConstrucc', fn() => $this->empresaConstrucc->nombre),
 
@@ -39,14 +40,14 @@ class ConstruccPagoResource extends JsonResource
 
       // datos del comprobante de pago
       'datos_comprobante' => [
-        'comprobante_url' => $this->when(
-          $this->comprobante_pago && $proveedorId && $sppId,
-          fn() => route('construcc.pagos-spp.proveedor.spp.descargar-comprobante', [
-            'proveedor' => $proveedorId,
-            'spp'       => $sppId,
-            'pago'      => $this->id,
-          ])
-        ),
+        // 'comprobante_url' => $this->when(
+        //   $this->comprobante_pago && $proveedorId && $sppId,
+        //   fn() => route('construcc.pagos-spp.proveedor.spp.descargar-comprobante', [
+        //     'proveedor' => $proveedorId,
+        //     'spp'       => $sppId,
+        //     'pago'      => $this->id,
+        //   ])
+        // ),
 
         'monto_total' => (float) $this->monto_total,
         'fecha_registro' => optional($this->fecha_registro)?->toDateTimeString(),

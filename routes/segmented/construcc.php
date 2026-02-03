@@ -295,61 +295,45 @@ Route::prefix('construcc')
             Route::get(
                 '/proveedor/{proveedor}/spp/{spp}/pagos/{pago}/descargar-comprobante',
                 [ConstruccPagosSPPController::class, 'descargarComprobantePago']
-            )
-                ->name('proveedor.spp.descargar-comprobante');
+            )->name('proveedor.spp.descargar-comprobante');
 
             Route::post(
                 '/proveedor/{proveedor}/spp/{spp}/pagos/{pago}/subir-comprobante',
                 [ConstruccPagosSPPController::class, 'subirComprobanteSpp']
-            )
-                ->name('proveedor.spp.pagos.subir-comprobante');
+            )->name('proveedor.spp.pagos.subir-comprobante');
 
             Route::get(
                 '/proveedor/{proveedor}/spp/{spp}/pagos',
                 [ConstruccPagosSPPController::class, 'pagosDeSpp']
-            )
-                ->name('proveedor.spp.pagos');
+            )->name('proveedor.spp.pagos');
 
             Route::get(
                 '/proveedor/{proveedor}/spp/{spp}',
                 [ConstruccPagosSPPController::class, 'showSppProveedor']
-            )
-                ->name('proveedor.spp.show');
+            )->name('proveedor.spp.show');
 
             Route::get(
                 '/proveedor/{proveedor}/spp',
                 [ConstruccPagosSPPController::class, 'sppPorProveedor']
-            )
-                ->name('proveedor.spp.index');
+            )->name('proveedor.spp.index');
 
             Route::get(
                 '/proveedor',
                 [ConstruccPagosSPPController::class, 'indexProveedor']
-            )
-                ->name('proveedor.spp.index');
+            )->name('proveedor.spp.index');
 
             // ===== GESTIÓN DE PAGOS A PROVEEDOR =====
-
             Route::post(
                 '/proveedor/{proveedor}/pagos',
                 [ConstruccPagosSPPController::class, 'registrarPagoProveedor']
-            )
-                ->name('proveedor.pagos.registrar');
+            )->name('proveedor.pagos.registrar');
 
-            Route::get(
-                '/proveedor/{proveedor}/pagos/{pago}/spp',
-                [ConstruccPagosSPPController::class, 'sppDePago']
-            )
-                ->name('proveedor.pagos.spp');
+            Route::get('/proveedor/{proveedor}/pagos/{pago}/spp', [ConstruccPagosSPPController::class, 'sppDePago'])->name('proveedor.pagos.spp');
 
             // ===== RUTAS GENERALES DE PAGOS =====
-            Route::get('/', [ConstruccPagosSPPController::class, 'index'])
-                ->middleware(['audit'])
-                ->name('index');
+            Route::get('/', [ConstruccPagosSPPController::class, 'index'])->middleware(['audit'])->name('index');
 
-            Route::get('/{pago}', [ConstruccPagosSPPController::class, 'show'])
-                ->middleware(['audit'])
-                ->name('show');
+            Route::get('/{pago}', [ConstruccPagosSPPController::class, 'show'])->middleware(['audit'])->name('show');
         });
 
         /**

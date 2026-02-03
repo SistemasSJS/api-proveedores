@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class PagoSPP extends BaseModel
 {
-    use HasFactory, Filterable;
+    use HasFactory;
 
     protected $connection = 'mysql5';
     protected $table = 'pagos_spp';
@@ -48,6 +48,7 @@ class PagoSPP extends BaseModel
         'usuario_registro_id',
         'usuario_registro_nombre',
         'empresa_construcc_id',
+        'folio_pago_spp_consecutivo',
     ];
 
     protected $casts = [
@@ -316,5 +317,22 @@ class PagoSPP extends BaseModel
         return $this->solicitudesPago()
             ->withPivot(['monto_aplicado', 'estado_pago', 'notas', 'fecha_aplicacion'])
             ->get();
+    }
+
+    public function getComprobanteUrlAttribute(): ?string
+    {
+        // Solo si existe comprobante y la relación solicitudesPago tiene datos
+        if (!$this->comprobante_pago || !$this->proveedor_id || $this->solicitudesPago->isEmpty()) {
+            return null;
+        }
+
+        // Tomamos el primer ID de SPP (pivot)
+        $sppId = $this->solicitudesPago->first()->id;
+
+        return route('proveedor.spp.descargar-comprobante', [
+            'proveedor' => $this->proveedor_id,
+            'spp' => $sppId,
+            'pago' => $this->id,
+        ]);
     }
 }
