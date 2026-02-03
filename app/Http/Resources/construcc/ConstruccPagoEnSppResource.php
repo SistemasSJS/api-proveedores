@@ -16,14 +16,9 @@ class ConstruccPagoEnSppResource extends JsonResource
       'datos_comprobante' => [
         'comprobante_url' => $this->when(
           $this->comprobante_pago,
-          fn() => route(
-            'pagos-spp.proveedor.spp.descargar-comprobante',
-            [
-              'proveedor' => $request->route('proveedor')?->id,
-              'spp' => $request->route('spp')?->id,
-              'pago' => $this->id,
-            ]
-          )
+          fn() => route('construcc.pagos-spp.proveedor.spp.descargar-comprobante', [
+            'pago' => $this->id,
+          ])
         ),
         'monto_total' => (float) $this->monto_total,
         'fecha_pago' => optional($this->fecha_pago)?->toDateTimeString(),

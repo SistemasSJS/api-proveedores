@@ -40,14 +40,12 @@ class ConstruccPagoResource extends JsonResource
 
       // datos del comprobante de pago
       'datos_comprobante' => [
-        // 'comprobante_url' => $this->when(
-        //   $this->comprobante_pago && $proveedorId && $sppId,
-        //   fn() => route('construcc.pagos-spp.proveedor.spp.descargar-comprobante', [
-        //     'proveedor' => $proveedorId,
-        //     'spp'       => $sppId,
-        //     'pago'      => $this->id,
-        //   ])
-        // ),
+        'comprobante_url' => $this->when(
+          $this->comprobante_pago,
+          fn() => route('construcc.pagos-spp.proveedor.spp.descargar-comprobante', [
+            'pago' => $this->id,
+          ])
+        ),
 
         'monto_total' => (float) $this->monto_total,
         'fecha_registro' => optional($this->fecha_registro)?->toDateTimeString(),
@@ -64,6 +62,7 @@ class ConstruccPagoResource extends JsonResource
           return [
             'id' => $sp->id,
             'numero_folio_solicitud' => $sp->numero_folio_solicitud ?? null,
+            'folio_sp_consecutivo' => $this->folio_sp_consecutivo,
             'monto_total_sp' => (float) $sp->monto_total,
             'monto_aplicado' => (float) $sp->pivot->monto_aplicado,
             'estado_pago' => $sp->pivot->estado_pago,

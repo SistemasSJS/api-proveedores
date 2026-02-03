@@ -290,49 +290,36 @@ Route::prefix('construcc')
         Route::prefix('pagos-spp')->name('pagos-spp.')->group(function () {
 
             // ===== GESTIÓN DE PROVEEDORES Y SUS SPP =====
+            // GET /pagos/{pago}/descargar-comprobante -> Descargar comprobante de un pago
+            Route::get('/pagos/{pago}/descargar-comprobante', [ConstruccPagosSPPController::class, 'descargarComprobante'])->name('proveedor.spp.descargar-comprobante');
 
-            // Rutas más específicas primero
-            Route::get(
-                '/proveedor/{proveedor}/spp/{spp}/pagos/{pago}/descargar-comprobante',
-                [ConstruccPagosSPPController::class, 'descargarComprobantePago']
-            )->name('proveedor.spp.descargar-comprobante');
+            // POST /proveedor/{proveedor}/spp/{spp}/pagos/{pago}/subir-comprobante -> Subir comprobante de pago a una SPP específica
+            Route::post('/proveedor/{proveedor}/spp/{spp}/pagos/{pago}/subir-comprobante', [ConstruccPagosSPPController::class, 'subirComprobanteSpp'])->name('proveedor.spp.pagos.subir-comprobante');
 
-            Route::post(
-                '/proveedor/{proveedor}/spp/{spp}/pagos/{pago}/subir-comprobante',
-                [ConstruccPagosSPPController::class, 'subirComprobanteSpp']
-            )->name('proveedor.spp.pagos.subir-comprobante');
+            // GET /proveedor/{proveedor}/spp/{spp}/pagos -> Listar pagos de una SPP de un proveedor
+            Route::get('/proveedor/{proveedor}/spp/{spp}/pagos', [ConstruccPagosSPPController::class, 'pagosDeSpp'])->name('proveedor.spp.pagos');
 
-            Route::get(
-                '/proveedor/{proveedor}/spp/{spp}/pagos',
-                [ConstruccPagosSPPController::class, 'pagosDeSpp']
-            )->name('proveedor.spp.pagos');
+            // GET /proveedor/{proveedor}/spp/{spp} -> Mostrar información de una SPP de un proveedor
+            Route::get('/proveedor/{proveedor}/spp/{spp}', [ConstruccPagosSPPController::class, 'showSppProveedor'])->name('proveedor.spp.show');
 
-            Route::get(
-                '/proveedor/{proveedor}/spp/{spp}',
-                [ConstruccPagosSPPController::class, 'showSppProveedor']
-            )->name('proveedor.spp.show');
+            // GET /proveedor/{proveedor}/spp -> Listar SPP de un proveedor
+            Route::get('/proveedor/{proveedor}/spp', [ConstruccPagosSPPController::class, 'sppPorProveedor'])->name('proveedor.spp.index');
 
-            Route::get(
-                '/proveedor/{proveedor}/spp',
-                [ConstruccPagosSPPController::class, 'sppPorProveedor']
-            )->name('proveedor.spp.index');
-
-            Route::get(
-                '/proveedor',
-                [ConstruccPagosSPPController::class, 'indexProveedor']
-            )->name('proveedor.spp.index');
+            // GET /proveedor -> Listar proveedores con SPP
+            Route::get('/proveedor', [ConstruccPagosSPPController::class, 'indexProveedor'])->name('proveedor.spp.index');
 
             // ===== GESTIÓN DE PAGOS A PROVEEDOR =====
-            Route::post(
-                '/proveedor/{proveedor}/pagos',
-                [ConstruccPagosSPPController::class, 'registrarPagoProveedor']
-            )->name('proveedor.pagos.registrar');
+            // POST /proveedor/{proveedor}/pagos -> Registrar un pago a un proveedor
+            Route::post('/proveedor/{proveedor}/pagos', [ConstruccPagosSPPController::class, 'registrarPagoProveedor'])->name('proveedor.pagos.registrar');
 
+            // GET /proveedor/{proveedor}/pagos/{pago}/spp -> Listar SPP asociadas a un pago
             Route::get('/proveedor/{proveedor}/pagos/{pago}/spp', [ConstruccPagosSPPController::class, 'sppDePago'])->name('proveedor.pagos.spp');
 
             // ===== RUTAS GENERALES DE PAGOS =====
+            // GET / -> Listar todos los pagos
             Route::get('/', [ConstruccPagosSPPController::class, 'index'])->middleware(['audit'])->name('index');
 
+            // GET /{pago} -> Mostrar información de un pago específico
             Route::get('/{pago}', [ConstruccPagosSPPController::class, 'show'])->middleware(['audit'])->name('show');
         });
 

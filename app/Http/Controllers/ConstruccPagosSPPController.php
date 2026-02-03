@@ -510,42 +510,37 @@ class ConstruccPagosSPPController extends Controller
      */
     public function sppDePago(Proveedor $proveedor, PagoSPP $pago): JsonResponse
     {
-        // try {
-        // Validar que el pago pertenece al proveedor
-        // FIXME: revisar esto porque un pago puede involucrar varios proveedores
-        // if ($pago->proveedor_id !== $proveedor->id) {
-        //     return $this->error(
-        //         'El pago no pertenece a este proveedor.',
-        //         null,
-        //         403
-        //     );
-        // }
+        try {
+            // Obtener solo las SPP del proveedor
+            $spps = $pago->solicitudesPago()
+                ->where('proveedor_id', $proveedor->id)
+                ->with(['empresaConstrucc'])
+                ->withPivot([
+                    'monto_aplicado',
+                    'estado_pago',
+                    'notas',
+                    'fecha_aplicacion'
+                ])
+                ->orderBy('pago_solicitud_pago.fecha_aplicacion', 'desc')
+                ->get();
 
-        $spps = $pago->solicitudesPago()
-            ->with([
-                'empresaConstrucc',
-            ])
-            ->orderBy('pago_solicitud_pago.fecha_aplicacion', 'desc')
-            ->get();
+            return $this->success([
+                'pago' => ConstruccPagoResource::make($pago),
+                'solicitudes_pago' => ConstruccPagoSPPResource::collection($spps),
+            ], 'Solicitudes de pago obtenidas exitosamente.');
+        } catch (\Throwable $e) {
+            Log::error('Error al listar SPP de un pago', [
+                'proveedor_id' => $proveedor->id,
+                'pago_id' => $pago->id,
+                'error' => $e->getMessage(),
+            ]);
 
-        return $this->success([
-            ConstruccPagoEnSppResource::collection($spps),
-            // 'pago' => ConstruccPagoResource::make($pago),
-            // 'solicitudes_pago' => ConstruccPagoSPPResource::collection($spps),
-        ], 'Solicitudes de pago obtenidas exitosamente.');
-        // } catch (\Throwable $e) {
-        //     Log::error('Error al listar SPP de un pago', [
-        //         'proveedor_id' => $proveedor->id,
-        //         'pago_id' => $pago->id,
-        //         'error' => $e->getMessage(),
-        //     ]);
-
-        //     return $this->error(
-        //         'No se pudieron obtener las solicitudes de pago del pago.',
-        //         null,
-        //         500
-        //     );
-        // }
+            return $this->error(
+                'No se pudieron obtener las solicitudes de pago del pago.',
+                null,
+                500
+            );
+        }
     }
 
 
@@ -856,6 +851,7 @@ class ConstruccPagosSPPController extends Controller
             ]);
 
             Log::info('Pago SPP registrado', [
+                'pago' => $pago->toArray(),
                 'pago_id' => $pago->id,
                 'proveedor_id' => $proveedor->id,
             ]);
@@ -883,8 +879,17 @@ class ConstruccPagosSPPController extends Controller
             $pago->load([
                 'empresaConstrucc',
                 'proveedor',
-                'solicitudesPago', // esta relación ya tiene pivot + orden definido
+                'solicitudesPago' => function ($query) {
+                    $query->withPivot([
+                        'solicitud_pago_id',
+                        'monto_aplicado',
+                        'estado_pago',
+                        'notas',
+                        'fecha_aplicacion'
+                    ]);
+                }
             ]);
+
 
             // return $this->success($pago, 'Pago registrado y aplicado exitosamente.', 201);
             return $this->success(
