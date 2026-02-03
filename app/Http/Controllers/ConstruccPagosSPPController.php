@@ -514,7 +514,7 @@ class ConstruccPagosSPPController extends Controller
             // Obtener solo las SPP del proveedor
             $spps = $pago->solicitudesPago()
                 ->where('proveedor_id', $proveedor->id)
-                ->with(['empresaConstrucc'])
+                ->with(['empresaConstrucc', 'proveedor'])
                 ->withPivot([
                     'monto_aplicado',
                     'estado_pago',
