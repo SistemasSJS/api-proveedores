@@ -19,13 +19,11 @@ class ConstruccPagoIndexResource extends JsonResource
 
     return [
       'id' => $this->id,
+      'monto_total' => (float) $this->monto_total,
 
       // datos de empresa construcc
       'empresa_construcc_id' => $this->empresa_construcc_id,
-      'empresa_construcc_nombre' => $this->whenLoaded(
-        'empresaConstrucc',
-        fn() => $this->empresaConstrucc?->nombre
-      ),
+      'empresa_construcc_nombre' => $this->whenLoaded('empresaConstrucc', fn() => $this->empresaConstrucc?->nombre),
 
       // usuario
       'usuario_id' => $this->usuario_registro_id,
@@ -33,18 +31,9 @@ class ConstruccPagoIndexResource extends JsonResource
 
       // proveedor
       'proveedor_id' => $proveedorId,
-      'proveedor_nombre_comercial' => $this->whenLoaded(
-        'proveedor',
-        fn() => $this->proveedor?->nombre_comercial
-      ),
-      'proveedor_razon_social' => $this->whenLoaded(
-        'proveedor',
-        fn() => $this->proveedor?->razon_social
-      ),
-      'proveedor_rfc' => $this->whenLoaded(
-        'proveedor',
-        fn() => $this->proveedor?->rfc
-      ),
+      'proveedor_nombre_comercial' => $this->whenLoaded('proveedor', fn() => $this->proveedor?->nombre_comercial),
+      'proveedor_razon_social' => $this->whenLoaded('proveedor', fn() => $this->proveedor?->razon_social),
+      'proveedor_rfc' => $this->whenLoaded('proveedor', fn() => $this->proveedor?->rfc),
 
       // datos del comprobante de pago (en index no hay URL de descarga)
       'datos_comprobante' => [
