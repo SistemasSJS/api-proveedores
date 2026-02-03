@@ -19,36 +19,42 @@ class PagoSPP extends BaseModel
     protected $table = 'pagos_spp';
 
     protected $fillable = [
+        // folio consecuntivio por empresa
+        'folio_pago_spp_consecutivo',
+
         // Comprobante y fechas
         'comprobante_pago',
-        'fecha_pago',
-        'fecha_registro',
-        'proveedor_id',
-        // Referencia de pago
-        'referencia_pago',
 
-        // Datos bancarios del pago (cuenta origen)
+        // cuenta bancaria de la empresa de construcción
+        'cuenta_bancaria_empresa_construcc_id',
+
+        // datos basicos de pago
+        'empresa_construcc_id',
+        'proveedor_id',
+        'usuario_registro_id',
+        'usuario_registro_nombre',
+
+        'monto_total', //               --> ingo_comprobante.montoTotal
+        'fecha_pago', //                --> ingo_comprobante.fechaPago
+        'referencia_pago',  //          --> ingo_comprobante.referencia
+        'banco_destino',  //            --> ingo_comprobante.bancoDestino
+        'titular_cuenta_destino',  //   --> ingo_comprobante.nombreBeneficiario
+        'clave_rastreo',  //             --> ingo_comprobante.claveRastreo
+
+        'fecha_registro', // fecha en que se registró el pago en el sistema
+
+        // Datos bancarios del proveedor (cuenta destino)
+        /**
+         * @deprecated no se almacena la inforamción bancaria DEL PROVEEDOR 
+         */
+        'cuenta_destino',
+        'tipo_cuenta_destino',
+        'clabe_interbancaria_destino',
+        'observaciones',
         'banco_pago',
         'cuenta_origen',
         'tipo_cuenta_origen',
         'clabe_interbancaria_origen',
-
-        // Datos bancarios del proveedor (cuenta destino)
-        'banco_destino',
-        'cuenta_destino',
-        'tipo_cuenta_destino',
-        'clabe_interbancaria_destino',
-        'titular_cuenta_destino',
-
-        // Montos
-        'monto_total',
-
-        // Metadatos
-        'observaciones',
-        'usuario_registro_id',
-        'usuario_registro_nombre',
-        'empresa_construcc_id',
-        'folio_pago_spp_consecutivo',
     ];
 
     protected $casts = [

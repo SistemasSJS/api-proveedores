@@ -728,7 +728,6 @@ class ConstruccSolicitudPagoController extends Controller
 
             // datos comprobante
             'fecha_comprobante_pago' => $request->fecha_hora_pago,
-
             'nombre_beneficiario_pago' => $request->nombre_beneficiario,
             'clave_rastreo_pago' => $request->clave_rastreo,
             'banco_pago' => $request->banco,

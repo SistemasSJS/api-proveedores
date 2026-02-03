@@ -21,6 +21,7 @@ use App\Http\Resources\Construcc\ConstruccPagoSPPResource;
 use App\Models\PagoSPP;
 use App\Models\Proveedor;
 use App\Models\SolicitudPago;
+use Carbon\Carbon;
 
 /**
  * Controlador para gestionar los pagos de solicitudes de pago (SPP).
@@ -422,7 +423,6 @@ class ConstruccPagosSPPController extends Controller
             // ✅ Respuesta con resource específico de SPP (que ya incluye pagos)
             return $this->success(
                 [
-
                     'solicitud_pago' => new ConstruccPagoSPPResource($spp),
                     'pagos' => ConstruccPagoResource::collection($spp->pagos),
                 ],
@@ -755,7 +755,6 @@ class ConstruccPagosSPPController extends Controller
          ************************************************************/
         /**
          * existen varios montos 
-         *  - monto_total: se refire al monto total del pago que se está registrando
          *  - info_comprobante.monto: monto extraído del comprobante (OCR)
          *  - solicitudes.*.monto_pago: Es el monto abonado a cada SPP
          * 
@@ -764,10 +763,7 @@ class ConstruccPagosSPPController extends Controller
          */
 
         // 1. Validar que la suma de los montos aplicados a las SPP no exceda el monto_total
-        // FIXME: El monto_total debe ser igual a la suma de los montos aplicados a las SPP???
-
-        $montoTotalPago = (float) $validated['monto_total'];
-        $montoComprobante = (float) $validated['info_comprobante']['monto'];
+        $montoTotalPago = (float) $validated['info_comprobante']['monto'];
         $sumaMontoSPPs = (float) collect($validated['solicitudes'])->sum(function ($item) {
             return (float) $item['monto_pago'];
         });
@@ -788,21 +784,6 @@ class ConstruccPagosSPPController extends Controller
                 422
             );
         }
-
-
-        // Comparación con tolerancia para decimales (evita broncas por precisión float)
-        if (round($montoTotalPago, 2) !== round($montoComprobante, 2)) {
-            return $this->error(
-                'El monto total del pago no coincide con el monto extraído del comprobante.',
-                [
-                    'monto_total'       => $montoTotalPago,
-                    'monto_comprobante' => $montoComprobante,
-                ],
-                422
-            );
-        }
-
-
 
         try {
             DB::beginTransaction();
@@ -836,25 +817,18 @@ class ConstruccPagosSPPController extends Controller
                 'proveedor_id' => $validated['proveedor_id'],
                 'usuario_registro_id' => $validated['usuario_id'],
                 'usuario_registro_nombre' => $validated['usuario_nombre'],
-                // nivel_usuario
 
                 // Informacion del comprobante de pago OCR
-                'monto_total'      => $validated['monto_total'],
-                'fecha_registro'   => now(),
-                'fecha_pago'       => $validated['fecha_pago'],
-                'referencia_pago'  => $validated['referencia_pago'],
+                'monto_total'      => $info_comprobante['monto'] ?? 0,
+                'fecha_pago' => Carbon::parse(trim($validated['info_comprobante']['fecha']) . ' ' . trim($validated['info_comprobante']['hora']))->format('Y-m-d H:i:s'),
+                'referencia_pago'  => $validated['info_comprobante']['referencia'] ?? null,
                 'banco_destino'    => $infoComprobante['bancoDestino'] ?? null,
                 'titular_cuenta_destino' => $infoComprobante['nombreBeneficiario'] ?? null,
                 'clave_rastreo'    => $infoComprobante['claveRastreo'] ?? null,
 
-
+                'fecha_registro'   => now(),
             ]);
 
-            Log::info('Pago SPP registrado', [
-                'pago' => $pago->toArray(),
-                'pago_id' => $pago->id,
-                'proveedor_id' => $proveedor->id,
-            ]);
             /************************************************************
              * Aplicar el pago a las SPP
              ************************************************************/

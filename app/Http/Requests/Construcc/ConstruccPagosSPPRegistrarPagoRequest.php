@@ -23,6 +23,11 @@ class ConstruccPagosSPPRegistrarPagoRequest extends FormRequest
       // =========================
       'comprobante_pago' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
 
+      /**
+       * Cuentas bancarias de la empresa de construcción; para consilacion de cierres contable
+       */
+      'cuenta_bancaria' => ['nullable', 'numeric'],
+
       // =========================
       // Datos básicos del pago
       // =========================
@@ -30,14 +35,7 @@ class ConstruccPagosSPPRegistrarPagoRequest extends FormRequest
       'proveedor_id'   => ['required', 'integer'],
       'usuario_id'     => ['required', 'integer'],
       'usuario_nombre' => ['required', 'string', 'max:255'],
-      'monto_total'    => ['required', 'numeric', 'min:0.01'],
       'nivel_usuario'  => ['required', 'integer', Rule::in([$NIVEL_USUARIO_CONSTRUCC_DA])],
-
-      // =========================
-      // Datos obligatorios del comprobante
-      // =========================
-      'fecha_pago'      => ['required', 'date'],
-      'referencia_pago' => ['required', 'string', 'max:50'],
 
       // =========================
       // Información extraída del comprobante (OCR)
@@ -57,6 +55,9 @@ class ConstruccPagosSPPRegistrarPagoRequest extends FormRequest
       'solicitudes'                   => ['required', 'array', 'min:1'],
       'solicitudes.*.solicitud_id'    => ['required', 'integer', 'exists:solicitudes_pago,id'],
       'solicitudes.*.monto_pago'      => ['required', 'numeric', 'min:0.01'],
+
+      // Otros datos
+      'fecha_pago'      => ['required', 'date'],              // --> cambio por info_comprobante.fecha + info_comprobante.hora
     ];
   }
 
