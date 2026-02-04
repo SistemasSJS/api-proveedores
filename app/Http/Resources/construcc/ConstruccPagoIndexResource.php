@@ -37,6 +37,12 @@ class ConstruccPagoIndexResource extends JsonResource
       'proveedor_razon_social' => $this->whenLoaded('proveedor', fn() => $this->proveedor?->razon_social),
       'proveedor_rfc' => $this->whenLoaded('proveedor', fn() => $this->proveedor?->rfc),
 
+      'comprobante_url' => $this->when(
+        $this->comprobante_pago,
+        fn() => route('construcc.pagos-spp.proveedor.spp.descargar-comprobante', [
+          'pago' => $this->id,
+        ])
+      ),
       // datos del comprobante de pago (en index no hay URL de descarga)
       // 'datos_comprobante' => [
       //   'comprobante_url' => null,
@@ -49,7 +55,7 @@ class ConstruccPagoIndexResource extends JsonResource
       //   'clave_rastreo' => $this->clave_rastreo,
       // ],
 
-      // // solicitudes asociadas (opcional en index)
+      // solicitudes asociadas (opcional en index)
       // 'solicitudes_pago' => $this->whenLoaded('solicitudesPago', function () {
       //   return $this->solicitudesPago->map(function ($sp) {
       //     return [

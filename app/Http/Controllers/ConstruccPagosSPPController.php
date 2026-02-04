@@ -791,11 +791,6 @@ class ConstruccPagosSPPController extends Controller
         //     );
         // }
 
-
-        Log::info('Cuenta bancaria (empresa construcc):', [
-            'cuenta_bancaria_empresa_construcc_id' => $validated['cuenta_bancaria_empresa_construcc_id'] ?? null,
-        ]);
-
         try {
             DB::beginTransaction();
 
@@ -851,9 +846,6 @@ class ConstruccPagosSPPController extends Controller
 
                 'fecha_registro'   => now(),
             ]);
-
-
-            Log::info('Pago almacenado', $pago->toArray());
 
             /************************************************************
              * Aplicar el pago a las SPP
@@ -917,20 +909,8 @@ class ConstruccPagosSPPController extends Controller
     /**
      * Descargar comprobante de pago
      */
-    public function descargarComprobantePago(Request $request, Proveedor $proveedor, SolicitudPago $solicitudPago, PagoSPP $pago)
+    public function descargarComprobantePago(Request $request, PagoSPP $pago)
     {
-        // Verificar que la SPP pertenece al proveedor
-        $sppPerteneceProveedor = $solicitudPago->proveedor_id === $proveedor->id;
-        if (!$sppPerteneceProveedor) {
-            return $this->error('La solicitud de pago no pertenece a este proveedor.', null, 403);
-        }
-
-        // Verificar que el pago está asociado a esta SPP
-        $pagoAsociado = $pago->solicitudesPago()->where('solicitud_pago_id', $solicitudPago->id)->exists();
-        if (!$pagoAsociado) {
-            return $this->error('El pago no está asociado a esta solicitud de pago.', null, 404);
-        }
-
         // Verificar que el pago tiene comprobante
         if (! $pago->comprobante_pago || ! Storage::disk('private')->exists($pago->comprobante_pago)) {
             return $this->error('Comprobante de pago no disponible.', null, 404);
