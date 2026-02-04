@@ -30,6 +30,8 @@ class ConstruccPagosSPPRegistrarPagoRequest extends FormRequest
       'cuenta_destino_id' => ['required', 'integer'],
       'cuenta_destino_terminacion' => ['required', 'string', 'max:4'],
 
+      'monto_total' => ['required', 'numeric', 'min:0.01'],
+
       // =========================
       // Datos básicos del pago
       // =========================

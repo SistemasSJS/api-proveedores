@@ -828,7 +828,7 @@ class ConstruccPagosSPPController extends Controller
 
 
                 // Informacion del comprobante de pago OCR
-                'monto_total'      => $info_comprobante['monto'] ?? 0,
+                'monto_total'      => $validated['monto_total'],
                 'fecha_pago' => Carbon::parse(trim($validated['info_comprobante']['fecha']) . ' ' . trim($validated['info_comprobante']['hora']))->format('Y-m-d H:i:s'),
                 'referencia_pago'  => $validated['info_comprobante']['referencia'] ?? null,
                 'banco_destino'    => $infoComprobante['bancoDestino'] ?? null,
