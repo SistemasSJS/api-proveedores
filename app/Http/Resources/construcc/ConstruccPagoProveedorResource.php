@@ -24,7 +24,6 @@ class ConstruccPagoProveedorResource extends JsonResource
 
       // Contadores
       'spp_autorizadas_count' => $count,
-
       // Cuentas bancarias
       'cuentas_bancarias' => $this->whenLoaded('cuentasBancarias', function () {
         return $this->cuentasBancarias->map(function ($cuenta) {
@@ -34,6 +33,7 @@ class ConstruccPagoProveedorResource extends JsonResource
             'banco_clave' => $cuenta->banco_clave,
             'banco_nombre' => $cuenta->banco_nombre,
             'tipo_cuenta' => $cuenta->tipo_cuenta,
+            $cuenta->tipo_cuenta => $cuenta->campo_dependiente,
             'titular_cuenta' => $cuenta->titular_cuenta,
             'referencia' => $cuenta->referencia,
             'estatus' => $cuenta->estatus?->value ?? null,

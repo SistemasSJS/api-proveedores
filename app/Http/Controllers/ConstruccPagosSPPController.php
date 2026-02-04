@@ -312,9 +312,9 @@ class ConstruccPagosSPPController extends Controller
 
             // 🔥 Adaptamos la colección para que el resource reciba el proveedor
             $paginator->getCollection()->transform(function ($row) {
+                /** @var Proveedor */
                 $proveedor = $row->proveedor;
                 $proveedor->spp_autorizadas_count = $row->spp_autorizadas_count;
-                $proveedor->cuentasBancarias();
                 return $proveedor;
             });
 
