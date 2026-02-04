@@ -24,6 +24,8 @@ use App\Models\Proveedor;
 use App\Models\SolicitudPago;
 use Carbon\Carbon;
 
+use function Laravel\Prompts\info;
+
 /**
  * Controlador para gestionar los pagos de solicitudes de pago (SPP).
  * Maneja la relación muchos a muchos entre pagos y solicitudes de pago.
@@ -789,6 +791,11 @@ class ConstruccPagosSPPController extends Controller
         //     );
         // }
 
+
+        Log::info('Cuenta bancaria (empresa construcc):', [
+            'cuenta_bancaria_empresa_construcc_id' => $validated['cuenta_bancaria_empresa_construcc_id'] ?? null,
+        ]);
+
         try {
             DB::beginTransaction();
 
@@ -844,6 +851,9 @@ class ConstruccPagosSPPController extends Controller
 
                 'fecha_registro'   => now(),
             ]);
+
+
+            Log::info('Pago almacenado', $pago->toArray());
 
             /************************************************************
              * Aplicar el pago a las SPP
