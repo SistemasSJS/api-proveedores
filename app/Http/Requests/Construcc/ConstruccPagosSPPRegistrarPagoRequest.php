@@ -24,9 +24,11 @@ class ConstruccPagosSPPRegistrarPagoRequest extends FormRequest
       'comprobante_pago' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
 
       /**
-       * Cuentas bancarias de la empresa de construcción; para consilacion de cierres contable
+       * Cuentas bancarias de la empresa de construcción; para consolidación de cierres contable
        */
-      'cuenta_bancaria' => ['nullable', 'numeric'],
+      'cuenta_bancaria_empresa_construcc_id' => ['nullable', 'numeric'],
+      'cuenta_destino_id' => ['required', 'integer'],
+      'cuenta_destino_terminacion' => ['required', 'string', 'max:4'],
 
       // =========================
       // Datos básicos del pago
@@ -70,6 +72,12 @@ class ConstruccPagosSPPRegistrarPagoRequest extends FormRequest
       'comprobante_pago.mimes'    => 'El comprobante debe ser PDF, JPG o PNG.',
       'comprobante_pago.max'      => 'El comprobante no debe pesar más de 10 MB.',
 
+      'cuenta_destino_id.required' => 'Debes seleccionar la cuenta destino del proveedor.',
+      'cuenta_destino_id.integer'  => 'La cuenta destino debe ser un valor válido.',
+      'cuenta_destino_terminacion.required' => 'La terminación de la cuenta destino es obligatoria.',
+      'cuenta_destino_terminacion.string'   => 'La terminación de la cuenta debe ser texto.',
+      'cuenta_destino_terminacion.max'      => 'La terminación de la cuenta no debe exceder 4 caracteres.',
+
       'empresa_id.required'     => 'No se recibió la empresa.',
       'proveedor_id.required'   => 'No se recibió el proveedor.',
       'usuario_id.required'     => 'No se pudo identificar al usuario.',
@@ -94,6 +102,8 @@ class ConstruccPagosSPPRegistrarPagoRequest extends FormRequest
   {
     return [
       'comprobante_pago' => 'comprobante de pago',
+      'cuenta_destino_id' => 'cuenta destino',
+      'cuenta_destino_terminacion' => 'terminación de cuenta',
       'monto_total'      => 'monto total del pago',
       'fecha_pago'       => 'fecha de pago',
       'referencia_pago'  => 'referencia de pago',

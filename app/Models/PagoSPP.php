@@ -27,6 +27,8 @@ class PagoSPP extends BaseModel
 
         // cuenta bancaria de la empresa de construcción
         'cuenta_bancaria_empresa_construcc_id',
+        'cuenta_destino_id',
+        'cuenta_destino_terminacion',
 
         // datos basicos de pago
         'empresa_construcc_id',

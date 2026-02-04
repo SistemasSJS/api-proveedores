@@ -304,7 +304,8 @@ class ConstruccPagosSPPController extends Controller
                 })
                 ->groupBy('proveedor_id')
                 ->with([
-                    'proveedor:id,nombre_comercial'
+                    'proveedor:id,nombre_comercial',
+                    'proveedor.cuentasBancarias',
                 ]);
 
             $paginator = $query->paginate($perPage);
@@ -313,6 +314,7 @@ class ConstruccPagosSPPController extends Controller
             $paginator->getCollection()->transform(function ($row) {
                 $proveedor = $row->proveedor;
                 $proveedor->spp_autorizadas_count = $row->spp_autorizadas_count;
+                $proveedor->cuentasBancarias();
                 return $proveedor;
             });
 
@@ -740,6 +742,7 @@ class ConstruccPagosSPPController extends Controller
             })
             ->pluck('id');
 
+        // TODO: Generar excepción personalizada para este caso quie retrone una respuesta estandar Api Rest Full
         if ($invalidSPPs->isNotEmpty()) {
             return $this->error(
                 'Una o más solicitudes de pago no pertenecen al proveedor o a la empresa indicada.',
@@ -811,12 +814,18 @@ class ConstruccPagosSPPController extends Controller
                 // Comprobante File
                 'comprobante_pago' => $comprobantePath,
 
+                // Datos de la cuenta de origen
+                'cuenta_bancaria_empresa_construcc_id' => $validated['cuenta_bancaria_empresa_construcc_id'] ?? null,
+                'cuenta_destino_id' => $validated['cuenta_destino_id'] ?? null,
+                'cuenta_destino_terminacion' => $validated['cuenta_destino_terminacion'] ?? null,
+
                 // Informacion basica del pago
                 'empresa_construcc_id' => $empresaConstruccId,
                 'folio_pago_spp_consecutivo' => $folio_consecutivo_construcc,
                 'proveedor_id' => $validated['proveedor_id'],
                 'usuario_registro_id' => $validated['usuario_id'],
                 'usuario_registro_nombre' => $validated['usuario_nombre'],
+
 
                 // Informacion del comprobante de pago OCR
                 'monto_total'      => $info_comprobante['monto'] ?? 0,
@@ -912,5 +921,18 @@ class ConstruccPagosSPPController extends Controller
         return response()->download(
             Storage::disk('private')->path($pago->comprobante_pago)
         );
+    }
+
+    public function cuentasPorProveedor(Proveedor $proveedor): JsonResponse
+    {
+        $cuentas = $proveedor->cuentasBancarias()->get();
+
+        return $this->success([
+            'proveedor' => [
+                'id' => $proveedor->id,
+                'nombre_comercial' => $proveedor->nombre_comercial,
+            ],
+            'cuentas_bancarias' => $cuentas,
+        ], 'Cuentas bancarias del proveedor obtenidas exitosamente.');
     }
 }

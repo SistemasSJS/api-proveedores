@@ -115,8 +115,8 @@ Route::prefix('construcc')
          *--------------------------------------------------------------------------
          * Información agregada para dashboard y reportes
          */
+        // Estadísticas generales del módulo
         Route::prefix('reportes')->name('reportes.')->group(function () {
-            // Estadísticas generales del módulo
             Route::get('estadisticas', [ConstruccController::class, 'estadisticas'])
                 ->middleware(['audit'])
                 ->name('estadisticas');
@@ -307,6 +307,9 @@ Route::prefix('construcc')
 
             // GET /proveedor -> Listar proveedores con SPP
             Route::get('/proveedor', [ConstruccPagosSPPController::class, 'indexProveedor'])->name('proveedor.spp.index');
+
+            // GET /proveedor/{proveedor}/cuentas_bancarias -> Listar cuentas bancarias de un proveedor
+            Route::get('/proveedor/{proveedor}/cuentas_bancarias', [ConstruccPagosSPPController::class, 'cuentasPorProveedor'])->name('proveedor.spp.cuentas');
 
             // ===== GESTIÓN DE PAGOS A PROVEEDOR =====
             // POST /proveedor/{proveedor}/pagos -> Registrar un pago a un proveedor
