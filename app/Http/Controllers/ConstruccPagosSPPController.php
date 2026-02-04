@@ -827,7 +827,7 @@ class ConstruccPagosSPPController extends Controller
                 'cuenta_destino_terminacion' => $ultimos4,
 
                 // Informacion basica del pago
-                'empresa_construcc_id' => $empresaConstruccId,
+                'empresa_construcc_id' => $validated['empresa_id'], // ← mapeo explícito
                 'folio_pago_spp_consecutivo' => $folio_consecutivo_construcc,
                 'proveedor_id' => $validated['proveedor_id'],
                 'usuario_registro_id' => $validated['usuario_id'],
