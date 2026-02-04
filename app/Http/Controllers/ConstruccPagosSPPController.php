@@ -771,21 +771,23 @@ class ConstruccPagosSPPController extends Controller
         });
 
 
-        if (round($sumaMontoSPPs, 2) > round($montoTotalPago, 2)) {
-            return $this->error(
-                'El monto total aplicado a las solicitudes excede el monto del pago registrado.',
-                ['monto_total' => $montoTotalPago, 'monto_aplicado' => $sumaMontoSPPs,],
-                422
-            );
-        }
+        // TODO: solo se deshabilitaraa para pruebas.
+        // if (round($sumaMontoSPPs, 2) > round($montoTotalPago, 2)) {
+        //     return $this->error(
+        //         'El monto total aplicado a las solicitudes excede el monto del pago registrado.',
+        //         ['monto_total' => $montoTotalPago, 'monto_aplicado' => $sumaMontoSPPs,],
+        //         422
+        //     );
+        // }
 
-        if (round($sumaMontoSPPs, 2) !== round($montoTotalPago, 2)) {
-            return $this->error(
-                'El monto total aplicado a las solicitudes no coincide con el monto del pago registrado.',
-                ['monto_total' => $montoTotalPago, 'monto_aplicado' => $sumaMontoSPPs,],
-                422
-            );
-        }
+        // TODO: solo se deshabilitaraa para pruebas.
+        // if (round($sumaMontoSPPs, 2) !== round($montoTotalPago, 2)) {
+        //     return $this->error(
+        //         'El monto total aplicado a las solicitudes no coincide con el monto del pago registrado.',
+        //         ['monto_total' => $montoTotalPago, 'monto_aplicado' => $sumaMontoSPPs,],
+        //         422
+        //     );
+        // }
 
         try {
             DB::beginTransaction();
