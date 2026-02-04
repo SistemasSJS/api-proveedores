@@ -17,7 +17,7 @@ use App\Http\Resources\Construcc\ConstruccPagoIndexResource;
 use App\Http\Resources\Construcc\ConstruccPagoProveedorResource;
 use App\Http\Resources\Construcc\ConstruccPagoResource;
 use App\Http\Resources\Construcc\ConstruccPagoSPPResource;
-
+use App\Models\EmpresaConstrucc;
 use App\Models\PagoSPP;
 use App\Models\Proveedor;
 use App\Models\SolicitudPago;
@@ -804,7 +804,7 @@ class ConstruccPagosSPPController extends Controller
 
             $folio_consecutivo_construcc = null;
             if ($empresaConstruccId) {
-                $empresaConstrucc = \App\Models\EmpresaConstrucc::find($empresaConstruccId);
+                $empresaConstrucc = EmpresaConstrucc::find($empresaConstruccId);
 
                 if ($empresaConstrucc) {
                     $folio_consecutivo_construcc = $empresaConstrucc->obtenerFolioSiguientePagoSPP();
