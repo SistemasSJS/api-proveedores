@@ -13,41 +13,50 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class PagoSPP extends BaseModel
 {
-    use HasFactory, Filterable;
+    use HasFactory;
 
     protected $connection = 'mysql5';
     protected $table = 'pagos_spp';
 
     protected $fillable = [
+        // folio consecuntivio por empresa
+        'folio_pago_spp_consecutivo',
+
         // Comprobante y fechas
         'comprobante_pago',
-        'fecha_pago',
-        'fecha_registro',
-        
-        // Referencia de pago
-        'referencia_pago',
-        
-        // Datos bancarios del pago (cuenta origen)
+
+        // cuenta bancaria de la empresa de construcción
+        'cuenta_bancaria_empresa_construcc_id',
+        'cuenta_destino_id',
+        'cuenta_destino_terminacion',
+
+        // datos basicos de pago
+        'empresa_construcc_id',
+        'proveedor_id',
+        'usuario_registro_id',
+        'usuario_registro_nombre',
+
+        'monto_total', //               --> ingo_comprobante.montoTotal
+        'fecha_pago', //                --> ingo_comprobante.fechaPago
+        'referencia_pago',  //          --> ingo_comprobante.referencia
+        'banco_destino',  //            --> ingo_comprobante.bancoDestino
+        'titular_cuenta_destino',  //   --> ingo_comprobante.nombreBeneficiario
+        'clave_rastreo',  //             --> ingo_comprobante.claveRastreo
+
+        'fecha_registro', // fecha en que se registró el pago en el sistema
+
+        // Datos bancarios del proveedor (cuenta destino)
+        /**
+         * @deprecated no se almacena la inforamción bancaria DEL PROVEEDOR 
+         */
+        'cuenta_destino',
+        'tipo_cuenta_destino',
+        'clabe_interbancaria_destino',
+        'observaciones',
         'banco_pago',
         'cuenta_origen',
         'tipo_cuenta_origen',
         'clabe_interbancaria_origen',
-        
-        // Datos bancarios del proveedor (cuenta destino)
-        'banco_destino',
-        'cuenta_destino',
-        'tipo_cuenta_destino',
-        'clabe_interbancaria_destino',
-        'titular_cuenta_destino',
-        
-        // Montos
-        'monto_total',
-        
-        // Metadatos
-        'observaciones',
-        'usuario_registro_id',
-        'usuario_registro_nombre',
-        'empresa_construcc_id',
     ];
 
     protected $casts = [
@@ -75,10 +84,19 @@ class PagoSPP extends BaseModel
         'monto_max' => 'MontoMax',
     ];
 
+
+    public static function eagerLodable(): array
+    {
+        return [
+            'solicitudesPago',
+            'empresaConstrucc',
+        ];
+    }
+
     /** ----------------
      * Relaciones
      * ----------------- */
-    
+
     /**
      * Relación muchos a muchos con SolicitudPago a través de la tabla pivot.
      * Un pago puede aplicar a múltiples solicitudes de pago.
@@ -91,14 +109,14 @@ class PagoSPP extends BaseModel
             'pago_spp_id',
             'solicitud_pago_id'
         )
-        ->withPivot([
-            'monto_aplicado',
-            'estado_pago',
-            'notas',
-            'fecha_aplicacion'
-        ])
-        ->withTimestamps()
-        ->using(PagoSolicitudPago::class);
+            ->withPivot([
+                'monto_aplicado',
+                'estado_pago',
+                'notas',
+                'fecha_aplicacion'
+            ])
+            ->withTimestamps()
+            ->using(PagoSolicitudPago::class);
     }
 
     /**
@@ -109,10 +127,18 @@ class PagoSPP extends BaseModel
         return $this->belongsTo(EmpresaConstrucc::class, 'empresa_construcc_id');
     }
 
+    /**
+     * Relación con el proveedor al que se realizó el pago.
+     */
+    public function proveedor(): BelongsTo
+    {
+        return $this->belongsTo(Proveedor::class);
+    }
+
     /** ----------------
      * Scopes
      * ----------------- */
-    
+
     /**
      * Scope para filtrar pagos por empresa constructora.
      */
@@ -140,7 +166,6 @@ class PagoSPP extends BaseModel
     /** ----------------
      * Filtros
      * ----------------- */
-    
     /**
      * Filtro de búsqueda global.
      * Busca en: referencia, banco, observaciones, titular cuenta.
@@ -234,7 +259,6 @@ class PagoSPP extends BaseModel
     /** ----------------
      * Métodos de negocio
      * ----------------- */
-    
     /**
      * Calcula el monto total aplicado de este pago a todas las SPP.
      */
@@ -299,5 +323,22 @@ class PagoSPP extends BaseModel
         return $this->solicitudesPago()
             ->withPivot(['monto_aplicado', 'estado_pago', 'notas', 'fecha_aplicacion'])
             ->get();
+    }
+
+    public function getComprobanteUrlAttribute(): ?string
+    {
+        // Solo si existe comprobante y la relación solicitudesPago tiene datos
+        if (!$this->comprobante_pago || !$this->proveedor_id || $this->solicitudesPago->isEmpty()) {
+            return null;
+        }
+
+        // Tomamos el primer ID de SPP (pivot)
+        $sppId = $this->solicitudesPago->first()->id;
+
+        return route('proveedor.spp.descargar-comprobante', [
+            'proveedor' => $this->proveedor_id,
+            'spp' => $sppId,
+            'pago' => $this->id,
+        ]);
     }
 }

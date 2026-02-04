@@ -2,13 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PagoSPP;
-use App\Models\SolicitudPago;
+
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
+
+use App\Enums\EstadoSP;
+
+use App\Http\Requests\Construcc\ConstruccPagosSPPRegistrarPagoRequest;
+use App\Http\Resources\Construcc\ConstruccPagoIndexResource;
+use App\Http\Resources\Construcc\ConstruccPagoProveedorResource;
+use App\Http\Resources\Construcc\ConstruccPagoResource;
+use App\Http\Resources\Construcc\ConstruccPagoSPPResource;
+
+use App\Models\PagoSPP;
+use App\Models\Proveedor;
+use App\Models\SolicitudPago;
+use Carbon\Carbon;
 
 /**
  * Controlador para gestionar los pagos de solicitudes de pago (SPP).
@@ -16,611 +28,910 @@ use Illuminate\Validation\Rule;
  */
 class ConstruccPagosSPPController extends Controller
 {
+
+
     /**
      * Lista de pagos con filtros y paginación.
      * 
      * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function index(Request $request)
+
+    public function index(Request $request): JsonResponse
     {
         try {
-            $perPage = $request->get('per_page', 20);
-            $filters = $request->except(['page', 'per_page']);
+            $filters = $request->only(PagoSPP::getFilters());
+            $sortBy  = $request->input('sort_by', 'fecha_pago');
+            $order   = $request->input('order', 'desc');
+            $perPage = $request->input('per_page', 10000);
 
             $query = PagoSPP::query()
-                ->with(['solicitudesPago', 'empresaConstrucc'])
+                ->with([
+                    'proveedor',
+                    'empresaConstrucc',
+                    // Opcional: si quieres ver las solicitudes relacionadas en el index
+                    'solicitudesPago',
+                ])
                 ->filter($filters)
-                ->orderBy('fecha_pago', 'desc');
+                ->orderBy($sortBy, $order);
 
-            $pagos = $query->paginate($perPage);
+            $paginator = $query->paginate($perPage);
 
-            return response()->json([
-                'success' => true,
-                'data' => $pagos->items(),
-                'pagination' => [
-                    'total' => $pagos->total(),
-                    'per_page' => $pagos->perPage(),
-                    'current_page' => $pagos->currentPage(),
-                    'last_page' => $pagos->lastPage(),
-                ],
-            ], 200);
-        } catch (\Exception $e) {
+            return $this->paginated(
+                $paginator->setCollection(
+                    ConstruccPagoIndexResource::collection($paginator)->collection
+                ),
+                'Pagos SPP obtenidos exitosamente.'
+            );
+        } catch (\Throwable $e) {
             Log::error('Error al listar pagos SPP', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al obtener los pagos',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->error(
+                'No se pudieron obtener los pagos SPP. Por favor, intente nuevamente.',
+                null,
+                500
+            );
         }
     }
 
     /**
-     * Muestra un pago específico con sus solicitudes de pago asociadas.
-     * 
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
+     * Mostrar un pago
      */
-    public function show($id)
+    public function show(PagoSPP $pago): JsonResponse
     {
-        try {
-            $pago = PagoSPP::with([
-                'solicitudesPago' => function ($query) {
-                    $query->withPivot(['monto_aplicado', 'estado_pago', 'notas', 'fecha_aplicacion']);
-                },
-                'solicitudesPago.proveedor',
-                'solicitudesPago.empresaConstrucc',
-                'empresaConstrucc',
-            ])->findOrFail($id);
+        $pago->load([
+            'empresaConstrucc',
+            'proveedor',
+            'solicitudesPago', // esta relación ya tiene pivot + orden definido
+        ]);
 
-            return response()->json([
-                'success' => true,
-                'data' => $pago,
-            ], 200);
-        } catch (\Exception $e) {
-            Log::error('Error al obtener pago SPP', [
-                'id' => $id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al obtener el pago',
-                'error' => $e->getMessage(),
-            ], 404);
-        }
+        return $this->success([
+            'pago' => new ConstruccPagoResource($pago),
+        ], 'Pago obtenido correctamente.');
+        // return response()->json([
+        //     'success' => true,
+        //     'message' => 'Pago obtenido correctamente',
+        //     'data' => new ConstruccPagoResource($pago),
+        // ]);
     }
 
     /**
-     * Registra un nuevo pago y lo aplica a una o más solicitudes de pago.
+     * Registrar un nuevo pago SPP
+     */
+    // public function store(ConstruccPagosSPPRegistrarPagoRequest $request): JsonResponse
+    // {
+    //     $validated = $request->validated();
+
+    //     // 1. Validar suma de montos contra monto_total
+    //     $montoTotalAplicado = (float) collect($validated['solicitudes'])->sum(fn($s) => (float) $s['monto_pago']);
+    //     $montoTotal = (float) $validated['monto_total'];
+
+    //     if ($montoTotalAplicado > $montoTotal) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'El monto total aplicado a las solicitudes excede el monto del pago.',
+    //             'errors' => [
+    //                 'monto_total' => $montoTotal,
+    //                 'monto_aplicado' => $montoTotalAplicado,
+    //             ],
+    //         ], 422);
+    //     }
+
+    //     $pago = DB::transaction(function () use ($validated) {
+    //         $pago = PagoSPP::create([
+    //             'fecha_pago' => $validated['fecha_pago'],
+    //             'fecha_registro' => now(),
+    //             'referencia_pago' => $validated['referencia_pago'] ?? null,
+    //             'banco_pago' => $validated['banco_pago'] ?? null,
+    //             'cuenta_origen' => $validated['cuenta_origen'] ?? null,
+    //             'tipo_cuenta_origen' => $validated['tipo_cuenta_origen'] ?? null,
+    //             'banco_destino' => $validated['banco_destino'] ?? null,
+    //             'cuenta_destino' => $validated['cuenta_destino'] ?? null,
+    //             'tipo_cuenta_destino' => $validated['tipo_cuenta_destino'] ?? null,
+    //             'clabe_interbancaria_destino' => $validated['clabe_interbancaria_destino'] ?? null,
+    //             'titular_cuenta_destino' => $validated['titular_cuenta_destino'] ?? null,
+    //             'monto_total' => (float) $validated['monto_total'],
+    //             'observaciones' => $validated['observaciones'] ?? null,
+    //             'usuario_registro_id' => auth()->id(),
+    //             'usuario_registro_nombre' => auth()->user()->name ?? null,
+    //             'empresa_construcc_id' => $validated['empresa_construcc_id'],
+    //             'proveedor_id' => $validated['proveedor_id'],
+    //         ]);
+
+    //         foreach ($validated['solicitudes'] as $item) {
+    //             $pago->solicitudesPago()->attach($item['solicitud_pago_id'], [
+    //                 'monto_aplicado' => (float) $item['monto_pago'],
+    //                 'estado_pago' => $item['estado_pago'] ?? 'aplicado',
+    //                 'notas' => $item['notas'] ?? null,
+    //                 'fecha_aplicacion' => now(),
+    //             ]);
+    //         }
+
+    //         return $pago;
+    //     });
+
+    //     $pago->load(['empresaConstrucc', 'proveedor', 'solicitudesPago']);
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Pago registrado correctamente',
+    //         'data' => new ConstruccPagoResource($pago),
+    //     ], 201);
+    // }
+
+    /**
+     * Actualizar pago
+     */
+    public function update(ConstruccPagosSPPRegistrarPagoRequest $request, PagoSPP $pago): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $pago->update($validated);
+
+        $pago->load(['empresaConstrucc', 'proveedor', 'solicitudesPago']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pago actualizado correctamente',
+            'data' => new ConstruccPagoResource($pago),
+        ]);
+    }
+
+    /**
+     * Eliminar pago
+     */
+    public function destroy(PagoSPP $pago): JsonResponse
+    {
+        $pago->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pago eliminado correctamente',
+        ]);
+    }
+
+    /**
+     * Agregar una solicitud de pago al pago
+     */
+    public function agregarSolicitudPago(Request $request, PagoSPP $pago): JsonResponse
+    {
+        $data = $request->validate([
+            'solicitud_pago_id' => ['required', 'exists:solicitudes_pago,id'],
+            'monto_aplicado' => ['required', 'numeric', 'min:0.01'],
+            'estado_pago' => ['nullable', 'string'],
+            'notas' => ['nullable', 'string'],
+        ]);
+
+        $pago->solicitudesPago()->attach($data['solicitud_pago_id'], [
+            'monto_aplicado' => (float) $data['monto_aplicado'],
+            'estado_pago' => $data['estado_pago'] ?? 'aplicado',
+            'notas' => $data['notas'] ?? null,
+            'fecha_aplicacion' => now(),
+        ]);
+
+        $pago->load(['empresaConstrucc', 'proveedor', 'solicitudesPago']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Solicitud de pago agregada al pago.',
+            'data' => new ConstruccPagoResource($pago),
+        ]);
+    }
+
+    /**
+     * Actualizar datos del pivot
+     */
+    public function actualizarSolicitudPago(Request $request, PagoSPP $pago, SolicitudPago $solicitudPago): JsonResponse
+    {
+        $data = $request->validate([
+            'monto_aplicado' => ['required', 'numeric', 'min:0.01'],
+            'estado_pago' => ['nullable', 'string'],
+            'notas' => ['nullable', 'string'],
+        ]);
+
+        $pago->solicitudesPago()->updateExistingPivot($solicitudPago->id, [
+            'monto_aplicado' => (float) $data['monto_aplicado'],
+            'estado_pago' => $data['estado_pago'] ?? 'aplicado',
+            'notas' => $data['notas'] ?? null,
+        ]);
+
+        $pago->load(['empresaConstrucc', 'proveedor', 'solicitudesPago']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Solicitud de pago actualizada.',
+            'data' => new ConstruccPagoResource($pago),
+        ]);
+    }
+
+    /**
+     * Eliminar relación pago - solicitud de pago
+     */
+    public function eliminarSolicitudPago(PagoSPP $pago, SolicitudPago $solicitudPago): JsonResponse
+    {
+        $pago->solicitudesPago()->detach($solicitudPago->id);
+
+        $pago->load(['empresaConstrucc', 'proveedor', 'solicitudesPago']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Solicitud de pago eliminada del pago.',
+            'data' => new ConstruccPagoResource($pago),
+        ]);
+    }
+
+    /**
+     * Estadísticas de pagos
+     */
+    public function estadisticas(): JsonResponse
+    {
+        $totalPagos = PagoSPP::sum('monto_total');
+        $conteo = PagoSPP::count();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'total_pagado' => (float) $totalPagos,
+                'total_pagos' => $conteo,
+            ],
+        ]);
+    }
+
+    /**
+     * listado de proveedores con informacion de las SPP activas.
+     * El listado se realiza en base a las SPP autorizadas y se agrupan por proveedor.
+     * 
+     *  GET /api/construcc/pagos-spp/proveedores?empresas_construcc={id_empresa_construcc}
      * 
      * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return ConstruccPagoProveedorResource[]
      */
-    public function store(Request $request)
+    public function indexProveedor(Request $request): JsonResponse
     {
         try {
-            // Validación
-            $validated = $request->validate([
-                // Datos del pago
-                'comprobante_pago' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'fecha_pago' => 'required|date',
-                'referencia_pago' => 'required|string|max:100',
-                
-                // Datos bancarios del pago (origen)
-                'banco_pago' => 'nullable|string|max:100',
-                'cuenta_origen' => 'nullable|string|max:50',
-                'tipo_cuenta_origen' => 'nullable|string|max:50',
-                'clabe_interbancaria_origen' => 'nullable|string|max:18',
-                
-                // Datos bancarios del proveedor (destino)
-                'banco_destino' => 'nullable|string|max:100',
-                'cuenta_destino' => 'nullable|string|max:50',
-                'tipo_cuenta_destino' => 'nullable|string|max:50',
-                'clabe_interbancaria_destino' => 'nullable|string|max:18',
-                'titular_cuenta_destino' => 'nullable|string|max:255',
-                
-                // Montos
-                'monto_total' => 'required|numeric|min:0.01',
-                
-                // Metadatos
-                'observaciones' => 'nullable|string',
-                'usuario_registro_id' => 'nullable|integer',
-                'usuario_registro_nombre' => 'nullable|string|max:255',
-                'empresa_construcc_id' => 'nullable|integer',
-                
-                // Solicitudes de pago a las que se aplica (obligatorio)
-                'solicitudes_pago' => 'required|array|min:1',
-                'solicitudes_pago.*.solicitud_pago_id' => 'required|integer|exists:solicitudes_pago,id',
-                'solicitudes_pago.*.monto_aplicado' => 'required|numeric|min:0.01',
-                'solicitudes_pago.*.estado_pago' => [
-                    'required',
-                    Rule::in(['aplicado', 'pendiente', 'rechazado', 'parcial', 'completado'])
-                ],
-                'solicitudes_pago.*.notas' => 'nullable|string',
-            ]);
+            $empresaConstruccId = $request->integer('empresa_construcc_id');
+            $perPage = $request->input('per_page', 1000);
 
-            DB::beginTransaction();
-
-            // Guardar el comprobante de pago
-            $comprobantePath = null;
-            if ($request->hasFile('comprobante_pago')) {
-                $comprobantePath = $request->file('comprobante_pago')->store(
-                    'comprobantes_pago',
-                    'public'
-                );
-            }
-
-            // Crear el pago
-            $pago = PagoSPP::create([
-                'comprobante_pago' => $comprobantePath,
-                'fecha_pago' => $validated['fecha_pago'],
-                'fecha_registro' => now(),
-                'referencia_pago' => $validated['referencia_pago'],
-                'banco_pago' => $validated['banco_pago'] ?? null,
-                'cuenta_origen' => $validated['cuenta_origen'] ?? null,
-                'tipo_cuenta_origen' => $validated['tipo_cuenta_origen'] ?? null,
-                'clabe_interbancaria_origen' => $validated['clabe_interbancaria_origen'] ?? null,
-                'banco_destino' => $validated['banco_destino'] ?? null,
-                'cuenta_destino' => $validated['cuenta_destino'] ?? null,
-                'tipo_cuenta_destino' => $validated['tipo_cuenta_destino'] ?? null,
-                'clabe_interbancaria_destino' => $validated['clabe_interbancaria_destino'] ?? null,
-                'titular_cuenta_destino' => $validated['titular_cuenta_destino'] ?? null,
-                'monto_total' => $validated['monto_total'],
-                'observaciones' => $validated['observaciones'] ?? null,
-                'usuario_registro_id' => $validated['usuario_registro_id'] ?? null,
-                'usuario_registro_nombre' => $validated['usuario_registro_nombre'] ?? null,
-                'empresa_construcc_id' => $validated['empresa_construcc_id'] ?? null,
-            ]);
-
-            // Verificar que el monto total aplicado no exceda el monto del pago
-            $montoTotalAplicado = collect($validated['solicitudes_pago'])->sum('monto_aplicado');
-            if ($montoTotalAplicado > $validated['monto_total']) {
-                throw new \Exception('El monto total aplicado excede el monto del pago');
-            }
-
-            // Aplicar el pago a las solicitudes de pago
-            foreach ($validated['solicitudes_pago'] as $solicitudData) {
-                $solicitudPago = SolicitudPago::findOrFail($solicitudData['solicitud_pago_id']);
-                
-                // Adjuntar la relación con los datos del pivot
-                $pago->solicitudesPago()->attach($solicitudPago->id, [
-                    'monto_aplicado' => $solicitudData['monto_aplicado'],
-                    'estado_pago' => $solicitudData['estado_pago'],
-                    'notas' => $solicitudData['notas'] ?? null,
-                    'fecha_aplicacion' => now(),
+            $query = SolicitudPago::query()
+                ->selectRaw('proveedor_id, COUNT(*) as spp_autorizadas_count')
+                ->where('estado_solicitud', EstadoSP::AUTORIZADA)
+                ->when($empresaConstruccId, function ($q) use ($empresaConstruccId) {
+                    $q->where('empresa_construcc_id', $empresaConstruccId);
+                })
+                ->groupBy('proveedor_id')
+                ->with([
+                    'proveedor:id,nombre_comercial',
+                    'proveedor.cuentasBancarias',
                 ]);
 
-                // Actualizar los saldos de la solicitud de pago si el estado es aplicado
-                if ($solicitudData['estado_pago'] === 'aplicado' || $solicitudData['estado_pago'] === 'completado') {
-                    $solicitudPago->actualizarSaldos($solicitudData['monto_aplicado']);
-                }
-            }
+            $paginator = $query->paginate($perPage);
 
-            DB::commit();
+            // 🔥 Adaptamos la colección para que el resource reciba el proveedor
+            $paginator->getCollection()->transform(function ($row) {
+                /** @var Proveedor */
+                $proveedor = $row->proveedor;
+                $proveedor->spp_autorizadas_count = $row->spp_autorizadas_count;
+                return $proveedor;
+            });
 
-            // Cargar las relaciones para la respuesta
-            $pago->load(['solicitudesPago', 'empresaConstrucc']);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Pago registrado exitosamente',
-                'data' => $pago,
-            ], 201);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Error de validación',
-                'errors' => $e->errors(),
-            ], 422);
+            $data = ConstruccPagoProveedorResource::collection($paginator)->resolve();
+
+            return $this->paginated(
+                $paginator->setCollection(collect($data))
+            );
         } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error al crear pago SPP', [
+            Log::error('Error al listar proveedores con SPP autorizadas', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al registrar el pago',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->error(
+                'No se pudieron obtener los proveedores.',
+                null,
+                500
+            );
         }
     }
 
     /**
-     * Actualiza un pago existente.
-     * 
-     * @param Request $request
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
+     * Lista todas las SPP de un proveedor específico con filtros y paginación.
+     *
+     * GET /api/construcc/pagos-spp/proveedor/{proveedor}/spp?empresas_construcc={id_empresa_construcc}
      */
-    public function update(Request $request, $id)
+    public function sppPorProveedor(Request $request, int $proveedorId): JsonResponse
     {
         try {
-            $pago = PagoSPP::findOrFail($id);
+            $proveedor = Proveedor::findOrFail($proveedorId);
 
-            // Validación
-            $validated = $request->validate([
-                'comprobante_pago' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'fecha_pago' => 'nullable|date',
-                'referencia_pago' => 'nullable|string|max:100',
-                'banco_pago' => 'nullable|string|max:100',
-                'cuenta_origen' => 'nullable|string|max:50',
-                'tipo_cuenta_origen' => 'nullable|string|max:50',
-                'clabe_interbancaria_origen' => 'nullable|string|max:18',
-                'banco_destino' => 'nullable|string|max:100',
-                'cuenta_destino' => 'nullable|string|max:50',
-                'tipo_cuenta_destino' => 'nullable|string|max:50',
-                'clabe_interbancaria_destino' => 'nullable|string|max:18',
-                'titular_cuenta_destino' => 'nullable|string|max:255',
-                'monto_total' => 'nullable|numeric|min:0.01',
-                'observaciones' => 'nullable|string',
+            $empresaConstruccId = $request->integer('empresa_construcc_id');
+            $perPage = $request->input('per_page', 1000);
+
+            $query = SolicitudPago::query()
+                ->where('proveedor_id', $proveedor->id)
+                ->where('estado_solicitud', EstadoSP::AUTORIZADA)
+                ->when($empresaConstruccId, function ($q) use ($empresaConstruccId) {
+                    $q->where('empresa_construcc_id', $empresaConstruccId);
+                })
+                ->withSum('pagos as total_pagado', 'pago_solicitud_pago.monto_aplicado')
+                ->with(array_merge(
+                    SolicitudPago::eagerLodable(),
+                    [
+                        'pagos' => function ($q) {
+                            $q->orderBy('pago_solicitud_pago.fecha_aplicacion', 'desc');
+                        }
+                    ]
+                ));
+
+            $paginator = $query->paginate($perPage);
+
+            return $this->paginated(
+                $paginator->setCollection(ConstruccPagoSPPResource::collection($paginator)->collection),
+                'Solicitudes de pago obtenidas exitosamente.'
+            );
+        } catch (\Exception $e) {
+            Log::error('Error al listar SPP del proveedor', [
+                'proveedor_id' => $proveedorId,
+                'error'        => $e->getMessage(),
             ]);
 
-            DB::beginTransaction();
+            return $this->error(
+                'No se pudieron obtener las solicitudes de pago.',
+                null,
+                500
+            );
+        }
+    }
 
-            // Actualizar comprobante si se proporciona uno nuevo
-            if ($request->hasFile('comprobante_pago')) {
-                // Eliminar el comprobante anterior
-                if ($pago->comprobante_pago && Storage::disk('public')->exists($pago->comprobante_pago)) {
-                    Storage::disk('public')->delete($pago->comprobante_pago);
-                }
-
-                // Guardar el nuevo comprobante
-                $validated['comprobante_pago'] = $request->file('comprobante_pago')->store(
-                    'comprobantes_pago',
-                    'public'
+    /**
+     * Muestra una SPP específica de un proveedor con todos sus pagos parciales.
+     * 
+     * GET /api/construcc/pagos-spp/proveedor/{proveedor}/spp/{spp}
+     */
+    public function showSppProveedor(Request $request, Proveedor $proveedor, SolicitudPago $spp): JsonResponse
+    {
+        try {
+            // 🔐 Validación de pertenencia
+            if ($spp->proveedor_id !== $proveedor->id) {
+                return $this->error(
+                    'La solicitud de pago no pertenece a este proveedor.',
+                    null,
+                    403
                 );
             }
 
-            // Actualizar el pago
-            $pago->update(array_filter($validated));
+            // 📦 Cargar relaciones necesarias para el resource
+            $spp->load([
+                'proveedor',
+                'empresaConstrucc',
+                'cuentasBancarias',
+                'pagos' => function ($query) {
+                    $query->with([
+                        'empresaConstrucc',
+                        'proveedor',
+                    ])
+                        ->withPivot([
+                            'solicitud_pago_id',
+                            'monto_aplicado',
+                            'fecha_aplicacion',
+                        ])
+                        ->orderByPivot('fecha_aplicacion', 'desc');
+                },
+            ]);
 
-            DB::commit();
+            // ✅ Respuesta con resource específico de SPP (que ya incluye pagos)
+            return $this->success(
+                [
+                    'solicitud_pago' => new ConstruccPagoSPPResource($spp),
+                    'pagos' => ConstruccPagoResource::collection($spp->pagos),
+                ],
+                'Solicitud de pago obtenida exitosamente.'
+            );
+        } catch (\Throwable $e) {
+            Log::error('Error al obtener SPP del proveedor', [
+                'proveedor_id' => $proveedor->id,
+                'spp_id'       => $spp->id,
+                'error'        => $e->getMessage(),
+            ]);
 
-            $pago->load(['solicitudesPago', 'empresaConstrucc']);
+            return $this->error(
+                'No se pudo obtener el detalle de la solicitud de pago. Por favor, intente nuevamente.',
+                null,
+                500
+            );
+        }
+    }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Pago actualizado exitosamente',
-                'data' => $pago,
-            ], 200);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error al actualizar pago SPP', [
-                'id' => $id,
+
+    /**
+     * Lista todos los pagos parciales de una SPP específica.
+     * 
+     * GET /api/construcc/pagos-spp/proveedor/{proveedor}/spp/{spp}/pagos
+     * 
+     * @param Proveedor $proveedor
+     * @param SolicitudPago $spp
+     * @return JsonResponse
+     */
+    public function pagosDeSpp(Proveedor $proveedor, SolicitudPago $spp): JsonResponse
+    {
+        try {
+            // Verificar que la SPP pertenece al proveedor
+            if ($spp->proveedor_id !== $proveedor->id) {
+                return $this->error(
+                    'La solicitud de pago no pertenece a este proveedor.',
+                    null,
+                    403
+                );
+            }
+
+            $pagos = $spp->pagos()
+                ->with([
+                    'empresaConstrucc',
+                    'proveedor', // 👈 NECESARIO para armar la URL
+                ])
+                ->withPivot([
+                    'solicitud_pago_id', // 👈 NECESARIO para el parámetro {spp}
+                    'monto_aplicado',
+                    'estado_pago',
+                    'notas',
+                    'fecha_aplicacion'
+                ])
+                ->orderBy('pago_solicitud_pago.fecha_aplicacion', 'desc')
+                ->get();
+
+            return $this->success([
+                'solicitud_pago' => ConstruccPagoSPPResource::make($spp),
+                'pagos' => ConstruccPagoResource::collection($pagos),
+            ], 'Pagos obtenidos exitosamente.');
+        } catch (\Throwable $e) {
+            Log::error('Error al listar pagos de SPP', [
+                'proveedor_id' => $proveedor->id,
+                'spp_id' => $spp->id,
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al actualizar el pago',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->error(
+                'No se pudieron obtener los pagos. Por favor, intente nuevamente.',
+                null,
+                500
+            );
         }
     }
 
     /**
-     * Elimina un pago.
+     * Lista todas las SPP asociadas a un pago específico de un proveedor.
      * 
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
+     * GET /api/construcc/pagos-spp/proveedor/{proveedor}/pagos/{pago}/spps
+     * 
+     * @param Proveedor $proveedor
+     * @param ConstruccPago $pago
+     * @return JsonResponse
      */
-    public function destroy($id)
+    public function sppDePago(Proveedor $proveedor, PagoSPP $pago): JsonResponse
     {
         try {
-            $pago = PagoSPP::findOrFail($id);
+            // Obtener solo las SPP del proveedor
+            $spps = $pago->solicitudesPago()
+                ->where('proveedor_id', $proveedor->id)
+                ->with(['empresaConstrucc', 'proveedor'])
+                ->withPivot([
+                    'monto_aplicado',
+                    'estado_pago',
+                    'notas',
+                    'fecha_aplicacion'
+                ])
+                ->orderBy('pago_solicitud_pago.fecha_aplicacion', 'desc')
+                ->get();
+
+            return $this->success([
+                'pago' => ConstruccPagoResource::make($pago),
+                'solicitudes_pago' => ConstruccPagoSPPResource::collection($spps),
+            ], 'Solicitudes de pago obtenidas exitosamente.');
+        } catch (\Throwable $e) {
+            Log::error('Error al listar SPP de un pago', [
+                'proveedor_id' => $proveedor->id,
+                'pago_id' => $pago->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->error(
+                'No se pudieron obtener las solicitudes de pago del pago.',
+                null,
+                500
+            );
+        }
+    }
+
+
+    /**
+     * Muestra un pago específico de una SPP.
+     * 
+     * GET /api/construcc/pagos-spp/proveedor/{proveedor}/spp/{spp}/pagos/{pago}
+     * 
+     * @param Proveedor $proveedor
+     * @param SolicitudPago $spp
+     * @param PagoSPP $pago
+     * @return JsonResponse
+     */
+    // public function showPagoDeSpp(Proveedor $proveedor, SolicitudPago $spp, PagoSPP $pago): JsonResponse
+    // {
+    //     try {
+    //         // Verificar que la SPP pertenece al proveedor
+    //         if ($spp->proveedor_id !== $proveedor->id) {
+    //             return $this->error(
+    //                 'La solicitud de pago no pertenece a este proveedor.',
+    //                 null,
+    //                 403
+    //             );
+    //         }
+
+    //         // Verificar que el pago está asociado a esta SPP
+    //         $pagoAsociado = $pago->solicitudesPago()
+    //             ->where('solicitud_pago_id', $spp->id)
+    //             ->exists();
+
+    //         if (!$pagoAsociado) {
+    //             return $this->error(
+    //                 'El pago no está asociado a esta solicitud de pago.',
+    //                 null,
+    //                 404
+    //             );
+    //         }
+
+    //         $pago->load(['empresaConstrucc']);
+
+    //         // Obtener datos del pivot
+    //         $pivotData = DB::connection('mysql5')
+    //             ->table('pago_solicitud_pago')
+    //             ->where('pago_spp_id', $pago->id)
+    //             ->where('solicitud_pago_id', $spp->id)
+    //             ->first();
+
+    //         return $this->success([
+    //             'pago' => $pago,
+    //             'relacion' => [
+    //                 'monto_aplicado' => (float) $pivotData->monto_aplicado,
+    //                 'estado_pago' => $pivotData->estado_pago,
+    //                 'notas' => $pivotData->notas,
+    //                 'fecha_aplicacion' => $pivotData->fecha_aplicacion,
+    //             ],
+    //             'solicitud_pago' => [
+    //                 'id' => $spp->id,
+    //                 'numero_folio_solicitud' => $spp->numero_folio_solicitud,
+    //                 'monto_total' => (float) $spp->monto_total,
+    //                 'monto_abonado' => (float) $spp->monto_abonado,
+    //                 'saldo_pendiente' => (float) $spp->saldo_pendiente,
+    //             ],
+    //         ], 'Detalle del pago obtenido exitosamente.');
+    //     } catch (\Exception $e) {
+    //         Log::error('Error al obtener pago de SPP', [
+    //             'proveedor_id' => $proveedor->id,
+    //             'spp_id' => $spp->id,
+    //             'pago_id' => $pago->id,
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //         ]);
+
+    //         return $this->error(
+    //             'No se pudo obtener el detalle del pago. Por favor, intente nuevamente.',
+    //             null,
+    //             500
+    //         );
+    //     }
+    // }
+
+    /**
+     * Sube o actualiza el comprobante de pago para un pago específico.
+     * 
+     * POST /api/construcc/pagos-spp/proveedor/{proveedor}/spp/{spp}/pagos/{pago}/subir-comprobante
+     * 
+     * @param Request $request
+     * @param Proveedor $proveedor
+     * @param SolicitudPago $spp
+     * @param PagoSPP $pago
+     * @return JsonResponse
+     */
+    public function subirComprobanteSpp(Request $request, Proveedor $proveedor, SolicitudPago $spp, PagoSPP $pago): JsonResponse
+    {
+        try {
+            // Verificar que la SPP pertenece al proveedor
+            if ($spp->proveedor_id !== $proveedor->id) {
+                return $this->error(
+                    'La solicitud de pago no pertenece a este proveedor.',
+                    null,
+                    403
+                );
+            }
+
+            // Verificar que el pago está asociado a esta SPP
+            $pagoAsociado = $pago->solicitudesPago()
+                ->where('solicitud_pago_id', $spp->id)
+                ->exists();
+
+            if (!$pagoAsociado) {
+                return $this->error(
+                    'El pago no está asociado a esta solicitud de pago.',
+                    null,
+                    404
+                );
+            }
+
+            // Validación
+            $validated = $request->validate([
+                'comprobante_pago' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            ], [
+                'comprobante_pago.required' => 'El comprobante de pago es obligatorio.',
+                'comprobante_pago.file' => 'El comprobante debe ser un archivo válido.',
+                'comprobante_pago.mimes' => 'El comprobante debe ser PDF, JPG o PNG.',
+                'comprobante_pago.max' => 'El comprobante no debe superar los 10MB.',
+            ]);
 
             DB::beginTransaction();
 
-            // Eliminar el archivo del comprobante
+            // Eliminar el comprobante anterior si existe
             if ($pago->comprobante_pago && Storage::disk('public')->exists($pago->comprobante_pago)) {
                 Storage::disk('public')->delete($pago->comprobante_pago);
             }
 
-            // Eliminar el pago (esto también eliminará las relaciones en la tabla pivot por cascade)
-            $pago->delete();
+            // Guardar el nuevo comprobante
+            $comprobantePath = $request->file('comprobante_pago')->store(
+                'comprobantes_pago',
+                'public'
+            );
+
+            $pago->update([
+                'comprobante_pago' => $comprobantePath,
+            ]);
 
             DB::commit();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Pago eliminado exitosamente',
-            ], 200);
+            return $this->success([
+                'comprobante_pago' => $comprobantePath,
+                'comprobante_pago_url' => asset('storage/' . $comprobantePath),
+            ], 'Comprobante de pago guardado exitosamente.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            return $this->error(
+                'Error de validación en el archivo.',
+                $e->errors(),
+                422
+            );
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al eliminar pago SPP', [
-                'id' => $id,
+            Log::error('Error al subir comprobante de pago', [
+                'proveedor_id' => $proveedor->id,
+                'spp_id' => $spp->id,
+                'pago_id' => $pago->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al eliminar el pago',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->error('No se pudo guardar el comprobante. Por favor, intente nuevamente.', null, 500);
         }
     }
 
     /**
-     * Descarga el comprobante de pago.
+     * Registra un pago y lo aplica a una o varias SPP de un proveedor.
+     * Este endpoint permite crear un pago con comprobante y asociarlo a múltiples SPP.
      * 
-     * @param int $id
-     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\JsonResponse
-     */
-    public function descargarComprobante($id)
-    {
-        try {
-            $pago = PagoSPP::findOrFail($id);
-
-            if (!$pago->comprobante_pago || !Storage::disk('public')->exists($pago->comprobante_pago)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Comprobante de pago no encontrado',
-                ], 404);
-            }
-
-            return Storage::disk('public')->download($pago->comprobante_pago);
-        } catch (\Exception $e) {
-            Log::error('Error al descargar comprobante de pago', [
-                'id' => $id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al descargar el comprobante',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * Agrega una solicitud de pago adicional a un pago existente.
+     * POST /api/construcc/pagos-spp/proveedor/{proveedor}/pagos?empresas_construcc={id_empresa_construcc}
      * 
      * @param Request $request
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
+     * @param Proveedor $proveedor
+     * @return JsonResponse
      */
-    public function agregarSolicitudPago(Request $request, $id)
+    public function registrarPagoProveedor(ConstruccPagosSPPRegistrarPagoRequest $request, Proveedor $proveedor): JsonResponse
     {
-        try {
-            $pago = PagoSPP::findOrFail($id);
+        $validated = $request->validated();
+        $empresaConstruccId = $validated['empresa_id'];
 
-            // Validación
-            $validated = $request->validate([
-                'solicitud_pago_id' => 'required|integer|exists:solicitudes_pago,id',
-                'monto_aplicado' => 'required|numeric|min:0.01',
-                'estado_pago' => [
-                    'required',
-                    Rule::in(['aplicado', 'pendiente', 'rechazado', 'parcial', 'completado'])
+        /************************************************************
+         * Validar que las SPP pertenecen al proveedor y a la empresa
+         ************************************************************/
+        $listSPPIds = collect($validated['solicitudes'])->pluck('solicitud_id'); // --> [{solicitud_pago_id, ...}]
+
+        // This method genera: [ {id}, ...] con las SPP que no pertenecen al Proveedor ni a la empresa
+        $invalidSPPs = SolicitudPago::whereIn('id', $listSPPIds)
+            ->where(function ($q) use ($proveedor, $empresaConstruccId) {
+                $q->where('proveedor_id', '!=', $proveedor->id)
+                    ->orWhere('empresa_construcc_id', '!=', $empresaConstruccId)
+                    ->orWhere('estado_solicitud', '!=', EstadoSP::AUTORIZADA);
+            })
+            ->pluck('id');
+
+        // TODO: Generar excepción personalizada para este caso quie retrone una respuesta estandar Api Rest Full
+        if ($invalidSPPs->isNotEmpty()) {
+            return $this->error(
+                'Una o más solicitudes de pago no pertenecen al proveedor o a la empresa indicada.',
+                [
+                    'solicitudes_invalidas' => $invalidSPPs,
                 ],
-                'notas' => 'nullable|string',
-            ]);
+                422
+            );
+        }
 
+        /************************************************************
+         * Validar montos
+         ************************************************************/
+        /**
+         * existen varios montos 
+         *  - info_comprobante.monto: monto extraído del comprobante (OCR)
+         *  - solicitudes.*.monto_pago: Es el monto abonado a cada SPP
+         * 
+         *  1. Se debe validar que la suma de los montos aplicados a las SPP no exceda el monto_total del pago.
+         *  2. El monto_total debe ser igual al monto extraído del comprobante (si se proporcionó).
+         */
+
+        // 1. Validar que la suma de los montos aplicados a las SPP no exceda el monto_total
+        $montoTotalPago = (float) $validated['info_comprobante']['monto'];
+        $sumaMontoSPPs = (float) collect($validated['solicitudes'])->sum(function ($item) {
+            return (float) $item['monto_pago'];
+        });
+
+
+        if (round($sumaMontoSPPs, 2) > round($montoTotalPago, 2)) {
+            return $this->error(
+                'El monto total aplicado a las solicitudes excede el monto del pago registrado.',
+                ['monto_total' => $montoTotalPago, 'monto_aplicado' => $sumaMontoSPPs,],
+                422
+            );
+        }
+
+        if (round($sumaMontoSPPs, 2) !== round($montoTotalPago, 2)) {
+            return $this->error(
+                'El monto total aplicado a las solicitudes no coincide con el monto del pago registrado.',
+                ['monto_total' => $montoTotalPago, 'monto_aplicado' => $sumaMontoSPPs,],
+                422
+            );
+        }
+
+        try {
             DB::beginTransaction();
 
-            // Verificar que hay monto disponible
-            $montoDisponible = $pago->montoDisponible();
-            if ($montoDisponible < $validated['monto_aplicado']) {
-                throw new \Exception("Monto insuficiente. Disponible: {$montoDisponible}");
+            /************************************************************
+             * Guardar comprobante
+             ************************************************************/
+            $file = $request->file('comprobante_pago');
+            $comprobantePath = $file->store('comprobantes', 'private');
+
+            /************************************************************
+             * Crear el pago
+             ************************************************************/
+            $infoComprobante = $validated['info_comprobante'] ?? [];
+
+            $folio_consecutivo_construcc = null;
+            if ($empresaConstruccId) {
+                $empresaConstrucc = \App\Models\EmpresaConstrucc::find($empresaConstruccId);
+
+                if ($empresaConstrucc) {
+                    $folio_consecutivo_construcc = $empresaConstrucc->obtenerFolioSiguientePagoSPP();
+                }
             }
+            $pago = PagoSPP::create([
+                // Comprobante File
+                'comprobante_pago' => $comprobantePath,
 
-            $solicitudPago = SolicitudPago::findOrFail($validated['solicitud_pago_id']);
+                // Datos de la cuenta de origen
+                'cuenta_bancaria_empresa_construcc_id' => $validated['cuenta_bancaria_empresa_construcc_id'] ?? null,
+                'cuenta_destino_id' => $validated['cuenta_destino_id'] ?? null,
+                'cuenta_destino_terminacion' => $validated['cuenta_destino_terminacion'] ?? null,
 
-            // Verificar que no esté ya relacionada
-            if ($pago->solicitudesPago()->where('solicitud_pago_id', $solicitudPago->id)->exists()) {
-                throw new \Exception('Esta solicitud de pago ya está asociada a este pago');
-            }
+                // Informacion basica del pago
+                'empresa_construcc_id' => $empresaConstruccId,
+                'folio_pago_spp_consecutivo' => $folio_consecutivo_construcc,
+                'proveedor_id' => $validated['proveedor_id'],
+                'usuario_registro_id' => $validated['usuario_id'],
+                'usuario_registro_nombre' => $validated['usuario_nombre'],
 
-            // Adjuntar la solicitud de pago
-            $pago->solicitudesPago()->attach($solicitudPago->id, [
-                'monto_aplicado' => $validated['monto_aplicado'],
-                'estado_pago' => $validated['estado_pago'],
-                'notas' => $validated['notas'] ?? null,
-                'fecha_aplicacion' => now(),
+
+                // Informacion del comprobante de pago OCR
+                'monto_total'      => $info_comprobante['monto'] ?? 0,
+                'fecha_pago' => Carbon::parse(trim($validated['info_comprobante']['fecha']) . ' ' . trim($validated['info_comprobante']['hora']))->format('Y-m-d H:i:s'),
+                'referencia_pago'  => $validated['info_comprobante']['referencia'] ?? null,
+                'banco_destino'    => $infoComprobante['bancoDestino'] ?? null,
+                'titular_cuenta_destino' => $infoComprobante['nombreBeneficiario'] ?? null,
+                'clave_rastreo'    => $infoComprobante['claveRastreo'] ?? null,
+
+                'fecha_registro'   => now(),
             ]);
 
-            // Actualizar saldos si el estado es aplicado
-            if ($validated['estado_pago'] === 'aplicado' || $validated['estado_pago'] === 'completado') {
-                $solicitudPago->actualizarSaldos($validated['monto_aplicado']);
+            /************************************************************
+             * Aplicar el pago a las SPP
+             ************************************************************/
+
+            foreach ($validated['solicitudes'] as $solicitudData) {
+                /** @var SolicitudPago */
+                $solicitudPago = SolicitudPago::where('id', $solicitudData['solicitud_id'])
+                    ->where('proveedor_id', $proveedor->id)
+                    ->where('empresa_construcc_id', $empresaConstruccId)
+                    ->firstOrFail();
+
+                $pago->solicitudesPago()->attach($solicitudPago->id, [
+                    'monto_aplicado'   => $solicitudData['monto_pago'],
+                    'fecha_aplicacion' => now(),
+                ]);
+
+                $solicitudPago->actualizarSaldos($solicitudData['monto_pago']);
             }
 
             DB::commit();
 
-            $pago->load(['solicitudesPago']);
+            $pago->load([
+                'empresaConstrucc',
+                'proveedor',
+                'solicitudesPago' => function ($query) {
+                    $query->withPivot([
+                        'solicitud_pago_id',
+                        'monto_aplicado',
+                        'estado_pago',
+                        'notas',
+                        'fecha_aplicacion'
+                    ]);
+                }
+            ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Solicitud de pago agregada exitosamente',
-                'data' => $pago,
-            ], 200);
-        } catch (\Exception $e) {
+
+            // return $this->success($pago, 'Pago registrado y aplicado exitosamente.', 201);
+            return $this->success(
+                new ConstruccPagoResource($pago),
+                'Pago registrado y aplicado exitosamente.',
+                201
+            );
+        } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('Error al agregar solicitud de pago', [
-                'pago_id' => $id,
+
+            Log::error('Error al registrar pago del proveedor', [
+                'proveedor_id' => $proveedor->id,
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al agregar la solicitud de pago',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->error(
+                'No se pudo registrar el pago.',
+                null,
+                500
+            );
         }
     }
 
+
     /**
-     * Actualiza la relación entre un pago y una solicitud de pago.
-     * 
-     * @param Request $request
-     * @param int $pagoId
-     * @param int $solicitudPagoId
-     * @return \Illuminate\Http\JsonResponse
+     * Descargar comprobante de pago
      */
-    public function actualizarSolicitudPago(Request $request, $pagoId, $solicitudPagoId)
+    public function descargarComprobantePago(Request $request, Proveedor $proveedor, SolicitudPago $solicitudPago, PagoSPP $pago)
     {
-        try {
-            $pago = PagoSPP::findOrFail($pagoId);
-
-            // Validación
-            $validated = $request->validate([
-                'monto_aplicado' => 'nullable|numeric|min:0.01',
-                'estado_pago' => [
-                    'nullable',
-                    Rule::in(['aplicado', 'pendiente', 'rechazado', 'parcial', 'completado'])
-                ],
-                'notas' => 'nullable|string',
-            ]);
-
-            DB::beginTransaction();
-
-            // Verificar que la relación existe
-            $relacion = $pago->solicitudesPago()->where('solicitud_pago_id', $solicitudPagoId)->first();
-            if (!$relacion) {
-                throw new \Exception('Esta solicitud de pago no está asociada a este pago');
-            }
-
-            // Actualizar la relación
-            $pago->solicitudesPago()->updateExistingPivot($solicitudPagoId, array_filter([
-                'monto_aplicado' => $validated['monto_aplicado'] ?? null,
-                'estado_pago' => $validated['estado_pago'] ?? null,
-                'notas' => $validated['notas'] ?? null,
-            ]));
-
-            DB::commit();
-
-            $pago->load(['solicitudesPago']);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Relación actualizada exitosamente',
-                'data' => $pago,
-            ], 200);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error al actualizar relación pago-solicitud', [
-                'pago_id' => $pagoId,
-                'solicitud_pago_id' => $solicitudPagoId,
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al actualizar la relación',
-                'error' => $e->getMessage(),
-            ], 500);
+        // Verificar que la SPP pertenece al proveedor
+        $sppPerteneceProveedor = $solicitudPago->proveedor_id === $proveedor->id;
+        if (!$sppPerteneceProveedor) {
+            return $this->error('La solicitud de pago no pertenece a este proveedor.', null, 403);
         }
+
+        // Verificar que el pago está asociado a esta SPP
+        $pagoAsociado = $pago->solicitudesPago()->where('solicitud_pago_id', $solicitudPago->id)->exists();
+        if (!$pagoAsociado) {
+            return $this->error('El pago no está asociado a esta solicitud de pago.', null, 404);
+        }
+
+        // Verificar que el pago tiene comprobante
+        if (! $pago->comprobante_pago || ! Storage::disk('private')->exists($pago->comprobante_pago)) {
+            return $this->error('Comprobante de pago no disponible.', null, 404);
+        }
+        return response()->download(
+            Storage::disk('private')->path($pago->comprobante_pago)
+        );
     }
 
-    /**
-     * Elimina la relación entre un pago y una solicitud de pago.
-     * 
-     * @param int $pagoId
-     * @param int $solicitudPagoId
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function eliminarSolicitudPago($pagoId, $solicitudPagoId)
+    public function cuentasPorProveedor(Proveedor $proveedor): JsonResponse
     {
-        try {
-            $pago = PagoSPP::findOrFail($pagoId);
+        $cuentas = $proveedor->cuentasBancarias()->get();
 
-            DB::beginTransaction();
-
-            // Obtener el monto aplicado antes de desconectar
-            $relacion = $pago->solicitudesPago()
-                ->where('solicitud_pago_id', $solicitudPagoId)
-                ->first();
-
-            if (!$relacion) {
-                throw new \Exception('Esta solicitud de pago no está asociada a este pago');
-            }
-
-            $montoAplicado = $relacion->pivot->monto_aplicado;
-
-            // Desconectar la solicitud de pago
-            $pago->solicitudesPago()->detach($solicitudPagoId);
-
-            // Revertir el monto en la solicitud de pago
-            $solicitudPago = SolicitudPago::findOrFail($solicitudPagoId);
-            $solicitudPago->update([
-                'monto_abonado' => max(0, $solicitudPago->monto_abonado - $montoAplicado),
-                'saldo_pendiente' => $solicitudPago->saldo_pendiente + $montoAplicado,
-                'pago_completo' => false,
-            ]);
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Solicitud de pago desvinculada exitosamente',
-            ], 200);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error al eliminar relación pago-solicitud', [
-                'pago_id' => $pagoId,
-                'solicitud_pago_id' => $solicitudPagoId,
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al desvincular la solicitud de pago',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * Obtiene estadísticas de pagos.
-     * 
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function estadisticas(Request $request)
-    {
-        try {
-            $empresaId = $request->get('empresa_construcc_id');
-            
-            $query = PagoSPP::query();
-            
-            if ($empresaId) {
-                $query->where('empresa_construcc_id', $empresaId);
-            }
-
-            $totalPagos = $query->count();
-            $montoTotalPagado = $query->sum('monto_total');
-            $pagosPorEmpresa = PagoSPP::select('empresa_construcc_id')
-                ->selectRaw('COUNT(*) as total_pagos')
-                ->selectRaw('SUM(monto_total) as monto_total')
-                ->groupBy('empresa_construcc_id')
-                ->with('empresaConstrucc')
-                ->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'total_pagos' => $totalPagos,
-                    'monto_total_pagado' => $montoTotalPagado,
-                    'pagos_por_empresa' => $pagosPorEmpresa,
-                ],
-            ], 200);
-        } catch (\Exception $e) {
-            Log::error('Error al obtener estadísticas de pagos', [
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al obtener estadísticas',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+        return $this->success([
+            'proveedor' => [
+                'id' => $proveedor->id,
+                'nombre_comercial' => $proveedor->nombre_comercial,
+            ],
+            'cuentas_bancarias' => $cuentas,
+        ], 'Cuentas bancarias del proveedor obtenidas exitosamente.');
     }
 }

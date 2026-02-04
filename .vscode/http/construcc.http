@@ -68,7 +68,7 @@ X-API-KEY: {{apiKey}}
 ###############################################################################
 
 ### 7. Autorizar solicitud de pago (por rol)
-POST {{baseUrl}}/construcc/solicitudes-pago/{{solicitudId}}/autorizar
+POST {{baseUrl}}/construcc/solicitudes-pago/4/autorizar
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 

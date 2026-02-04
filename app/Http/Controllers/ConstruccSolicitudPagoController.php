@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\EstadoSolicitud;
 use App\Enums\EstadoSP;
 use App\Http\Requests\Construcc\SolicitudPagoAutorizarRequest;
+use App\Http\Requests\Construcc\SolicitudPagoAutorizarParcialRequest;
 use App\Http\Requests\Construcc\SolicitudPagoConfirmarPagoRequest;
 use App\Http\Requests\Construcc\SolicitudPagoRechazarRequest;
 use App\Http\Requests\Construcc\GenerarSolicitudPagoConstruccRequest;
@@ -423,6 +424,99 @@ class ConstruccSolicitudPagoController extends Controller
         );
     }
 
+    /**
+     * Autorizar un monto parcial de una solicitud de pago
+     * 
+     * Este endpoint permite autorizar un monto menor al total de la solicitud.
+     * Casos de uso: Flujo de caja limitado, pagos escalonados, aprobación por etapas.
+     * 
+     * Reglas:
+     * - monto_autorizado debe ser > 0
+     * - monto_autorizado debe ser <= monto_total
+     * - notas_autorizacion es obligatorio (mínimo 10 caracteres)
+     * - El usuario debe tener permiso para autorizar (DG, DT, PC, SI)
+     * - Marca el nivel correspondiente como autorizado
+     * - La solicitud pasa a estado AUTORIZADA
+     * 
+     * @param SolicitudPagoAutorizarParcialRequest $request
+     * @param SolicitudPago $solicitudPago
+     * @return JsonResponse
+     */
+    public function autorizarParcial(SolicitudPagoAutorizarParcialRequest $request, SolicitudPago $solicitudPago): JsonResponse
+    {
+        $data = $request->validated();
+        $rol = strtoupper(trim($data['rol']));
+        $montoAutorizado = $data['monto_autorizado'];
+        $notasAutorizacion = $data['notas_autorizacion'];
+        $usuarioId = $data['usuario_id'];
+        $usuarioNombre = $data['usuario_nombre'];
+
+        // Mapeo explícito de roles
+        $rolMap = [
+            'DG' => 'dg',
+            'DT' => 'dt',
+            'PC' => 'pc',
+            'DA' => 'da',
+        ];
+
+        if (! isset($rolMap[$rol])) {
+            return $this->error('Rol no válido.', null, 400);
+        }
+
+        // Validar que el monto autorizado no exceda el monto total
+        if ($montoAutorizado > $solicitudPago->monto_total) {
+            return $this->error(
+                'El monto autorizado no puede ser mayor al monto total de la solicitud.',
+                [
+                    'monto_total' => $solicitudPago->monto_total,
+                    'monto_autorizado' => $montoAutorizado
+                ],
+                400
+            );
+        }
+
+        $rolField = $rolMap[$rol];
+        $fechaField = "{$rolField}_fecha";
+
+        // Evitar doble autorización
+        if ($solicitudPago->$rolField === EstadoSolicitud::AUTORIZADA->value) {
+            return $this->error('Este rol ya autorizó esta solicitud.', null, 400);
+        }
+
+        // Autorizar rol + registrar monto parcial + cambiar estado general
+        $solicitudPago->update([
+            // Marcar nivel como autorizado
+            $rolField => EstadoSolicitud::AUTORIZADA->value,
+            $fechaField => now(),
+            'estado_solicitud' => EstadoSP::AUTORIZADA->value,
+
+            // Registrar datos de autorización parcial
+            'monto_autorizado' => $montoAutorizado,
+            'usuario_autorizo_parcial_id' => $usuarioId,
+            'usuario_autorizo_parcial_nombre' => $usuarioNombre,
+            'motivo_autorizacion_parcial' => $notasAutorizacion,
+            'fecha_autorizacion_parcial' => now(),
+        ]);
+
+        Log::info('✅ Solicitud autorizada con monto parcial', [
+            'solicitud_pago_id' => $solicitudPago->id,
+            'folio' => $solicitudPago->numero_folio_solicitud,
+            'rol' => $rol,
+            'monto_total' => $solicitudPago->monto_total,
+            'monto_autorizado' => $montoAutorizado,
+            'usuario_id' => $usuarioId,
+            'usuario_nombre' => $usuarioNombre,
+        ]);
+
+        $this->interApiService->spAutorizarNotify($solicitudPago);
+
+        return $this->success(
+            new ConstruccSolicitudPagoResource(
+                $solicitudPago->fresh()->load(SolicitudPago::eagerLodable())
+            ),
+            "Solicitud autorizada con monto parcial de $" . number_format($montoAutorizado, 2) . " por {$rol}."
+        );
+    }
 
     /**
      * Rechazar una solicitud de pago por rol específico
@@ -544,7 +638,6 @@ class ConstruccSolicitudPagoController extends Controller
             'nombre_beneficiario' => $request->nombre_beneficiario,
             'clave_rastreo' => $request->clave_rastreo,
             'banco' => $request->banco,
-
         ]);
 
         Log::info('🟢 PAGO-SP: Solicitud de confirmación de pago recibida', [
@@ -635,7 +728,6 @@ class ConstruccSolicitudPagoController extends Controller
 
             // datos comprobante
             'fecha_comprobante_pago' => $request->fecha_hora_pago,
-
             'nombre_beneficiario_pago' => $request->nombre_beneficiario,
             'clave_rastreo_pago' => $request->clave_rastreo,
             'banco_pago' => $request->banco,

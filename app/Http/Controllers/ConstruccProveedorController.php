@@ -15,6 +15,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Controlador para gestionar proveedores registrados por usuarios de construcción (tipo_alta = 2).
+ * Proporciona funcionalidades para listar, ver detalles, crear, actualizar y eliminar proveedores.
+ * Los proveedores gestionados aquí son específicos para el módulo de construcción y tienen
+ * características particulares en comparación con otros tipos de proveedores.
+ * Rutas principales:
+ *  - GET /api/construcc/proveedores
+ *  - GET /api/construcc/proveedores/{proveedor}
+ *  - POST /api/construcc/proveedores
+ *  - PUT /api/construcc/proveedores/{proveedor}
+ *  - DELETE /api/construcc/proveedores/{proveedor} 
+ */
 class ConstruccProveedorController extends Controller
 {
     use ApiResponse;

@@ -36,6 +36,8 @@ class EmpresaConstrucc extends Model
 
         // Consecutivo interno para Solicitudes de Pago
         'consecutivo_sp',
+        // Consecutivo interno para  Pago de SPP
+        'consecutivo_pago_spp',
     ];
 
     /**
@@ -157,6 +159,35 @@ class EmpresaConstrucc extends Model
 
         return str_pad($consecutivo, 4, '0', STR_PAD_LEFT);
     }
+
+    /**
+     * Incrementa y devuelve el siguiente consecutivo de PagoSPP
+     * 🔒 Seguro ante concurrencia
+     */
+    public function obtenerConsecutivoSiguientePagoSPP(): int
+    {
+        return DB::transaction(function () {
+            $this->refresh();
+            $folioSiguiente = $this->consecutivo_pago_spp;
+            $this->consecutivo_pago_spp = ($this->consecutivo_pago_spp ?? 0) + 1;
+            $this->save();
+
+            return $folioSiguiente;
+        });
+    }
+
+    /**
+     * Obtiene el folio formateado de la siguiente PagoSPP
+     *
+     * Formato: 0001, 0002, 0003...
+     */
+    public function obtenerFolioSiguientePagoSPP(): string
+    {
+        $consecutivo = $this->obtenerConsecutivoSiguientePagoSPP();
+
+        return str_pad($consecutivo, 4, '0', STR_PAD_LEFT);
+    }
+
 
     /* -----------------------------------------------------------------
      | Eager loading permitido

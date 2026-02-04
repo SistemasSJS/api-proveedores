@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\EstadoCuentaBancaria;
 use App\Enums\EstadoSolicitud;
+use App\Enums\EstadoSP;
 use App\Events\SpChangeEstadoGeneralEvent;
 use App\Traits\Filterable;
 use App\Traits\MarksAsNotified;
@@ -108,6 +109,14 @@ class SolicitudPago extends BaseModel
         'clave_rastreo_pago',
         'banco_pago',
         'fecha_comprobante_pago',
+
+
+        // Campos para autorización parcial
+        'monto_autorizado',
+        'usuario_autorizo_parcial_id',
+        'usuario_autorizo_parcial_nombre',
+        'motivo_autorizacion_parcial',
+        'fecha_autorizacion_parcial',
     ];
 
     protected static $filters = [
@@ -264,10 +273,8 @@ class SolicitudPago extends BaseModel
         return $this->belongsTo(OrdenCompra::class, 'referencia_oc', 'numero_orden');
     }
 
-    /**
-     * Relación muchos a muchos con PagoSPP.
-     * Una solicitud de pago puede recibir múltiples pagos.
-     */
+    // [2026-01-28 19:35:14] local.ERROR: Error al listar SPP del proveedor {"proveedor_id":8,"error":"Call to undefined relationship [pagos] on model [App\\Models\\SolicitudPago].","trace":"#0 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(939): Illuminate\\Database\\Eloquent\\RelationNotFoundException::make(Object(App\\Models\\SolicitudPago), 'pagos')
+
     public function pagos(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -276,14 +283,21 @@ class SolicitudPago extends BaseModel
             'solicitud_pago_id',
             'pago_spp_id'
         )
-        ->withPivot([
-            'monto_aplicado',
-            'estado_pago',
-            'notas',
-            'fecha_aplicacion'
-        ])
-        ->withTimestamps()
-        ->using(PagoSolicitudPago::class);
+            ->withPivot([
+                'monto_aplicado',
+                'estado_pago',
+                'notas',
+                'fecha_aplicacion'
+            ])
+            ->withTimestamps();
+    }
+
+    /**
+     * Relación con el modelo pivot para acceso directo
+     */
+    public function pagosSolicitudPago(): HasMany
+    {
+        return $this->hasMany(PagoSolicitudPago::class, 'solicitud_pago_id');
     }
 
     /** ----------------
@@ -546,6 +560,14 @@ class SolicitudPago extends BaseModel
     /** ----------------
      * Métodos para manejo de pagos parciales
      * ----------------- */
+
+
+    /**
+     * Actualiza los montos abonados y saldos pendientes de la solicitud de pago y ajusta el estado de la solicitud: 
+     *  Si el monto toltal abonado es igual o mayor al monto total, la solicitud se marca como PAGADO.
+     * @param float $montoAbono Monto que se va a abonar a la solicitud de pago
+     * @return bool Indica si la solicitud de pago ha sido completamente pagada 
+     */
     public function actualizarSaldos($montoAbono)
     {
         $nuevoMontoAbonado = $this->monto_abonado + $montoAbono;
@@ -555,7 +577,7 @@ class SolicitudPago extends BaseModel
         $this->update([
             'monto_abonado' => $nuevoMontoAbonado,
             'saldo_pendiente' => max(0, $nuevoSaldoPendiente),
-            'pago_completo' => $pagoCompleto,
+            'estado_solicitud' => $pagoCompleto ? EstadoSP::PAGADO->value : EstadoSP::AUTORIZADA->value,
         ]);
 
         return $pagoCompleto;
