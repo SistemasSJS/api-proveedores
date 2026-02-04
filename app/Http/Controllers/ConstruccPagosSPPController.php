@@ -17,6 +17,7 @@ use App\Http\Resources\Construcc\ConstruccPagoIndexResource;
 use App\Http\Resources\Construcc\ConstruccPagoProveedorResource;
 use App\Http\Resources\Construcc\ConstruccPagoResource;
 use App\Http\Resources\Construcc\ConstruccPagoSPPResource;
+use App\Models\CuentaBancaria;
 use App\Models\EmpresaConstrucc;
 use App\Models\PagoSPP;
 use App\Models\Proveedor;
@@ -810,6 +811,12 @@ class ConstruccPagosSPPController extends Controller
                     $folio_consecutivo_construcc = $empresaConstrucc->obtenerFolioSiguientePagoSPP();
                 }
             }
+
+
+            $cuentaBancaria = CuentaBancaria::findOrFail($validated['cuenta_destino_id']);
+            $campo = preg_replace('/\D+/', '', (string) $cuentaBancaria->campo_dependiente); // solo dígitos
+            $ultimos4 = substr($campo, -4);
+
             $pago = PagoSPP::create([
                 // Comprobante File
                 'comprobante_pago' => $comprobantePath,
@@ -817,7 +824,7 @@ class ConstruccPagosSPPController extends Controller
                 // Datos de la cuenta de origen
                 'cuenta_bancaria_empresa_construcc_id' => $validated['cuenta_bancaria_empresa_construcc_id'] ?? null,
                 'cuenta_destino_id' => $validated['cuenta_destino_id'] ?? null,
-                'cuenta_destino_terminacion' => $validated['cuenta_destino_terminacion'] ?? null,
+                'cuenta_destino_terminacion' => $ultimos4,
 
                 // Informacion basica del pago
                 'empresa_construcc_id' => $empresaConstruccId,
