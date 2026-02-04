@@ -291,7 +291,7 @@ Route::prefix('construcc')
 
             // ===== GESTIÓN DE PROVEEDORES Y SUS SPP =====
             // GET /pagos/{pago}/descargar-comprobante -> Descargar comprobante de un pago
-            Route::get('/pagos/{pago}/descargar-comprobante', [ConstruccPagosSPPController::class, 'descargarComprobante'])->name('proveedor.spp.descargar-comprobante');
+            Route::get('/pagos/{pago}/descargar-comprobante', [ConstruccPagosSPPController::class, 'descargarComprobantePago'])->name('proveedor.spp.descargar-comprobante');
 
             // POST /proveedor/{proveedor}/spp/{spp}/pagos/{pago}/subir-comprobante -> Subir comprobante de pago a una SPP específica
             Route::post('/proveedor/{proveedor}/spp/{spp}/pagos/{pago}/subir-comprobante', [ConstruccPagosSPPController::class, 'subirComprobanteSpp'])->name('proveedor.spp.pagos.subir-comprobante');
