@@ -494,8 +494,8 @@ class ConstruccPagosSPPController extends Controller
             Log::error('Error al listar pagos de SPP', [
                 'proveedor_id' => $proveedor->id,
                 'spp_id' => $spp->id,
-                ]);
                 'error' => $e->getMessage(),
+            ]);
 
             return $this->error(
                 'No se pudieron obtener los pagos. Por favor, intente nuevamente.',
