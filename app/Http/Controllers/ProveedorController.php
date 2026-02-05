@@ -392,7 +392,7 @@ class ProveedorController extends Controller
     public function puedeGenerarSP(Request $request, Proveedor $proveedor)
     {
         // Verificar primero si es proveedor de SP
-        if (! $proveedor->is_proveedor_sp) {
+        if (!$proveedor->is_proveedor_sp) {
             $responseData = [
                 'puede_generar_sp' => false,
                 'detalle' => [
@@ -416,8 +416,8 @@ class ProveedorController extends Controller
             $tieneCuentaBancaria = $proveedor->cuentasBancarias->where('estatus', EstadoCuentaBancaria::ACTIVA)->count() > 0;
 
             // Validaciones mínimas para confirmar que sigue siendo válido
-            $tieneLogo = ! empty($proveedor->logo);
-            $tieneConstanciaFiscal = ! empty($proveedor->constancia_fiscal);
+            $tieneLogo = !empty($proveedor->logo);
+            $tieneConstanciaFiscal = !empty($proveedor->constancia_fiscal);
 
             // Si las validaciones básicas pasan, no necesitamos hacer validaciones detalladas
             if ($tieneCuentaBancaria && $tieneLogo && $tieneConstanciaFiscal) {

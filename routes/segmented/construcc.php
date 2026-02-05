@@ -205,6 +205,12 @@ Route::prefix('construcc')
             Route::get('estadisticas', [ConstruccSolicitudPagoController::class, 'estadisticas'])->name('estadisticas');
             Route::get('{solicitudPago}', [ConstruccSolicitudPagoController::class, 'show'])->name('show');
 
+            // Gestión de archivos - Subir factura xml y/o pdf
+            Route::post('/{solicitudPago}/subir-factura', [ConstruccSolicitudPagoController::class, 'uploadFacturaPdfXml'])->middleware(['audit']);
+            Route::post('/{solicitudPago}/subir-factura-pdf', [ConstruccSolicitudPagoController::class, 'uploadFacturaPdf'])->middleware(['audit']);
+            Route::post('/{solicitudPago}/subir-factura-xml', [ConstruccSolicitudPagoController::class, 'uploadFacturaXml'])->middleware(['audit']);
+
+
             // Gestión de archivos - Descargas protegidas
             Route::get('{solicitudPago}/comprobante/download', [ConstruccSolicitudPagoController::class, 'descargarComprobante'])->name('descargar-comprobante');
             Route::get('{solicitudPago}/factura-pdf/download', [ConstruccSolicitudPagoController::class, 'descargarFacturaPdf'])->name('descargar-factura-pdf');

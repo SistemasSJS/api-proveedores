@@ -725,4 +725,22 @@ class SolicitudPago extends BaseModel
 
         return $this->monto_total <= $this->monto_oc_original;
     }
+
+    /**
+     * Valida si la SP ya tiene los archivos XML y PDF de la factura.
+     * Actualiza el campo tiene_factura = true
+     */
+    private function solicitudTieneFacturaCompleta(): bool
+    {
+        $tienePdf = !empty($this->ruta_archivo_factura_pdf);
+        $tieneXml = !empty($this->ruta_archivo_factura_xml);
+
+        if (! $tienePdf || ! $tieneXml) {
+            return false;
+        }
+
+        $this->update(['tiene_factura' => true,]);
+
+        return true;
+    }
 }
