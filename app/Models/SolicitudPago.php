@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
-
+use Laravel\Reverb\Loggers\Log;
 
 class SolicitudPago extends BaseModel
 {
@@ -732,7 +732,7 @@ class SolicitudPago extends BaseModel
      */
     public function calcularSaldoRestante(): float
     {
-        $totalPagado = $this->pagos()
+        $totalPagado = (float) $this->pagos()
             ->wherePivotIn('estado_pago', [
                 PagoSolicitudPago::ESTADO_APLICADO,
                 PagoSolicitudPago::ESTADO_COMPLETADO,
@@ -740,11 +740,9 @@ class SolicitudPago extends BaseModel
             ])
             ->sum('pago_solicitud_pago.monto_aplicado');
 
-        $montoTotal = (string) $this->monto_total;
-        $totalPagado = (string) $totalPagado;
+        Log::info('PAGOS', $totalPagado);
+        Log::info('SALDO',  $this->monto_total - $totalPagado);
 
-        $saldo = bcsub($montoTotal, $totalPagado, 2); // 2 decimales
-
-        return max(0, (float) $saldo);
+        return max(0, (float) $this->monto_total - $totalPagado);
     }
 }
