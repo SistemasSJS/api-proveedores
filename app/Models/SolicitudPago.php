@@ -732,7 +732,7 @@ class SolicitudPago extends BaseModel
      */
     public function calcularSaldoRestante(): float
     {
-        $totalPagado = (float) $this->pagos()
+        $totalPagado = $this->pagos()
             ->wherePivotIn('estado_pago', [
                 PagoSolicitudPago::ESTADO_APLICADO,
                 PagoSolicitudPago::ESTADO_COMPLETADO,
@@ -740,6 +740,11 @@ class SolicitudPago extends BaseModel
             ])
             ->sum('pago_solicitud_pago.monto_aplicado');
 
-        return max(0, (float) $this->monto_total - $totalPagado);
+        $montoTotal = (string) $this->monto_total;
+        $totalPagado = (string) $totalPagado;
+
+        $saldo = bcsub($montoTotal, $totalPagado, 2); // 2 decimales
+
+        return max(0, (float) $saldo);
     }
 }
