@@ -776,6 +776,7 @@ class ConstruccPagosSPPController extends Controller
         });
 
 
+        // TODO: Validar con variables de entorno para deshgabilitar en pruebas
         // if (round($sumaMontoSPPs, 2) > round($montoTotalPago, 2)) {
         //     return $this->error(
         //         'El monto total aplicado a las solicitudes excede el monto del pago registrado.',
@@ -859,7 +860,12 @@ class ConstruccPagosSPPController extends Controller
                     ->where('empresa_construcc_id', $empresaConstruccId)
                     ->firstOrFail();
 
+                // calculo de saldo incial spp
+
+                $saldo_inicial_spp = $solicitudPago->calcularSaldoRestante();
                 $pago->solicitudesPago()->attach($solicitudPago->id, [
+                    // saldo_inicial se debe calcular al aplicar cada pagosDeSpp
+                    'saldo_inicial' => $saldo_inicial_spp,
                     'monto_aplicado'   => $solicitudData['monto_pago'],
                     'fecha_aplicacion' => now(),
                 ]);

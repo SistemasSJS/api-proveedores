@@ -725,4 +725,21 @@ class SolicitudPago extends BaseModel
 
         return $this->monto_total <= $this->monto_oc_original;
     }
+
+    /**
+     * Calcula el saldo restante de la Solicitud de Pago (SPP). En base a los pagos aplicados.
+     * saldo_restante = montoSPP - sum(pagos)
+     */
+    public function calcularSaldoRestante(): float
+    {
+        $totalPagado = (float) $this->pagos()
+            ->wherePivotIn('estado_pago', [
+                PagoSolicitudPago::ESTADO_APLICADO,
+                PagoSolicitudPago::ESTADO_COMPLETADO,
+                PagoSolicitudPago::ESTADO_PARCIAL,
+            ])
+            ->sum('pago_solicitud_pago.monto_aplicado');
+
+        return max(0, (float) $this->monto_total - $totalPagado);
+    }
 }

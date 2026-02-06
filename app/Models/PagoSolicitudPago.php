@@ -23,6 +23,7 @@ class PagoSolicitudPago extends Pivot
         'pago_spp_id',
         'solicitud_pago_id',
         'monto_aplicado',
+        'saldo_inicial',
         'estado_pago',
         'notas',
         'fecha_aplicacion',
@@ -30,6 +31,7 @@ class PagoSolicitudPago extends Pivot
 
     protected $casts = [
         'monto_aplicado' => 'decimal:2',
+        'saldo_inicial' => 'decimal:2',
         'fecha_aplicacion' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

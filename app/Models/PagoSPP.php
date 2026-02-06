@@ -294,12 +294,8 @@ class PagoSPP extends BaseModel
      * @param string|null $notas
      * @return void
      */
-    public function aplicarASolicitudPago(
-        SolicitudPago $solicitudPago,
-        float $montoAplicar,
-        string $estadoPago = 'aplicado',
-        ?string $notas = null
-    ) {
+    public function aplicarASolicitudPago(SolicitudPago $solicitudPago, float $montoAplicar, string $estadoPago = 'aplicado', ?string $notas = null)
+    {
         // Verificar que hay monto disponible
         if ($this->montoDisponible() < $montoAplicar) {
             throw new \Exception('El monto a aplicar excede el monto disponible del pago.');

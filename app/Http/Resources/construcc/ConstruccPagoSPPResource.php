@@ -24,8 +24,8 @@ class ConstruccPagoSPPResource extends JsonResource
 
             // Montos (nombres EXACTOS como en tu interface)
             'monto_total'      => $montoTotal,
-            'monto_pagado'     => $montoPagado,
-            'monto_pendiente'  => max(0, $montoTotal - $montoPagado),
+            'monto_pagado'     => $this->calcularSaldoRestante(),
+            'monto_pendiente'  => $montoTotal - $this->calcularSaldoRestante(),
             'monto_autorizado' => $montoAutorizado,
 
             // Campos de autorización parcial (si existen)
