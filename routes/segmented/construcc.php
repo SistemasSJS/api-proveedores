@@ -211,6 +211,10 @@ Route::prefix('construcc')
             Route::get('{solicitudPago}/factura-xml/download', [ConstruccSolicitudPagoController::class, 'descargarFacturaXml'])->name('descargar-factura-xml');
             Route::get('{solicitudPago}/cotizacion/download', [ConstruccSolicitudPagoController::class, 'descargarCotizacion'])->name('descargar-cotizacion');
 
+            // Gestion de archivos - Upload Factura XML/PDF 
+            Route::get('{solicitudPago}/factura-pdf/upadload', [ConstruccSolicitudPagoController::class, 'uploadFacturaPdf'])->name('upload-factura-pdf');
+            Route::get('{solicitudPago}/factura-xml/upadload', [ConstruccSolicitudPagoController::class, 'uploadFacturaXml'])->name('upload-factura-xml');
+
             // Cambios de estatus con validaciones por rol
             Route::post('{solicitudPago}/autorizar', [ConstruccSolicitudPagoController::class, 'autorizar'])->name('autorizar');
             Route::post('{solicitudPago}/autorizar-parcial', [ConstruccSolicitudPagoController::class, 'autorizarParcial'])->name('autorizar-parcial');
