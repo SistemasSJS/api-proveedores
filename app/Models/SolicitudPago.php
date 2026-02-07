@@ -122,6 +122,15 @@ class SolicitudPago extends BaseModel
         'usuario_autorizo_parcial_nombre',
         'motivo_autorizacion_parcial',
         'fecha_autorizacion_parcial',
+
+        // Especificacion de facturacion
+        'datos_facturacion_id', // Si USO, MP, FP estan en null datos_facturacion_id contiene todos los daots de facturacion
+        'USO',  // uso_cfdi: puedene ser nullos
+        'MP',   // metodo_pago: puedene ser nullos 
+        'FP',   // forma_pago: puedene ser nullos 
+
+
+
     ];
 
     protected static $filters = [
@@ -746,5 +755,24 @@ class SolicitudPago extends BaseModel
             ->sum('pago_solicitud_pago.monto_aplicado');
 
         return max(0, (float) $this->monto_total - $totalPagado);
+    }
+
+    /**
+     * Indica si la Solicitud de Pago ya tiene factura completa (PDF + XML).
+     * Además sincroniza el flag tiene_factura cuando corresponde.
+     */
+    public function tieneFactura(): bool
+    {
+        $tienePdf = ! empty($this->ruta_archivo_factura_pdf);
+        $tieneXml = ! empty($this->ruta_archivo_factura_xml);
+
+        $tieneFacturaCompleta = $tienePdf && $tieneXml;
+
+        // Mantener sincronizado el flag persistido
+        if ($tieneFacturaCompleta && ! $this->tiene_factura) {
+            $this->update(['tiene_factura' => true]);
+        }
+
+        return $tieneFacturaCompleta;
     }
 }

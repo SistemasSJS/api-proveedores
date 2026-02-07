@@ -380,4 +380,34 @@ class InterApiService
       ];
     }
   }
+
+
+  public function obtenerDatosFacturacionEmpresa($empresaConstruccId)
+  {
+    try {
+      $payload = ['id' => $empresaConstruccId];
+
+      // TODO: LA ruta aun no esta establecida
+      $url = "{$this->apiContruccUrl}/api/datos-facturacion";
+
+      $response = Http::withoutVerifying()
+        ->withHeaders([
+          'X-API-KEY' => $this->apiContruccApiKey,
+          'Accept' => 'application/json',
+        ])
+        ->timeout($this->timeout)
+        ->post($url, $payload);
+
+      return [
+        'success' => $response->successful(),
+        'status'  => $response->status(),
+        'data'    => $response->json(),
+      ];
+    } catch (\Throwable $e) {
+      return [
+        'success' => false,
+        'error'   => $e->getMessage(),
+      ];
+    }
+  }
 }
