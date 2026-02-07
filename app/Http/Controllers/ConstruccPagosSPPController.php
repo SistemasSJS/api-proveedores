@@ -530,8 +530,6 @@ class ConstruccPagosSPPController extends Controller
                 ->orderBy('pago_solicitud_pago.fecha_aplicacion', 'desc')
                 ->get();
 
-            Log::info("")
-
             return $this->success([
                 'pago' => ConstruccPagoResource::make($pago),
                 'solicitudes_pago' => ConstruccPagoSPPResource::collection($spps),
