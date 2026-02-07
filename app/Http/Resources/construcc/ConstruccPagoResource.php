@@ -59,7 +59,7 @@ class ConstruccPagoResource extends JsonResource
 
           // Si ya vienes con withSum('pagos as total_pagado') se aprovecha
           $saldoPendiente = (float) ($sp->calcularSaldoRestante() ?? 0);
-          $montoPagado = (float) ($sp->monto_total - $montoPagado);
+          $montoPagado = (float) ($sp->monto_total - $saldoPendiente);
 
           return [
             'id' => $sp->id,
