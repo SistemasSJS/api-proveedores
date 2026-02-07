@@ -40,7 +40,7 @@ class ConstruccPagoResource extends JsonResource
       'datos_comprobante' => [
         'comprobante_url' => $this->when(
           $this->comprobante_pago,
-          fn() => route('construcc.pagos-spp.descargar-comprobante', [
+          fn() => route('construcc.pagos-spp.proveedor.spp.descargar-comprobante', [
             'pago' => $this->id,
           ])
         ),
