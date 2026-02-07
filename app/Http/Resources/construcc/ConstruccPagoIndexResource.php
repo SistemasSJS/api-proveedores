@@ -5,6 +5,9 @@ namespace App\Http\Resources\Construcc;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * Recuros para listado de los pagos 
+ */
 class ConstruccPagoIndexResource extends JsonResource
 {
   /**

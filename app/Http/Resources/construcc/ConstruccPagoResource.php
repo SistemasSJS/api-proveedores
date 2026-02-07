@@ -5,6 +5,10 @@ namespace App\Http\Resources\Construcc;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * Detalle del pago con la solicitud de pago. 
+ * Para preacargar los datos: proveedor, SPP se debe usar ->load()
+ */
 class ConstruccPagoResource extends JsonResource
 {
   /**
@@ -70,6 +74,9 @@ class ConstruccPagoResource extends JsonResource
             'monto_total_sp' => (float) $sp->monto_total,
             'monto_pagado' => $montoPagado,
             'saldo_pendiente' => $saldoPendiente,
+
+            // Bandreas de factura
+            'tiene_factura' => $sp->tiene_factura,
 
             // Pivot blindado
             'monto_aplicado' => (float) ($sp->pivot->monto_aplicado ?? 0),
