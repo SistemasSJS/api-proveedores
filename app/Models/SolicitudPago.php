@@ -94,6 +94,12 @@ class SolicitudPago extends BaseModel
         'origen_oc',
         'monto_oc_original',
 
+        // Tracking de carga factura
+        'fecha_subida_factura_xml',
+        'fecha_subida_factura_pdf',
+        'usuario_construcc_subio_factura_id',
+        'usuario_construcc_subio_factura_rol',
+
         // 
         'visto_rechazada',
 

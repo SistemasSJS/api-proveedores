@@ -2127,4 +2127,52 @@ class ConstruccSolicitudPagoController extends Controller
             'Comprobante de pago actualizado correctamente.'
         );
     }
+
+
+    /**
+     * GESTION DE FACTURA
+     */
+    public function uploadFacturaPdfXml(Request $request, SolicitudPago $solicitudPago): JsonResponse
+    {
+        $request->validate([
+            'factura_pdf' => 'required|file|mimes:pdf|max:10240',
+            'factura_xml' => 'required|file|mimes:xml|max:5120',
+            'usuario_construcc_subio_factura_id' => 'required|integer',
+            'usuario_construcc_subio_factura_rol' => 'required|string|max:50',
+        ]);
+
+        // TODO: validar empresa_construcc_id del request contra $solicitudPago->empresa_construcc_id
+
+        $facturaPdf = $request->file('factura_pdf');
+        $facturaXml = $request->file('factura_xml');
+
+        $rutaPdf = $facturaPdf->store('facturas/pdf', 'private');
+        $rutaXml = $facturaXml->store('facturas/xml', 'private');
+
+        $datosXml = $this->extraerDatosXML($facturaXml->getRealPath());
+
+        $serie = $datosXml['serie'] ?? '';
+        $folio = $datosXml['folio'] ?? '';
+        $folioFactura = trim($serie . ($serie && $folio ? '-' : '') . $folio) ?: null;
+
+        $solicitudPago->update([
+            'folio_factura' => $folioFactura,
+            'datos_factura_xml' => $datosXml,
+            'ruta_archivo_factura_pdf' => $rutaPdf,
+            'ruta_archivo_factura_xml' => $rutaXml,
+            'tiene_factura' => true,
+            'fecha_subida_factura_pdf' => now(),
+            'fecha_subida_factura_xml' => now(),
+            'usuario_construcc_subio_factura_id' => $request->usuario_construcc_subio_factura_id,
+            'usuario_construcc_subio_factura_rol' => $request->usuario_construcc_subio_factura_rol,
+        ]);
+
+        return $this->success(
+            new ConstruccSolicitudPagoResource(
+                $solicitudPago->load(SolicitudPago::eagerLodable())
+            ),
+            'Factura cargada correctamente.',
+            201
+        );
+    }
 }
