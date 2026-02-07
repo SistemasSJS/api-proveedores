@@ -309,3 +309,4 @@ storage/logs/*.*
 !/public/uploads/.gitkeep
 /public/storage/*
 !/public/storage/.gitkeep
+postman.json

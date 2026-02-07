@@ -35,6 +35,181 @@ Route::prefix('construcc')
     ->name('construcc.')
     ->group(function () {
 
+
+        /*** 
+         * TODO: Generar esquema postman 
+        *--------------------------------------------------------------------------
+        * SOLICITUDES DE PAGO - CRUD Completo
+        *--------------------------------------------------------------------------
+        * Gestión de solicitudes de pago con cambios de estatus y fechas
+        */
+        Route::prefix('solicitudes-pago')->name('solicitudes-pago.')->group(function () {
+            
+            // ✅ NUEVO: Generar solicitud de pago desde construcción (crea proveedor, cuenta bancaria y SPP)
+            Route::post('generar-spp-construcc', [ConstruccSolicitudPagoController::class, 'generarSolicitudPagoConstrucc'])->name('generar-spp-construcc');
+
+            // Listado y detalle (solo lectura en ConstruccApp)
+            Route::get('/', [ConstruccSolicitudPagoController::class, 'index'])->name('index');
+            // Listado de SP no verificadas
+            Route::get('no-verificadas', [ConstruccSolicitudPagoController::class, 'indexNoVerificadas'])->name('no-verificadas');
+            // Listados especializados por rol y estado
+            Route::get('por-rol', [ConstruccSolicitudPagoController::class, 'listarPorRol'])->name('por-rol');
+            Route::get('por-estado', [ConstruccSolicitudPagoController::class, 'listarPorEstado'])->name('por-estado');
+            Route::get('estadisticas-rol', [ConstruccSolicitudPagoController::class, 'estadisticasPorRol'])->name('estadisticas-rol');
+            // validada - 1  Y recibe cpom parametro: estauts- pendiente|autorizada  
+            Route::get('sp-por-autorizar', [ConstruccSolicitudPagoController::class, 'spPendienteAutorizar'])->name('sp-por-autorizar');
+            // validada - 0 y recibe parametro  usuario_id: entero no null, empresa_construcc_id: entero no null
+            Route::get('sp-por-validar', [ConstruccSolicitudPagoController::class, 'spPorValidar'])->name('sp-por-validar');
+            Route::get('sp-por-validar-otros', [ConstruccSolicitudPagoController::class, 'spPorValidarOtros'])->name('sp-por-validar-otros');
+
+            // Segmento de dashboard para métricas de SP verificadas / no verificadas
+            Route::prefix('dashboard-sp-metricas')->name('dashboard-sp-metricas.')->group(function () {
+                Route::get('verificadas', [ConstruccSolicitudPagoController::class, 'dashboardSpMetricasVerificadas'])->name('verificadas');
+                Route::get('no-verificadas', [ConstruccSolicitudPagoController::class, 'dashboardSpMetricasNoVerificadas'])->name('no-verificadas');
+            });
+
+            // Endpoints auxiliares
+            Route::get('empresas-constructoras/search', [ConstruccSolicitudPagoController::class, 'empresasConstructoras'])->name('empresas-search');
+            // ✅ NUEVO: Listar proveedores asociados a una empresa constructora
+            Route::get('empresa/{empresaId}/proveedores', [ConstruccSolicitudPagoController::class, 'proveedoresPorEmpresa'])->name('proveedores-por-empresa');
+            // ✅ NUEVO: Listar proveedores NO asociados a una empresa constructora
+            Route::get('empresa/{empresaId}/proveedores/no-asociados', [ConstruccSolicitudPagoController::class, 'proveedoresNoAsociadosPorEmpresa'])->name('proveedores-no-asociados');
+            // ✅ NUEVO: Asociar proveedor a una empresa constructora
+            Route::post('empresa/{empresaId}/proveedores/asociar', [ConstruccSolicitudPagoController::class, 'asociarProveedorAEmpresa'])->name('asociar-proveedor');
+
+            Route::get('estadisticas', [ConstruccSolicitudPagoController::class, 'estadisticas'])->name('estadisticas');
+            Route::get('{solicitudPago}', [ConstruccSolicitudPagoController::class, 'show'])->name('show');
+
+            // Gestión de archivos - Descargas protegidas
+            Route::get('{solicitudPago}/comprobante/download', [ConstruccSolicitudPagoController::class, 'descargarComprobante'])->name('descargar-comprobante');
+            Route::get('{solicitudPago}/factura-pdf/download', [ConstruccSolicitudPagoController::class, 'descargarFacturaPdf'])->name('descargar-factura-pdf');
+            Route::get('{solicitudPago}/factura-xml/download', [ConstruccSolicitudPagoController::class, 'descargarFacturaXml'])->name('descargar-factura-xml');
+            Route::get('{solicitudPago}/cotizacion/download', [ConstruccSolicitudPagoController::class, 'descargarCotizacion'])->name('descargar-cotizacion');
+
+            // Gestion de archivos - Upload Factura XML/PDF 
+            Route::post('{solicitudPago}/subir-factura', [ConstruccSolicitudPagoController::class, 'uploadFacturaPdfXml'])->name('subir-factura');
+
+            // Cambios de estatus con validaciones por rol
+            Route::post('{solicitudPago}/autorizar', [ConstruccSolicitudPagoController::class, 'autorizar'])->name('autorizar');
+            Route::post('{solicitudPago}/autorizar-parcial', [ConstruccSolicitudPagoController::class, 'autorizarParcial'])->name('autorizar-parcial');
+            Route::post('{solicitudPago}/rechazar', [ConstruccSolicitudPagoController::class, 'rechazar'])->name('rechazar');
+            Route::post('{solicitudPago}/confirmar-pago', [ConstruccSolicitudPagoController::class, 'confirmarPago'])->name('confirmar-pago');
+            Route::post('{solicitudPago}/actualizar-comprobante-pago', [ConstruccSolicitudPagoController::class, 'actualizarComprobantePago'])->name('actualizar-comprobante-pago');
+
+            // Verificación de SP por usuario construcción
+            Route::post('{solicitudPago}/marcar-verificada', [ConstruccSolicitudPagoController::class, 'marcarComoVerificada'])->name('marcar-verificada');
+            Route::post('{solicitudPago}/marcar-rechazada', [ConstruccSolicitudPagoController::class, 'marcarComoRechazada'])->name('marcar-rechazada');
+        });
+
+
+        /**
+         * TODO: Generar esquema postman 
+         *--------------------------------------------------------------------------
+         * GESTIÓN DE PROVEEDORES CONSTRUCCIÓN (tipo_alta = 2)
+         *--------------------------------------------------------------------------
+         * CRUD completo de proveedores registrados por usuarios construcción,
+         * sus cuentas bancarias y generación de solicitudes de pago
+         */
+        Route::prefix('proveedor')->name('proveedor.')->group(function () {
+            // ===== PROVEEDORES tipo_alta=2 =====
+            Route::get('/', [ConstruccProveedorController::class, 'index'])->name('index');
+            Route::get('/{proveedor}', [ConstruccProveedorController::class, 'show'])->name('show');
+            Route::post('/', [ConstruccProveedorController::class, 'store'])->name('store');
+            Route::put('/{proveedor}', [ConstruccProveedorController::class, 'update'])->name('update');
+            Route::delete('/{proveedor}', [ConstruccProveedorController::class, 'destroy'])->name('destroy');
+
+            // ===== CUENTAS BANCARIAS =====
+            Route::get('/{proveedor}/cuentas', [ConstruccProveedorCuentaBancariaController::class, 'index'])->name('cuentas.index');
+            Route::get('/{proveedor}/cuentas/{cuenta}', [ConstruccProveedorCuentaBancariaController::class, 'show'])->name('cuentas.show');
+            Route::post('/{proveedor}/cuentas', [ConstruccProveedorCuentaBancariaController::class, 'store'])->name('cuentas.store');
+            Route::put('/{proveedor}/cuentas/{cuenta}', [ConstruccProveedorCuentaBancariaController::class, 'update'])->name('cuentas.update');
+            Route::delete('/{proveedor}/cuentas/{cuenta}', [ConstruccProveedorCuentaBancariaController::class, 'destroy'])->name('cuentas.destroy');
+            Route::post('/{proveedor}/cuentas/{cuenta}/set-favorita', [ConstruccProveedorCuentaBancariaController::class, 'setFavorita'])->name('cuentas.set-favorita');
+
+            // ===== SOLICITUDES DE PAGO =====
+            Route::post('/{proveedor}/solicitudes-pago', [ConstruccProveedorSolicitudPagoController::class, 'store'])->name('solicitudes-pago.store');
+        });
+
+        /**
+         * TODO: Generar esquema postman 
+         *--------------------------------------------------------------------------
+         * PAGOS DE SOLICITUDES DE PAGO (SPP) - CRUD Completo
+         *--------------------------------------------------------------------------
+         * Gestión de pagos realizados a proveedores.
+         * Un pago puede aplicar a múltiples solicitudes de pago.
+         * Una solicitud de pago puede recibir múltiples pagos.
+         */
+        Route::prefix('pagos-spp')->name('pagos-spp.')->group(function () {
+
+            // ===== GESTIÓN DE PROVEEDORES Y SUS SPP =====
+            // GET /pagos/{pago}/descargar-comprobante -> Descargar comprobante de un pago
+            Route::get('/pagos/{pago}/descargar-comprobante', [ConstruccPagosSPPController::class, 'descargarComprobantePago'])->name('proveedor.spp.descargar-comprobante');
+
+            // POST /proveedor/{proveedor}/spp/{spp}/pagos/{pago}/subir-comprobante -> Subir comprobante de pago a una SPP específica
+            Route::post('/proveedor/{proveedor}/spp/{spp}/pagos/{pago}/subir-comprobante', [ConstruccPagosSPPController::class, 'subirComprobanteSpp'])->name('proveedor.spp.pagos.subir-comprobante');
+
+            // GET /proveedor/{proveedor}/spp/{spp}/pagos -> Listar pagos de una SPP de un proveedor
+            Route::get('/proveedor/{proveedor}/spp/{spp}/pagos', [ConstruccPagosSPPController::class, 'pagosDeSpp'])->name('proveedor.spp.pagos');
+
+            // GET /proveedor/{proveedor}/spp/{spp} -> Mostrar información de una SPP de un proveedor
+            Route::get('/proveedor/{proveedor}/spp/{spp}', [ConstruccPagosSPPController::class, 'showSppProveedor'])->name('proveedor.spp.show');
+
+            // GET /proveedor/{proveedor}/spp -> Listar SPP de un proveedor
+            Route::get('/proveedor/{proveedor}/spp', [ConstruccPagosSPPController::class, 'sppPorProveedor'])->name('proveedor.spp.index');
+
+            // GET /proveedor -> Listar proveedores con SPP
+            Route::get('/proveedor', [ConstruccPagosSPPController::class, 'indexProveedor'])->name('proveedor.spp.index');
+
+            // GET /proveedor/{proveedor}/cuentas_bancarias -> Listar cuentas bancarias de un proveedor
+            Route::get('/proveedor/{proveedor}/cuentas_bancarias', [ConstruccPagosSPPController::class, 'cuentasPorProveedor'])->name('proveedor.spp.cuentas');
+
+            // ===== GESTIÓN DE PAGOS A PROVEEDOR =====
+            // POST /proveedor/{proveedor}/pagos -> Registrar un pago a un proveedor
+            Route::post('/proveedor/{proveedor}/pagos', [ConstruccPagosSPPController::class, 'registrarPagoProveedor'])->name('proveedor.pagos.registrar');
+
+            // GET /proveedor/{proveedor}/pagos/{pago}/spp -> Listar SPP asociadas a un pago
+            Route::get('/proveedor/{proveedor}/pagos/{pago}/spp', [ConstruccPagosSPPController::class, 'sppDePago'])->name('proveedor.pagos.spp');
+
+            // ===== RUTAS GENERALES DE PAGOS =====
+            // GET / -> Listar todos los pagos
+            Route::get('/', [ConstruccPagosSPPController::class, 'index'])->middleware(['audit'])->name('index');
+
+            // GET /{pago} -> Mostrar información de un pago específico
+            Route::get('/{pago}', [ConstruccPagosSPPController::class, 'show'])->middleware(['audit'])->name('show');
+        });
+
+
+        /**
+         *--------------------------------------------------------------------------
+         * NOTAS DE IMPLEMENTACIÓN
+         *--------------------------------------------------------------------------
+         *
+         * 1. FILTROS MÚLTIPLES:
+         *    - Formato: ?categoria=1,2,3&marca=4,5
+         *    - Se procesan como arrays en el controlador
+         *
+         * 2. PAGINACIÓN:
+         *    - Parámetros: ?page=1&per_page=20
+         *    - Máximo por página: 100
+         *    - Por defecto: 20 elementos
+         *
+         * 3. ORDENAMIENTO:
+         *    - Parámetros: ?sort_by=nombre&order=asc
+         *    - Campos disponibles definidos en cada método
+         *
+         * 4. BÚSQUEDA:
+         *    - Parámetro: ?buscar=termino
+         *    - Busca en múltiples campos (nombre, descripción, etc.)
+         *
+         * 5. AUTENTICACIÓN:
+         *    - Header: Authorization: Bearer {token}
+         *    - Token generado con Sanctum
+         *
+         * 6. AUDITORÍA:
+         *    - Todas las rutas registran actividad
+         *    - Incluye usuario, acción y parámetros
+         */
+
         /**
          *--------------------------------------------------------------------------
          * PROVEEDORES - Con Paginación
@@ -62,6 +237,35 @@ Route::prefix('construcc')
                 ->middleware(['audit'])
                 ->name('productos.buscar');
         });
+
+        /**
+         *--------------------------------------------------------------------------
+         * ÓRDENES DE COMPRA - CRUD Completo
+         *--------------------------------------------------------------------------
+         * Gestión de órdenes de compra desde el segmento construccción
+         */
+        Route::prefix('ordenes-compra')->name('ordenes-compra.')->group(function () {
+
+            // Listado general y por filtros
+            Route::get('/', [ConstruccOrdenCompraController::class, 'index'])->middleware(['audit'])->name('index');
+            Route::get('/estadisticas', [ConstruccOrdenCompraController::class, 'estadisticas'])->middleware(['audit'])->name('estadisticas');
+
+            // Crear nueva orden de compra
+            Route::post('/', [ConstruccOrdenCompraController::class, 'store'])->middleware(['audit'])->name('store');
+
+            // Operaciones sobre una orden específica
+            Route::get('/{ordenCompra}', [ConstruccOrdenCompraController::class, 'show'])->middleware(['audit'])->name('show');
+            Route::put('/{ordenCompra}', [ConstruccOrdenCompraController::class, 'update'])->middleware(['audit'])->name('update');
+            Route::delete('/{ordenCompra}', [ConstruccOrdenCompraController::class, 'destroy'])->middleware(['audit'])->name('destroy');
+
+            // Cambio de estado
+            Route::post('/{ordenCompra}/cambiar-estado', [ConstruccOrdenCompraController::class, 'cambiarEstado'])->middleware(['audit'])->name('cambiar-estado');
+
+            // Consultas por entidad
+            Route::get('/proveedor/{proveedor}', [ConstruccOrdenCompraController::class, 'porProveedor'])->middleware(['audit'])->name('por-proveedor');
+            Route::get('/empresa/{empresa}', [ConstruccOrdenCompraController::class, 'porEmpresa'])->middleware(['audit'])->name('por-empresa');
+        });
+
 
         /**
          *--------------------------------------------------------------------------
@@ -160,203 +364,4 @@ Route::prefix('construcc')
                 Route::delete('{cotizacion}', [ConstruccCotizacionController::class, 'destroy']);
             });
         });
-
-
-        /*** 
-         *--------------------------------------------------------------------------
-         * SOLICITUDES DE PAGO - CRUD Completo
-         *--------------------------------------------------------------------------
-         * Gestión de solicitudes de pago con cambios de estatus y fechas
-         */
-        Route::prefix('solicitudes-pago')->name('solicitudes-pago.')->group(function () {
-
-            // ✅ NUEVO: Generar solicitud de pago desde construcción (crea proveedor, cuenta bancaria y SPP)
-            Route::post('generar-spp-construcc', [ConstruccSolicitudPagoController::class, 'generarSolicitudPagoConstrucc'])->name('generar-spp-construcc');
-
-            // Listado y detalle (solo lectura en ConstruccApp)
-            Route::get('/', [ConstruccSolicitudPagoController::class, 'index'])->name('index');
-            // Listado de SP no verificadas
-            Route::get('no-verificadas', [ConstruccSolicitudPagoController::class, 'indexNoVerificadas'])->name('no-verificadas');
-            // Listados especializados por rol y estado
-            Route::get('por-rol', [ConstruccSolicitudPagoController::class, 'listarPorRol'])->name('por-rol');
-            Route::get('por-estado', [ConstruccSolicitudPagoController::class, 'listarPorEstado'])->name('por-estado');
-            Route::get('estadisticas-rol', [ConstruccSolicitudPagoController::class, 'estadisticasPorRol'])->name('estadisticas-rol');
-            // validada - 1  Y recibe cpom parametro: estauts- pendiente|autorizada  
-            Route::get('sp-por-autorizar', [ConstruccSolicitudPagoController::class, 'spPendienteAutorizar'])->name('sp-por-autorizar');
-            // validada - 0 y recibe parametro  usuario_id: entero no null, empresa_construcc_id: entero no null
-            Route::get('sp-por-validar', [ConstruccSolicitudPagoController::class, 'spPorValidar'])->name('sp-por-validar');
-            Route::get('sp-por-validar-otros', [ConstruccSolicitudPagoController::class, 'spPorValidarOtros'])->name('sp-por-validar-otros');
-
-            // Segmento de dashboard para métricas de SP verificadas / no verificadas
-            Route::prefix('dashboard-sp-metricas')->name('dashboard-sp-metricas.')->group(function () {
-                Route::get('verificadas', [ConstruccSolicitudPagoController::class, 'dashboardSpMetricasVerificadas'])->name('verificadas');
-                Route::get('no-verificadas', [ConstruccSolicitudPagoController::class, 'dashboardSpMetricasNoVerificadas'])->name('no-verificadas');
-            });
-
-            // Endpoints auxiliares
-            Route::get('empresas-constructoras/search', [ConstruccSolicitudPagoController::class, 'empresasConstructoras'])->name('empresas-search');
-            // ✅ NUEVO: Listar proveedores asociados a una empresa constructora
-            Route::get('empresa/{empresaId}/proveedores', [ConstruccSolicitudPagoController::class, 'proveedoresPorEmpresa'])->name('proveedores-por-empresa');
-            // ✅ NUEVO: Listar proveedores NO asociados a una empresa constructora
-            Route::get('empresa/{empresaId}/proveedores/no-asociados', [ConstruccSolicitudPagoController::class, 'proveedoresNoAsociadosPorEmpresa'])->name('proveedores-no-asociados');
-            // ✅ NUEVO: Asociar proveedor a una empresa constructora
-            Route::post('empresa/{empresaId}/proveedores/asociar', [ConstruccSolicitudPagoController::class, 'asociarProveedorAEmpresa'])->name('asociar-proveedor');
-
-            Route::get('estadisticas', [ConstruccSolicitudPagoController::class, 'estadisticas'])->name('estadisticas');
-            Route::get('{solicitudPago}', [ConstruccSolicitudPagoController::class, 'show'])->name('show');
-
-            // Gestión de archivos - Descargas protegidas
-            Route::get('{solicitudPago}/comprobante/download', [ConstruccSolicitudPagoController::class, 'descargarComprobante'])->name('descargar-comprobante');
-            Route::get('{solicitudPago}/factura-pdf/download', [ConstruccSolicitudPagoController::class, 'descargarFacturaPdf'])->name('descargar-factura-pdf');
-            Route::get('{solicitudPago}/factura-xml/download', [ConstruccSolicitudPagoController::class, 'descargarFacturaXml'])->name('descargar-factura-xml');
-            Route::get('{solicitudPago}/cotizacion/download', [ConstruccSolicitudPagoController::class, 'descargarCotizacion'])->name('descargar-cotizacion');
-
-            // Gestion de archivos - Upload Factura XML/PDF 
-            Route::post('{solicitudPago}/subir-factura', [ConstruccSolicitudPagoController::class, 'uploadFacturaPdfXml'])->name('subir-factura');
-
-            // Cambios de estatus con validaciones por rol
-            Route::post('{solicitudPago}/autorizar', [ConstruccSolicitudPagoController::class, 'autorizar'])->name('autorizar');
-            Route::post('{solicitudPago}/autorizar-parcial', [ConstruccSolicitudPagoController::class, 'autorizarParcial'])->name('autorizar-parcial');
-            Route::post('{solicitudPago}/rechazar', [ConstruccSolicitudPagoController::class, 'rechazar'])->name('rechazar');
-            Route::post('{solicitudPago}/confirmar-pago', [ConstruccSolicitudPagoController::class, 'confirmarPago'])->name('confirmar-pago');
-            Route::post('{solicitudPago}/actualizar-comprobante-pago', [ConstruccSolicitudPagoController::class, 'actualizarComprobantePago'])->name('actualizar-comprobante-pago');
-
-            // Verificación de SP por usuario construcción
-            Route::post('{solicitudPago}/marcar-verificada', [ConstruccSolicitudPagoController::class, 'marcarComoVerificada'])->name('marcar-verificada');
-            Route::post('{solicitudPago}/marcar-rechazada', [ConstruccSolicitudPagoController::class, 'marcarComoRechazada'])->name('marcar-rechazada');
-        });
-
-        /**
-         *--------------------------------------------------------------------------
-         * ÓRDENES DE COMPRA - CRUD Completo
-         *--------------------------------------------------------------------------
-         * Gestión de órdenes de compra desde el segmento construccción
-         */
-        Route::prefix('ordenes-compra')->name('ordenes-compra.')->group(function () {
-
-            // Listado general y por filtros
-            Route::get('/', [ConstruccOrdenCompraController::class, 'index'])->middleware(['audit'])->name('index');
-            Route::get('/estadisticas', [ConstruccOrdenCompraController::class, 'estadisticas'])->middleware(['audit'])->name('estadisticas');
-
-            // Crear nueva orden de compra
-            Route::post('/', [ConstruccOrdenCompraController::class, 'store'])->middleware(['audit'])->name('store');
-
-            // Operaciones sobre una orden específica
-            Route::get('/{ordenCompra}', [ConstruccOrdenCompraController::class, 'show'])->middleware(['audit'])->name('show');
-            Route::put('/{ordenCompra}', [ConstruccOrdenCompraController::class, 'update'])->middleware(['audit'])->name('update');
-            Route::delete('/{ordenCompra}', [ConstruccOrdenCompraController::class, 'destroy'])->middleware(['audit'])->name('destroy');
-
-            // Cambio de estado
-            Route::post('/{ordenCompra}/cambiar-estado', [ConstruccOrdenCompraController::class, 'cambiarEstado'])->middleware(['audit'])->name('cambiar-estado');
-
-            // Consultas por entidad
-            Route::get('/proveedor/{proveedor}', [ConstruccOrdenCompraController::class, 'porProveedor'])->middleware(['audit'])->name('por-proveedor');
-            Route::get('/empresa/{empresa}', [ConstruccOrdenCompraController::class, 'porEmpresa'])->middleware(['audit'])->name('por-empresa');
-        });
-
-
-        /**
-         *--------------------------------------------------------------------------
-         * GESTIÓN DE PROVEEDORES CONSTRUCCIÓN (tipo_alta = 2)
-         *--------------------------------------------------------------------------
-         * CRUD completo de proveedores registrados por usuarios construcción,
-         * sus cuentas bancarias y generación de solicitudes de pago
-         */
-        Route::prefix('proveedor')->name('proveedor.')->group(function () {
-            // ===== PROVEEDORES tipo_alta=2 =====
-            Route::get('/', [ConstruccProveedorController::class, 'index'])->name('index');
-            Route::get('/{proveedor}', [ConstruccProveedorController::class, 'show'])->name('show');
-            Route::post('/', [ConstruccProveedorController::class, 'store'])->name('store');
-            Route::put('/{proveedor}', [ConstruccProveedorController::class, 'update'])->name('update');
-            Route::delete('/{proveedor}', [ConstruccProveedorController::class, 'destroy'])->name('destroy');
-
-            // ===== CUENTAS BANCARIAS =====
-            Route::get('/{proveedor}/cuentas', [ConstruccProveedorCuentaBancariaController::class, 'index'])->name('cuentas.index');
-            Route::get('/{proveedor}/cuentas/{cuenta}', [ConstruccProveedorCuentaBancariaController::class, 'show'])->name('cuentas.show');
-            Route::post('/{proveedor}/cuentas', [ConstruccProveedorCuentaBancariaController::class, 'store'])->name('cuentas.store');
-            Route::put('/{proveedor}/cuentas/{cuenta}', [ConstruccProveedorCuentaBancariaController::class, 'update'])->name('cuentas.update');
-            Route::delete('/{proveedor}/cuentas/{cuenta}', [ConstruccProveedorCuentaBancariaController::class, 'destroy'])->name('cuentas.destroy');
-            Route::post('/{proveedor}/cuentas/{cuenta}/set-favorita', [ConstruccProveedorCuentaBancariaController::class, 'setFavorita'])->name('cuentas.set-favorita');
-
-            // ===== SOLICITUDES DE PAGO =====
-            Route::post('/{proveedor}/solicitudes-pago', [ConstruccProveedorSolicitudPagoController::class, 'store'])->name('solicitudes-pago.store');
-        });
-
-        /**
-         *--------------------------------------------------------------------------
-         * PAGOS DE SOLICITUDES DE PAGO (SPP) - CRUD Completo
-         *--------------------------------------------------------------------------
-         * Gestión de pagos realizados a proveedores.
-         * Un pago puede aplicar a múltiples solicitudes de pago.
-         * Una solicitud de pago puede recibir múltiples pagos.
-         */
-        Route::prefix('pagos-spp')->name('pagos-spp.')->group(function () {
-
-            // ===== GESTIÓN DE PROVEEDORES Y SUS SPP =====
-            // GET /pagos/{pago}/descargar-comprobante -> Descargar comprobante de un pago
-            Route::get('/pagos/{pago}/descargar-comprobante', [ConstruccPagosSPPController::class, 'descargarComprobantePago'])->name('proveedor.spp.descargar-comprobante');
-
-            // POST /proveedor/{proveedor}/spp/{spp}/pagos/{pago}/subir-comprobante -> Subir comprobante de pago a una SPP específica
-            Route::post('/proveedor/{proveedor}/spp/{spp}/pagos/{pago}/subir-comprobante', [ConstruccPagosSPPController::class, 'subirComprobanteSpp'])->name('proveedor.spp.pagos.subir-comprobante');
-
-            // GET /proveedor/{proveedor}/spp/{spp}/pagos -> Listar pagos de una SPP de un proveedor
-            Route::get('/proveedor/{proveedor}/spp/{spp}/pagos', [ConstruccPagosSPPController::class, 'pagosDeSpp'])->name('proveedor.spp.pagos');
-
-            // GET /proveedor/{proveedor}/spp/{spp} -> Mostrar información de una SPP de un proveedor
-            Route::get('/proveedor/{proveedor}/spp/{spp}', [ConstruccPagosSPPController::class, 'showSppProveedor'])->name('proveedor.spp.show');
-
-            // GET /proveedor/{proveedor}/spp -> Listar SPP de un proveedor
-            Route::get('/proveedor/{proveedor}/spp', [ConstruccPagosSPPController::class, 'sppPorProveedor'])->name('proveedor.spp.index');
-
-            // GET /proveedor -> Listar proveedores con SPP
-            Route::get('/proveedor', [ConstruccPagosSPPController::class, 'indexProveedor'])->name('proveedor.spp.index');
-
-            // GET /proveedor/{proveedor}/cuentas_bancarias -> Listar cuentas bancarias de un proveedor
-            Route::get('/proveedor/{proveedor}/cuentas_bancarias', [ConstruccPagosSPPController::class, 'cuentasPorProveedor'])->name('proveedor.spp.cuentas');
-
-            // ===== GESTIÓN DE PAGOS A PROVEEDOR =====
-            // POST /proveedor/{proveedor}/pagos -> Registrar un pago a un proveedor
-            Route::post('/proveedor/{proveedor}/pagos', [ConstruccPagosSPPController::class, 'registrarPagoProveedor'])->name('proveedor.pagos.registrar');
-
-            // GET /proveedor/{proveedor}/pagos/{pago}/spp -> Listar SPP asociadas a un pago
-            Route::get('/proveedor/{proveedor}/pagos/{pago}/spp', [ConstruccPagosSPPController::class, 'sppDePago'])->name('proveedor.pagos.spp');
-
-            // ===== RUTAS GENERALES DE PAGOS =====
-            // GET / -> Listar todos los pagos
-            Route::get('/', [ConstruccPagosSPPController::class, 'index'])->middleware(['audit'])->name('index');
-
-            // GET /{pago} -> Mostrar información de un pago específico
-            Route::get('/{pago}', [ConstruccPagosSPPController::class, 'show'])->middleware(['audit'])->name('show');
-        });
-
-        /**
-         *--------------------------------------------------------------------------
-         * NOTAS DE IMPLEMENTACIÓN
-         *--------------------------------------------------------------------------
-         *
-         * 1. FILTROS MÚLTIPLES:
-         *    - Formato: ?categoria=1,2,3&marca=4,5
-         *    - Se procesan como arrays en el controlador
-         *
-         * 2. PAGINACIÓN:
-         *    - Parámetros: ?page=1&per_page=20
-         *    - Máximo por página: 100
-         *    - Por defecto: 20 elementos
-         *
-         * 3. ORDENAMIENTO:
-         *    - Parámetros: ?sort_by=nombre&order=asc
-         *    - Campos disponibles definidos en cada método
-         *
-         * 4. BÚSQUEDA:
-         *    - Parámetro: ?buscar=termino
-         *    - Busca en múltiples campos (nombre, descripción, etc.)
-         *
-         * 5. AUTENTICACIÓN:
-         *    - Header: Authorization: Bearer {token}
-         *    - Token generado con Sanctum
-         *
-         * 6. AUDITORÍA:
-         *    - Todas las rutas registran actividad
-         *    - Incluye usuario, acción y parámetros
-         */
     });
