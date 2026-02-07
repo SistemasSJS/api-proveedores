@@ -740,9 +740,6 @@ class SolicitudPago extends BaseModel
             ])
             ->sum('pago_solicitud_pago.monto_aplicado');
 
-        Log::info('PAGOS', $totalPagado);
-        Log::info('SALDO',  $this->monto_total - $totalPagado);
-
         return max(0, (float) $this->monto_total - $totalPagado);
     }
 }
