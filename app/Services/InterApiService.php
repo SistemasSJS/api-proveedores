@@ -31,7 +31,7 @@ class InterApiService
 
       $payload = [
         'sp_id' => $sp->id,
-        // 'sp_folio' => $sp->numero_folio_solicitud,
+        // 'sp_folio' => $sp->folio_sp_consecutivo,
         'sp_folio' => $sp->folio_sp_consecutivo,
         'company' => $sp->empresa_construcc_id,
         'user_id' => $sp->usuario_id,
@@ -103,7 +103,7 @@ class InterApiService
     } catch (\Exception $e) {
       Log::channel('inter_api')->error('Excepción al notificar SP', [
         'sp_id' => $sp->id ?? null,
-        'sp_folio' => $sp->numero_folio_solicitud ?? null,
+        'sp_folio' => $sp->folio_sp_consecutivo ?? null,
         'company' => $sp->empresa_construcc_id ?? null,
         'user_id' => $sp->usuario_id ?? null,
         'error' => $e->getMessage(),
@@ -223,14 +223,14 @@ class InterApiService
     try {
       Log::channel('inter_api')->info('Iniciando notificación de SP autorizada', [
         'sp_id' => $solicitudPago->id ?? null,
-        'sp_folio' => $solicitudPago->numero_folio_solicitud ?? null,
+        'sp_folio' => $solicitudPago->folio_sp_consecutivo ?? null,
         'company' => $solicitudPago->empresa_construcc_id ?? null,
         'user_id' => $solicitudPago->usuario_id ?? null,
       ]);
 
       $payload = [
         'sp_id' => $solicitudPago->id,
-        'sp_folio' => $solicitudPago->numero_folio_solicitud,
+        'sp_folio' => $solicitudPago->folio_sp_consecutivo,
         'company' => $solicitudPago->empresa_construcc_id,
         'user_id' => $solicitudPago->usuario_id,
       ];
@@ -257,7 +257,7 @@ class InterApiService
       if ($response->successful()) {
         Log::channel('inter_api')->info('Notificación de SP autorizada enviada exitosamente', [
           'sp_id' => $solicitudPago->id,
-          'sp_folio' => $solicitudPago->numero_folio_solicitud
+          'sp_folio' => $solicitudPago->folio_sp_consecutivo
         ]);
 
         return [
@@ -268,7 +268,7 @@ class InterApiService
     } catch (\Exception $e) {
       Log::channel('inter_api')->error('Excepción al notificar SP autorizada', [
         'sp_id' => $solicitudPago->id ?? null,
-        'sp_folio' => $solicitudPago->numero_folio_solicitud ?? null,
+        'sp_folio' => $solicitudPago->folio_sp_consecutivo ?? null,
         'company' => $solicitudPago->empresa_construcc_id ?? null,
         'user_id' => $solicitudPago->usuario_id ?? null,
         'error' => $e->getMessage(),
