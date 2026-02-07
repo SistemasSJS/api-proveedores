@@ -63,9 +63,12 @@ class ConstruccPagoResource extends JsonResource
             'id' => $sp->id,
             'numero_folio_solicitud' => $sp->numero_folio_solicitud ?? null,
             'folio_sp_consecutivo' => $this->folio_sp_consecutivo,
+
+            // Montos
             'monto_total_sp' => (float) $sp->monto_total,
+            'monto_pagado' => (float) ($sp->monto_total - $sp->calcularSaldoRestante()),
+            'saldo_pendiente' => (float) $sp->calcularSaldoRestante(),
             'monto_aplicado' => (float) $sp->pivot->monto_aplicado,
-            'saldo_pendiente' => (float) $sp->saldo_pendiente,
             'estado_pago' => $sp->pivot->estado_pago,
             'notas' => $sp->pivot->notas,
             'fecha_aplicacion' => optional($sp->pivot->fecha_aplicacion)?->toDateTimeString(),
