@@ -1390,6 +1390,8 @@ class ConstruccSolicitudPagoController extends Controller
     /**
      * Conteo de solicitudes por validar
      * Validada = 0 y recibe parámetro usuario_id: entero no null
+     * 
+     * FIXME: Revisar conteo de solicitudes de pago por validar. En produccion no se refleja el conteo de forma correcta.
      */
     public function spPorValidar(Request $request): JsonResponse
     {

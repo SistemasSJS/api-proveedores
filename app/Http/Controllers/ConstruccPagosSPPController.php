@@ -21,6 +21,9 @@ use App\Models\EmpresaConstrucc;
 use App\Models\PagoSPP;
 use App\Models\Proveedor;
 use App\Models\SolicitudPago;
+use App\Notifications\SolicitudPago\SolicitudPagoAbonada;
+use App\Notifications\SolicitudPago\SolicitudPagoFacturaPendiente;
+use App\Notifications\SolicitudPago\SolicitudPagoPagada;
 use App\Services\InterApiService;
 use Carbon\Carbon;
 
@@ -735,6 +738,8 @@ class ConstruccPagosSPPController extends Controller
     public function registrarPagoProveedor(ConstruccPagosSPPRegistrarPagoRequest $request, Proveedor $proveedor): JsonResponse
     {
         $validated = $request->validated();
+        /** @var User  */
+        $proveedorUsuarioPrincipal = $proveedor->usuarioPrincipal();
         $empresaConstruccId = $validated['empresa_id'];
 
         /************************************************************
@@ -857,34 +862,6 @@ class ConstruccPagosSPPController extends Controller
                 'fecha_registro'   => now(),
             ]);
 
-            /************************************************************
-             * Datos Factura: SPP sin factura 
-             ************************************************************/
-            /**
-             * - Validar que sea solo una factura y sin SPP. Sin retorno de error. solo no se almacena el dato
-             * Los campos uso, mp, fp si vienen en null 
-             * la consutal a interApi tiene todos los datos de facturacion 
-             */
-            $uso  = $validated['uso'] ?? null;
-            $mp   = $validated['mp'] ?? null;
-            $fp   = $validated['fp'] ?? null; // ojo: en el request se llama pue
-            $datosFacturacionId = $validated['datos_facturacion_id'] ?? null;
-
-            // Regla: solo 1 SP y que no tenga factura
-            if (count($validated['solicitudes']) === 1) {
-                $spId = $validated['solicitudes'][0]['solicitud_id'];
-                /** @var SolicitudPago */
-                $sp   = SolicitudPago::find($spId);
-
-                if ($sp && ! $sp->tiene_factura) {
-                    $sp->update([
-                        'uso' => $uso,
-                        'mp'  => $mp,
-                        'fp'  => $fp,
-                        'datos_facturacion_id' => $datosFacturacionId,
-                    ]);
-                }
-            }
 
             /************************************************************
              * Aplicar el pago a las SPP
@@ -908,8 +885,68 @@ class ConstruccPagosSPPController extends Controller
 
 
 
-                $solicitudPago->actualizarSaldos($solicitudData['monto_pago']);
+                $spPagoCompleto = $solicitudPago->actualizarSaldos($solicitudData['monto_pago']);
+
+                // Validar que tipo de notificacion utiliar: SPPPagada o SPPAbonada  
+
+                if ($proveedorUsuarioPrincipal) {
+                    if ($spPagoCompleto) {
+                        $proveedorUsuarioPrincipal->notify(new SolicitudPagoPagada(
+                            $solicitudPago->numero_folio_solicitud,
+                            $solicitudPago->id,
+                            $proveedor->id,
+                            $proveedorUsuarioPrincipal->id
+                        ));
+                    } else {
+                        $proveedorUsuarioPrincipal->notify(new SolicitudPagoAbonada(
+                            $solicitudPago->numero_folio_solicitud,
+                            $solicitudPago->id,
+                            $proveedor->id,
+                            $proveedorUsuarioPrincipal->id
+                        ));
+                    }
+                }
+
+                /************************************************************
+                 * Datos Factura: SPP sin factura 
+                 ************************************************************/
+                /**
+                 * - Validar que sea solo una factura y sin SPP. Sin retorno de error. solo no se almacena el dato
+                 * Los campos uso, mp, fp si vienen en null 
+                 * la consutal a interApi tiene todos los datos de facturacion 
+                 */
+                $uso  = $validated['uso'] ?? null;
+                $mp   = $validated['mp'] ?? null;
+                $fp   = $validated['fp'] ?? null; // ojo: en el request se llama pue
+                $datosFacturacionId = $validated['datos_facturacion_id'] ?? null;
+
+                // Regla: solo 1 SP y que no tenga factura
+                if (count($validated['solicitudes']) === 1) {
+                    $spId = $validated['solicitudes'][0]['solicitud_id'];
+                    /** @var SolicitudPago */
+                    $sp   = SolicitudPago::find($spId);
+
+                    if ($sp && ! $sp->tiene_factura) {
+                        $sp->update([
+                            'uso' => $uso,
+                            'mp'  => $mp,
+                            'fp'  => $fp,
+                            'datos_facturacion_id' => $datosFacturacionId,
+                        ]);
+
+                        if ($proveedorUsuarioPrincipal) {
+                            $proveedorUsuarioPrincipal->notify(new SolicitudPagoFacturaPendiente(
+                                $sp->numero_folio_solicitud,
+                                $sp->id,
+                                $sp->proveedor_id,
+                                $validated['monto_total'],
+                                $proveedorUsuarioPrincipal->id
+                            ));
+                        }
+                    }
+                }
             }
+
 
             DB::commit();
 
