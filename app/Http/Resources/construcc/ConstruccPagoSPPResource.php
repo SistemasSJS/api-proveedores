@@ -33,7 +33,12 @@ class ConstruccPagoSPPResource extends JsonResource
 
             // Bandera de factura 
             'tiene_factura' => $this->tiene_factura,
-
+            'datos_factura' => [
+                'uso' => $this->uso,
+                'mp' => $this->mp,
+                'fp' => $this->fp,
+                'datos_facturacion_id' => $this->datos_facturacion_id,
+            ],
 
             // Campos de autorización parcial (si existen)
             'usuario_autorizo_parcial_id'     => $this->usuario_autorizo_parcial_id ?? null,

@@ -78,6 +78,12 @@ class ConstruccPagoResource extends JsonResource
             // Bandreas de factura
             'tiene_factura' => $sp->tiene_factura,
 
+            'datos_factura' => [
+              'uso' => $sp->uso,
+              'mp' => $sp->mp,
+              'fp' => $sp->fp,
+              'datos_facturacion_id' => $sp->datos_facturacion_id,
+            ],
             // Pivot blindado
             'monto_aplicado' => (float) ($sp->pivot->monto_aplicado ?? 0),
             'estado_pago' => $sp->pivot->estado_pago ?? null,

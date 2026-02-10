@@ -742,6 +742,8 @@ class ConstruccPagosSPPController extends Controller
          ************************************************************/
         $listSPPIds = collect($validated['solicitudes'])->pluck('solicitud_id'); // --> [{solicitud_pago_id, ...}]
 
+        //  TODO: Paritir validacion en: no_pertenecen_al_proveedor, no_pertenecen_a_la_empresa, no_autorizadas, ya_pagadas con mensajes personalizadas.
+        //  TODO: Agregar validacion directo al modelo.
         // This method genera: [ {id}, ...] con las SPP que no pertenecen al Proveedor ni a la empresa
         $invalidSPPs = SolicitudPago::whereIn('id', $listSPPIds)
             ->where(function ($q) use ($proveedor, $empresaConstruccId) {
@@ -865,21 +867,20 @@ class ConstruccPagosSPPController extends Controller
              */
             $uso  = $validated['uso'] ?? null;
             $mp   = $validated['mp'] ?? null;
-            $fp   = $validated['pue'] ?? null; // ojo: en el request se llama pue
+            $fp   = $validated['fp'] ?? null; // ojo: en el request se llama pue
             $datosFacturacionId = $validated['datos_facturacion_id'] ?? null;
-
-            $permitirDatosFactura = false;
 
             // Regla: solo 1 SP y que no tenga factura
             if (count($validated['solicitudes']) === 1) {
                 $spId = $validated['solicitudes'][0]['solicitud_id'];
+                /** @var SolicitudPago */
                 $sp   = SolicitudPago::find($spId);
 
-                if ($sp && ! $sp->tieneFactura()) {
+                if ($sp && ! $sp->tiene_factura) {
                     $sp->update([
-                        'USO' => $uso,
-                        'MP'  => $mp,
-                        'FP'  => $fp,
+                        'uso' => $uso,
+                        'mp'  => $mp,
+                        'fp'  => $fp,
                         'datos_facturacion_id' => $datosFacturacionId,
                     ]);
                 }

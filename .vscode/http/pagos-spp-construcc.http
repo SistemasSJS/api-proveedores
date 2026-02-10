@@ -1,0 +1,123 @@
+###
+# ARCHIVO DE PRUEBAS HTTP - CONSTRUCC
+# API Pagos SPP - Los Mochis, Sinaloa, México
+###
+
+@baseUrl = http://localhost:80/api
+# @baseUrl = https://apicons.ddns.net:8092/api
+@contentType = application/json
+@acceptType = application/json
+@apiKey = 7f2wnCyn7ctmTE7B3mrtDPKCPVF9z8pYseihsHA6
+
+### VARIABLES
+@pagoId = 1
+@proveedorId = 8
+@sppId = 1
+
+###############################################################################
+# RUTAS CONSTRUCC - PAGOS SPP
+###############################################################################
+
+### 1. Listado general de pagos SPP
+GET {{baseUrl}}/construcc/pagos-spp
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 2. Ver detalle de un pago SPP por ID
+GET {{baseUrl}}/construcc/pagos-spp/{{pagoId}}
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+###############################################################################
+# FILTROS POR PROVEEDOR Y SPP
+###############################################################################
+
+### 3. Listar pagos SPP por proveedor (todas sus SPP)
+GET {{baseUrl}}/construcc/pagos-spp/proveedor
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 4. Listar SPP de un proveedor
+GET {{baseUrl}}/construcc/pagos-spp/proveedor/{{proveedorId}}/spp
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 5. Listar pagos aplicados a una SPP específica de un proveedor
+GET {{baseUrl}}/construcc/pagos-spp/proveedor/{{proveedorId}}/spp/{{sppId}}/pagos
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+###############################################################################
+# REGISTRO DE PAGOS
+###############################################################################
+
+### 6. Registrar un nuevo pago SPP a un proveedor
+POST {{baseUrl}}/construcc/pagos-spp/proveedor/{{proveedorId}}/pagos
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+Accept: {{acceptType}}
+
+{
+  "spp_id": {{sppId}},
+  "monto_pagado": 15000.50,
+  "fecha_pago": "2026-02-07",
+  "metodo_pago": "TRANSFERENCIA",
+  "referencia": "TRX-00012345",
+  "notas": "Pago parcial correspondiente al anticipo de la SPP."
+}
+
+###############################################################################
+# CASOS DE ERROR
+###############################################################################
+
+### 7. Error: Proveedor inexistente
+GET {{baseUrl}}/construcc/pagos-spp/proveedor/999999/spp
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 8. Error: SPP inexistente para proveedor
+GET {{baseUrl}}/construcc/pagos-spp/proveedor/{{proveedorId}}/spp/999999/pagos
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 9. Error: Registrar pago con monto inválido
+POST {{baseUrl}}/construcc/pagos-spp/proveedor/{{proveedorId}}/pagos
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+Accept: {{acceptType}}
+
+{
+  "spp_id": {{sppId}},
+  "monto_pagado": 0,
+  "fecha_pago": "2026-02-07"
+}
+
+###############################################################################
+# FLUJOS DE PRUEBA
+###############################################################################
+
+### 10. Flujo completo: 
+# Paso 1: Listar SPP del proveedor
+GET {{baseUrl}}/construcc/pagos-spp/proveedor/{{proveedorId}}/spp
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### Paso 2: Elegir una SPP y ver sus pagos
+GET {{baseUrl}}/construcc/pagos-spp/proveedor/{{proveedorId}}/spp/{{sppId}}/pagos
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### Paso 3: Registrar un nuevo pago
+POST {{baseUrl}}/construcc/pagos-spp/proveedor/{{proveedorId}}/pagos
+X-API-KEY: {{apiKey}}
+Content-Type: {{contentType}}
+Accept: {{acceptType}}
+
+{
+  "spp_id": {{sppId}},
+  "monto_pagado": 5000.00,
+  "fecha_pago": "2026-02-07",
+  "metodo_pago": "EFECTIVO",
+  "referencia": "PAGO-CAJA-01",
+  "notas": "Abono adicional para reducir saldo pendiente."
+}
