@@ -179,10 +179,10 @@ class ConstruccSolicitudPagoController extends Controller
      */
     public function marcarComoVerificada(Request $request, SolicitudPago $solicitudPago): JsonResponse
     {
-        Log::info('SP-marcarComoVerificada: ', [
-            'solicitud_pago_id' => $solicitudPago->id,
-            'payload' => $request->all(),
-        ]);
+        // Log::info('SP-marcarComoVerificada: ', [
+        //     'solicitud_pago_id' => $solicitudPago->id,
+        //     'payload' => $request->all(),
+        // ]);
 
         // Validación
         $validated = $request->validate([
@@ -199,7 +199,7 @@ class ConstruccSolicitudPagoController extends Controller
         ]);
 
         if ($solicitudPago->verificada) {
-            Log::warning('⚠️ Intento de verificar SP ya verificada', ['solicitud_pago_id' => $solicitudPago->id,]);
+            // Log::warning('⚠️ Intento de verificar SP ya verificada', ['solicitud_pago_id' => $solicitudPago->id,]);
             return $this->error('Esta solicitud ya ha sido verificada.', null, 400);
         }
 
@@ -498,15 +498,15 @@ class ConstruccSolicitudPagoController extends Controller
             'fecha_autorizacion_parcial' => now(),
         ]);
 
-        Log::info('✅ Solicitud autorizada con monto parcial', [
-            'solicitud_pago_id' => $solicitudPago->id,
-            'folio' => $solicitudPago->numero_folio_solicitud,
-            'rol' => $rol,
-            'monto_total' => $solicitudPago->monto_total,
-            'monto_autorizado' => $montoAutorizado,
-            'usuario_id' => $usuarioId,
-            'usuario_nombre' => $usuarioNombre,
-        ]);
+        // Log::info('✅ Solicitud autorizada con monto parcial', [
+        //     'solicitud_pago_id' => $solicitudPago->id,
+        //     'folio' => $solicitudPago->numero_folio_solicitud,
+        //     'rol' => $rol,
+        //     'monto_total' => $solicitudPago->monto_total,
+        //     'monto_autorizado' => $montoAutorizado,
+        //     'usuario_id' => $usuarioId,
+        //     'usuario_nombre' => $usuarioNombre,
+        // ]);
 
         $this->interApiService->spAutorizarNotify($solicitudPago);
 
@@ -625,28 +625,28 @@ class ConstruccSolicitudPagoController extends Controller
      */
     public function confirmarPago(SolicitudPagoConfirmarPagoRequest $request, SolicitudPago $solicitudPago): JsonResponse
     {
-        Log::info('🟢 PAGO-SP Carga util de la peticion: ', [
-            'rol' => $request->rol,
-            'monto_pagado' => $request->monto_pagado,
-            'comprobante' => $request->comprobante,
-            'observaciones' => $request->observaciones,
-            'cuenta_bancaria_empresa_construcc_id' => $request->cuenta_bancaria_empresa_construcc_id,
-            // 
-            'fecha_comprobante_pago' => $request->fecha,
-            'fecha_pago' =>  now(),
-            'hora' => $request->hora,
-            'nombre_beneficiario' => $request->nombre_beneficiario,
-            'clave_rastreo' => $request->clave_rastreo,
-            'banco' => $request->banco,
-        ]);
+        // Log::info('🟢 PAGO-SP Carga util de la peticion: ', [
+        //     'rol' => $request->rol,
+        //     'monto_pagado' => $request->monto_pagado,
+        //     'comprobante' => $request->comprobante,
+        //     'observaciones' => $request->observaciones,
+        //     'cuenta_bancaria_empresa_construcc_id' => $request->cuenta_bancaria_empresa_construcc_id,
+        //     // 
+        //     'fecha_comprobante_pago' => $request->fecha,
+        //     'fecha_pago' =>  now(),
+        //     'hora' => $request->hora,
+        //     'nombre_beneficiario' => $request->nombre_beneficiario,
+        //     'clave_rastreo' => $request->clave_rastreo,
+        //     'banco' => $request->banco,
+        // ]);
 
-        Log::info('🟢 PAGO-SP: Solicitud de confirmación de pago recibida', [
-            'solicitud_pago_id' => $solicitudPago->id,
-            'folio' => $solicitudPago->numero_folio_solicitud,
-            'estado_actual' => $solicitudPago->estado_solicitud,
-            'usuario_id' => $solicitudPago->usuario_id,
-            'empresa_id' => $solicitudPago->empresa_construcc_id,
-        ]);
+        // Log::info('🟢 PAGO-SP: Solicitud de confirmación de pago recibida', [
+        //     'solicitud_pago_id' => $solicitudPago->id,
+        //     'folio' => $solicitudPago->numero_folio_solicitud,
+        //     'estado_actual' => $solicitudPago->estado_solicitud,
+        //     'usuario_id' => $solicitudPago->usuario_id,
+        //     'empresa_id' => $solicitudPago->empresa_construcc_id,
+        // ]);
 
         /**
          * Campos de la peticion
@@ -696,24 +696,24 @@ class ConstruccSolicitudPagoController extends Controller
         //     trim($request->fecha . ' ' . $request->hora)
         // );
 
-        Log::info(
-            '🟢 PAGO-SP: SP actualizada',
-            [
-                'cuenta_bancaria_empresa_construcc_id' => $request->cuenta_bancaria_empresa_construcc_id,
-                'estado_solicitud' => $estadoFinal,
-                'ruta_archivo_comprobante_pago' => $path,
-                'notas_abono' => $request->observaciones,
-                'monto_pagado' => $request->monto_pagado,
-                'da' => $estadoDA,
-                'da_fecha' => now(),
-                // datos comprobante
-                'fecha_comprobante_pago' => $request->fecha_hora_pago,
-                'fecha_pago' =>  now(),
-                'nombre_beneficiario_pago' => $request->nombre_beneficiario,
-                'clave_rastreo_pago' => $request->clave_rastreo,
-                'banco_pago' => $request->banco,
-            ]
-        );
+        // Log::info(
+        //     '🟢 PAGO-SP: SP actualizada',
+        //     [
+        //         'cuenta_bancaria_empresa_construcc_id' => $request->cuenta_bancaria_empresa_construcc_id,
+        //         'estado_solicitud' => $estadoFinal,
+        //         'ruta_archivo_comprobante_pago' => $path,
+        //         'notas_abono' => $request->observaciones,
+        //         'monto_pagado' => $request->monto_pagado,
+        //         'da' => $estadoDA,
+        //         'da_fecha' => now(),
+        //         // datos comprobante
+        //         'fecha_comprobante_pago' => $request->fecha_hora_pago,
+        //         'fecha_pago' =>  now(),
+        //         'nombre_beneficiario_pago' => $request->nombre_beneficiario,
+        //         'clave_rastreo_pago' => $request->clave_rastreo,
+        //         'banco_pago' => $request->banco,
+        //     ]
+        // );
 
         // Actualizar solicitud
         $solicitudPago->update([
@@ -759,7 +759,7 @@ class ConstruccSolicitudPagoController extends Controller
                     'user_id' => $solicitudPago->usuario_id,
                 ];
 
-                Log::info('🟢 PAGO-SP: Notificación de SP Pagada - Datos preparados', $data);
+                // Log::info('🟢 PAGO-SP: Notificación de SP Pagada - Datos preparados', $data);
 
                 $result = $this->interApiService->spPagoNotify($data);
 
@@ -769,15 +769,15 @@ class ConstruccSolicitudPagoController extends Controller
                     Log::warning('⚠️ InterAPI respondió con error', ['solicitud_pago_id' => $solicitudPago->id, 'response' => $result,]);
                 }
 
-                Log::info('✅ Notificación de SP Pagada enviada', [
-                    'solicitud_pago_id' => $solicitudPago->id,
-                    'folio' => $solicitudPago->numero_folio_solicitud,
-                    'proveedor_id' => $proveedor->id,
-                    'usuario_id' => $usuarioPrincipal->id,
-                    'usuario_idcuenta_bancaria_empresa_construcc_id' => $solicitudPago->cuenta_bancaria_empresa_construcc_id,
-                    // 'monto' => $montoAbono,
-                    // 'pago_completo' => $pagoCompleto,
-                ]);
+                // Log::info('✅ Notificación de SP Pagada enviada', [
+                //     'solicitud_pago_id' => $solicitudPago->id,
+                //     'folio' => $solicitudPago->numero_folio_solicitud,
+                //     'proveedor_id' => $proveedor->id,
+                //     'usuario_id' => $usuarioPrincipal->id,
+                //     'usuario_idcuenta_bancaria_empresa_construcc_id' => $solicitudPago->cuenta_bancaria_empresa_construcc_id,
+                //     // 'monto' => $montoAbono,
+                //     // 'pago_completo' => $pagoCompleto,
+                // ]);
             }
         } catch (\Exception $e) {
             Log::error('❌ Error al enviar notificación de SP Pagada', [
@@ -1390,8 +1390,6 @@ class ConstruccSolicitudPagoController extends Controller
     /**
      * Conteo de solicitudes por validar
      * Validada = 0 y recibe parámetro usuario_id: entero no null
-     * 
-     * FIXME: Revisar conteo de solicitudes de pago por validar. En produccion no se refleja el conteo de forma correcta.
      */
     public function spPorValidar(Request $request): JsonResponse
     {
@@ -1401,16 +1399,16 @@ class ConstruccSolicitudPagoController extends Controller
         DB::purge('mysql5');
         DB::reconnect('mysql5');
 
-        // 👉 Log de entrada al método
-        Log::info('📥 Ingresando a spPorValidar', [
-            'route' => $request->path(),
-            'ip'    => $request->ip(),
-            'params' => $request->all(),
-            'headers' => [
-                'X-API-KEY' => $request->header('X-API-KEY') ? '(recibida)' : '(no enviada)',
-                'Authorization' => $request->header('Authorization') ? '(recibido)' : '(no enviado)',
-            ],
-        ]);
+        // // 👉 Log de entrada al método
+        // Log::info('📥 Ingresando a spPorValidar', [
+        //     'route' => $request->path(),
+        //     'ip'    => $request->ip(),
+        //     'params' => $request->all(),
+        //     'headers' => [
+        //         'X-API-KEY' => $request->header('X-API-KEY') ? '(recibida)' : '(no enviada)',
+        //         'Authorization' => $request->header('Authorization') ? '(recibido)' : '(no enviado)',
+        //     ],
+        // ]);
 
         // 👉 Validación
         try {
@@ -1432,10 +1430,10 @@ class ConstruccSolicitudPagoController extends Controller
         $usuarioId = $request->input('usuario_id');
         $filters = $request->only(SolicitudPago::getFilters());
 
-        Log::info('🔍 Parámetros procesados', [
-            'usuario_id' => $usuarioId,
-            'filters'    => $filters,
-        ]);
+        // Log::info('🔍 Parámetros procesados', [
+        //     'usuario_id' => $usuarioId,
+        //     'filters'    => $filters,
+        // ]);
 
         // 👉 Construcción de la query
         $query = SolicitudPago::on('mysql5')
@@ -1445,18 +1443,18 @@ class ConstruccSolicitudPagoController extends Controller
             ->filter($filters);
 
         // 👉 Log de SQL generado
-        Log::debug('🧩 Query generada en spPorValidar', [
-            'sql' => $query->toSql(),
-            'bindings' => $query->getBindings(),
-        ]);
+        // Log::debug('🧩 Query generada en spPorValidar', [
+        //     'sql' => $query->toSql(),
+        //     'bindings' => $query->getBindings(),
+        // ]);
 
         // 👉 Conteo ejecutado
         $conteo = $query->count();
 
-        Log::info('📤 Respuesta spPorValidar', [
-            'conteo' => $conteo,
-            'usuario_id' => $usuarioId,
-        ]);
+        // Log::info('📤 Respuesta spPorValidar', [
+        //     'conteo' => $conteo,
+        //     'usuario_id' => $usuarioId,
+        // ]);
 
         return $this->success(
             ['conteo' => $conteo],
@@ -1506,10 +1504,10 @@ class ConstruccSolicitudPagoController extends Controller
         // 👉 Conteo ejecutado
         $conteo = $query->count();
 
-        Log::info('📤 Respuesta spPorValidar', [
-            'conteo' => $conteo,
-            'usuario_id' => $usuarioId,
-        ]);
+        // Log::info('📤 Respuesta spPorValidar', [
+        //     'conteo' => $conteo,
+        //     'usuario_id' => $usuarioId,
+        // ]);
 
         return $this->success(
             ['conteo' => $conteo],
@@ -1581,11 +1579,11 @@ class ConstruccSolicitudPagoController extends Controller
                 'perfil_empresa_completo' => false,
             ]);
 
-            Log::info('✅ Proveedor creado desde construcción', [
-                'proveedor_id' => $proveedor->id,
-                'rfc' => $proveedor->rfc,
-                'razon_social' => $proveedor->razon_social,
-            ]);
+            // Log::info('✅ Proveedor creado desde construcción', [
+            //     'proveedor_id' => $proveedor->id,
+            //     'rfc' => $proveedor->rfc,
+            //     'razon_social' => $proveedor->razon_social,
+            // ]);
 
             // ============================================
             // PASO 3: Registrar cuenta bancaria
@@ -1608,12 +1606,12 @@ class ConstruccSolicitudPagoController extends Controller
                 'preferida' => $esPrimeraCuenta, // Solo la primera cuenta es preferida automáticamente
             ]);
 
-            Log::info('✅ Cuenta bancaria registrada', [
-                'cuenta_bancaria_id' => $cuentaBancaria->id,
-                'proveedor_id' => $proveedor->id,
-                'alias' => $cuentaBancaria->alias,
-                'preferida' => $cuentaBancaria->preferida,
-            ]);
+            // Log::info('✅ Cuenta bancaria registrada', [
+            //     'cuenta_bancaria_id' => $cuentaBancaria->id,
+            //     'proveedor_id' => $proveedor->id,
+            //     'alias' => $cuentaBancaria->alias,
+            //     'preferida' => $cuentaBancaria->preferida,
+            // ]);
 
             // ============================================
             // PASO 3.1: Asociar proveedor a empresa de construcción (si aplica)
@@ -1628,11 +1626,11 @@ class ConstruccSolicitudPagoController extends Controller
                     'usuario_construcc_nombre' => $usuarioNombre,
                 ]);
 
-                Log::info('✅ Proveedor asociado a empresa de construcción', [
-                    'proveedor_id' => $proveedor->id,
-                    'empresa_construcc_id' => $empresaConstructId,
-                    'usuario_id' => $usuarioId,
-                ]);
+                // Log::info('✅ Proveedor asociado a empresa de construcción', [
+                //     'proveedor_id' => $proveedor->id,
+                //     'empresa_construcc_id' => $empresaConstructId,
+                //     'usuario_id' => $usuarioId,
+                // ]);
             }
 
             // ============================================
@@ -1664,12 +1662,12 @@ class ConstruccSolicitudPagoController extends Controller
                 $rutaCotizacion = $cotizacionFile->store('cotizaciones', 'private');
             }
 
-            Log::info('✅ Archivos almacenados', [
-                'factura_pdf' => $rutaPdf,
-                'factura_xml' => $rutaXml,
-                'cotizacion' => $rutaCotizacion,
-                'folio_factura' => $folioFactura,
-            ]);
+            // Log::info('✅ Archivos almacenados', [
+            //     'factura_pdf' => $rutaPdf,
+            //     'factura_xml' => $rutaXml,
+            //     'cotizacion' => $rutaCotizacion,
+            //     'folio_factura' => $folioFactura,
+            // ]);
 
             // ============================================
             // PASO 5: Crear solicitud de pago
@@ -1755,15 +1753,15 @@ class ConstruccSolicitudPagoController extends Controller
 
             $solicitud = SolicitudPago::create($datosSP);
 
-            Log::info('✅ Solicitud de pago creada', [
-                'solicitud_pago_id' => $solicitud->id,
-                'numero_folio' => $solicitud->numero_folio_solicitud,
-                'proveedor_id' => $proveedor->id,
-                'monto_total' => $montoTotal,
-                'verificada' => $solicitud->verificada,
-                'estado_solicitud' => $solicitud->estado_solicitud,
-                'auto_aprobada_por_director' => $esDirector,
-            ]);
+            // Log::info('✅ Solicitud de pago creada', [
+            //     'solicitud_pago_id' => $solicitud->id,
+            //     'numero_folio' => $solicitud->numero_folio_solicitud,
+            //     'proveedor_id' => $proveedor->id,
+            //     'monto_total' => $montoTotal,
+            //     'verificada' => $solicitud->verificada,
+            //     'estado_solicitud' => $solicitud->estado_solicitud,
+            //     'auto_aprobada_por_director' => $esDirector,
+            // ]);
 
             // ============================================
             // NOTIFICACIÓN: Si es director, notificar a otros directores
@@ -1785,11 +1783,11 @@ class ConstruccSolicitudPagoController extends Controller
                 // Ejemplo de uso:
                 // $this->interApiService->notifyDirectoresSPAutoAprobada($solicitud, $nivelId);
 
-                Log::info('📧 [PENDIENTE] Notificar a directores sobre SP auto-aprobada', [
-                    'solicitud_pago_id' => $solicitud->id,
-                    'creada_por_nivel' => $nivelId,
-                    'empresa_construcc_id' => $empresaConstructId,
-                ]);
+                // Log::info('📧 [PENDIENTE] Notificar a directores sobre SP auto-aprobada', [
+                //     'solicitud_pago_id' => $solicitud->id,
+                //     'creada_por_nivel' => $nivelId,
+                //     'empresa_construcc_id' => $empresaConstructId,
+                // ]);
             }
 
             // ============================================
@@ -1813,10 +1811,10 @@ class ConstruccSolicitudPagoController extends Controller
                 ],
             ]);
 
-            Log::info('✅ Cuenta bancaria sincronizada con SP', [
-                'solicitud_pago_id' => $solicitud->id,
-                'cuenta_bancaria_id' => $cuentaBancaria->id,
-            ]);
+            // Log::info('✅ Cuenta bancaria sincronizada con SP', [
+            //     'solicitud_pago_id' => $solicitud->id,
+            //     'cuenta_bancaria_id' => $cuentaBancaria->id,
+            // ]);
 
             // Agregar notificación
             $solicitud->addNotification();
@@ -2012,17 +2010,17 @@ class ConstruccSolicitudPagoController extends Controller
      */
     public function actualizarComprobantePago(SolicitudPagoUpdateConprobantePagoRequest $request, SolicitudPago $solicitudPago): JsonResponse
     {
-        Log::info('🟢 PAGO-SP Carga util de la peticion: ', [
-            'rol' => $request->rol,
-            'comprobante' => $request->comprobante,
-            'observaciones' => $request->observaciones,
-            'fecha' => $request->fecha,
-            'hora' => $request->hora,
-            'nombre_beneficiario' => $request->nombre_beneficiario,
-            'clave_rastreo' => $request->clave_rastreo,
-            'banco' => $request->banco,
+        // Log::info('🟢 PAGO-SP Carga util de la peticion: ', [
+        //     'rol' => $request->rol,
+        //     'comprobante' => $request->comprobante,
+        //     'observaciones' => $request->observaciones,
+        //     'fecha' => $request->fecha,
+        //     'hora' => $request->hora,
+        //     'nombre_beneficiario' => $request->nombre_beneficiario,
+        //     'clave_rastreo' => $request->clave_rastreo,
+        //     'banco' => $request->banco,
 
-        ]);
+        // ]);
 
         /** 🔒 Validar rol */
         if ($request->rol !== 'DA') {
@@ -2061,19 +2059,20 @@ class ConstruccSolicitudPagoController extends Controller
         //     trim($request->fecha . ' ' . $request->hora)
         // );
 
-        Log::info(
-            '🟢 PAGO-SP: SP actualizada',
-            [
-                'ruta_archivo_comprobante_pago' => $path,
-                'notas_abono' => $request->observaciones,
-                'fecha_comprobante_pago' => $request->fecha_hora_pago,
-                'fecha_pago' =>  now(),
+        // Log::info(
+        //     '🟢 PAGO-SP: SP actualizada',
+        //     [
+        //         'ruta_archivo_comprobante_pago' => $path,
+        //         'notas_abono' => $request->observaciones,
+        //         'fecha_comprobante_pago' => $request->fecha_hora_pago,
+        //         'fecha_pago' =>  now(),
 
-                'nombre_beneficiario_pago' => $request->nombre_beneficiario,
-                'clave_rastreo_pago' => $request->clave_rastreo,
-                'banco_pago' => $request->banco,
-            ]
-        );
+        //         'nombre_beneficiario_pago' => $request->nombre_beneficiario,
+        //         'clave_rastreo_pago' => $request->clave_rastreo,
+        //         'banco_pago' => $request->banco,
+        //     ]
+        // );
+        
         /** 📝 Actualizar SOLO datos del comprobante */
         $solicitudPago->update([
             'ruta_archivo_comprobante_pago' => $path,
@@ -2106,12 +2105,12 @@ class ConstruccSolicitudPagoController extends Controller
                     )
                 );
 
-                Log::info('🟢 SP-COMPROBANTE: Notificación local enviada', [
-                    'solicitud_pago_id' => $solicitudPago->id,
-                    'folio' => $solicitudPago->numero_folio_solicitud,
-                    'proveedor_id' => $proveedor->id,
-                    'usuario_id' => $usuarioPrincipal->id,
-                ]);
+                // Log::info('🟢 SP-COMPROBANTE: Notificación local enviada', [
+                //     'solicitud_pago_id' => $solicitudPago->id,
+                //     'folio' => $solicitudPago->numero_folio_solicitud,
+                //     'proveedor_id' => $proveedor->id,
+                //     'usuario_id' => $usuarioPrincipal->id,
+                // ]);
             }
         } catch (\Exception $e) {
             Log::error('❌ Error al enviar notificación de comprobante actualizado', [
