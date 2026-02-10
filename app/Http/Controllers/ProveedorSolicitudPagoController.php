@@ -655,7 +655,7 @@ class ProveedorSolicitudPagoController extends Controller
         }
 
         return $timeline;
-  } 
+    }
 
     /**
      * Obtener conteo de solicitudes por estado
@@ -922,12 +922,46 @@ class ProveedorSolicitudPagoController extends Controller
         // Extraer datos del XML
         $datosXml = $this->extraerDatosXML($facturaXml);
 
+        /**
+         * VALICACION DE LA ESPECIFICACION DE LA FACTURA
+         */
+        // 1. Llamado a interApi para los datos de factuiracion
+        if ($solicitudPago->datos_facturacion_id) {
+
+            $interResponse = $this->interApiService->obtenerDatosFacturacionEmpresa(
+                $solicitudPago->datos_facturacion_id
+            );
+
+            if (!$interResponse['success']) {
+                return $this->error(
+                    'No fue posible obtener los datos de facturación desde Construcc.',
+                    $interResponse['error'] ?? null,
+                    500
+                );
+            }
+
+            $datosFacturacion = $interResponse['data'] ?? [];
+
+            $errores = $solicitudPago->validarEspecificacionFactura($datosXml, $datosFacturacion);
+
+            if (!empty($errores)) {
+                return $this->error(
+                    'La factura no cumple con la especificación requerida.',
+                    $errores,
+                    422
+                );
+            }
+        }
+
+
         // Construir folio de factura (serie-folio)
         $serie = $datosXml['serie'] ?? '';
         $folio = $datosXml['folio'] ?? '';
         $folioFactura = trim(
             $serie . ($serie && $folio ? '-' : '') . $folio
         ) ?: null;
+
+
 
         // Actualizar Solicitud de Pago
         $solicitudPago->update([

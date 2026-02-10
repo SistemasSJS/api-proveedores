@@ -2072,7 +2072,7 @@ class ConstruccSolicitudPagoController extends Controller
         //         'banco_pago' => $request->banco,
         //     ]
         // );
-        
+
         /** 📝 Actualizar SOLO datos del comprobante */
         $solicitudPago->update([
             'ruta_archivo_comprobante_pago' => $path,
@@ -2155,6 +2155,36 @@ class ConstruccSolicitudPagoController extends Controller
         $serie = $datosXml['serie'] ?? '';
         $folio = $datosXml['folio'] ?? '';
         $folioFactura = trim($serie . ($serie && $folio ? '-' : '') . $folio) ?: null;
+
+
+        // 🔎 VALIDACIÓN DE ESPECIFICACIÓN DE FACTURA (SPP sin factura / con especificación)
+        if ($solicitudPago->datos_facturacion_id) {
+
+            $interResponse = $this->interApiService->obtenerDatosFacturacionEmpresa(
+                $solicitudPago->datos_facturacion_id
+            );
+
+            if (!$interResponse['success']) {
+                return $this->error(
+                    'No fue posible obtener los datos de facturación desde Construcc.',
+                    $interResponse['error'] ?? null,
+                    500
+                );
+            }
+
+            $datosFacturacion = $interResponse['data'] ?? [];
+
+            $errores = $solicitudPago->validarEspecificacionFactura($datosXml, $datosFacturacion);
+
+            if (!empty($errores)) {
+                return $this->error(
+                    'La factura no cumple con la especificación requerida.',
+                    $errores,
+                    422
+                );
+            }
+        }
+
 
         $solicitudPago->update([
             'folio_factura' => $folioFactura,

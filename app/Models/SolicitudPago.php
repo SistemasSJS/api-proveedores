@@ -775,4 +775,35 @@ class SolicitudPago extends BaseModel
 
         return $tieneFacturaCompleta;
     }
+
+    /**
+     * Valida la especificación de factura usando defaults del Inter API
+     * y overrides de la SP (uso, mp, fp).
+     *
+     * @param array $datosXml
+     * @param array $datosFacturacion
+     * @return string[] Lista de errores. Vacía si todo es válido.
+     */
+    public function validarEspecificacionFactura(array $datosXml, array $datosFacturacion): array
+    {
+        $errores = [];
+
+        $usoFinal = $this->uso ?? ($datosFacturacion['uso_cfdi'] ?? null);
+        $mpFinal  = $this->mp  ?? ($datosFacturacion['metodo_pago'] ?? null);
+        $fpFinal  = $this->fp  ?? ($datosFacturacion['forma_pago'] ?? null);
+
+        if ($usoFinal !== null && (($datosXml['uso_cfdi'] ?? null) !== $usoFinal)) {
+            $errores[] = 'El uso de CFDI no coincide con la especificación requerida.';
+        }
+
+        if ($mpFinal !== null && (($datosXml['metodo_pago'] ?? null) !== $mpFinal)) {
+            $errores[] = 'El método de pago no coincide con la especificación requerida.';
+        }
+
+        if ($fpFinal !== null && (($datosXml['forma_pago'] ?? null) !== $fpFinal)) {
+            $errores[] = 'La forma de pago no coincide con la especificación requerida.';
+        }
+
+        return $errores;
+    }
 }
