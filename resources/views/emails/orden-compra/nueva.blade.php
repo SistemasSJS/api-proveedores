@@ -209,7 +209,7 @@
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-            <img src="{{ config('app.url') }}/assets/icon/ms-310.png" alt="Logo" class="logo">
+            <img src="{{ config('app.url') }}/assets/logos/logo-gestionpro.png" alt="Gesti?nPro" class="logo">
             <h1>📦 Nueva Orden de Compra</h1>
             <p>Sistema de Gestión de Proveedores</p>
         </div>

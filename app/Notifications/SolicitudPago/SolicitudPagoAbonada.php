@@ -1,7 +1,8 @@
-<?php
+<php
 
 namespace App\Notifications\SolicitudPago;
 
+use App\Models\SolicitudPago;
 use App\Traits\NotificationStyleTrait;
 use App\Services\FcmService;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
@@ -18,15 +19,19 @@ class SolicitudPagoAbonada extends Notification implements ShouldBroadcastNow
   public $proveedorId;
   public $montoAbonado;
   public $montoRestante;
+  public $montoAcumulado;
+  public $saldoInicial;
   public $userId;
 
   public function __construct(
     string $solicitudPagoFolio,
     int $solicitudPagoId,
     int $proveedorId,
-    ?float $montoAbonado = null,
-    ?float $montoRestante = null,
-    ?int $userId = null
+    float $montoAbonado = null,
+    float $montoRestante = null,
+    int $userId = null,
+    float $montoAcumulado = null,
+    float $saldoInicial = null
   ) {
     $this->solicitudPagoFolio = $solicitudPagoFolio;
     $this->solicitudPagoId = $solicitudPagoId;
@@ -34,6 +39,9 @@ class SolicitudPagoAbonada extends Notification implements ShouldBroadcastNow
     $this->montoAbonado = $montoAbonado;
     $this->montoRestante = $montoRestante;
     $this->userId = $userId;
+    $this->montoAcumulado = $montoAcumulado;
+    $this->saldoInicial = $saldoInicial;
+    $this->solicitudPagoFolio = $this->resolveSolicitudPagoFolio($solicitudPagoFolio, $solicitudPagoId);
   }
 
   /**
@@ -62,13 +70,15 @@ class SolicitudPagoAbonada extends Notification implements ShouldBroadcastNow
     $data = [
       'tipo' => 'solicitud_pago',
       'subtipo' => 'abonada',
-      'titulo' => 'Abono registrado a la Solicitud de Pago #' . $this->solicitudPagoFolio,
-      'mensaje' => "Se registró un abono a tu solicitud de pago #{$this->solicitudPagoFolio}.",
+      'titulo' => 'Abono registrado en solicitud de pago #' . $this->solicitudPagoFolio,
+      'mensaje' => "Se registró un abono en tu solicitud de pago #{$this->solicitudPagoFolio}.",
       'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       'data' => [
         'solicitud_pago_folio' => $this->solicitudPagoFolio,
         'proveedor_id' => $this->proveedorId,
         'monto_abonado' => $this->montoAbonado,
+        'monto_acumulado' => $this->montoAcumulado,
+        'saldo_inicial' => $this->saldoInicial,
         'monto_restante' => $this->montoRestante,
         'estatus' => 'abonada',
       ],
@@ -91,13 +101,15 @@ class SolicitudPagoAbonada extends Notification implements ShouldBroadcastNow
     $data = [
       'tipo' => 'solicitud_pago',
       'subtipo' => 'abonada',
-      'titulo' => 'Abono registrado a la Solicitud de Pago #' . $this->solicitudPagoFolio,
-      'mensaje' => "Se registró un abono a tu solicitud de pago #{$this->solicitudPagoFolio}.",
+      'titulo' => 'Abono registrado en solicitud de pago #' . $this->solicitudPagoFolio,
+      'mensaje' => "Se registró un abono en tu solicitud de pago #{$this->solicitudPagoFolio}.",
       'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       'solicitud_pago_id' => $this->solicitudPagoId,
       'solicitud_pago_folio' => $this->solicitudPagoFolio,
       'proveedor_id' => $this->proveedorId,
       'monto_abonado' => $this->montoAbonado,
+      'monto_acumulado' => $this->montoAcumulado,
+      'saldo_inicial' => $this->saldoInicial,
       'monto_restante' => $this->montoRestante,
       'estatus' => 'abonada',
       'timestamp' => now()->toIso8601String(),
@@ -115,13 +127,15 @@ class SolicitudPagoAbonada extends Notification implements ShouldBroadcastNow
     $urlSolicitud = $frontendUrl . '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId;
 
     return (new MailMessage)
-      ->subject('Abono registrado a la Solicitud de Pago #' . $this->solicitudPagoFolio)
+      ->subject('Abono registrado en solicitud de pago #' . $this->solicitudPagoFolio)
       ->view('emails.solicitud-pago.abonada', [
         'notifiable' => $notifiable,
         'solicitudPagoFolio' => $this->solicitudPagoFolio,
         'solicitudPagoId' => $this->solicitudPagoId,
         'proveedorId' => $this->proveedorId,
         'montoAbonado' => $this->montoAbonado,
+        'montoAcumulado' => $this->montoAcumulado,
+        'saldoInicial' => $this->saldoInicial,
         'montoRestante' => $this->montoRestante,
         'urlSolicitud' => $urlSolicitud,
       ]);
@@ -142,8 +156,8 @@ class SolicitudPagoAbonada extends Notification implements ShouldBroadcastNow
     }
 
     $notification = [
-      'title' => '💳 Abono registrado - SPP #' . $this->solicitudPagoFolio,
-      'body' => 'Se registró un abono a tu solicitud de pago.',
+      'title' => 'Abono registrado - SPP #' . $this->solicitudPagoFolio,
+      'body' => 'Se registró un abono en tu solicitud de pago.',
     ];
 
     $data = [
@@ -152,8 +166,10 @@ class SolicitudPagoAbonada extends Notification implements ShouldBroadcastNow
       'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       'solicitud_pago_folio' => $this->solicitudPagoFolio,
       'proveedor_id' => (string) $this->proveedorId,
-      'monto_abonado' => $this->montoAbonado ? (string) $this->montoAbonado : null,
-      'monto_restante' => $this->montoRestante ? (string) $this->montoRestante : null,
+      'monto_abonado' => $this->montoAbonado  (string) $this->montoAbonado : null,
+      'monto_acumulado' => $this->montoAcumulado  (string) $this->montoAcumulado : null,
+      'saldo_inicial' => $this->saldoInicial  (string) $this->saldoInicial : null,
+      'monto_restante' => $this->montoRestante  (string) $this->montoRestante : null,
       'estatus' => 'abonada',
       'timestamp' => now()->toIso8601String(),
     ];
@@ -173,5 +189,19 @@ class SolicitudPagoAbonada extends Notification implements ShouldBroadcastNow
   protected function getNotificationSubtipo(): string
   {
     return 'abonada';
+  }
+
+  private function resolveSolicitudPagoFolio(string $folio, int $solicitudPagoId): string
+  {
+    if ($folio && !preg_match('/^SP-\\d+$/', $folio)) {
+      return $folio;
+    }
+
+    $sp = SolicitudPago::find($solicitudPagoId);
+    if ($sp && $sp->numero_folio_solicitud) {
+      return $sp->numero_folio_solicitud;
+    }
+
+    return $folio : ('SP-' . $solicitudPagoId);
   }
 }

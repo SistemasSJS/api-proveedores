@@ -3,7 +3,7 @@
 
 <head>
  <meta charset="UTF-8">
- <title>Solicitud de pago sin factura</title>
+ <title>Comprobante de Pago Actualizado</title>
  <style>
   body {
    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -18,17 +18,14 @@
    background: #ffffff;
    border-radius: 8px;
    overflow: hidden;
+   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 
   .header {
-   background: linear-gradient(135deg, #ff9800, #ffc107);
+   background: linear-gradient(135deg, #2196f3, #64b5f6);
    color: #ffffff;
    text-align: center;
    padding: 30px 20px;
-  }
-
-  .header h1 {
-   margin: 0;
   }
 
   .logo {
@@ -38,21 +35,44 @@
    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
   }
 
+  .header h1 {
+   margin: 0;
+  }
+
   .content {
    padding: 30px 20px;
   }
 
-  .alert-box {
-   background-color: #fff3cd;
-   border-left: 4px solid #ff9800;
+  .info-box {
+   background-color: #e3f2fd;
+   border-left: 4px solid #2196f3;
    padding: 15px;
    margin: 20px 0;
    border-radius: 4px;
+   color: #0d47a1;
+  }
+
+  .details {
+   background: #f8f9fa;
+   border: 1px solid #e9ecef;
+   border-radius: 8px;
+   padding: 15px;
+   margin: 20px 0;
+  }
+
+  .detail-item {
+   margin: 6px 0;
+  }
+
+  .detail-label {
+   font-weight: 600;
+   color: #495057;
+   margin-right: 6px;
   }
 
   .action-button {
    display: inline-block;
-   background: #ff9800;
+   background: #2196f3;
    color: #ffffff;
    padding: 15px 30px;
    text-decoration: none;
@@ -74,31 +94,34 @@
 
  <div class="email-container">
   <div class="header">
-   <img src="{{ config('app.url') }}/assets/logos/logo-gestionpro.png" alt="GestinPro" class="logo">
-      <h1>Solicitud de pago sin factura</h1>
+   <img src="{{ config('app.url') }}/assets/logos/logo-gestionpro.png" alt="GestiónPro" class="logo">
+      <h1>Comprobante actualizado</h1>
       <p>Sistema de Gestion de Proveedores</p>
   </div>
 
   <div class="content">
    <p>Hola <strong>{{ $notifiable->name }}</strong>,</p>
 
-   <div class="alert-box">
-    Tu solicitud de pago <strong>#{{ $solicitudPagoFolio }}</strong> aún no cuenta con una factura asociada.
+   <div class="info-box">
+    El comprobante de la solicitud de pago <strong>#{{ $solicitudPagoFolio }}</strong> fue actualizado.
    </div>
 
-   <p>
-    Para continuar con el proceso de pago, es necesario que subas la factura correspondiente
-    en el sistema.
-   </p>
+   <div class="details">
+    <div class="detail-item">
+     <span class="detail-label">Folio:</span> #{{ $solicitudPagoFolio }}
+    </div>
+    <div class="detail-item">
+     <span class="detail-label">Proveedor ID:</span> {{ $proveedorId }}
+    </div>
+    <div class="detail-item">
+     <span class="detail-label">Fecha:</span> {{ now()->format('d/m/Y') }}
+    </div>
+   </div>
 
    <p style="text-align: center; margin: 30px 0;">
     <a href="{{ $urlSolicitud }}" class="action-button">
-     Subir Factura
+     Ver Detalles
     </a>
-   </p>
-
-   <p>
-    Si tienes dudas o consideras que esto es un error, por favor contáctanos.
    </p>
   </div>
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Solicitud de pago rechazada Durante Verificación</title>
+  <title>Abono a Solicitud de pago</title>
   <style>
     * {
       margin: 0;
@@ -92,14 +92,10 @@
       color: #ff9800;
     }
     
-    .solicitud-status {
-      background-color: #ff9800;
-      color: #ffffff;
-      padding: 5px 15px;
-      border-radius: 20px;
-      font-size: 14px;
+    .solicitud-monto {
+      font-size: 18px;
       font-weight: 600;
-      text-transform: uppercase;
+      color: #f57c00;
     }
     
     .details-grid {
@@ -124,9 +120,9 @@
       color: #6c757d;
     }
     
-    .warning-badge {
+    .info-badge {
       background-color: #fff3cd;
-      border: 1px solid #ffeaa7;
+      border: 1px solid #ffeeba;
       color: #856404;
       padding: 15px;
       border-radius: 6px;
@@ -135,30 +131,9 @@
       font-weight: 600;
     }
     
-    .warning-badge .icon {
+    .info-badge .icon {
       font-size: 40px;
       margin-bottom: 10px;
-    }
-    
-    .motivo-box {
-      background-color: #fff3cd;
-      border: 1px solid #ffeaa7;
-      border-radius: 6px;
-      padding: 15px;
-      margin: 20px 0;
-    }
-    
-    .motivo-label {
-      font-weight: 600;
-      color: #856404;
-      margin-bottom: 8px;
-      display: block;
-    }
-    
-    .motivo-text {
-      color: #533f03;
-      font-style: italic;
-      line-height: 1.6;
     }
     
     .action-button {
@@ -221,10 +196,9 @@
         gap: 10px;
       }
       
-      .solicitud-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
+      .solicitud-header-table td {
+        display: block;
+        width: 100%;
       }
       
       .content {
@@ -238,7 +212,7 @@
     <!-- Header -->
     <div class="header">
       <img src="{{ config('app.url') }}/assets/logos/logo-gestionpro.png" alt="GestiónPro" class="logo">
-      <h1>Solicitud rechazada en verificaciNn</h1>
+      <h1>Abono en solicitud de pago</h1>
       <p>Sistema de Gestion de Proveedores</p>
     </div>
     
@@ -248,24 +222,30 @@
                 Hola {{ $notifiable->name }},
       </div>
       
-      <div class="warning-badge">
-        <div>Tu solicitud fue rechazada durante la verificación</div>
+      <div class="info-badge">
+        <div>Se registro un abono en tu solicitud de pago.</div>
       </div>
       
       <div class="intro-text">
-        Tu solicitud de pago ha sido rechazada durante el proceso de verificación inicial. 
-        Esto significa que no llegó a la etapa de autorización. Por favor revisa los detalles y realiza las correcciones necesarias.
+        Se registro un abono en tu solicitud de pago. Puedes revisar el detalle y el saldo restante en el sistema.
+        Puedes revisar el detalle y el saldo restante en el sistema.
       </div>
       
       <!-- Solicitud Card -->
       <div class="solicitud-card">
         <div class="solicitud-header">
-          <div class="solicitud-folio">
-            Folio #{{ $solicitudPagoFolio }}
-          </div>
-          <div class="solicitud-status">
-            Rechazada
-          </div>
+          <table class="solicitud-header-table" role="presentation" cellspacing="0" cellpadding="0">
+            <tr>
+              <td class="solicitud-folio">
+                Folio #{{ $solicitudPagoFolio }}
+              </td>
+              @if($montoAbonado)
+              <td class="solicitud-monto" align="right">
+                ${{ number_format($montoAbonado, 2) }}
+              </td>
+              @endif
+            </tr>
+          </table>
         </div>
         
         <div class="details-grid">
@@ -279,25 +259,38 @@
           </div>
           <div class="detail-item">
             <span class="detail-label">📊 Estado:</span>
-            <span class="detail-value">Rechazada</span>
+            <span class="detail-value">Abonada</span>
           </div>
+          @if($montoAbonado)
           <div class="detail-item">
-            <span class="detail-label">⏱️ Etapa:</span>
-            <span class="detail-value">Verificación</span>
+            <span class="detail-label">💰 Monto abonado:</span>
+            <span class="detail-value">${{ number_format($montoAbonado, 2) }}</span>
           </div>
+          @endif
+          @if(!is_null($montoAcumulado))
+          <div class="detail-item">
+            <span class="detail-label">Monto acumulado:</span>
+            <span class="detail-value">${{ number_format($montoAcumulado, 2) }}</span>
+          </div>
+          @endif
+          @if(!is_null($saldoInicial))
+          <div class="detail-item">
+            <span class="detail-label">Saldo inicial:</span>
+            <span class="detail-value">${{ number_format($saldoInicial, 2) }}</span>
+          </div>
+          @endif
+          @if(!is_null($montoRestante))
+          <div class="detail-item">
+                        <span class="detail-label">Saldo restante:</span>
+            <span class="detail-value">${{ number_format($montoRestante, 2) }}</span>
+          </div>
+          @endif
         </div>
-        
-        @if($motivo)
-        <div class="motivo-box">
-          <span class="motivo-label">💬 Motivo del rechazo:</span>
-          <div class="motivo-text">{{ $motivo }}</div>
-        </div>
-        @endif
       </div>
       
       <div class="info-box">
-        <div class="info-box-label">💡 ¿Qué significa esto</div>
-        <div>Tu solicitud fue revisada por el equipo de verificación y no cumplió con los requisitos iniciales. Esto ocurre antes de que llegue a los directivos para su autorización. Revisa el motivo, corrige los errores y envía nuevamente tu solicitud.</div>
+        <div class="info-box-label">💡 Información:</div>
+        <div>Si necesitas el comprobante o el detalle completo, puedes consultarlo en el sistema.</div>
       </div>
       
       <!-- Action Button -->
@@ -308,12 +301,11 @@
       </div>
       
       <div class="footer-text">
-        <p><strong>¿Necesitas ayuda</strong> Si tienes dudas sobre el motivo del rechazo o necesitas orientación para corregir tu solicitud, contacta al equipo de verificación.</p>
+                <p><strong>Gracias por tu paciencia.</strong> Si tienes alguna duda sobre este pago, no dudes en contactarnos.</p>
         
         <p style="margin-top: 15px;">
-        <p style="margin-top: 15px;">
-          Gracias por tu comprensiNn. Estamos aquN para ayudarte a completar tu solicitud de pago.
-        </p>
+                    Gracias por ser parte de nuestro sistema de proveedores.
+          Tu colaboración es fundamental para el éxito de nuestros proyectos.
         </p>
       </div>
     </div>
@@ -321,7 +313,7 @@
     <!-- Footer -->
     <div class="footer">
       <p>
-        © {{ date('Y') }} {{ config('app.name', 'Sistema de Proveedores') }} - 
+        © {{ date('Y') }} {{ config('app.name', 'Sistema de Proveedores') }} -
         Este es un mensaje automático, por favor no responder directamente.
       </p>
     </div>

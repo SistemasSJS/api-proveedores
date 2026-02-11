@@ -1,7 +1,8 @@
-<?php
+<php
 
 namespace App\Notifications\SolicitudPago;
 
+use App\Models\SolicitudPago;
 use App\Services\FcmService;
 use App\Traits\NotificationStyleTrait;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
@@ -17,8 +18,10 @@ class SolicitudPagoFacturaSubida extends Notification implements ShouldBroadcast
     public string $solicitudPagoFolio,
     public int $solicitudPagoId,
     public int $proveedorId,
-    public ?int $userId = null
-  ) {}
+    public int $userId = null
+  ) {
+    $this->solicitudPagoFolio = $this->resolveSolicitudPagoFolio($this->solicitudPagoFolio, $this->solicitudPagoId);
+  }
 
   /**
    * Canales
@@ -72,7 +75,7 @@ class SolicitudPagoFacturaSubida extends Notification implements ShouldBroadcast
     $frontendUrl = config('app.frontend_url', config('app.url'));
 
     return (new MailMessage)
-      ->subject('Factura subida - Solicitud de Pago #' . $this->solicitudPagoFolio)
+      ->subject('Factura subida - Solicitud de pago #' . $this->solicitudPagoFolio)
       ->view('emails.solicitud-pago.factura-subida', [
         'notifiable' => $notifiable,
         'solicitudPagoFolio' => $this->solicitudPagoFolio,
@@ -97,7 +100,7 @@ class SolicitudPagoFacturaSubida extends Notification implements ShouldBroadcast
     app(FcmService::class)->sendToTokens(
       $tokens,
       [
-        'title' => '🧾 Factura subida',
+        'title' => 'Factura subida',
         'body' => "La solicitud #{$this->solicitudPagoFolio} ya cuenta con factura.",
       ],
       $this->addStylesToData([
@@ -133,5 +136,19 @@ class SolicitudPagoFacturaSubida extends Notification implements ShouldBroadcast
   protected function getNotificationSubtipo(): string
   {
     return 'factura_subida';
+  }
+
+  private function resolveSolicitudPagoFolio(string $folio, int $solicitudPagoId): string
+  {
+    if ($folio && !preg_match('/^SP-\\d+$/', $folio)) {
+      return $folio;
+    }
+
+    $sp = SolicitudPago::find($solicitudPagoId);
+    if ($sp && $sp->numero_folio_solicitud) {
+      return $sp->numero_folio_solicitud;
+    }
+
+    return $folio : ('SP-' . $solicitudPagoId);
   }
 }

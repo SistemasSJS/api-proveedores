@@ -1,7 +1,8 @@
-<?php
+<php
 
 namespace App\Notifications\SolicitudPago;
 
+use App\Models\SolicitudPago;
 use App\Traits\NotificationStyleTrait;
 use App\Services\FcmService;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
@@ -20,13 +21,14 @@ class SolicitudPagoRechazadaSinAutorizacion extends Notification implements Shou
     public $motivo;
     public $userId;
 
-    public function __construct(string $solicitudPagoFolio, int $solicitudPagoId, int $proveedorId, ?string $motivo = null, ?int $userId = null)
+    public function __construct(string $solicitudPagoFolio, int $solicitudPagoId, int $proveedorId, string $motivo = null, int $userId = null)
     {
         $this->solicitudPagoFolio = $solicitudPagoFolio;
         $this->solicitudPagoId = $solicitudPagoId;
         $this->proveedorId = $proveedorId;
         $this->motivo = $motivo;
         $this->userId = $userId;
+        $this->solicitudPagoFolio = $this->resolveSolicitudPagoFolio($solicitudPagoFolio, $solicitudPagoId);
     }
 
     /**
@@ -57,7 +59,7 @@ class SolicitudPagoRechazadaSinAutorizacion extends Notification implements Shou
         $data  = [
             'tipo' => 'solicitud_pago',   // Categoría base
             'subtipo' => 'rechazada-sin-autorizacion',     // Tipo específico
-            'titulo' => 'Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
+            'titulo' => 'Solicitud de pago rechazada #' . $this->solicitudPagoFolio,
             'mensaje' => "Tu solicitud de pago #{$this->solicitudPagoFolio} ha sido rechazada durante la verificación.",
             'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
             'data' => [
@@ -96,7 +98,7 @@ class SolicitudPagoRechazadaSinAutorizacion extends Notification implements Shou
         return [
             'tipo' => 'solicitud_pago',   // Categoría base
             'subtipo' => 'rechazada-sin-autorizacion',     // Tipo específico
-            'titulo' => 'Solicitud de Pago Rechazada #' . $this->solicitudPagoFolio,
+            'titulo' => 'Solicitud de pago rechazada #' . $this->solicitudPagoFolio,
             'mensaje' => "Tu solicitud de pago #{$this->solicitudPagoFolio} ha sido rechazada durante la verificación.",
             'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
             'solicitud_pago_id' => $this->solicitudPagoId,
@@ -144,9 +146,9 @@ class SolicitudPagoRechazadaSinAutorizacion extends Notification implements Shou
         }
 
         $notification = [
-            'title' => '⚠️ Solicitud Rechazada #' . $this->solicitudPagoFolio,
+            'title' => 'Solicitud de pago rechazada #' . $this->solicitudPagoFolio,
             'body' => $this->motivo
-                ? "Tu solicitud de pago fue rechazada durante la verificación. Motivo: {$this->motivo}"
+                 "Tu solicitud de pago fue rechazada durante la verificación. Motivo: {$this->motivo}"
                 : "Tu solicitud de pago fue rechazada durante la verificación.",
         ];
 
@@ -177,5 +179,19 @@ class SolicitudPagoRechazadaSinAutorizacion extends Notification implements Shou
     protected function getNotificationSubtipo(): string
     {
         return 'rechazada-sin-autorizacion';
+    }
+
+    private function resolveSolicitudPagoFolio(string $folio, int $solicitudPagoId): string
+    {
+        if ($folio && !preg_match('/^SP-\\d+$/', $folio)) {
+            return $folio;
+        }
+
+        $sp = SolicitudPago::find($solicitudPagoId);
+        if ($sp && $sp->numero_folio_solicitud) {
+            return $sp->numero_folio_solicitud;
+        }
+
+        return $folio : ('SP-' . $solicitudPagoId);
     }
 }

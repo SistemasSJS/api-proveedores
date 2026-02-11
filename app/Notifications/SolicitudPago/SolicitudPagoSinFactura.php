@@ -1,7 +1,8 @@
-<?php
+<php
 
 namespace App\Notifications\SolicitudPago;
 
+use App\Models\SolicitudPago;
 use App\Services\FcmService;
 use App\Traits\NotificationStyleTrait;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
@@ -17,8 +18,10 @@ class SolicitudPagoSinFactura extends Notification implements ShouldBroadcastNow
     public string $solicitudPagoFolio,
     public int $solicitudPagoId,
     public int $proveedorId,
-    public ?int $userId = null
-  ) {}
+    public int $userId = null
+  ) {
+    $this->solicitudPagoFolio = $this->resolveSolicitudPagoFolio($this->solicitudPagoFolio, $this->solicitudPagoId);
+  }
 
   /**
    * Canales
@@ -72,7 +75,7 @@ class SolicitudPagoSinFactura extends Notification implements ShouldBroadcastNow
     $frontendUrl = config('app.frontend_url', config('app.url'));
 
     return (new MailMessage)
-      ->subject('Solicitud de Pago Sin Factura #' . $this->solicitudPagoFolio)
+      ->subject('Solicitud de pago sin factura #' . $this->solicitudPagoFolio)
       ->view('emails.solicitud-pago.sin-factura', [
         'notifiable' => $notifiable,
         'solicitudPagoFolio' => $this->solicitudPagoFolio,
@@ -97,7 +100,7 @@ class SolicitudPagoSinFactura extends Notification implements ShouldBroadcastNow
     app(FcmService::class)->sendToTokens(
       $tokens,
       [
-        'title' => '🧾 Solicitud de Pago Sin Factura',
+        'title' => 'Solicitud de pago sin factura',
         'body' => "La solicitud #{$this->solicitudPagoFolio} no tiene factura.",
       ],
       $this->addStylesToData([
@@ -114,7 +117,7 @@ class SolicitudPagoSinFactura extends Notification implements ShouldBroadcastNow
     return [
       'tipo' => 'solicitud_pago',
       'subtipo' => 'sin_factura',
-      'titulo' => 'Solicitud de Pago Sin Factura #' . $this->solicitudPagoFolio,
+      'titulo' => 'Solicitud de pago sin factura #' . $this->solicitudPagoFolio,
       'mensaje' => "La solicitud de pago #{$this->solicitudPagoFolio} no tiene factura.",
       'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       'solicitud_pago_id' => $this->solicitudPagoId,
@@ -133,5 +136,19 @@ class SolicitudPagoSinFactura extends Notification implements ShouldBroadcastNow
   protected function getNotificationSubtipo(): string
   {
     return 'sin_factura';
+  }
+
+  private function resolveSolicitudPagoFolio(string $folio, int $solicitudPagoId): string
+  {
+    if ($folio && !preg_match('/^SP-\\d+$/', $folio)) {
+      return $folio;
+    }
+
+    $sp = SolicitudPago::find($solicitudPagoId);
+    if ($sp && $sp->numero_folio_solicitud) {
+      return $sp->numero_folio_solicitud;
+    }
+
+    return $folio : ('SP-' . $solicitudPagoId);
   }
 }

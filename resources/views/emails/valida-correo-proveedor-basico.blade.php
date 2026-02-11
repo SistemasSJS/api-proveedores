@@ -139,7 +139,7 @@
     <div class="email-container">
         <!-- Header con logo -->
         <div class="header">
-            <img src="{{ config('app.url') }}/assets/icon/ms-310.png" alt="SJS Construcciones Logo" class="logo">
+            <img src="{{ config('app.url') }}/assets/logos/logo-gestionpro.png" alt="Gesti?nPro" class="logo">
             <h1 class="header-title">¡Bienvenido a SJS Construcciones!</h1>
         </div>
 

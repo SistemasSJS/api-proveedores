@@ -886,6 +886,9 @@ class ConstruccPagosSPPController extends Controller
 
 
                 $spPagoCompleto = $solicitudPago->actualizarSaldos($solicitudData['monto_pago']);
+                $solicitudPago->refresh();
+                $saldoRestante = $solicitudPago->saldo_pendiente ?? $solicitudPago->calcularSaldoRestante();
+                $montoAcumulado = $solicitudPago->monto_abonado;
 
                 // Validar que tipo de notificacion utiliar: SPPPagada o SPPAbonada  
 
@@ -895,6 +898,7 @@ class ConstruccPagosSPPController extends Controller
                             $solicitudPago->numero_folio_solicitud,
                             $solicitudPago->id,
                             $proveedor->id,
+                            $solicitudData['monto_pago'],
                             $proveedorUsuarioPrincipal->id
                         ));
                     } else {
@@ -902,7 +906,11 @@ class ConstruccPagosSPPController extends Controller
                             $solicitudPago->numero_folio_solicitud,
                             $solicitudPago->id,
                             $proveedor->id,
-                            $proveedorUsuarioPrincipal->id
+                            $solicitudData['monto_pago'],
+                            $saldoRestante,
+                            $proveedorUsuarioPrincipal->id,
+                            $montoAcumulado,
+                            $saldo_inicial_spp
                         ));
                     }
                 }

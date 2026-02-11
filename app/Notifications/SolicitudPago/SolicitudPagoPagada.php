@@ -1,7 +1,8 @@
-<?php
+<php
 
 namespace App\Notifications\SolicitudPago;
 
+use App\Models\SolicitudPago;
 use App\Traits\NotificationStyleTrait;
 use App\Services\FcmService;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
@@ -20,14 +21,15 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
     public $monto;
     public $userId;
 
-    public function __construct(string $solicitudPagoFolio, int $solicitudPagoId, int $proveedorId, ?float $monto = null, ?int $userId = null)
+    public function __construct(string $solicitudPagoFolio, int $solicitudPagoId, int $proveedorId, float $monto = null, int $userId = null)
     {
-        $this->solicitudPagoFolio = $solicitudPagoFolio;
-        $this->solicitudPagoId = $solicitudPagoId;
-        $this->proveedorId = $proveedorId;
-        $this->monto = $monto;
-        $this->userId = $userId;
-    }
+    $this->solicitudPagoFolio = $solicitudPagoFolio;
+    $this->solicitudPagoId = $solicitudPagoId;
+    $this->proveedorId = $proveedorId;
+    $this->monto = $monto;
+    $this->userId = $userId;
+    $this->solicitudPagoFolio = $this->resolveSolicitudPagoFolio($solicitudPagoFolio, $solicitudPagoId);
+  }
 
     /**
      * Canales de notificación
@@ -57,8 +59,8 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
         $data = [
             'tipo' => 'solicitud_pago',  // Categoría base
             'subtipo' => 'pagada',        // Tipo específico
-            'titulo' => 'Solicitud de Pago Pagada #' . $this->solicitudPagoFolio,
-            'mensaje' => "Tu solicitud de pago #{$this->solicitudPagoFolio} ha sido pagada.",
+            'titulo' => 'Solicitud de pago pagada #' . $this->solicitudPagoFolio,
+            'mensaje' => "Se registró el pago de tu solicitud #{$this->solicitudPagoFolio}.",
             'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
             'data' => [
                 'solicitud_pago_folio' => $this->solicitudPagoFolio,
@@ -97,8 +99,8 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
         $data = [
             'tipo' => 'solicitud_pago',  // Categoría base
             'subtipo' => 'pagada',        // Tipo específico
-            'titulo' => 'Solicitud de Pago Pagada #' . $this->solicitudPagoFolio,
-            'mensaje' => "Tu solicitud de pago #{$this->solicitudPagoFolio} ha sido pagada.",
+            'titulo' => 'Solicitud de pago pagada #' . $this->solicitudPagoFolio,
+            'mensaje' => "Se registró el pago de tu solicitud #{$this->solicitudPagoFolio}.",
             'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
             'solicitud_pago_id' => $this->solicitudPagoId,
             'solicitud_pago_folio' => $this->solicitudPagoFolio,
@@ -121,7 +123,7 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
         $urlSolicitud = $frontendUrl . '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId;
 
         return (new MailMessage)
-            ->subject('Solicitud de Pago Pagada #' . $this->solicitudPagoFolio)
+            ->subject('Solicitud de pago pagada #' . $this->solicitudPagoFolio)
             ->view('emails.solicitud-pago.pagada', [
                 'notifiable' => $notifiable,
                 'solicitudPagoFolio' => $this->solicitudPagoFolio,
@@ -147,8 +149,8 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
         }
 
         $notification = [
-            'title' => '✅ Solicitud de Pago Pagada #' . $this->solicitudPagoFolio,
-            'body' => "Tu solicitud de pago ha sido pagada exitosamente.",
+            'title' => 'Solicitud de pago pagada #' . $this->solicitudPagoFolio,
+            'body' => 'Se registró el pago de tu solicitud.',
         ];
         $data = [
             'tipo' => 'solicitud_pago',  // Categoría base
@@ -156,7 +158,7 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
             'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
             'solicitud_pago_folio' => $this->solicitudPagoFolio,
             'proveedor_id' => (string) $this->proveedorId,
-            'monto' => $this->monto ? (string) $this->monto : null,
+            'monto' => $this->monto  (string) $this->monto : null,
             'estatus' => 'pagada',
             'timestamp' => now()->toIso8601String(),
         ];
@@ -175,6 +177,20 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
 
     protected function getNotificationSubtipo(): string
     {
-        return 'pagada';
+    return 'pagada';
+  }
+
+  private function resolveSolicitudPagoFolio(string $folio, int $solicitudPagoId): string
+  {
+    if ($folio && !preg_match('/^SP-\\d+$/', $folio)) {
+      return $folio;
     }
+
+    $sp = SolicitudPago::find($solicitudPagoId);
+    if ($sp && $sp->numero_folio_solicitud) {
+      return $sp->numero_folio_solicitud;
+    }
+
+    return $folio : ('SP-' . $solicitudPagoId);
+  }
 }

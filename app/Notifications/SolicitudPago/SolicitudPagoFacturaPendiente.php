@@ -1,7 +1,8 @@
-<?php
+<php
 
 namespace App\Notifications\SolicitudPago;
 
+use App\Models\SolicitudPago;
 use App\Traits\NotificationStyleTrait;
 use App\Services\FcmService;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
@@ -19,13 +20,14 @@ class SolicitudPagoFacturaPendiente extends Notification implements ShouldBroadc
   public $monto;
   public $userId;
 
-  public function __construct(string $solicitudPagoFolio, int $solicitudPagoId, int $proveedorId, ?float $monto = null, ?int $userId = null)
+  public function __construct(string $solicitudPagoFolio, int $solicitudPagoId, int $proveedorId, float $monto = null, int $userId = null)
   {
     $this->solicitudPagoFolio = $solicitudPagoFolio;
     $this->solicitudPagoId = $solicitudPagoId;
     $this->proveedorId = $proveedorId;
     $this->monto = $monto;
     $this->userId = $userId;
+    $this->solicitudPagoFolio = $this->resolveSolicitudPagoFolio($solicitudPagoFolio, $solicitudPagoId);
   }
 
   /**
@@ -55,8 +57,8 @@ class SolicitudPagoFacturaPendiente extends Notification implements ShouldBroadc
     $data = [
       'tipo' => 'solicitud_pago',
       'subtipo' => 'factura_pendiente',
-      'titulo' => 'Factura pendiente de la Solicitud de Pago #' . $this->solicitudPagoFolio,
-      'mensaje' => "La solicitud de pago #{$this->solicitudPagoFolio} fue pagada, pero aún falta la factura correspondiente. Por favor emite y sube el CFDI conforme a los datos indicados.",
+      'titulo' => 'Factura pendiente de la solicitud de pago #' . $this->solicitudPagoFolio,
+      'mensaje' => "La solicitud de pago #{$this->solicitudPagoFolio} fue pagada, pero falta la factura correspondiente. Emite y sube el CFDI conforme a los datos fiscales indicados.",
       'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       'data' => [
         'solicitud_pago_folio' => $this->solicitudPagoFolio,
@@ -83,8 +85,8 @@ class SolicitudPagoFacturaPendiente extends Notification implements ShouldBroadc
     $data = [
       'tipo' => 'solicitud_pago',
       'subtipo' => 'factura_pendiente',
-      'titulo' => 'Factura pendiente de la Solicitud de Pago #' . $this->solicitudPagoFolio,
-      'mensaje' => "La solicitud de pago #{$this->solicitudPagoFolio} fue pagada, pero aún falta la factura correspondiente. Emite y sube el CFDI conforme a los datos fiscales indicados.",
+      'titulo' => 'Factura pendiente de la solicitud de pago #' . $this->solicitudPagoFolio,
+      'mensaje' => "La solicitud de pago #{$this->solicitudPagoFolio} fue pagada, pero falta la factura correspondiente. Emite y sube el CFDI conforme a los datos fiscales indicados.",
       'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       'solicitud_pago_id' => $this->solicitudPagoId,
       'solicitud_pago_folio' => $this->solicitudPagoFolio,
@@ -106,7 +108,7 @@ class SolicitudPagoFacturaPendiente extends Notification implements ShouldBroadc
     $urlSolicitud = $frontendUrl . '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId;
 
     return (new MailMessage)
-      ->subject('Factura pendiente de la Solicitud de Pago #' . $this->solicitudPagoFolio)
+      ->subject('Factura pendiente de la solicitud de pago #' . $this->solicitudPagoFolio)
       ->view('emails.solicitud-pago.factura-pendiente', [
         'notifiable' => $notifiable,
         'solicitudPagoFolio' => $this->solicitudPagoFolio,
@@ -132,7 +134,7 @@ class SolicitudPagoFacturaPendiente extends Notification implements ShouldBroadc
     }
 
     $notification = [
-      'title' => '⚠️ Factura pendiente - SPP #' . $this->solicitudPagoFolio,
+      'title' => 'Factura pendiente - SPP #' . $this->solicitudPagoFolio,
       'body' => 'La solicitud ya fue pagada, pero falta la factura (CFDI).',
     ];
 
@@ -142,7 +144,7 @@ class SolicitudPagoFacturaPendiente extends Notification implements ShouldBroadc
       'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       'solicitud_pago_folio' => $this->solicitudPagoFolio,
       'proveedor_id' => (string) $this->proveedorId,
-      'monto' => $this->monto ? (string) $this->monto : null,
+      'monto' => $this->monto  (string) $this->monto : null,
       'estatus' => 'factura_pendiente',
       'timestamp' => now()->toIso8601String(),
     ];
@@ -162,5 +164,19 @@ class SolicitudPagoFacturaPendiente extends Notification implements ShouldBroadc
   protected function getNotificationSubtipo(): string
   {
     return 'factura_pendiente';
+  }
+
+  private function resolveSolicitudPagoFolio(string $folio, int $solicitudPagoId): string
+  {
+    if ($folio && !preg_match('/^SP-\\d+$/', $folio)) {
+      return $folio;
+    }
+
+    $sp = SolicitudPago::find($solicitudPagoId);
+    if ($sp && $sp->numero_folio_solicitud) {
+      return $sp->numero_folio_solicitud;
+    }
+
+    return $folio : ('SP-' . $solicitudPagoId);
   }
 }

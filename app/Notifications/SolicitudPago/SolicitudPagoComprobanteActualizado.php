@@ -1,7 +1,8 @@
-<?php
+<php
 
 namespace App\Notifications\SolicitudPago;
 
+use App\Models\SolicitudPago;
 use App\Traits\NotificationStyleTrait;
 use App\Services\FcmService;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
@@ -22,12 +23,13 @@ class SolicitudPagoComprobanteActualizado extends Notification implements Should
     string $solicitudPagoFolio,
     int $solicitudPagoId,
     int $proveedorId,
-    ?int $userId = null
+    int $userId = null
   ) {
     $this->solicitudPagoFolio = $solicitudPagoFolio;
     $this->solicitudPagoId = $solicitudPagoId;
     $this->proveedorId = $proveedorId;
     $this->userId = $userId;
+    $this->solicitudPagoFolio = $this->resolveSolicitudPagoFolio($solicitudPagoFolio, $solicitudPagoId);
   }
 
   /**
@@ -59,8 +61,8 @@ class SolicitudPagoComprobanteActualizado extends Notification implements Should
     $data = [
       'tipo' => 'solicitud_pago',
       'subtipo' => 'comprobante_actualizado',
-      'titulo' => 'Comprobante de Pago Actualizado #' . $this->solicitudPagoFolio,
-      'mensaje' => "El comprobante de la solicitud de pago #{$this->solicitudPagoFolio} ha sido actualizado.",
+      'titulo' => 'Comprobante de pago actualizado #' . $this->solicitudPagoFolio,
+      'mensaje' => "El comprobante de la solicitud de pago #{$this->solicitudPagoFolio} fue actualizado.",
       'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       'data' => [
         'solicitud_pago_folio' => $this->solicitudPagoFolio,
@@ -86,8 +88,8 @@ class SolicitudPagoComprobanteActualizado extends Notification implements Should
     $data = [
       'tipo' => 'solicitud_pago',
       'subtipo' => 'comprobante_actualizado',
-      'titulo' => 'Comprobante de Pago Actualizado #' . $this->solicitudPagoFolio,
-      'mensaje' => "El comprobante de la solicitud de pago #{$this->solicitudPagoFolio} ha sido actualizado.",
+      'titulo' => 'Comprobante de pago actualizado #' . $this->solicitudPagoFolio,
+      'mensaje' => "El comprobante de la solicitud de pago #{$this->solicitudPagoFolio} fue actualizado.",
       'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       'solicitud_pago_id' => $this->solicitudPagoId,
       'solicitud_pago_folio' => $this->solicitudPagoFolio,
@@ -108,7 +110,7 @@ class SolicitudPagoComprobanteActualizado extends Notification implements Should
     $urlSolicitud = $frontendUrl . '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId;
 
     return (new MailMessage)
-      ->subject('Comprobante de Pago Actualizado #' . $this->solicitudPagoFolio)
+      ->subject('Comprobante de pago actualizado #' . $this->solicitudPagoFolio)
       ->view('emails.solicitud-pago.comprobante-actualizado', [
         'notifiable' => $notifiable,
         'solicitudPagoFolio' => $this->solicitudPagoFolio,
@@ -133,7 +135,7 @@ class SolicitudPagoComprobanteActualizado extends Notification implements Should
     }
 
     $notification = [
-      'title' => '📎 Comprobante Actualizado #' . $this->solicitudPagoFolio,
+      'title' => 'Comprobante actualizado #' . $this->solicitudPagoFolio,
       'body' => 'El comprobante de tu solicitud de pago fue actualizado.',
     ];
 
@@ -163,5 +165,19 @@ class SolicitudPagoComprobanteActualizado extends Notification implements Should
   protected function getNotificationSubtipo(): string
   {
     return 'comprobante_actualizado';
+  }
+
+  private function resolveSolicitudPagoFolio(string $folio, int $solicitudPagoId): string
+  {
+    if ($folio && !preg_match('/^SP-\\d+$/', $folio)) {
+      return $folio;
+    }
+
+    $sp = SolicitudPago::find($solicitudPagoId);
+    if ($sp && $sp->numero_folio_solicitud) {
+      return $sp->numero_folio_solicitud;
+    }
+
+    return $folio : ('SP-' . $solicitudPagoId);
   }
 }
