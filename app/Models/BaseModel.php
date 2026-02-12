@@ -21,13 +21,13 @@ abstract class BaseModel extends Model
 
     protected static $filters = [];
 
-    // /**
-    //  * Aplicar filtros con OR encadenado.
-    //  *
-    //  * @param $query
-    //  * @param array $filters
-    //  * @return \Illuminate\Database\Eloquent\Builder
-    //  */
+    /**
+     * Aplicar filtros con OR encadenado.
+     *
+     * @param $query
+     * @param array $filters
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
     public function scopeFilter($query, array $filters)
     {
         foreach ($filters as $filter => $value) {

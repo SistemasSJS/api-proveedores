@@ -193,6 +193,9 @@ class SolicitudPago extends BaseModel
         // Filtro para sp sin factura 
         'tiene_factura' => 'TieneFactura',
         'item_visto' => 'SPVista',
+
+        // Filtro bandera: incluir datos de facturación en la respuesta
+        'with_datos_facturacion' => 'WithDatosFacturacion',
     ];
 
     protected $casts = [
@@ -569,6 +572,23 @@ class SolicitudPago extends BaseModel
     public function filterByFechaPagoHasta($query, $value)
     {
         return $query->whereDate('fecha_pago', '<=', $value);
+    }
+
+
+    /** --------------------------------
+     * Filtros bandera
+     * --------------------------------*/
+
+    /**
+     * Filtro bandera: incluir datos de facturación en la respuesta final
+     */
+    public function filterByWithDatosFacturacion($query, $value)
+    {
+        if (filter_var($value, FILTER_VALIDATE_BOOLEAN)) {
+            $this->addResponseFlag('datos_facturacion', true);
+        }
+
+        return $query; // No se modifica el query
     }
 
     /** ----------------

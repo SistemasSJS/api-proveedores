@@ -253,6 +253,11 @@ Route::prefix('proveedores')
             Route::post('/{solicitudPago}/procesando', [ProveedorSolicitudPagoController::class, 'procesando'])->middleware(['audit']);
         });
 
+        // Pagos SPP (parciales) del proveedor
+        Route::get('{proveedor}/pagos-spp/{pago}/descargar-comprobante', [ProveedorSolicitudPagoController::class, 'descargarComprobantePagoParcial'])
+            ->middleware(['proveedor.access', 'audit'])
+            ->name('proveedores.pagos-spp.descargar-comprobante');
+
         /**
          * GESTIÓN DE ÓRDENES DE COMPRA
          */

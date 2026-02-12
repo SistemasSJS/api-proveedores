@@ -113,11 +113,12 @@ class SolicitudPagoResource extends JsonResource
 
             // Campos de abono y pagos parciales
             'monto_total' => (float) $this->monto_total,
-            'monto_abonado' => (float) $this->monto_abonado,
-            'saldo_pendiente' => (float) $this->saldo_pendiente,
+            'monto_abonado' => (float) $this->monto_total - $this->calcularSaldoRestante(),
+            // 'saldo_pendiente' => (float) $this->saldo_pendiente,
+            'saldo_pendiente' => (float) $this->calcularSaldoRestante(),
             'pago_completo' => (bool) $this->pago_completo,
             'notas_abono' => $this->notas_abono,
-            'porcentaje_pagado' => $this->monto_total > 0 ? round(($this->monto_abonado / $this->monto_total) * 100, 2) : 0,
+            'porcentaje_pagado' => $this->monto_total > 0 ? round((($this->monto_total - $this->calcularSaldoRestante()) / $this->monto_total) * 100, 2) : 0,
 
             // Información de Órdenes de Compra
             'origen_oc' => (bool) $this->origen_oc,
@@ -159,6 +160,14 @@ class SolicitudPagoResource extends JsonResource
                 ];
             }),
 
+            // datos facutracion
+            'tiene_factura' => $this->tiene_factura,
+            'datos_facturacion' => [
+                'uso' => $this->uso,
+                'mp' => $this->mp,
+                'fp' => $this->fp,
+                'datos_facturacion_id' => $this->datos_facturacion_id,
+            ],
             // Metadatos
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),

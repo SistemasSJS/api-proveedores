@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Enums\EstadoSP;
 use App\Http\Requests\SolicitudPago\CrearSolicitudPagoRequest;
 use App\Http\Requests\SolicitudPago\CrearSolicitudPagoSinFacturaRequest;
+use App\Http\Resources\Proveedor\ProveedorPagoResource;
 use App\Http\Resources\SolicitudPago\SolicitudPagoResource;
 use App\Models\EmpresaConstrucc;
+use App\Models\PagoSPP;
 use App\Models\Proveedor;
 use App\Models\SolicitudPago;
 use App\Services\InterApiService;
@@ -257,8 +259,16 @@ class ProveedorSolicitudPagoController extends Controller
         $solicitudPago->markRead(auth()->user());
 
 
-        // Cargar relaciones estándar
-        $solicitudPago->load(SolicitudPago::eagerLodable());
+        // Cargar relaciones estándar + pagos parciales asociados
+        $solicitudPago->load([
+            ...SolicitudPago::eagerLodable(),
+            'pagos' => function ($query) {
+                $query->with([
+                    'empresaConstrucc',
+                    'proveedor',
+                ])->orderByPivot('fecha_aplicacion', 'desc');
+            },
+        ]);
 
         // Fallback cuentas bancarias
         if ($solicitudPago->cuentasBancarias->isEmpty()) {
@@ -274,9 +284,10 @@ class ProveedorSolicitudPagoController extends Controller
             }
         }
 
-        return $this->success(
-            new SolicitudPagoResource($solicitudPago)
-        );
+        $solicitudPagoData = (new SolicitudPagoResource($solicitudPago))->resolve();
+        $solicitudPagoData['pagos'] = ProveedorPagoResource::collection($solicitudPago->pagos)->resolve();
+
+        return $this->success($solicitudPagoData);
     }
 
     /**
@@ -427,6 +438,24 @@ class ProveedorSolicitudPagoController extends Controller
 
         return response()->download(
             Storage::disk('private')->path($solicitudPago->ruta_archivo_comprobante_pago)
+        );
+    }
+
+    /**
+     * Descargar comprobante de un Pago SPP (pago parcial)
+     */
+    public function descargarComprobantePagoParcial(Proveedor $proveedor, PagoSPP $pago)
+    {
+        if ($pago->proveedor_id !== $proveedor->id) {
+            return $this->error('El pago no pertenece a este proveedor', 403);
+        }
+
+        if (! $pago->comprobante_pago || ! Storage::disk('private')->exists($pago->comprobante_pago)) {
+            return $this->error('Comprobante no disponible', 404);
+        }
+
+        return response()->download(
+            Storage::disk('private')->path($pago->comprobante_pago)
         );
     }
 
