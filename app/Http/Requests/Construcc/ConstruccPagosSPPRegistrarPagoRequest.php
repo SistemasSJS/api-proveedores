@@ -64,6 +64,8 @@ class ConstruccPagosSPPRegistrarPagoRequest extends FormRequest
       'solicitudes.*.uso' => ['nullable', 'string'],
       'solicitudes.*.mp' => ['nullable', 'string'],
       'solicitudes.*.fp' => ['nullable', 'string'],
+      'solicitudes.*.rf' => ['nullable', 'string'],
+      'solicitudes.*.razon_social_id' => ['nullable', 'numeric'],
       'solicitudes.*.datos_facturacion_id' => ['nullable', 'numeric'],
 
       // Otros datos

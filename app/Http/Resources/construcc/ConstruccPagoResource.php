@@ -82,6 +82,8 @@ class ConstruccPagoResource extends JsonResource
               'uso' => $sp->uso,
               'mp' => $sp->mp,
               'fp' => $sp->fp,
+              'rf' => $sp->rf,
+              'razon_social_id' => $sp->razon_social_id,
               'datos_facturacion_id' => $sp->datos_facturacion_id,
             ],
             // Pivot blindado

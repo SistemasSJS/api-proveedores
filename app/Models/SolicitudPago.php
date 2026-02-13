@@ -125,9 +125,11 @@ class SolicitudPago extends BaseModel
 
         // Especificacion de facturacion
         'datos_facturacion_id', // Si USO, MP, FP estan en null datos_facturacion_id contiene todos los daots de facturacion
+        'razon_social_id',
         'uso',  // uso_cfdi: puedene ser nullos
         'mp',   // metodo_pago: puedene ser nullos 
         'fp',   // forma_pago: puedene ser nullos 
+        'rf', // regimen fiscal
 
 
 

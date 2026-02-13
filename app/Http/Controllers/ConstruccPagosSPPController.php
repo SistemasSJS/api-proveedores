@@ -926,7 +926,9 @@ class ConstruccPagosSPPController extends Controller
                 $uso  = $solicitudData['uso'] ?? null;
                 $mp   = $solicitudData['mp'] ?? null;
                 $fp   = $solicitudData['fp'] ?? null; // ojo: en el request se llama pue
+                $rf   = $solicitudData['rf'] ?? null; // ojo: en el request se llama pue
                 $datosFacturacionId = $solicitudData['datos_facturacion_id'] ?? null;
+                $razonSocialId = $solicitudData['razon_social_id'] ?? null;
 
                 // Solo se solicita factura cuando la SPP ya quedo pagada.
                 if ($solicitudPago && ! $solicitudPago->tiene_factura) {
@@ -934,7 +936,9 @@ class ConstruccPagosSPPController extends Controller
                         'uso' => $uso,
                         'mp'  => $mp,
                         'fp'  => $fp,
+                        'rf'  => $rf,
                         'datos_facturacion_id' => $datosFacturacionId,
+                        'razon_social_id' => $razonSocialId,
                     ]);
                     $solicitudPago->refresh();
 
@@ -966,7 +970,6 @@ class ConstruccPagosSPPController extends Controller
                     ]);
                 }
             ]);
-
 
             // return $this->success($pago, 'Pago registrado y aplicado exitosamente.', 201);
             return $this->success(

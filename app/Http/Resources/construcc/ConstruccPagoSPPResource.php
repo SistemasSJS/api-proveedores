@@ -37,6 +37,8 @@ class ConstruccPagoSPPResource extends JsonResource
                 'uso' => $this->uso,
                 'mp' => $this->mp,
                 'fp' => $this->fp,
+                'rf' => $this->rf,
+                'razon_social_id' => $this->razon_social_id,
                 'datos_facturacion_id' => $this->datos_facturacion_id,
             ],
 

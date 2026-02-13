@@ -385,10 +385,16 @@ class InterApiService
   public function obtenerDatosFacturacionEmpresa($empresaConstruccId)
   {
     try {
-      $payload = ['id' => $empresaConstruccId];
+      Log::channel('inter_api')->info('Iniciando solicitud de datos de facturación de empresa', [
+        'datos_facturacion_id' => $empresaConstruccId,
+      ]);
 
-      // TODO: LA ruta aun no esta establecida
-      $url = "{$this->apiContruccUrl}/api/datos-facturacion";
+      // TODO: Definir endpoint real cuando esté disponible en API Construcciones
+      $url = "{$this->apiContruccUrl}/empresas/{$empresaConstruccId}/facturacion-default";
+
+      Log::channel('inter_api')->info('URL destino para obtener datos de facturación', [
+        'url' => $url,
+      ]);
 
       $response = Http::withoutVerifying()
         ->withHeaders([
@@ -396,14 +402,44 @@ class InterApiService
           'Accept' => 'application/json',
         ])
         ->timeout($this->timeout)
-        ->post($url, $payload);
+        ->get($url); // <-- aquí sí hace más sentido GET
+
+      Log::channel('inter_api')->info('Respuesta recibida desde API Construcciones (datos facturación empresa)', [
+        'status'  => $response->status(),
+        'ok'      => $response->successful(),
+        'headers' => $response->headers(),
+        'body'    => $response->json() ?? $response->body(),
+      ]);
+
+      if ($response->successful()) {
+        Log::channel('inter_api')->info('Datos de facturación de empresa obtenidos correctamente', [
+          'datos_facturacion_id' => $empresaConstruccId,
+        ]);
+
+        return [
+          'success' => true,
+          'data' => $response->json(),
+        ];
+      }
+
+      Log::channel('inter_api')->warning('Fallo al obtener datos de facturación de empresa', [
+        'datos_facturacion_id' => $empresaConstruccId,
+        'status' => $response->status(),
+        'error' => $response->body(),
+      ]);
 
       return [
-        'success' => $response->successful(),
-        'status'  => $response->status(),
-        'data'    => $response->json(),
+        'success' => false,
+        'error' => $response->body(),
+        'status' => $response->status(),
       ];
     } catch (\Throwable $e) {
+      Log::channel('inter_api')->error('Excepción al obtener datos de facturación de empresa', [
+        'datos_facturacion_id' => $empresaConstruccId,
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString(),
+      ]);
+
       return [
         'success' => false,
         'error'   => $e->getMessage(),
