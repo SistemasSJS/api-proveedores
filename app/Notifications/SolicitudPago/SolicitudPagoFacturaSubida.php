@@ -1,4 +1,4 @@
-<php
+<?php
 
 namespace App\Notifications\SolicitudPago;
 
@@ -14,13 +14,21 @@ class SolicitudPagoFacturaSubida extends Notification implements ShouldBroadcast
 {
   use NotificationStyleTrait;
 
+    public string $solicitudPagoFolio;
+    public int $solicitudPagoId;
+    public int $proveedorId;
+    public int $userId;
+
   public function __construct(
-    public string $solicitudPagoFolio,
-    public int $solicitudPagoId,
-    public int $proveedorId,
-    public int $userId = null
+     string $solicitudPagoFolio,
+     int $solicitudPagoId,
+     int $proveedorId,
+     int $userId = null
   ) {
-    $this->solicitudPagoFolio = $this->resolveSolicitudPagoFolio($this->solicitudPagoFolio, $this->solicitudPagoId);
+   $this->solicitudPagoFolio= $solicitudPagoFolio;
+   $this->solicitudPagoId= $solicitudPagoId;
+   $this->proveedorId= $proveedorId;
+   $this->userId= $userId;
   }
 
   /**
@@ -136,19 +144,5 @@ class SolicitudPagoFacturaSubida extends Notification implements ShouldBroadcast
   protected function getNotificationSubtipo(): string
   {
     return 'factura_subida';
-  }
-
-  private function resolveSolicitudPagoFolio(string $folio, int $solicitudPagoId): string
-  {
-    if ($folio && !preg_match('/^SP-\\d+$/', $folio)) {
-      return $folio;
-    }
-
-    $sp = SolicitudPago::find($solicitudPagoId);
-    if ($sp && $sp->numero_folio_solicitud) {
-      return $sp->numero_folio_solicitud;
-    }
-
-    return $folio : ('SP-' . $solicitudPagoId);
   }
 }

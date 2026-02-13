@@ -1,4 +1,4 @@
-<php
+<?php
 
 namespace App\Notifications\SolicitudPago;
 
@@ -41,7 +41,7 @@ class SolicitudPagoAbonada extends Notification implements ShouldBroadcastNow
     $this->userId = $userId;
     $this->montoAcumulado = $montoAcumulado;
     $this->saldoInicial = $saldoInicial;
-    $this->solicitudPagoFolio = $this->resolveSolicitudPagoFolio($solicitudPagoFolio, $solicitudPagoId);
+    $this->solicitudPagoFolio = $solicitudPagoFolio;
   }
 
   /**
@@ -166,10 +166,10 @@ class SolicitudPagoAbonada extends Notification implements ShouldBroadcastNow
       'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       'solicitud_pago_folio' => $this->solicitudPagoFolio,
       'proveedor_id' => (string) $this->proveedorId,
-      'monto_abonado' => $this->montoAbonado  (string) $this->montoAbonado : null,
-      'monto_acumulado' => $this->montoAcumulado  (string) $this->montoAcumulado : null,
-      'saldo_inicial' => $this->saldoInicial  (string) $this->saldoInicial : null,
-      'monto_restante' => $this->montoRestante  (string) $this->montoRestante : null,
+      'monto_abonado' => $this->montoAbonado  ? (string) $this->montoAbonado : null,
+      'monto_acumulado' => $this->montoAcumulado  ? (string) $this->montoAcumulado : null,
+      'saldo_inicial' => $this->saldoInicial  ? (string) $this->saldoInicial : null,
+      'monto_restante' => $this->montoRestante  ? (string) $this->montoRestante : null,
       'estatus' => 'abonada',
       'timestamp' => now()->toIso8601String(),
     ];
@@ -189,19 +189,5 @@ class SolicitudPagoAbonada extends Notification implements ShouldBroadcastNow
   protected function getNotificationSubtipo(): string
   {
     return 'abonada';
-  }
-
-  private function resolveSolicitudPagoFolio(string $folio, int $solicitudPagoId): string
-  {
-    if ($folio && !preg_match('/^SP-\\d+$/', $folio)) {
-      return $folio;
-    }
-
-    $sp = SolicitudPago::find($solicitudPagoId);
-    if ($sp && $sp->numero_folio_solicitud) {
-      return $sp->numero_folio_solicitud;
-    }
-
-    return $folio : ('SP-' . $solicitudPagoId);
   }
 }

@@ -1,4 +1,4 @@
-<php
+<?php
 
 namespace App\Notifications\SolicitudPago;
 
@@ -29,7 +29,7 @@ class SolicitudPagoComprobanteActualizado extends Notification implements Should
     $this->solicitudPagoId = $solicitudPagoId;
     $this->proveedorId = $proveedorId;
     $this->userId = $userId;
-    $this->solicitudPagoFolio = $this->resolveSolicitudPagoFolio($solicitudPagoFolio, $solicitudPagoId);
+    $this->solicitudPagoFolio = $solicitudPagoFolio;
   }
 
   /**
@@ -165,19 +165,5 @@ class SolicitudPagoComprobanteActualizado extends Notification implements Should
   protected function getNotificationSubtipo(): string
   {
     return 'comprobante_actualizado';
-  }
-
-  private function resolveSolicitudPagoFolio(string $folio, int $solicitudPagoId): string
-  {
-    if ($folio && !preg_match('/^SP-\\d+$/', $folio)) {
-      return $folio;
-    }
-
-    $sp = SolicitudPago::find($solicitudPagoId);
-    if ($sp && $sp->numero_folio_solicitud) {
-      return $sp->numero_folio_solicitud;
-    }
-
-    return $folio : ('SP-' . $solicitudPagoId);
   }
 }

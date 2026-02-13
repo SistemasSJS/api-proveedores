@@ -1,4 +1,4 @@
-<php
+<?php
 
 namespace App\Notifications\SolicitudPago;
 
@@ -28,7 +28,7 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
         $this->proveedorId = $proveedorId;
         $this->motivo = $motivo;
         $this->userId = $userId;
-        $this->solicitudPagoFolio = $this->resolveSolicitudPagoFolio($solicitudPagoFolio, $solicitudPagoId);
+        $this->solicitudPagoFolio = $solicitudPagoFolio;
     }
 
     /**
@@ -148,7 +148,7 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
         $notification = [
             'title' => 'Solicitud de pago rechazada #' . $this->solicitudPagoFolio,
             'body' => $this->motivo
-                 "Tu solicitud de pago fue rechazada. Motivo: {$this->motivo}"
+                ? "Tu solicitud de pago fue rechazada. Motivo: {$this->motivo}"
                 : "Tu solicitud de pago fue rechazada.",
         ];
         $data = [
@@ -177,19 +177,5 @@ class SolicitudPagoRechazada extends Notification implements ShouldBroadcastNow
     protected function getNotificationSubtipo(): string
     {
         return 'rechazada';
-    }
-
-    private function resolveSolicitudPagoFolio(string $folio, int $solicitudPagoId): string
-    {
-        if ($folio && !preg_match('/^SP-\\d+$/', $folio)) {
-            return $folio;
-        }
-
-        $sp = SolicitudPago::find($solicitudPagoId);
-        if ($sp && $sp->numero_folio_solicitud) {
-            return $sp->numero_folio_solicitud;
-        }
-
-        return $folio : ('SP-' . $solicitudPagoId);
     }
 }

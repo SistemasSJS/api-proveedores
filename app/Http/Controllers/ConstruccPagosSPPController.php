@@ -934,7 +934,8 @@ class ConstruccPagosSPPController extends Controller
                     /** @var SolicitudPago */
                     $sp   = SolicitudPago::find($spId);
 
-                    if ($sp && ! $sp->tiene_factura) {
+                    // Solo se solicita factura cuando la SPP ya quedo pagada.
+                    if ($sp && ! $sp->tiene_factura && $spPagoCompleto) {
                         $sp->update([
                             'uso' => $uso,
                             'mp'  => $mp,

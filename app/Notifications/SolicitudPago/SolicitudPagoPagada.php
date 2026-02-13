@@ -1,4 +1,4 @@
-<php
+<?php
 
 namespace App\Notifications\SolicitudPago;
 
@@ -28,7 +28,7 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
     $this->proveedorId = $proveedorId;
     $this->monto = $monto;
     $this->userId = $userId;
-    $this->solicitudPagoFolio = $this->resolveSolicitudPagoFolio($solicitudPagoFolio, $solicitudPagoId);
+    $this->solicitudPagoFolio = $solicitudPagoFolio;
   }
 
     /**
@@ -158,7 +158,7 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
             'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
             'solicitud_pago_folio' => $this->solicitudPagoFolio,
             'proveedor_id' => (string) $this->proveedorId,
-            'monto' => $this->monto  (string) $this->monto : null,
+            'monto' => $this->monto ? (string) $this->monto : null,
             'estatus' => 'pagada',
             'timestamp' => now()->toIso8601String(),
         ];
@@ -178,19 +178,5 @@ class SolicitudPagoPagada extends Notification implements ShouldBroadcastNow
     protected function getNotificationSubtipo(): string
     {
     return 'pagada';
-  }
-
-  private function resolveSolicitudPagoFolio(string $folio, int $solicitudPagoId): string
-  {
-    if ($folio && !preg_match('/^SP-\\d+$/', $folio)) {
-      return $folio;
-    }
-
-    $sp = SolicitudPago::find($solicitudPagoId);
-    if ($sp && $sp->numero_folio_solicitud) {
-      return $sp->numero_folio_solicitud;
-    }
-
-    return $folio : ('SP-' . $solicitudPagoId);
   }
 }
