@@ -923,35 +923,29 @@ class ConstruccPagosSPPController extends Controller
                  * Los campos uso, mp, fp si vienen en null 
                  * la consutal a interApi tiene todos los datos de facturacion 
                  */
-                $uso  = $validated['uso'] ?? null;
-                $mp   = $validated['mp'] ?? null;
-                $fp   = $validated['fp'] ?? null; // ojo: en el request se llama pue
-                $datosFacturacionId = $validated['datos_facturacion_id'] ?? null;
+                $uso  = $solicitudData['uso'] ?? null;
+                $mp   = $solicitudData['mp'] ?? null;
+                $fp   = $solicitudData['fp'] ?? null; // ojo: en el request se llama pue
+                $datosFacturacionId = $solicitudData['datos_facturacion_id'] ?? null;
 
-                // Regla: solo 1 SP y que no tenga factura
-                if (count($validated['solicitudes']) === 1) {
-                    $spId = $validated['solicitudes'][0]['solicitud_id'];
-                    /** @var SolicitudPago */
-                    $sp   = SolicitudPago::find($spId);
+                // Solo se solicita factura cuando la SPP ya quedo pagada.
+                if ($solicitudPago && ! $solicitudPago->tiene_factura) {
+                    $solicitudPago->update([
+                        'uso' => $uso,
+                        'mp'  => $mp,
+                        'fp'  => $fp,
+                        'datos_facturacion_id' => $datosFacturacionId,
+                    ]);
+                    $solicitudPago->refresh();
 
-                    // Solo se solicita factura cuando la SPP ya quedo pagada.
-                    if ($sp && ! $sp->tiene_factura && $spPagoCompleto) {
-                        $sp->update([
-                            'uso' => $uso,
-                            'mp'  => $mp,
-                            'fp'  => $fp,
-                            'datos_facturacion_id' => $datosFacturacionId,
-                        ]);
-
-                        if ($proveedorUsuarioPrincipal) {
-                            $proveedorUsuarioPrincipal->notify(new SolicitudPagoFacturaPendiente(
-                                $sp->numero_folio_solicitud,
-                                $sp->id,
-                                $sp->proveedor_id,
-                                $validated['monto_total'],
-                                $proveedorUsuarioPrincipal->id
-                            ));
-                        }
+                    if ($proveedorUsuarioPrincipal) {
+                        $proveedorUsuarioPrincipal->notify(new SolicitudPagoFacturaPendiente(
+                            $solicitudPago->numero_folio_solicitud,
+                            $solicitudPago->id,
+                            $solicitudPago->proveedor_id,
+                            $validated['monto_total'],
+                            $proveedorUsuarioPrincipal->id
+                        ));
                     }
                 }
             }

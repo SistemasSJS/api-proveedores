@@ -58,17 +58,24 @@ class ConstruccPagosSPPRegistrarPagoRequest extends FormRequest
       'solicitudes'                   => ['required', 'array', 'min:1'],
       'solicitudes.*.solicitud_id'    => ['required', 'integer', 'exists:solicitudes_pago,id'],
       'solicitudes.*.monto_pago'      => ['required', 'numeric', 'min:0.01'],
+      // =========================
+      // datos de facturacion
+      // =========================
+      'solicitudes.*.uso' => ['nullable', 'string'],
+      'solicitudes.*.mp' => ['nullable', 'string'],
+      'solicitudes.*.fp' => ['nullable', 'string'],
+      'solicitudes.*.datos_facturacion_id' => ['nullable', 'numeric'],
 
       // Otros datos
       'fecha_pago'      => ['required', 'date'],              // --> cambio por info_comprobante.fecha + info_comprobante.hora
 
-      // =========================
-      // datos de facturacion
-      // =========================
-      'uso' => ['nullable', 'string'],
-      'mp' => ['nullable', 'string'],
-      'fp' => ['nullable', 'string'],
-      'datos_facturacion_id' => ['nullable', 'numeric'],
+      // // =========================
+      // // datos de facturacion
+      // // =========================
+      // 'uso' => ['nullable', 'string'],
+      // 'mp' => ['nullable', 'string'],
+      // 'fp' => ['nullable', 'string'],
+      // 'datos_facturacion_id' => ['nullable', 'numeric'],
 
     ];
   }
