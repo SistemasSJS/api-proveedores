@@ -62,6 +62,23 @@ trait NotificationStyleTrait
                     'style_class' => 'payment-notification', // Siempre distintiva
                     'is_payment' => true, // Marca especial para notificaciones de pago
                 ],
+                // 👇 NUEVO: SP abonada (pago parcial)
+                'abonada' => [
+                    'color' => 'warning',                 // Visualmente distinto al pagado
+                    'icon' => 'cash-outline',             // O 'wallet-outline' si prefieres uniformidad
+                    'style_class' => 'payment-notification', // Mantiene estilo de notificación de pago
+                    'is_payment' => true,                 // Sigue siendo notificación de pago
+                    'is_partial' => true,                 // Flag opcional para diferenciar en el Front
+                ],
+                // 👇 NUEVO: Factura pendiente
+                'factura_pendiente' => [
+                    'color' => 'danger',
+                    'icon' => 'document-attach-outline',
+                    'style_class' => 'danger-notification',
+                    'is_payment' => false,        // No es pago
+                    'is_billing' => true,         // Flag semántico para el Front
+                    'requires_action' => true,    // Acción requerida del proveedor
+                ],
                 'rechazada' => [
                     'color' => 'medium',
                     'icon' => 'close-circle-outline',
