@@ -828,18 +828,16 @@ class ProveedorSolicitudPagoController extends Controller
     {
         try {
             $contenidoXml = file_get_contents($archivoXml->getRealPath());
-            $xml = simplexml_load_string($contenidoXml);
+            $xml = simplexml_load_string($contenidoXml, 'SimpleXMLElement', LIBXML_NOCDATA);
 
             if ($xml === false) {
                 Log::warning('No se pudo parsear el XML de la factura');
                 return [];
             }
 
-            // Registrar namespaces del CFDI
             $namespaces = $xml->getNamespaces(true);
-            $cfdi = $namespaces['cfdi'] ?? $namespaces[''] ?? 'http://www.sat.gob.mx/cfd/4';
-
-            // Extraer datos principales del comprobante
+            $cfdiNamespace = $namespaces['cfdi'] ?? $namespaces[''] ?? null;
+            $cfdiRoot = $cfdiNamespace ? $xml->children($cfdiNamespace) : $xml;
             $atributos = $xml->attributes();
 
             $datos = [
@@ -859,9 +857,8 @@ class ProveedorSolicitudPagoController extends Controller
                 'lugar_expedicion' => (string) ($atributos->LugarExpedicion ?? ''),
             ];
 
-            // Extraer emisor
-            if (isset($xml->Emisor)) {
-                $emisor = $xml->Emisor->attributes();
+            if (isset($cfdiRoot->Emisor)) {
+                $emisor = $cfdiRoot->Emisor->attributes();
                 $datos['emisor'] = [
                     'rfc' => (string) ($emisor->Rfc ?? ''),
                     'nombre' => (string) ($emisor->Nombre ?? ''),
@@ -869,9 +866,8 @@ class ProveedorSolicitudPagoController extends Controller
                 ];
             }
 
-            // Extraer receptor
-            if (isset($xml->Receptor)) {
-                $receptor = $xml->Receptor->attributes();
+            if (isset($cfdiRoot->Receptor)) {
+                $receptor = $cfdiRoot->Receptor->attributes();
                 $datos['receptor'] = [
                     'rfc' => (string) ($receptor->Rfc ?? ''),
                     'nombre' => (string) ($receptor->Nombre ?? ''),
@@ -879,12 +875,17 @@ class ProveedorSolicitudPagoController extends Controller
                     'domicilio_fiscal_receptor' => (string) ($receptor->DomicilioFiscalReceptor ?? ''),
                     'regimen_fiscal_receptor' => (string) ($receptor->RegimenFiscalReceptor ?? ''),
                 ];
+
+                // Claves planas usadas por validarEspecificacionFactura
+                $datos['uso_cfdi'] = (string) ($receptor->UsoCFDI ?? '');
+                $datos['regimen_fiscal_receptor'] = (string) ($receptor->RegimenFiscalReceptor ?? '');
+                $datos['codigo_postal_receptor'] = (string) ($receptor->DomicilioFiscalReceptor ?? '');
+                $datos['rfc_receptor'] = (string) ($receptor->Rfc ?? '');
             }
 
-            // Extraer conceptos
             $conceptos = [];
-            if (isset($xml->Conceptos)) {
-                foreach ($xml->Conceptos->Concepto as $concepto) {
+            if (isset($cfdiRoot->Conceptos)) {
+                foreach ($cfdiRoot->Conceptos->Concepto as $concepto) {
                     $conceptoAttr = $concepto->attributes();
                     $conceptos[] = [
                         'clave_prod_serv' => (string) ($conceptoAttr->ClaveProdServ ?? ''),
@@ -899,21 +900,29 @@ class ProveedorSolicitudPagoController extends Controller
             }
             $datos['conceptos'] = $conceptos;
 
-            // Extraer UUID del timbre fiscal
-            if (isset($xml->Complemento)) {
-                foreach ($xml->Complemento->children() as $complemento) {
-                    if ($complemento->getName() === 'TimbreFiscalDigital') {
-                        $timbre = $complemento->attributes();
-                        $datos['timbre_fiscal'] = [
-                            'uuid' => (string) ($timbre->UUID ?? ''),
-                            'fecha_timbrado' => (string) ($timbre->FechaTimbrado ?? ''),
-                            'rfc_prov_certif' => (string) ($timbre->RfcProvCertif ?? ''),
-                            'sello_cfd' => (string) ($timbre->SelloCFD ?? ''),
-                            'no_certificado_sat' => (string) ($timbre->NoCertificadoSAT ?? ''),
-                            'sello_sat' => (string) ($timbre->SelloSAT ?? ''),
-                        ];
-                        break;
+            if (isset($cfdiRoot->Complemento)) {
+                $complemento = $cfdiRoot->Complemento;
+                $timbreNode = null;
+
+                foreach ($complemento->getNamespaces(true) as $namespace) {
+                    foreach ($complemento->children($namespace) as $child) {
+                        if ($child->getName() === 'TimbreFiscalDigital') {
+                            $timbreNode = $child;
+                            break 2;
+                        }
                     }
+                }
+
+                if ($timbreNode) {
+                    $timbre = $timbreNode->attributes();
+                    $datos['timbre_fiscal'] = [
+                        'uuid' => (string) ($timbre->UUID ?? ''),
+                        'fecha_timbrado' => (string) ($timbre->FechaTimbrado ?? ''),
+                        'rfc_prov_certif' => (string) ($timbre->RfcProvCertif ?? ''),
+                        'sello_cfd' => (string) ($timbre->SelloCFD ?? ''),
+                        'no_certificado_sat' => (string) ($timbre->NoCertificadoSAT ?? ''),
+                        'sello_sat' => (string) ($timbre->SelloSAT ?? ''),
+                    ];
                 }
             }
 
@@ -935,7 +944,7 @@ class ProveedorSolicitudPagoController extends Controller
         Proveedor $proveedor,
         SolicitudPago $solicitudPago
     ): JsonResponse {
-        // Validación de archivos
+
         $request->validate([
             'factura_pdf' => 'required|file|mimes:pdf|max:10240',
             'factura_xml' => 'required|file|mimes:xml|max:5120',
@@ -944,76 +953,28 @@ class ProveedorSolicitudPagoController extends Controller
         $facturaPdf = $request->file('factura_pdf');
         $facturaXml = $request->file('factura_xml');
 
-        // Guardar archivos
         $rutaPdf = $facturaPdf->store('facturas/pdf', 'private');
         $rutaXml = $facturaXml->store('facturas/xml', 'private');
 
-        // Extraer datos del XML
         $datosXml = $this->extraerDatosXML($facturaXml);
 
-        /**
-         * VALICACION DE LA ESPECIFICACION DE LA FACTURA
-         */
-        // 1. Llamado a interApi para los datos de factuiracion
-        if ($solicitudPago->datos_facturacion_id) {
+        // 🔎 Validación de especificación (InterAPI)
+        // $validacion = $this->validarEspecificacionFacturaInterApi($solicitudPago, $datosXml);
+        // if ($validacion) {
+        //     return $validacion;
+        // }
 
-            $interResponse = $this->interApiService->obtenerDatosFacturacionEmpresa(
-                $solicitudPago->datos_facturacion_id
-            );
-
-            if (!$interResponse['success']) {
-                return $this->error(
-                    'No fue posible obtener los datos de facturación desde Construcc.',
-                    $interResponse['error'] ?? null,
-                    500
-                );
-            }
-
-            $datosFacturacion = $interResponse['data'] ?? [];
-
-            $errores = $solicitudPago->validarEspecificacionFactura($datosXml, $datosFacturacion);
-
-            if (!empty($errores)) {
-                return $this->error(
-                    'La factura no cumple con la especificación requerida.',
-                    $errores,
-                    422
-                );
-            }
-        }
-
-
-        // Construir folio de factura (serie-folio)
         $serie = $datosXml['serie'] ?? '';
         $folio = $datosXml['folio'] ?? '';
-        $folioFactura = trim(
-            $serie . ($serie && $folio ? '-' : '') . $folio
-        ) ?: null;
+        $folioFactura = trim($serie . ($serie && $folio ? '-' : '') . $folio) ?: null;
 
-
-
-        // Actualizar Solicitud de Pago
         $solicitudPago->update([
             'folio_factura' => $folioFactura,
             'datos_factura_xml' => $datosXml,
             'ruta_archivo_factura_pdf' => $rutaPdf,
             'ruta_archivo_factura_xml' => $rutaXml,
-            'tiene_factura' => true
+            'tiene_factura' => true,
         ]);
-
-        /**
-         *--------------------------------------------------------------------------
-         * ESPACIO RESERVADO PARA LÓGICA FUTURA
-         *--------------------------------------------------------------------------
-         * - Validar UUID duplicado
-         * - Validar RFC emisor vs proveedor
-         * - Validar total vs monto_total
-         * - Cambiar estado automáticamente
-         * - Disparar eventos / notificaciones
-         *
-         * Ejemplo:
-        //  * event(new FacturaAsociadaASolicitudPago($solicitudPago));
-         */
 
         return $this->success(
             new SolicitudPagoResource(
@@ -1023,7 +984,6 @@ class ProveedorSolicitudPagoController extends Controller
             201
         );
     }
-
 
 
     /**
@@ -1063,35 +1023,139 @@ class ProveedorSolicitudPagoController extends Controller
     /**
      * Subir únicamente el XML de la factura
      */
-    public function uploadFacturaXml(Request $request, Proveedor $proveedor, SolicitudPago $solicitudPago): JsonResponse
-    {
+    public function uploadFacturaXml(
+        Request $request,
+        Proveedor $proveedor,
+        SolicitudPago $solicitudPago
+    ): JsonResponse {
+
+        Log::info('🟢 upload Factura XML', ['sp' => $solicitudPago->id]);
+
+        if ($solicitudPago->proveedor_id !== $proveedor->id) {
+            return $this->error('La solicitud no pertenece al proveedor.', 403);
+        }
 
         $request->validate([
-            'factura_xml' => 'required|file|mimes:xml|max:5120',
+            'factura_xml' => [
+                'required',
+                'file',
+                'mimetypes:text/xml,application/xml',
+                'max:5120',
+            ],
         ]);
 
         $facturaXml = $request->file('factura_xml');
-
-        $rutaXml = $facturaXml->store('facturas/xml', 'private');
-
         $datosXml = $this->extraerDatosXML($facturaXml);
+
+        if (empty($datosXml)) {
+            return $this->error('El archivo XML no es un CFDI válido.', 422);
+        }
+
+        Log::info('🧪 Factura parseada', ['xml' => $datosXml]);
+
+        $datosFacturacion = null;
+
+        if ($solicitudPago->datos_facturacion_id) {
+
+            $interResponse = $this->interApiService->obtenerDatosFacturacionEmpresa($solicitudPago->datos_facturacion_id);
+            if (!$interResponse['success']) {
+                return $this->error(
+                    'No fue posible obtener los datos de facturación desde Construcc.',
+                    $interResponse['error'] ?? null,
+                    500
+                );
+            }
+            $data = $interResponse['data'] ?? [];
+
+            $facturacionDefault = $data['facturacion_default'] ?? [];
+            $datosFacturacion = $data['razon_social'] ?? [];
+            $regimenFiscal      = $data['regimen_fiscal_default'] ?? null;
+
+            $datosFacturacion = [
+                'uso_cfdi'       => $facturacionDefault['uso_cfdi'] ?? null,
+                'forma_pago'     => $facturacionDefault['forma_pago'] ?? null,
+                'metodo_pago'    => $facturacionDefault['metodo_pago'] ?? null,
+                'codigo_postal'  => $facturacionDefault['codigo_postal'] ?? null,
+                'regimen_fiscal' => $regimenFiscal,
+                'rfc'            => $razonSocial['rfc'] ?? null,
+                'total'          => $solicitudPago->monto_total ?? null,
+                'moneda'         => $solicitudPago->moneda ?? 'MXN',
+            ];
+        }
+
+        if ($solicitudPago->razon_social_id && !$solicitudPago->datos_facturacion_id) {
+
+            if (!$solicitudPago->uso || !$solicitudPago->mp || !$solicitudPago->fp) {
+                return $this->error(
+                    'La solicitud de pago no tiene la especificación mínima de facturación.',
+                    [
+                        'uso_cfdi'    => $solicitudPago->uso,
+                        'metodo_pago' => $solicitudPago->mp,
+                        'forma_pago'  => $solicitudPago->fp,
+                    ],
+                    422
+                );
+            }
+
+            $interResponse = $this->interApiService
+                ->obtenerDatosFacturacionRazonSocial($solicitudPago->razon_social_id);
+
+            if (!$interResponse['success']) {
+                return $this->error(
+                    'No fue posible obtener la razón social desde Construcc.',
+                    $interResponse['error'] ?? null,
+                    500
+                );
+            }
+
+            $data = $interResponse['data'] ?? [];
+
+            $cp = $data['cp'] ?? null;
+            $regimenFiscal = $data['regimen_fiscal_default'] ?? $solicitudPago->rf;
+            $rfc = $data['rfc'] ?? null;
+            $razonSocial = $data['razon_social'] ?? null;
+
+            $datosFacturacion = [
+                'uso_cfdi'       => $solicitudPago->uso,
+                'metodo_pago'    => $solicitudPago->mp,
+                'forma_pago'     => $solicitudPago->fp,
+                'codigo_postal'  => $cp,
+                'regimen_fiscal' => $regimenFiscal,
+                'rfc'            => $rfc,
+                'total'          => $solicitudPago->monto_total ?? null,
+                'moneda'         => $solicitudPago->moneda ?? 'MXN',
+            ];
+        }
+
+        if ($datosFacturacion) {
+            Log::info('🧾 Comparativa Facturación InterAPI vs CFDI XML', [
+                'sp_id' => $solicitudPago->id,
+                'interapi' => $datosFacturacion,
+                'xml' => $datosXml
+            ]);
+
+            $errores = $solicitudPago->validarEspecificacionFactura($datosXml, $datosFacturacion);
+
+            if (!empty($errores)) {
+                return $this->error(
+                    'La factura no cumple con la especificación requerida.',
+                    $errores,
+                    422
+                );
+            }
+        }
 
         $serie = $datosXml['serie'] ?? '';
         $folio = $datosXml['folio'] ?? '';
-        $folioFactura = trim(
-            $serie . ($serie && $folio ? '-' : '') . $folio
-        ) ?: null;
+        $folioFactura = trim($serie . ($serie && $folio ? '-' : '') . $folio) ?: null;
+        $rutaXml = $facturaXml->store('facturas/xml', 'private');
 
         $solicitudPago->update([
-            'folio_factura' => $folioFactura,
-            'datos_factura_xml' => $datosXml,
+            'folio_factura'           => $folioFactura,
+            'datos_factura_xml'      => $datosXml,
             'ruta_archivo_factura_xml' => $rutaXml,
         ]);
 
-        /**
-         * TODO: aqio se dispara la ntofiocacion  
-         *  event(new FacturaAsociadaASolicitudPago($solicitudPago, 'xml'));
-         */
         $this->solicitudTieneFacturaCompleta($solicitudPago);
 
         return $this->success(
@@ -1102,6 +1166,8 @@ class ProveedorSolicitudPagoController extends Controller
             201
         );
     }
+
+
 
     /**
      * Verifica si la Solicitud de Pago ya tiene PDF y XML

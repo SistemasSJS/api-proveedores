@@ -798,32 +798,71 @@ class SolicitudPago extends BaseModel
         return $tieneFacturaCompleta;
     }
 
+
     /**
-     * Valida la especificación de factura usando defaults del Inter API
-     * y overrides de la SP (uso, mp, fp).
+     * Valida la especificación de factura contra los datos esperados (InterAPI + overrides SP).
      *
      * @param array $datosXml
      * @param array $datosFacturacion
-     * @return string[] Lista de errores. Vacía si todo es válido.
+     * @return array Lista de errores. Vacía si todo es válido.
      */
     public function validarEspecificacionFactura(array $datosXml, array $datosFacturacion): array
     {
         $errores = [];
 
-        $usoFinal = $this->uso ?? ($datosFacturacion['uso_cfdi'] ?? null);
-        $mpFinal  = $this->mp  ?? ($datosFacturacion['metodo_pago'] ?? null);
-        $fpFinal  = $this->fp  ?? ($datosFacturacion['forma_pago'] ?? null);
+        $norm = function ($v) {
+            if ($v === null || $v === '') return null;
+            return strtoupper(trim((string) $v));
+        };
 
-        if ($usoFinal !== null && (($datosXml['uso_cfdi'] ?? null) !== $usoFinal)) {
-            $errores[] = 'El uso de CFDI no coincide con la especificación requerida.';
+        $usoEsperado    = $norm($datosFacturacion['uso_cfdi'] ?? null);
+        $mpEsperado     = $norm($datosFacturacion['metodo_pago'] ?? null);
+        $fpEsperado     = $norm($datosFacturacion['forma_pago'] ?? null);
+        $rfEsperado     = $norm($datosFacturacion['regimen_fiscal'] ?? null);
+        $cpEsperado     = $norm($datosFacturacion['codigo_postal'] ?? null);
+        $rfcEsperado    = $norm($datosFacturacion['rfc'] ?? null);
+        $totalEsperado  = isset($datosFacturacion['total']) ? round((float)$datosFacturacion['total'], 2) : null;
+        $monedaEsperada = $norm($datosFacturacion['moneda'] ?? null);
+
+        $usoXml    = $norm($datosXml['uso_cfdi'] ?? null);
+        $mpXml     = $norm($datosXml['metodo_pago'] ?? null);
+        $fpXml     = $norm($datosXml['forma_pago'] ?? null);
+        $rfXml     = $norm($datosXml['regimen_fiscal_receptor'] ?? null);
+        $cpXml     = $norm($datosXml['codigo_postal_receptor'] ?? null);
+        $rfcXml    = $norm($datosXml['rfc_receptor'] ?? null);
+        $totalXml  = isset($datosXml['total']) && $datosXml['total'] !== '' ? round((float)$datosXml['total'], 2) : null;
+        $monedaXml = $norm($datosXml['moneda'] ?? null);
+
+        if ($usoEsperado && $usoXml && $usoXml !== $usoEsperado) {
+            $errores['uso_cfdi'] = "Uso CFDI no coincide ({$usoEsperado} vs {$usoXml})";
         }
 
-        if ($mpFinal !== null && (($datosXml['metodo_pago'] ?? null) !== $mpFinal)) {
-            $errores[] = 'El método de pago no coincide con la especificación requerida.';
+        if ($mpEsperado && $mpXml && $mpXml !== $mpEsperado) {
+            $errores['metodo_pago'] = "Método de pago no coincide ({$mpEsperado} vs {$mpXml})";
         }
 
-        if ($fpFinal !== null && (($datosXml['forma_pago'] ?? null) !== $fpFinal)) {
-            $errores[] = 'La forma de pago no coincide con la especificación requerida.';
+        if ($fpEsperado && $fpXml && $fpXml !== $fpEsperado) {
+            $errores['forma_pago'] = "Forma de pago no coincide ({$fpEsperado} vs {$fpXml})";
+        }
+
+        if ($rfEsperado && $rfXml && $rfXml !== $rfEsperado) {
+            $errores['regimen_fiscal'] = "Régimen fiscal no coincide ({$rfEsperado} vs {$rfXml})";
+        }
+
+        if ($cpEsperado && $cpXml && $cpXml !== $cpEsperado) {
+            $errores['codigo_postal'] = "Código postal no coincide ({$cpEsperado} vs {$cpXml})";
+        }
+
+        if ($rfcEsperado && $rfcXml && $rfcXml !== $rfcEsperado) {
+            $errores['rfc'] = "RFC no coincide ({$rfcEsperado} vs {$rfcXml})";
+        }
+
+        if ($totalEsperado !== null && $totalXml !== null && $totalXml !== $totalEsperado) {
+            $errores['total'] = "Total no coincide ({$totalEsperado} vs {$totalXml})";
+        }
+
+        if ($monedaEsperada && $monedaXml && $monedaXml !== $monedaEsperada) {
+            $errores['moneda'] = "Moneda no coincide ({$monedaEsperada} vs {$monedaXml})";
         }
 
         return $errores;

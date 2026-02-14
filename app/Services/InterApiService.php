@@ -390,7 +390,7 @@ class InterApiService
       ]);
 
       // TODO: Definir endpoint real cuando esté disponible en API Construcciones
-      $url = "{$this->apiContruccUrl}/empresas/{$empresaConstruccId}/facturacion-default";
+      $url = "{$this->apiContruccUrl}/api/empresas/{$empresaConstruccId}/facturacion-defaultgp";
 
       Log::channel('inter_api')->info('URL destino para obtener datos de facturación', [
         'url' => $url,
@@ -436,6 +436,66 @@ class InterApiService
     } catch (\Throwable $e) {
       Log::channel('inter_api')->error('Excepción al obtener datos de facturación de empresa', [
         'datos_facturacion_id' => $empresaConstruccId,
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString(),
+      ]);
+
+      return [
+        'success' => false,
+        'error'   => $e->getMessage(),
+      ];
+    }
+  }
+
+  public function obtenerDatosFacturacionRazonSocial($razonSocialId)
+  {
+    try {
+      Log::channel('inter_api')->info('Iniciando solicitud de razón social', [
+        'razon_social_id' => $razonSocialId,
+      ]);
+
+      $url = "{$this->apiContruccUrl}/api/razones-socialesgp/{$razonSocialId}";
+
+      Log::channel('inter_api')->info('URL destino para obtener razón social', [
+        'url' => $url,
+      ]);
+
+      $response = Http::withoutVerifying()
+        ->withHeaders([
+          'X-API-KEY' => $this->apiContruccApiKey,
+          'Accept' => 'application/json',
+        ])
+        ->timeout($this->timeout)
+        ->get($url);
+
+      Log::channel('inter_api')->info('Respuesta recibida desde API Construcc (razón social)', [
+        'status'  => $response->status(),
+        'ok'      => $response->successful(),
+        'headers' => $response->headers(),
+        'body'    => $response->json() ?? $response->body(),
+      ]);
+
+      if ($response->successful()) {
+        return [
+          'success' => true,
+          'data'    => $response->json(),
+        ];
+      }
+
+      Log::channel('inter_api')->warning('Fallo al obtener razón social desde API Construcc', [
+        'razon_social_id' => $razonSocialId,
+        'status' => $response->status(),
+        'error'  => $response->body(),
+      ]);
+
+      return [
+        'success' => false,
+        'error'   => $response->body(),
+        'status'  => $response->status(),
+      ];
+    } catch (\Throwable $e) {
+      Log::channel('inter_api')->error('Excepción al obtener razón social desde API Construcc', [
+        'razon_social_id' => $razonSocialId,
         'error' => $e->getMessage(),
         'trace' => $e->getTraceAsString(),
       ]);
