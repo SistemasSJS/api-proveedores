@@ -285,9 +285,99 @@ class ProveedorSolicitudPagoController extends Controller
         }
 
         $solicitudPagoData = (new SolicitudPagoResource($solicitudPago))->resolve();
+        $datosFacturacionEsperados = $this->resolverDatosFacturacionParaSolicitud($solicitudPago);
+        if (!empty($datosFacturacionEsperados)) {
+            $solicitudPagoData['datos_facturacion'] = array_merge(
+                $solicitudPagoData['datos_facturacion'] ?? [],
+                $datosFacturacionEsperados
+            );
+        }
         $solicitudPagoData['pagos'] = ProveedorPagoResource::collection($solicitudPago->pagos)->resolve();
 
         return $this->success($solicitudPagoData);
+    }
+
+    /**
+     * Resuelve la especificación de facturación esperada para mostrarla en el detalle de la SPP.
+     * Replica las reglas usadas al subir factura XML.
+     */
+    private function resolverDatosFacturacionParaSolicitud(SolicitudPago $solicitudPago): array
+    {
+        $datos = [
+            'datos_facturacion_id' => $solicitudPago->datos_facturacion_id,
+            'razon_social_id' => $solicitudPago->razon_social_id,
+            'uso' => $solicitudPago->uso,
+            'mp' => $solicitudPago->mp,
+            'fp' => $solicitudPago->fp,
+            'uso_cfdi' => $solicitudPago->uso,
+            'metodo_pago' => $solicitudPago->mp,
+            'forma_pago' => $solicitudPago->fp,
+            'regimen_fiscal' => $solicitudPago->rf,
+            'codigo_postal' => null,
+            'rfc' => null,
+            'total' => $solicitudPago->monto_total ?? null,
+            'moneda' => $solicitudPago->moneda ?? 'MXN',
+        ];
+
+        if ($solicitudPago->datos_facturacion_id) {
+            $interResponse = $this->interApiService
+                ->obtenerDatosFacturacionEmpresa($solicitudPago->datos_facturacion_id);
+
+            if (!($interResponse['success'] ?? false)) {
+                Log::warning('No fue posible obtener datos_facturacion para detalle SPP', [
+                    'sp_id' => $solicitudPago->id,
+                    'datos_facturacion_id' => $solicitudPago->datos_facturacion_id,
+                    'error' => $interResponse['error'] ?? null,
+                ]);
+                return $datos;
+            }
+
+            $data = $interResponse['data'] ?? [];
+            $facturacionDefault = $data['facturacion_default'] ?? [];
+            $regimenFiscal = $data['regimen_fiscal_default'] ?? null;
+
+            return array_merge($datos, [
+                'uso' => $facturacionDefault['uso_cfdi'] ?? null,
+                'mp' => $facturacionDefault['metodo_pago'] ?? null,
+                'fp' => $facturacionDefault['forma_pago'] ?? null,
+                'uso_cfdi' => $facturacionDefault['uso_cfdi'] ?? null,
+                'metodo_pago' => $facturacionDefault['metodo_pago'] ?? null,
+                'forma_pago' => $facturacionDefault['forma_pago'] ?? null,
+                'codigo_postal' => $facturacionDefault['codigo_postal'] ?? null,
+                'regimen_fiscal' => $regimenFiscal,
+                'rfc' => $data['rfc'] ?? null,
+            ]);
+        }
+
+        if ($solicitudPago->razon_social_id && !$solicitudPago->datos_facturacion_id) {
+            $interResponse = $this->interApiService
+                ->obtenerDatosFacturacionRazonSocial($solicitudPago->razon_social_id);
+
+            if (!($interResponse['success'] ?? false)) {
+                Log::warning('No fue posible obtener razon social para detalle SPP', [
+                    'sp_id' => $solicitudPago->id,
+                    'razon_social_id' => $solicitudPago->razon_social_id,
+                    'error' => $interResponse['error'] ?? null,
+                ]);
+                return $datos;
+            }
+
+            $razonSocial = $interResponse['data'] ?? [];
+
+            return array_merge($datos, [
+                'uso' => $solicitudPago->uso,
+                'mp' => $solicitudPago->mp,
+                'fp' => $solicitudPago->fp,
+                'uso_cfdi' => $solicitudPago->uso,
+                'metodo_pago' => $solicitudPago->mp,
+                'forma_pago' => $solicitudPago->fp,
+                'codigo_postal' => $razonSocial['codigo_postal'] ?? null,
+                'regimen_fiscal' => $solicitudPago->rf,
+                'rfc' => $razonSocial['rfc'] ?? null,
+            ]);
+        }
+
+        return $datos;
     }
 
     /**
