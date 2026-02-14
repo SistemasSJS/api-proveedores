@@ -83,7 +83,7 @@ class ConstruccSolicitudPagoController extends Controller
 
         $query = SolicitudPago::query()
             ->with(SolicitudPago::eagerLodable())
-            // ->where('verificada', true)
+            ->where('verificada', true)
             ->filter($filters)
             ->orderBy($sortBy, $order);
 
