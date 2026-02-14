@@ -1535,6 +1535,7 @@ class ConstruccSolicitudPagoController extends Controller
 
         $query = SolicitudPago::on('mysql5')
             ->where('verificada', true)
+            ->whereIn('estado_solicitud', [EstadoSP::AUTORIZADA->value, EstadoSP::PAGADO->value])
             ->where('empresa_construcc_id', $request->input('empresa_construcc_id'))
             ->filter($filters);
 
