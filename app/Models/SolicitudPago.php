@@ -417,8 +417,19 @@ class SolicitudPago extends BaseModel
 
     public function filterByEstadoSolicitud($query, $value)
     {
-        return $query->where('estado_solicitud', $value);
+        $estados = is_array($value)
+            ? $value
+            : explode(',', $value);
+
+        $estados = array_filter($estados, fn($estado) => filled($estado));
+
+        if (empty($estados)) {
+            return $query;
+        }
+
+        return $query->whereIn('estado_solicitud', $estados);
     }
+
 
     public function filterByProveedorId($query, $value)
     {

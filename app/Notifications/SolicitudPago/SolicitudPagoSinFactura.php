@@ -24,11 +24,10 @@ class SolicitudPagoSinFactura extends Notification implements ShouldBroadcastNow
     int $proveedorId,
     int $userId = null
   ) {
-     $this->solicitudPagoFolio = $solicitudPagoFolio;
-     $this->solicitudPagoId = $solicitudPagoId;
-     $this->proveedorId = $proveedorId;
-     $this->userId = $userId;
-
+    $this->solicitudPagoFolio = $solicitudPagoFolio;
+    $this->solicitudPagoId = $solicitudPagoId;
+    $this->proveedorId = $proveedorId;
+    $this->userId = $userId;
   }
 
   /**
@@ -87,7 +86,7 @@ class SolicitudPagoSinFactura extends Notification implements ShouldBroadcastNow
       ->view('emails.solicitud-pago.sin-factura', [
         'notifiable' => $notifiable,
         'solicitudPagoFolio' => $this->solicitudPagoFolio,
-        'urlSolicitud' => $frontendUrl . '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
+        'urlSolicitud' => $frontendUrl . '/pages/proveedor/sp/subir-factura/' . $this->solicitudPagoId,
       ]);
   }
 
@@ -112,7 +111,7 @@ class SolicitudPagoSinFactura extends Notification implements ShouldBroadcastNow
         'body' => "La solicitud #{$this->solicitudPagoFolio} no tiene factura.",
       ],
       $this->addStylesToData([
-        'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
+        'action_url' => '/pages/proveedor/sp/subir-factura/' . $this->solicitudPagoId,
       ])
     );
   }
@@ -127,7 +126,7 @@ class SolicitudPagoSinFactura extends Notification implements ShouldBroadcastNow
       'subtipo' => 'sin_factura',
       'titulo' => 'Solicitud de pago sin factura #' . $this->solicitudPagoFolio,
       'mensaje' => "La solicitud de pago #{$this->solicitudPagoFolio} no tiene factura.",
-      'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
+      'action_url' => '/pages/proveedor/sp/subir-factura/' . $this->solicitudPagoId,
       'solicitud_pago_id' => $this->solicitudPagoId,
       'solicitud_pago_folio' => $this->solicitudPagoFolio,
       'proveedor_id' => $this->proveedorId,
