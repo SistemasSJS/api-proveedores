@@ -38,13 +38,13 @@ Route::prefix('construcc')
 
         /*** 
          * TODO: Generar esquema postman 
-        *--------------------------------------------------------------------------
-        * SOLICITUDES DE PAGO - CRUD Completo
-        *--------------------------------------------------------------------------
-        * Gestión de solicitudes de pago con cambios de estatus y fechas
-        */
+         *--------------------------------------------------------------------------
+         * SOLICITUDES DE PAGO - CRUD Completo
+         *--------------------------------------------------------------------------
+         * Gestión de solicitudes de pago con cambios de estatus y fechas
+         */
         Route::prefix('solicitudes-pago')->name('solicitudes-pago.')->group(function () {
-            
+
             // ✅ NUEVO: Generar solicitud de pago desde construcción (crea proveedor, cuenta bancaria y SPP)
             Route::post('generar-spp-construcc', [ConstruccSolicitudPagoController::class, 'generarSolicitudPagoConstrucc'])->name('generar-spp-construcc');
 
@@ -61,6 +61,7 @@ Route::prefix('construcc')
             // validada - 0 y recibe parametro  usuario_id: entero no null, empresa_construcc_id: entero no null
             Route::get('sp-por-validar', [ConstruccSolicitudPagoController::class, 'spPorValidar'])->name('sp-por-validar');
             Route::get('sp-por-validar-otros', [ConstruccSolicitudPagoController::class, 'spPorValidarOtros'])->name('sp-por-validar-otros');
+            Route::get('sp-sin-factura', [ConstruccSolicitudPagoController::class, 'spSinFactura'])->name('sp-sin-factura');
 
             // Segmento de dashboard para métricas de SP verificadas / no verificadas
             Route::prefix('dashboard-sp-metricas')->name('dashboard-sp-metricas.')->group(function () {

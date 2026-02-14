@@ -1516,6 +1516,38 @@ class ConstruccSolicitudPagoController extends Controller
     }
 
     /**
+     * Conteo de SP sin factura, filtrado por empresa y validada.
+     * ruta: /api/construcc/solicitudes-pago/sp-sin-factura
+     */
+    public function spSinFactura(Request $request): JsonResponse
+    {
+        // Reconectar bases de datos
+        DB::purge('mysql');
+        DB::reconnect('mysql');
+        DB::purge('mysql5');
+        DB::reconnect('mysql5');
+
+        $request->validate([
+            'empresa_construcc_id' => ['nullable', 'integer'],
+        ]);
+
+        $filters = $request->only(SolicitudPago::getFilters());
+
+        $query = SolicitudPago::on('mysql5')
+            ->where('verificada', true)
+            ->where('empresa_construcc_id', $request->input('empresa_construcc_id'))
+            ->filter($filters);
+
+        $conteo = $query->count();
+
+        return $this->success(
+            ['conteo' => $conteo],
+            'Conteo de solicitudes de pago sin factura obtenido correctamente.'
+        );
+    }
+
+
+    /**
      * Generar nueva solicitud de pago desde construcción
      * Este endpoint crea un proveedor nuevo, registra su cuenta bancaria y genera la SPP
      * 
@@ -2158,6 +2190,17 @@ class ConstruccSolicitudPagoController extends Controller
 
 
         // 🔎 VALIDACIÓN DE ESPECIFICACIÓN DE FACTURA (SPP sin factura / con especificación)
+        /**
+         * TODO: Ajustar esta seccion
+         * Reglas:
+         *  - si datos_facturacion_id viene definido de ahi se tomaran los datos de facturacion
+         *  - si razon_social_id viene datos_facturacion_id sera null y usp, mp, fp son obligatorios y rf podra ser null y si tiene valor sustituye los datos de razon_social_id['razon_social'] unicamente los demas quedan igual.
+         * 
+         * Interapi Tiene los metodos correspondientes:
+         * datos_facturacion_id: obtenerDatosFacturacionEmpresa
+         * razon_social_id: obtenerRazonSocial
+         */
+        // 🔎 VALIDACIÓN DE ESPECIFICACIÓN DE FACTURA (SPP sin factura / con especificación)
         if ($solicitudPago->datos_facturacion_id) {
 
             $interResponse = $this->interApiService->obtenerDatosFacturacionEmpresa(
@@ -2172,7 +2215,64 @@ class ConstruccSolicitudPagoController extends Controller
                 );
             }
 
-            $datosFacturacion = $interResponse['data'] ?? [];
+            $data = $interResponse['data'] ?? [];
+
+            $facturacionDefault = $data['facturacion_default'] ?? [];
+            $regimenFiscal      = $data['regimen_fiscal_default'] ?? null;
+
+            $datosFacturacion = [
+                'uso_cfdi'       => $facturacionDefault['uso_cfdi'] ?? null,
+                'forma_pago'     => $facturacionDefault['forma_pago'] ?? null,
+                'metodo_pago'    => $facturacionDefault['metodo_pago'] ?? null,
+                'codigo_postal'  => $facturacionDefault['codigo_postal'] ?? null,
+                'regimen_fiscal' => $regimenFiscal,
+            ];
+
+            $errores = $solicitudPago->validarEspecificacionFactura($datosXml, $datosFacturacion);
+
+            if (!empty($errores)) {
+                return $this->error(
+                    'La factura no cumple con la especificación requerida.',
+                    $errores,
+                    422
+                );
+            }
+        } elseif ($solicitudPago->razon_social_id) {
+
+            if (!$solicitudPago->uso || !$solicitudPago->mp || !$solicitudPago->fp) {
+                return $this->error(
+                    'La solicitud de pago no tiene la especificación mínima de facturación.',
+                    [
+                        'uso_cfdi'    => $solicitudPago->uso,
+                        'metodo_pago' => $solicitudPago->mp,
+                        'forma_pago'  => $solicitudPago->fp,
+                    ],
+                    422
+                );
+            }
+
+            $interResponse = $this->interApiService->obtenerDatosFacturacionRazonSocial(
+                $solicitudPago->razon_social_id
+            );
+
+            if (!$interResponse['success']) {
+                return $this->error(
+                    'No fue posible obtener la razón social desde Construcc.',
+                    $interResponse['error'] ?? null,
+                    500
+                );
+            }
+
+            $razonSocial = $interResponse['data'] ?? [];
+
+            $datosFacturacion = [
+                'uso_cfdi'       => $solicitudPago->uso,
+                'metodo_pago'    => $solicitudPago->mp,
+                'forma_pago'     => $solicitudPago->fp,
+                'codigo_postal'  => $razonSocial['codigo_postal'] ?? null,
+                'regimen_fiscal' => $solicitudPago->rf, // puede ser null
+                'rfc'            => $razonSocial['rfc'] ?? null,
+            ];
 
             $errores = $solicitudPago->validarEspecificacionFactura($datosXml, $datosFacturacion);
 
@@ -2184,7 +2284,6 @@ class ConstruccSolicitudPagoController extends Controller
                 );
             }
         }
-
 
         $solicitudPago->update([
             'folio_factura' => $folioFactura,
