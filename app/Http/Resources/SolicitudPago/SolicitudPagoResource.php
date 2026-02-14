@@ -162,12 +162,12 @@ class SolicitudPagoResource extends JsonResource
 
             // datos facutracion
             'tiene_factura' => $this->tiene_factura,
-            'datos_facturacion' => [
-                'uso' => $this->uso,
-                'mp' => $this->mp,
-                'fp' => $this->fp,
-                'datos_facturacion_id' => $this->datos_facturacion_id,
-            ],
+            // 'datos_facturacion' => [
+            //     'uso' => $this->uso,
+            //     'mp' => $this->mp,
+            //     'fp' => $this->fp,
+            //     'datos_facturacion_id' => $this->datos_facturacion_id,
+            // ],
             // Metadatos
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),

@@ -286,6 +286,7 @@ class ProveedorSolicitudPagoController extends Controller
 
         $solicitudPagoData = (new SolicitudPagoResource($solicitudPago))->resolve();
         $datosFacturacionEsperados = $this->resolverDatosFacturacionParaSolicitud($solicitudPago);
+
         if (!empty($datosFacturacionEsperados)) {
             $solicitudPagoData['datos_facturacion'] = array_merge(
                 $solicitudPagoData['datos_facturacion'] ?? [],
@@ -303,82 +304,80 @@ class ProveedorSolicitudPagoController extends Controller
      */
     private function resolverDatosFacturacionParaSolicitud(SolicitudPago $solicitudPago): array
     {
-        $datos = [
-            'datos_facturacion_id' => $solicitudPago->datos_facturacion_id,
-            'razon_social_id' => $solicitudPago->razon_social_id,
-            'uso' => $solicitudPago->uso,
-            'mp' => $solicitudPago->mp,
-            'fp' => $solicitudPago->fp,
-            'uso_cfdi' => $solicitudPago->uso,
-            'metodo_pago' => $solicitudPago->mp,
-            'forma_pago' => $solicitudPago->fp,
-            'regimen_fiscal' => $solicitudPago->rf,
-            'codigo_postal' => null,
-            'rfc' => null,
-            'total' => $solicitudPago->monto_total ?? null,
-            'moneda' => $solicitudPago->moneda ?? 'MXN',
-        ];
+        $datosFacturacion = null;
 
         if ($solicitudPago->datos_facturacion_id) {
-            $interResponse = $this->interApiService
-                ->obtenerDatosFacturacionEmpresa($solicitudPago->datos_facturacion_id);
 
-            if (!($interResponse['success'] ?? false)) {
-                Log::warning('No fue posible obtener datos_facturacion para detalle SPP', [
+            $interResponse = $this->interApiService->obtenerDatosFacturacionEmpresa($solicitudPago->datos_facturacion_id);
+            if (!$interResponse['success']) {
+                Log::warning('InterAPI Razón Social falló', [
                     'sp_id' => $solicitudPago->id,
-                    'datos_facturacion_id' => $solicitudPago->datos_facturacion_id,
-                    'error' => $interResponse['error'] ?? null,
+                    'response' => $interResponse
                 ]);
-                return $datos;
             }
+            $data = $interResponse['data']['data'] ?? [];
 
-            $data = $interResponse['data'] ?? [];
             $facturacionDefault = $data['facturacion_default'] ?? [];
-            $regimenFiscal = $data['regimen_fiscal_default'] ?? null;
+            $razonSocial = $data['razon_social'] ?? [];
+            $regimenFiscal      = $data['regimen_fiscal_default'] ?? null;
 
-            return array_merge($datos, [
-                'uso' => $facturacionDefault['uso_cfdi'] ?? null,
-                'mp' => $facturacionDefault['metodo_pago'] ?? null,
-                'fp' => $facturacionDefault['forma_pago'] ?? null,
-                'uso_cfdi' => $facturacionDefault['uso_cfdi'] ?? null,
-                'metodo_pago' => $facturacionDefault['metodo_pago'] ?? null,
-                'forma_pago' => $facturacionDefault['forma_pago'] ?? null,
-                'codigo_postal' => $facturacionDefault['codigo_postal'] ?? null,
+            $datosFacturacion = [
+                'uso_cfdi'       => $facturacionDefault['uso_cfdi'] ?? null,
+                'forma_pago'     => $facturacionDefault['forma_pago'] ?? null,
+                'metodo_pago'    => $facturacionDefault['metodo_pago'] ?? null,
+                'codigo_postal'  => $facturacionDefault['codigo_postal'] ?? null,
                 'regimen_fiscal' => $regimenFiscal,
-                'rfc' => $data['rfc'] ?? null,
-            ]);
+                'rfc'            => $razonSocial['rfc'] ?? null,
+                'total'          => $solicitudPago->monto_total ?? null,
+                'moneda'         => $solicitudPago->moneda ?? 'MXN',
+            ];
         }
 
         if ($solicitudPago->razon_social_id && !$solicitudPago->datos_facturacion_id) {
+
+            if (!$solicitudPago->uso || !$solicitudPago->mp || !$solicitudPago->fp) {
+                Log::warning(
+                    'La solicitud de pago no tiene la especificación mínima de facturación.',
+                    [
+                        'uso_cfdi'    => $solicitudPago->uso,
+                        'metodo_pago' => $solicitudPago->mp,
+                        'forma_pago'  => $solicitudPago->fp,
+                    ]
+                );
+            }
+
             $interResponse = $this->interApiService
                 ->obtenerDatosFacturacionRazonSocial($solicitudPago->razon_social_id);
 
-            if (!($interResponse['success'] ?? false)) {
-                Log::warning('No fue posible obtener razon social para detalle SPP', [
+            if (!$interResponse['success']) {
+                Log::warning('InterAPI Razón Social falló', [
                     'sp_id' => $solicitudPago->id,
-                    'razon_social_id' => $solicitudPago->razon_social_id,
-                    'error' => $interResponse['error'] ?? null,
+                    'response' => $interResponse
                 ]);
-                return $datos;
             }
 
-            $razonSocial = $interResponse['data'] ?? [];
+            $data = $interResponse['data'] ?? [];
 
-            return array_merge($datos, [
-                'uso' => $solicitudPago->uso,
-                'mp' => $solicitudPago->mp,
-                'fp' => $solicitudPago->fp,
-                'uso_cfdi' => $solicitudPago->uso,
-                'metodo_pago' => $solicitudPago->mp,
-                'forma_pago' => $solicitudPago->fp,
-                'codigo_postal' => $razonSocial['codigo_postal'] ?? null,
-                'regimen_fiscal' => $solicitudPago->rf,
-                'rfc' => $razonSocial['rfc'] ?? null,
-            ]);
+            $cp = $data['cp'] ?? null;
+            $regimenFiscal = $data['regimen_fiscal_default'] ?? $solicitudPago->rf;
+            $rfc = $data['rfc'] ?? null;
+            $razonSocial = $data['razon_social'] ?? null;
+
+            $datosFacturacion = [
+                'uso_cfdi'       => $solicitudPago->uso,
+                'metodo_pago'    => $solicitudPago->mp,
+                'forma_pago'     => $solicitudPago->fp,
+                'codigo_postal'  => $cp,
+                'regimen_fiscal' => $regimenFiscal,
+                'rfc'            => $rfc,
+                'total'          => $solicitudPago->monto_total ?? null,
+                'moneda'         => $solicitudPago->moneda ?? 'MXN',
+            ];
         }
 
-        return $datos;
+        return  $datosFacturacion;
     }
+
 
     /**
      * Actualizar solicitud de pago
@@ -1155,10 +1154,10 @@ class ProveedorSolicitudPagoController extends Controller
                     500
                 );
             }
-            $data = $interResponse['data'] ?? [];
+            $data = $interResponse['data']['data'] ?? [];
 
             $facturacionDefault = $data['facturacion_default'] ?? [];
-            $datosFacturacion = $data['razon_social'] ?? [];
+            $razonSocial = $data['razon_social'] ?? [];
             $regimenFiscal      = $data['regimen_fiscal_default'] ?? null;
 
             $datosFacturacion = [
