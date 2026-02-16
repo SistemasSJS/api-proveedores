@@ -304,7 +304,7 @@ class ProveedorSolicitudPagoController extends Controller
      */
     private function resolverDatosFacturacionParaSolicitud(SolicitudPago $solicitudPago): array
     {
-        $datosFacturacion = null;
+        $datosFacturacion = [];
 
         if ($solicitudPago->datos_facturacion_id) {
 

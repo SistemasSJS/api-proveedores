@@ -21,6 +21,7 @@ use App\Models\EmpresaConstrucc;
 use App\Models\PagoSPP;
 use App\Models\Proveedor;
 use App\Models\SolicitudPago;
+use App\Models\PagoSolicitudPago;
 use App\Notifications\SolicitudPago\SolicitudPagoAbonada;
 use App\Notifications\SolicitudPago\SolicitudPagoFacturaPendiente;
 use App\Notifications\SolicitudPago\SolicitudPagoPagada;
@@ -490,6 +491,19 @@ class ConstruccPagosSPPController extends Controller
             );
         }
 
+        // Una sola consulta para saldos restantes (evita N+1 de calcularSaldoRestante() en el loop)
+        $totalesAplicadosPorSpp = PagoSolicitudPago::query()
+            ->whereIn('solicitud_pago_id', $listSPPIds)
+            ->whereIn('estado_pago', [
+                PagoSolicitudPago::ESTADO_APLICADO,
+                PagoSolicitudPago::ESTADO_COMPLETADO,
+                PagoSolicitudPago::ESTADO_PARCIAL,
+            ])
+            ->selectRaw('solicitud_pago_id, COALESCE(SUM(monto_aplicado), 0) as total_aplicado')
+            ->groupBy('solicitud_pago_id')
+            ->pluck('total_aplicado', 'solicitud_pago_id')
+            ->map(fn ($v) => (float) $v);
+
         $montoTotalPago = (float) $validated['info_comprobante']['monto'];
         $sumaMontoSPPs = (float) collect($validated['solicitudes'])->sum(function ($item) {
             return (float) $item['monto_pago'];
@@ -542,10 +556,10 @@ class ConstruccPagosSPPController extends Controller
 
             foreach ($validated['solicitudes'] as $solicitudData) {
 
-                // obtener la SPP ya cargada antes de la transacción para reducir consultas dentro del loop 
+                // obtener la SPP ya cargada antes de la transacción para reducir consultas dentro del loop
                 $solicitudPago = $solicitudes[$solicitudData['solicitud_id']];
-
-                $saldo_inicial_spp = $solicitudPago->calcularSaldoRestante();
+                $totalAplicadoPrevio = $totalesAplicadosPorSpp->get($solicitudPago->id, 0.0);
+                $saldo_inicial_spp = max(0, (float) $solicitudPago->monto_total - $totalAplicadoPrevio);
 
                 $pago->solicitudesPago()->attach($solicitudPago->id, [
                     'saldo_inicial' => $saldo_inicial_spp,
@@ -555,8 +569,8 @@ class ConstruccPagosSPPController extends Controller
 
                 $spPagoCompleto = $solicitudPago->actualizarSaldos($solicitudData['monto_pago']);
 
-                $saldoRestante = $solicitudPago->saldo_pendiente ?? $solicitudPago->calcularSaldoRestante();
-                $montoAcumulado = $solicitudPago->monto_abonado;
+                $saldoRestante = (float) $solicitudPago->saldo_pendiente;
+                $montoAcumulado = (float) $solicitudPago->monto_abonado;
 
                 if ($proveedorUsuarioPrincipal) {
 
