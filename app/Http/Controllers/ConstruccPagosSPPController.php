@@ -449,28 +449,42 @@ class ConstruccPagosSPPController extends Controller
      * 
      * POST /api/construcc/pagos-spp/proveedor/{proveedor}/pagos?empresas_construcc={id_empresa_construcc}
      */
-    public function registrarPagoProveedor(ConstruccPagosSPPRegistrarPagoRequest $request, Proveedor $proveedor): JsonResponse
-    {
+    public function registrarPagoProveedor(
+        ConstruccPagosSPPRegistrarPagoRequest $request,
+        Proveedor $proveedor
+    ): JsonResponse {
+
         $validated = $request->validated();
         /** @var User  */
         $proveedorUsuarioPrincipal = $proveedor->usuarioPrincipal();
         $empresaConstruccId = $validated['empresa_id'];
 
-        $listSPPIds = collect($validated['solicitudes'])->pluck('solicitud_id');
+        $listSPPIds = collect($validated['solicitudes'])
+            ->pluck('solicitud_id')
+            ->unique()
+            ->values();
 
-        $invalidSPPs = SolicitudPago::whereIn('id', $listSPPIds)
-            ->where(function ($q) use ($proveedor, $empresaConstruccId) {
-                $q->where('proveedor_id', '!=', $proveedor->id)
-                    ->orWhere('empresa_construcc_id', '!=', $empresaConstruccId)
-                    ->orWhere('estado_solicitud', '!=', EstadoSP::AUTORIZADA);
-            })
-            ->pluck('id');
+        /**
+         *--------------------------------------------------------------------------
+         * Obtener todas las SPP válidas antes de la transacción
+         *--------------------------------------------------------------------------
+         */
+        $solicitudes = SolicitudPago::whereIn('id', $listSPPIds)
+            ->where('proveedor_id', $proveedor->id)
+            ->where('empresa_construcc_id', $empresaConstruccId)
+            ->where('estado_solicitud', EstadoSP::AUTORIZADA)
+            ->get()
+            ->keyBy('id');
 
-        if ($invalidSPPs->isNotEmpty()) {
+        if ($solicitudes->count() !== $listSPPIds->count()) {
+
+            $idsValidos = $solicitudes->keys();
+            $idsInvalidos = $listSPPIds->diff($idsValidos)->values();
+
             return $this->error(
                 'Una o más solicitudes de pago no pertenecen al proveedor o a la empresa indicada.',
                 [
-                    'solicitudes_invalidas' => $invalidSPPs,
+                    'solicitudes_invalidas' => $idsInvalidos,
                 ],
                 422
             );
@@ -484,6 +498,7 @@ class ConstruccPagosSPPController extends Controller
         $notificaciones = [];
 
         try {
+
             DB::beginTransaction();
 
             $file = $request->file('comprobante_pago');
@@ -527,10 +542,8 @@ class ConstruccPagosSPPController extends Controller
 
             foreach ($validated['solicitudes'] as $solicitudData) {
 
-                $solicitudPago = SolicitudPago::where('id', $solicitudData['solicitud_id'])
-                    ->where('proveedor_id', $proveedor->id)
-                    ->where('empresa_construcc_id', $empresaConstruccId)
-                    ->firstOrFail();
+                // obtener la SPP ya cargada antes de la transacción para reducir consultas dentro del loop 
+                $solicitudPago = $solicitudes[$solicitudData['solicitud_id']];
 
                 $saldo_inicial_spp = $solicitudPago->calcularSaldoRestante();
 
@@ -672,6 +685,7 @@ class ConstruccPagosSPPController extends Controller
             );
         }
     }
+
 
 
 
