@@ -721,7 +721,7 @@ class ConstruccPagosSPPController extends Controller
 
                         case 'pagada_user_construcc':
                             try {
-                                $response = $this->interApiService->spPagoNotifyUsuarioConstrucc($n['data']);
+                                $response = $this->interApiService->spPagoNotifyUsuarioConstrucc(...$n['data']);
 
                                 Log::info('✅ Notificación enviada a InterAPI: Registro PAgo Prov2', [
                                     'data' => $n['data'],
