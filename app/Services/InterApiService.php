@@ -518,6 +518,7 @@ class InterApiService
     $monto,
     $fecha_pago,
     $user_id,
+    $titulo
   ) {
     try {
       Log::channel('inter_api')->info('Iniciando notificación de SP pagada', [
@@ -528,7 +529,9 @@ class InterApiService
         'monto' => $monto,
         'fecha_pago' => $fecha_pago,
         'user_id' => $user_id,
+        'titulo' => $titulo,
       ]);
+
 
       $payload = [
         'sp_id' => $sp_id,
@@ -539,6 +542,7 @@ class InterApiService
         'monto' => $monto,
         'fecha_pago' => $fecha_pago,
         'user_id' => $user_id,
+        'titulo' => $titulo,
       ];
 
       Log::channel('inter_api')->info('Payload preparado para notificación de pago', [

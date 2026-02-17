@@ -637,6 +637,7 @@ class ConstruccPagosSPPController extends Controller
                     /**
                      * Notificacion para usuario principal del proveedor no encontrada, se omite notificación de pago/abono.
                      */
+                    $titulo = $spPagoCompleto ? 'SPP pagada' : 'SPP abonada';
                     $notificaciones[] = [
                         'tipo' => 'pagada_user_construcc',
                         'data'  => [
@@ -647,7 +648,8 @@ class ConstruccPagosSPPController extends Controller
                             $proveedor->nombre_comercial,
                             $solicitudData['monto_pago'],
                             $pago->fecha_pago,
-                            $proveedor->user_construcc_alta
+                            $proveedor->user_construcc_alta,
+                            $titulo
                         ]
                     ];
                 }
