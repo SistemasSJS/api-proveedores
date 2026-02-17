@@ -513,7 +513,7 @@ class InterApiService
   public function spPagoNotifyUsuarioConstrucc($data)
   {
     try {
-      Log::channel('inter_api')->info('Iniciando notificación de SP pagada', [
+      Log::info('PAGO: Iniciando notificación de SP pagada', [
         'sp_id' => $data['sp_id'],
         'sp_folio' => $data['sp_folio'],
         'company_id' => $data['company_id'],
@@ -535,14 +535,14 @@ class InterApiService
         'user_id' => $data['user_id'] ?? null,
       ];
 
-      Log::channel('inter_api')->info('Payload preparado para notificación de pago', [
+      Log::info('PAGO: Payload preparado para notificación de pago', [
         'payload' => $payload
       ]);
 
       // $url = "{$this->apiContruccUrl}/api/notify-sp-pagada-usuario-construcc";
       $url = "{$this->apiContruccUrl}/api/notify-sp-pagada-t2";
 
-      Log::channel('inter_api')->info('URL destino para notificación de SP pagada para usuario construcc', [
+      Log::info('PAGO: URL destino para notificación de SP pagada para usuario construcc', [
         'url' => $url
       ]);
 
@@ -556,13 +556,13 @@ class InterApiService
         // ->retry(3, 200) // opcional
         ->post($url, $payload);
 
-      Log::channel('inter_api')->info('Respuesta recibida desde API Construcciones (SP pagada para usuario construcc)', [
+      Log::info('PAGO: Respuesta recibida desde API Construcciones (SP pagada para usuario construcc)', [
         'status' => $response->status(),
         'body' => $response->body()
       ]);
 
       if ($response->successful()) {
-        Log::channel('inter_api')->info('Notificación de SP pagada para usuario construcc enviada exitosamente', [
+        Log::info('PAGO: Notificación de SP pagada para usuario construcc enviada exitosamente', [
           'sp_id' => $data['sp_id'],
           'sp_folio' => $data['sp_folio']
         ]);
@@ -573,7 +573,7 @@ class InterApiService
         ];
       }
 
-      Log::channel('inter_api')->warning('Fallo en notificación de SP pagada para usuario construcc', [
+      Log::warning('PAGO: Fallo en notificación de SP pagada para usuario construcc', [
         'sp_id' => $data['sp_id'],
         'status' => $response->status(),
         'error' => $response->body()
@@ -584,7 +584,7 @@ class InterApiService
         'error' => $response->body()
       ];
     } catch (\Exception $e) {
-      Log::channel('inter_api')->error('Excepción al notificar SP pagada para usuario construcc ', [
+      Log::error('PAGO: Excepción al notificar SP pagada para usuario construcc ', [
         'sp_id' => $data['sp_id'] ?? null,
         'sp_folio' => $data['sp_folio'] ?? null,
         'company_id' => $data['company_id'] ?? null,
