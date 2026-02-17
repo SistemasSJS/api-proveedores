@@ -527,7 +527,7 @@ class InterApiService
       $payload = [
         'sp_id' => $data['sp_id'],
         'sp_folio' => $data['sp_folio'],
-        'company_id' => $data['company_id'],
+        'company' => $data['company_id'],
         'folio_factura' => $data['folio_factura'],
         'proveedor' => $data['proveedor'],
         'monto' => $data['monto'] ?? null,
