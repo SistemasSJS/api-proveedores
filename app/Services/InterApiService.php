@@ -521,16 +521,16 @@ class InterApiService
     $titulo
   ) {
     try {
-      Log::channel('inter_api')->info('Iniciando notificación de SP pagada', [
-        'sp_id' => $sp_id,
-        'sp_folio' => $sp_folio,
-        'company_id' => $company_id,
-        'proveedor' => $proveedor,
-        'monto' => $monto,
-        'fecha_pago' => $fecha_pago,
-        'user_id' => $user_id,
-        'titulo' => $titulo,
-      ]);
+      // Log::channel('inter_api')->info('Iniciando notificación de SP pagada', [
+      //   'sp_id' => $sp_id,
+      //   'sp_folio' => $sp_folio,
+      //   'company_id' => $company_id,
+      //   'proveedor' => $proveedor,
+      //   'monto' => $monto,
+      //   'fecha_pago' => $fecha_pago,
+      //   'user_id' => $user_id,
+      //   'titulo' => $titulo,
+      // ]);
 
 
       $payload = [
@@ -545,16 +545,16 @@ class InterApiService
         'titulo' => $titulo,
       ];
 
-      Log::channel('inter_api')->info('Payload preparado para notificación de pago', [
-        'payload' => $payload
-      ]);
+      // Log::channel('inter_api')->info('Payload preparado para notificación de pago', [
+      //   'payload' => $payload
+      // ]);
 
       // $url = "{$this->apiContruccUrl}/api/notify-sp-pagada-usuario-construcc";
       $url = "{$this->apiContruccUrl}/api/notify-sp-pagada-t2";
 
-      Log::channel('inter_api')->info('URL destino para notificación de SP pagada para usuario construcc', [
-        'url' => $url
-      ]);
+      // Log::channel('inter_api')->info('URL destino para notificación de SP pagada para usuario construcc', [
+      //   'url' => $url
+      // ]);
 
       $response = Http::withoutVerifying()
         ->withHeaders([
@@ -566,13 +566,97 @@ class InterApiService
         // ->retry(3, 200) // opcional
         ->post($url, $payload);
 
-      Log::channel('inter_api')->info('Respuesta recibida desde API Construcciones (SP pagada para usuario construcc)', [
+      // Log::channel('inter_api')->info('Respuesta recibida desde API Construcciones (SP pagada para usuario construcc)', [
+      //   'status' => $response->status(),
+      //   'body' => $response->body()
+      // ]);
+
+      if ($response->successful()) {
+        // Log::channel('inter_api')->info('Notificación de SP pagada para usuario construcc enviada exitosamente', [
+        //   'sp_id' => $sp_id,
+        //   'sp_folio' => $sp_folio
+        // ]);
+
+        return [
+          'success' => true,
+          'data' => $response->json()
+        ];
+      }
+
+      // Log::channel('inter_api')->warning('Fallo en notificación de SP pagada para usuario construcc', [
+      //   'sp_id' => $sp_id,
+      //   'status' => $response->status(),
+      //   'error' => $response->body()
+      // ]);
+
+      return [
+        'success' => false,
+        'error' => $response->body()
+      ];
+    } catch (\Exception $e) {
+      Log::channel('inter_api')->error('Excepción al notificar SP pagada para usuario construcc ', [
+        'sp_id' => $sp_id ?? null,
+        'sp_folio' => $sp_folio ?? null,
+        'company_id' => $company_id ?? null,
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString()
+      ]);
+
+      // No lanzamos la excepción para no romper el flujo principal
+      return [
+        'success' => false,
+        'error' => $e->getMessage()
+      ];
+    }
+  }
+
+  /**
+   * Para proveedor tipo_registro = 2. 
+   */
+  public function sPPFacturaNotifyDA(
+    $sp_id,
+    $sp_folio,
+    $company,
+  ) {
+    try {
+      Log::channel('inter_api')->info('FACTURA: Iniciando notificación de factura asociada a SPP', [
+        'sp_id' => $sp_id,
+        'sp_folio' => $sp_folio,
+        'company' => $company,
+      ]);
+
+      $payload = [
+        'sp_id' => $sp_id,
+        'sp_folio' => $sp_folio,
+        'company' => $company,
+      ];
+
+      Log::channel('inter_api')->info('FACTURA: Payload preparado para notificación de factura asociada a SPP', [
+        'payload' => $payload
+      ]);
+
+      $url = "{$this->apiContruccUrl}/api/notify-sp-factura";
+
+      Log::channel('inter_api')->info('FACTURA: URL destino para notificación de factura asociada a SPP', [
+        'url' => $url
+      ]);
+
+      $response = Http::withoutVerifying()
+        ->withHeaders([
+          'X-API-KEY' => $this->apiContruccApiKey,
+          'Content-Type' => 'application/json',
+          'Accept' => 'application/json'
+        ])
+        ->timeout($this->timeout)
+        ->post($url, $payload);
+
+      Log::channel('inter_api')->info('FACTURA: Respuesta recibida desde API Construcciones (SP pagada para usuario construcc)', [
         'status' => $response->status(),
         'body' => $response->body()
       ]);
 
       if ($response->successful()) {
-        Log::channel('inter_api')->info('Notificación de SP pagada para usuario construcc enviada exitosamente', [
+        Log::channel('inter_api')->info('FACTURA: Notificación de factura asociada a SPP enviada exitosamente', [
           'sp_id' => $sp_id,
           'sp_folio' => $sp_folio
         ]);
@@ -583,7 +667,7 @@ class InterApiService
         ];
       }
 
-      Log::channel('inter_api')->warning('Fallo en notificación de SP pagada para usuario construcc', [
+      Log::channel('inter_api')->warning('FACTURA: Fallo en notificación de factura asociada a SPP', [
         'sp_id' => $sp_id,
         'status' => $response->status(),
         'error' => $response->body()
@@ -597,7 +681,7 @@ class InterApiService
       Log::channel('inter_api')->error('Excepción al notificar SP pagada para usuario construcc ', [
         'sp_id' => $sp_id ?? null,
         'sp_folio' => $sp_folio ?? null,
-        'company_id' => $company_id ?? null,
+        'company' => $company ?? null,
         'error' => $e->getMessage(),
         'trace' => $e->getTraceAsString()
       ]);

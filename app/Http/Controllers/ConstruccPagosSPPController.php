@@ -457,13 +457,13 @@ class ConstruccPagosSPPController extends Controller
 
         $validated = $request->validated();
 
-        Log::info('PAGO: Iniciando registro de pago SPP', [
-            'proveedor_id' => $proveedor->id,
-            'empresa_construcc_id' => $validated['empresa_id'] ?? null,
-            'usuario_id' => $validated['usuario_id'],
-            'cantidad_spp' => count($validated['solicitudes']),
-            'monto_total_pago' => $validated['monto_total'],
-        ]);
+        // Log::info('PAGO: Iniciando registro de pago SPP', [
+        //     'proveedor_id' => $proveedor->id,
+        //     'empresa_construcc_id' => $validated['empresa_id'] ?? null,
+        //     'usuario_id' => $validated['usuario_id'],
+        //     'cantidad_spp' => count($validated['solicitudes']),
+        //     'monto_total_pago' => $validated['monto_total'],
+        // ]);
 
         /** @var User  */
         $proveedorUsuarioPrincipal = $proveedor->usuarioPrincipal();
@@ -474,9 +474,9 @@ class ConstruccPagosSPPController extends Controller
             ->unique()
             ->values();
 
-        Log::info('PAGO: Antes de validar SPPs para el pago', [
-            'list_spp_ids' => $listSPPIds,
-        ]);
+        // Log::info('PAGO: Antes de validar SPPs para el pago', [
+        //     'list_spp_ids' => $listSPPIds,
+        // ]);
         /**
          *--------------------------------------------------------------------------
          * Obtener todas las SPP válidas antes de la transacción
@@ -501,9 +501,9 @@ class ConstruccPagosSPPController extends Controller
             );
         }
 
-        Log::info('PAGO: Despues de validar SPPs para el pago', [
-            'list_spp_ids' => $listSPPIds,
-        ]);
+        // Log::info('PAGO: Despues de validar SPPs para el pago', [
+        //     'list_spp_ids' => $listSPPIds,
+        // ]);
 
         // Una sola consulta para saldos restantes (evita N+1 de calcularSaldoRestante() en el loop)
         $totalesAplicadosPorSpp = PagoSolicitudPago::query()
@@ -526,14 +526,14 @@ class ConstruccPagosSPPController extends Controller
         $notificaciones = [];
 
         try {
-            Log::info('PAGO: Begin Transaction', [
-                'proveedor_id' => $proveedor->id,
-                'empresa_construcc_id' => $empresaConstruccId,
-                'usuario_id' => $validated['usuario_id'],
-                'cantidad_spp' => count($validated['solicitudes']),
-                'monto_total_pago' => $montoTotalPago,
-                'suma_monto_spps' => $sumaMontoSPPs,
-            ]);
+            // Log::info('PAGO: Begin Transaction', [
+            //     'proveedor_id' => $proveedor->id,
+            //     'empresa_construcc_id' => $empresaConstruccId,
+            //     'usuario_id' => $validated['usuario_id'],
+            //     'cantidad_spp' => count($validated['solicitudes']),
+            //     'monto_total_pago' => $montoTotalPago,
+            //     'suma_monto_spps' => $sumaMontoSPPs,
+            // ]);
             DB::beginTransaction();
 
             $file = $request->file('comprobante_pago');
@@ -575,7 +575,7 @@ class ConstruccPagosSPPController extends Controller
                 'fecha_registro' => now(),
             ]);
 
-            Log::info('PAGO: Create PagoSPP', ['pago' => $pago->id]);
+            // Log::info('PAGO: Create PagoSPP', ['pago' => $pago->id]);
 
             foreach ($validated['solicitudes'] as $solicitudData) {
 
@@ -597,11 +597,11 @@ class ConstruccPagosSPPController extends Controller
 
                 if ($proveedorUsuarioPrincipal) {
                     if ($spPagoCompleto) {
-                        Log::info('PAGO: Noticacion Pago Completo', [
-                            'usuario' => $proveedorUsuarioPrincipal->id,
-                            'solicitud_pago_id' => $solicitudPago->id,
-                            'pago_id' => $pago->id,
-                        ]);
+                        // Log::info('PAGO: Noticacion Pago Completo', [
+                        //     'usuario' => $proveedorUsuarioPrincipal->id,
+                        //     'solicitud_pago_id' => $solicitudPago->id,
+                        //     'pago_id' => $pago->id,
+                        // ]);
                         $notificaciones[] = [
                             'tipo' => 'pagada',
                             'data' => [
@@ -613,11 +613,11 @@ class ConstruccPagosSPPController extends Controller
                             ]
                         ];
                     } else {
-                        Log::info('PAGO: Noticacion Abono', [
-                            'usuario' => $proveedorUsuarioPrincipal->id,
-                            'solicitud_pago_id' => $solicitudPago->id,
-                            'pago_id' => $pago->id,
-                        ]);
+                        // Log::info('PAGO: Noticacion Abono', [
+                        //     'usuario' => $proveedorUsuarioPrincipal->id,
+                        //     'solicitud_pago_id' => $solicitudPago->id,
+                        //     'pago_id' => $pago->id,
+                        // ]);
                         $notificaciones[] = [
                             'tipo' => 'abonada',
                             'data' => [
@@ -698,42 +698,42 @@ class ConstruccPagosSPPController extends Controller
                             $proveedorUsuarioPrincipal?->notify(
                                 new SolicitudPagoPagada(...$n['data'])
                             );
-                            Log::info('✅ Notificación enviada a InterAPI: Pagada', [
-                                'data' => $n['data'],
-                            ]);
+                            // Log::info('✅ Notificación enviada a InterAPI: Pagada', [
+                            //     'data' => $n['data'],
+                            // ]);
                             break;
 
                         case 'abonada':
                             $proveedorUsuarioPrincipal?->notify(
                                 new SolicitudPagoAbonada(...$n['data'])
                             );
-                            Log::info('✅ Notificación enviada a InterAPI: Abonada', [
-                                'data' => $n['data'],
-                            ]);
+                            // Log::info('✅ Notificación enviada a InterAPI: Abonada', [
+                            //     'data' => $n['data'],
+                            // ]);
                             break;
 
                         case 'factura_pendiente':
                             $proveedorUsuarioPrincipal?->notify(
                                 new SolicitudPagoFacturaPendiente(...$n['data'])
                             );
-                            Log::info('✅ Notificación enviada a InterAPI: Factura pendiente', [
-                                'data' => $n['data'],
-                            ]);
+                            // Log::info('✅ Notificación enviada a InterAPI: Factura pendiente', [
+                            //     'data' => $n['data'],
+                            // ]);
                             break;
 
                         case 'pagada_user_construcc':
                             try {
                                 $response = $this->interApiService->spPagoNotifyUsuarioConstrucc(...$n['data']);
 
-                                Log::info('✅ Notificación enviada a InterAPI: Registro PAgo Prov2', [
-                                    'data' => $n['data'],
-                                    'response' => $response
-                                ]);
+                                // Log::info('✅ Notificación enviada a InterAPI: Registro PAgo Prov2', [
+                                //     'data' => $n['data'],
+                                //     'response' => $response
+                                // ]);
                             } catch (\Exception $e) {
-                                Log::warning('⚠️ Error al notificar a InterAPI (no crítico)', [
-                                    'data' => $n['data'],
-                                    'error' => $e->getMessage(),
-                                ]);
+                                // Log::warning('⚠️ Error al notificar a InterAPI (no crítico)', [
+                                //     'data' => $n['data'],
+                                //     'error' => $e->getMessage(),
+                                // ]);
                                 // No fallar la operación si la notificación externa falla
                             }
                             // $proveedorUsuarioPrincipal?->notify(

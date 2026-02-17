@@ -2319,7 +2319,21 @@ class ConstruccSolicitudPagoController extends Controller
             'usuario_construcc_subio_factura_id' => $request->usuario_construcc_subio_factura_id,
             'usuario_construcc_subio_factura_rol' => $request->usuario_construcc_subio_factura_rol,
         ]);
+        
+        Log::info('Factura: Antes Notificación a InterAPI');
 
+        $response = $this->interApiService->sPPFacturaNotifyDA(
+            $solicitudPago->id,
+            $solicitudPago->numero_folio_solicitud,
+            $solicitudPago->empresa_construcc_id,
+        );
+
+        Log::info('Factura: Notificación a InterAPI', [
+            'solicitud_pago_id' => $solicitudPago->id,
+            'numero_folio' => $solicitudPago->numero_folio_solicitud,
+            'empresa_construcc_id' => $solicitudPago->empresa_construcc_id,
+            'inter_api_response' => $response,
+        ]);
         return $this->success(
             new ConstruccSolicitudPagoResource(
                 $solicitudPago->load(SolicitudPago::eagerLodable())
