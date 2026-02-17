@@ -121,7 +121,7 @@ class ConstruccPagosSPPController extends Controller
 
             $query = SolicitudPago::query()
                 ->selectRaw('proveedor_id, COUNT(*) as spp_autorizadas_count')
-                ->where('estado_solicitud', EstadoSP::AUTORIZADA)
+                ->where('estado_solicitud', 'autorizada')
                 ->when($empresaConstruccId, function ($q) use ($empresaConstruccId) {
                     $q->where('empresa_construcc_id', $empresaConstruccId);
                 })
@@ -175,7 +175,7 @@ class ConstruccPagosSPPController extends Controller
 
             $query = SolicitudPago::query()
                 ->where('proveedor_id', $proveedor->id)
-                ->where('estado_solicitud', EstadoSP::AUTORIZADA)
+                ->where('estado_solicitud', 'autorizada')
                 ->when($empresaConstruccId, function ($q) use ($empresaConstruccId) {
                     $q->where('empresa_construcc_id', $empresaConstruccId);
                 })
@@ -473,15 +473,13 @@ class ConstruccPagosSPPController extends Controller
         $solicitudes = SolicitudPago::whereIn('id', $listSPPIds)
             ->where('proveedor_id', $proveedor->id)
             ->where('empresa_construcc_id', $empresaConstruccId)
-            ->where('estado_solicitud', EstadoSP::AUTORIZADA)
+            ->where('estado_solicitud', 'autorizada')
             ->get()
             ->keyBy('id');
 
         if ($solicitudes->count() !== $listSPPIds->count()) {
-
             $idsValidos = $solicitudes->keys();
             $idsInvalidos = $listSPPIds->diff($idsValidos)->values();
-
             return $this->error(
                 'Una o más solicitudes de pago no pertenecen al proveedor o a la empresa indicada.',
                 [
