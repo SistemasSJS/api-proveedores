@@ -539,7 +539,8 @@ class InterApiService
         'payload' => $payload
       ]);
 
-      $url = "{$this->apiContruccUrl}/api/notify-sp-pagada-usuario-construcc";
+      // $url = "{$this->apiContruccUrl}/api/notify-sp-pagada-usuario-construcc";
+      $url = "{$this->apiContruccUrl}/api/notify-sp-pagada-t2";
 
       Log::channel('inter_api')->info('URL destino para notificación de SP pagada para usuario construcc', [
         'url' => $url
