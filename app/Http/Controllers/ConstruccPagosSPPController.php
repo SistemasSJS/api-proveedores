@@ -643,7 +643,7 @@ class ConstruccPagosSPPController extends Controller
                             $solicitudPago->id,
                             $solicitudPago->folio_sp_consecutivo,
                             $solicitudPago->empresa_construcc_id,
-                            $validated['folio_factura'],
+                            // $validated['folio_factura'],
                             $proveedor->nombre_comercial,
                             $solicitudData['monto_pago'],
                             $pago->fecha_pago,
