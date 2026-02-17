@@ -67,75 +67,59 @@ class ConstruccReportesController extends Controller
     }
 
     // Ordenar por fecha de pago
+    /** @var Collection<PagoSPP> $pagos */
     $pagos = $query->orderBy('fecha_pago', 'asc')->get();
 
     // Transformar datos para el reporte
     $data = [];
 
+    /** @var PagoSPP $pago */
     foreach ($pagos as $pago) {
-      $sppDelPago = $pago->solicitudesPago;
-      $totalSppEnPago = $sppDelPago->count();
+      /** @var SolicitudPago $SPPsDelPago */
+      $SPPsDelPago = $pago->solicitudesPago;
+      $totalSppEnPago = $SPPsDelPago->count();
 
       // Si el pago tiene múltiples SPP, generamos URL de descarga múltiple
       $urlDescargaMultiplePdf = null;
-      $urlDescargaMultipleXml = null;
 
       if ($totalSppEnPago > 1) {
-        $sppIds = $sppDelPago->pluck('id')->toArray();
+        $sppIds = $SPPsDelPago->pluck('id')->toArray();
         $sppIdsString = implode(',', $sppIds);
-
         // Generar URLs usando la ruta pública con parámetros de ruta
         $urlDescargaMultiplePdf = url('/api/construcc/reportes/descargar-facturas-multiple/' . $sppIdsString . '/pdf');
-        $urlDescargaMultipleXml = url('/api/construcc/reportes/descargar-facturas-multiple/' . $sppIdsString . '/xml');
       }
 
-      foreach ($sppDelPago as $spp) {
+      $foliosFactura = [];
+      $importeTotal = 0;
+
+      foreach ($SPPsDelPago as $spp) {
         // Obtener monto aplicado desde la tabla pivot
         $montoAplicado = $spp->pivot->monto_aplicado ?? 0;
-
-        // Generar URL de descarga INDIVIDUAL usando la MISMA ruta pública
-        $enlaceDescargaPdf = null;
-        $enlaceDescargaXml = null;
-
-        // if ($spp->ruta_archivo_factura_pdf) {
-        //   // Usar la ruta pública de descarga múltiple, pero con un solo ID
-        //   $enlaceDescargaPdf = url('/api/construcc/reportes/descargar-facturas-multiple/' . $spp->id . '/pdf');
-        // }
-
-        // if ($spp->ruta_archivo_factura_xml) {
-        //   // Usar la ruta pública de descarga múltiple, pero con un solo ID
-        //   $enlaceDescargaXml = url('/api/construcc/reportes/descargar-facturas-multiple/' . $spp->id . '/xml');
-        // }
-
-        $data[] = [
-          'pago_id' => $pago->id,
-          'fecha_pago' => $pago->fecha_pago ? $pago->fecha_pago->format('Y-m-d') : null,
-          'proveedor_rfc' => $pago->proveedor->rfc ?? null,
-          'proveedor_razon_social' => $pago->proveedor->razon_social ?? $pago->proveedor->nombre_comercial ?? null,
-          'folio_factura' => $spp->folio_factura,
-          'spp_id' => $spp->id,
-
-          // URLs de descarga usando SOLO la ruta pública
-          'enlace_descarga_pdf' => $enlaceDescargaPdf,
-          'enlace_descarga_xml' => $enlaceDescargaXml,
-
-          // Si hay múltiples facturas en el pago, incluir URL para descargar todas
-          'total_facturas_en_pago' => $totalSppEnPago,
-          'enlace_descarga_todas_pdf' => $totalSppEnPago > 1 ? $urlDescargaMultiplePdf : null,
-          'enlace_descarga_todas_xml' => $totalSppEnPago > 1 ? $urlDescargaMultipleXml : null,
-
-          'importe' => number_format($montoAplicado, 2, '.', ''),
-
-          // Información adicional útil
-          'referencia_pago' => $pago->referencia_pago,
-          'clave_rastreo' => $pago->clave_rastreo,
-          'banco_destino' => $pago->banco_destino,
-          'titular_cuenta_destino' => $pago->titular_cuenta_destino,
-        ];
+        $importeTotal += $montoAplicado;
+        $foliosFactura[] = $spp->folio_factura;
       }
+
+      $data[] = [
+        'pago_id' => $pago->id,
+        'fecha_pago' => $pago->fecha_pago ? $pago->fecha_pago->format('Y-m-d') : null,
+        'proveedor_rfc' => $pago->proveedor->rfc ?? null,
+        'proveedor_razon_social' => $pago->proveedor->razon_social ?? $pago->proveedor->nombre_comercial ?? null,
+        'folios_factura' => $foliosFactura,
+
+        'importe' => number_format($importeTotal, 2, '.', ''),
+
+        // Información adicional útil
+        'referencia_pago' => $pago->referencia_pago,
+        'clave_rastreo' => $pago->clave_rastreo,
+        'banco_destino' => $pago->banco_destino,
+        'titular_cuenta_destino' => $pago->titular_cuenta_destino,
+
+        'facturas_pdf' => $urlDescargaMultiplePdf,
+      ];
     }
 
     return $this->success([
+      'importe_total' => number_format($importeTotal, 2, '.', ''),
       'total_registros' => count($data),
       'fecha_desde' => $fechaDesde,
       'fecha_hasta' => $fechaHasta,
@@ -211,7 +195,8 @@ class ConstruccReportesController extends Controller
 
       // Agregar PDF si se solicita
       if (($tipo === 'pdf' || $tipo === 'ambos') && $spp->ruta_archivo_factura_pdf) {
-        $rutaPdf = storage_path($spp->ruta_archivo_factura_pdf);
+        // Buscar en disco 'private' de Laravel Storage
+        $rutaPdf = storage_path('app/private/' . $spp->ruta_archivo_factura_pdf);
         if (file_exists($rutaPdf)) {
           $nombreArchivo = "SPP_{$spp->id}_{$folioSanitizado}.pdf";
           $zip->addFile($rutaPdf, $nombreArchivo);
@@ -221,7 +206,8 @@ class ConstruccReportesController extends Controller
 
       // Agregar XML si se solicita
       if (($tipo === 'xml' || $tipo === 'ambos') && $spp->ruta_archivo_factura_xml) {
-        $rutaXml = storage_path($spp->ruta_archivo_factura_xml);
+        // Buscar en disco 'private' de Laravel Storage
+        $rutaXml = storage_path('app/private/' . $spp->ruta_archivo_factura_xml);
         if (file_exists($rutaXml)) {
           $nombreArchivo = "SPP_{$spp->id}_{$folioSanitizado}.xml";
           $zip->addFile($rutaXml, $nombreArchivo);

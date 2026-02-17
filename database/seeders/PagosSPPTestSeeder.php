@@ -188,13 +188,17 @@ class PagosSPPTestSeeder extends Seeder
                     $folioFactura = $foliosFacturas[$folioIndex % count($foliosFacturas)];
                     $folioIndex++;
 
+                    // Generar nombres únicos para los archivos (similar a como Laravel los genera)
+                    $nombrePdf = \Illuminate\Support\Str::random(40) . '.pdf';
+                    $nombreXml = \Illuminate\Support\Str::random(40) . '.xml';
+                    
                     // Rutas relativas al storage (como las guarda Laravel)
-                    $rutaPdf = "facturas/pdf/0CYh9ArCRB9RaP4Arvas0bzicrAbisb5fxl6E9SB.pdf";
-                    $rutaXml = "facturas/xml/0x5a0kZFaXq5h0cizg39jzhTS4CctY51USUSfLkJ.xml";
+                    $rutaPdf = "facturas/pdf/{$nombrePdf}";
+                    $rutaXml = "facturas/xml/{$nombreXml}";
 
                     // Crear archivos PDF y XML de prueba en disco 'private'
-                    // $this->crearFacturaPdf($rutaPdf, $folioFactura, $proveedor->razon_social, $montoTotal);
-                    // $this->crearFacturaXml($rutaXml, $folioFactura, $proveedor->rfc, $montoTotal);
+                    $this->crearFacturaPdf($rutaPdf, $folioFactura, $proveedor->razon_social, $montoTotal);
+                    $this->crearFacturaXml($rutaXml, $folioFactura, $proveedor->rfc, $montoTotal);
                     $archivosCreados += 2;
 
                     $spp = SolicitudPago::create([
@@ -230,63 +234,109 @@ class PagosSPPTestSeeder extends Seeder
             $relacionesCreadas = 0;
 
             // Crear 10 pagos con diferentes configuraciones
+            // IMPORTANTE: Solo usar las SPP creadas en este seeder (que tienen archivos)
+            $sppDisponibles = collect($solicitudesCreadas);
+
             for ($i = 0; $i < 10; $i++) {
                 $fechaPago = now()->subDays(rand(1, 20));
-                $proveedorAleatorio = $proveedoresCreados[array_rand($proveedoresCreados)];
+                
+                // Decidir cuántas SPP se pagarán con este pago (1-4)
+                $numSppAPagar = rand(1, min(4, $sppDisponibles->count()));
+                
+                // Refrescar los datos de las SPP desde la BD para tener saldos actualizados
+                $sppDisponibles = SolicitudPago::whereIn('id', collect($solicitudesCreadas)->pluck('id'))
+                    ->where('saldo_pendiente', '>', 0)
+                    ->get();
+                
+                if ($sppDisponibles->isEmpty()) {
+                    $this->command->info('ℹ️ No hay más SPP con saldo pendiente. Finalizando creación de pagos.');
+                    break; // No hay más SPP disponibles
+                }
+                
+                // Obtener SPP aleatorias con saldo pendiente
+                $sppDelPago = $sppDisponibles
+                    ->shuffle()
+                    ->take($numSppAPagar);
 
+                if ($sppDelPago->isEmpty()) {
+                    continue; // No hay SPP disponibles para este pago
+                }
+
+                $proveedorDelPago = $sppDelPago->first()->proveedor;
+
+                // Calcular primero los montos que se aplicarán a cada SPP
+                $montosAplicar = [];
+                $montoTotalPago = 0;
+
+                foreach ($sppDelPago as $spp) {
+                    // Pagar total o parcial (70% probabilidad de pago completo)
+                    $pagoCompleto = rand(1, 10) <= 7;
+                    
+                    if ($pagoCompleto) {
+                        $montoAplicado = $spp->saldo_pendiente;
+                    } else {
+                        // Pago parcial: entre 30% y 80% del saldo pendiente
+                        $porcentaje = rand(30, 80) / 100;
+                        $montoAplicado = round($spp->saldo_pendiente * $porcentaje, 2);
+                        // Asegurar que el monto sea al menos 1000 y no exceda el saldo
+                        $montoAplicado = max(1000, min($montoAplicado, $spp->saldo_pendiente));
+                    }
+
+                    $montosAplicar[$spp->id] = [
+                        'monto' => $montoAplicado,
+                        'saldo_inicial' => $spp->saldo_pendiente,
+                        'pago_completo' => $pagoCompleto,
+                    ];
+
+                    $montoTotalPago += $montoAplicado;
+                }
+
+                // Crear el pago con el monto total correcto desde el inicio
                 $pago = PagoSPP::create([
                     'empresa_construcc_id' => $empresa->id,
-                    'proveedor_id' => $proveedorAleatorio->id,
+                    'proveedor_id' => $proveedorDelPago->id,
                     'folio_pago_spp_consecutivo' => sprintf('PAGO-%04d', $i + 1),
                     'comprobante_pago' => "comprobantes/pago_" . ($i + 1) . "_" . time() . ".pdf",
                     'fecha_pago' => $fechaPago,
                     'fecha_registro' => $fechaPago,
                     'referencia_pago' => $this->generarReferenciaAleatoria(),
                     'clave_rastreo' => $this->generarClaveRastreo(),
-                    'monto_total' => 0, // Se calculará después
+                    'monto_total' => $montoTotalPago, // ✅ Monto correcto desde el inicio
                     'banco_pago' => 'BBVA Bancomer',
                     'banco_destino' => $this->getBancoAleatorio(),
-                    'titular_cuenta_destino' => $proveedorAleatorio->razon_social,
+                    'titular_cuenta_destino' => $proveedorDelPago->razon_social,
                     'usuario_registro_id' => 1,
                     'usuario_registro_nombre' => 'Usuario Construcción Test',
                     'cuenta_bancaria_empresa_construcc_id' => 1,
                 ]);
 
-                // Decidir cuántas SPP se pagarán con este pago (1-4)
-                $numSppAPagar = rand(1, 4);
-                $sppDelProveedor = SolicitudPago::where('proveedor_id', $proveedorAleatorio->id)
-                    ->where('saldo_pendiente', '>', 0)
-                    ->inRandomOrder()
-                    ->limit($numSppAPagar)
-                    ->get();
-
-                $montoTotalPago = 0;
-
-                foreach ($sppDelProveedor as $spp) {
-                    // Pagar total o parcial
-                    $pagoCompleto = rand(0, 1) == 1;
-                    $montoAplicado = $pagoCompleto
-                        ? $spp->saldo_pendiente
-                        : rand(1000, min(5000, $spp->saldo_pendiente));
-
-                    $montoTotalPago += $montoAplicado;
+                // Aplicar los montos a cada SPP
+                foreach ($sppDelPago as $spp) {
+                    $datosAplicacion = $montosAplicar[$spp->id];
+                    $montoAplicado = $datosAplicacion['monto'];
+                    $saldoInicial = $datosAplicacion['saldo_inicial'];
+                    $pagoCompleto = $datosAplicacion['pago_completo'];
 
                     // Crear relación en tabla pivot
                     PagoSolicitudPago::create([
                         'pago_spp_id' => $pago->id,
                         'solicitud_pago_id' => $spp->id,
                         'monto_aplicado' => $montoAplicado,
-                        'saldo_inicial' => $spp->saldo_pendiente,
+                        'saldo_inicial' => $saldoInicial,
                         'estado_pago' => PagoSolicitudPago::ESTADO_APLICADO,
                         'fecha_aplicacion' => $fechaPago,
                         'notas' => $pagoCompleto ? 'Pago completo' : 'Pago parcial',
                     ]);
 
-                    // Actualizar saldos de la SPP
+                    // Calcular nuevo saldo
+                    $nuevoSaldoPendiente = $saldoInicial - $montoAplicado;
+                    $nuevoMontoAbonado = $spp->monto_abonado + $montoAplicado;
+
+                    // Actualizar saldos de la SPP (campos deprecados pero aún en uso)
                     $spp->update([
-                        'monto_abonado' => $spp->monto_abonado + $montoAplicado,
-                        'saldo_pendiente' => $spp->saldo_pendiente - $montoAplicado,
-                        'estado_solicitud' => ($spp->saldo_pendiente - $montoAplicado) <= 0
+                        'monto_abonado' => $nuevoMontoAbonado,
+                        'saldo_pendiente' => $nuevoSaldoPendiente,
+                        'estado_solicitud' => $nuevoSaldoPendiente <= 0
                             ? EstadoSP::PAGADO->value
                             : EstadoSP::AUTORIZADA->value,
                     ]);
@@ -294,9 +344,15 @@ class PagosSPPTestSeeder extends Seeder
                     $relacionesCreadas++;
                 }
 
-                // Actualizar monto total del pago
-                $pago->update(['monto_total' => $montoTotalPago]);
                 $pagosCreados++;
+                
+                // Mostrar información del pago creado
+                $this->command->info(sprintf(
+                    '  💰 Pago #%d: $%s aplicado a %d SPP(s)',
+                    $i + 1,
+                    number_format($montoTotalPago, 2),
+                    count($sppDelPago)
+                ));
             }
 
             $this->command->info('✅ Pagos creados: ' . $pagosCreados);
@@ -402,5 +458,144 @@ class PagosSPPTestSeeder extends Seeder
     {
         Storage::disk('private')->makeDirectory('facturas/pdf');
         Storage::disk('private')->makeDirectory('facturas/xml');
+    }
+
+    /**
+     * Crear archivo PDF de prueba en disco 'private'
+     */
+    private function crearFacturaPdf(string $ruta, string $folio, string $razonSocial, float $monto): void
+    {
+        $contenidoPdf = "%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/Resources <<
+/Font <<
+/F1 4 0 R
+>>
+>>
+/MediaBox [0 0 612 792]
+/Contents 5 0 R
+>>
+endobj
+4 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+endobj
+5 0 obj
+<<
+/Length 350
+>>
+stream
+BT
+/F1 24 Tf
+50 700 Td
+(FACTURA DE PRUEBA) Tj
+0 -40 Td
+/F1 12 Tf
+(Folio: {$folio}) Tj
+0 -30 Td
+(Razon Social: {$razonSocial}) Tj
+0 -25 Td
+(Monto Total: $" . number_format($monto, 2) . ") Tj
+0 -25 Td
+(Fecha: " . now()->format('Y-m-d') . ") Tj
+0 -40 Td
+(Este es un archivo PDF de prueba generado) Tj
+0 -20 Td
+(por el seeder PagosSPPTestSeeder.) Tj
+0 -30 Td
+(RFC: TEST010101AAA) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f
+0000000009 00000 n
+0000000058 00000 n
+0000000115 00000 n
+0000000274 00000 n
+0000000361 00000 n
+trailer
+<<
+/Size 6
+/Root 1 0 R
+>>
+startxref
+762
+%%EOF";
+
+        Storage::disk('private')->put($ruta, $contenidoPdf);
+    }
+
+    /**
+     * Crear archivo XML de prueba en disco 'private'
+     */
+    private function crearFacturaXml(string $ruta, string $folio, string $rfc, float $monto): void
+    {
+        $contenidoXml = '<?xml version="1.0" encoding="UTF-8"?>
+<cfdi:Comprobante
+    xmlns:cfdi="http://www.sat.gob.mx/cfd/4"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.sat.gob.mx/cfd/4 http://www.sat.gob.mx/sitio_internet/cfd/4/cfdv40.xsd"
+    Version="4.0"
+    Serie="A"
+    Folio="' . $folio . '"
+    Fecha="' . now()->format('Y-m-d\TH:i:s') . '"
+    Sello="TEST_SELLO_DIGITAL"
+    FormaPago="03"
+    NoCertificado="00001000000123456789"
+    Certificado="TEST_CERTIFICADO"
+    SubTotal="' . number_format($monto / 1.16, 2, '.', '') . '"
+    Moneda="MXN"
+    Total="' . number_format($monto, 2, '.', '') . '"
+    TipoDeComprobante="I"
+    Exportacion="01"
+    MetodoPago="PUE"
+    LugarExpedicion="81200">
+    <cfdi:Emisor Rfc="' . $rfc . '" Nombre="Proveedor Test" RegimenFiscal="601"/>
+    <cfdi:Receptor Rfc="CTE010101AAA" Nombre="Constructora Test SA de CV" UsoCFDI="G03" RegimenFiscalReceptor="601" DomicilioFiscalReceptor="81200"/>
+    <cfdi:Conceptos>
+        <cfdi:Concepto
+            ClaveProdServ="25101500"
+            Cantidad="1"
+            ClaveUnidad="ACT"
+            Descripcion="Materiales de construcción"
+            ValorUnitario="' . number_format($monto / 1.16, 2, '.', '') . '"
+            Importe="' . number_format($monto / 1.16, 2, '.', '') . '"
+            ObjetoImp="02">
+            <cfdi:Impuestos>
+                <cfdi:Traslados>
+                    <cfdi:Traslado Base="' . number_format($monto / 1.16, 2, '.', '') . '" Impuesto="002" TipoFactor="Tasa" TasaOCuota="0.160000" Importe="' . number_format($monto - ($monto / 1.16), 2, '.', '') . '"/>
+                </cfdi:Traslados>
+            </cfdi:Impuestos>
+        </cfdi:Concepto>
+    </cfdi:Conceptos>
+    <cfdi:Impuestos TotalImpuestosTrasladados="' . number_format($monto - ($monto / 1.16), 2, '.', '') . '">
+        <cfdi:Traslados>
+            <cfdi:Traslado Base="' . number_format($monto / 1.16, 2, '.', '') . '" Impuesto="002" TipoFactor="Tasa" TasaOCuota="0.160000" Importe="' . number_format($monto - ($monto / 1.16), 2, '.', '') . '"/>
+        </cfdi:Traslados>
+    </cfdi:Impuestos>
+</cfdi:Comprobante>';
+
+        Storage::disk('private')->put($ruta, $contenidoXml);
     }
 }

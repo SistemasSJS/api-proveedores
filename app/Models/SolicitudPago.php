@@ -56,9 +56,14 @@ class SolicitudPago extends BaseModel
         //
         'motivo_rechazo',
         'monto_total',
-        'monto_abonado',
-        'saldo_pendiente',
-        'pago_completo',
+        
+        // DEPRECATED: Estos campos se mantienen por compatibilidad pero están deprecados
+        // Los valores reales se calculan desde la tabla pivot PagoSolicitudPago
+        // Usar métodos: calcularSaldoRestante() y calcularMontoAbonado()
+        'monto_abonado',      // @deprecated Usar calcularMontoAbonado()
+        'saldo_pendiente',    // @deprecated Usar calcularSaldoRestante()
+        'pago_completo',      // @deprecated Usar estaPagadaCompletamente()
+        
         'verificada',
         'tipo',
         // FIXME: tipo_id se migrara a una tabla y este almacenara el id asignado al tipo de SP
@@ -788,6 +793,47 @@ class SolicitudPago extends BaseModel
             ->sum('pago_solicitud_pago.monto_aplicado');
 
         return max(0, (float) $this->monto_total - $totalPagado);
+    }
+
+    /**
+     * Calcula el monto total abonado de la Solicitud de Pago (SPP). En base a los pagos aplicados.
+     * monto_abonado = sum(pagos aplicados)
+     */
+    public function calcularMontoAbonado(): float
+    {
+        return (float) $this->pagos()
+            ->wherePivotIn('estado_pago', [
+                PagoSolicitudPago::ESTADO_APLICADO,
+                PagoSolicitudPago::ESTADO_COMPLETADO,
+                PagoSolicitudPago::ESTADO_PARCIAL,
+            ])
+            ->sum('pago_solicitud_pago.monto_aplicado');
+    }
+
+    /**
+     * Verifica si la SPP está pagada completamente
+     */
+    public function estaPagadaCompletamente(): bool
+    {
+        return $this->calcularSaldoRestante() <= 0;
+    }
+
+    /**
+     * Accessor para obtener el saldo restante calculado dinámicamente
+     * Uso: $spp->saldo_restante_calculado
+     */
+    public function getSaldoRestanteCalculadoAttribute(): float
+    {
+        return $this->calcularSaldoRestante();
+    }
+
+    /**
+     * Accessor para obtener el monto abonado calculado dinámicamente
+     * Uso: $spp->monto_abonado_calculado
+     */
+    public function getMontoAbonadoCalculadoAttribute(): float
+    {
+        return $this->calcularMontoAbonado();
     }
 
     /**
