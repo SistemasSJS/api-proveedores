@@ -502,7 +502,7 @@ class ConstruccPagosSPPController extends Controller
             ->selectRaw('solicitud_pago_id, COALESCE(SUM(monto_aplicado), 0) as total_aplicado')
             ->groupBy('solicitud_pago_id')
             ->pluck('total_aplicado', 'solicitud_pago_id')
-            ->map(fn ($v) => (float) $v);
+            ->map(fn($v) => (float) $v);
 
         $montoTotalPago = (float) $validated['info_comprobante']['monto'];
         $sumaMontoSPPs = (float) collect($validated['solicitudes'])->sum(function ($item) {
@@ -573,7 +573,6 @@ class ConstruccPagosSPPController extends Controller
                 $montoAcumulado = (float) $solicitudPago->monto_abonado;
 
                 if ($proveedorUsuarioPrincipal) {
-
                     if ($spPagoCompleto) {
                         $notificaciones[] = [
                             'tipo' => 'pagada',
@@ -600,6 +599,23 @@ class ConstruccPagosSPPController extends Controller
                             ]
                         ];
                     }
+                } else if ($proveedor->tipo_alta == 2) {
+                    /**
+                     * Notificacion para usuario principal del proveedor no encontrada, se omite notificación de pago/abono.
+                     */
+                    $notificaciones[] = [
+                        'tipo' => 'pagada_user_construcc',
+                        'data'  => [
+                            $solicitudPago->id,
+                            $solicitudPago->folio_sp_consecutivo,
+                            $solicitudPago->empresa_construcc_id,
+                            $validated['folio_factura'],
+                            $proveedor->nombre_comercial,
+                            $solicitudData['monto_pago'],
+                            $pago->fecha_pago,
+                            $proveedor->user_construcc_alta
+                        ]
+                    ];
                 }
 
                 $uso  = $solicitudData['uso'] ?? null;
@@ -610,7 +626,6 @@ class ConstruccPagosSPPController extends Controller
                 $razonSocialId = $solicitudData['razon_social_id'] ?? null;
 
                 if ($solicitudPago && ! $solicitudPago->tiene_factura) {
-
                     $solicitudPago->update([
                         'uso' => $uso,
                         'mp'  => $mp,
@@ -659,6 +674,24 @@ class ConstruccPagosSPPController extends Controller
                             $proveedorUsuarioPrincipal?->notify(
                                 new SolicitudPagoFacturaPendiente(...$n['data'])
                             );
+                            break;
+
+                        case 'pagada_user_construcc':
+                            try {
+                                $this->interApiService->spPagoNotifyUsuarioConstrucc(...$n['data']);
+                                Log::info('✅ Notificación enviada a InterAPI: Registro PAgo Prov2', [
+                                    'data' => $n['data'],
+                                ]);
+                            } catch (\Exception $e) {
+                                Log::warning('⚠️ Error al notificar a InterAPI (no crítico)', [
+                                    'data' => $n['data'],
+                                    'error' => $e->getMessage(),
+                                ]);
+                                // No fallar la operación si la notificación externa falla
+                            }
+                            // $proveedorUsuarioPrincipal?->notify(
+                            //     new SolicitudPagoPagadaUserConstrucc(...$n['data'])
+                            // );
                             break;
                     }
                 }
