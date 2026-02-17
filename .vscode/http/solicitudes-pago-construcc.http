@@ -105,7 +105,7 @@ X-API-KEY: {{apiKey}}
 ###############################################################################
 
 ### 9. Autorizar solicitud de pago (por rol)
-POST {{baseUrl}}/construcc/solicitudes-pago/6/autorizar
+POST {{baseUrl}}/construcc/solicitudes-pago/8/autorizar
 X-API-KEY: {{apiKey}}
 Content-Type: {{contentType}}
 
@@ -393,3 +393,56 @@ Accept: {{acceptType}}
 GET {{baseUrl}}/construcc/solicitudes-pago
 X-API-KEY: {{apiKey}}
 Accept: {{acceptType}}
+
+###############################################################################
+# REPORTES - CONTABILIDAD
+###############################################################################
+
+### 39. Reporte de contabilidad - Sin filtros (solo fecha de hoy)
+GET {{baseUrl}}/construcc/reportes/contabilidad
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 40. Reporte de contabilidad - Con rango de fechas
+GET {{baseUrl}}/construcc/reportes/contabilidad?fecha_pago_desde=2026-02-01&fecha_pago_hasta=2026-02-28
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 41. Reporte de contabilidad - Filtrado por banco
+GET {{baseUrl}}/construcc/reportes/contabilidad?banco_id=1&fecha_pago_desde=2026-02-01&fecha_pago_hasta=2026-02-28
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 42. Reporte de contabilidad - Solo un día específico
+GET {{baseUrl}}/construcc/reportes/contabilidad?fecha_pago_desde=2026-02-15&fecha_pago_hasta=2026-02-15
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 43. Reporte de contabilidad - Con fecha de inicio y fin iguales (default)
+GET {{baseUrl}}/construcc/reportes/contabilidad?fecha_pago_desde=2026-02-16
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+### 44. Reporte de contabilidad - Banco específico sin fechas (usa hoy)
+GET {{baseUrl}}/construcc/reportes/contabilidad?banco_id=1
+X-API-KEY: {{apiKey}}
+Accept: {{acceptType}}
+
+###############################################################################
+# DESCARGA DE FACTURAS MÚLTIPLES - RUTA PÚBLICA GET (Sin autenticación)
+###############################################################################
+
+### 45. Descargar múltiples facturas en ZIP (PDF por defecto) - PÚBLICO
+GET {{baseUrl}}/construcc/reportes/descargar-facturas-multiple/1,2,3
+
+### 46. Descargar múltiples facturas en ZIP (PDF explícito) - PÚBLICO
+GET {{baseUrl}}/construcc/reportes/descargar-facturas-multiple/1,2,3/pdf
+
+### 47. Descargar múltiples facturas en ZIP (XML) - PÚBLICO
+GET {{baseUrl}}/construcc/reportes/descargar-facturas-multiple/1,2,3/xml
+
+### 48. Descargar múltiples facturas en ZIP (PDF y XML) - PÚBLICO
+GET {{baseUrl}}/construcc/reportes/descargar-facturas-multiple/1,2,3,4,5/ambos
+
+### 49. Descargar con muchos IDs - PÚBLICO
+GET {{baseUrl}}/construcc/reportes/descargar-facturas-multiple/1,2,3,4,5,6,7,8,9,10/pdf

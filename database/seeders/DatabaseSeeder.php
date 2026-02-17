@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\OrdenCompra;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -64,22 +63,24 @@ class DatabaseSeeder extends Seeder
                 ProveedoresSPSeeder::class,
 
                 // 2. Cotizaciones para proveedores SP
-                CotizacionesSPSeeder::class,
+                // CotizacionesSPSeeder::class,
 
                 // 3. Detalles de cotizaciones SP
-                CotizacionDetalleSeeder::class,
+                // CotizacionDetalleSeeder::class,
 
                 // 4. Órdenes de compra (requerido antes de SP para relaciones)
                 // OrdenCompraSeeder::class,
 
                 // 5. Solicitudes de pago basadas en cotizaciones
                 // SolicitudPagoSeeder::class,
+
+                PagosSPPTestSeeder::class,
             ]);
 
             echo "\n";
-            echo "\u2705 Seeders ejecutados correctamente para Los Mochis, Sinaloa, México\n";
-            echo "\ud83d\udccd Zona horaria configurada: America/Mazatlan\n";
-            echo "\ud83c\udfe2 Datos de proveedores SP y solicitudes de pago generados\n";
+            echo "\t Seeders ejecutados correctamente para Los Mochis, Sinaloa, México\n";
+            echo "\t \t Zona horaria configurada: America/Mazatlan\n";
+            echo "\t \t Datos de proveedores SP y solicitudes de pago generados\n";
             echo "\n";
         }
 

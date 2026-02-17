@@ -9,6 +9,7 @@ use App\Http\Controllers\ConstruccProveedorController;
 use App\Http\Controllers\ConstruccProveedorCuentaBancariaController;
 use App\Http\Controllers\ConstruccProveedorSolicitudPagoController;
 use App\Http\Controllers\ConstruccPagosSPPController;
+use App\Http\Controllers\ConstruccReportesController;
 use App\Http\Middleware\CheckApiKey;
 use Illuminate\Support\Facades\Route;
 
@@ -158,6 +159,7 @@ Route::prefix('construcc')
             // GET /proveedor/{proveedor}/spp -> Listar SPP de un proveedor
             Route::get('/proveedor/{proveedor}/spp', [ConstruccPagosSPPController::class, 'sppPorProveedor'])->name('proveedor.spp.index');
 
+     
             // GET /proveedor -> Listar proveedores con SPP
             Route::get('/proveedor', [ConstruccPagosSPPController::class, 'indexProveedor'])->name('proveedor.spp.index');
 
@@ -178,6 +180,16 @@ Route::prefix('construcc')
             // GET /{pago} -> Mostrar información de un pago específico
             Route::get('/{pago}', [ConstruccPagosSPPController::class, 'show'])->middleware(['audit'])->name('show');
         });
+
+        /**
+         *--------------------------------------------------------------------------
+         * ESTADÍSTICAS Y REPORTES
+         *--------------------------------------------------------------------------
+         * Información agregada para dashboard y reportes
+         */
+        // Estadísticas generales del módulo
+        Route::get('reportes/contabilidad', [ConstruccReportesController::class, 'reporteContabilidad'])->name('reporteContabilidad');
+
 
 
         /**
@@ -314,13 +326,6 @@ Route::prefix('construcc')
                 ->name('unidades');
         });
 
-        /**
-         *--------------------------------------------------------------------------
-         * ESTADÍSTICAS Y REPORTES
-         *--------------------------------------------------------------------------
-         * Información agregada para dashboard y reportes
-         */
-        // Estadísticas generales del módulo
         Route::prefix('reportes')->name('reportes.')->group(function () {
             Route::get('estadisticas', [ConstruccController::class, 'estadisticas'])
                 ->middleware(['audit'])

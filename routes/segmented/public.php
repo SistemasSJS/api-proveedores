@@ -99,3 +99,12 @@ Route::get(
     'public/proveedor/{id}/compartir-constancia',
     [ProveedorPublicController::class, 'compartirConstancia']
 );
+
+/**
+ * REPORTES - DESCARGA PÚBLICA DE FACTURAS
+ */
+Route::get(
+    'construcc/reportes/descargar-facturas-multiple/{spp_ids}/{tipo?}',
+    [\App\Http\Controllers\ConstruccReportesController::class, 'descargarFacturasMultiple']
+)->name('construcc.reportes.descargar-facturas-multiple')
+    ->middleware(['throttle:60,1']);
