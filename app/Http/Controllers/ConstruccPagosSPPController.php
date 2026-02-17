@@ -639,14 +639,15 @@ class ConstruccPagosSPPController extends Controller
                      */
                     $notificaciones[] = [
                         'tipo' => 'pagada_user_construcc',
-                        'data' => [
-                            'sp_id'      => $solicitudPago->id,
-                            'sp_folio'   => $solicitudPago->folio_sp_consecutivo,
-                            'company_id' => $solicitudPago->empresa_construcc_id,
-                            'proveedor'  => $proveedor->nombre_comercial,
-                            'monto'      => $solicitudData['monto_pago'],
-                            'fecha_pago' => $pago->fecha_pago,
-                            'user_id'    => $proveedor->user_construcc_alta,
+                        'data'  => [
+                            $solicitudPago->id,
+                            $solicitudPago->folio_sp_consecutivo,
+                            $solicitudPago->empresa_construcc_id,
+                            // $validated['folio_factura'],
+                            $proveedor->nombre_comercial,
+                            $solicitudData['monto_pago'],
+                            $pago->fecha_pago,
+                            $proveedor->user_construcc_alta
                         ]
                     ];
                 }
@@ -720,7 +721,7 @@ class ConstruccPagosSPPController extends Controller
 
                         case 'pagada_user_construcc':
                             try {
-                                $response = $this->interApiService->spPagoNotifyUsuarioConstrucc(...$n['data']);
+                                $response = $this->interApiService->spPagoNotifyUsuarioConstrucc($n['data']);
 
                                 Log::info('✅ Notificación enviada a InterAPI: Registro PAgo Prov2', [
                                     'data' => $n['data'],
