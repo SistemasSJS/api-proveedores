@@ -128,7 +128,7 @@ class InterApiService
    * @param int $validatorUserId ID del usuario validador
    * @return array
    */
-  public function spNotifyByValidator($spId, $spFolio, $company, $validatorUserId)
+  public function spNotifyByValidator(int $spId, string $spFolio, int  $company, int $validatorUserId)
   {
     try {
       Log::channel('inter_api')->info('Iniciando notificación de validación por validador', [
@@ -510,29 +510,35 @@ class InterApiService
   /**
    * Para proveedor tipo_registro = 2. 
    */
-  public function spPagoNotifyUsuarioConstrucc($data)
-  {
+  public function spPagoNotifyUsuarioConstrucc(
+    $sp_id,
+    $sp_folio,
+    $company_id,
+    $proveedor,
+    $monto,
+    $fecha_pago,
+    $user_id,
+  ) {
     try {
       Log::channel('inter_api')->info('Iniciando notificación de SP pagada', [
-        'sp_id' => $data['sp_id'],
-        'sp_folio' => $data['sp_folio'],
-        'company_id' => $data['company_id'],
-        // 'folio_factura' => $data['folio_factura'],
-        'proveedor' => $data['proveedor'],
-        'monto' => $data['monto'] ?? null,
-        'fecha_pago' => $data['fecha_pago'] ?? null,
-        'user_id' => $data['user_id'] ?? null,
+        'sp_id' => $sp_id,
+        'sp_folio' => $sp_folio,
+        'company_id' => $company_id,
+        'proveedor' => $proveedor,
+        'monto' => $monto,
+        'fecha_pago' => $fecha_pago,
+        'user_id' => $user_id,
       ]);
 
       $payload = [
-        'sp_id' => $data['sp_id'],
-        'sp_folio' => $data['sp_folio'],
-        'company' => $data['company_id'],
-        // 'folio_factura' => $data['folio_factura'],
-        'proveedor' => $data['proveedor'],
-        'monto' => $data['monto'] ?? null,
-        'fecha_pago' => $data['fecha_pago'] ?? null,
-        'user_id' => $data['user_id'] ?? null,
+        'sp_id' => $sp_id,
+        'sp_folio' => $sp_folio,
+        'company' => $company_id,
+        // 'folio_factura' => $folio_factura,
+        'proveedor' => $proveedor,
+        'monto' => $monto,
+        'fecha_pago' => $fecha_pago,
+        'user_id' => $user_id,
       ];
 
       Log::channel('inter_api')->info('Payload preparado para notificación de pago', [
@@ -563,8 +569,8 @@ class InterApiService
 
       if ($response->successful()) {
         Log::channel('inter_api')->info('Notificación de SP pagada para usuario construcc enviada exitosamente', [
-          'sp_id' => $data['sp_id'],
-          'sp_folio' => $data['sp_folio']
+          'sp_id' => $sp_id,
+          'sp_folio' => $sp_folio
         ]);
 
         return [
@@ -574,7 +580,7 @@ class InterApiService
       }
 
       Log::channel('inter_api')->warning('Fallo en notificación de SP pagada para usuario construcc', [
-        'sp_id' => $data['sp_id'],
+        'sp_id' => $sp_id,
         'status' => $response->status(),
         'error' => $response->body()
       ]);
@@ -585,9 +591,9 @@ class InterApiService
       ];
     } catch (\Exception $e) {
       Log::channel('inter_api')->error('Excepción al notificar SP pagada para usuario construcc ', [
-        'sp_id' => $data['sp_id'] ?? null,
-        'sp_folio' => $data['sp_folio'] ?? null,
-        'company_id' => $data['company_id'] ?? null,
+        'sp_id' => $sp_id ?? null,
+        'sp_folio' => $sp_folio ?? null,
+        'company_id' => $company_id ?? null,
         'error' => $e->getMessage(),
         'trace' => $e->getTraceAsString()
       ]);
