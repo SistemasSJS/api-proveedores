@@ -32,7 +32,7 @@ class ConstruccPagoProveedorResource extends JsonResource
             'alias' => $cuenta->alias,
             'banco_clave' => $cuenta->banco_clave,
             'banco_nombre' => $cuenta->banco_nombre,
-            'tipo_cuenta' => $cuenta->tipo_cuenta . "(" . $cuenta->campo_dependiente .  ")",
+            'tipo_cuenta' => $cuenta->tipo_cuenta, // . "(" . $cuenta->campo_dependiente .  ")",
             $cuenta->tipo_cuenta => $cuenta->campo_dependiente,
             'titular_cuenta' => $cuenta->titular_cuenta,
             'referencia' => $cuenta->referencia,
