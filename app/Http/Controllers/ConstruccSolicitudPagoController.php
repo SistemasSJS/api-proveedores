@@ -1067,7 +1067,7 @@ class ConstruccSolicitudPagoController extends Controller
         $usuarioConstruccId = $request->input('usuario_construcc_id');
 
         $proveedores = \App\Models\Proveedor::query()
-            ->where('tipo_actividad_id', 1) // Solo proveedores de tipo "Materiales"
+            ->where('tipo_alta', '!=', 2)   // 🔥 Excluir tipo_alta = 2
             ->whereHas('empresasConstrucc', function ($q) use ($empresaId, $usuarioConstruccId) {
                 $q->where('empresa_construcc_id', $empresaId);
 
