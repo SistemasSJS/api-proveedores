@@ -472,28 +472,29 @@ class ConstruccPagosSPPController extends Controller
         //     'list_spp_ids' => $listSPPIds,
         // ]);
         /**
+         * 
          *--------------------------------------------------------------------------
          * Obtener todas las SPP válidas antes de la transacción
          *--------------------------------------------------------------------------
+         * $solicitudes = SolicitudPago::whereIn('id', $listSPPIds)
+         *     ->where('proveedor_id', $proveedor->id)
+         *     ->where('empresa_construcc_id', $empresaConstruccId)
+         *     ->where('estado_solicitud', 'autorizada')
+         *     ->get()
+         *     ->keyBy('id');
+         * 
+         * if ($solicitudes->count() !== $listSPPIds->count()) {
+         *     $idsValidos = $solicitudes->keys();
+         *     $idsInvalidos = $listSPPIds->diff($idsValidos)->values();
+         *     return $this->error(
+         *         'Una o más solicitudes de pago no pertenecen al proveedor o a la empresa indicada.',
+         *         [
+         *             'solicitudes_invalidas' => $idsInvalidos,
+         *         ],
+         *         422
+         *     );
+         * }
          */
-        $solicitudes = SolicitudPago::whereIn('id', $listSPPIds)
-            ->where('proveedor_id', $proveedor->id)
-            ->where('empresa_construcc_id', $empresaConstruccId)
-            ->where('estado_solicitud', 'autorizada')
-            ->get()
-            ->keyBy('id');
-
-        if ($solicitudes->count() !== $listSPPIds->count()) {
-            $idsValidos = $solicitudes->keys();
-            $idsInvalidos = $listSPPIds->diff($idsValidos)->values();
-            return $this->error(
-                'Una o más solicitudes de pago no pertenecen al proveedor o a la empresa indicada.',
-                [
-                    'solicitudes_invalidas' => $idsInvalidos,
-                ],
-                422
-            );
-        }
 
         // Log::info('PAGO: Despues de validar SPPs para el pago', [
         //     'list_spp_ids' => $listSPPIds,

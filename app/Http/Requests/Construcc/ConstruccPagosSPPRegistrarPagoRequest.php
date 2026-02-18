@@ -14,6 +14,9 @@ class ConstruccPagosSPPRegistrarPagoRequest extends FormRequest
 
   public function rules(): array
   {
+    $NIVEL_USUARIO_CONSTRUCC_DG_ADMIN = 0; // Rol DA
+    $NIVEL_USUARIO_CONSTRUCC_DG = 1; // Rol DA
+    $NIVEL_USUARIO_CONSTRUCC_DT = 2; // Rol DA
     $NIVEL_USUARIO_CONSTRUCC_DA = 3; // Rol DA
 
     return [
@@ -38,7 +41,12 @@ class ConstruccPagosSPPRegistrarPagoRequest extends FormRequest
       'proveedor_id'   => ['required', 'integer'],
       'usuario_id'     => ['required', 'integer'],
       'usuario_nombre' => ['required', 'string', 'max:255'],
-      'nivel_usuario'  => ['required', 'integer', Rule::in([$NIVEL_USUARIO_CONSTRUCC_DA])],
+      'nivel_usuario'  => ['required', 'integer', Rule::in([
+        $NIVEL_USUARIO_CONSTRUCC_DA,
+        $NIVEL_USUARIO_CONSTRUCC_DG_ADMIN,
+        $NIVEL_USUARIO_CONSTRUCC_DG,
+        $NIVEL_USUARIO_CONSTRUCC_DT
+      ])],
 
       // =========================
       // Información extraída del comprobante (OCR)

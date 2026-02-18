@@ -68,6 +68,7 @@ class Proveedor extends BaseModel
         'pais',
         'tipo_alta',    // 1: Proveedor  2: UserConstrucc
         'user_construcc_alta',
+        'empresa_construcc_alta',
     ];
 
     protected $casts = [
@@ -77,6 +78,7 @@ class Proveedor extends BaseModel
         'cambiar_pass_default' => 'boolean',
         'perfil_empresa_completo' => 'boolean',
         'user_construcc_alta' => 'integer',
+        'empresa_construcc_alta' => 'integer',
     ];
 
     protected static $filters = [
@@ -261,6 +263,10 @@ class Proveedor extends BaseModel
 
         return $query->whereHas('empresasConstrucc', function ($q) use ($empresas) {
             $q->whereIn('empresa_construcc.id', $empresas);
+
+            if ($this->empresa_construcc_alta) {
+                $q->orWhere('empresa_construcc.id', $this->empresa_construcc_alta);
+            }
         });
     }
 
