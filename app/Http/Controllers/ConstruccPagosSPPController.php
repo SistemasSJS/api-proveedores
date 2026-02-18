@@ -457,13 +457,7 @@ class ConstruccPagosSPPController extends Controller
 
         $validated = $request->validated();
 
-        // Log::info('PAGO: Iniciando registro de pago SPP', [
-        //     'proveedor_id' => $proveedor->id,
-        //     'empresa_construcc_id' => $validated['empresa_id'] ?? null,
-        //     'usuario_id' => $validated['usuario_id'],
-        //     'cantidad_spp' => count($validated['solicitudes']),
-        //     'monto_total_pago' => $validated['monto_total'],
-        // ]);
+        // Log::info('PAGO: Iniciando registro de pago SPP', [ 'proveedor_id' => $proveedor->id, 'empresa_construcc_id' => $validated['empresa_id'] ?? null, 'usuario_id' => $validated['usuario_id'], 'cantidad_spp' => count($validated['solicitudes']), 'monto_total_pago' => $validated['monto_total'],]);
 
         /** @var User  */
         $proveedorUsuarioPrincipal = $proveedor->usuarioPrincipal();
@@ -522,6 +516,14 @@ class ConstruccPagosSPPController extends Controller
         $sumaMontoSPPs = (float) collect($validated['solicitudes'])->sum(function ($item) {
             return (float) $item['monto_pago'];
         });
+
+        if (round($sumaMontoSPPs, 2) !== round($montoTotalPago, 2)) {
+            return $this->error(
+                'El monto del comprobante no coincide con el monto total aplicado a las solicitudes.',
+                ['monto_total' => $montoTotalPago, 'monto_aplicado' => $sumaMontoSPPs,],
+                422
+            );
+        }
 
         $notificaciones = [];
 
@@ -695,50 +697,23 @@ class ConstruccPagosSPPController extends Controller
                     switch ($n['tipo']) {
 
                         case 'pagada':
-                            $proveedorUsuarioPrincipal?->notify(
-                                new SolicitudPagoPagada(...$n['data'])
-                            );
-                            // Log::info('✅ Notificación enviada a InterAPI: Pagada', [
-                            //     'data' => $n['data'],
-                            // ]);
+                            $proveedorUsuarioPrincipal?->notify(new SolicitudPagoPagada(...$n['data']));
+                            // Log::info('✅ Notificación enviada a InterAPI: Pagada', [ 'data' => $n['data'], ]);
                             break;
 
                         case 'abonada':
-                            $proveedorUsuarioPrincipal?->notify(
-                                new SolicitudPagoAbonada(...$n['data'])
-                            );
-                            // Log::info('✅ Notificación enviada a InterAPI: Abonada', [
-                            //     'data' => $n['data'],
-                            // ]);
+                            $proveedorUsuarioPrincipal?->notify(new SolicitudPagoAbonada(...$n['data']));
+                            // Log::info('✅ Notificación enviada a InterAPI: Abonada', [ 'data' => $n['data'], ]);
                             break;
 
                         case 'factura_pendiente':
-                            $proveedorUsuarioPrincipal?->notify(
-                                new SolicitudPagoFacturaPendiente(...$n['data'])
-                            );
-                            // Log::info('✅ Notificación enviada a InterAPI: Factura pendiente', [
-                            //     'data' => $n['data'],
-                            // ]);
+                            $proveedorUsuarioPrincipal?->notify(new SolicitudPagoFacturaPendiente(...$n['data']));
+                            // Log::info('✅ Notificación enviada a InterAPI: Factura pendiente', [ 'data' => $n['data'], ]);
                             break;
 
                         case 'pagada_user_construcc':
-                            try {
-                                $response = $this->interApiService->spPagoNotifyUsuarioConstrucc(...$n['data']);
-
-                                // Log::info('✅ Notificación enviada a InterAPI: Registro PAgo Prov2', [
-                                //     'data' => $n['data'],
-                                //     'response' => $response
-                                // ]);
-                            } catch (\Exception $e) {
-                                // Log::warning('⚠️ Error al notificar a InterAPI (no crítico)', [
-                                //     'data' => $n['data'],
-                                //     'error' => $e->getMessage(),
-                                // ]);
-                                // No fallar la operación si la notificación externa falla
-                            }
-                            // $proveedorUsuarioPrincipal?->notify(
-                            //     new SolicitudPagoPagadaUserConstrucc(...$n['data'])
-                            // );
+                            $response = $this->interApiService->spPagoNotifyUsuarioConstrucc(...$n['data']);
+                            // Log::info('✅ Notificación enviada a InterAPI: Registro PAgo Prov2', [ 'data' => $n['data'], 'response' => $response ]);
                             break;
                     }
                 }
