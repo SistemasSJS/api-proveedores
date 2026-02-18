@@ -72,6 +72,7 @@ class ConstruccReportesController extends Controller
 
     // Transformar datos para el reporte
     $data = [];
+    $importeTotal = 0;
 
     /** @var PagoSPP $pago */
     foreach ($pagos as $pago) {
@@ -81,23 +82,24 @@ class ConstruccReportesController extends Controller
 
       // Si el pago tiene múltiples SPP, generamos URL de descarga múltiple
       $urlDescargaMultiplePdf = null;
+      $urlDescargaMultipleXml = null;
+      $urlDescargaMultipleAmbos = null;
+      $foliosFacturaString = null;
+      $foliosFactura = [];
 
       if ($totalSppEnPago > 1) {
+        // Generar URLs usando la ruta pública con parámetros de ruta
         $sppIds = $SPPsDelPago->pluck('id')->toArray();
         $sppIdsString = implode(',', $sppIds);
-        // Generar URLs usando la ruta pública con parámetros de ruta
-        $urlDescargaMultiplePdf = url('/api/construcc/reportes/descargar-facturas-multiple/' . $sppIdsString . '/pdf');
+        // $urlDescargaMultiplePdf = url('/api/construcc/reportes/descargar-facturas-multiple/' . $sppIdsString . '/pdf');
+        // $urlDescargaMultipleXml = url('/api/construcc/reportes/descargar-facturas-multiple/' . $sppIdsString . '/xml');
+        $urlDescargaMultipleAmbos = url('/api/construcc/reportes/descargar-facturas-multiple/' . $sppIdsString . '/ambos');
+        // Obtener los folios de las facturas
+        $foliosFactura = $SPPsDelPago->pluck('folio_factura')->toArray();
+        $foliosFacturaString = implode(',', $foliosFactura);
       }
 
-      $foliosFactura = [];
-      $importeTotal = 0;
-
-      foreach ($SPPsDelPago as $spp) {
-        // Obtener monto aplicado desde la tabla pivot
-        $montoAplicado = $spp->pivot->monto_aplicado ?? 0;
-        $importeTotal += $montoAplicado;
-        $foliosFactura[] = $spp->folio_factura;
-      }
+      $importeTotal += $pago->monto_total;
 
       $data[] = [
         'pago_id' => $pago->id,
@@ -106,15 +108,19 @@ class ConstruccReportesController extends Controller
         'proveedor_razon_social' => $pago->proveedor->razon_social ?? $pago->proveedor->nombre_comercial ?? null,
         'folios_factura' => $foliosFactura,
 
-        'importe' => number_format($importeTotal, 2, '.', ''),
-
+        'importe' => number_format($pago->monto_total, 2, '.', ''),
         // Información adicional útil
         'referencia_pago' => $pago->referencia_pago,
         'clave_rastreo' => $pago->clave_rastreo,
         'banco_destino' => $pago->banco_destino,
         'titular_cuenta_destino' => $pago->titular_cuenta_destino,
 
-        'facturas_pdf' => $urlDescargaMultiplePdf,
+        'comprobante_pago_url' => $pago->comprobante_pago_url,
+        'comprobante_pago_descarga' => route('construcc.reportes.descargar-comprobantes-pago', [
+          'pago_id' => $pago->id,
+        ]),
+        'folios_facturas' => $foliosFacturaString,
+        'facturas_descarga' => $urlDescargaMultipleAmbos,
       ];
     }
 
@@ -228,5 +234,19 @@ class ConstruccReportesController extends Controller
 
     // Descargar el archivo y eliminarlo después
     return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
+  }
+
+
+
+  public function descargarComprobantesPago(PagoSPP $pago)
+  {
+
+    if (! $pago->comprobante_pago || ! Storage::disk('private')->exists($pago->comprobante_pago)) {
+      return $this->error('Comprobante de pago no disponible.', null, 404);
+    }
+
+    return response()->download(
+      Storage::disk('private')->path($pago->comprobante_pago)
+    );
   }
 }

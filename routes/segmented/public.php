@@ -108,3 +108,13 @@ Route::get(
     [\App\Http\Controllers\ConstruccReportesController::class, 'descargarFacturasMultiple']
 )->name('construcc.reportes.descargar-facturas-multiple')
     ->middleware(['throttle:60,1']);
+
+
+/**
+ * REPORTES - DESCARGA PÚBLICA DE COMPROBANTES DE PAGO
+ */
+Route::get(
+    'construcc/reportes/descargar-comprobantes-pago/{pago_id}',
+    [\App\Http\Controllers\ConstruccReportesController::class, 'descargarComprobantesPago']
+)->name('construcc.reportes.descargar-comprobantes-pago')
+    ->middleware(['throttle:60,1']);

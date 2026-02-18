@@ -191,7 +191,7 @@ class PagosSPPTestSeeder extends Seeder
                     // Generar nombres únicos para los archivos (similar a como Laravel los genera)
                     $nombrePdf = \Illuminate\Support\Str::random(40) . '.pdf';
                     $nombreXml = \Illuminate\Support\Str::random(40) . '.xml';
-                    
+
                     // Rutas relativas al storage (como las guarda Laravel)
                     $rutaPdf = "facturas/pdf/{$nombrePdf}";
                     $rutaXml = "facturas/xml/{$nombreXml}";
@@ -215,8 +215,8 @@ class PagosSPPTestSeeder extends Seeder
                         'verificada' => true,
                         'usuario_id' => 1,
                         'usuario_nombre' => 'Usuario Construcción Test',
-                        'fecha_registro_pendiente' => now()->subDays(rand(10, 30)),
-                        'fecha_aprobado' => now()->subDays(rand(5, 15)),
+                        'fecha_registro_pendiente' => now()->subDays(rand(10, 30))->format('Y-m-d H:i:s'),
+                        'fecha_aprobado' => now()->subDays(rand(5, 15))->format('Y-m-d H:i:s'),
                         // Rutas relativas como las guarda Laravel Storage en disco 'private'
                         'ruta_archivo_factura_pdf' => $rutaPdf,
                         'ruta_archivo_factura_xml' => $rutaXml,
@@ -238,21 +238,24 @@ class PagosSPPTestSeeder extends Seeder
             $sppDisponibles = collect($solicitudesCreadas);
 
             for ($i = 0; $i < 10; $i++) {
-                $fechaPago = now()->subDays(rand(1, 20));
-                
+                // Generar fecha en formato MySQL DATETIME
+                // fecha_pago esta en formato timestamp
+                // convertimos a timestamp
+                $fechaPago = now()->subDays(rand(1, 20))->timestamp;
+
                 // Decidir cuántas SPP se pagarán con este pago (1-4)
                 $numSppAPagar = rand(1, min(4, $sppDisponibles->count()));
-                
+
                 // Refrescar los datos de las SPP desde la BD para tener saldos actualizados
                 $sppDisponibles = SolicitudPago::whereIn('id', collect($solicitudesCreadas)->pluck('id'))
                     ->where('saldo_pendiente', '>', 0)
                     ->get();
-                
+
                 if ($sppDisponibles->isEmpty()) {
                     $this->command->info('ℹ️ No hay más SPP con saldo pendiente. Finalizando creación de pagos.');
                     break; // No hay más SPP disponibles
                 }
-                
+
                 // Obtener SPP aleatorias con saldo pendiente
                 $sppDelPago = $sppDisponibles
                     ->shuffle()
@@ -271,7 +274,7 @@ class PagosSPPTestSeeder extends Seeder
                 foreach ($sppDelPago as $spp) {
                     // Pagar total o parcial (70% probabilidad de pago completo)
                     $pagoCompleto = rand(1, 10) <= 7;
-                    
+
                     if ($pagoCompleto) {
                         $montoAplicado = $spp->saldo_pendiente;
                     } else {
@@ -296,7 +299,7 @@ class PagosSPPTestSeeder extends Seeder
                     'empresa_construcc_id' => $empresa->id,
                     'proveedor_id' => $proveedorDelPago->id,
                     'folio_pago_spp_consecutivo' => sprintf('PAGO-%04d', $i + 1),
-                    'comprobante_pago' => "comprobantes/pago_" . ($i + 1) . "_" . time() . ".pdf",
+                    'comprobante_pago' => "comprobantes/zP9jePszxcsVcf2jVzQwwkP2hXpbiHksYd4LGBHD.jpg",
                     'fecha_pago' => $fechaPago,
                     'fecha_registro' => $fechaPago,
                     'referencia_pago' => $this->generarReferenciaAleatoria(),
@@ -345,7 +348,7 @@ class PagosSPPTestSeeder extends Seeder
                 }
 
                 $pagosCreados++;
-                
+
                 // Mostrar información del pago creado
                 $this->command->info(sprintf(
                     '  💰 Pago #%d: $%s aplicado a %d SPP(s)',
