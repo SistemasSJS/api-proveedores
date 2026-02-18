@@ -34,7 +34,7 @@ class ConstruccProveedorStoreRequest extends FormRequest
         return [
             // Datos del proveedor (REQUERIDOS Y ÚNICOS)
             'razon_social' => 'required|string|max:255|unique:proveedores,razon_social',
-            'rfc' => 'required|string|min:12|max:13|unique:proveedores,rfc',
+            'rfc' => 'nullable|string|min:12|max:13|unique:proveedores,rfc',
             'email' => 'nullable|email|max:255|unique:proveedores,email',
             'telefono' => 'nullable|string|max:20|unique:proveedores,telefono',
             'celular' => 'nullable|string|max:20',
