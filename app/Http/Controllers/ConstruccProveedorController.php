@@ -45,6 +45,7 @@ class ConstruccProveedorController extends Controller
             $perPage = $request->input('per_page', 10);
 
             $query = Proveedor::query()
+                ->where('empresa_construcc_alta', 'empresa_id') // Solo proveedores de construcciรณn
                 ->where('tipo_alta', 2) // Solo proveedores de construcciรณn
                 ->with(['cuentasBancarias', 'empresasConstrucc'])
                 ->withCount('solicitudesPago')
