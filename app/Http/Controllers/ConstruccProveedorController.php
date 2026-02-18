@@ -140,8 +140,8 @@ class ConstruccProveedorController extends Controller
                 'razon_social' => $data['razon_social'],
                 'nombre_comercial' => $data['nombre_comercial'] ?? $data['razon_social'],
                 'rfc' => strtoupper($data['rfc']),
-                'email' => $data['email'],
-                'telefono' => $data['telefono'],
+                'email' => $data['email'] ?? null,
+                'telefono' => $data['telefono'] ?? null,
                 'celular' => $data['celular'] ?? null,
                 'tipo_alta' => 2, // UserConstrucc
                 'is_proveedor_sp' => true,
