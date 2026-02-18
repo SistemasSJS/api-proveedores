@@ -1067,6 +1067,7 @@ class ConstruccSolicitudPagoController extends Controller
         $usuarioConstruccId = $request->input('usuario_construcc_id');
 
         $proveedores = \App\Models\Proveedor::query()
+            ->where('tipo_actividad_id', 1) // Solo proveedores de tipo "Materiales"
             ->whereHas('empresasConstrucc', function ($q) use ($empresaId, $usuarioConstruccId) {
                 $q->where('empresa_construcc_id', $empresaId);
 
@@ -2319,7 +2320,7 @@ class ConstruccSolicitudPagoController extends Controller
             'usuario_construcc_subio_factura_id' => $request->usuario_construcc_subio_factura_id,
             'usuario_construcc_subio_factura_rol' => $request->usuario_construcc_subio_factura_rol,
         ]);
-        
+
         Log::info('Factura: Antes Notificación a InterAPI');
 
         $response = $this->interApiService->sPPFacturaNotifyDA(
