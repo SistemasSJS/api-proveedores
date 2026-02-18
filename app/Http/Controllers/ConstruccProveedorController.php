@@ -39,13 +39,19 @@ class ConstruccProveedorController extends Controller
         try {
             $fields = Proveedor::getFilters();
             $filters = $request->only($fields);
+            $empresaId = $request->integer('empresa_id');
 
             $sortBy = $request->input('sort_by', 'nombre_comercial');
             $order = $request->input('order', 'asc');
             $perPage = $request->input('per_page', 10);
 
             $query = Proveedor::query()
-                ->where('empresa_construcc_alta', 'empresa_id') // Solo proveedores de construcciรณn
+                ->when($empresaId, function ($q) use ($empresaId) {
+                    $q->where(function ($sub) use ($empresaId) {
+                        $sub->whereNull('empresa_construcc_alta')
+                            ->orWhere('empresa_construcc_alta', $empresaId);
+                    });
+                })
                 ->where('tipo_alta', 2) // Solo proveedores de construcciรณn
                 ->with(['cuentasBancarias', 'empresasConstrucc'])
                 ->withCount('solicitudesPago')
