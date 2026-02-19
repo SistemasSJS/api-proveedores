@@ -40,6 +40,7 @@ class ConstruccProveedorController extends Controller
             $fields = Proveedor::getFilters();
             $filters = $request->only($fields);
             $empresaId = $request->integer('empresa_id');
+            $usuarioId = $request->integer('usuario_id');
 
             $sortBy = $request->input('sort_by', 'nombre_comercial');
             $order = $request->input('order', 'asc');
@@ -50,6 +51,12 @@ class ConstruccProveedorController extends Controller
                     $q->where(function ($sub) use ($empresaId) {
                         $sub->whereNull('empresa_construcc_alta')
                             ->orWhere('empresa_construcc_alta', $empresaId);
+                    });
+                })
+                ->when($usuarioId, function ($q) use ($usuarioId) {
+                    $q->where(function ($sub) use ($usuarioId) {
+                        $sub->whereNull('user_construcc_alta')
+                            ->orWhere('user_construcc_alta', $usuarioId);
                     });
                 })
                 ->where('tipo_alta', 2) // Solo proveedores de construcciรณn
