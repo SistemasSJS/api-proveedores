@@ -35,7 +35,7 @@ class ConstruccReportesController extends Controller
   {
     // Validar parámetros de entrada
     $validated = $request->validate([
-      'banco_id' => 'nullable|integer',
+      'cuenta_id' => 'nullable|integer',
       'fecha_pago_desde' => 'nullable|date',
       'fecha_pago_hasta' => 'nullable|date',
     ]);
@@ -43,7 +43,7 @@ class ConstruccReportesController extends Controller
     // Establecer fechas por defecto (hoy)
     $fechaDesde = $validated['fecha_pago_desde'] ?? now()->format('Y-m-d');
     $fechaHasta = $validated['fecha_pago_hasta'] ?? now()->format('Y-m-d');
-    $bancoId = $validated['banco_id'] ?? null;
+    $bancoId = $validated['cuenta_id'] ?? null;
 
     // Construir consulta de pagos con relaciones
     $query = PagoSPP::with([
@@ -129,7 +129,7 @@ class ConstruccReportesController extends Controller
       'total_registros' => count($data),
       'fecha_desde' => $fechaDesde,
       'fecha_hasta' => $fechaHasta,
-      'banco_id' => $bancoId,
+      'cuenta_id' => $bancoId,
       'registros' => $data,
     ], 'Reporte de contabilidad generado con éxito.');
   }
