@@ -471,17 +471,17 @@ class ConstruccPagosSPPController extends Controller
         // Log::info('PAGO: Antes de validar SPPs para el pago', [
         //     'list_spp_ids' => $listSPPIds,
         // ]);
+        $solicitudes = SolicitudPago::whereIn('id', $listSPPIds)
+            ->where('proveedor_id', $proveedor->id)
+            ->where('empresa_construcc_id', $empresaConstruccId)
+            ->where('estado_solicitud', 'autorizada')
+            ->get()
+            ->keyBy('id');
         /**
          * 
          *--------------------------------------------------------------------------
          * Obtener todas las SPP válidas antes de la transacción
          *--------------------------------------------------------------------------
-         * $solicitudes = SolicitudPago::whereIn('id', $listSPPIds)
-         *     ->where('proveedor_id', $proveedor->id)
-         *     ->where('empresa_construcc_id', $empresaConstruccId)
-         *     ->where('estado_solicitud', 'autorizada')
-         *     ->get()
-         *     ->keyBy('id');
          * 
          * if ($solicitudes->count() !== $listSPPIds->count()) {
          *     $idsValidos = $solicitudes->keys();
