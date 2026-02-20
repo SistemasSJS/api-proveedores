@@ -110,7 +110,7 @@ class ConstruccReportesController extends Controller
 
       $data[] = [
         'pago_id' => $pago->id . '',
-        'folio_pago' => $pago->folio_pago,
+        'folio_pago' => $pago->folio_pago_spp_consecutivo,
         'fecha_pago' => $pago->fecha_pago ? $pago->fecha_pago->format('Y-m-d H:i:s') : null,
         'proveedor_rfc' => $pago->proveedor->rfc ?? null,
         'proveedor_razon_social' => $pago->proveedor->razon_social ?? $pago->proveedor->nombre_comercial ?? null,

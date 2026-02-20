@@ -44,6 +44,7 @@ class PagoSPP extends BaseModel
         'clave_rastreo',  //             --> ingo_comprobante.claveRastreo
 
         'fecha_registro', // fecha en que se registró el pago en el sistema
+        'observaciones',
 
         // Datos bancarios del proveedor (cuenta destino)
         /**
@@ -52,7 +53,6 @@ class PagoSPP extends BaseModel
         'cuenta_destino',
         'tipo_cuenta_destino',
         'clabe_interbancaria_destino',
-        'observaciones',
         'banco_pago',
         'cuenta_origen',
         'tipo_cuenta_origen',
