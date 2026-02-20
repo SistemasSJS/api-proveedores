@@ -131,6 +131,7 @@ Route::prefix('construcc')
              * GESTIÓN DE PROVEEDORES CONSTRUCCIÓN (tipo_alta = 1)
              */
             Route::get('/empresa/{empresaId}/all', [ConstruccProveedorController::class, 'allProveedores'])->name('proveedores.all');
+            Route::get('/empresa/{empresaId}/all/con-spp', [ConstruccProveedorController::class, 'allProveedoresConSpp'])->name('proveedores.all.con-spp');
             Route::get('/empresa/{empresaId}/all/spp-rechazadas', [ConstruccProveedorController::class, 'allProveedoresSppRechazadas'])->name('proveedores.spp-rechazadas');
             Route::get('/empresa/{empresaId}/all/spp-autorizadas', [ConstruccProveedorController::class, 'allProveedoresSppAutorizadas'])->name('proveedores.spp-autorizadas');
         });
