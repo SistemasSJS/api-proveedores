@@ -457,14 +457,18 @@ class ConstruccProveedorController extends Controller
             ->whereHas('solicitudesPago', function ($q) use ($empresaId, $estado) {
                 $q->where('empresa_construcc_id', $empresaId);
                 if ($estado) {
-                    $q->where('estado_solicitud', $estado);
+                    $q
+                        ->where('estado_solicitud', $estado)
+                        ->where('verificada', true)
+                    ;
                 }
             })
             ->withCount([
                 'solicitudesPago as solicitudes_pago_count' => function ($q) use ($empresaId, $estado) {
                     $q->where('empresa_construcc_id', $empresaId);
                     if ($estado) {
-                        $q->where('estado_solicitud', $estado);
+                        $q->where('estado_solicitud', $estado)
+                            ->where('verificada', true);
                     }
                 }
             ])
