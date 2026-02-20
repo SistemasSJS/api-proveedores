@@ -36,9 +36,7 @@ Route::prefix('construcc')
     ->name('construcc.')
     ->group(function () {
 
-
         /*** 
-         * TODO: Generar esquema postman 
          *--------------------------------------------------------------------------
          * SOLICITUDES DE PAGO - CRUD Completo
          *--------------------------------------------------------------------------
@@ -105,15 +103,13 @@ Route::prefix('construcc')
 
 
         /**
-         * TODO: Generar esquema postman 
-         *--------------------------------------------------------------------------
-         * GESTIÓN DE PROVEEDORES CONSTRUCCIÓN (tipo_alta = 2)
-         *--------------------------------------------------------------------------
          * CRUD completo de proveedores registrados por usuarios construcción,
          * sus cuentas bancarias y generación de solicitudes de pago
          */
         Route::prefix('proveedor')->name('proveedor.')->group(function () {
-            // ===== PROVEEDORES tipo_alta=2 =====
+            /** 
+             * GESTIÓN DE PROVEEDORES CONSTRUCCIÓN (tipo_alta = 2)
+             */
             Route::get('/', [ConstruccProveedorController::class, 'index'])->name('index');
             Route::get('/{proveedor}', [ConstruccProveedorController::class, 'show'])->name('show');
             Route::post('/', [ConstruccProveedorController::class, 'store'])->name('store');
@@ -130,10 +126,16 @@ Route::prefix('construcc')
 
             // ===== SOLICITUDES DE PAGO =====
             Route::post('/{proveedor}/solicitudes-pago', [ConstruccProveedorSolicitudPagoController::class, 'store'])->name('solicitudes-pago.store');
+
+            /** 
+             * GESTIÓN DE PROVEEDORES CONSTRUCCIÓN (tipo_alta = 1)
+             */
+            Route::get('/empresa/{empresaId}/all', [ConstruccProveedorController::class, 'allProveedores'])->name('proveedores.all');
+            Route::get('/empresa/{empresaId}/all/spp-rechazadas', [ConstruccProveedorController::class, 'allProveedoresSppRechazadas'])->name('proveedores.spp-rechazadas');
+            Route::get('/empresa/{empresaId}/all/spp-autorizadas', [ConstruccProveedorController::class, 'allProveedoresSppAutorizadas'])->name('proveedores.spp-autorizadas');
         });
 
         /**
-         * TODO: Generar esquema postman 
          *--------------------------------------------------------------------------
          * PAGOS DE SOLICITUDES DE PAGO (SPP) - CRUD Completo
          *--------------------------------------------------------------------------
@@ -159,7 +161,7 @@ Route::prefix('construcc')
             // GET /proveedor/{proveedor}/spp -> Listar SPP de un proveedor
             Route::get('/proveedor/{proveedor}/spp', [ConstruccPagosSPPController::class, 'sppPorProveedor'])->name('proveedor.spp.index');
 
-     
+
             // GET /proveedor -> Listar proveedores con SPP
             Route::get('/proveedor', [ConstruccPagosSPPController::class, 'indexProveedor'])->name('proveedor.spp.index');
 

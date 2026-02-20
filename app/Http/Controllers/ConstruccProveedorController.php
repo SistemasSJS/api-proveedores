@@ -438,4 +438,94 @@ class ConstruccProveedorController extends Controller
             );
         }
     }
+
+
+
+    /**
+     * PROVEDORES TIPO ALTA 1 LISTADOS 
+     */
+
+    /** 
+     * Estos métodos son para obtener listados de proveedores con tipo_alta = 1 (registrados por otros medios, no construcción)
+     */
+    public function allProveedores(Request $request, int $empresaId): JsonResponse
+    {
+        $proveedores = Proveedor::query()
+            ->select(['id', 'nombre_comercial', 'razon_social'])
+            ->whereNull('tipo_alta')
+            ->whereHas('solicitudesPago', function ($q) use ($empresaId) {
+                $q->where('empresa_construcc_id', $empresaId);
+            })
+            ->withCount([
+                'solicitudesPago as solicitudes_pago_count' => function ($q) use ($empresaId) {
+                    $q->where('empresa_construcc_id', $empresaId);
+                }
+            ])
+            ->get()
+            ->map(function ($proveedor) {
+                $nombre = $proveedor->razon_social ?: $proveedor->nombre_comercial;
+                $proveedor->nombre_comercial = $proveedor->razon_social = $nombre . ' (' . $proveedor->solicitudes_pago_count . ' SPP)';
+                return $proveedor;
+            });
+
+        return $this->success($proveedores);
+    }
+
+    /**
+     * Estos métodos son para obtener listados de proveedores con tipo_alta = 1 (registrados por otros medios, no construcción) que tengan solicitudes de pago rechazadas o autorizadas 
+     */
+    public function allProveedoresSppRechazadas(Request $request, int $empresaId): JsonResponse
+    {
+        $proveedores = Proveedor::query()
+            ->select(['id', 'nombre_comercial', 'razon_social'])
+            ->whereNull('tipo_alta')
+            ->withCount([
+                'solicitudesPago as solicitudes_pago_count' => function ($q) use ($empresaId) {
+                    $q->where('empresa_construcc_id', $empresaId)
+                        ->where('estado_solicitud', 'rechazada');
+                }
+            ])
+            ->having('solicitudes_pago_count', '>', 0) // 🔥 aquí está la magia
+            ->groupBy('id', 'nombre_comercial', 'razon_social')
+            ->get()
+            ->map(function ($proveedor) {
+                $nombre = $proveedor->razon_social ?: $proveedor->nombre_comercial;
+
+                $proveedor->nombre_comercial =
+                    $proveedor->razon_social = $nombre . ' (' . $proveedor->solicitudes_pago_count . ' SPP)';
+
+                return $proveedor;
+            });
+
+        return $this->success($proveedores, 'Proveedores con SPP rechazadas obtenidos exitosamente.');
+    }
+
+    /**
+     * Estos métodos son para obtener listados de proveedores con tipo_alta = 1 (registrados por otros medios, no construcción) que tengan solicitudes de pago autorizadas
+     */
+    public function allProveedoresSppAutorizadas(Request $request, int $empresaId): JsonResponse
+    {
+        $proveedores = Proveedor::query()
+            ->select(['id', 'nombre_comercial', 'razon_social'])
+            ->whereNull('tipo_alta')
+            ->withCount([
+                'solicitudesPago as solicitudes_pago_count' => function ($q) use ($empresaId) {
+                    $q->where('empresa_construcc_id', $empresaId)
+                        ->where('estado_solicitud', 'autorizada');
+                }
+            ])
+            ->having('solicitudes_pago_count', '>', 0) // 🔥 aquí está la magia
+            ->groupBy('id', 'nombre_comercial', 'razon_social')
+            ->get()
+            ->map(function ($proveedor) {
+                $nombre = $proveedor->razon_social ?: $proveedor->nombre_comercial;
+
+                $proveedor->nombre_comercial =
+                    $proveedor->razon_social = $nombre . ' (' . $proveedor->solicitudes_pago_count . ' SPP)';
+
+                return $proveedor;
+            });
+
+        return $this->success($proveedores, 'Proveedores con SPP autorizadas obtenidos exitosamente.');
+    }
 }
