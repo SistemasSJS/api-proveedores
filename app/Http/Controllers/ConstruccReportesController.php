@@ -95,15 +95,24 @@ class ConstruccReportesController extends Controller
         // $urlDescargaMultipleXml = url('/api/construcc/reportes/descargar-facturas-multiple/' . $sppIdsString . '/xml');
         $urlDescargaMultipleAmbos = url('/api/construcc/reportes/descargar-facturas-multiple/' . $sppIdsString . '/ambos');
         // Obtener los folios de las facturas
-        $foliosFactura = $SPPsDelPago->pluck('folio_factura')->toArray();
-        $foliosFacturaString = implode(',', $foliosFactura);
+        // $foliosFactura = $SPPsDelPago->pluck('folio_factura')->toArray();
+        // $foliosFacturaString = implode(',', $foliosFactura);
+      }
+
+      $foliosFactura = [];
+      $importeTotal = 0;
+
+      foreach ($SPPsDelPago as $spp) {
+        // Obtener monto aplicado desde la tabla pivot
+        $foliosFactura[] = $spp->folio_factura;
       }
 
       $importeTotal += $pago->monto_total;
 
       $data[] = [
         'pago_id' => $pago->id,
-        'fecha_pago' => $pago->fecha_pago ? $pago->fecha_pago->format('Y-m-d') : null,
+        'folio_pago' => $pago->folio_pago,
+        'fecha_pago' => $pago->fecha_pago ? $pago->fecha_pago->format('Y-m-d H:i:s') : null,
         'proveedor_rfc' => $pago->proveedor->rfc ?? null,
         'proveedor_razon_social' => $pago->proveedor->razon_social ?? $pago->proveedor->nombre_comercial ?? null,
         'folios_factura' => $foliosFactura,

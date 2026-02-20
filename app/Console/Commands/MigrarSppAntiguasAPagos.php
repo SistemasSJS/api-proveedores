@@ -102,7 +102,7 @@ class MigrarSppAntiguasAPagos extends Command
     private function obtenerSppCandidatas()
     {
         return SolicitudPago::query()
-            ->where('estado_solicitud', '=', 'PAGADO')  // SPP que están marcadas como pagadas o con monto_abonado > 0
+            ->where('estado_solicitud', '=', 'pagado')  // SPP que están marcadas como pagadas o con monto_abonado > 0
             ->whereDoesntHave('pagos')                  // Que no tengan registros en el nuevo sistema de pagos
             ->where('monto_total', '>', 0)              // Que tengan monto total
             ->orderBy('created_at', 'asc')              // Ordenar por fecha de registro
