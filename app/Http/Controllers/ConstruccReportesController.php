@@ -100,7 +100,6 @@ class ConstruccReportesController extends Controller
       }
 
       $foliosFactura = [];
-      $importeTotal = 0;
 
       foreach ($SPPsDelPago as $spp) {
         // Obtener monto aplicado desde la tabla pivot
@@ -110,7 +109,7 @@ class ConstruccReportesController extends Controller
       $importeTotal += $pago->monto_total;
 
       $data[] = [
-        'pago_id' => $pago->id,
+        'pago_id' => $pago->id . '',
         'folio_pago' => $pago->folio_pago,
         'fecha_pago' => $pago->fecha_pago ? $pago->fecha_pago->format('Y-m-d H:i:s') : null,
         'proveedor_rfc' => $pago->proveedor->rfc ?? null,
