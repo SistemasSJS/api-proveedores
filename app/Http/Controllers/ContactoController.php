@@ -22,7 +22,7 @@ class ContactoController extends Controller
             $validated = $request->validated();
 
             // Obtener el correo de destino desde las variables de entorno
-            $destinatario = 'contacto@sjsconstrucciones.com';
+            $destinatario = 'contacto@sjsconstrucciones.com.mx';
 
             // Enviar el correo
             Mail::to($destinatario)->send(new ContactoMail(
