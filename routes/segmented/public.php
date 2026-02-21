@@ -15,6 +15,7 @@ use App\Notifications\PushNotification;
 use App\Models\User;
 use Illuminate\Support\Facades\Request;
 use App\Http\Controllers\ProveedorPublicController;
+use App\Http\Controllers\ContactoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -118,3 +119,10 @@ Route::get(
     [\App\Http\Controllers\ConstruccReportesController::class, 'descargarComprobantesPago']
 )->name('construcc.reportes.descargar-comprobantes-pago')
     ->middleware(['throttle:60,1']);
+
+/**
+ * FORMULARIO DE CONTACTO
+ */
+Route::post('contacto/enviar', [ContactoController::class, 'enviarContacto'])
+    ->name('contacto.enviar')
+    ->middleware(['throttle:5,1']); // Máximo 5 envíos por minuto por IP
