@@ -7,6 +7,7 @@ use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvi
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+use App\Models\Proveedor;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -25,19 +26,30 @@ class RouteServiceProvider extends ServiceProvider
     public function boot(): void
     {
         RateLimiter::for('api', function (Request $request) {
-            // Rate limiting desactivado - Sin límite de peticiones
             return Limit::none();
-            // para limitar a 10,000 peticiones por minuto, descomentar la línea siguiente y comentar la línea anterior
-            // eturn Limit::perMinute(10000)->by($request->user()?->id ?: $request->ip());
+        });
+
+        /**
+         * Route Model Binding condicional
+         * Si la ruta es admin → ignora el global scope
+         */
+        Route::bind('proveedor', function ($value, $route) {
+
+            // Si la URL empieza con api/admin
+            if (str_starts_with($route->uri(), 'api/admin')) {
+                return Proveedor::withoutGlobalScope('solo_activos')
+                    ->where('id', $value)
+                    ->firstOrFail();
+            }
+
+            // Rutas normales → aplica scope
+            return Proveedor::where('id', $value)->firstOrFail();
         });
 
         $this->routes(function () {
             Route::middleware('api')
                 ->prefix('api')
                 ->group(base_path('routes/api.php'));
-
-            // Route::middleware('web')
-            //     ->group(base_path('routes/web.php'));
         });
     }
 }

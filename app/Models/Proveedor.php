@@ -5,6 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Enums\EstadoUsuario;
+use Illuminate\Database\Eloquent\Builder;
+
+
 
 class Proveedor extends BaseModel
 {
@@ -341,5 +345,52 @@ class Proveedor extends BaseModel
     public function solicitudesPagoActivas(): HasMany
     {
         return $this->solicitudesPago()->whereIn('estado_solicitud', ['pendiente', 'autorizada', 'procesando']);
+    }
+
+
+    /**
+     * GLOBALS FILTERS
+     */
+
+
+
+    /**
+     * Boot del modelo.
+     *
+     * Se ejecuta automáticamente cuando el modelo es inicializado por Eloquent.
+     *
+     * Aquí se registra un Global Scope llamado "solo_activos" que restringe
+     * todas las consultas del modelo Proveedor para incluir únicamente
+     * proveedores con estatus:
+     *
+     * - REGISTRADO
+     * - VERIFICADO
+     *
+     * Esto significa que cualquier consulta como:
+     * Proveedor::all()
+     * Proveedor::query()
+     * Proveedor::with(...)
+     *
+     * automáticamente aplicará:
+     * WHERE estatus IN ('registrado', 'verificado')
+     *
+     * ⚠ IMPORTANTE:
+     * Si se requiere consultar proveedores suspendidos o bloqueados,
+     * se debe usar:
+     *
+     * Proveedor::withoutGlobalScope('solo_activos')
+     *
+     * o
+     *
+     * Proveedor::withoutGlobalScopes()
+     * 
+     * Para el prefijo de rutas: 'api/admin', se ignora este global scope para permitir la gestión completa de proveedores, incluyendo los bloqueados.
+     * mendiante Route Model Binding condicional registrado en RouteServiceProvider.
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope('solo_activos', function (Builder $builder) {
+            $builder->where('estatus', '!=', EstadoUsuario::BLOQUEADO->value);
+        });
     }
 }
