@@ -93,7 +93,7 @@ class ProveedorHomologacionController extends Controller
     {
         try {
             $duplicateRazonSociales = Proveedor::query()
-                ->where('tipo_registro', '!=', 2) // 👈 agregar 
+                ->where('tipo_alta', '!=', 2) // 👈 agregar 
                 ->selectRaw('LOWER(TRIM(razon_social)) as razon_social_normalizada')
                 ->whereNotNull('razon_social')
                 ->whereRaw("TRIM(razon_social) <> ''")
