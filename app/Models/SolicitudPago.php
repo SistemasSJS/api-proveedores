@@ -56,14 +56,14 @@ class SolicitudPago extends BaseModel
         //
         'motivo_rechazo',
         'monto_total',
-        
+
         // DEPRECATED: Estos campos se mantienen por compatibilidad pero están deprecados
         // Los valores reales se calculan desde la tabla pivot PagoSolicitudPago
         // Usar métodos: calcularSaldoRestante() y calcularMontoAbonado()
         'monto_abonado',      // @deprecated Usar calcularMontoAbonado()
         'saldo_pendiente',    // @deprecated Usar calcularSaldoRestante()
         'pago_completo',      // @deprecated Usar estaPagadaCompletamente()
-        
+
         'verificada',
         'tipo',
         // FIXME: tipo_id se migrara a una tabla y este almacenara el id asignado al tipo de SP
@@ -136,6 +136,8 @@ class SolicitudPago extends BaseModel
         'fp',   // forma_pago: puedene ser nullos 
         'rf', // regimen fiscal
 
+        //migracion add usario que genera la spp.
+        'usuario_creador_id',
 
 
     ];
@@ -203,6 +205,7 @@ class SolicitudPago extends BaseModel
 
         // Filtro bandera: incluir datos de facturación en la respuesta
         'with_datos_facturacion' => 'WithDatosFacturacion',
+
     ];
 
     protected $casts = [
@@ -261,12 +264,19 @@ class SolicitudPago extends BaseModel
             'cotizacion',
             'cuentasBancarias',
             'ordenCompra',
+            'usuarioCreador'
         ];
     }
 
     /** ----------------
      * Relaciones
      * ----------------- */
+
+    public function usuarioCreador(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'usuario_creador_id');
+    }
+
     public function proveedor(): BelongsTo
     {
         return $this->belongsTo(Proveedor::class, 'proveedor_id');

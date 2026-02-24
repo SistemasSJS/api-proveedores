@@ -11,6 +11,8 @@ use App\Models\EmpresaConstrucc;
 use App\Models\PagoSPP;
 use App\Models\Proveedor;
 use App\Models\SolicitudPago;
+use App\Notifications\SolicitudPago\SolicitudPagoComprobanteActualizado;
+use App\Notifications\SolicitudPago\SolicitudPagoFacturaSubida;
 use App\Services\InterApiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -129,6 +131,7 @@ class ProveedorSolicitudPagoController extends Controller
 
         $solicitud = SolicitudPago::create([
             'proveedor_id' => $proveedor->id,
+            'usuario_creador_id' => $request->user()->id ?? null,
             'numero_folio_solicitud' => $numeroFolio,
             'folio_factura' => $folioFactura,
             'datos_factura_xml' => $datosXml,
@@ -469,6 +472,17 @@ class ProveedorSolicitudPagoController extends Controller
             'ruta_archivo_comprobante_pago' => $path,
             'fecha_con_comprobante' => now(),
         ]);
+
+        $proveedor->notify(
+            new SolicitudPagoComprobanteActualizado(
+                $solicitudPago->numero_folio_solicitud,
+                $solicitudPago->id,
+                $proveedor->id,
+                null,
+                $path,
+                'private'
+            )
+        );
 
         return $this->success(
             new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc', 'cuentasBancarias'])),
@@ -1064,6 +1078,20 @@ class ProveedorSolicitudPagoController extends Controller
             'ruta_archivo_factura_xml' => $rutaXml,
             'tiene_factura' => true,
         ]);
+
+        $solicitudPago->load('empresaConstrucc');
+        if ($solicitudPago->empresaConstrucc) {
+            $solicitudPago->empresaConstrucc->notify(
+                new SolicitudPagoFacturaSubida(
+                    $solicitudPago->numero_folio_solicitud,
+                    $solicitudPago->id,
+                    $solicitudPago->proveedor_id,
+                    null,
+                    $rutaPdf,
+                    $rutaXml
+                )
+            );
+        }
 
         return $this->success(
             new SolicitudPagoResource(
