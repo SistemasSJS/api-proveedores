@@ -152,6 +152,11 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
      * Sistema para reasignar usuarios entre proveedores con la misma razón social
      */
     Route::prefix('homologacion')->group(function () {
+        // Reporte de proveedores duplicados con metricas de SPP
+        Route::get('reporte-proveedores-duplicados', [ProveedorHomologacionController::class, 'reporteProveedoresDuplicados'])
+            ->middleware(['audit'])
+            ->name('admin.homologacion.proveedores.reporte-duplicados');
+
         // Listar proveedores para homologación
         Route::get('proveedores', [ProveedorHomologacionController::class, 'listarProveedores'])
             ->middleware(['audit'])
@@ -271,3 +276,4 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
 //     Route::post('pedidos/{pedido}/payment-confirmed', [PedidoController::class, 'paymentConfirmed'])
 //         ->name('integration.pedidos.payment-confirmed');
 // });
+

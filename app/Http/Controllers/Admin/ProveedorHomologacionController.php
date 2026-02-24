@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\EstadoSP;
 use App\Http\Controllers\Controller;
 use App\Models\Proveedor;
 use App\Models\User;
@@ -77,6 +78,125 @@ class ProveedorHomologacionController extends Controller
 
             return $this->error(
                 'Error al obtener la lista de proveedores',
+                ['exception' => $e->getMessage()],
+                500
+            );
+        }
+    }
+
+    /**
+     * Reporte de proveedores duplicados por razon social
+     *
+     * GET /api/admin/homologacion/reporte-proveedores-duplicados
+     */
+    public function reporteProveedoresDuplicados(Request $request): JsonResponse
+    {
+        try {
+            $duplicateRazonSociales = Proveedor::query()
+                ->selectRaw('LOWER(TRIM(razon_social)) as razon_social_normalizada')
+                ->whereNotNull('razon_social')
+                ->whereRaw("TRIM(razon_social) <> ''")
+                ->groupBy('razon_social_normalizada')
+                ->havingRaw('COUNT(*) > 1')
+                ->pluck('razon_social_normalizada');
+
+            if ($duplicateRazonSociales->isEmpty()) {
+                return $this->success([
+                    'total_proveedores_duplicados' => 0,
+                    'total_grupos_duplicados' => 0,
+                    'proveedores' => [],
+                ], 'No se encontraron proveedores duplicados');
+            }
+
+            $proveedores = Proveedor::query()
+                ->whereIn(DB::raw('LOWER(TRIM(razon_social))'), $duplicateRazonSociales)
+                ->with([
+                    'solicitudesPago:id,proveedor_id,estado_solicitud,created_at,updated_at',
+                    'userProveedores' => function ($query) {
+                        $query->where('activo', true)
+                            ->orderByRaw("FIELD(tipo_relacion, 'PRINCIPAL', 'SECUNDARIO')")
+                            ->with([
+                                'user:id,name,email,telefono,role_id',
+                                'user.role:id,nombre',
+                            ]);
+                    },
+                ])
+                ->orderBy('razon_social')
+                ->orderBy('nombre_comercial')
+                ->get();
+
+            $proveedoresPorGrupo = $proveedores->groupBy(function ($proveedor) {
+                return mb_strtolower(trim((string) $proveedor->razon_social));
+            });
+
+            $data = $proveedores->map(function ($proveedor) use ($proveedoresPorGrupo) {
+                $spps = $proveedor->solicitudesPago;
+                $estadosBase = collect(EstadoSP::values())
+                    ->push('procesando')
+                    ->unique()
+                    ->values()
+                    ->all();
+
+                $conteoPorEstado = $spps
+                    ->groupBy(fn($spp) => $spp->estado_solicitud ?? 'sin_estado')
+                    ->map(fn($items) => $items->count())
+                    ->all();
+
+                foreach ($estadosBase as $estado) {
+                    $conteoPorEstado[$estado] = $conteoPorEstado[$estado] ?? 0;
+                }
+
+                $idsSppPorEstado = $spps
+                    ->groupBy(fn($spp) => $spp->estado_solicitud ?? 'sin_estado')
+                    ->map(fn($items) => $items->pluck('id')->values()->all())
+                    ->all();
+
+                foreach ($estadosBase as $estado) {
+                    $idsSppPorEstado[$estado] = $idsSppPorEstado[$estado] ?? [];
+                }
+
+                $usuarioRelacion = $proveedor->userProveedores->first();
+                $usuario = $usuarioRelacion?->user;
+                $razonSocialNormalizada = mb_strtolower(trim((string) $proveedor->razon_social));
+
+                return [
+                    'proveedor_id' => $proveedor->id,
+                    'razon_social' => $proveedor->razon_social,
+                    'nombre_comercial' => $proveedor->nombre_comercial,
+                    'duplicados_en_razon_social' => $proveedoresPorGrupo[$razonSocialNormalizada]->count(),
+                    'total_spp' => $spps->count(),
+                    'conteo_spp_por_estado' => $conteoPorEstado,
+                    'ultima_spp_creada_en' => optional($spps->sortByDesc('created_at')->first())->created_at?->toDateTimeString(),
+                    'ultima_actualizacion_spp_en' => optional($spps->sortByDesc('updated_at')->first())->updated_at?->toDateTimeString(),
+                    'ids_spp' => $spps->pluck('id')->values()->all(),
+                    'ids_spp_por_estado' => $idsSppPorEstado,
+                    'usuario' => $usuario ? [
+                        'id' => $usuario->id,
+                        'name' => $usuario->name,
+                        'email' => $usuario->email,
+                        'telefono' => $usuario->telefono,
+                        'role_id' => $usuario->role_id,
+                        'role' => $usuario->role?->nombre,
+                        'tipo_relacion' => $usuarioRelacion?->tipo_relacion,
+                        'activo' => $usuarioRelacion?->activo,
+                        'fecha_asignacion' => $usuarioRelacion?->fecha_asignacion,
+                    ] : null,
+                ];
+            })->values();
+
+            return $this->success([
+                'total_proveedores_duplicados' => $data->count(),
+                'total_grupos_duplicados' => $proveedoresPorGrupo->count(),
+                'proveedores' => $data,
+            ], 'Reporte de proveedores duplicados generado exitosamente');
+        } catch (\Exception $e) {
+            Log::error('Error al generar reporte de proveedores duplicados', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return $this->error(
+                'Error al generar el reporte de proveedores duplicados',
                 ['exception' => $e->getMessage()],
                 500
             );
