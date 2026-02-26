@@ -27,7 +27,7 @@ class ContactoController extends Controller
             // Enviar el correo
             Mail::to($destinatario)->send(new ContactoMail(
                 $validated['nombre'],
-                $validated['email'],
+                $validated['email'] ?? null,
                 $validated['telefono'] ?? null,
                 $validated['empresa'] ?? null,
                 $validated['mensaje']

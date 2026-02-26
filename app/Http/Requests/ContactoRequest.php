@@ -21,7 +21,7 @@ class ContactoRequest extends FormRequest
     {
         return [
             'nombre' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
+            'email' => 'nullable|email|max:255',
             'telefono' => 'nullable|string|max:20',
             'empresa' => 'nullable|string|max:255',
             'mensaje' => 'required|string|max:2000',
