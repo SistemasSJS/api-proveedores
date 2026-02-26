@@ -164,6 +164,11 @@ trait NotificationStyleTrait
                 ],
             ],
             'usuario' => [
+                'email_verificado' => [
+                    'color' => 'success',
+                    'icon' => 'checkmark-circle-outline',
+                    'style_class' => 'success-notification',
+                ],
                 'reasignado' => [
                     'color' => 'primary',
                     'icon' => 'person-add-outline',

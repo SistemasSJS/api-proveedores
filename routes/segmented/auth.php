@@ -26,15 +26,16 @@ Route::prefix('auth')->group(function () {
     Route::post('completar-registro-proveedor', [AuthController::class, 'completarRegistroProveedor'])->middleware(['audit']);
     Route::post('asociar-proveedor-existente', [AuthController::class, 'asociar_proveedor_existente'])->middleware(['audit']);
     Route::post('verificar-email', [AuthController::class, 'verificarEmailExistente'])->middleware(['audit']);
+    Route::get('verificar-email-token', [AuthController::class, 'verifyUpdatedEmail'])->middleware(['audit']);
     Route::post('verificar-razon-social', [AuthController::class, 'verificarRazonSocialExistente'])->middleware(['audit']);
     Route::post('verificar-telefono', [AuthController::class, 'verificarTelefonoExistente'])->middleware(['audit']);
-    
+
     /**
      * RECUPERACIÓN DE CONTRASEÑA
      */
     Route::post('password/forgot', [AuthController::class, 'requestPasswordReset'])->middleware(['audit']);
     Route::post('password/reset', [AuthController::class, 'resetPassword'])->middleware(['audit']);
-    
+
     /**
      * PERFIL Y GESTIÓN DE CUENTA
      */
@@ -43,9 +44,10 @@ Route::prefix('auth')->group(function () {
         Route::post('refresh', [AuthController::class, 'refresh'])->middleware(['audit']);
         Route::post('update-img-perfil', [AuthController::class, 'update_foto_perfil'])->middleware(['audit']);
         Route::post('update-credentials', [AuthController::class, 'updateUser'])->middleware(['audit']);
+        Route::post('update-user-data', [AuthController::class, 'updateUserData'])->middleware(['audit']);
         Route::post('change-password', [AuthController::class, 'updatePassword'])->middleware(['audit']);
         Route::get('logout', [AuthController::class, 'logout'])->middleware(['audit']);
-        
+
         /**
          * NOTIFICACIONES DE SP
          */

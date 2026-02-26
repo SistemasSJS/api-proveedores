@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\EstadoUsuario;
 use App\Enums\UserRoleEnumerate;
 use App\Exceptions\Api\Auth\UnauthorizedException;
 use App\Http\Requests\Auth\AuthRegisterCompleteRequest;
 use App\Http\Requests\Auth\AuthRegisterRequest;
 use App\Http\Requests\Auth\AuthUpdateCredentialsRequest;
 use App\Http\Requests\Auth\AuthUpdateFotoPerfilRequest;
+use App\Http\Requests\Auth\AuthUpdateUserDataRequest;
 use App\Http\Requests\Auth\PasswordResetRequest;
 use App\Http\Requests\Auth\PasswordResetCompleteRequest;
 use App\Http\Requests\Proveedor\ProveedorRegisterCompleteRequest;
@@ -20,12 +22,14 @@ use App\Http\Resources\ProveedorResource;
 use App\Http\Resources\UserAuthenticateResource;
 use App\Mail\CompletaRegistroProveedorMail;
 use App\Mail\CompletaRegistroUsuarioMail;
+use App\Mail\VerifyUpdatedEmailMail;
 use App\Mail\ValidaCorreoProveedorBasicoMail;
 use App\Mail\PasswordResetMail;
 use App\Models\Proveedor;
 use App\Models\EmpresaConstrucc;
 use App\Models\Role;
 use App\Models\User;
+use App\Notifications\Auth\CuentaVerificadaNotification;
 use App\Notifications\ProveedorEmpresa\ProveedorAsociadoAEmpresa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -36,6 +40,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
+
 
 
 class AuthController extends Controller
@@ -186,8 +191,12 @@ class AuthController extends Controller
             ]);
 
             // Buscar usuario por email o teléfono
-            $user = User::where('email', $request->email)
-                ->orWhere('telefono', $request->email)
+            $user = User::where(function ($q) use ($request) {
+                $q->where('email', $request->email)
+                    ->orWhere('telefono', $request->email);
+            })
+                ->where('status', '!=', EstadoUsuario::BLOQUEADO->value)
+                ->where('status', '!=', EstadoUsuario::SUSPENDIDO->value)
                 ->first();
 
             if (! $user || ! Hash::check($request->password, $user->password)) {
@@ -207,9 +216,11 @@ class AuthController extends Controller
             return $this->error('Los datos proporcionados no son válidos.', $e->errors(), 422);
         } catch (UnauthorizedException $e) {
             // Credenciales incorrectas o acceso no autorizado
+            Log::error('Error al iniciar sesión: ' . $e->getMessage());
             return $this->error($e->getMessage(), [], 401);
         } catch (\Exception $e) {
             // Cualquier otro error inesperado
+            Log::error('Error al iniciar sesión: ' . $e->getMessage());
             return $this->error('Ocurrió un error al intentar iniciar sesión.', [], 500);
         }
     }
@@ -884,10 +895,13 @@ class AuthController extends Controller
     {
         $email = $request->email;
         // Buscar usuario por email o teléfono
-        $user = User::where('email', $request->email)
-            ->orWhere('telefono', $request->email)
+        $user = User::where(function ($q) use ($request) {
+            $q->where('email', $request->email)
+                ->orWhere('telefono', $request->email);
+        })
+            ->where('status', '!=', EstadoUsuario::BLOQUEADO->value)
+            ->where('status', '!=', EstadoUsuario::SUSPENDIDO->value)
             ->first();
-
 
         if (!$user) {
             // Retornar éxito aunque no exista para evitar enumeration attacks
@@ -983,12 +997,6 @@ class AuthController extends Controller
     }
 
     /**
-     * Verificar si un correo electrónico ya está registrado
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    /**
      * Obtener o crear empresa constructora a partir de datos de request de enlace
      *
      * @param array $validatedData
@@ -1018,6 +1026,13 @@ class AuthController extends Controller
         return $empresa;
     }
 
+
+    /**
+     * Verificar si un correo electrónico ya está registrado
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function verificarEmailExistente(Request $request)
     {
         $request->validate([
@@ -1086,5 +1101,116 @@ class AuthController extends Controller
             'existe' => $existe,
             'telefono' => $telefono,
         ], $existe ? 'El teléfono ya está registrado.' : 'El teléfono está disponible.', 200);
+    }
+
+    /**
+     * Update user data: name, email, telefono
+     * Esta actualizacion no debe afectar el perfil de la empresa.
+     */
+    public function updateUserData(AuthUpdateUserDataRequest $request)
+    {
+        $validatedData = $request->validated();
+        $user = $request->user();
+        $emailBeforeUpdate = $user->email;
+
+        $user->update($validatedData);
+        $verificationEmailSent = false;
+
+        $emailChanged = array_key_exists('email', $validatedData) && $validatedData['email'] !== $emailBeforeUpdate;
+        $requiresEmailVerification = $emailChanged || is_null($user->email_verified_at);
+
+        if ($emailChanged) {
+            $user->email_verified_at = null;
+            $user->save();
+        }
+
+        if ($requiresEmailVerification && !empty($user->email)) {
+            $verificationToken = Str::random(64);
+            $cacheKey = "email_verification_user_update_{$verificationToken}";
+            $userTokenKey = "email_verification_user_update_latest_token_{$user->id}";
+
+            $oldToken = Cache::get($userTokenKey);
+            if (!empty($oldToken)) {
+                Cache::forget("email_verification_user_update_{$oldToken}");
+            }
+
+            Cache::put($cacheKey, [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'created_at' => now()->toIso8601String(),
+            ], 60 * 60 * 24); // 24 horas
+
+            Cache::put($userTokenKey, $verificationToken, 60 * 60 * 24);
+
+            $verificationUrl = url("/api/auth/verificar-email-token?token={$verificationToken}");
+            Mail::to($user->email)->send(new VerifyUpdatedEmailMail($verificationUrl, $user->name));
+            $verificationEmailSent = true;
+        }
+
+        $user->load(User::eagerLodable());
+        $token = $user->createToken('API Token')->plainTextToken;
+
+        return $this->success(
+            [
+                'user' => new UserAuthenticateResource($user),
+                'token' => $token,
+                'proveedor' => new ProveedorResource($user->proveedorPrincipal()),
+                'email_verification_required' => $requiresEmailVerification,
+                'email_verification_sent' => $verificationEmailSent,
+                'email_verification_message' => $verificationEmailSent
+                    ? 'Te enviamos un correo para validar tu email. Revisa tu bandeja de entrada.'
+                    : null,
+            ],
+            $verificationEmailSent
+                ? 'Datos de usuario actualizados correctamente. Te enviamos un correo para validar tu email.'
+                : 'Datos de usuario actualizados correctamente.',
+            200
+        );
+    }
+
+    /**
+     * Verifica el correo actualizado desde el enlace enviado por email.
+     */
+    public function verifyUpdatedEmail(Request $request)
+    {
+        $request->validate([
+            'token' => ['required', 'string'],
+        ]);
+
+        $cacheKey = "email_verification_user_update_{$request->token}";
+        $data = Cache::get($cacheKey);
+
+        if (!$data) {
+            return $this->error('El enlace de validación es inválido o expiró.', [], 400);
+        }
+
+        $user = User::find($data['user_id']);
+        if (!$user) {
+            Cache::forget($cacheKey);
+            return $this->error('Usuario no encontrado para validar el correo.', [], 404);
+        }
+
+        if ($user->email !== $data['email']) {
+            Cache::forget($cacheKey);
+            return $this->error('El correo ya fue modificado. Solicita una nueva validación.', [], 400);
+        }
+
+        if (is_null($user->email_verified_at)) {
+            $user->email_verified_at = now();
+            $user->save();
+        }
+
+        Cache::forget($cacheKey);
+        Cache::forget("email_verification_user_update_latest_token_{$user->id}");
+
+        $user->notify(new CuentaVerificadaNotification(
+            email: $user->email,
+            userId: $user->id,
+            verifiedAtIso: optional($user->email_verified_at)->toIso8601String()
+        ));
+
+        $frontendHomeUrl = rtrim((string) config('services.frontend.url', 'http://localhost:8100'), '/') . '/';
+
+        return redirect()->away($frontendHomeUrl);
     }
 }

@@ -245,4 +245,20 @@ class User extends Authenticatable
             ->pluck('token')
             ->toArray();
     }
+
+
+    /**
+     * HELPERS
+     */
+
+    /**
+     * Determina si el usuario tiene un correo electrónico registrado
+     * Esto es útil para decidir si se pueden enviar notificaciones por email o si se requiere solicitar un correo al usuario para completar su perfil
+     */
+    public function solicitarCorreo(): bool
+    {
+        // validar que el email sea un email valido, no solo que no sea null
+        $emailIsValid = filter_var($this->email, FILTER_VALIDATE_EMAIL) !== false;
+        return $this->email !== null && !$emailIsValid;
+    }
 }
