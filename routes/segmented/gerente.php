@@ -22,6 +22,7 @@ use App\Http\Controllers\OrdenCompraRegistroController;
 use App\Http\Controllers\OrdenCompraSolicitudPagoController;
 use App\Http\Controllers\ProveedorOrdenCompraDashboardController;
 use App\Http\Controllers\ProveedorOrdenCompraController;
+use App\Http\Controllers\Gerente\PresupuestoController;
 
 /**
  * GESTIÓN DE PROVEEDORES
@@ -361,6 +362,10 @@ Route::prefix('proveedores')
                 Route::delete('/{empresaConstrucc}', [EmpresaConstruccController::class, 'destroy'])->middleware(['audit']);
             });
     });
+
+Route::prefix('gerente')->middleware('auth:sanctum')->group(function () {
+    Route::apiResource('presupuestos', PresupuestoController::class);
+});
 
 
 
