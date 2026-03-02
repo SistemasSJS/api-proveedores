@@ -191,7 +191,9 @@ class NotificationController extends Controller
         $user = Auth::user();
         $lastTimestamp = $request->query('last_timestamp');
 
-        $query = $user->notifications()->latest();
+        $query = $user->notifications()
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc');
 
         if ($lastTimestamp) {
             $query->where('created_at', '>', $lastTimestamp);

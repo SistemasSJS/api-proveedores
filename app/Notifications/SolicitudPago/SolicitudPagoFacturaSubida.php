@@ -9,6 +9,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Storage;
 
 class SolicitudPagoFacturaSubida extends Notification implements ShouldBroadcastNow
 {
@@ -18,17 +19,23 @@ class SolicitudPagoFacturaSubida extends Notification implements ShouldBroadcast
     public int $solicitudPagoId;
     public int $proveedorId;
     public int $userId;
+    public ?string $rutaFacturaPdf;
+    public ?string $rutaFacturaXml;
 
   public function __construct(
      string $solicitudPagoFolio,
      int $solicitudPagoId,
      int $proveedorId,
-     int $userId = null
+     ?int $userId = null,
+     ?string $rutaFacturaPdf = null,
+     ?string $rutaFacturaXml = null
   ) {
    $this->solicitudPagoFolio= $solicitudPagoFolio;
    $this->solicitudPagoId= $solicitudPagoId;
    $this->proveedorId= $proveedorId;
    $this->userId= $userId;
+   $this->rutaFacturaPdf= $rutaFacturaPdf;
+   $this->rutaFacturaXml= $rutaFacturaXml;
   }
 
   /**
@@ -82,13 +89,35 @@ class SolicitudPagoFacturaSubida extends Notification implements ShouldBroadcast
   {
     $frontendUrl = config('app.frontend_url', config('app.url'));
 
-    return (new MailMessage)
+    $mailMessage = (new MailMessage)
       ->subject('Factura subida - Solicitud de pago #' . $this->solicitudPagoFolio)
       ->view('emails.solicitud-pago.factura-subida', [
         'notifiable' => $notifiable,
         'solicitudPagoFolio' => $this->solicitudPagoFolio,
         'urlSolicitud' => $frontendUrl . '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       ]);
+
+    if ($this->rutaFacturaPdf && Storage::disk('private')->exists($this->rutaFacturaPdf)) {
+      $mailMessage->attach(
+        Storage::disk('private')->path($this->rutaFacturaPdf),
+        [
+          'as' => 'factura_' . $this->solicitudPagoFolio . '.pdf',
+          'mime' => 'application/pdf',
+        ]
+      );
+    }
+
+    if ($this->rutaFacturaXml && Storage::disk('private')->exists($this->rutaFacturaXml)) {
+      $mailMessage->attach(
+        Storage::disk('private')->path($this->rutaFacturaXml),
+        [
+          'as' => 'factura_' . $this->solicitudPagoFolio . '.xml',
+          'mime' => 'application/xml',
+        ]
+      );
+    }
+
+    return $mailMessage;
   }
 
   /**

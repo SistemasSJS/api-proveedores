@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+ <meta charset="UTF-8">
+ <title>Comprobante de Pago Subido</title>
+ <style>
+  body {
+   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+   background-color: #f8f9fa;
+   margin: 0;
+   padding: 0;
+  }
+
+  .email-container {
+   max-width: 600px;
+   margin: auto;
+   background: #ffffff;
+   border-radius: 8px;
+   overflow: hidden;
+   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .header {
+   background: linear-gradient(135deg, #2196f3, #64b5f6);
+   color: #ffffff;
+   text-align: center;
+   padding: 30px 20px;
+  }
+
+  .logo {
+   max-width: 80px;
+   height: auto;
+   margin-bottom: 15px;
+   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+  }
+
+  .header h1 {
+   margin: 0;
+  }
+
+  .content {
+   padding: 30px 20px;
+  }
+
+  .info-box {
+   background-color: #e3f2fd;
+   border-left: 4px solid #2196f3;
+   padding: 15px;
+   margin: 20px 0;
+   border-radius: 4px;
+   color: #0d47a1;
+  }
+
+  .details {
+   background: #f8f9fa;
+   border: 1px solid #e9ecef;
+   border-radius: 8px;
+   padding: 15px;
+   margin: 20px 0;
+  }
+
+  .detail-item {
+   margin: 6px 0;
+  }
+
+  .detail-label {
+   font-weight: 600;
+   color: #495057;
+   margin-right: 6px;
+  }
+
+  .action-button {
+   display: inline-block;
+   background: #2196f3;
+   color: #ffffff;
+   padding: 15px 30px;
+   text-decoration: none;
+   border-radius: 6px;
+   font-weight: 600;
+  }
+
+  .footer {
+   background-color: #343a40;
+   color: #ffffff;
+   text-align: center;
+   padding: 15px;
+   font-size: 12px;
+  }
+ </style>
+</head>
+
+<body>
+
+ <div class="email-container">
+  <div class="header">
+   <img src="{{ config('app.url') }}/assets/logos/logo-gestionpro.png" alt="GestiónPro" class="logo">
+      <h1>Comprobante subido</h1>
+      <p>Sistema de Gestion de Proveedores</p>
+  </div>
+
+  <div class="content">
+   <p>Hola <strong>{{ $notifiable->name }}</strong>,</p>
+
+   <div class="info-box">
+    Se ha subido el comprobante de la solicitud de pago <strong>#{{ $solicitudPagoFolio }}</strong>.
+   </div>
+
+   <div class="details">
+    <div class="detail-item">
+     <span class="detail-label">Folio:</span> #{{ $solicitudPagoFolio }}
+    </div>
+    <div class="detail-item">
+     <span class="detail-label">Proveedor ID:</span> {{ $proveedorId }}
+    </div>
+    <div class="detail-item">
+     <span class="detail-label">Fecha:</span> {{ now()->format('d/m/Y') }}
+    </div>
+   </div>
+
+   <p style="text-align: center; margin: 30px 0;">
+    <a href="{{ $urlSolicitud }}" class="action-button">
+     Ver Detalles
+    </a>
+   </p>
+  </div>
+
+  <div class="footer">
+   © {{ date('Y') }} {{ config('app.name') }} · Mensaje automático
+  </div>
+ </div>
+
+</body>
+
+</html>

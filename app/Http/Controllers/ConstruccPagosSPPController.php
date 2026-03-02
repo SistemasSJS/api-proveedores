@@ -15,6 +15,7 @@ use App\Http\Requests\Construcc\ConstruccPagosSPPRegistrarPagoRequest;
 use App\Http\Resources\Construcc\ConstruccPagoIndexResource;
 use App\Http\Resources\Construcc\ConstruccPagoProveedorResource;
 use App\Http\Resources\Construcc\ConstruccPagoResource;
+use App\Http\Resources\Construcc\ConstruccPagoResumenResource;
 use App\Http\Resources\Construcc\ConstruccPagoSPPResource;
 use App\Models\CuentaBancaria;
 use App\Models\EmpresaConstrucc;
@@ -23,6 +24,7 @@ use App\Models\Proveedor;
 use App\Models\SolicitudPago;
 use App\Models\PagoSolicitudPago;
 use App\Notifications\SolicitudPago\SolicitudPagoAbonada;
+use App\Notifications\SolicitudPago\SolicitudPagoComprobanteActualizado;
 use App\Notifications\SolicitudPago\SolicitudPagoFacturaPendiente;
 use App\Notifications\SolicitudPago\SolicitudPagoPagada;
 use App\Services\InterApiService;
@@ -301,10 +303,7 @@ class ConstruccPagosSPPController extends Controller
                 ->orderBy('pago_solicitud_pago.fecha_aplicacion', 'desc')
                 ->get();
 
-            return $this->success([
-                'solicitud_pago' => ConstruccPagoSPPResource::make($spp),
-                'pagos' => ConstruccPagoResource::collection($pagos),
-            ], 'Pagos obtenidos exitosamente.');
+            return $this->success(ConstruccPagoResumenResource::collection($pagos), 'Pagos obtenidos exitosamente.');
         } catch (\Throwable $e) {
             Log::error('Error al listar pagos de SPP', [
                 'proveedor_id' => $proveedor->id,
@@ -416,6 +415,17 @@ class ConstruccPagosSPPController extends Controller
             $pago->update([
                 'comprobante_pago' => $comprobantePath,
             ]);
+
+            $proveedor->notify(
+                new SolicitudPagoComprobanteActualizado(
+                    $spp->numero_folio_solicitud,
+                    $spp->id,
+                    $proveedor->id,
+                    null,
+                    $comprobantePath,
+                    'public'
+                )
+            );
 
             DB::commit();
 

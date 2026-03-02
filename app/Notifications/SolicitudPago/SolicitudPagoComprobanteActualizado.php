@@ -9,6 +9,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Storage;
 
 class SolicitudPagoComprobanteActualizado extends Notification implements ShouldBroadcastNow
 {
@@ -18,18 +19,23 @@ class SolicitudPagoComprobanteActualizado extends Notification implements Should
   public $solicitudPagoFolio;
   public $proveedorId;
   public $userId;
+  public $rutaComprobante;
+  public $diskComprobante;
 
   public function __construct(
     string $solicitudPagoFolio,
     int $solicitudPagoId,
     int $proveedorId,
-    int $userId = null
+    ?int $userId = null,
+    ?string $rutaComprobante = null,
+    string $diskComprobante = 'private'
   ) {
     $this->solicitudPagoFolio = $solicitudPagoFolio;
     $this->solicitudPagoId = $solicitudPagoId;
     $this->proveedorId = $proveedorId;
     $this->userId = $userId;
-    $this->solicitudPagoFolio = $solicitudPagoFolio;
+    $this->rutaComprobante = $rutaComprobante;
+    $this->diskComprobante = $diskComprobante;
   }
 
   /**
@@ -109,7 +115,7 @@ class SolicitudPagoComprobanteActualizado extends Notification implements Should
     $frontendUrl = config('app.frontend_url', config('app.url'));
     $urlSolicitud = $frontendUrl . '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId;
 
-    return (new MailMessage)
+    $mailMessage = (new MailMessage)
       ->subject('Comprobante de pago actualizado #' . $this->solicitudPagoFolio)
       ->view('emails.solicitud-pago.comprobante-actualizado', [
         'notifiable' => $notifiable,
@@ -118,6 +124,26 @@ class SolicitudPagoComprobanteActualizado extends Notification implements Should
         'proveedorId' => $this->proveedorId,
         'urlSolicitud' => $urlSolicitud,
       ]);
+
+    if ($this->rutaComprobante && Storage::disk($this->diskComprobante)->exists($this->rutaComprobante)) {
+      $extension = pathinfo($this->rutaComprobante, PATHINFO_EXTENSION);
+      $mimeTypes = [
+        'pdf' => 'application/pdf',
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+      ];
+
+      $mailMessage->attach(
+        Storage::disk($this->diskComprobante)->path($this->rutaComprobante),
+        [
+          'as' => 'comprobante_' . $this->solicitudPagoFolio . '.' . $extension,
+          'mime' => $mimeTypes[$extension] ?? 'application/octet-stream',
+        ]
+      );
+    }
+
+    return $mailMessage;
   }
 
   /**
