@@ -1,0 +1,163 @@
+﻿{
+  "info": {
+    "name": "API Proveedores - Presupuestos (Proveedor Segment)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "CRUD de Presupuestos bajo /proveedores/{proveedor}/presupuestos"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost/api" },
+    { "key": "token", "value": "REPLACE_SANCTUM_TOKEN" },
+    { "key": "proveedor_id", "value": "1" },
+    { "key": "presupuesto_id", "value": "1" },
+    { "key": "empresa_receptora_id", "value": "2" }
+  ],
+  "item": [
+    {
+      "name": "Presupuestos por Proveedor",
+      "item": [
+        {
+          "name": "Index",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/proveedores/{{proveedor_id}}/presupuestos?per_page=10&sort_by=created_at&order=desc",
+              "host": ["{{base_url}}"],
+              "path": ["proveedores", "{{proveedor_id}}", "presupuestos"],
+              "query": [
+                { "key": "per_page", "value": "10" },
+                { "key": "sort_by", "value": "created_at" },
+                { "key": "order", "value": "desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Store (receptora del sistema)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body?.data?.id) pm.collectionVariables.set('presupuesto_id', body.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/proveedores/{{proveedor_id}}/presupuestos",
+              "host": ["{{base_url}}"],
+              "path": ["proveedores", "{{proveedor_id}}", "presupuestos"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"proveedor_id\": {{proveedor_id}},\n  \"empresa_receptora_id\": {{empresa_receptora_id}},\n  \"fecha_emision\": \"2026-03-03\",\n  \"concepto_general\": \"Servicio de instalación\",\n  \"con_iva\": true,\n  \"iva_porcentaje\": 16,\n  \"condiciones\": {\n    \"pago\": \"30 dias\"\n  },\n  \"observaciones\": \"Creado desde Postman\",\n  \"conceptos\": [\n    {\n      \"descripcion\": \"Mano de obra\",\n      \"cantidad\": 2,\n      \"unidad\": \"servicio\",\n      \"precio_unitario\": 1500\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Store (receptora externa)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/proveedores/{{proveedor_id}}/presupuestos",
+              "host": ["{{base_url}}"],
+              "path": ["proveedores", "{{proveedor_id}}", "presupuestos"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"proveedor_id\": {{proveedor_id}},\n  \"fecha_emision\": \"2026-03-03\",\n  \"concepto_general\": \"Proyecto llave en mano\",\n  \"empresa_receptora_nombre\": \"Cliente Externo SA de CV\",\n  \"empresa_receptora_rfc\": \"CEX010101AA1\",\n  \"empresa_receptora_direccion\": \"Av Reforma 123, CDMX\",\n  \"empresa_receptora_telefono\": \"5555555555\",\n  \"empresa_receptora_correo\": \"compras@clienteexterno.com\",\n  \"con_iva\": false,\n  \"iva_porcentaje\": 0,\n  \"condiciones\": {\n    \"anticipo\": \"50%\"\n  },\n  \"observaciones\": \"Cliente no registrado\",\n  \"conceptos\": [\n    {\n      \"descripcion\": \"Diseño\",\n      \"cantidad\": 1,\n      \"unidad\": \"paquete\",\n      \"precio_unitario\": 5000\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Show",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/proveedores/{{proveedor_id}}/presupuestos/{{presupuesto_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["proveedores", "{{proveedor_id}}", "presupuestos", "{{presupuesto_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/proveedores/{{proveedor_id}}/presupuestos/{{presupuesto_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["proveedores", "{{proveedor_id}}", "presupuestos", "{{presupuesto_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"proveedor_id\": {{proveedor_id}},\n  \"fecha_emision\": \"2026-03-04\",\n  \"concepto_general\": \"Presupuesto actualizado\",\n  \"empresa_receptora_nombre\": \"Cliente Externo SA de CV\",\n  \"empresa_receptora_rfc\": \"CEX010101AA1\",\n  \"empresa_receptora_direccion\": \"Av Reforma 456, CDMX\",\n  \"empresa_receptora_telefono\": \"5555550000\",\n  \"empresa_receptora_correo\": \"facturas@clienteexterno.com\",\n  \"con_iva\": true,\n  \"iva_porcentaje\": 16,\n  \"condiciones\": {\n    \"pago\": \"15 dias\"\n  },\n  \"observaciones\": \"Version 2\",\n  \"conceptos\": [\n    {\n      \"descripcion\": \"Diseño\",\n      \"cantidad\": 1,\n      \"unidad\": \"paquete\",\n      \"precio_unitario\": 5500\n    },\n    {\n      \"descripcion\": \"Implementacion\",\n      \"cantidad\": 2,\n      \"unidad\": \"fase\",\n      \"precio_unitario\": 3200\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/proveedores/{{proveedor_id}}/presupuestos/{{presupuesto_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["proveedores", "{{proveedor_id}}", "presupuestos", "{{presupuesto_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"proveedor_id\": {{proveedor_id}},\n  \"fecha_emision\": \"2026-03-05\",\n  \"concepto_general\": \"Actualizacion via PATCH\",\n  \"empresa_receptora_nombre\": \"Cliente Externo SA de CV\",\n  \"con_iva\": false,\n  \"iva_porcentaje\": 0,\n  \"conceptos\": [\n    {\n      \"descripcion\": \"Soporte\",\n      \"cantidad\": 1,\n      \"unidad\": \"mes\",\n      \"precio_unitario\": 2500\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Destroy",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/proveedores/{{proveedor_id}}/presupuestos/{{presupuesto_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["proveedores", "{{proveedor_id}}", "presupuestos", "{{presupuesto_id}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

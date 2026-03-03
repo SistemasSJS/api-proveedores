@@ -21,8 +21,11 @@ return new class extends Migration
             $table->decimal('iva_porcentaje', 5, 2)->default(16.00);
             $table->decimal('iva_total', 15, 2)->default(0);
             $table->decimal('total', 15, 2)->default(0);
-            $table->json('empresa_emisora_datos')->nullable();
-            $table->json('empresa_receptora_datos')->nullable();
+            $table->string('empresa_receptora_nombre')->nullable();
+            $table->string('empresa_receptora_rfc', 20)->nullable();
+            $table->text('empresa_receptora_direccion')->nullable();
+            $table->string('empresa_receptora_telefono', 30)->nullable();
+            $table->string('empresa_receptora_correo')->nullable();
             $table->json('condiciones')->nullable();
             $table->text('observaciones')->nullable();
 

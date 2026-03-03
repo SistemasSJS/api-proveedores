@@ -5,10 +5,11 @@ namespace App\Http\Controllers\Gerente;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Presupuesto\StorePresupuestoRequest;
 use App\Http\Requests\Presupuesto\UpdatePresupuestoRequest;
-use App\Http\Resources\Presupuesto\PresupuestoCollection;
 use App\Http\Resources\Presupuesto\PresupuestoResource;
 use App\Models\Presupuesto;
 use App\Models\PresupuestoConcepto;
+use App\Models\Proveedor;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,93 +24,64 @@ class PresupuestoController extends Controller
     private bool $logEnabled = true;
 
     /**
-     * Lista presupuestos con filtros opcionales y paginación.
-     * Responsabilidad: consulta y serialización de resultados.
+     * Listado paginado de presupuestos.
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request, Proveedor $proveedor): JsonResponse
     {
-        $request->validate([
-            'proveedor_id' => 'nullable|integer|exists:proveedores,id',
-            'user_id' => 'nullable|integer|exists:users,id',
-            'fecha_desde' => 'nullable|date',
-            'fecha_hasta' => 'nullable|date|after_or_equal:fecha_desde',
-            'con_iva' => 'nullable|boolean',
-            'sort_by' => 'nullable|in:id,numero_presupuesto,fecha_emision,subtotal,total,created_at',
-            'order' => 'nullable|in:asc,desc',
-            'per_page' => 'nullable|integer|min:1|max:100',
-        ]);
-
-        $sortBy = $request->input('sort_by', 'fecha_emision');
+        $filters = $request->only(Presupuesto::getFilters());
+        $filters['proveedor_id'] = $proveedor->id;
+        $sortBy = $request->input('sort_by', 'created_at');
         $order = $request->input('order', 'desc');
-        $perPage = (int) $request->input('per_page', 15);
+        $perPage = $request->input('per_page', 10);
 
-        $query = Presupuesto::query()
-            ->with(['proveedor:id,nombre_comercial,razon_social', 'empresaReceptora:id,nombre_comercial,razon_social', 'user:id,name'])
-            ->when($request->filled('proveedor_id'), fn ($q) => $q->byProveedor((int) $request->input('proveedor_id')))
-            ->when($request->filled('user_id'), fn ($q) => $q->byUser((int) $request->input('user_id')))
-            ->byFechaRango($request->input('fecha_desde'), $request->input('fecha_hasta'))
-            ->when($request->has('con_iva'), function ($q) use ($request) {
-                return filter_var($request->input('con_iva'), FILTER_VALIDATE_BOOLEAN)
-                    ? $q->conIva()
-                    : $q->sinIva();
-            })
-            ->orderBy($sortBy, $order);
+        $originalPaginator = Presupuesto::query()
+            ->with(Presupuesto::eagerLodable())
+            ->filter($filters)
+            ->orderBy($sortBy, $order)
+            ->paginate($perPage);
 
-        $paginator = $query->paginate($perPage);
+        $data = PresupuestoResource::collection($originalPaginator)->resolve();
 
-        return $this->success(new PresupuestoCollection($paginator));
+        return $this->paginated($originalPaginator->setCollection(collect($data)));
     }
 
     /**
-     * Crea un presupuesto con sus conceptos en una transacción.
-     * Responsabilidad: orquestación de persistencia; los cálculos viven en modelos.
+     * Crear presupuesto con conceptos.
      */
-    public function store(StorePresupuestoRequest $request): JsonResponse
+    public function store(StorePresupuestoRequest $request, Proveedor $proveedor): JsonResponse
     {
         try {
-            $presupuesto = DB::transaction(function () use ($request) {
-                $data = $request->validated();
-                $conceptos = $data['conceptos'];
-                unset($data['conceptos']);
+            $validated = $request->validated();
+            $user = $request->user();
 
-                $data['user_id'] = $request->user()?->id;
-                $data['numero_presupuesto'] = $data['numero_presupuesto']
-                    ?? Presupuesto::generarNumeroPresupuesto((int) $data['proveedor_id']);
-                $data['con_iva'] = $data['con_iva'] ?? true;
-                $data['iva_porcentaje'] = $data['iva_porcentaje'] ?? 16.00;
+            if (! $user || ! method_exists($user, 'tieneAccesoAProveedor') || ! $user->tieneAccesoAProveedor((int) $proveedor->id)) {
+                return $this->error('El usuario autenticado no tiene acceso al proveedor indicado.', null, 403);
+            }
 
-                $presupuesto = Presupuesto::create($data);
+            if ((int) $validated['proveedor_id'] !== (int) $proveedor->id) {
+                return $this->error('El proveedor del payload no coincide con el proveedor de la ruta.', null, 422);
+            }
 
-                foreach ($conceptos as $index => $conceptoData) {
-                    $concepto = new PresupuestoConcepto([
-                        'numero' => $index + 1,
-                        'descripcion' => $conceptoData['descripcion'],
-                        'cantidad' => $conceptoData['cantidad'],
-                        'unidad' => $conceptoData['unidad'],
-                        'precio_unitario' => $conceptoData['precio_unitario'],
-                    ]);
-                    $concepto->calcularImporte();
-                    $presupuesto->conceptos()->save($concepto);
-                }
+            $presupuesto = DB::transaction(function () use ($request, $validated) {
+                $payload = collect($validated)->except(['conceptos'])->toArray();
+                $payload['user_id'] = $request->user()->id;
+                $payload['proveedor_id'] = (int) $validated['proveedor_id'];
+                $payload['numero_presupuesto'] = $payload['numero_presupuesto']
+                    ?? Presupuesto::generarNumeroPresupuesto((int) $payload['proveedor_id']);
+                $payload['con_iva'] = $payload['con_iva'] ?? true;
+                $payload['iva_porcentaje'] = $payload['iva_porcentaje'] ?? 16.00;
+                $payload = $this->normalizarEmpresaReceptora($payload);
 
-                $presupuesto->load('conceptos');
-                $presupuesto->calcularTotales();
+                $presupuesto = Presupuesto::create($payload);
+
+                $this->sincronizarConceptos($presupuesto, $validated['conceptos']);
+                $presupuesto->recalcularDesdeConceptos();
                 $presupuesto->save();
 
-                return $presupuesto;
+                return $presupuesto->fresh(Presupuesto::eagerLodable());
             });
 
-            $presupuesto->load([
-                'proveedor:id,nombre_comercial,razon_social',
-                'empresaReceptora:id,nombre_comercial,razon_social',
-                'user:id,name',
-                'conceptos',
-            ]);
-
-            $this->log('Presupuesto creado', [
-                'presupuesto_id' => $presupuesto->id,
-                'numero_presupuesto' => $presupuesto->numero_presupuesto,
-            ]);
+            $this->log('Presupuesto creado', ['presupuesto_id' => $presupuesto->id]);
 
             return $this->success(
                 new PresupuestoResource($presupuesto),
@@ -119,77 +91,54 @@ class PresupuestoController extends Controller
         } catch (Throwable $e) {
             $this->log('Error al crear presupuesto', ['error' => $e->getMessage()]);
 
-            return $this->error('No fue posible crear el presupuesto.', $e->getMessage(), 500);
+            return $this->error('No fue posible crear el presupuesto.', [$e->getMessage()], 500);
         }
     }
 
     /**
-     * Muestra un presupuesto con sus relaciones principales.
-     * Responsabilidad: lectura detallada del recurso.
+     * Mostrar detalle de presupuesto.
      */
-    public function show(Presupuesto $presupuesto): JsonResponse
+    public function show(Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
     {
-        $presupuesto->load([
-            'proveedor:id,nombre_comercial,razon_social',
-            'empresaReceptora:id,nombre_comercial,razon_social',
-            'user:id,name',
-            'conceptos',
-        ]);
+        if ($presupuesto->proveedor_id !== $proveedor->id) {
+            return $this->error('Presupuesto no pertenece a este proveedor.', null, 403);
+        }
+
+        $presupuesto->load(Presupuesto::eagerLodable());
 
         return $this->success(new PresupuestoResource($presupuesto));
     }
 
     /**
-     * Actualiza cabecera y conceptos en transacción, recalculando importes desde modelo.
-     * Responsabilidad: actualización atómica del agregado Presupuesto.
+     * Actualizar presupuesto y conceptos.
      */
-    public function update(UpdatePresupuestoRequest $request, Presupuesto $presupuesto): JsonResponse
+    public function update(UpdatePresupuestoRequest $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
     {
         try {
-            $presupuesto = DB::transaction(function () use ($request, $presupuesto) {
-                $data = $request->validated();
-                $conceptos = $data['conceptos'];
-                unset($data['conceptos']);
+            if ($presupuesto->proveedor_id !== $proveedor->id) {
+                return $this->error('Presupuesto no pertenece a este proveedor.', null, 403);
+            }
 
-                if (empty($data['numero_presupuesto'])) {
-                    $data['numero_presupuesto'] = $presupuesto->numero_presupuesto
-                        ?: Presupuesto::generarNumeroPresupuesto((int) $data['proveedor_id']);
-                }
+            $validated = $request->validated();
+            if ((int) $validated['proveedor_id'] !== (int) $proveedor->id) {
+                return $this->error('El proveedor del payload no coincide con el proveedor de la ruta.', null, 422);
+            }
 
-                $presupuesto->fill($data);
+            $presupuesto = DB::transaction(function () use ($validated, $presupuesto) {
+                $payload = collect($validated)->except(['conceptos'])->toArray();
+                $payload['proveedor_id'] = (int) $validated['proveedor_id'];
+                $payload['numero_presupuesto'] = $payload['numero_presupuesto'] ?? $presupuesto->numero_presupuesto;
+                $payload = $this->normalizarEmpresaReceptora($payload);
+
+                $presupuesto->update($payload);
+                $this->sincronizarConceptos($presupuesto, $validated['conceptos']);
+                $presupuesto->recalcularDesdeConceptos();
                 $presupuesto->save();
 
-                $presupuesto->conceptos()->delete();
-                foreach ($conceptos as $index => $conceptoData) {
-                    $concepto = new PresupuestoConcepto([
-                        'numero' => $index + 1,
-                        'descripcion' => $conceptoData['descripcion'],
-                        'cantidad' => $conceptoData['cantidad'],
-                        'unidad' => $conceptoData['unidad'],
-                        'precio_unitario' => $conceptoData['precio_unitario'],
-                    ]);
-                    $concepto->calcularImporte();
-                    $presupuesto->conceptos()->save($concepto);
-                }
-
-                $presupuesto->load('conceptos');
-                $presupuesto->calcularTotales();
-                $presupuesto->save();
-
-                return $presupuesto;
+                return $presupuesto->fresh(Presupuesto::eagerLodable());
             });
 
-            $presupuesto->load([
-                'proveedor:id,nombre_comercial,razon_social',
-                'empresaReceptora:id,nombre_comercial,razon_social',
-                'user:id,name',
-                'conceptos',
-            ]);
-
-            $this->log('Presupuesto actualizado', [
-                'presupuesto_id' => $presupuesto->id,
-                'numero_presupuesto' => $presupuesto->numero_presupuesto,
-            ]);
+            $this->log('Presupuesto actualizado', ['presupuesto_id' => $presupuesto->id]);
 
             return $this->success(
                 new PresupuestoResource($presupuesto),
@@ -201,17 +150,20 @@ class PresupuestoController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->error('No fue posible actualizar el presupuesto.', $e->getMessage(), 500);
+            return $this->error('No fue posible actualizar el presupuesto.', [$e->getMessage()], 500);
         }
     }
 
     /**
-     * Elimina un presupuesto y sus conceptos por cascada.
-     * Responsabilidad: remoción del recurso.
+     * Eliminar presupuesto.
      */
-    public function destroy(Presupuesto $presupuesto): JsonResponse
+    public function destroy(Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
     {
         try {
+            if ($presupuesto->proveedor_id !== $proveedor->id) {
+                return $this->error('Presupuesto no pertenece a este proveedor.', null, 403);
+            }
+
             $presupuesto->delete();
 
             $this->log('Presupuesto eliminado', [
@@ -226,14 +178,54 @@ class PresupuestoController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->error('No fue posible eliminar el presupuesto.', $e->getMessage(), 500);
+            return $this->error('No fue posible eliminar el presupuesto.', [$e->getMessage()], 500);
         }
     }
 
     /**
-     * Registro de eventos internos del módulo.
+     * Normaliza los campos de receptora externa cuando receptora es del sistema.
      *
-     * @param  array<string, mixed>  $data
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
+    private function normalizarEmpresaReceptora(array $payload): array
+    {
+        if (! empty($payload['empresa_receptora_id'])) {
+            $payload['empresa_receptora_nombre'] = null;
+            $payload['empresa_receptora_rfc'] = null;
+            $payload['empresa_receptora_direccion'] = null;
+            $payload['empresa_receptora_telefono'] = null;
+            $payload['empresa_receptora_correo'] = null;
+        }
+
+        return $payload;
+    }
+
+    /**
+     * Reemplaza conceptos actuales por la lista enviada.
+     *
+     * @param Collection<int, PresupuestoConcepto>|array<int, array<string, mixed>> $conceptos
+     * @return void
+     */
+    private function sincronizarConceptos(Presupuesto $presupuesto, array $conceptos): void
+    {
+        $presupuesto->conceptos()->delete();
+
+        foreach ($conceptos as $index => $conceptoData) {
+            $concepto = new PresupuestoConcepto([
+                'numero' => $index + 1,
+                'descripcion' => $conceptoData['descripcion'],
+                'cantidad' => $conceptoData['cantidad'],
+                'unidad' => $conceptoData['unidad'],
+                'precio_unitario' => $conceptoData['precio_unitario'],
+            ]);
+            $concepto->calcularImporte();
+            $presupuesto->conceptos()->save($concepto);
+        }
+    }
+
+    /**
+     * Registro de eventos internos.
      */
     private function log($message, $data = []): void
     {
@@ -244,4 +236,3 @@ class PresupuestoController extends Controller
         Log::info($message, $data);
     }
 }
-

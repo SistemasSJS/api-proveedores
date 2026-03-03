@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Enums\EstadoUsuario;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 
 
@@ -73,6 +74,7 @@ class Proveedor extends BaseModel
         'tipo_alta',    // 1: Proveedor  2: UserConstrucc
         'user_construcc_alta',
         'empresa_construcc_alta',
+        'consecutivo_presupuesto_siguiente',
     ];
 
     protected $casts = [
@@ -83,6 +85,7 @@ class Proveedor extends BaseModel
         'perfil_empresa_completo' => 'boolean',
         'user_construcc_alta' => 'integer',
         'empresa_construcc_alta' => 'integer',
+        'consecutivo_presupuesto_siguiente' => 'integer',
     ];
 
     protected static $filters = [
@@ -345,6 +348,33 @@ class Proveedor extends BaseModel
     public function solicitudesPagoActivas(): HasMany
     {
         return $this->solicitudesPago()->whereIn('estado_solicitud', ['pendiente', 'autorizada', 'procesando']);
+    }
+
+    /**
+     * Incrementa y devuelve el siguiente consecutivo de presupuesto.
+     */
+    public function obtenerConsecutivoSiguientePresupuesto(): int
+    {
+        return DB::transaction(function () {
+            $this->refresh();
+
+            $folioSiguiente = $this->consecutivo_presupuesto_siguiente ?? 1;
+            $this->consecutivo_presupuesto_siguiente = ((int) ($this->consecutivo_presupuesto_siguiente ?? 1)) + 1;
+            $this->save();
+
+            return (int) $folioSiguiente;
+        });
+    }
+
+    /**
+     * Obtiene el folio formateado del siguiente presupuesto.
+     * Formato: PRES-0001
+     */
+    public function obtenerFolioSiguientePresupuesto(): string
+    {
+        $consecutivo = $this->obtenerConsecutivoSiguientePresupuesto();
+
+        return 'PRES-' . str_pad((string) $consecutivo, 4, '0', STR_PAD_LEFT);
     }
 
 

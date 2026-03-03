@@ -12,6 +12,18 @@ class Presupuesto extends BaseModel
 
     protected $table = 'presupuestos';
 
+    protected static $filters = [
+        'numero_presupuesto' => 'NumeroPresupuesto',
+        'proveedor_id' => 'ProveedorId',
+        'empresa_receptora_id' => 'EmpresaReceptoraId',
+        'user_id' => 'UserId',
+        'fecha_emision' => 'FechaEmision',
+        'fecha_desde' => 'FechaDesde',
+        'fecha_hasta' => 'FechaHasta',
+        'con_iva' => 'ConIva',
+        'total' => 'Total',
+    ];
+
     protected $fillable = [
         'numero_presupuesto',
         'fecha_emision',
@@ -21,8 +33,11 @@ class Presupuesto extends BaseModel
         'iva_porcentaje',
         'iva_total',
         'total',
-        'empresa_emisora_datos',
-        'empresa_receptora_datos',
+        'empresa_receptora_nombre',
+        'empresa_receptora_rfc',
+        'empresa_receptora_direccion',
+        'empresa_receptora_telefono',
+        'empresa_receptora_correo',
         'condiciones',
         'observaciones',
         'proveedor_id',
@@ -37,10 +52,23 @@ class Presupuesto extends BaseModel
         'iva_porcentaje' => 'decimal:2',
         'iva_total' => 'decimal:2',
         'total' => 'decimal:2',
-        'empresa_emisora_datos' => 'array',
-        'empresa_receptora_datos' => 'array',
         'condiciones' => 'array',
     ];
+
+    /**
+     * Relaciones para carga eager estándar.
+     *
+     * @return array<int, string>
+     */
+    public static function eagerLodable(): array
+    {
+        return [
+            'proveedor',
+            'empresaReceptora',
+            'user',
+            'conceptos',
+        ];
+    }
 
     /**
      * Relación con proveedor emisor.
@@ -120,28 +148,9 @@ class Presupuesto extends BaseModel
      */
     public static function generarNumeroPresupuesto(int $proveedorId): string
     {
-        $prefix = 'PRES-' . now()->format('Ymd') . '-';
+        $proveedor = Proveedor::query()->findOrFail($proveedorId);
 
-        $ultimo = static::query()
-            ->where('proveedor_id', $proveedorId)
-            ->orderByDesc('id')
-            ->value('numero_presupuesto');
-
-        $consecutivo = 1;
-        if (is_string($ultimo) && preg_match('/(\d+)$/', $ultimo, $matches)) {
-            $consecutivo = ((int) $matches[1]) + 1;
-        }
-
-        do {
-            $numero = $prefix . str_pad((string) $consecutivo, 4, '0', STR_PAD_LEFT);
-            $existe = static::query()
-                ->where('proveedor_id', $proveedorId)
-                ->where('numero_presupuesto', $numero)
-                ->exists();
-            $consecutivo++;
-        } while ($existe);
-
-        return $numero;
+        return $proveedor->obtenerFolioSiguientePresupuesto();
     }
 
     /**
@@ -184,5 +193,83 @@ class Presupuesto extends BaseModel
     public function scopeSinIva($query)
     {
         return $query->where('con_iva', false);
+    }
+
+    /**
+     * Filtro por número de presupuesto.
+     */
+    public function filterByNumeroPresupuesto($query, string $value)
+    {
+        return $query->where('numero_presupuesto', 'like', "%{$value}%");
+    }
+
+    /**
+     * Filtro por proveedor.
+     */
+    public function filterByProveedorId($query, $value)
+    {
+        return $query->whereIn('proveedor_id', explode(',', (string) $value));
+    }
+
+    /**
+     * Filtro por empresa receptora (solo registros del sistema).
+     */
+    public function filterByEmpresaReceptoraId($query, $value)
+    {
+        return $query->whereIn('empresa_receptora_id', explode(',', (string) $value));
+    }
+
+    /**
+     * Filtro por usuario.
+     */
+    public function filterByUserId($query, $value)
+    {
+        return $query->whereIn('user_id', explode(',', (string) $value));
+    }
+
+    /**
+     * Filtro por fecha exacta de emisión.
+     */
+    public function filterByFechaEmision($query, string $value)
+    {
+        return $query->whereDate('fecha_emision', $value);
+    }
+
+    /**
+     * Filtro por fecha de emisión desde.
+     */
+    public function filterByFechaDesde($query, string $value)
+    {
+        return $query->whereDate('fecha_emision', '>=', $value);
+    }
+
+    /**
+     * Filtro por fecha de emisión hasta.
+     */
+    public function filterByFechaHasta($query, string $value)
+    {
+        return $query->whereDate('fecha_emision', '<=', $value);
+    }
+
+    /**
+     * Filtro por indicador de IVA.
+     */
+    public function filterByConIva($query, $value)
+    {
+        $boolValue = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+        if ($boolValue === null) {
+            return $query;
+        }
+
+        return $query->where('con_iva', $boolValue);
+    }
+
+    /**
+     * Filtro por total exacto.
+     */
+    public function filterByTotal($query, $value)
+    {
+        return $query->where('total', $value);
     }
 }
