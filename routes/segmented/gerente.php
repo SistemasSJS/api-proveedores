@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 use App\Enums\UserRoleEnumerate;
 use Illuminate\Support\Facades\Route;
