@@ -11,14 +11,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class PresupuestoResource extends JsonResource
 {
     /**
-     * Transforma el recurso en arreglo.
-     *
-     * Campos incluidos:
-     * - Identificadores y datos fiscales del presupuesto.
-     * - Totales monetarios.
-     * - Relación emisor/receptor/usuario.
-     * - Conceptos (cuando están cargados).
-     *
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
@@ -43,14 +35,12 @@ class PresupuestoResource extends JsonResource
             ],
             'empresa_receptora' => [
                 'id' => $this->empresaReceptora?->id ?? $this->empresa_receptora_id,
-                'nombre' => $this->empresaReceptora?->nombre_comercial
-                    ?? $this->empresaReceptora?->razon_social
-                    ?? $this->empresa_receptora_nombre,
-                'rfc' => $this->empresaReceptora?->rfc ?? $this->empresa_receptora_rfc,
-                'direccion' => $this->empresaReceptora?->direccion_empresa ?? $this->empresa_receptora_direccion,
-                'telefono' => $this->empresaReceptora?->telefono ?? $this->empresa_receptora_telefono,
-                'correo' => $this->empresaReceptora?->email ?? $this->empresa_receptora_correo,
-                'origen' => $this->empresa_receptora_id ? 'sistema' : 'externa',
+                'nombre' => $this->empresaReceptora?->nombre ?? $this->empresa_receptora_nombre,
+                'puesto' => $this->empresaReceptora?->puesto ?? $this->empresa_receptora_puesto,
+                'empresa' => $this->empresaReceptora?->empresa ?? $this->empresa_receptora_empresa,
+                'telefono' => $this->empresa_receptora_telefono,
+                'correo' => $this->empresa_receptora_correo,
+                'origen' => $this->empresa_receptora_id ? 'cartera' : 'captura',
             ],
             'user' => $this->whenLoaded('user', function () {
                 return [
@@ -59,8 +49,8 @@ class PresupuestoResource extends JsonResource
                 ];
             }),
             'empresa_receptora_nombre' => $this->empresa_receptora_nombre,
-            'empresa_receptora_rfc' => $this->empresa_receptora_rfc,
-            'empresa_receptora_direccion' => $this->empresa_receptora_direccion,
+            'empresa_receptora_puesto' => $this->empresa_receptora_puesto,
+            'empresa_receptora_empresa' => $this->empresa_receptora_empresa,
             'empresa_receptora_telefono' => $this->empresa_receptora_telefono,
             'empresa_receptora_correo' => $this->empresa_receptora_correo,
             'conceptos' => PresupuestoConceptoResource::collection($this->whenLoaded('conceptos')),

@@ -9,17 +9,12 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class UpdatePresupuestoRequest extends FormRequest
 {
-    /**
-     * Determina si el usuario puede realizar esta petición.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
     /**
-     * Reglas de validación para actualizar presupuesto.
-     *
      * @return array<string, mixed>
      */
     public function rules(): array
@@ -27,10 +22,10 @@ class UpdatePresupuestoRequest extends FormRequest
         return [
             'numero_presupuesto' => 'nullable|string|max:255',
             'proveedor_id' => 'required|exists:proveedores,id',
-            'empresa_receptora_id' => 'nullable|exists:proveedores,id',
+            'empresa_receptora_id' => 'nullable|exists:cartera_clientes,id',
             'empresa_receptora_nombre' => 'nullable|string|max:255|required_without:empresa_receptora_id',
-            'empresa_receptora_rfc' => 'nullable|string|max:20',
-            'empresa_receptora_direccion' => 'nullable|string',
+            'empresa_receptora_puesto' => 'nullable|string|max:255',
+            'empresa_receptora_empresa' => 'nullable|string|max:255|required_without:empresa_receptora_id',
             'empresa_receptora_telefono' => 'nullable|string|max:30',
             'empresa_receptora_correo' => 'nullable|email|max:255',
             'fecha_emision' => 'required|date',
@@ -48,8 +43,6 @@ class UpdatePresupuestoRequest extends FormRequest
     }
 
     /**
-     * Mensajes personalizados para validación.
-     *
      * @return array<string, string>
      */
     public function messages(): array
@@ -59,17 +52,19 @@ class UpdatePresupuestoRequest extends FormRequest
             'numero_presupuesto.max' => 'El número de presupuesto no debe exceder 255 caracteres.',
             'proveedor_id.required' => 'El proveedor emisor es obligatorio.',
             'proveedor_id.exists' => 'El proveedor emisor seleccionado no existe.',
-            'empresa_receptora_id.exists' => 'La empresa receptora seleccionada no existe.',
-            'empresa_receptora_nombre.required_without' => 'El nombre de la empresa receptora es obligatorio cuando no se envía empresa_receptora_id.',
-            'empresa_receptora_nombre.string' => 'El nombre de empresa receptora debe ser texto.',
-            'empresa_receptora_nombre.max' => 'El nombre de empresa receptora no debe exceder 255 caracteres.',
-            'empresa_receptora_rfc.string' => 'El RFC de empresa receptora debe ser texto.',
-            'empresa_receptora_rfc.max' => 'El RFC de empresa receptora no debe exceder 20 caracteres.',
-            'empresa_receptora_direccion.string' => 'La dirección de empresa receptora debe ser texto.',
-            'empresa_receptora_telefono.string' => 'El teléfono de empresa receptora debe ser texto.',
-            'empresa_receptora_telefono.max' => 'El teléfono de empresa receptora no debe exceder 30 caracteres.',
-            'empresa_receptora_correo.email' => 'El correo de empresa receptora debe ser válido.',
-            'empresa_receptora_correo.max' => 'El correo de empresa receptora no debe exceder 255 caracteres.',
+            'empresa_receptora_id.exists' => 'El cliente seleccionado en cartera no existe.',
+            'empresa_receptora_nombre.required_without' => 'El nombre de la persona es obligatorio cuando no se envía empresa_receptora_id.',
+            'empresa_receptora_nombre.string' => 'El nombre de la persona debe ser texto.',
+            'empresa_receptora_nombre.max' => 'El nombre de la persona no debe exceder 255 caracteres.',
+            'empresa_receptora_puesto.string' => 'El puesto debe ser texto.',
+            'empresa_receptora_puesto.max' => 'El puesto no debe exceder 255 caracteres.',
+            'empresa_receptora_empresa.required_without' => 'La empresa es obligatoria cuando no se envía empresa_receptora_id.',
+            'empresa_receptora_empresa.string' => 'La empresa debe ser texto.',
+            'empresa_receptora_empresa.max' => 'La empresa no debe exceder 255 caracteres.',
+            'empresa_receptora_telefono.string' => 'El teléfono debe ser texto.',
+            'empresa_receptora_telefono.max' => 'El teléfono no debe exceder 30 caracteres.',
+            'empresa_receptora_correo.email' => 'El correo debe ser válido.',
+            'empresa_receptora_correo.max' => 'El correo no debe exceder 255 caracteres.',
             'fecha_emision.required' => 'La fecha de emisión es obligatoria.',
             'fecha_emision.date' => 'La fecha de emisión debe tener un formato válido.',
             'concepto_general.required' => 'El concepto general es obligatorio.',

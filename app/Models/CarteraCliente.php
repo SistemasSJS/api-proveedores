@@ -1,0 +1,83 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class CarteraCliente extends BaseModel
+{
+    protected $table = 'cartera_clientes';
+
+    protected static $filters = [
+        'proveedor_id' => 'ProveedorId',
+        'nombre' => 'Nombre',
+        'empresa' => 'Empresa',
+        'puesto' => 'Puesto',
+    ];
+
+    protected $fillable = [
+        'proveedor_id',
+        'nombre',
+        'puesto',
+        'empresa',
+        'telefono',
+        'correo',
+    ];
+
+    /**
+     * Proveedor dueño de la cartera.
+     */
+    public function proveedor(): BelongsTo
+    {
+        return $this->belongsTo(Proveedor::class);
+    }
+
+    /**
+     * Presupuestos que usan este cliente como receptor.
+     */
+    public function presupuestos(): HasMany
+    {
+        return $this->hasMany(Presupuesto::class, 'empresa_receptora_id');
+    }
+
+    /**
+     * Scope por proveedor.
+     */
+    public function scopeByProveedor($query, int $proveedorId)
+    {
+        return $query->where('proveedor_id', $proveedorId);
+    }
+
+    /**
+     * Filtro por proveedor.
+     */
+    public function filterByProveedorId($query, $value)
+    {
+        return $query->whereIn('proveedor_id', explode(',', (string) $value));
+    }
+
+    /**
+     * Filtro por nombre.
+     */
+    public function filterByNombre($query, string $value)
+    {
+        return $query->where('nombre', 'like', "%{$value}%");
+    }
+
+    /**
+     * Filtro por empresa.
+     */
+    public function filterByEmpresa($query, string $value)
+    {
+        return $query->where('empresa', 'like', "%{$value}%");
+    }
+
+    /**
+     * Filtro por puesto.
+     */
+    public function filterByPuesto($query, string $value)
+    {
+        return $query->where('puesto', 'like', "%{$value}%");
+    }
+}

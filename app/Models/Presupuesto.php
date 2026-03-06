@@ -34,8 +34,8 @@ class Presupuesto extends BaseModel
         'iva_total',
         'total',
         'empresa_receptora_nombre',
-        'empresa_receptora_rfc',
-        'empresa_receptora_direccion',
+        'empresa_receptora_puesto',
+        'empresa_receptora_empresa',
         'empresa_receptora_telefono',
         'empresa_receptora_correo',
         'condiciones',
@@ -79,11 +79,11 @@ class Presupuesto extends BaseModel
     }
 
     /**
-     * Relación con empresa receptora (también proveedor).
+     * Relación con cliente de cartera receptora.
      */
     public function empresaReceptora(): BelongsTo
     {
-        return $this->belongsTo(Proveedor::class, 'empresa_receptora_id');
+        return $this->belongsTo(CarteraCliente::class, 'empresa_receptora_id');
     }
 
     /**

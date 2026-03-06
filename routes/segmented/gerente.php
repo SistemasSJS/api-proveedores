@@ -22,7 +22,8 @@ use App\Http\Controllers\OrdenCompraRegistroController;
 use App\Http\Controllers\OrdenCompraSolicitudPagoController;
 use App\Http\Controllers\ProveedorOrdenCompraDashboardController;
 use App\Http\Controllers\ProveedorOrdenCompraController;
-use App\Http\Controllers\Gerente\PresupuestoController;
+use App\Http\Controllers\ProveedorPresupuestoController;
+use App\Http\Controllers\ProveedorPresupuestoCarteraClientesController;
 
 /**
  * GESTIÃ“N DE PROVEEDORES
@@ -213,12 +214,21 @@ Route::prefix('proveedores')
          * PRESUPUESTOS DEL PROVEEDOR
          */
         Route::prefix('{proveedor}/presupuestos')->middleware(['proveedor.access'])->group(function () {
-            Route::get('/', [PresupuestoController::class, 'index'])->middleware(['audit']);
-            Route::post('/', [PresupuestoController::class, 'store'])->middleware(['audit']);
-            Route::get('/{presupuesto}', [PresupuestoController::class, 'show'])->middleware(['audit']);
-            Route::put('/{presupuesto}', [PresupuestoController::class, 'update'])->middleware(['audit']);
-            Route::patch('/{presupuesto}', [PresupuestoController::class, 'update'])->middleware(['audit']);
-            Route::delete('/{presupuesto}', [PresupuestoController::class, 'destroy'])->middleware(['audit']);
+            Route::get('/', [ProveedorPresupuestoController::class, 'index'])->middleware(['audit']);
+            Route::post('/', [ProveedorPresupuestoController::class, 'store'])->middleware(['audit']);
+            Route::get('/{presupuesto}', [ProveedorPresupuestoController::class, 'show'])->middleware(['audit']);
+            Route::put('/{presupuesto}', [ProveedorPresupuestoController::class, 'update'])->middleware(['audit']);
+            Route::patch('/{presupuesto}', [ProveedorPresupuestoController::class, 'update'])->middleware(['audit']);
+            Route::delete('/{presupuesto}', [ProveedorPresupuestoController::class, 'destroy'])->middleware(['audit']);
+
+            Route::prefix('cartera-clientes')->group(function () {
+                Route::get('/', [ProveedorPresupuestoCarteraClientesController::class, 'index'])->middleware(['audit']);
+                Route::post('/', [ProveedorPresupuestoCarteraClientesController::class, 'store'])->middleware(['audit']);
+                Route::get('/{carteraCliente}', [ProveedorPresupuestoCarteraClientesController::class, 'show'])->middleware(['audit']);
+                Route::put('/{carteraCliente}', [ProveedorPresupuestoCarteraClientesController::class, 'update'])->middleware(['audit']);
+                Route::patch('/{carteraCliente}', [ProveedorPresupuestoCarteraClientesController::class, 'update'])->middleware(['audit']);
+                Route::delete('/{carteraCliente}', [ProveedorPresupuestoCarteraClientesController::class, 'destroy'])->middleware(['audit']);
+            });
         });
 
         // Route::get('imports/products/template', [ProductoImportController::class, 'downloadTemplate']);

@@ -1,15 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Gerente;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Http\Requests\Presupuesto\StorePresupuestoRequest;
 use App\Http\Requests\Presupuesto\UpdatePresupuestoRequest;
 use App\Http\Resources\Presupuesto\PresupuestoResource;
+use App\Models\CarteraCliente;
 use App\Models\Presupuesto;
 use App\Models\PresupuestoConcepto;
 use App\Models\Proveedor;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,13 +18,10 @@ use Throwable;
 /**
  * Controlador de administración para el módulo Presupuesto Básico.
  */
-class PresupuestoController extends Controller
+class ProveedorPresupuestoController extends Controller
 {
     private bool $logEnabled = true;
 
-    /**
-     * Listado paginado de presupuestos.
-     */
     public function index(Request $request, Proveedor $proveedor): JsonResponse
     {
         $filters = $request->only(Presupuesto::getFilters());
@@ -45,9 +41,6 @@ class PresupuestoController extends Controller
         return $this->paginated($originalPaginator->setCollection(collect($data)));
     }
 
-    /**
-     * Crear presupuesto con conceptos.
-     */
     public function store(StorePresupuestoRequest $request, Proveedor $proveedor): JsonResponse
     {
         try {
@@ -62,6 +55,13 @@ class PresupuestoController extends Controller
                 return $this->error('El proveedor del payload no coincide con el proveedor de la ruta.', null, 422);
             }
 
+            if (! empty($validated['empresa_receptora_id']) && ! CarteraCliente::query()
+                ->where('proveedor_id', $proveedor->id)
+                ->whereKey((int) $validated['empresa_receptora_id'])
+                ->exists()) {
+                return $this->error('El cliente de cartera no pertenece al proveedor indicado.', null, 422);
+            }
+
             $presupuesto = DB::transaction(function () use ($request, $validated) {
                 $payload = collect($validated)->except(['conceptos'])->toArray();
                 $payload['user_id'] = $request->user()->id;
@@ -70,7 +70,7 @@ class PresupuestoController extends Controller
                     ?? Presupuesto::generarNumeroPresupuesto((int) $payload['proveedor_id']);
                 $payload['con_iva'] = $payload['con_iva'] ?? true;
                 $payload['iva_porcentaje'] = $payload['iva_porcentaje'] ?? 16.00;
-                $payload = $this->normalizarEmpresaReceptora($payload);
+                $payload = $this->normalizarEmpresaReceptora($payload, (int) $payload['proveedor_id']);
 
                 $presupuesto = Presupuesto::create($payload);
 
@@ -95,9 +95,6 @@ class PresupuestoController extends Controller
         }
     }
 
-    /**
-     * Mostrar detalle de presupuesto.
-     */
     public function show(Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
     {
         if ($presupuesto->proveedor_id !== $proveedor->id) {
@@ -109,9 +106,6 @@ class PresupuestoController extends Controller
         return $this->success(new PresupuestoResource($presupuesto));
     }
 
-    /**
-     * Actualizar presupuesto y conceptos.
-     */
     public function update(UpdatePresupuestoRequest $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
     {
         try {
@@ -124,11 +118,18 @@ class PresupuestoController extends Controller
                 return $this->error('El proveedor del payload no coincide con el proveedor de la ruta.', null, 422);
             }
 
+            if (! empty($validated['empresa_receptora_id']) && ! CarteraCliente::query()
+                ->where('proveedor_id', $proveedor->id)
+                ->whereKey((int) $validated['empresa_receptora_id'])
+                ->exists()) {
+                return $this->error('El cliente de cartera no pertenece al proveedor indicado.', null, 422);
+            }
+
             $presupuesto = DB::transaction(function () use ($validated, $presupuesto) {
                 $payload = collect($validated)->except(['conceptos'])->toArray();
                 $payload['proveedor_id'] = (int) $validated['proveedor_id'];
                 $payload['numero_presupuesto'] = $payload['numero_presupuesto'] ?? $presupuesto->numero_presupuesto;
-                $payload = $this->normalizarEmpresaReceptora($payload);
+                $payload = $this->normalizarEmpresaReceptora($payload, (int) $payload['proveedor_id']);
 
                 $presupuesto->update($payload);
                 $this->sincronizarConceptos($presupuesto, $validated['conceptos']);
@@ -154,9 +155,6 @@ class PresupuestoController extends Controller
         }
     }
 
-    /**
-     * Eliminar presupuesto.
-     */
     public function destroy(Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
     {
         try {
@@ -183,29 +181,30 @@ class PresupuestoController extends Controller
     }
 
     /**
-     * Normaliza los campos de receptora externa cuando receptora es del sistema.
-     *
      * @param array<string, mixed> $payload
      * @return array<string, mixed>
      */
-    private function normalizarEmpresaReceptora(array $payload): array
+    private function normalizarEmpresaReceptora(array $payload, int $proveedorId): array
     {
-        if (! empty($payload['empresa_receptora_id'])) {
-            $payload['empresa_receptora_nombre'] = null;
-            $payload['empresa_receptora_rfc'] = null;
-            $payload['empresa_receptora_direccion'] = null;
-            $payload['empresa_receptora_telefono'] = null;
-            $payload['empresa_receptora_correo'] = null;
+        if (empty($payload['empresa_receptora_id'])) {
+            return $payload;
         }
+
+        $cliente = CarteraCliente::query()
+            ->where('proveedor_id', $proveedorId)
+            ->findOrFail((int) $payload['empresa_receptora_id']);
+
+        $payload['empresa_receptora_nombre'] = $cliente->nombre;
+        $payload['empresa_receptora_puesto'] = $cliente->puesto;
+        $payload['empresa_receptora_empresa'] = $cliente->empresa;
+        $payload['empresa_receptora_telefono'] = $cliente->telefono;
+        $payload['empresa_receptora_correo'] = $cliente->correo;
 
         return $payload;
     }
 
     /**
-     * Reemplaza conceptos actuales por la lista enviada.
-     *
-     * @param Collection<int, PresupuestoConcepto>|array<int, array<string, mixed>> $conceptos
-     * @return void
+     * @param array<int, array<string, mixed>> $conceptos
      */
     private function sincronizarConceptos(Presupuesto $presupuesto, array $conceptos): void
     {
@@ -224,9 +223,6 @@ class PresupuestoController extends Controller
         }
     }
 
-    /**
-     * Registro de eventos internos.
-     */
     private function log($message, $data = []): void
     {
         if (! $this->logEnabled) {
