@@ -22,6 +22,47 @@ class ProveedorPresupuestoController extends Controller
 {
     private bool $logEnabled = true;
 
+    /**
+     * Obtiene el siguiente folio de presupuesto para el proveedor autenticado.
+     * Este endpoint no consume el consecutivo, solo lo consulta para previsualización.
+     */
+    public function nextFolio(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $proveedor = $user?->proveedorPrincipal();
+
+        if (! $user || ! $proveedor) {
+            return $this->error('No fue posible resolver el proveedor del usuario autenticado.', null, 422);
+        }
+
+        if (! $user->tieneAccesoAProveedor((int) $proveedor->id)) {
+            return $this->error('El usuario autenticado no tiene acceso al proveedor indicado.', null, 403);
+        }
+
+        return $this->success([
+            'folio' => $this->formatearFolioSiguiente($proveedor),
+            'proveedor_id' => (int) $proveedor->id,
+        ]);
+    }
+
+    /**
+     * Obtiene el siguiente folio de presupuesto para un proveedor específico.
+     * No incrementa el consecutivo en base de datos.
+     */
+    public function nextFolioByProveedor(Request $request, Proveedor $proveedor): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user || ! $user->tieneAccesoAProveedor((int) $proveedor->id)) {
+            return $this->error('El usuario autenticado no tiene acceso al proveedor indicado.', null, 403);
+        }
+
+        return $this->success([
+            'folio' => $this->formatearFolioSiguiente($proveedor),
+            'proveedor_id' => (int) $proveedor->id,
+        ]);
+    }
+
     public function index(Request $request, Proveedor $proveedor): JsonResponse
     {
         $filters = $request->only(Presupuesto::getFilters());
@@ -230,5 +271,13 @@ class ProveedorPresupuestoController extends Controller
         }
 
         Log::info($message, $data);
+    }
+
+    private function formatearFolioSiguiente(Proveedor $proveedor): string
+    {
+        $consecutivo = (int) ($proveedor->consecutivo_presupuesto_siguiente ?? 1);
+        $consecutivo = max($consecutivo, 1);
+
+        return 'PRES-' . str_pad((string) $consecutivo, 4, '0', STR_PAD_LEFT);
     }
 }

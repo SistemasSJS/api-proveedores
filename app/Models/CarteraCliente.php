@@ -14,6 +14,7 @@ class CarteraCliente extends BaseModel
         'nombre' => 'Nombre',
         'empresa' => 'Empresa',
         'puesto' => 'Puesto',
+        'search' => 'Search',
     ];
 
     protected $fillable = [
@@ -79,5 +80,18 @@ class CarteraCliente extends BaseModel
     public function filterByPuesto($query, string $value)
     {
         return $query->where('puesto', 'like', "%{$value}%");
+    }
+
+    /**
+     * Búsqueda general en múltiples campos.
+     */
+    public function filterBySearch($query, string $value)
+    {
+        return $query->where(function ($q) use ($value) {
+            $q->where('nombre', 'like', "%{$value}%")
+                ->orWhere('empresa', 'like', "%{$value}%")
+                ->orWhere('telefono', 'like', "%{$value}%")
+                ->orWhere('correo', 'like', "%{$value}%");
+        });
     }
 }

@@ -31,6 +31,9 @@ use App\Http\Controllers\ProveedorPresupuestoCarteraClientesController;
 Route::prefix('proveedores')
     ->middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::GERENTE->value])
     ->group(function () {
+        Route::prefix('api-proveedor/presupuestos')->group(function () {
+            Route::get('/next-folio', [ProveedorPresupuestoController::class, 'nextFolio'])->middleware(['audit']);
+        });
 
         /**
          * CRUD BASICO
@@ -214,6 +217,7 @@ Route::prefix('proveedores')
          * PRESUPUESTOS DEL PROVEEDOR
          */
         Route::prefix('{proveedor}/presupuestos')->middleware(['proveedor.access'])->group(function () {
+            Route::get('/next-folio', [ProveedorPresupuestoController::class, 'nextFolioByProveedor'])->middleware(['audit']);
             Route::get('/', [ProveedorPresupuestoController::class, 'index'])->middleware(['audit']);
             Route::post('/', [ProveedorPresupuestoController::class, 'store'])->middleware(['audit']);
             Route::get('/{presupuesto}', [ProveedorPresupuestoController::class, 'show'])->middleware(['audit']);
