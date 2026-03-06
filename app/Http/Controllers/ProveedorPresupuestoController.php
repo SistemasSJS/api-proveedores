@@ -9,10 +9,12 @@ use App\Models\CarteraCliente;
 use App\Models\Presupuesto;
 use App\Models\PresupuestoConcepto;
 use App\Models\Proveedor;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 /**
@@ -279,5 +281,183 @@ class ProveedorPresupuestoController extends Controller
         $consecutivo = max($consecutivo, 1);
 
         return 'PRES-' . str_pad((string) $consecutivo, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Genera la respuesta PDF usando Laravel DomPDF.
+     *
+     * @param array<string, mixed> $datosPresupuesto
+     */
+    private function generarPdfResponse(array $datosPresupuesto, string $numeroPresupuesto): Response
+    {
+        try {
+            // Generar nombre del archivo
+            $filename = "Presupuesto_{$numeroPresupuesto}.pdf";
+
+            // Generar PDF usando el facade PDF de barryvdh/laravel-dompdf
+            $pdf = Pdf::loadView('presupuestos.pdf', ['presupuesto' => $datosPresupuesto])
+                ->setPaper('a4', 'portrait')
+                ->setOption('isRemoteEnabled', true)
+                ->setOption('isHtml5ParserEnabled', true)
+                ->setOption('defaultFont', 'DejaVu Sans');
+
+            // Retornar PDF como descarga
+            return $pdf->download($filename);
+        } catch (\Exception $e) {
+            $this->log('Error al generar PDF', [
+                'numero_presupuesto' => $numeroPresupuesto,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No fue posible generar el PDF: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Genera y descarga el PDF de un presupuesto guardado.
+     */
+    public function generarPdf(Proveedor $proveedor, Presupuesto $presupuesto): Response
+    {
+        try {
+            if ($presupuesto->proveedor_id !== $proveedor->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Presupuesto no pertenece a este proveedor.',
+                ], 403);
+            }
+
+            $presupuesto->load(Presupuesto::eagerLodable());
+
+            $this->log('Generación de PDF solicitada', [
+                'presupuesto_id' => $presupuesto->id,
+                'numero_presupuesto' => $presupuesto->numero_presupuesto,
+            ]);
+
+            // Preparar datos para la vista
+            $datosPresupuesto = [
+                'proveedor' => $presupuesto->proveedor,
+                'numero_presupuesto' => $presupuesto->numero_presupuesto,
+                'fecha_emision' => $presupuesto->fecha_emision,
+                'concepto_general' => $presupuesto->concepto_general,
+                'con_iva' => $presupuesto->con_iva,
+                'iva_porcentaje' => $presupuesto->iva_porcentaje,
+                'subtotal' => $presupuesto->subtotal,
+                'iva_total' => $presupuesto->iva_total,
+                'total' => $presupuesto->total,
+                'empresa_receptora' => [
+                    'nombre' => $presupuesto->empresa_receptora_nombre,
+                    'empresa' => $presupuesto->empresa_receptora_empresa,
+                    'puesto' => $presupuesto->empresa_receptora_puesto,
+                    'telefono' => $presupuesto->empresa_receptora_telefono,
+                    'correo' => $presupuesto->empresa_receptora_correo,
+                    'direccion' => $presupuesto->condiciones['direccion'] ?? null,
+                ],
+                'conceptos' => $presupuesto->conceptos->map(function ($concepto) {
+                    return [
+                        'descripcion' => $concepto->descripcion,
+                        'cantidad' => $concepto->cantidad,
+                        'unidad' => $concepto->unidad,
+                        'precio_unitario' => $concepto->precio_unitario,
+                        'precio_total' => $concepto->precio_total,
+                    ];
+                })->toArray(),
+                'condiciones' => $presupuesto->condiciones ?? [],
+                'observaciones' => $presupuesto->observaciones,
+            ];
+
+            return $this->generarPdfResponse($datosPresupuesto, $presupuesto->numero_presupuesto);
+        } catch (Throwable $e) {
+            $this->log('Error al generar PDF', [
+                'presupuesto_id' => $presupuesto->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No fue posible generar el PDF.',
+                'errors' => [$e->getMessage()],
+            ], 500);
+        }
+    }
+
+    /**
+     * Genera PDF desde datos del formulario (para borradores).
+     */
+    public function generarPdfDesdeFormulario(StorePresupuestoRequest $request, Proveedor $proveedor): Response
+    {
+        try {
+            $user = $request->user();
+
+            if (! $user || ! method_exists($user, 'tieneAccesoAProveedor') || ! $user->tieneAccesoAProveedor((int) $proveedor->id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El usuario autenticado no tiene acceso al proveedor indicado.',
+                ], 403);
+            }
+
+            $validated = $request->validated();
+
+            if ((int) $validated['proveedor_id'] !== (int) $proveedor->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El proveedor del payload no coincide con el proveedor de la ruta.',
+                ], 422);
+            }
+
+            // Preparar datos para el PDF
+            $datosPresupuesto = [
+                'proveedor' => $proveedor,
+                'numero_presupuesto' => $validated['numero_presupuesto'] ?? $this->formatearFolioSiguiente($proveedor),
+                'fecha_emision' => $validated['fecha_emision'],
+                'concepto_general' => $validated['concepto_general'],
+                'con_iva' => $validated['con_iva'] ?? true,
+                'iva_porcentaje' => $validated['iva_porcentaje'] ?? 16.00,
+                'empresa_receptora' => [
+                    'nombre' => $validated['empresa_receptora_nombre'] ?? null,
+                    'empresa' => $validated['empresa_receptora_empresa'] ?? null,
+                    'puesto' => $validated['empresa_receptora_puesto'] ?? null,
+                    'telefono' => $validated['empresa_receptora_telefono'] ?? null,
+                    'correo' => $validated['empresa_receptora_correo'] ?? null,
+                    'direccion' => $validated['condiciones']['direccion'] ?? null,
+                ],
+                'conceptos' => $validated['conceptos'] ?? [],
+                'condiciones' => $validated['condiciones'] ?? [],
+                'observaciones' => $validated['observaciones'] ?? null,
+            ];
+
+            // Calcular totales
+            $subtotal = collect($datosPresupuesto['conceptos'])->sum(function ($concepto) {
+                return ($concepto['cantidad'] ?? 0) * ($concepto['precio_unitario'] ?? 0);
+            });
+
+            $ivaTotal = $datosPresupuesto['con_iva']
+                ? $subtotal * ($datosPresupuesto['iva_porcentaje'] / 100)
+                : 0;
+
+            $datosPresupuesto['subtotal'] = round($subtotal, 2);
+            $datosPresupuesto['iva_total'] = round($ivaTotal, 2);
+            $datosPresupuesto['total'] = round($subtotal + $ivaTotal, 2);
+
+            $this->log('Generación de PDF desde formulario solicitada', [
+                'proveedor_id' => $proveedor->id,
+                'numero_presupuesto' => $datosPresupuesto['numero_presupuesto'],
+            ]);
+
+            return $this->generarPdfResponse($datosPresupuesto, $datosPresupuesto['numero_presupuesto']);
+        } catch (Throwable $e) {
+            $this->log('Error al generar PDF desde formulario', [
+                'proveedor_id' => $proveedor->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No fue posible generar el PDF.',
+                'errors' => [$e->getMessage()],
+            ], 500);
+        }
     }
 }

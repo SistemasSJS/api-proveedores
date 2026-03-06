@@ -217,13 +217,6 @@ Route::prefix('proveedores')
          * PRESUPUESTOS DEL PROVEEDOR
          */
         Route::prefix('{proveedor}/presupuestos')->middleware(['proveedor.access'])->group(function () {
-            Route::get('/next-folio', [ProveedorPresupuestoController::class, 'nextFolioByProveedor'])->middleware(['audit']);
-            Route::get('/', [ProveedorPresupuestoController::class, 'index'])->middleware(['audit']);
-            Route::post('/', [ProveedorPresupuestoController::class, 'store'])->middleware(['audit']);
-            Route::get('/{presupuesto}', [ProveedorPresupuestoController::class, 'show'])->middleware(['audit']);
-            Route::put('/{presupuesto}', [ProveedorPresupuestoController::class, 'update'])->middleware(['audit']);
-            Route::patch('/{presupuesto}', [ProveedorPresupuestoController::class, 'update'])->middleware(['audit']);
-            Route::delete('/{presupuesto}', [ProveedorPresupuestoController::class, 'destroy'])->middleware(['audit']);
 
             Route::prefix('cartera-clientes')->group(function () {
                 Route::get('/', [ProveedorPresupuestoCarteraClientesController::class, 'index'])->middleware(['audit']);
@@ -233,6 +226,21 @@ Route::prefix('proveedores')
                 Route::patch('/{carteraCliente}', [ProveedorPresupuestoCarteraClientesController::class, 'update'])->middleware(['audit']);
                 Route::delete('/{carteraCliente}', [ProveedorPresupuestoCarteraClientesController::class, 'destroy'])->middleware(['audit']);
             });
+ 
+            Route::get('/next-folio', [ProveedorPresupuestoController::class, 'nextFolioByProveedor'])->middleware(['audit']);
+            Route::get('/', [ProveedorPresupuestoController::class, 'index'])->middleware(['audit']);
+            Route::post('/', [ProveedorPresupuestoController::class, 'store'])->middleware(['audit']);
+            
+            // Generar PDF desde formulario (para borradores)
+            Route::post('/generar-pdf', [ProveedorPresupuestoController::class, 'generarPdfDesdeFormulario'])->middleware(['audit']);
+            
+            Route::get('/{presupuesto}', [ProveedorPresupuestoController::class, 'show'])->middleware(['audit']);
+            Route::put('/{presupuesto}', [ProveedorPresupuestoController::class, 'update'])->middleware(['audit']);
+            Route::patch('/{presupuesto}', [ProveedorPresupuestoController::class, 'update'])->middleware(['audit']);
+            Route::delete('/{presupuesto}', [ProveedorPresupuestoController::class, 'destroy'])->middleware(['audit']);
+            
+            // Generar PDF de presupuesto guardado
+            Route::get('/{presupuesto}/pdf', [ProveedorPresupuestoController::class, 'generarPdf'])->middleware(['audit']);
         });
 
         // Route::get('imports/products/template', [ProductoImportController::class, 'downloadTemplate']);
