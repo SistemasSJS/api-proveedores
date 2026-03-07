@@ -291,29 +291,194 @@ class ProveedorPresupuestoController extends Controller
     private function generarPdfResponse(array $datosPresupuesto, string $numeroPresupuesto): Response
     {
         try {
+            // Verificar si GD está disponible antes de generar el PDF
+            $gdDisponible = extension_loaded('gd');
+            
+            if (!$gdDisponible) {
+                $this->log('Advertencia: GD no está disponible. Las imágenes PNG/GIF no se mostrarán.', [
+                    'numero_presupuesto' => $numeroPresupuesto,
+                ]);
+            }
+
             // Generar nombre del archivo
             $filename = "Presupuesto_{$numeroPresupuesto}.pdf";
+
+            // Convertir logos a base64 para incluirlos en el PDF
+            // Si GD no está disponible, retornará arrays vacíos y se usarán fallbacks de texto
+            $logosBase64 = $this->convertirLogosABase64();
+
+            // Agregar los logos base64 a los datos del presupuesto
+            $datosPresupuesto['logos_base64'] = $logosBase64;
+            $datosPresupuesto['gd_disponible'] = $gdDisponible; // Información útil para la vista
 
             // Generar PDF usando el facade PDF de barryvdh/laravel-dompdf
             $pdf = Pdf::loadView('presupuestos.pdf', ['presupuesto' => $datosPresupuesto])
                 ->setPaper('a4', 'portrait')
-                ->setOption('isRemoteEnabled', true)
+                ->setOption('isRemoteEnabled', false) // Deshabilitar carga remota para evitar timeouts
                 ->setOption('isHtml5ParserEnabled', true)
-                ->setOption('defaultFont', 'DejaVu Sans');
+                ->setOption('defaultFont', 'DejaVu Sans')
+                ->setOption('margin-top', 10)
+                ->setOption('margin-bottom', 10)
+                ->setOption('margin-left', 10)
+                ->setOption('margin-right', 10)
+                ->setOption('enable-local-file-access', false) // No necesitamos acceso a archivos locales si usamos base64
+                ->setOption('chroot', public_path()); // Establecer directorio raíz para archivos locales
 
             // Retornar PDF como descarga
             return $pdf->download($filename);
         } catch (\Exception $e) {
+            $errorMessage = $e->getMessage();
+            
+            // Mensaje más claro si el error es por falta de GD
+            if (stripos($errorMessage, 'GD extension') !== false || stripos($errorMessage, 'gd') !== false) {
+                $errorMessage = 'La extensión GD de PHP es requerida para generar PDFs con imágenes. Por favor, instala la extensión GD en tu servidor PHP.';
+            }
+
             $this->log('Error al generar PDF', [
                 'numero_presupuesto' => $numeroPresupuesto,
                 'error' => $e->getMessage(),
+                'gd_disponible' => extension_loaded('gd'),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'No fue posible generar el PDF: ' . $e->getMessage(),
+                'message' => 'No fue posible generar el PDF: ' . $errorMessage,
             ], 500);
         }
+    }
+
+    /**
+     * Convierte los logos de las apps a base64.
+     * 
+     * IMPORTANTE: DomPDF requiere la extensión GD de PHP para procesar imágenes PNG/GIF.
+     * Si GD no está disponible, se retornan arrays vacíos y se usan iconos de texto como fallback.
+     * 
+     * Solo las imágenes JPEG pueden procesarse sin GD.
+     * 
+     * @return array<string, string>
+     */
+    private function convertirLogosABase64(): array
+    {
+        $logos = [
+            'facturapro' => '',
+            'constucc' => '',
+            'gestionpro' => '',
+        ];
+
+        // Verificar si GD está disponible
+        // Si no está disponible, DomPDF no podrá procesar PNG/GIF, así que retornamos vacío
+        if (!extension_loaded('gd')) {
+            $this->log('GD no está disponible - usando fallback de texto para logos', []);
+            return $logos;
+        }
+
+        $facturaproPath = public_path('assets/logos/logo-facturapro.png');
+        $constuccPath = public_path('assets/logos/logo-construcc.png');
+        $gestionproPath = public_path('assets/logos/logo-gestionpro.png');
+
+        try {
+            if (file_exists($facturaproPath) && is_readable($facturaproPath)) {
+                $imageData = @file_get_contents($facturaproPath);
+                if ($imageData !== false && !empty($imageData)) {
+                    $logos['facturapro'] = 'data:image/png;base64,' . base64_encode($imageData);
+                }
+            }
+
+            if (file_exists($constuccPath) && is_readable($constuccPath)) {
+                $imageData = @file_get_contents($constuccPath);
+                if ($imageData !== false && !empty($imageData)) {
+                    $logos['constucc'] = 'data:image/png;base64,' . base64_encode($imageData);
+                }
+            }
+
+            if (file_exists($gestionproPath) && is_readable($gestionproPath)) {
+                $imageData = @file_get_contents($gestionproPath);
+                if ($imageData !== false && !empty($imageData)) {
+                    $logos['gestionpro'] = 'data:image/png;base64,' . base64_encode($imageData);
+                }
+            }
+        } catch (\Exception $e) {
+            // Si hay algún error al leer las imágenes, retornar arrays vacíos para usar fallback
+            $this->log('Error al convertir logos a base64', [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return $logos;
+    }
+
+    /**
+     * Convierte el logo del proveedor a base64 si está disponible.
+     * 
+     * IMPORTANTE: DomPDF requiere GD para procesar PNG/GIF. Si GD no está disponible:
+     * - Las imágenes JPEG funcionarán sin GD
+     * - Las imágenes PNG/GIF retornarán string vacío (se usará fallback de texto)
+     *
+     * @param \App\Models\Proveedor|null $proveedor
+     * @return string
+     */
+    private function convertirLogoProveedorABase64($proveedor): string
+    {
+        if (!$proveedor || empty($proveedor->logo)) {
+            return '';
+        }
+
+        try {
+            $logoPath = null;
+            
+            // Si el logo es una URL completa, no podemos convertirla sin GD
+            if (filter_var($proveedor->logo, FILTER_VALIDATE_URL)) {
+                return '';
+            }
+
+            // Si es una ruta relativa, construir la ruta completa
+            if (strpos($proveedor->logo, '/') === 0) {
+                $logoPath = public_path($proveedor->logo);
+            } elseif (strpos($proveedor->logo, 'storage/') === 0) {
+                $logoPath = public_path($proveedor->logo);
+            } else {
+                $logoPath = public_path('storage/' . $proveedor->logo);
+            }
+
+            if (!$logoPath || !file_exists($logoPath) || !is_readable($logoPath)) {
+                return '';
+            }
+
+            // Detectar el tipo de imagen por extensión
+            $extension = strtolower(pathinfo($logoPath, PATHINFO_EXTENSION));
+            
+            // Verificar si GD está disponible para PNG/GIF
+            // JPEG puede procesarse sin GD
+            if (in_array($extension, ['png', 'gif']) && !extension_loaded('gd')) {
+                $this->log('GD no disponible para procesar logo PNG/GIF - usando fallback', [
+                    'logo' => $proveedor->logo,
+                    'extension' => $extension,
+                ]);
+                return '';
+            }
+
+            $imageData = @file_get_contents($logoPath);
+            if ($imageData === false || empty($imageData)) {
+                return '';
+            }
+
+            // Determinar MIME type
+            $mimeType = 'image/png';
+            if ($extension === 'jpg' || $extension === 'jpeg') {
+                $mimeType = 'image/jpeg';
+            } elseif ($extension === 'gif') {
+                $mimeType = 'image/gif';
+            }
+            
+            return 'data:' . $mimeType . ';base64,' . base64_encode($imageData);
+        } catch (\Exception $e) {
+            $this->log('Error al convertir logo del proveedor a base64', [
+                'error' => $e->getMessage(),
+                'logo' => $proveedor->logo ?? 'N/A',
+            ]);
+        }
+
+        return '';
     }
 
     /**
@@ -336,9 +501,13 @@ class ProveedorPresupuestoController extends Controller
                 'numero_presupuesto' => $presupuesto->numero_presupuesto,
             ]);
 
+            // Convertir logo del proveedor a base64
+            $logoProveedorBase64 = $this->convertirLogoProveedorABase64($presupuesto->proveedor);
+
             // Preparar datos para la vista
             $datosPresupuesto = [
                 'proveedor' => $presupuesto->proveedor,
+                'logo_proveedor_base64' => $logoProveedorBase64,
                 'numero_presupuesto' => $presupuesto->numero_presupuesto,
                 'fecha_emision' => $presupuesto->fecha_emision,
                 'concepto_general' => $presupuesto->concepto_general,
@@ -407,9 +576,13 @@ class ProveedorPresupuestoController extends Controller
                 ], 422);
             }
 
+            // Convertir logo del proveedor a base64
+            $logoProveedorBase64 = $this->convertirLogoProveedorABase64($proveedor);
+
             // Preparar datos para el PDF
             $datosPresupuesto = [
                 'proveedor' => $proveedor,
+                'logo_proveedor_base64' => $logoProveedorBase64,
                 'numero_presupuesto' => $validated['numero_presupuesto'] ?? $this->formatearFolioSiguiente($proveedor),
                 'fecha_emision' => $validated['fecha_emision'],
                 'concepto_general' => $validated['concepto_general'],
