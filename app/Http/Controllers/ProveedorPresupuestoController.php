@@ -12,8 +12,11 @@ use App\Models\Proveedor;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Mail\PresupuestoEnviadoMail;
+use App\Notifications\Presupuesto\PresupuestoEnviado;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -67,11 +70,30 @@ class ProveedorPresupuestoController extends Controller
 
     public function index(Request $request, Proveedor $proveedor): JsonResponse
     {
+        Presupuesto::actualizarVencidos();
+
         $filters = $request->only(Presupuesto::getFilters());
         $filters['proveedor_id'] = $proveedor->id;
         $sortBy = $request->input('sort_by', 'created_at');
         $order = $request->input('order', 'desc');
         $perPage = $request->input('per_page', 10);
+
+        $countFilters = array_diff_key($filters, array_flip(['estado']));
+        $segmentCounts = Presupuesto::query()
+            ->where('proveedor_id', $proveedor->id)
+            ->when(! empty($countFilters), fn ($q) => $q->filter($countFilters))
+            ->selectRaw('estado, COUNT(*) as total')
+            ->groupBy('estado')
+            ->pluck('total', 'estado')
+            ->toArray();
+
+        $segmentCountsFormatted = [
+            'borrador' => (int) ($segmentCounts['borrador'] ?? 0),
+            'enviadas' => (int) ($segmentCounts['enviado'] ?? 0),
+            'aceptadas' => (int) ($segmentCounts['aceptado'] ?? 0),
+            'rechazadas' => (int) ($segmentCounts['rechazado'] ?? 0),
+            'vencidas' => (int) ($segmentCounts['vencido'] ?? 0),
+        ];
 
         $originalPaginator = Presupuesto::query()
             ->with(Presupuesto::eagerLodable())
@@ -81,7 +103,12 @@ class ProveedorPresupuestoController extends Controller
 
         $data = PresupuestoResource::collection($originalPaginator)->resolve();
 
-        return $this->paginated($originalPaginator->setCollection(collect($data)));
+        return $this->paginated(
+            $originalPaginator->setCollection(collect($data)),
+            'Datos paginados.',
+            200,
+            ['segment_counts' => $segmentCountsFormatted]
+        );
     }
 
     public function store(StorePresupuestoRequest $request, Proveedor $proveedor): JsonResponse
@@ -113,9 +140,11 @@ class ProveedorPresupuestoController extends Controller
                     ?? Presupuesto::generarNumeroPresupuesto((int) $payload['proveedor_id']);
                 $payload['con_iva'] = $payload['con_iva'] ?? true;
                 $payload['iva_porcentaje'] = $payload['iva_porcentaje'] ?? 16.00;
+                $payload['estado'] = $payload['estado'] ?? Presupuesto::ESTADO_BORRADOR;
                 $payload = $this->normalizarEmpresaReceptora($payload, (int) $payload['proveedor_id']);
 
                 $presupuesto = Presupuesto::create($payload);
+                $presupuesto->asegurarTokenPublico();
 
                 $this->sincronizarConceptos($presupuesto, $validated['conceptos']);
                 $presupuesto->recalcularDesdeConceptos();
@@ -145,6 +174,7 @@ class ProveedorPresupuestoController extends Controller
         }
 
         $presupuesto->load(Presupuesto::eagerLodable());
+        $presupuesto->asegurarTokenPublico();
 
         return $this->success(new PresupuestoResource($presupuesto));
     }
@@ -312,15 +342,16 @@ class ProveedorPresupuestoController extends Controller
             $datosPresupuesto['gd_disponible'] = $gdDisponible; // Información útil para la vista
 
             // Generar PDF usando el facade PDF de barryvdh/laravel-dompdf
+            // Tamaño carta (8.5" x 11") con márgenes estándar 1 pulgada (25.4mm)
             $pdf = Pdf::loadView('presupuestos.pdf', ['presupuesto' => $datosPresupuesto])
-                ->setPaper('a4', 'portrait')
+                ->setPaper('letter', 'portrait') // Tamaño carta (8.5" x 11")
                 ->setOption('isRemoteEnabled', false) // Deshabilitar carga remota para evitar timeouts
                 ->setOption('isHtml5ParserEnabled', true)
                 ->setOption('defaultFont', 'DejaVu Sans')
-                ->setOption('margin-top', 10)
-                ->setOption('margin-bottom', 10)
-                ->setOption('margin-left', 10)
-                ->setOption('margin-right', 10)
+                ->setOption('margin-top', 25)
+                ->setOption('margin-bottom', 25)
+                ->setOption('margin-left', 25)
+                ->setOption('margin-right', 25)
                 ->setOption('enable-local-file-access', false) // No necesitamos acceso a archivos locales si usamos base64
                 ->setOption('chroot', public_path()); // Establecer directorio raíz para archivos locales
 
@@ -509,7 +540,12 @@ class ProveedorPresupuestoController extends Controller
                 'proveedor' => $presupuesto->proveedor,
                 'logo_proveedor_base64' => $logoProveedorBase64,
                 'numero_presupuesto' => $presupuesto->numero_presupuesto,
+                'clave_unica' => $presupuesto->id ?? null, // Clave única del presupuesto
                 'fecha_emision' => $presupuesto->fecha_emision,
+                'lugar' => ($presupuesto->condiciones['lugar'] ?? null) 
+                    ?: ($presupuesto->proveedor->ciudad 
+                        ? ($presupuesto->proveedor->ciudad . ', ' . ($presupuesto->proveedor->direccion_fiscal->estado ?? 'México'))
+                        : null),
                 'concepto_general' => $presupuesto->concepto_general,
                 'con_iva' => $presupuesto->con_iva,
                 'iva_porcentaje' => $presupuesto->iva_porcentaje,
@@ -535,6 +571,7 @@ class ProveedorPresupuestoController extends Controller
                 })->toArray(),
                 'condiciones' => $presupuesto->condiciones ?? [],
                 'observaciones' => $presupuesto->observaciones,
+                'qr_code' => null, // Se puede generar un QR code aquí si es necesario
             ];
 
             return $this->generarPdfResponse($datosPresupuesto, $presupuesto->numero_presupuesto);
@@ -550,6 +587,126 @@ class ProveedorPresupuestoController extends Controller
                 'errors' => [$e->getMessage()],
             ], 500);
         }
+    }
+
+    /**
+     * Envía el presupuesto al cliente: cambia estado a enviado, envía email y notifica.
+     */
+    public function enviar(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
+    {
+        try {
+            if ($presupuesto->proveedor_id !== $proveedor->id) {
+                return $this->error('Presupuesto no pertenece a este proveedor.', null, 403);
+            }
+
+            if ($presupuesto->estado !== Presupuesto::ESTADO_BORRADOR) {
+                return $this->error(
+                    'Solo se puede enviar un presupuesto en estado borrador.',
+                    ['estado_actual' => $presupuesto->estado],
+                    422
+                );
+            }
+
+            $presupuesto->load(Presupuesto::eagerLodable());
+
+            DB::transaction(function () use ($presupuesto, $proveedor) {
+                $presupuesto->estado = Presupuesto::ESTADO_ENVIADO;
+                $presupuesto->asegurarTokenPublico();
+
+                if (! $presupuesto->fecha_vencimiento) {
+                    $presupuesto->fecha_vencimiento = $this->calcularFechaVencimiento($presupuesto);
+                }
+                $presupuesto->save();
+
+                $appUrl = config('app.frontend_url', config('app.url'));
+                $enlacePublico = $appUrl . '/public/presupuesto/' . $presupuesto->token_publico;
+                $nombreReceptor = $presupuesto->empresa_receptora_nombre
+                    ?? $presupuesto->empresa_receptora_empresa
+                    ?? 'Cliente';
+
+                if ($presupuesto->empresa_receptora_correo && filter_var($presupuesto->empresa_receptora_correo, FILTER_VALIDATE_EMAIL)) {
+                    Mail::to($presupuesto->empresa_receptora_correo)->send(
+                        new PresupuestoEnviadoMail($presupuesto, $enlacePublico, $nombreReceptor)
+                    );
+                }
+
+                foreach ($proveedor->usuariosActivos()->get() as $user) {
+                    $user->notify(new PresupuestoEnviado($presupuesto));
+                }
+            });
+
+            $presupuesto->refresh()->load(Presupuesto::eagerLodable());
+            $this->log('Presupuesto enviado', ['presupuesto_id' => $presupuesto->id]);
+
+            return $this->success(
+                new PresupuestoResource($presupuesto),
+                'Presupuesto enviado correctamente al cliente.'
+            );
+        } catch (Throwable $e) {
+            $this->log('Error al enviar presupuesto', [
+                'presupuesto_id' => $presupuesto->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->error('No fue posible enviar el presupuesto.', [$e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Reenvía el presupuesto por correo al cliente (solo si ya está enviado y tiene correo).
+     */
+    public function reenviar(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
+    {
+        try {
+            if ($presupuesto->proveedor_id !== $proveedor->id) {
+                return $this->error('Presupuesto no pertenece a este proveedor.', null, 403);
+            }
+
+            if (! $presupuesto->empresa_receptora_correo || ! filter_var($presupuesto->empresa_receptora_correo, FILTER_VALIDATE_EMAIL)) {
+                return $this->error('No hay correo del cliente para reenviar.', null, 422);
+            }
+
+            $presupuesto->load(Presupuesto::eagerLodable());
+            $presupuesto->asegurarTokenPublico();
+
+            $appUrl = config('app.frontend_url', config('app.url'));
+            $enlacePublico = $appUrl . '/public/presupuesto/' . $presupuesto->token_publico;
+            $nombreReceptor = $presupuesto->empresa_receptora_nombre
+                ?? $presupuesto->empresa_receptora_empresa
+                ?? 'Cliente';
+
+            Mail::to($presupuesto->empresa_receptora_correo)->send(
+                new PresupuestoEnviadoMail($presupuesto, $enlacePublico, $nombreReceptor)
+            );
+
+            $this->log('Presupuesto reenviado por correo', ['presupuesto_id' => $presupuesto->id]);
+
+            return $this->success(
+                new PresupuestoResource($presupuesto->fresh(Presupuesto::eagerLodable())),
+                'Presupuesto reenviado correctamente al cliente.'
+            );
+        } catch (Throwable $e) {
+            $this->log('Error al reenviar presupuesto', [
+                'presupuesto_id' => $presupuesto->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->error('No fue posible reenviar el presupuesto.', [$e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Calcula fecha de vencimiento desde condiciones.vigencia (ej: "7 días naturales").
+     */
+    private function calcularFechaVencimiento(Presupuesto $presupuesto): \Carbon\Carbon
+    {
+        $vigencia = $presupuesto->condiciones['vigencia'] ?? '7 días naturales';
+        $dias = 7;
+        if (preg_match('/(\d+)\s*d[ií]as?/i', $vigencia, $m)) {
+            $dias = (int) $m[1];
+        }
+
+        return $presupuesto->fecha_emision->copy()->addDays($dias);
     }
 
     /**
@@ -584,7 +741,9 @@ class ProveedorPresupuestoController extends Controller
                 'proveedor' => $proveedor,
                 'logo_proveedor_base64' => $logoProveedorBase64,
                 'numero_presupuesto' => $validated['numero_presupuesto'] ?? $this->formatearFolioSiguiente($proveedor),
+                'clave_unica' => null, // Para borradores no hay clave única
                 'fecha_emision' => $validated['fecha_emision'],
+                'lugar' => $validated['condiciones']['lugar'] ?? null,
                 'concepto_general' => $validated['concepto_general'],
                 'con_iva' => $validated['con_iva'] ?? true,
                 'iva_porcentaje' => $validated['iva_porcentaje'] ?? 16.00,
@@ -599,6 +758,7 @@ class ProveedorPresupuestoController extends Controller
                 'conceptos' => $validated['conceptos'] ?? [],
                 'condiciones' => $validated['condiciones'] ?? [],
                 'observaciones' => $validated['observaciones'] ?? null,
+                'qr_code' => null, // Se puede generar un QR code aquí si es necesario
             ];
 
             // Calcular totales

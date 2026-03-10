@@ -102,6 +102,16 @@ Route::get(
 );
 
 /**
+ * PRESUPUESTOS PÚBLICOS (enlace compartido sin autenticación)
+ */
+Route::middleware(['throttle:60,1'])->group(function () {
+    Route::get('public/presupuestos/{token}', [\App\Http\Controllers\PresupuestoPublicController::class, 'show']);
+    Route::get('public/presupuestos/{token}/pdf', [\App\Http\Controllers\PresupuestoPublicController::class, 'descargarPdf']);
+    Route::post('public/presupuestos/{token}/aceptar', [\App\Http\Controllers\PresupuestoPublicController::class, 'aceptar']);
+    Route::post('public/presupuestos/{token}/rechazar', [\App\Http\Controllers\PresupuestoPublicController::class, 'rechazar']);
+});
+
+/**
  * REPORTES - DESCARGA PÚBLICA DE FACTURAS
  */
 Route::get(

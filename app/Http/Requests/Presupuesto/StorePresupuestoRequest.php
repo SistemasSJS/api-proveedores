@@ -34,6 +34,7 @@ class StorePresupuestoRequest extends FormRequest
             'iva_porcentaje' => 'nullable|numeric|min:0|max:100',
             'condiciones' => 'nullable|array',
             'observaciones' => 'nullable|string',
+            'estado' => 'nullable|string|in:borrador,enviado,aceptado,rechazado,vencido',
             'conceptos' => 'required|array|min:1',
             'conceptos.*.descripcion' => 'required|string',
             'conceptos.*.cantidad' => 'required|numeric|min:0.0001',

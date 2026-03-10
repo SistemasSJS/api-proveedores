@@ -217,6 +217,38 @@ trait NotificationStyleTrait
                     'style_class' => 'primary-notification',
                 ],
             ],
+            'presupuesto' => [
+                'enviado' => [
+                    'color' => 'primary',
+                    'icon' => 'send-outline',
+                    'style_class' => 'primary-notification',
+                    'is_payment' => false,
+                ],
+                'aceptado' => [
+                    'color' => 'success',
+                    'icon' => 'checkmark-circle-outline',
+                    'style_class' => 'success-notification',
+                    'is_payment' => false,
+                ],
+                'rechazado' => [
+                    'color' => 'medium',
+                    'icon' => 'close-circle-outline',
+                    'style_class' => 'medium-notification',
+                    'is_payment' => false,
+                ],
+                'vencido' => [
+                    'color' => 'medium',
+                    'icon' => 'time-outline',
+                    'style_class' => 'medium-notification',
+                    'is_payment' => false,
+                ],
+                'default' => [
+                    'color' => 'primary',
+                    'icon' => 'document-text-outline',
+                    'style_class' => 'primary-notification',
+                    'is_payment' => false,
+                ],
+            ],
             'importacion' => [
                 'nueva' => [
                     'color' => 'primary',

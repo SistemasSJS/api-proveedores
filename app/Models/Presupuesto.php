@@ -22,11 +22,19 @@ class Presupuesto extends BaseModel
         'fecha_hasta' => 'FechaHasta',
         'con_iva' => 'ConIva',
         'total' => 'Total',
+        'estado' => 'Estado',
     ];
+
+    public const ESTADO_BORRADOR = 'borrador';
+    public const ESTADO_ENVIADO = 'enviado';
+    public const ESTADO_ACEPTADO = 'aceptado';
+    public const ESTADO_RECHAZADO = 'rechazado';
+    public const ESTADO_VENCIDO = 'vencido';
 
     protected $fillable = [
         'numero_presupuesto',
         'fecha_emision',
+        'fecha_vencimiento',
         'concepto_general',
         'subtotal',
         'con_iva',
@@ -40,6 +48,8 @@ class Presupuesto extends BaseModel
         'empresa_receptora_correo',
         'condiciones',
         'observaciones',
+        'estado',
+        'token_publico',
         'proveedor_id',
         'empresa_receptora_id',
         'user_id',
@@ -47,6 +57,7 @@ class Presupuesto extends BaseModel
 
     protected $casts = [
         'fecha_emision' => 'date',
+        'fecha_vencimiento' => 'date',
         'con_iva' => 'boolean',
         'subtotal' => 'decimal:2',
         'iva_porcentaje' => 'decimal:2',
@@ -144,6 +155,30 @@ class Presupuesto extends BaseModel
     }
 
     /**
+     * Genera un token público único para compartir el presupuesto.
+     */
+    public function generarTokenPublico(): string
+    {
+        $token = bin2hex(random_bytes(32));
+        $this->token_publico = $token;
+        $this->save();
+
+        return $token;
+    }
+
+    /**
+     * Asegura que el presupuesto tenga un token público.
+     */
+    public function asegurarTokenPublico(): string
+    {
+        if ($this->token_publico) {
+            return $this->token_publico;
+        }
+
+        return $this->generarTokenPublico();
+    }
+
+    /**
      * Genera un número de presupuesto consecutivo por proveedor.
      */
     public static function generarNumeroPresupuesto(int $proveedorId): string
@@ -151,6 +186,18 @@ class Presupuesto extends BaseModel
         $proveedor = Proveedor::query()->findOrFail($proveedorId);
 
         return $proveedor->obtenerFolioSiguientePresupuesto();
+    }
+
+    /**
+     * Marca como vencidos los presupuestos enviados cuya fecha_vencimiento ya pasó.
+     */
+    public static function actualizarVencidos(): int
+    {
+        return self::query()
+            ->where('estado', self::ESTADO_ENVIADO)
+            ->whereNotNull('fecha_vencimiento')
+            ->whereDate('fecha_vencimiento', '<', now()->toDateString())
+            ->update(['estado' => self::ESTADO_VENCIDO]);
     }
 
     /**
@@ -271,5 +318,13 @@ class Presupuesto extends BaseModel
     public function filterByTotal($query, $value)
     {
         return $query->where('total', $value);
+    }
+
+    /**
+     * Filtro por estado del presupuesto.
+     */
+    public function filterByEstado($query, $value)
+    {
+        return $query->where('estado', $value);
     }
 }

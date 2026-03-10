@@ -29,22 +29,28 @@ trait ApiResponse
         ], $code, [], JSON_UNESCAPED_UNICODE);
     }
 
-    protected function paginated(LengthAwarePaginator $paginator, string $message = 'Datos paginados.', int $code = 200): JsonResponse
+    protected function paginated(LengthAwarePaginator $paginator, string $message = 'Datos paginados.', int $code = 200, array $extraMeta = []): JsonResponse
     {
+        $meta = [
+            'pagination' => [
+                'current_page' => $paginator->currentPage(),
+                'from' => $paginator->firstItem(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'to' => $paginator->lastItem(),
+                'total' => $paginator->total(),
+            ],
+        ];
+
+        if (! empty($extraMeta)) {
+            $meta = array_merge($meta, $extraMeta);
+        }
+
         return response()->json([
             'status' => 'SUCCESS',
             'code' => $code,
             'message' => $message,
-            'meta' => [
-                'pagination' => [
-                    'current_page' => $paginator->currentPage(),
-                    'from' => $paginator->firstItem(),
-                    'last_page' => $paginator->lastPage(),
-                    'per_page' => $paginator->perPage(),
-                    'to' => $paginator->lastItem(),
-                    'total' => $paginator->total(),
-                ]
-            ],
+            'meta' => $meta,
             'data' => $paginator->items(),
             'errors' => null,
         ], $code, [], JSON_UNESCAPED_UNICODE);

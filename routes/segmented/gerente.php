@@ -241,6 +241,8 @@ Route::prefix('proveedores')
             
             // Generar PDF de presupuesto guardado
             Route::get('/{presupuesto}/pdf', [ProveedorPresupuestoController::class, 'generarPdf'])->middleware(['audit']);
+            Route::post('/{presupuesto}/enviar', [ProveedorPresupuestoController::class, 'enviar'])->middleware(['audit']);
+            Route::post('/{presupuesto}/reenviar', [ProveedorPresupuestoController::class, 'reenviar'])->middleware(['audit']);
         });
 
         // Route::get('imports/products/template', [ProductoImportController::class, 'downloadTemplate']);

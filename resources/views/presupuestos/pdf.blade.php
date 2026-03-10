@@ -1,801 +1,754 @@
+@php
+    $margenMm = 18;
+    $condicionesDefault = [
+        'tiempo_entrega' => '3 días hábiles a partir de anticipo',
+        'condiciones_pago' => '50% anticipo, 50% contra entrega',
+        'garantia' => '30 días por mano de obra, no incluye mal uso',
+        'vigencia' => '7 días naturales',
+    ];
+    $cond = $presupuesto['condiciones'] ?? [];
+    $tiempoEntrega = $cond['tiempo_entrega'] ?? $condicionesDefault['tiempo_entrega'];
+    $condicionesPago = $cond['condiciones_pago'] ?? $condicionesDefault['condiciones_pago'];
+    $garantia = $cond['garantia'] ?? $condicionesDefault['garantia'];
+    $vigencia = $cond['vigencia'] ?? $condicionesDefault['vigencia'];
+@endphp
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Presupuesto {{ $presupuesto['numero_presupuesto'] ?? 'N/A' }}</title>
     <style>
+        @page {
+            size: letter;
+            margin: 0;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        html, body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
         body {
             font-family: 'DejaVu Sans', Arial, sans-serif;
-            font-size: 11px;
+            font-size: 8.5pt;
             color: #2c3e50;
             background: #ffffff;
-            padding: 0;
+            line-height: 1.15;
             margin: 0;
-            line-height: 1.5;
+            padding: 0;
         }
 
-        .budget-container {
-            max-width: 210mm;
-            margin: 0 auto;
+        /* Elementos de margen (cuando @page margin no funciona) */
+        .margin-top {
+            height: {{ $margenMm }}mm;
+            min-height: {{ $margenMm }}mm;
+            clear: both;
+        }
+
+        .margin-bottom {
+            height: {{ $margenMm }}mm;
+            min-height: {{ $margenMm }}mm;
+            clear: both;
+        }
+
+        .margin-sides {
+            padding-left: {{ $margenMm }}mm;
+            padding-right: {{ $margenMm }}mm;
+        }
+
+        .document-container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
             background: #ffffff;
-            padding: 10mm;
+            overflow-x: hidden;
         }
 
-        /* Header mejorado */
+        /* ========== 1) ENCABEZADO (igual que preview) ========== */
         .header {
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 3px solid #3498db;
+            margin-bottom: 4mm;
+            padding-bottom: 3mm;
+            border-bottom: 2px solid #3498db;
             page-break-inside: avoid;
         }
 
         .header-content {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
         }
 
         .logo-section {
-            width: 80px;
+            width: 14%;
+            min-width: 0;
             vertical-align: top;
-        }
-
-        .logo-box {
-            width: 60px;
-            height: 60px;
-            background: #3498db;
-            border-radius: 8px;
-            text-align: center;
-            color: #ffffff;
-            font-size: 28px;
-            font-weight: bold;
-            padding: 16px 0;
-        }
-
-        .logo-image {
-            width: 60px;
-            height: 60px;
-            object-fit: contain;
-            border-radius: 8px;
-        }
-
-        .logo-fallback {
-            width: 60px;
-            height: 60px;
-            background: #3498db;
-            border-radius: 8px;
-            text-align: center;
-            color: #ffffff;
-            font-size: 28px;
-            font-weight: bold;
-            padding: 16px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding-right: 2mm;
         }
 
         .header-info {
             vertical-align: top;
-            padding-left: 20px;
-        }
-
-        .company-header-name {
-            font-size: 16px;
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 4px;
-        }
-
-        .company-header-info {
-            font-size: 9px;
-            color: #7f8c8d;
-            margin-bottom: 3px;
+            padding-left: 4mm;
+            width: 55%;
+            min-width: 0;
+            overflow: hidden;
+            word-wrap: break-word;
         }
 
         .folio-section {
-            text-align: right;
+            width: 31%;
+            min-width: 0;
             vertical-align: top;
+            text-align: right;
+            padding-left: 2mm;
+            overflow: hidden;
+        }
+
+        .logo-img {
+            max-width: 100%;
+            max-height: 16mm;
+            object-fit: contain;
+            border-radius: 2mm;
+        }
+
+        .logo-fallback {
+            width: 14mm;
+            height: 14mm;
+            background: #3498db;
+            border-radius: 2mm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 11pt;
+            font-weight: bold;
+        }
+
+        .company-header-name {
+            font-size: 9pt;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.8mm;
+            line-height: 1.15;
+        }
+
+        .company-header-info {
+            font-size: 6.5pt;
+            color: #7f8c8d;
+            margin-bottom: 0.6mm;
+            line-height: 1.15;
         }
 
         .folio-label {
-            font-size: 8px;
+            font-size: 6pt;
             color: #7f8c8d;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 1px;
             font-weight: 600;
-            margin-bottom: 5px;
+            margin-bottom: 0.8mm;
+            line-height: 1.1;
         }
 
         .folio-number {
-            font-size: 24px;
+            font-size: 14pt;
             font-weight: 700;
             color: #3498db;
-            margin-bottom: 4px;
-            letter-spacing: -1px;
+            margin-bottom: 0.8mm;
+            letter-spacing: -0.5pt;
+            word-wrap: break-word;
+            line-height: 1.1;
+            overflow: hidden;
         }
 
         .folio-date {
-            font-size: 9px;
+            font-size: 7pt;
             color: #7f8c8d;
+            line-height: 1.15;
         }
 
-        /* Sección PARA (cliente) - El proveedor ya está en el header */
-        .de-para-section {
+        /* ========== 2) DATOS DEL RECEPTOR (igual que preview) ========== */
+        .receptor-section {
             width: 100%;
-            margin-bottom: 15px;
-            padding: 15px;
+            margin-bottom: 4mm;
+            padding: 3mm;
             background: #f8f9fa;
-            border-radius: 8px;
+            border-radius: 2mm;
             border: 1px solid #e9ecef;
             page-break-inside: avoid;
         }
 
-        .para-section-full {
-            width: 100%;
-        }
-
-        .section-label {
-            font-size: 9px;
+        .receptor-title {
+            font-size: 7pt;
             color: #3498db;
             text-transform: uppercase;
             font-weight: 700;
             letter-spacing: 1px;
-            margin-bottom: 10px;
-            padding-bottom: 5px;
+            margin-bottom: 2mm;
+            padding-bottom: 1mm;
             border-bottom: 2px solid #3498db;
             display: inline-block;
+            line-height: 1.1;
         }
 
-        .company-name {
-            font-size: 13px;
+        .receptor-name {
+            font-size: 9pt;
             font-weight: 700;
             color: #2c3e50;
-            margin-bottom: 8px;
-            line-height: 1.4;
+            margin-bottom: 1mm;
+            line-height: 1.15;
         }
 
-        .company-info {
-            font-size: 10px;
+        .receptor-info {
+            font-size: 7pt;
             color: #5f6f89;
-            margin-bottom: 5px;
-            line-height: 1.6;
+            margin-bottom: 0.8mm;
+            line-height: 1.15;
         }
 
-        .company-info strong {
+        .receptor-info strong {
             color: #34495e;
             font-weight: 600;
         }
 
-        /* Detalles del presupuesto */
-        .presupuesto-details {
-            width: 100%;
-            margin-bottom: 15px;
-            padding: 12px;
-            background: #ffffff;
-            border: 1px solid #e9ecef;
-            border-radius: 6px;
+        /* ========== 3) DESCRIPCIÓN GENERAL ========== */
+        .descripcion-section {
+            margin-bottom: 4mm;
             page-break-inside: avoid;
         }
 
-        .presupuesto-details-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .detail-item {
-            padding: 8px 15px;
-            border-right: 1px solid #e9ecef;
-        }
-
-        .detail-item:last-child {
-            border-right: none;
-        }
-
-        .detail-label {
-            font-size: 8px;
-            color: #7f8c8d;
-            text-transform: uppercase;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .detail-value {
-            font-size: 11px;
+        .descripcion-title {
+            font-size: 8pt;
+            font-weight: 700;
             color: #2c3e50;
-            font-weight: 600;
+            margin-bottom: 1mm;
+            text-transform: uppercase;
+            letter-spacing: 0.5pt;
+            line-height: 1.1;
         }
 
-        /* Tabla de conceptos mejorada */
-        .servicios-section {
-            margin-bottom: 15px;
+        .descripcion-text {
+            font-size: 7pt;
+            color: #34495e;
+            text-align: justify;
+            line-height: 1.25;
         }
 
-        .servicios-header-table {
+        /* ========== 4) TÍTULO Y TABLA PRESUPUESTO ========== */
+        .presupuesto-title {
+            text-align: center;
+            font-size: 12pt;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 3mm;
+            text-transform: uppercase;
+            letter-spacing: 0.5pt;
+            line-height: 1.1;
+        }
+
+        .presupuesto-table {
             width: 100%;
+            max-width: 100%;
             border-collapse: collapse;
+            margin-bottom: 4mm;
+            page-break-inside: avoid;
+            table-layout: fixed;
+            overflow: hidden;
+        }
+
+        .presupuesto-table thead {
             background: #3498db;
             color: #ffffff;
         }
 
-        .servicios-header-table td {
-            padding: 12px 10px;
-            font-size: 9px;
+        .presupuesto-table thead td {
+            padding: 1.5mm 1mm;
+            font-size: 6pt;
+            font-weight: 700;
             text-transform: uppercase;
-            font-weight: 700;
             letter-spacing: 0.5px;
-        }
-
-        .servicios-title {
-            width: 50%;
-        }
-
-        .servicios-cantidad {
-            width: 12%;
             text-align: center;
+            border: 1px solid #2980b9;
+            line-height: 1.1;
         }
 
-        .servicios-precio {
-            width: 19%;
+        .presupuesto-table thead td:first-child { width: 5%; }
+        .presupuesto-table thead td:nth-child(2) {
+            width: 38%;
+            text-align: left;
+            padding-left: 1.5mm;
+        }
+        .presupuesto-table thead td:nth-child(3) { width: 10%; }
+        .presupuesto-table thead td:nth-child(4) { width: 10%; }
+        .presupuesto-table thead td:nth-child(5),
+        .presupuesto-table thead td:nth-child(6) {
+            width: 18%;
             text-align: right;
+            padding-right: 1mm;
         }
 
-        .servicios-importe {
-            width: 19%;
-            text-align: right;
-        }
-
-        .concepto-row {
-            width: 100%;
-            border-collapse: collapse;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .concepto-row:hover {
-            background: #f8f9fa;
-        }
-
-        .concepto-row td {
-            padding: 12px 10px;
-            vertical-align: top;
-        }
-
-        .concepto-descripcion {
-            width: 50%;
-            font-size: 10px;
-            color: #2c3e50;
-            line-height: 1.5;
-        }
-
-        .concepto-cantidad {
-            width: 12%;
-            text-align: center;
-            font-size: 10px;
-            color: #5f6f89;
-            font-weight: 600;
-        }
-
-        .concepto-precio {
-            width: 19%;
-            text-align: right;
-            font-size: 10px;
-            color: #5f6f89;
-        }
-
-        .concepto-importe {
-            width: 19%;
-            text-align: right;
-            font-size: 11px;
-            font-weight: 700;
-            color: #2c3e50;
-        }
-
-        .concepto-badges {
-            margin-top: 6px;
-        }
-
-        .badge {
-            background: #e8f4f8;
-            color: #2980b9;
-            font-size: 7px;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-weight: 600;
-            margin-right: 4px;
-            border: 1px solid #bee5eb;
-        }
-
-        /* Totales mejorados */
-        .totales-section {
-            margin-top: 15px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
+        .presupuesto-table tbody td {
+            padding: 1.2mm 1mm;
+            font-size: 6.5pt;
             border: 1px solid #e9ecef;
+            vertical-align: top;
+            line-height: 1.15;
+            overflow: hidden;
+        }
+
+        .presupuesto-table tbody td:first-child {
+            text-align: center;
+            font-weight: 600;
+            color: #7f8c8d;
+        }
+
+        .presupuesto-table tbody td:nth-child(2) {
+            text-align: left;
+            color: #2c3e50;
+            padding-left: 1.5mm;
+            word-wrap: break-word;
+        }
+
+        .presupuesto-table tbody td:nth-child(3),
+        .presupuesto-table tbody td:nth-child(4) {
+            text-align: center;
+            color: #5f6f89;
+            text-transform: uppercase;
+        }
+
+        .presupuesto-table tbody td:nth-child(5),
+        .presupuesto-table tbody td:nth-child(6) {
+            text-align: right;
+            color: #2c3e50;
+            padding-right: 1mm;
+        }
+
+        .presupuesto-table tbody td:nth-child(6) {
+            font-weight: 600;
+        }
+
+        .presupuesto-table tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .no-conceptos {
+            padding: 6mm;
+            text-align: center;
+            color: #95a5a6;
+            font-style: italic;
+            font-size: 7pt;
+        }
+
+        /* ========== 5) TOTALES (alineado con tabla) ========== */
+        .totales-section {
+            margin-bottom: 4mm;
             page-break-inside: avoid;
         }
 
-        .total-line-table {
+        .totales-table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
         }
 
-        .total-line {
-            padding: 8px 0;
+        .totales-table td {
+            padding: 1mm 1mm 1.5mm 1mm;
+            font-size: 7pt;
+            vertical-align: middle;
         }
 
-        .total-line td {
-            padding: 6px 10px;
-            font-size: 10px;
-            color: #5f6f89;
-        }
-
-        .total-line td:first-child {
-            text-align: left;
-            width: 70%;
-        }
-
-        .total-line td:last-child {
+        .totales-table td:first-child {
+            width: 82%;
             text-align: right;
-            font-weight: 600;
-            color: #2c3e50;
+            color: #5f6f89;
+            padding-right: 2mm;
         }
 
-        .total-line.final-total {
-            margin-top: 10px;
-            padding-top: 15px;
+        .totales-table td:last-child {
+            width: 18%;
+            text-align: right;
+            color: #2c3e50;
+            font-weight: 600;
+            padding-right: 0;
+        }
+
+        .totales-table .total-line-final td {
+            padding-top: 2mm;
             border-top: 2px solid #3498db;
         }
 
-        .total-line.final-total td {
-            font-size: 13px;
+        .totales-table .total-line-final td:first-child {
+            font-size: 9pt;
             font-weight: 700;
             color: #2c3e50;
-            padding-top: 10px;
         }
 
-        .total-line.final-total td:last-child {
-            font-size: 18px;
+        .totales-table .total-line-final td:last-child {
+            font-size: 10pt;
+            font-weight: 700;
             color: #3498db;
         }
 
-        .status-badge {
-            background: #27ae60;
-            color: #ffffff;
-            font-size: 7px;
-            padding: 3px 8px;
-            border-radius: 3px;
+        /* ========== 6) CONDICIONES (igual que preview, siempre visibles) ========== */
+        .condiciones-section {
+            margin-bottom: 4mm;
+            page-break-inside: avoid;
+        }
+
+        .condiciones-title {
+            font-size: 8pt;
             font-weight: 700;
-            margin-left: 10px;
+            color: #2c3e50;
+            margin-bottom: 2mm;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.5pt;
+            line-height: 1.1;
         }
 
-        /* Footer */
-        .footer {
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 2px solid #e9ecef;
-            text-align: center;
-            font-size: 8px;
-            color: #7f8c8d;
-            page-break-inside: avoid;
+        .condiciones-list {
+            list-style: none;
+            padding: 0;
         }
 
-        .footer-info {
-            margin-bottom: 5px;
+        .condiciones-list li {
+            font-size: 6.5pt;
+            color: #34495e;
+            margin-bottom: 0.8mm;
+            line-height: 1.15;
+            padding-left: 4mm;
+            position: relative;
         }
 
-        /* Sección de publicidad */
-        .publicidad-section {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 1px solid #e9ecef;
-            page-break-inside: avoid;
-        }
-
-        .publicidad-title {
-            font-size: 8px;
-            color: #7f8c8d;
-            text-transform: uppercase;
-            font-weight: 600;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-            text-align: center;
-        }
-
-        .publicidad-apps-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .publicidad-app {
-            text-align: center;
-            vertical-align: middle;
-            padding: 0 10px;
-            width: 33.33%;
-        }
-
-        .publicidad-logo-box {
-            width: 45px;
-            height: 45px;
-            margin: 0 auto 6px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
+        .condiciones-list li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #3498db;
             font-weight: bold;
-            color: #ffffff;
         }
 
-        .publicidad-logo-heventec {
-            background: #3498db;
-        }
-
-        .publicidad-logo-constucc {
-            background: #e67e22;
-        }
-
-        .publicidad-logo-gestionpro {
-            background: #27ae60;
-        }
-
-        .publicidad-name {
-            font-size: 7px;
-            color: #5f6f89;
+        .condiciones-list li strong {
+            color: #2c3e50;
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
-        .notas-section {
-            margin-top: 15px;
-            padding: 12px;
-            background: #fffbf0;
-            border-left: 4px solid #f39c12;
-            border-radius: 4px;
+        /* ========== 7) OBSERVACIONES ========== */
+        .observaciones-section {
+            margin-bottom: 4mm;
             page-break-inside: avoid;
         }
 
-        .notas-title {
-            font-size: 9px;
-            color: #e67e22;
-            text-transform: uppercase;
+        .observaciones-title {
+            font-size: 8pt;
             font-weight: 700;
-            margin-bottom: 8px;
+            color: #2c3e50;
+            margin-bottom: 1mm;
+            text-transform: uppercase;
+            letter-spacing: 0.5pt;
+            line-height: 1.1;
         }
 
-        .notas-content {
-            font-size: 9px;
-            color: #5f6f89;
-            line-height: 1.6;
+        .observaciones-text {
+            font-size: 6.5pt;
+            color: #34495e;
+            text-align: justify;
+            line-height: 1.2;
         }
 
-        @page {
-            margin: 10mm 10mm 10mm 10mm;
-            size: A4 portrait;
-        }
-
-        .no-break {
-            page-break-inside: avoid;
-        }
-
+        /* ========== 8) PIE DE PÁGINA ========== */
         .footer {
-            page-break-inside: avoid;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 18mm;
+            padding-top: 2mm;
+            padding-left: {{ $margenMm }}mm;
+            padding-right: {{ $margenMm }}mm;
+            border-top: 1px solid #e9ecef;
+            background: #ffffff;
+            font-size: 6pt;
+            color: #7f8c8d;
+            line-height: 1.2;
         }
 
-        .totales-section {
-            page-break-inside: avoid;
+        .footer-content {
+            width: 100%;
+            text-align: center;
+        }
+
+        .footer-pages {
+            margin-bottom: 0.5mm;
+        }
+
+        .footer-qr {
+            display: inline-block;
+            width: 12mm;
+            height: 12mm;
+            margin-top: 1mm;
+        }
+
+        .footer-qr img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
     </style>
 </head>
 <body>
-    <div class="budget-container">
-        <!-- Header mejorado -->
+    <div class="margin-top"></div>
+    <div class="margin-sides">
+        <div class="document-container">
+        <!-- 1) ENCABEZADO -->
         <div class="header">
             <table class="header-content">
                 <tr>
                     <td class="logo-section">
                         @php
-                            $logoProveedorBase64 = $presupuesto['logo_proveedor_base64'] ?? '';
+                            $logoProveedorBase64 = ($presupuesto['condiciones']['emisor_logo'] ?? null) ?: ($presupuesto['logo_proveedor_base64'] ?? null);
                             $nombreEmpresa = $presupuesto['proveedor']->razon_social ?? $presupuesto['proveedor']->nombre_comercial ?? 'P';
                             $inicial = strtoupper(substr($nombreEmpresa, 0, 1));
                         @endphp
                         @if($logoProveedorBase64)
-                            <img src="{{ $logoProveedorBase64 }}" alt="Logo" style="width: 60px; height: 60px; object-fit: contain; border-radius: 8px;" />
+                            <img src="{{ $logoProveedorBase64 }}" alt="Logo" class="logo-img" />
                         @else
-                            <div style="width: 60px; height: 60px; background: #3498db; border-radius: 8px; text-align: center; color: #ffffff; font-size: 28px; font-weight: bold; line-height: 60px;">{{ $inicial }}</div>
+                            <div class="logo-fallback">{{ $inicial }}</div>
                         @endif
                     </td>
                     <td class="header-info">
-                        <div class="company-header-name">
-                            {{ $presupuesto['proveedor']->razon_social ?? $presupuesto['proveedor']->nombre_comercial ?? 'Empresa Proveedora S.A. de C.V.' }}
-                        </div>
-                        <div class="company-header-info">
-                            @if(isset($presupuesto['proveedor']->rfc))
-                                RFC: {{ $presupuesto['proveedor']->rfc }}
-                            @endif
-                        </div>
-                        <div class="company-header-info">
-                            {{ $presupuesto['proveedor']->direccion_empresa ?? 'Av. Insurgentes Sur 1234, Col. Del Valle' }}
-                        </div>
-                        <div class="company-header-info">
-                            {{ $presupuesto['proveedor']->ciudad ?? 'Ciudad de México' }}, {{ $presupuesto['proveedor']->estado ?? 'CDMX' }}, México
-                        </div>
-                        @if(isset($presupuesto['proveedor']->telefono))
-                            <div class="company-header-info">
-                                Tel: {{ $presupuesto['proveedor']->telefono }}
-                            </div>
+                        @php
+                            $emisorNombre = $presupuesto['condiciones']['emisor_razon_social'] ?? $presupuesto['proveedor']->razon_social ?? $presupuesto['proveedor']->nombre_comercial ?? 'Empresa Proveedora S.A. de C.V.';
+                            $emisorRfc = $presupuesto['condiciones']['emisor_rfc'] ?? $presupuesto['proveedor']->rfc;
+                            $emisorDireccion = $presupuesto['condiciones']['emisor_direccion'] ?? $presupuesto['proveedor']->direccion_empresa;
+                            $emisorCiudad = $presupuesto['condiciones']['emisor_ciudad_estado'] ?? null;
+                            if (!$emisorCiudad) {
+                                $df = $presupuesto['proveedor']->direccion_fiscal ?? null;
+                                $ciudad = $presupuesto['proveedor']->ciudad ?? ($df ? ($df->ciudad ?? 'Ciudad de México') : 'Ciudad de México');
+                                $estado = $df ? ($df->estado ?? 'CDMX') : 'CDMX';
+                                $emisorCiudad = $ciudad . ', ' . $estado . ', México';
+                            }
+                            $emisorTel = $presupuesto['condiciones']['emisor_telefono'] ?? $presupuesto['proveedor']->telefono;
+                            $emisorEmail = $presupuesto['condiciones']['emisor_email'] ?? $presupuesto['proveedor']->email;
+                        @endphp
+                        <div class="company-header-name">{{ $emisorNombre }}</div>
+                        @if($emisorRfc)
+                            <div class="company-header-info">RFC: {{ $emisorRfc }}</div>
                         @endif
-                        @if(isset($presupuesto['proveedor']->correo))
-                            <div class="company-header-info">
-                                Email: {{ $presupuesto['proveedor']->correo }}
-                            </div>
+                        @if($emisorDireccion)
+                            <div class="company-header-info">{{ $emisorDireccion }}</div>
+                        @endif
+                        @if($emisorCiudad)
+                            <div class="company-header-info">{{ $emisorCiudad }}</div>
+                        @endif
+                        @if($emisorTel)
+                            <div class="company-header-info">Tel: {{ $emisorTel }}</div>
+                        @endif
+                        @if($emisorEmail)
+                            <div class="company-header-info">Email: {{ $emisorEmail }}</div>
                         @endif
                     </td>
                     <td class="folio-section">
                         <div class="folio-label">Presupuesto</div>
-                        <div class="folio-number">{{ $presupuesto['numero_presupuesto'] ?? 'N/A' }}</div>
+                        <div class="folio-number">{{ $presupuesto['numero_presupuesto'] ?? 'PRES-000001' }}</div>
                         <div class="folio-date">
-                            @if(isset($presupuesto['fecha_emision']))
-                                {{ \Carbon\Carbon::parse($presupuesto['fecha_emision'])->format('d/m/Y') }}
-                            @elseif(isset($presupuesto->fecha_emision))
-                                {{ \Carbon\Carbon::parse($presupuesto->fecha_emision)->format('d/m/Y') }}
-                            @else
-                                {{ date('d/m/Y') }}
-                            @endif
+                            @php
+                                $fecha = $presupuesto['fecha_emision'] ?? now();
+                                if (is_string($fecha)) {
+                                    $fecha = \Carbon\Carbon::parse($fecha);
+                                }
+                                $dia = str_pad($fecha->day, 2, '0', STR_PAD_LEFT);
+                                $mes = str_pad($fecha->month, 2, '0', STR_PAD_LEFT);
+                                $anio = $fecha->year;
+                            @endphp
+                            {{ $dia }}/{{ $mes }}/{{ $anio }}
                         </div>
                     </td>
                 </tr>
             </table>
         </div>
 
-        <!-- Información PARA (cliente) - El proveedor ya está en el header -->
-        <div class="de-para-section">
-            <div class="para-section-full">
-                <div class="section-label">Para:</div>
-                <div class="company-name">
-                    {{ $presupuesto['empresa_receptora']['empresa'] ?? $presupuesto['empresa_receptora']['nombre'] ?? 'Cliente S.A. de C.V.' }}
-                </div>
-                @if(isset($presupuesto['empresa_receptora']['direccion']))
-                    <div class="company-info">
-                        <strong>Dirección:</strong> {{ $presupuesto['empresa_receptora']['direccion'] }}
-                    </div>
-                @endif
-                @if(isset($presupuesto['empresa_receptora']['correo']))
-                    <div class="company-info">
-                        <strong>Email:</strong> {{ $presupuesto['empresa_receptora']['correo'] }}
-                    </div>
-                @endif
-                @if(isset($presupuesto['empresa_receptora']['telefono']))
-                    <div class="company-info">
-                        <strong>Teléfono:</strong> {{ $presupuesto['empresa_receptora']['telefono'] }}
-                    </div>
-                @endif
-                @if(isset($presupuesto['empresa_receptora']['rfc']))
-                    <div class="company-info">
-                        <strong>RFC:</strong> {{ $presupuesto['empresa_receptora']['rfc'] }}
-                    </div>
-                @endif
-            </div>
-        </div>
+        <!-- 2) DATOS DEL RECEPTOR -->
+        <div class="receptor-section">
+            <div class="receptor-title">Datos del receptor</div>
 
-        <!-- Detalles del presupuesto -->
-        <div class="presupuesto-details">
-            <table class="presupuesto-details-table">
-                <tr>
-                    <td class="detail-item">
-                        <span class="detail-label">Fecha de Emisión</span>
-                        <span class="detail-value">
-                            @if(isset($presupuesto['fecha_emision']))
-                                {{ \Carbon\Carbon::parse($presupuesto['fecha_emision'])->format('d/m/Y') }}
-                            @elseif(isset($presupuesto->fecha_emision))
-                                {{ \Carbon\Carbon::parse($presupuesto->fecha_emision)->format('d/m/Y') }}
-                            @else
-                                {{ date('d/m/Y') }}
-                            @endif
-                        </span>
-                    </td>
-                    <td class="detail-item">
-                        <span class="detail-label">Vigencia</span>
-                        <span class="detail-value">{{ $presupuesto['condiciones']['vigencia'] ?? '15 Días' }}</span>
-                    </td>
-                    <td class="detail-item">
-                        <span class="detail-label">Moneda</span>
-                        <span class="detail-value">MXN (Pesos Mexicanos)</span>
-                    </td>
-                </tr>
-            </table>
-        </div>
-
-        <!-- Tabla de conceptos mejorada -->
-        <div class="servicios-section">
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr>
-                        <td class="servicios-title" style="background: #3498db; color: #ffffff; padding: 12px 10px; font-size: 9px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; width: 50%;">Descripción</td>
-                        <td class="servicios-cantidad" style="background: #3498db; color: #ffffff; padding: 12px 10px; font-size: 9px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; width: 12%; text-align: center;">Cantidad</td>
-                        <td class="servicios-precio" style="background: #3498db; color: #ffffff; padding: 12px 10px; font-size: 9px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; width: 19%; text-align: right;">Precio Unitario</td>
-                        <td class="servicios-importe" style="background: #3498db; color: #ffffff; padding: 12px 10px; font-size: 9px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; width: 19%; text-align: right;">Importe</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if(isset($presupuesto['conceptos']) && is_array($presupuesto['conceptos']) && count($presupuesto['conceptos']) > 0)
-                        @foreach($presupuesto['conceptos'] as $index => $concepto)
-                            @php
-                                $cantidad = $concepto['cantidad'] ?? 1;
-                                $precioUnitario = $concepto['precio_unitario'] ?? 0;
-                                $importe = $cantidad * $precioUnitario;
-                            @endphp
-                            <tr style="border-bottom: 1px solid #e9ecef;">
-                                <td class="concepto-descripcion" style="padding: 12px 10px; vertical-align: top; font-size: 10px; color: #2c3e50; line-height: 1.5;">
-                                    <strong>{{ $concepto['descripcion'] ?? 'Servicio sin descripción' }}</strong>
-                                    @if(($presupuesto['con_iva'] ?? false))
-                                        <br><span class="badge" style="background: #e8f4f8; color: #2980b9; font-size: 7px; padding: 2px 6px; border-radius: 3px; font-weight: 600; border: 1px solid #bee5eb;">IVA {{ number_format($presupuesto['iva_porcentaje'] ?? 16, 0) }}%</span>
-                                    @endif
-                                </td>
-                                <td class="concepto-cantidad" style="padding: 12px 10px; text-align: center; font-size: 10px; color: #5f6f89; font-weight: 600;">{{ number_format($cantidad, 0, '.', ',') }}</td>
-                                <td class="concepto-precio" style="padding: 12px 10px; text-align: right; font-size: 10px; color: #5f6f89;">${{ number_format($precioUnitario, 2, '.', ',') }}</td>
-                                <td class="concepto-importe" style="padding: 12px 10px; text-align: right; font-size: 11px; font-weight: 700; color: #2c3e50;">${{ number_format($importe, 2, '.', ',') }}</td>
-                            </tr>
-                        @endforeach
-                    @elseif(isset($presupuesto->conceptos) && $presupuesto->conceptos->count() > 0)
-                        @foreach($presupuesto->conceptos as $concepto)
-                            <tr style="border-bottom: 1px solid #e9ecef;">
-                                <td class="concepto-descripcion" style="padding: 12px 10px; vertical-align: top; font-size: 10px; color: #2c3e50; line-height: 1.5;">
-                                    <strong>{{ $concepto->descripcion ?? 'Servicio sin descripción' }}</strong>
-                                    @if(($presupuesto->con_iva ?? false))
-                                        <br><span class="badge" style="background: #e8f4f8; color: #2980b9; font-size: 7px; padding: 2px 6px; border-radius: 3px; font-weight: 600; border: 1px solid #bee5eb;">IVA {{ number_format($presupuesto->iva_porcentaje ?? 16, 0) }}%</span>
-                                    @endif
-                                </td>
-                                <td class="concepto-cantidad" style="padding: 12px 10px; text-align: center; font-size: 10px; color: #5f6f89; font-weight: 600;">{{ number_format($concepto->cantidad ?? 1, 0, '.', ',') }}</td>
-                                <td class="concepto-precio" style="padding: 12px 10px; text-align: right; font-size: 10px; color: #5f6f89;">${{ number_format($concepto->precio_unitario ?? 0, 2, '.', ',') }}</td>
-                                <td class="concepto-importe" style="padding: 12px 10px; text-align: right; font-size: 11px; font-weight: 700; color: #2c3e50;">${{ number_format($concepto->precio_total ?? 0, 2, '.', ',') }}</td>
-                            </tr>
-                        @endforeach
-                    @else
-                        <tr>
-                            <td colspan="4" style="text-align: center; padding: 20px; color: #7f8c8d; font-style: italic;">
-                                No hay conceptos registrados
-                            </td>
-                        </tr>
-                    @endif
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Totales mejorados -->
-        <div class="totales-section">
             @php
-                $subtotal = $presupuesto['subtotal'] ?? ($presupuesto->subtotal ?? 0);
-                $ivaTotal = $presupuesto['iva_total'] ?? ($presupuesto->iva_total ?? 0);
-                $ivaPorcentaje = $presupuesto['iva_porcentaje'] ?? ($presupuesto->iva_porcentaje ?? 16);
-                $total = $presupuesto['total'] ?? ($presupuesto->total ?? 0);
-                $conIva = $presupuesto['con_iva'] ?? ($presupuesto->con_iva ?? false);
+                $empresa = $presupuesto['empresa_receptora']['empresa'] ?? null;
+                $nombre = $presupuesto['empresa_receptora']['nombre'] ?? null;
             @endphp
+            @if($empresa)
+                <div class="receptor-name">{{ $empresa }}</div>
+            @elseif($nombre)
+                <div class="receptor-name">{{ $nombre }}</div>
+            @endif
 
-            <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                    <td style="padding: 6px 10px; font-size: 10px; color: #5f6f89; width: 70%;">Subtotal</td>
-                    <td style="padding: 6px 10px; text-align: right; font-size: 10px; font-weight: 600; color: #2c3e50;">${{ number_format($subtotal, 2, '.', ',') }}</td>
-                </tr>
-                @if($conIva)
-                    <tr>
-                        <td style="padding: 6px 10px; font-size: 10px; color: #5f6f89;">IVA ({{ number_format($ivaPorcentaje, 0) }}%)</td>
-                        <td style="padding: 6px 10px; text-align: right; font-size: 10px; font-weight: 600; color: #2c3e50;">${{ number_format($ivaTotal, 2, '.', ',') }}</td>
-                    </tr>
-                @endif
-                <tr style="border-top: 2px solid #3498db; margin-top: 10px;">
-                    <td style="padding: 10px; font-size: 13px; font-weight: 700; color: #2c3e50;">
-                        TOTAL PRESUPUESTO
-                        <span style="background: #27ae60; color: #ffffff; font-size: 7px; padding: 3px 8px; border-radius: 3px; font-weight: 700; margin-left: 10px; text-transform: uppercase; letter-spacing: 0.5px;">LISTO</span>
-                    </td>
-                    <td style="padding: 10px; text-align: right; font-size: 18px; font-weight: 700; color: #3498db;">${{ number_format($total, 2, '.', ',') }}</td>
-                </tr>
-            </table>
+            @if($nombre)
+                <div class="receptor-info"><strong>Nombre:</strong> {{ $nombre }}</div>
+            @endif
+
+            @if($presupuesto['empresa_receptora']['puesto'] ?? null)
+                <div class="receptor-info"><strong>Cargo o puesto:</strong> {{ $presupuesto['empresa_receptora']['puesto'] }}</div>
+            @endif
+
+            @if($presupuesto['empresa_receptora']['correo'] ?? null)
+                <div class="receptor-info"><strong>Email:</strong> {{ $presupuesto['empresa_receptora']['correo'] }}</div>
+            @endif
+
+            @if($presupuesto['empresa_receptora']['telefono'] ?? null)
+                <div class="receptor-info"><strong>Teléfono:</strong> {{ $presupuesto['empresa_receptora']['telefono'] }}</div>
+            @endif
+
+            @if($presupuesto['empresa_receptora']['direccion'] ?? null)
+                <div class="receptor-info"><strong>Dirección:</strong> {{ $presupuesto['empresa_receptora']['direccion'] }}</div>
+            @endif
         </div>
 
-        <!-- Notas y condiciones -->
-        @if(isset($presupuesto['condiciones']['notas']) || isset($presupuesto['concepto_general']))
-            <div class="notas-section">
-                <div class="notas-title">Notas y Condiciones</div>
-                <div class="notas-content">
-                    @if(isset($presupuesto['concepto_general']) && !empty($presupuesto['concepto_general']))
-                        {{ $presupuesto['concepto_general'] }}
-                    @elseif(isset($presupuesto->concepto_general) && !empty($presupuesto->concepto_general))
-                        {{ $presupuesto->concepto_general }}
-                    @endif
-                    @if(isset($presupuesto['condiciones']['notas']) && !empty($presupuesto['condiciones']['notas']))
-                        @if(isset($presupuesto['concepto_general']) && !empty($presupuesto['concepto_general']))
-                            <br><br>
-                        @endif
-                        {{ $presupuesto['condiciones']['notas'] }}
-                    @endif
-                    @if(isset($presupuesto['condiciones']['vigencia']))
-                        <br><br>
-                        <strong>Vigencia:</strong> Este presupuesto tiene una vigencia de {{ $presupuesto['condiciones']['vigencia'] }}.
-                    @endif
-                </div>
+        <!-- 3) DESCRIPCIÓN GENERAL -->
+        @if($presupuesto['concepto_general'] ?? null)
+            <div class="descripcion-section">
+                <div class="descripcion-title">Descripción general</div>
+                <div class="descripcion-text">{{ $presupuesto['concepto_general'] }}</div>
             </div>
         @endif
 
-        <!-- Footer -->
-        <div class="footer">
-            <div class="footer-info">
-                Este documento es una cotización y no constituye una orden de compra hasta su aceptación formal.
-            </div>
-            <div class="footer-info">
-                Generado el {{ date('d/m/Y') }} a las {{ date('H:i') }} horas
-            </div>
-        </div>
+        <!-- 4) TÍTULO Y TABLA PRESUPUESTO -->
+        <div class="presupuesto-title">Presupuesto</div>
 
-        <!-- Sección de publicidad -->
-        @php
-            // Los logos base64 vienen del controlador
-            $logosBase64 = $presupuesto['logos_base64'] ?? [];
-            $facturaproBase64 = $logosBase64['facturapro'] ?? '';
-            $constuccBase64 = $logosBase64['constucc'] ?? '';
-            $gestionproBase64 = $logosBase64['gestionpro'] ?? '';
-        @endphp
-        <div class="publicidad-section" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef; page-break-inside: avoid;">
-            <div class="publicidad-title" style="font-size: 8px; color: #7f8c8d; text-transform: uppercase; font-weight: 600; letter-spacing: 1px; margin-bottom: 12px; text-align: center;">Desarrollado con nuestras aplicaciones</div>
-            <table class="publicidad-apps-table" style="width: 100%; border-collapse: collapse;">
+        <table class="presupuesto-table">
+            <thead>
                 <tr>
-                    <td style="text-align: center; vertical-align: middle; padding: 0 10px; width: 33.33%;">
-                        <table style="margin: 0 auto; border-collapse: collapse;">
-                            <tr>
-                                <td style="text-align: center;">
-                                    @if($facturaproBase64)
-                                        <img src="{{ $facturaproBase64 }}" alt="FacturaPro" style="width: 50px; height: 50px; object-fit: contain; margin: 0 auto 6px; display: block;" />
-                                    @else
-                                        <div style="width: 45px; height: 45px; margin: 0 auto 6px; border-radius: 8px; background: #3498db; color: #ffffff; font-size: 20px; font-weight: bold; line-height: 45px; text-align: center;">H</div>
-                                    @endif
-                                    <div style="font-size: 7px; color: #5f6f89; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">FacturaPro</div>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td style="text-align: center; vertical-align: middle; padding: 0 10px; width: 33.33%;">
-                        <table style="margin: 0 auto; border-collapse: collapse;">
-                            <tr>
-                                <td style="text-align: center;">
-                                    @if($constuccBase64)
-                                        <img src="{{ $constuccBase64 }}" alt="Constucc" style="width: 50px; height: 50px; object-fit: contain; margin: 0 auto 6px; display: block;" />
-                                    @else
-                                        <div style="width: 45px; height: 45px; margin: 0 auto 6px; border-radius: 8px; background: #e67e22; color: #ffffff; font-size: 20px; font-weight: bold; line-height: 45px; text-align: center;">C</div>
-                                    @endif
-                                    <div style="font-size: 7px; color: #5f6f89; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Constucc</div>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td style="text-align: center; vertical-align: middle; padding: 0 10px; width: 33.33%;">
-                        <table style="margin: 0 auto; border-collapse: collapse;">
-                            <tr>
-                                <td style="text-align: center;">
-                                    @if($gestionproBase64)
-                                        <img src="{{ $gestionproBase64 }}" alt="Gestionpro" style="width: 50px; height: 50px; object-fit: contain; margin: 0 auto 6px; display: block;" />
-                                    @else
-                                        <div style="width: 45px; height: 45px; margin: 0 auto 6px; border-radius: 8px; background: #27ae60; color: #ffffff; font-size: 20px; font-weight: bold; line-height: 45px; text-align: center;">G</div>
-                                    @endif
-                                    <div style="font-size: 7px; color: #5f6f89; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Gestionpro</div>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
+                    <td>#</td>
+                    <td>Descripción</td>
+                    <td>Cantidad</td>
+                    <td>Unidad</td>
+                    <td>Precio Unitario</td>
+                    <td>Importe</td>
+                </tr>
+            </thead>
+            <tbody>
+                @php
+                    $conceptos = $presupuesto['conceptos'] ?? [];
+                    $subtotal = 0;
+                @endphp
+                @if(count($conceptos) > 0)
+                    @foreach($conceptos as $index => $concepto)
+                        @php
+                            $cantidad = $concepto['cantidad'] ?? 1;
+                            $precioUnitario = $concepto['precio_unitario'] ?? 0;
+                            $importe = $cantidad * $precioUnitario;
+                            $subtotal += $importe;
+                        @endphp
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $concepto['descripcion'] ?? 'Sin descripción' }}</td>
+                            <td>{{ number_format($cantidad, 2, '.', ',') }}</td>
+                            <td>{{ strtoupper($concepto['unidad'] ?? 'PZA') }}</td>
+                            <td>${{ number_format($precioUnitario, 2, '.', ',') }}</td>
+                            <td>${{ number_format($importe, 2, '.', ',') }}</td>
+                        </tr>
+                    @endforeach
+                @else
+                    <tr>
+                        <td colspan="6" class="no-conceptos">No hay conceptos registrados</td>
+                    </tr>
+                @endif
+            </tbody>
+        </table>
+
+        <!-- 5) TOTALES -->
+        <div class="totales-section">
+            @php
+                $subtotalCalculado = $presupuesto['subtotal'] ?? $subtotal;
+                $conIva = $presupuesto['con_iva'] ?? false;
+                $ivaPorcentaje = $presupuesto['iva_porcentaje'] ?? 16;
+                $ivaTotal = $conIva ? ($subtotalCalculado * ($ivaPorcentaje / 100)) : 0;
+                $total = $subtotalCalculado + $ivaTotal;
+            @endphp
+            <table class="totales-table">
+                <tr>
+                    <td>Subtotal:</td>
+                    <td>${{ number_format($subtotalCalculado, 2, '.', ',') }}</td>
+                </tr>
+                @if($conIva)
+                    <tr>
+                        <td>IVA ({{ number_format($ivaPorcentaje, 0) }}%):</td>
+                        <td>${{ number_format($ivaTotal, 2, '.', ',') }}</td>
+                    </tr>
+                @endif
+                <tr class="total-line-final">
+                    <td>TOTAL:</td>
+                    <td>${{ number_format($total, 2, '.', ',') }}</td>
                 </tr>
             </table>
         </div>
+
+        <!-- 6) CONDICIONES (siempre visibles con defaults) -->
+        <div class="condiciones-section">
+            <div class="condiciones-title">Condiciones</div>
+            <ul class="condiciones-list">
+                <li><strong>Tiempo de entrega:</strong> {{ $tiempoEntrega }}</li>
+                <li><strong>Condiciones de pago:</strong> {{ $condicionesPago }}</li>
+                <li><strong>Garantía:</strong> {{ $garantia }}</li>
+                <li><strong>Vigencia del presupuesto:</strong> {{ $vigencia }}</li>
+                <li><strong>Moneda:</strong> MXN (Pesos Mexicanos)</li>
+                @if($presupuesto['proveedor']->datos_bancarios ?? null)
+                    <li>
+                        <strong>Datos bancarios:</strong>
+                        @php
+                            $bancarios = is_string($presupuesto['proveedor']->datos_bancarios)
+                                ? json_decode($presupuesto['proveedor']->datos_bancarios, true)
+                                : $presupuesto['proveedor']->datos_bancarios;
+                        @endphp
+                        @if($bancarios)
+                            Banco: {{ $bancarios['banco'] ?? 'N/A' }},
+                            CLABE: {{ $bancarios['clabe_interbancaria'] ?? 'N/A' }},
+                            Cuenta: {{ $bancarios['numero_cuenta'] ?? 'N/A' }}
+                        @endif
+                    </li>
+                @endif
+            </ul>
+        </div>
+
+        <!-- 7) OBSERVACIONES -->
+        @if($presupuesto['observaciones'] ?? null)
+            <div class="observaciones-section">
+                <div class="observaciones-title">Observaciones</div>
+                <div class="observaciones-text">{{ $presupuesto['observaciones'] }}</div>
+            </div>
+        @endif
+        </div>
     </div>
+    <div class="margin-bottom"></div>
+
+    <!-- 8) PIE DE PÁGINA -->
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-pages">
+                Página <span class="page-number"></span> de <span class="total-pages"></span>
+            </div>
+            @if(isset($presupuesto['qr_code']))
+                <div class="footer-qr">
+                    <img src="{{ $presupuesto['qr_code'] }}" alt="QR Presupuesto" />
+                </div>
+            @endif
+        </div>
+    </div>
+
+    <script type="text/php">
+        if (isset($pdf)) {
+            $text = "Página {PAGE_NUM} de {PAGE_COUNT}";
+            $size = 7;
+            $font = $fontMetrics->getFont("DejaVu Sans");
+            $width = $fontMetrics->get_text_width($text, $font, $size) / 2;
+            $x = ($pdf->get_width() - $width) / 2;
+            $y = $pdf->get_height() - 35;
+            $pdf->page_text($x, $y, $text, $font, $size);
+        }
+    </script>
 </body>
 </html>

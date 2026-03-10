@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Presupuesto;
 
+use App\Models\Presupuesto;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -19,6 +20,7 @@ class PresupuestoResource extends JsonResource
             'id' => $this->id,
             'numero_presupuesto' => $this->numero_presupuesto,
             'fecha_emision' => $this->fecha_emision?->format('Y-m-d'),
+            'fecha_vencimiento' => $this->fecha_vencimiento?->format('Y-m-d'),
             'concepto_general' => $this->concepto_general,
             'subtotal' => (float) $this->subtotal,
             'con_iva' => (bool) $this->con_iva,
@@ -27,6 +29,8 @@ class PresupuestoResource extends JsonResource
             'total' => (float) $this->total,
             'condiciones' => $this->condiciones,
             'observaciones' => $this->observaciones,
+            'estado' => $this->estado ?? Presupuesto::ESTADO_BORRADOR,
+            'token_publico' => $this->token_publico,
             'proveedor' => [
                 'id' => $this->proveedor?->id ?? $this->proveedor_id,
                 'nombre' => $this->proveedor?->nombre_comercial

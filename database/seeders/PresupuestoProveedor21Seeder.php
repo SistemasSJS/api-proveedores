@@ -107,7 +107,8 @@ class PresupuestoProveedor21Seeder extends Seeder
     {
         return [
             [
-                'fecha_emision' => '2026-02-10',
+                'fecha_emision' => now()->toDateString(),
+                // 'fecha_emision' => '2026-02-10',
                 'concepto_general' => 'Suministro e instalacion de luminarias LED para area de oficinas.',
                 'con_iva' => true,
                 'iva_porcentaje' => 16.00,
@@ -125,7 +126,8 @@ class PresupuestoProveedor21Seeder extends Seeder
                 ],
             ],
             [
-                'fecha_emision' => '2026-02-13',
+                'fecha_emision' => now()->toDateString(),
+                // 'fecha_emision' => '2026-02-13',
                 'concepto_general' => 'Mantenimiento preventivo a equipos de aire acondicionado.',
                 'con_iva' => false,
                 'iva_porcentaje' => 16.00,
@@ -143,7 +145,8 @@ class PresupuestoProveedor21Seeder extends Seeder
                 ],
             ],
             [
-                'fecha_emision' => '2026-02-18',
+                'fecha_emision' => now()->toDateString(),
+                // 'fecha_emision' => '2026-02-18',
                 'concepto_general' => 'Adecuacion de red de voz y datos en area administrativa.',
                 'con_iva' => true,
                 'iva_porcentaje' => 16.00,
@@ -162,7 +165,8 @@ class PresupuestoProveedor21Seeder extends Seeder
                 ],
             ],
             [
-                'fecha_emision' => '2026-02-24',
+                'fecha_emision' => now()->toDateString(),
+                // 'fecha_emision' => '2026-02-24',
                 'concepto_general' => 'Cotizacion para diseno de landing page y configuracion de campanas.',
                 'con_iva' => true,
                 'iva_porcentaje' => 16.00,
@@ -181,7 +185,8 @@ class PresupuestoProveedor21Seeder extends Seeder
                 ],
             ],
             [
-                'fecha_emision' => '2026-03-01',
+                'fecha_emision' => now()->toDateString(),
+                // 'fecha_emision' => '2026-03-01',
                 'concepto_general' => 'Suministro de insumos de oficina para el trimestre Q1.',
                 'con_iva' => true,
                 'iva_porcentaje' => 16.00,
