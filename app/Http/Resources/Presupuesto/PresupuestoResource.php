@@ -18,6 +18,7 @@ class PresupuestoResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'uuid' => $this->uuid,
             'numero_presupuesto' => $this->numero_presupuesto,
             'fecha_emision' => $this->fecha_emision?->format('Y-m-d'),
             'fecha_vencimiento' => $this->fecha_vencimiento?->format('Y-m-d'),

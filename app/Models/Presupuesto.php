@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Presupuesto extends BaseModel
 {
@@ -13,6 +14,7 @@ class Presupuesto extends BaseModel
     protected $table = 'presupuestos';
 
     protected static $filters = [
+        'uuid' => 'Uuid',
         'numero_presupuesto' => 'NumeroPresupuesto',
         'proveedor_id' => 'ProveedorId',
         'empresa_receptora_id' => 'EmpresaReceptoraId',
@@ -32,6 +34,7 @@ class Presupuesto extends BaseModel
     public const ESTADO_VENCIDO = 'vencido';
 
     protected $fillable = [
+        'uuid',
         'numero_presupuesto',
         'fecha_emision',
         'fecha_vencimiento',
@@ -65,6 +68,18 @@ class Presupuesto extends BaseModel
         'total' => 'decimal:2',
         'condiciones' => 'array',
     ];
+
+    /**
+     * Boot del modelo.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (Presupuesto $presupuesto) {
+            if (empty($presupuesto->uuid)) {
+                $presupuesto->uuid = (string) Str::uuid();
+            }
+        });
+    }
 
     /**
      * Relaciones para carga eager estándar.
@@ -201,6 +216,14 @@ class Presupuesto extends BaseModel
     }
 
     /**
+     * Filtra por UUID.
+     */
+    public function scopeByUuid($query, string $uuid)
+    {
+        return $query->where('uuid', $uuid);
+    }
+
+    /**
      * Filtra por proveedor.
      */
     public function scopeByProveedor($query, int $proveedorId)
@@ -240,6 +263,14 @@ class Presupuesto extends BaseModel
     public function scopeSinIva($query)
     {
         return $query->where('con_iva', false);
+    }
+
+    /**
+     * Filtro por UUID.
+     */
+    public function filterByUuid($query, string $value)
+    {
+        return $query->where('uuid', $value);
     }
 
     /**

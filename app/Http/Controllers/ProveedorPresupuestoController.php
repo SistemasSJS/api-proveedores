@@ -136,8 +136,7 @@ class ProveedorPresupuestoController extends Controller
                 $payload = collect($validated)->except(['conceptos'])->toArray();
                 $payload['user_id'] = $request->user()->id;
                 $payload['proveedor_id'] = (int) $validated['proveedor_id'];
-                $payload['numero_presupuesto'] = $payload['numero_presupuesto']
-                    ?? Presupuesto::generarNumeroPresupuesto((int) $payload['proveedor_id']);
+                $payload['numero_presupuesto'] = Presupuesto::generarNumeroPresupuesto((int) $payload['proveedor_id']);
                 $payload['con_iva'] = $payload['con_iva'] ?? true;
                 $payload['iva_porcentaje'] = $payload['iva_porcentaje'] ?? 16.00;
                 $payload['estado'] = $payload['estado'] ?? Presupuesto::ESTADO_BORRADOR;
@@ -149,6 +148,7 @@ class ProveedorPresupuestoController extends Controller
                 $this->sincronizarConceptos($presupuesto, $validated['conceptos']);
                 $presupuesto->recalcularDesdeConceptos();
                 $presupuesto->save();
+                
 
                 return $presupuesto->fresh(Presupuesto::eagerLodable());
             });
