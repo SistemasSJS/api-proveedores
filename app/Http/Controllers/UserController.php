@@ -35,21 +35,31 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $fields = User::getFilters();
-        $filters = $request->only($fields);
+        $filters = $request->only(User::getFilters());
 
-        $sortBy = $request->input('sort_by', 'name');
-        $order = $request->input('order', 'asc');
+        $sortBy = $request->input('sort_by', 'created_at');
+        $order = $request->input('order', 'desc');
         $perPage = $request->input('per_page', 10);
 
-        $originalPaginator = User::with(array_merge(User::eagerLodable(), ['role']))
-            ->filter($filters)
+        $query = User::query()
+            ->with(User::eagerLodable())
+            ->filter($filters);
+        $originalPaginator = $query
             ->orderBy($sortBy, $order)
             ->paginate($perPage);
 
-        $users = UserResource::collection($originalPaginator)->resolve();
+        $data = UserResource::collection($originalPaginator)->resolve();
 
-        return $this->paginated($originalPaginator->setCollection(collect($users)));
+        return $this->paginated($originalPaginator->setCollection(collect($data)));
+
+        // $originalPaginator = User::with(array_merge(User::eagerLodable(), ['role']))
+        //     ->filter($filters)
+        //     ->orderBy($sortBy, $order)
+        //     ->paginate($perPage);
+
+        // $users = UserResource::collection($originalPaginator)->resolve();
+
+        // return $this->paginated($originalPaginator->setCollection(collect($users)));
     }
 
     /**
