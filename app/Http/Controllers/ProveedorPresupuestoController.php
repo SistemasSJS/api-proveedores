@@ -540,6 +540,7 @@ class ProveedorPresupuestoController extends Controller
                 'proveedor' => $presupuesto->proveedor,
                 'logo_proveedor_base64' => $logoProveedorBase64,
                 'numero_presupuesto' => $presupuesto->numero_presupuesto,
+                'uuid' => $presupuesto->uuid ?? null,
                 'clave_unica' => $presupuesto->id ?? null, // Clave única del presupuesto
                 'fecha_emision' => $presupuesto->fecha_emision,
                 'lugar' => ($presupuesto->condiciones['lugar'] ?? null) 
@@ -741,6 +742,7 @@ class ProveedorPresupuestoController extends Controller
                 'proveedor' => $proveedor,
                 'logo_proveedor_base64' => $logoProveedorBase64,
                 'numero_presupuesto' => $validated['numero_presupuesto'] ?? $this->formatearFolioSiguiente($proveedor),
+                'uuid' => null, // Para borradores no hay UUID
                 'clave_unica' => null, // Para borradores no hay clave única
                 'fecha_emision' => $validated['fecha_emision'],
                 'lugar' => $validated['condiciones']['lugar'] ?? null,

@@ -27,6 +27,7 @@ class PresupuestoPdfService
             'logos_base64' => $logosBase64,
             'gd_disponible' => $gdDisponible,
             'numero_presupuesto' => $presupuesto->numero_presupuesto,
+            'uuid' => $presupuesto->uuid ?? null,
             'clave_unica' => $presupuesto->id,
             'fecha_emision' => $presupuesto->fecha_emision,
             'lugar' => ($presupuesto->condiciones['lugar'] ?? null)

@@ -1,0 +1,13 @@
+---
+description: Normas generales para api-proveedores
+alwaysApply: true
+---
+
+# api-proveedores - Normas generales
+
+- Proyecto: Laravel API para gestión de proveedores
+- Respuestas: formato ApiResponse (status, code, message, data, errors)
+- Rutas: segmentadas por rol en routes/segmented/
+- Prefijo recurso: proveedores/{proveedor}/recurso
+- Validar acceso con tieneAccesoAProveedor antes de operaciones
+- Responder en español en mensajes de usuario

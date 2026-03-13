@@ -1,0 +1,43 @@
+---
+description: Patrones para Controllers Laravel en api-proveedores
+globs: app/Http/Controllers/**/*.php
+alwaysApply: false
+---
+
+# Controllers - api-proveedores
+
+## Estructura base
+- Extender `Controller` (incluye ApiResponse, AutoSwaggerDocumentation)
+- Usar FormRequest para validación: `StoreXxxRequest`, `UpdateXxxRequest`
+- Retornar siempre `JsonResponse`
+
+## Respuestas
+```php
+// Éxito simple
+return $this->success($data, 'Mensaje.', 201);
+
+// Error
+return $this->error('Mensaje de error.', $errors, 422);
+
+// Paginado
+return $this->paginated($paginator, 'Datos paginados.', 200, ['segment_counts' => $counts]);
+```
+
+## Validación de acceso
+- Verificar `$user->tieneAccesoAProveedor($proveedorId)` antes de operaciones
+- Retornar 403 si no tiene acceso
+- Validar que recursos anidados pertenezcan al proveedor (ej: cartera_clientes)
+
+## Listados (index)
+- Filtros: `$request->only(Model::getFilters())` — los filtros se definen en el modelo
+- Inyectar contexto: `$filters['proveedor_id'] = $proveedor->id` cuando aplique
+- Aplicar: `Model::query()->with(Model::eagerLodable())->filter($filters)->orderBy($sortBy, $order)->paginate($perPage)`
+- Params: `sort_by`, `order`, `per_page`, `page`
+
+## Transacciones
+- Usar `DB::transaction()` para operaciones que modifican múltiples tablas
+- Retornar modelo con `->fresh(Model::eagerLodable())` al final
+
+## Logging
+- Propiedad `$logEnabled = true` para habilitar
+- Método `$this->log('mensaje', ['context' => $data])`

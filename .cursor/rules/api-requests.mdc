@@ -1,0 +1,45 @@
+---
+description: Patrones para Form Requests en api-proveedores
+globs: app/Http/Requests/**/*.php
+alwaysApply: false
+---
+
+# Form Requests - api-proveedores
+
+## Estructura
+- Namespace por dominio: `App\Http\Requests\Presupuesto\`, `App\Http\Requests\Proveedor\`
+- Nombres: `StoreXxxRequest`, `UpdateXxxRequest`, `XxxActionRequest`
+
+## Métodos obligatorios
+```php
+public function authorize(): bool
+{
+    return true; // o lógica de autorización
+}
+
+/**
+ * @return array<string, mixed>
+ */
+public function rules(): array
+{
+    return [
+        'campo' => 'required|string|max:255',
+        'conceptos.*.descripcion' => 'required|string',
+    ];
+}
+
+/**
+ * @return array<string, string>
+ */
+public function messages(): array
+{
+    return [
+        'campo.required' => 'El campo es obligatorio.',
+    ];
+}
+```
+
+## Convenciones
+- Mensajes en español
+- Usar `required_without`, `exists`, `nullable` según lógica
+- Validar arrays anidados con `conceptos.*.campo`

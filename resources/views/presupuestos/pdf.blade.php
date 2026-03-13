@@ -7,10 +7,133 @@
         'vigencia' => '7 días naturales',
     ];
     $cond = $presupuesto['condiciones'] ?? [];
-    $tiempoEntrega = $cond['tiempo_entrega'] ?? $condicionesDefault['tiempo_entrega'];
-    $condicionesPago = $cond['condiciones_pago'] ?? $condicionesDefault['condiciones_pago'];
-    $garantia = $cond['garantia'] ?? $condicionesDefault['garantia'];
-    $vigencia = $cond['vigencia'] ?? $condicionesDefault['vigencia'];
+
+    // Construir lista de TÉRMINOS Y CONDICIONES (solo las que existen)
+    $terminosLista = [];
+
+    if (!empty($cond['vigencia_activo']) && !empty($cond['vigencia_dias'])) {
+        $terminosLista[] = ['titulo' => 'Vigencia del presupuesto', 'texto' => 'Este presupuesto tiene una vigencia de ' . (int)$cond['vigencia_dias'] . ' días naturales a partir de su fecha de emisión.'];
+    } elseif (!empty($cond['vigencia'])) {
+        $terminosLista[] = ['titulo' => 'Vigencia del presupuesto', 'texto' => $cond['vigencia']];
+    }
+
+    if (!empty($cond['moneda_activo'])) {
+        $terminosLista[] = ['titulo' => 'Moneda', 'texto' => 'Los precios están expresados en moneda nacional (MXN), salvo que se indique lo contrario.'];
+    }
+
+    $conIvaPdf = $presupuesto['con_iva'] ?? false;
+    $ivaPct = $presupuesto['iva_porcentaje'] ?? 16;
+    if (!empty($cond['impuestos_activo'])) {
+        $terminosLista[] = [
+            'titulo' => 'Impuestos',
+            'texto' => $conIvaPdf
+                ? 'Los precios incluyen el Impuesto al Valor Agregado (IVA) al ' . (int)$ivaPct . '%.'
+                : 'Los precios no incluyen el Impuesto al Valor Agregado (IVA).'
+        ];
+    }
+
+    if (!empty($cond['anticipo_activo']) && isset($cond['anticipo_porcentaje'])) {
+        $terminosLista[] = ['titulo' => 'Anticipo', 'texto' => 'Para iniciar los trabajos se requiere un anticipo del ' . (int)$cond['anticipo_porcentaje'] . '% del monto total.'];
+    }
+
+    if (!empty($cond['entrega_activo']) && !empty($cond['entrega_tipo'])) {
+        $entregaTexto = ($cond['entrega_tipo'] ?? '') === 'despues'
+            ? 'Una vez entregados los trabajos o productos se deberá cubrir el 100% del monto total del presupuesto.'
+            : 'Para la entrega de los trabajos o productos se deberá haber cubierto el 100% del monto total del presupuesto.';
+        $terminosLista[] = ['titulo' => 'Entrega de trabajos o productos', 'texto' => $entregaTexto];
+    }
+
+    if (!empty($cond['tiempo_entrega_activo']) && !empty($cond['tiempo_entrega_dias'])) {
+        $terminosLista[] = ['titulo' => 'Tiempo de entrega o ejecución', 'texto' => 'Una vez recibido el anticipo, el tiempo estimado de entrega o ejecución total de los trabajos será de ' . (int)$cond['tiempo_entrega_dias'] . ' días naturales.'];
+    } elseif (!empty($cond['tiempo_entrega'])) {
+        $terminosLista[] = ['titulo' => 'Tiempo de entrega', 'texto' => $cond['tiempo_entrega']];
+    }
+
+    if (!empty($cond['disponibilidad_materiales_activo'])) {
+        $terminosLista[] = ['titulo' => 'Disponibilidad de materiales o refacciones', 'texto' => 'Los tiempos de entrega o ejecución pueden variar dependiendo de la disponibilidad de materiales, refacciones o insumos necesarios.'];
+    }
+
+    if (!empty($cond['trabajos_adicionales_activo'])) {
+        $terminosLista[] = ['titulo' => 'Trabajos o conceptos adicionales', 'texto' => 'Cualquier trabajo o concepto no incluido en este presupuesto será cotizado por separado.'];
+    }
+
+    if (!empty($cond['alcance_activo'])) {
+        $terminosLista[] = ['titulo' => 'Alcance del presupuesto', 'texto' => 'Este presupuesto incluye únicamente los trabajos o productos descritos en este documento.'];
+    }
+
+    if (!empty($cond['cancelacion_activo'])) {
+        $terminosLista[] = ['titulo' => 'Cancelación del pedido o servicio', 'texto' => 'En caso de cancelación del servicio o pedido una vez autorizado el presupuesto, los gastos o trabajos ya realizados deberán ser cubiertos por el cliente.'];
+    }
+
+    if (!empty($cond['autorizacion_gestionpro_activo'])) {
+        $terminosLista[] = ['titulo' => 'Autorización mediante GestiónPro', 'texto' => 'La autorización de este presupuesto mediante la aplicación GestiónPro implica la confirmación del cliente para el inicio de los trabajos o suministros descritos.'];
+    }
+
+    foreach (['condicionantes_adicionales_1', 'condicionantes_adicionales_2', 'condicionantes_adicionales_3', 'condicionantes_adicionales_4'] as $key) {
+        if (!empty(trim($cond[$key] ?? ''))) {
+            $terminosLista[] = ['titulo' => '', 'texto' => trim($cond[$key])];
+        }
+    }
+
+    if (empty($terminosLista)) {
+        $tiempoEntrega = $cond['tiempo_entrega'] ?? $condicionesDefault['tiempo_entrega'];
+        $condicionesPago = $cond['condiciones_pago'] ?? $condicionesDefault['condiciones_pago'];
+        $garantia = $cond['garantia'] ?? $condicionesDefault['garantia'];
+        $vigencia = $cond['vigencia'] ?? $condicionesDefault['vigencia'];
+        $terminosLista = [
+            ['titulo' => 'Tiempo de entrega', 'texto' => $tiempoEntrega],
+            ['titulo' => 'Condiciones de pago', 'texto' => $condicionesPago],
+            ['titulo' => 'Garantía', 'texto' => $garantia],
+            ['titulo' => 'Vigencia del presupuesto', 'texto' => $vigencia],
+            ['titulo' => 'Moneda', 'texto' => 'Los precios están expresados en moneda nacional (MXN).'],
+        ];
+    }
+
+    // Construir lista de OBSERVACIONES GENERALES
+    $observacionesLista = [];
+
+    if (!empty($cond['garantia_activo']) && !empty($cond['garantia_dias'])) {
+        $observacionesLista[] = 'La garantía de los trabajos o productos tendrá una vigencia de ' . (int)$cond['garantia_dias'] . ' días a partir de la finalización de los trabajos o entrega de los productos.';
+    } elseif (!empty($cond['garantia'])) {
+        $observacionesLista[] = 'Garantía: ' . $cond['garantia'];
+    }
+
+    if (!empty($cond['gastos_traslado_activo']) && isset($cond['gastos_traslado'])) {
+        $incluidos = (($cond['gastos_traslado'] ?? '') === 'incluidos');
+        $observacionesLista[] = 'Los trabajos contemplados en este presupuesto ' . ($incluidos ? 'sí' : 'no') . ' incluyen los gastos de traslado al sitio donde se realizarán los trabajos.';
+    }
+
+    if (!empty($cond['viaticos_activo']) && isset($cond['viaticos'])) {
+        $incluidos = (($cond['viaticos'] ?? '') === 'incluidos');
+        $observacionesLista[] = 'Los trabajos contemplados en este presupuesto ' . ($incluidos ? 'sí' : 'no') . ' incluyen los gastos de viáticos derivados de la ubicación donde deberán realizarse los trabajos.';
+    }
+
+    if (!empty($cond['revision_tecnica_activo'])) {
+        $observacionesLista[] = 'El diagnóstico o alcance final podrá ajustarse una vez realizada la revisión técnica.';
+    }
+
+    if (!empty($cond['condiciones_sitio_activo'])) {
+        $observacionesLista[] = 'El cliente deberá proporcionar acceso y condiciones adecuadas para la ejecución de los trabajos.';
+    }
+
+    foreach (['observaciones_adicionales_1', 'observaciones_adicionales_2', 'observaciones_adicionales_3', 'observaciones_adicionales_4'] as $key) {
+        if (!empty(trim($cond[$key] ?? ''))) {
+            $observacionesLista[] = trim($cond[$key]);
+        }
+    }
+
+    if (!empty(trim($presupuesto['observaciones'] ?? ''))) {
+        $observacionesLista[] = trim($presupuesto['observaciones']);
+    }
+
+    if (!empty($presupuesto['proveedor']->datos_bancarios ?? null)) {
+        $bancarios = is_string($presupuesto['proveedor']->datos_bancarios)
+            ? json_decode($presupuesto['proveedor']->datos_bancarios, true)
+            : $presupuesto['proveedor']->datos_bancarios;
+        if ($bancarios) {
+            $observacionesLista[] = 'Datos bancarios: Banco ' . ($bancarios['banco'] ?? 'N/A') . ', CLABE ' . ($bancarios['clabe_interbancaria'] ?? 'N/A') . ', Cuenta ' . ($bancarios['numero_cuenta'] ?? 'N/A') . '.';
+        }
+    }
 @endphp
 <!DOCTYPE html>
 <html lang="es">
@@ -70,6 +193,25 @@
             padding: 0;
             background: #ffffff;
             overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 240mm;
+        }
+
+        .document-main {
+            flex: 0 0 auto;
+        }
+
+        .terms-spacer {
+            flex: 1 1 auto;
+            min-height: 2mm;
+        }
+
+        .terms-block {
+            flex: 0 0 auto;
+            margin-top: 0;
+            margin-bottom: 0;
+            padding-bottom: 2mm;
         }
 
         /* ========== 1) ENCABEZADO (igual que preview) ========== */
@@ -165,6 +307,14 @@
             word-wrap: break-word;
             line-height: 1.1;
             overflow: hidden;
+        }
+
+        .folio-uuid {
+            font-size: 5.5pt;
+            color: #7f8c8d;
+            margin-bottom: 0.6mm;
+            line-height: 1.1;
+            word-break: break-all;
         }
 
         .folio-date {
@@ -395,70 +545,79 @@
             color: #3498db;
         }
 
-        /* ========== 6) CONDICIONES (igual que preview, siempre visibles) ========== */
-        .condiciones-section {
-            margin-bottom: 4mm;
+        /* ========== 6) TÉRMINOS Y CONDICIONES (documento legal/profesional) ========== */
+        .terminos-section {
+            margin-bottom: 1.5mm;
+            margin-top: 0;
             page-break-inside: avoid;
         }
 
-        .condiciones-title {
-            font-size: 8pt;
+        .terminos-main-title {
+            font-size: 10pt;
             font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 2mm;
+            color: #000000;
+            margin-bottom: 1.5mm;
             text-transform: uppercase;
             letter-spacing: 0.5pt;
             line-height: 1.1;
         }
 
-        .condiciones-list {
+        .terminos-list {
             list-style: none;
             padding: 0;
+            margin: 0;
         }
 
-        .condiciones-list li {
-            font-size: 6.5pt;
-            color: #34495e;
-            margin-bottom: 0.8mm;
-            line-height: 1.15;
-            padding-left: 4mm;
-            position: relative;
+        .terminos-list li {
+            font-size: 7pt;
+            color: #5f6f89;
+            margin-bottom: 0.3mm;
+            line-height: 1.05;
+            padding-left: 0;
         }
 
-        .condiciones-list li::before {
-            content: "•";
-            position: absolute;
-            left: 0;
-            color: #3498db;
-            font-weight: bold;
+        .terminos-list .termino-num {
+            font-weight: 700;
+            color: #5f6f89;
         }
 
-        .condiciones-list li strong {
-            color: #2c3e50;
-            font-weight: 600;
-        }
-
-        /* ========== 7) OBSERVACIONES ========== */
+        /* ========== 7) OBSERVACIONES GENERALES ========== */
         .observaciones-section {
-            margin-bottom: 4mm;
+            margin-bottom: 2mm;
             page-break-inside: avoid;
         }
 
         .observaciones-title {
-            font-size: 8pt;
+            font-size: 10pt;
             font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 1mm;
+            color: #000000;
+            margin-bottom: 1.5mm;
             text-transform: uppercase;
             letter-spacing: 0.5pt;
             line-height: 1.1;
         }
 
-        .observaciones-text {
-            font-size: 6.5pt;
-            color: #34495e;
-            text-align: justify;
-            line-height: 1.2;
+        .observaciones-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .observaciones-list li {
+            font-size: 7pt;
+            color: #5f6f89;
+            margin-bottom: 0.3mm;
+            line-height: 1.05;
+            padding-left: 5mm;
+            position: relative;
+        }
+
+        .observaciones-list li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #000000;
+            font-weight: bold;
         }
 
         /* ========== 8) PIE DE PÁGINA ========== */
@@ -505,6 +664,7 @@
     <div class="margin-top"></div>
     <div class="margin-sides">
         <div class="document-container">
+        <div class="document-main">
         <!-- 1) ENCABEZADO -->
         <div class="header">
             <table class="header-content">
@@ -556,17 +716,18 @@
                     <td class="folio-section">
                         <div class="folio-label">Presupuesto</div>
                         <div class="folio-number">{{ $presupuesto['numero_presupuesto'] ?? 'PRES-000001' }}</div>
+                        @if(!empty($presupuesto['uuid']))
+                            <div class="folio-uuid">{{ $presupuesto['uuid'] }}</div>
+                        @endif
                         <div class="folio-date">
                             @php
                                 $fecha = $presupuesto['fecha_emision'] ?? now();
                                 if (is_string($fecha)) {
                                     $fecha = \Carbon\Carbon::parse($fecha);
                                 }
-                                $dia = str_pad($fecha->day, 2, '0', STR_PAD_LEFT);
-                                $mes = str_pad($fecha->month, 2, '0', STR_PAD_LEFT);
-                                $anio = $fecha->year;
+                                $fechaFormateada = $fecha->locale('es')->translatedFormat('d \d\e F \d\e\l Y');
                             @endphp
-                            {{ $dia }}/{{ $mes }}/{{ $anio }}
+                            {{ $fechaFormateada }}
                         </div>
                     </td>
                 </tr>
@@ -687,40 +848,35 @@
             </table>
         </div>
 
-        <!-- 6) CONDICIONES (siempre visibles con defaults) -->
-        <div class="condiciones-section">
-            <div class="condiciones-title">Condiciones</div>
-            <ul class="condiciones-list">
-                <li><strong>Tiempo de entrega:</strong> {{ $tiempoEntrega }}</li>
-                <li><strong>Condiciones de pago:</strong> {{ $condicionesPago }}</li>
-                <li><strong>Garantía:</strong> {{ $garantia }}</li>
-                <li><strong>Vigencia del presupuesto:</strong> {{ $vigencia }}</li>
-                <li><strong>Moneda:</strong> MXN (Pesos Mexicanos)</li>
-                @if($presupuesto['proveedor']->datos_bancarios ?? null)
-                    <li>
-                        <strong>Datos bancarios:</strong>
-                        @php
-                            $bancarios = is_string($presupuesto['proveedor']->datos_bancarios)
-                                ? json_decode($presupuesto['proveedor']->datos_bancarios, true)
-                                : $presupuesto['proveedor']->datos_bancarios;
-                        @endphp
-                        @if($bancarios)
-                            Banco: {{ $bancarios['banco'] ?? 'N/A' }},
-                            CLABE: {{ $bancarios['clabe_interbancaria'] ?? 'N/A' }},
-                            Cuenta: {{ $bancarios['numero_cuenta'] ?? 'N/A' }}
-                        @endif
-                    </li>
-                @endif
-            </ul>
         </div>
-
-        <!-- 7) OBSERVACIONES -->
-        @if($presupuesto['observaciones'] ?? null)
-            <div class="observaciones-section">
-                <div class="observaciones-title">Observaciones</div>
-                <div class="observaciones-text">{{ $presupuesto['observaciones'] }}</div>
+        <div class="terms-spacer"></div>
+        <div class="terms-block">
+        <!-- 6) TÉRMINOS Y CONDICIONES -->
+        @if(count($terminosLista) > 0)
+            <div class="terminos-section">
+                <div class="terminos-main-title">Términos y Condiciones</div>
+                <ul class="terminos-list">
+                    @foreach($terminosLista as $idx => $item)
+                        <li>
+                            <span class="termino-num">{{ $idx + 1 }}. @if(!empty($item['titulo'])){{ $item['titulo'] }}: @endif</span>{{ $item['texto'] }}
+                        </li>
+                    @endforeach
+                </ul>
             </div>
         @endif
+
+        <!-- 7) OBSERVACIONES GENERALES -->
+        @if(count($observacionesLista) > 0)
+            <div class="observaciones-section">
+                <div class="observaciones-title">Observaciones Generales</div>
+                <ul class="observaciones-list">
+                    @foreach($observacionesLista as $obs)
+                        <li>{{ $obs }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+        </div>
         </div>
     </div>
     <div class="margin-bottom"></div>
@@ -742,11 +898,10 @@
     <script type="text/php">
         if (isset($pdf)) {
             $text = "Página {PAGE_NUM} de {PAGE_COUNT}";
-            $size = 7;
+            $size = 8;
             $font = $fontMetrics->getFont("DejaVu Sans");
-            $width = $fontMetrics->get_text_width($text, $font, $size) / 2;
-            $x = ($pdf->get_width() - $width) / 2;
-            $y = $pdf->get_height() - 35;
+            $x = 50;
+            $y = $pdf->get_height() - 25;
             $pdf->page_text($x, $y, $text, $font, $size);
         }
     </script>

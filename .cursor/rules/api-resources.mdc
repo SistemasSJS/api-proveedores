@@ -1,0 +1,39 @@
+---
+description: Patrones para API Resources en api-proveedores
+globs: app/Http/Resources/**/*.php
+alwaysApply: false
+---
+
+# API Resources - api-proveedores
+
+## Estructura
+- Extender `Illuminate\Http\Resources\Json\JsonResource`
+- Namespace por dominio: `App\Http\Resources\Presupuesto\`, `App\Http\Resources\Proveedor\`
+- Un Resource por entidad principal; sub-recursos en subcarpetas
+
+## Método toArray
+```php
+// PHPDoc obligatorio
+/**
+ * @return array<string, mixed>
+ */
+public function toArray(Request $request): array
+{
+    return [
+        'id' => $this->id,
+        'fecha' => $this->fecha?->format('Y-m-d'),
+        'relacion' => $this->whenLoaded('relacion', fn () => [...]),
+    ];
+}
+```
+
+## Convenciones
+- Fechas: `->format('Y-m-d')` o `->format('Y-m-d H:i:s')`
+- Booleanos: `(bool) $this->campo`
+- Números: `(float) $this->campo`
+- URLs de archivos: `Storage::disk('public')->url($this->logo)`
+- Relaciones: usar `whenLoaded()` para evitar N+1
+
+## Collections
+- Usar `XxxResource::collection($query)` para listados
+- Para paginación: `$collection->resolve()` y pasar a `paginated()`

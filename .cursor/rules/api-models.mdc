@@ -1,0 +1,66 @@
+---
+description: Patrones para Models Eloquent en api-proveedores
+globs: app/Models/**/*.php
+alwaysApply: false
+---
+
+# Models - api-proveedores
+
+## Herencia
+- Extender `BaseModel` (usa Filterable, AutoSwaggerSchema)
+- `$connection = 'mysql5'`, `$timestamps = true`
+
+## Propiedades
+```php
+protected $fillable = [...];
+protected $casts = ['fecha' => 'datetime', 'activo' => 'boolean'];
+protected $hidden = ['created_at', 'updated_at']; // opcional
+```
+
+## Filtros para listados
+
+Los filtros se definen en el modelo y se usan en los endpoints de listado (index). El Controller extrae los params con `$request->only(Model::getFilters())` y aplica `->filter($filters)`.
+
+### Definición en el modelo
+```php
+protected static $filters = [
+    'numero_presupuesto' => 'NumeroPresupuesto',  // clave = param request, valor = sufijo método
+    'estado' => 'Estado',
+    'fecha_desde' => 'FechaDesde',
+    'fecha_hasta' => 'FechaHasta',
+    'search' => 'Search',
+];
+```
+
+### Métodos de filtro
+- Nombre: `filterBy` + valor en PascalCase (ej: `filterByNumeroPresupuesto`)
+- Firma: `filterByXxx($query, $value)` — retorna el query modificado
+- El trait Filterable resuelve: `filterBy` + ucfirst(static::$filters[$key])
+
+### Uso en Controller
+```php
+$filters = $request->only(Presupuesto::getFilters());
+$filters['proveedor_id'] = $proveedor->id;  // inyectar contexto
+$query->filter($filters)->orderBy($sortBy, $order)->paginate($perPage);
+```
+
+### Parámetros de listado
+- Filtros: keys de `$filters` (ej: `?estado=borrador&numero_presupuesto=PRES-`)
+- Orden: `sort_by`, `order` (asc/desc)
+- Paginación: `page`, `per_page`
+
+## Eager loading
+```php
+public static function eagerLodable(): array
+{
+    return ['relacion1', 'relacion2'];
+}
+```
+
+## Relaciones
+- Usar tipos de retorno: `HasMany`, `BelongsTo`, `BelongsToMany`
+- Documentar con PHPDoc cuando aplica
+
+## Scopes globales
+- Usar `booted()` para Global Scopes
+- Documentar en comentario cuándo usar `withoutGlobalScope()`

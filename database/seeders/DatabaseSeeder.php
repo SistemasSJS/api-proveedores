@@ -44,6 +44,9 @@ class DatabaseSeeder extends Seeder
                 // Acceso rápido y cotizaciones originales
                 AccesoRapidoSeeder::class,
                 CotizacionesSeeder::class,
+
+                // Presupuestos para todos los proveedores (borrador, enviado, aceptado, rechazado, vencido)
+                PresupuestosSeeder::class,
                 // PedidosSeeder::class,
 
                 // OrdenCompraSeeder::class,

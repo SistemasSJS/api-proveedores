@@ -104,7 +104,7 @@ class Proveedor extends BaseModel
         'pagina_web' => 'pagina_web',
         // 👇 Nuevo filtro
         'empresas_construcc' => 'EmpresasConstrucc',
-        // 'search' => 'Search',
+        'search' => 'Search',
     ];
 
     public static function eagerLodable(): array
@@ -281,20 +281,24 @@ class Proveedor extends BaseModel
      * Filtro de búsqueda global
      * Busca en múltiples campos: folio, concepto, observaciones, usuario, referencia OC y empresa
      */
-    // public function filterBySearch($query, $value)
-    // {
-    //     return $query->where(function ($q) use ($value) {
-    //         $q->where('numero_folio_solicitud', 'like', "%$value%")
-    //             ->orWhere('folio_factura', 'like', "%$value%")
-    //             ->orWhere('descripcion_concepto', 'like', "%$value%")
-    //             ->orWhere('observaciones', 'like', "%$value%")
-    //             ->orWhere('usuario_nombre', 'like', "%$value%")
-    //             ->orWhere('referencia_oc', 'like', "%$value%")
-    //             ->orWhereHas('empresaConstrucc', function ($empresa) use ($value) {
-    //                 $empresa->where('nombre', 'like', "%$value%");
-    //             });
-    //     });
-    // }
+    public function filterBySearch($query, $value)
+    {
+        return $query->where(function ($q) use ($value) {
+            $q->where('nombre_comercial', 'like', "%$value%")
+                ->orWhere('razon_social', 'like', "%$value%")
+                ->orWhere('rfc', 'like', "%$value%")
+                ->orWhere('direccion_fiscal', 'like', "%$value%")
+                ->orWhere('estado', 'like', "%$value%")
+                ->orWhere('municipio', 'like', "%$value%")
+                ->orWhere('fecha_registro', 'like', "%$value%")
+                ->orWhere('estatus', 'like', "%$value%")
+                ->orWhere('notas', 'like', "%$value%")
+                ->orWhere('email', 'like', "%$value%")
+                ->orWhere('descripcion_giro_empresa', 'like', "%$value%")
+                ->orWhere('direccion_empresa', 'like', "%$value%")
+                ->orWhere('pagina_web', 'like', "%$value%");
+        });
+    }
 
     // ================== CUENTAS BANCARIAS ==================
 

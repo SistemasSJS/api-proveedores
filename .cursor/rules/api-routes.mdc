@@ -1,0 +1,88 @@
+---
+description: Patrones para rutas API en api-proveedores
+globs: routes/**/*.php
+alwaysApply: false
+---
+
+# Rutas - api-proveedores
+
+## Estructura de archivos
+
+El archivo principal `api.php` incluye `routes/segmented/routes-segmented.php`, que carga los archivos en este orden:
+
+| Orden | Archivo | Propósito |
+|-------|---------|-----------|
+| 0.1 | construcc.php | Módulo construcción (API token) |
+| 1 | public.php | Sin autenticación |
+| 2 | auth.php | Login, registro, recuperación contraseña |
+| 3 | shared.php | Todos los roles autenticados |
+| 4 | cliente.php | Rol CLIENTE |
+| 4 | gerente.php | Rol GERENTE (proveedor) |
+| 4 | admin.php | Rol ADMINISTRADOR |
+| 5 | mixed.php | Roles mixtos (CLIENTE, GERENTE, ADMIN) |
+| 6 | middleware.php | Middleware especializados |
+| 7 | notifications.php | Notificaciones, webhooks |
+| 8 | compatibility.php | Compatibilidad con código existente |
+| 9 | testing.php | Desarrollo y testing |
+
+## Patrones por rol
+
+### Gerente (proveedor)
+```php
+Route::prefix('proveedores')
+    ->middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::GERENTE->value])
+    ->group(function () {
+        // CRUD básico: post/, get/{proveedor}, patch/{proveedor}, delete/{proveedor}
+        // Rutas anidadas: {proveedor}/recurso
+        Route::prefix('{proveedor}/presupuestos')->middleware(['proveedor.access'])->group(...);
+    });
+```
+
+### Rutas anidadas
+- Prefijo: `{proveedor}/recurso` (ej: `{proveedor}/presupuestos`)
+- Middleware: `proveedor.access` para acceso al proveedor
+- Middleware adicional: `proveedor.cuenta`, `proveedor.user`, `proveedor.producto`, etc. para recursos hijos
+
+### Orden de rutas
+- Rutas de colección antes de rutas con parámetro: `GET /` y `POST /` antes de `GET /{id}`
+- Rutas específicas (next-folio, generar-pdf) antes de `/{id}`
+
+### Admin
+```php
+Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->value])
+    ->prefix('admin')
+    ->group(...);
+```
+
+### Cliente
+```php
+Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::CLIENTE->value])
+    ->prefix('cliente')
+    ->group(...);
+```
+
+### Construcc (API externa)
+```php
+Route::prefix('construcc')
+    ->middleware(CheckApiKey::class)
+    ->name('construcc.')
+    ->group(...);
+```
+
+### Públicas
+- Sin middleware auth
+- Usar `throttle:60,1` o `throttle:5,1` para limitar
+- Prefijo `public/` para rutas públicas
+
+## Middleware
+
+- `auth:sanctum`: Autenticación
+- `audit`: Auditoría (registrar en todas las rutas que modifican datos)
+- `proveedor.access`: Verificar acceso al proveedor
+- `api.access`: Verificar acceso API
+- `proveedor.{recurso}`: Verificar recurso pertenece al proveedor
+
+## Nombres de rutas
+
+- Usar `->name('nombre.descriptivo')` cuando se necesite para redirects o URLs
+- Compatibilidad: mantener nombres existentes en compatibility.php

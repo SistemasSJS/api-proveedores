@@ -1,0 +1,18 @@
+---
+description: Patrones para Mail y Notifications en api-proveedores
+globs: app/Mail/**/*.php, app/Notifications/**/*.php
+alwaysApply: false
+---
+
+# Mail - api-proveedores
+- Extender `Mailable`, usar `Queueable`, `SerializesModels`
+- Constructor con modelo + datos (ej: `Presupuesto $presupuesto`, `string $enlacePublico`)
+- `envelope()`: subject
+- `content()`: vista en `emails.{dominio}.{nombre}`
+
+# Notifications - api-proveedores
+- Namespace: `App\Notifications\Presupuesto\`, `App\Notifications\SolicitudPago\`
+- Usar `NotificationStyleTrait` para estilos
+- `via()`: ['database', 'mail', 'fcm'] según disponibilidad
+- `toArray()`, `toMail()`, `toFcm()`, `toBroadcast()` según canal
+- Método privado `baseData()` para datos comunes

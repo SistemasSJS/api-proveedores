@@ -1,0 +1,56 @@
+# Dependencias (no indexar)
+vendor/
+node_modules/
+
+# Cache y compilación
+bootstrap/cache/
+storage/
+public/build/
+public/hot
+public/storage
+.phpunit.result.cache
+
+# Archivos sensibles
+.env
+.env.*
+!.env.example
+
+# Logs y temporales
+*.log
+*.tmp
+*.temp
+*.sql
+*.dump
+storage/logs/
+storage/framework/
+storage/imports/
+storage/exports/
+storage/reports/
+storage/api-docs/
+
+# Documentación generada
+public/docs/
+coverage/
+
+# Archivos binarios y uploads
+*.sqlite
+*.sqlite3
+*.pdf
+*.zip
+*.pem
+*.key
+public/uploads/
+
+# IDE y herramientas
+.idea/
+_ide_helper.php
+_ide_helper_models.php
+.phpstorm.meta.php
+
+# OS
+.DS_Store
+Thumbs.db
+
+# custom ignore
+docs/
+.docs/

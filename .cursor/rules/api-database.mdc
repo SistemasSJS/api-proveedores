@@ -1,0 +1,29 @@
+---
+description: Patrones para migraciones y seeds en api-proveedores
+globs: database/**/*.php
+alwaysApply: false
+---
+
+# Database - api-proveedores
+
+## Migraciones
+- Nombre: `YYYY_MM_DD_HHMMSS_descripcion_accion_table.php`
+- `Schema::create()` o `Schema::table()`
+- Siempre implementar `down()` con `Schema::dropIfExists()` o reversión
+
+## Convenciones de columnas
+```php
+$table->id();
+$table->string('campo', 255)->nullable();
+$table->decimal('monto', 15, 2)->default(0);
+$table->boolean('activo')->default(true);
+$table->json('datos')->nullable();
+$table->foreignId('proveedor_id')->constrained('proveedores')->cascadeOnDelete();
+$table->timestamps();
+$table->index('proveedor_id');
+$table->unique(['proveedor_id', 'numero']);
+```
+
+## Índices
+- Índices en FKs y columnas usadas en filtros
+- Unique para combinaciones que deben ser únicas
