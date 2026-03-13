@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Presupuesto\StorePresupuestoRequest;
 use App\Http\Requests\Presupuesto\UpdatePresupuestoRequest;
 use App\Http\Resources\Presupuesto\PresupuestoResource;
+use App\Http\Resources\ProveedorResource;
 use App\Models\CarteraCliente;
 use App\Models\Presupuesto;
 use App\Models\PresupuestoConcepto;
@@ -66,6 +67,30 @@ class ProveedorPresupuestoController extends Controller
             'folio' => $this->formatearFolioSiguiente($proveedor),
             'proveedor_id' => (int) $proveedor->id,
         ]);
+    }
+
+    /**
+     * Lista proveedores registrados con filtros (search) para uso en selector de clientes de catálogo.
+     */
+    public function proveedoresRegistrados(Request $request, Proveedor $proveedor): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user || ! $user->tieneAccesoAProveedor((int) $proveedor->id)) {
+            return $this->error('El usuario autenticado no tiene acceso al proveedor indicado.', null, 403);
+        }
+
+        $filters = $request->only(Proveedor::getFilters());
+        $perPage = min((int) $request->input('per_page', 50), 100);
+
+        $proveedores = Proveedor::with(Proveedor::eagerLodable())
+            ->filter($filters)
+            ->orderBy('nombre_comercial', 'asc')
+            ->paginate($perPage);
+
+        $data = ProveedorResource::collection($proveedores)->resolve();
+
+        return $this->paginated($proveedores->setCollection(collect($data)));
     }
 
     public function index(Request $request, Proveedor $proveedor): JsonResponse

@@ -83,15 +83,25 @@ class CarteraCliente extends BaseModel
     }
 
     /**
-     * Búsqueda general en múltiples campos.
+     * Búsqueda general en múltiples campos (nombre, empresa, teléfono, correo, ID).
      */
     public function filterBySearch($query, string $value)
     {
-        return $query->where(function ($q) use ($value) {
+        $numericId = null;
+        if (preg_match('/CLI-?(\d+)/i', $value, $m)) {
+            $numericId = (int) $m[1];
+        } elseif (ctype_digit($value)) {
+            $numericId = (int) $value;
+        }
+
+        return $query->where(function ($q) use ($value, $numericId) {
             $q->where('nombre', 'like', "%{$value}%")
                 ->orWhere('empresa', 'like', "%{$value}%")
                 ->orWhere('telefono', 'like', "%{$value}%")
                 ->orWhere('correo', 'like', "%{$value}%");
+            if ($numericId !== null) {
+                $q->orWhere('id', $numericId);
+            }
         });
     }
 }

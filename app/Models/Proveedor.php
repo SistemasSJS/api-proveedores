@@ -290,7 +290,7 @@ class Proveedor extends BaseModel
                 ->orWhere('direccion_fiscal', 'like', "%$value%")
                 ->orWhere('estado', 'like', "%$value%")
                 ->orWhere('municipio', 'like', "%$value%")
-                ->orWhere('fecha_registro', 'like', "%$value%")
+                // ->orWhere('fecha_registro', 'like', "%$value%")
                 ->orWhere('estatus', 'like', "%$value%")
                 ->orWhere('notas', 'like', "%$value%")
                 ->orWhere('email', 'like', "%$value%")

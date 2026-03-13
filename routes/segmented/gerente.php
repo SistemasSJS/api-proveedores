@@ -218,6 +218,8 @@ Route::prefix('proveedores')
          */
         Route::prefix('{proveedor}/presupuestos')->middleware(['proveedor.access'])->group(function () {
 
+            Route::get('proveedores-registrados', [ProveedorPresupuestoController::class, 'proveedoresRegistrados'])->middleware(['audit']);
+
             Route::prefix('cartera-clientes')->group(function () {
                 Route::get('/', [ProveedorPresupuestoCarteraClientesController::class, 'index'])->middleware(['audit']);
                 Route::post('/', [ProveedorPresupuestoCarteraClientesController::class, 'store'])->middleware(['audit']);
