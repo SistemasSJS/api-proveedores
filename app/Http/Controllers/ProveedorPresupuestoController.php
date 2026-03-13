@@ -464,6 +464,42 @@ class ProveedorPresupuestoController extends Controller
     }
 
     /**
+     * Genera la URL del código QR para la versión web del presupuesto.
+     * Usa API externa y convierte a base64 para que DomPDF lo renderice sin habilitar remote.
+     *
+     * @param \App\Models\Presupuesto $presupuesto
+     * @return string|null
+     */
+    private function generarQrCodeParaPresupuesto(Presupuesto $presupuesto): ?string
+    {
+        $token = $presupuesto->token_publico;
+        if (! $token) {
+            return null;
+        }
+
+        $appUrl = config('app.frontend_url', config('app.url'));
+        $urlWeb = rtrim($appUrl, '/') . '/public/presupuesto/' . $token;
+        $qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=' . rawurlencode($urlWeb);
+
+        try {
+            $context = stream_context_create([
+                'http' => ['timeout' => 5],
+            ]);
+            $qrImage = @file_get_contents($qrApiUrl, false, $context);
+            if ($qrImage !== false && ! empty($qrImage)) {
+                return 'data:image/png;base64,' . base64_encode($qrImage);
+            }
+        } catch (\Throwable $e) {
+            $this->log('Error al generar QR para presupuesto', [
+                'presupuesto_id' => $presupuesto->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return null;
+    }
+
+    /**
      * Convierte el logo del proveedor a base64 si está disponible.
      * 
      * IMPORTANTE: DomPDF requiere GD para procesar PNG/GIF. Si GD no está disponible:
@@ -597,7 +633,7 @@ class ProveedorPresupuestoController extends Controller
                 })->toArray(),
                 'condiciones' => $presupuesto->condiciones ?? [],
                 'observaciones' => $presupuesto->observaciones,
-                'qr_code' => null, // Se puede generar un QR code aquí si es necesario
+                'qr_code' => $this->generarQrCodeParaPresupuesto($presupuesto),
             ];
 
             return $this->generarPdfResponse($datosPresupuesto, $presupuesto->numero_presupuesto);
@@ -785,7 +821,7 @@ class ProveedorPresupuestoController extends Controller
                 'conceptos' => $validated['conceptos'] ?? [],
                 'condiciones' => $validated['condiciones'] ?? [],
                 'observaciones' => $validated['observaciones'] ?? null,
-                'qr_code' => null, // Se puede generar un QR code aquí si es necesario
+                'qr_code' => null, // Borradores no tienen URL pública
             ];
 
             // Calcular totales

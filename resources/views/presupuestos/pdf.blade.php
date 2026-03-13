@@ -12,13 +12,22 @@
     $terminosLista = [];
 
     if (!empty($cond['vigencia_activo']) && !empty($cond['vigencia_dias'])) {
-        $terminosLista[] = ['titulo' => 'Vigencia del presupuesto', 'texto' => 'Este presupuesto tiene una vigencia de ' . (int)$cond['vigencia_dias'] . ' días naturales a partir de su fecha de emisión.'];
+        $terminosLista[] = [
+            'titulo' => 'Vigencia del presupuesto',
+            'texto' =>
+                'Este presupuesto tiene una vigencia de ' .
+                (int) $cond['vigencia_dias'] .
+                ' días naturales a partir de su fecha de emisión.',
+        ];
     } elseif (!empty($cond['vigencia'])) {
         $terminosLista[] = ['titulo' => 'Vigencia del presupuesto', 'texto' => $cond['vigencia']];
     }
 
     if (!empty($cond['moneda_activo'])) {
-        $terminosLista[] = ['titulo' => 'Moneda', 'texto' => 'Los precios están expresados en moneda nacional (MXN), salvo que se indique lo contrario.'];
+        $terminosLista[] = [
+            'titulo' => 'Moneda',
+            'texto' => 'Los precios están expresados en moneda nacional (MXN), salvo que se indique lo contrario.',
+        ];
     }
 
     $conIvaPdf = $presupuesto['con_iva'] ?? false;
@@ -27,49 +36,88 @@
         $terminosLista[] = [
             'titulo' => 'Impuestos',
             'texto' => $conIvaPdf
-                ? 'Los precios incluyen el Impuesto al Valor Agregado (IVA) al ' . (int)$ivaPct . '%.'
-                : 'Los precios no incluyen el Impuesto al Valor Agregado (IVA).'
+                ? 'Los precios incluyen el Impuesto al Valor Agregado (IVA) al ' . (int) $ivaPct . '%.'
+                : 'Los precios no incluyen el Impuesto al Valor Agregado (IVA).',
         ];
     }
 
     if (!empty($cond['anticipo_activo']) && isset($cond['anticipo_porcentaje'])) {
-        $terminosLista[] = ['titulo' => 'Anticipo', 'texto' => 'Para iniciar los trabajos se requiere un anticipo del ' . (int)$cond['anticipo_porcentaje'] . '% del monto total.'];
+        $terminosLista[] = [
+            'titulo' => 'Anticipo',
+            'texto' =>
+                'Para iniciar los trabajos se requiere un anticipo del ' .
+                (int) $cond['anticipo_porcentaje'] .
+                '% del monto total.',
+        ];
     }
 
     if (!empty($cond['entrega_activo']) && !empty($cond['entrega_tipo'])) {
-        $entregaTexto = ($cond['entrega_tipo'] ?? '') === 'despues'
-            ? 'Una vez entregados los trabajos o productos se deberá cubrir el 100% del monto total del presupuesto.'
-            : 'Para la entrega de los trabajos o productos se deberá haber cubierto el 100% del monto total del presupuesto.';
+        $entregaTexto =
+            ($cond['entrega_tipo'] ?? '') === 'despues'
+                ? 'Una vez entregados los trabajos o productos se deberá cubrir el 100% del monto total del presupuesto.'
+                : 'Para la entrega de los trabajos o productos se deberá haber cubierto el 100% del monto total del presupuesto.';
         $terminosLista[] = ['titulo' => 'Entrega de trabajos o productos', 'texto' => $entregaTexto];
     }
 
     if (!empty($cond['tiempo_entrega_activo']) && !empty($cond['tiempo_entrega_dias'])) {
-        $terminosLista[] = ['titulo' => 'Tiempo de entrega o ejecución', 'texto' => 'Una vez recibido el anticipo, el tiempo estimado de entrega o ejecución total de los trabajos será de ' . (int)$cond['tiempo_entrega_dias'] . ' días naturales.'];
+        $terminosLista[] = [
+            'titulo' => 'Tiempo de entrega o ejecución',
+            'texto' =>
+                'Una vez recibido el anticipo, el tiempo estimado de entrega o ejecución total de los trabajos será de ' .
+                (int) $cond['tiempo_entrega_dias'] .
+                ' días naturales.',
+        ];
     } elseif (!empty($cond['tiempo_entrega'])) {
         $terminosLista[] = ['titulo' => 'Tiempo de entrega', 'texto' => $cond['tiempo_entrega']];
     }
 
     if (!empty($cond['disponibilidad_materiales_activo'])) {
-        $terminosLista[] = ['titulo' => 'Disponibilidad de materiales o refacciones', 'texto' => 'Los tiempos de entrega o ejecución pueden variar dependiendo de la disponibilidad de materiales, refacciones o insumos necesarios.'];
+        $terminosLista[] = [
+            'titulo' => 'Disponibilidad de materiales o refacciones',
+            'texto' =>
+                'Los tiempos de entrega o ejecución pueden variar dependiendo de la disponibilidad de materiales, refacciones o insumos necesarios.',
+        ];
     }
 
     if (!empty($cond['trabajos_adicionales_activo'])) {
-        $terminosLista[] = ['titulo' => 'Trabajos o conceptos adicionales', 'texto' => 'Cualquier trabajo o concepto no incluido en este presupuesto será cotizado por separado.'];
+        $terminosLista[] = [
+            'titulo' => 'Trabajos o conceptos adicionales',
+            'texto' => 'Cualquier trabajo o concepto no incluido en este presupuesto será cotizado por separado.',
+        ];
     }
 
     if (!empty($cond['alcance_activo'])) {
-        $terminosLista[] = ['titulo' => 'Alcance del presupuesto', 'texto' => 'Este presupuesto incluye únicamente los trabajos o productos descritos en este documento.'];
+        $terminosLista[] = [
+            'titulo' => 'Alcance del presupuesto',
+            'texto' => 'Este presupuesto incluye únicamente los trabajos o productos descritos en este documento.',
+        ];
     }
 
     if (!empty($cond['cancelacion_activo'])) {
-        $terminosLista[] = ['titulo' => 'Cancelación del pedido o servicio', 'texto' => 'En caso de cancelación del servicio o pedido una vez autorizado el presupuesto, los gastos o trabajos ya realizados deberán ser cubiertos por el cliente.'];
+        $terminosLista[] = [
+            'titulo' => 'Cancelación del pedido o servicio',
+            'texto' =>
+                'En caso de cancelación del servicio o pedido una vez autorizado el presupuesto, los gastos o trabajos ya realizados deberán ser cubiertos por el cliente.',
+        ];
     }
 
     if (!empty($cond['autorizacion_gestionpro_activo'])) {
-        $terminosLista[] = ['titulo' => 'Autorización mediante GestiónPro', 'texto' => 'La autorización de este presupuesto mediante la aplicación GestiónPro implica la confirmación del cliente para el inicio de los trabajos o suministros descritos.'];
+        $terminosLista[] = [
+            'titulo' => 'Autorización mediante GestiónPro',
+            'texto' =>
+                'La autorización de este presupuesto mediante la aplicación GestiónPro implica la confirmación del cliente para el inicio de los trabajos o suministros descritos.',
+        ];
     }
 
-    foreach (['condicionantes_adicionales_1', 'condicionantes_adicionales_2', 'condicionantes_adicionales_3', 'condicionantes_adicionales_4'] as $key) {
+    foreach (
+        [
+            'condicionantes_adicionales_1',
+            'condicionantes_adicionales_2',
+            'condicionantes_adicionales_3',
+            'condicionantes_adicionales_4',
+        ]
+        as $key
+    ) {
         if (!empty(trim($cond[$key] ?? ''))) {
             $terminosLista[] = ['titulo' => '', 'texto' => trim($cond[$key])];
         }
@@ -93,19 +141,28 @@
     $observacionesLista = [];
 
     if (!empty($cond['garantia_activo']) && !empty($cond['garantia_dias'])) {
-        $observacionesLista[] = 'La garantía de los trabajos o productos tendrá una vigencia de ' . (int)$cond['garantia_dias'] . ' días a partir de la finalización de los trabajos o entrega de los productos.';
+        $observacionesLista[] =
+            'La garantía de los trabajos o productos tendrá una vigencia de ' .
+            (int) $cond['garantia_dias'] .
+            ' días a partir de la finalización de los trabajos o entrega de los productos.';
     } elseif (!empty($cond['garantia'])) {
         $observacionesLista[] = 'Garantía: ' . $cond['garantia'];
     }
 
     if (!empty($cond['gastos_traslado_activo']) && isset($cond['gastos_traslado'])) {
-        $incluidos = (($cond['gastos_traslado'] ?? '') === 'incluidos');
-        $observacionesLista[] = 'Los trabajos contemplados en este presupuesto ' . ($incluidos ? 'sí' : 'no') . ' incluyen los gastos de traslado al sitio donde se realizarán los trabajos.';
+        $incluidos = ($cond['gastos_traslado'] ?? '') === 'incluidos';
+        $observacionesLista[] =
+            'Los trabajos contemplados en este presupuesto ' .
+            ($incluidos ? 'sí' : 'no') .
+            ' incluyen los gastos de traslado al sitio donde se realizarán los trabajos.';
     }
 
     if (!empty($cond['viaticos_activo']) && isset($cond['viaticos'])) {
-        $incluidos = (($cond['viaticos'] ?? '') === 'incluidos');
-        $observacionesLista[] = 'Los trabajos contemplados en este presupuesto ' . ($incluidos ? 'sí' : 'no') . ' incluyen los gastos de viáticos derivados de la ubicación donde deberán realizarse los trabajos.';
+        $incluidos = ($cond['viaticos'] ?? '') === 'incluidos';
+        $observacionesLista[] =
+            'Los trabajos contemplados en este presupuesto ' .
+            ($incluidos ? 'sí' : 'no') .
+            ' incluyen los gastos de viáticos derivados de la ubicación donde deberán realizarse los trabajos.';
     }
 
     if (!empty($cond['revision_tecnica_activo'])) {
@@ -113,10 +170,19 @@
     }
 
     if (!empty($cond['condiciones_sitio_activo'])) {
-        $observacionesLista[] = 'El cliente deberá proporcionar acceso y condiciones adecuadas para la ejecución de los trabajos.';
+        $observacionesLista[] =
+            'El cliente deberá proporcionar acceso y condiciones adecuadas para la ejecución de los trabajos.';
     }
 
-    foreach (['observaciones_adicionales_1', 'observaciones_adicionales_2', 'observaciones_adicionales_3', 'observaciones_adicionales_4'] as $key) {
+    foreach (
+        [
+            'observaciones_adicionales_1',
+            'observaciones_adicionales_2',
+            'observaciones_adicionales_3',
+            'observaciones_adicionales_4',
+        ]
+        as $key
+    ) {
         if (!empty(trim($cond[$key] ?? ''))) {
             $observacionesLista[] = trim($cond[$key]);
         }
@@ -131,12 +197,20 @@
             ? json_decode($presupuesto['proveedor']->datos_bancarios, true)
             : $presupuesto['proveedor']->datos_bancarios;
         if ($bancarios) {
-            $observacionesLista[] = 'Datos bancarios: Banco ' . ($bancarios['banco'] ?? 'N/A') . ', CLABE ' . ($bancarios['clabe_interbancaria'] ?? 'N/A') . ', Cuenta ' . ($bancarios['numero_cuenta'] ?? 'N/A') . '.';
+            $observacionesLista[] =
+                'Datos bancarios: Banco ' .
+                ($bancarios['banco'] ?? 'N/A') .
+                ', CLABE ' .
+                ($bancarios['clabe_interbancaria'] ?? 'N/A') .
+                ', Cuenta ' .
+                ($bancarios['numero_cuenta'] ?? 'N/A') .
+                '.';
         }
     }
 @endphp
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Presupuesto {{ $presupuesto['numero_presupuesto'] ?? 'N/A' }}</title>
@@ -152,7 +226,8 @@
             box-sizing: border-box;
         }
 
-        html, body {
+        html,
+        body {
             width: 100%;
             max-width: 100%;
             overflow-x: hidden;
@@ -211,7 +286,9 @@
             flex: 0 0 auto;
             margin-top: 0;
             margin-bottom: 0;
-            padding-bottom: 2mm;
+            padding: 3mm 4mm 2mm;
+            background: #faf8f5;
+            border-radius: 2mm;
         }
 
         /* ========== 1) ENCABEZADO (igual que preview) ========== */
@@ -428,14 +505,24 @@
             line-height: 1.1;
         }
 
-        .presupuesto-table thead td:first-child { width: 5%; }
+        .presupuesto-table thead td:first-child {
+            width: 5%;
+        }
+
         .presupuesto-table thead td:nth-child(2) {
             width: 38%;
             text-align: left;
             padding-left: 1.5mm;
         }
-        .presupuesto-table thead td:nth-child(3) { width: 10%; }
-        .presupuesto-table thead td:nth-child(4) { width: 10%; }
+
+        .presupuesto-table thead td:nth-child(3) {
+            width: 10%;
+        }
+
+        .presupuesto-table thead td:nth-child(4) {
+            width: 10%;
+        }
+
         .presupuesto-table thead td:nth-child(5),
         .presupuesto-table thead td:nth-child(6) {
             width: 18%;
@@ -545,7 +632,7 @@
             color: #3498db;
         }
 
-        /* ========== 6) TÉRMINOS Y CONDICIONES (documento legal/profesional) ========== */
+        /* ========== 6) TÉRMINOS Y CONDICIONES (tipografía legal, tamaño reducido) ========== */
         .terminos-section {
             margin-bottom: 1.5mm;
             margin-top: 0;
@@ -553,10 +640,11 @@
         }
 
         .terminos-main-title {
-            font-size: 10pt;
+            font-family: 'DejaVu Serif', Georgia, serif;
+            font-size: 6.5pt;
             font-weight: 700;
-            color: #000000;
-            margin-bottom: 1.5mm;
+            color: #9ca3af;
+            margin-bottom: 1mm;
             text-transform: uppercase;
             letter-spacing: 0.5pt;
             line-height: 1.1;
@@ -569,16 +657,18 @@
         }
 
         .terminos-list li {
-            font-size: 7pt;
-            color: #5f6f89;
-            margin-bottom: 0.3mm;
-            line-height: 1.05;
+            font-family: 'DejaVu Serif', Georgia, serif;
+            font-size: 5.5pt;
+            color: #9ca3af;
+            margin-bottom: 0.4mm;
+            line-height: 1.2;
             padding-left: 0;
         }
 
-        .terminos-list .termino-num {
+        .terminos-list .termino-num,
+        .terminos-list strong {
             font-weight: 700;
-            color: #5f6f89;
+            color: #6b7280;
         }
 
         /* ========== 7) OBSERVACIONES GENERALES ========== */
@@ -588,10 +678,11 @@
         }
 
         .observaciones-title {
-            font-size: 10pt;
+            font-family: 'DejaVu Serif', Georgia, serif;
+            font-size: 6.5pt;
             font-weight: 700;
-            color: #000000;
-            margin-bottom: 1.5mm;
+            color: #9ca3af;
+            margin-bottom: 1mm;
             text-transform: uppercase;
             letter-spacing: 0.5pt;
             line-height: 1.1;
@@ -604,11 +695,12 @@
         }
 
         .observaciones-list li {
-            font-size: 7pt;
-            color: #5f6f89;
-            margin-bottom: 0.3mm;
-            line-height: 1.05;
-            padding-left: 5mm;
+            font-family: 'DejaVu Serif', Georgia, serif;
+            font-size: 5.5pt;
+            color: #9ca3af;
+            margin-bottom: 0.4mm;
+            line-height: 1.2;
+            padding-left: 4mm;
             position: relative;
         }
 
@@ -616,41 +708,77 @@
             content: "•";
             position: absolute;
             left: 0;
-            color: #000000;
+            color: #9ca3af;
             font-weight: bold;
         }
 
-        /* ========== 8) PIE DE PÁGINA ========== */
+        /* ========== 8) PIE DE PÁGINA (logos izq | página centro | QR der) ========== */
         .footer {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            height: 18mm;
-            padding-top: 2mm;
-            padding-left: {{ $margenMm }}mm;
-            padding-right: {{ $margenMm }}mm;
+            height: 16mm;
+            padding: 2mm {{ $margenMm }}mm;
             border-top: 1px solid #e9ecef;
-            background: #ffffff;
-            font-size: 6pt;
-            color: #7f8c8d;
+            background: #f9fafb;
+            font-size: 5.5pt;
+            color: #6b7280;
             line-height: 1.2;
+            display: table;
+            width: 100%;
         }
 
-        .footer-content {
-            width: 100%;
+        .footer-left {
+            display: table-cell;
+            width: 38%;
+            vertical-align: middle;
+        }
+
+        .footer-center {
+            display: table-cell;
+            width: 24%;
             text-align: center;
+            vertical-align: middle;
+        }
+
+        .footer-right {
+            display: table-cell;
+            width: 38%;
+            text-align: right;
+            vertical-align: middle;
+        }
+
+        .footer-logos {
+            font-size: 0;
+        }
+
+        .footer-logo-link {
+            display: inline-block;
+            vertical-align: middle;
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 5pt;
+            margin-right: 3mm;
+        }
+
+        .footer-logo-link img {
+            width: 8mm;
+            height: 8mm;
+            object-fit: contain;
+            vertical-align: middle;
+            margin-right: 1mm;
         }
 
         .footer-pages {
-            margin-bottom: 0.5mm;
+            font-weight: 600;
+            color: #4b5563;
         }
 
         .footer-qr {
             display: inline-block;
-            width: 12mm;
-            height: 12mm;
-            margin-top: 1mm;
+            width: 10mm;
+            height: 10mm;
         }
 
         .footer-qr img {
@@ -660,236 +788,288 @@
         }
     </style>
 </head>
+
 <body>
     <div class="margin-top"></div>
     <div class="margin-sides">
         <div class="document-container">
-        <div class="document-main">
-        <!-- 1) ENCABEZADO -->
-        <div class="header">
-            <table class="header-content">
-                <tr>
-                    <td class="logo-section">
-                        @php
-                            $logoProveedorBase64 = ($presupuesto['condiciones']['emisor_logo'] ?? null) ?: ($presupuesto['logo_proveedor_base64'] ?? null);
-                            $nombreEmpresa = $presupuesto['proveedor']->razon_social ?? $presupuesto['proveedor']->nombre_comercial ?? 'P';
-                            $inicial = strtoupper(substr($nombreEmpresa, 0, 1));
-                        @endphp
-                        @if($logoProveedorBase64)
-                            <img src="{{ $logoProveedorBase64 }}" alt="Logo" class="logo-img" />
-                        @else
-                            <div class="logo-fallback">{{ $inicial }}</div>
-                        @endif
-                    </td>
-                    <td class="header-info">
-                        @php
-                            $emisorNombre = $presupuesto['condiciones']['emisor_razon_social'] ?? $presupuesto['proveedor']->razon_social ?? $presupuesto['proveedor']->nombre_comercial ?? 'Empresa Proveedora S.A. de C.V.';
-                            $emisorRfc = $presupuesto['condiciones']['emisor_rfc'] ?? $presupuesto['proveedor']->rfc;
-                            $emisorDireccion = $presupuesto['condiciones']['emisor_direccion'] ?? $presupuesto['proveedor']->direccion_empresa;
-                            $emisorCiudad = $presupuesto['condiciones']['emisor_ciudad_estado'] ?? null;
-                            if (!$emisorCiudad) {
-                                $df = $presupuesto['proveedor']->direccion_fiscal ?? null;
-                                $ciudad = $presupuesto['proveedor']->ciudad ?? ($df ? ($df->ciudad ?? 'Ciudad de México') : 'Ciudad de México');
-                                $estado = $df ? ($df->estado ?? 'CDMX') : 'CDMX';
-                                $emisorCiudad = $ciudad . ', ' . $estado . ', México';
-                            }
-                            $emisorTel = $presupuesto['condiciones']['emisor_telefono'] ?? $presupuesto['proveedor']->telefono;
-                            $emisorEmail = $presupuesto['condiciones']['emisor_email'] ?? $presupuesto['proveedor']->email;
-                        @endphp
-                        <div class="company-header-name">{{ $emisorNombre }}</div>
-                        @if($emisorRfc)
-                            <div class="company-header-info">RFC: {{ $emisorRfc }}</div>
-                        @endif
-                        @if($emisorDireccion)
-                            <div class="company-header-info">{{ $emisorDireccion }}</div>
-                        @endif
-                        @if($emisorCiudad)
-                            <div class="company-header-info">{{ $emisorCiudad }}</div>
-                        @endif
-                        @if($emisorTel)
-                            <div class="company-header-info">Tel: {{ $emisorTel }}</div>
-                        @endif
-                        @if($emisorEmail)
-                            <div class="company-header-info">Email: {{ $emisorEmail }}</div>
-                        @endif
-                    </td>
-                    <td class="folio-section">
-                        <div class="folio-label">Presupuesto</div>
-                        <div class="folio-number">{{ $presupuesto['numero_presupuesto'] ?? 'PRES-000001' }}</div>
-                        @if(!empty($presupuesto['uuid']))
-                            <div class="folio-uuid">{{ $presupuesto['uuid'] }}</div>
-                        @endif
-                        <div class="folio-date">
-                            @php
-                                $fecha = $presupuesto['fecha_emision'] ?? now();
-                                if (is_string($fecha)) {
-                                    $fecha = \Carbon\Carbon::parse($fecha);
-                                }
-                                $fechaFormateada = $fecha->locale('es')->translatedFormat('d \d\e F \d\e\l Y');
-                            @endphp
-                            {{ $fechaFormateada }}
-                        </div>
-                    </td>
-                </tr>
-            </table>
-        </div>
-
-        <!-- 2) DATOS DEL RECEPTOR -->
-        <div class="receptor-section">
-            <div class="receptor-title">Datos del receptor</div>
-
-            @php
-                $empresa = $presupuesto['empresa_receptora']['empresa'] ?? null;
-                $nombre = $presupuesto['empresa_receptora']['nombre'] ?? null;
-            @endphp
-            @if($empresa)
-                <div class="receptor-name">{{ $empresa }}</div>
-            @elseif($nombre)
-                <div class="receptor-name">{{ $nombre }}</div>
-            @endif
-
-            @if($nombre)
-                <div class="receptor-info"><strong>Nombre:</strong> {{ $nombre }}</div>
-            @endif
-
-            @if($presupuesto['empresa_receptora']['puesto'] ?? null)
-                <div class="receptor-info"><strong>Cargo o puesto:</strong> {{ $presupuesto['empresa_receptora']['puesto'] }}</div>
-            @endif
-
-            @if($presupuesto['empresa_receptora']['correo'] ?? null)
-                <div class="receptor-info"><strong>Email:</strong> {{ $presupuesto['empresa_receptora']['correo'] }}</div>
-            @endif
-
-            @if($presupuesto['empresa_receptora']['telefono'] ?? null)
-                <div class="receptor-info"><strong>Teléfono:</strong> {{ $presupuesto['empresa_receptora']['telefono'] }}</div>
-            @endif
-
-            @if($presupuesto['empresa_receptora']['direccion'] ?? null)
-                <div class="receptor-info"><strong>Dirección:</strong> {{ $presupuesto['empresa_receptora']['direccion'] }}</div>
-            @endif
-        </div>
-
-        <!-- 3) DESCRIPCIÓN GENERAL -->
-        @if($presupuesto['concepto_general'] ?? null)
-            <div class="descripcion-section">
-                <div class="descripcion-title">Descripción general</div>
-                <div class="descripcion-text">{{ $presupuesto['concepto_general'] }}</div>
-            </div>
-        @endif
-
-        <!-- 4) TÍTULO Y TABLA PRESUPUESTO -->
-        <div class="presupuesto-title">Presupuesto</div>
-
-        <table class="presupuesto-table">
-            <thead>
-                <tr>
-                    <td>#</td>
-                    <td>Descripción</td>
-                    <td>Cantidad</td>
-                    <td>Unidad</td>
-                    <td>Precio Unitario</td>
-                    <td>Importe</td>
-                </tr>
-            </thead>
-            <tbody>
-                @php
-                    $conceptos = $presupuesto['conceptos'] ?? [];
-                    $subtotal = 0;
-                @endphp
-                @if(count($conceptos) > 0)
-                    @foreach($conceptos as $index => $concepto)
-                        @php
-                            $cantidad = $concepto['cantidad'] ?? 1;
-                            $precioUnitario = $concepto['precio_unitario'] ?? 0;
-                            $importe = $cantidad * $precioUnitario;
-                            $subtotal += $importe;
-                        @endphp
+            <div class="document-main">
+                <!-- 1) ENCABEZADO -->
+                <div class="header">
+                    <table class="header-content">
                         <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $concepto['descripcion'] ?? 'Sin descripción' }}</td>
-                            <td>{{ number_format($cantidad, 2, '.', ',') }}</td>
-                            <td>{{ strtoupper($concepto['unidad'] ?? 'PZA') }}</td>
-                            <td>${{ number_format($precioUnitario, 2, '.', ',') }}</td>
-                            <td>${{ number_format($importe, 2, '.', ',') }}</td>
+                            <td class="logo-section">
+                                @php
+                                    $logoProveedorBase64 =
+                                        $presupuesto['condiciones']['emisor_logo'] ?? null ?:
+                                        $presupuesto['logo_proveedor_base64'] ?? null;
+                                    $nombreEmpresa =
+                                        $presupuesto['proveedor']->razon_social ??
+                                        ($presupuesto['proveedor']->nombre_comercial ?? 'P');
+                                    $inicial = strtoupper(substr($nombreEmpresa, 0, 1));
+                                @endphp
+                                @if ($logoProveedorBase64)
+                                    <img src="{{ $logoProveedorBase64 }}" alt="Logo" class="logo-img" />
+                                @else
+                                    <div class="logo-fallback">{{ $inicial }}</div>
+                                @endif
+                            </td>
+                            <td class="header-info">
+                                @php
+                                    $emisorNombre =
+                                        $presupuesto['condiciones']['emisor_razon_social'] ??
+                                        ($presupuesto['proveedor']->razon_social ??
+                                            ($presupuesto['proveedor']->nombre_comercial ??
+                                                'Empresa Proveedora S.A. de C.V.'));
+                                    $emisorRfc =
+                                        $presupuesto['condiciones']['emisor_rfc'] ?? $presupuesto['proveedor']->rfc;
+                                    $emisorDireccion =
+                                        $presupuesto['condiciones']['emisor_direccion'] ??
+                                        $presupuesto['proveedor']->direccion_empresa;
+                                    $emisorCiudad = $presupuesto['condiciones']['emisor_ciudad_estado'] ?? null;
+                                    if (!$emisorCiudad) {
+                                        $df = $presupuesto['proveedor']->direccion_fiscal ?? null;
+                                        $ciudad =
+                                            $presupuesto['proveedor']->ciudad ??
+                                            ($df ? $df->ciudad ?? 'Ciudad de México' : 'Ciudad de México');
+                                        $estado = $df ? $df->estado ?? 'CDMX' : 'CDMX';
+                                        $emisorCiudad = $ciudad . ', ' . $estado . ', México';
+                                    }
+                                    $emisorTel =
+                                        $presupuesto['condiciones']['emisor_telefono'] ??
+                                        $presupuesto['proveedor']->telefono;
+                                    $emisorEmail =
+                                        $presupuesto['condiciones']['emisor_email'] ?? $presupuesto['proveedor']->email;
+                                @endphp
+                                <div class="company-header-name">{{ $emisorNombre }}</div>
+                                @if ($emisorRfc)
+                                    <div class="company-header-info">RFC: {{ $emisorRfc }}</div>
+                                @endif
+                                @if ($emisorDireccion)
+                                    <div class="company-header-info">{{ $emisorDireccion }}</div>
+                                @endif
+                                @if ($emisorCiudad)
+                                    <div class="company-header-info">{{ $emisorCiudad }}</div>
+                                @endif
+                                @if ($emisorTel)
+                                    <div class="company-header-info">Tel: {{ $emisorTel }}</div>
+                                @endif
+                                @if ($emisorEmail)
+                                    <div class="company-header-info">Email: {{ $emisorEmail }}</div>
+                                @endif
+                            </td>
+                            <td class="folio-section">
+                                <div class="folio-label">Presupuesto</div>
+                                <div class="folio-number">{{ $presupuesto['numero_presupuesto'] ?? 'PRES-000001' }}
+                                </div>
+                                @if (!empty($presupuesto['uuid']))
+                                    <div class="folio-uuid">{{ $presupuesto['uuid'] }}</div>
+                                @endif
+                                <div class="folio-date">
+                                    @php
+                                        $fecha = $presupuesto['fecha_emision'] ?? now();
+                                        if (is_string($fecha)) {
+                                            $fecha = \Carbon\Carbon::parse($fecha);
+                                        }
+                                        $fechaFormateada = $fecha->locale('es')->translatedFormat('d \d\e F \d\e\l Y');
+                                    @endphp
+                                    {{ $fechaFormateada }}
+                                </div>
+                            </td>
                         </tr>
-                    @endforeach
-                @else
-                    <tr>
-                        <td colspan="6" class="no-conceptos">No hay conceptos registrados</td>
-                    </tr>
+                    </table>
+                </div>
+
+                <!-- 2) DATOS DEL RECEPTOR -->
+                <div class="receptor-section">
+                    <div class="receptor-title">Datos del receptor</div>
+
+                    @php
+                        $empresa = $presupuesto['empresa_receptora']['empresa'] ?? null;
+                        $nombre = $presupuesto['empresa_receptora']['nombre'] ?? null;
+                    @endphp
+                    @if ($empresa)
+                        <div class="receptor-name">{{ $empresa }}</div>
+                    @elseif($nombre)
+                        <div class="receptor-name">{{ $nombre }}</div>
+                    @endif
+
+                    @if ($nombre)
+                        <div class="receptor-info"><strong>Nombre:</strong> {{ $nombre }}</div>
+                    @endif
+
+                    @if ($presupuesto['empresa_receptora']['puesto'] ?? null)
+                        <div class="receptor-info"><strong>Cargo o puesto:</strong>
+                            {{ $presupuesto['empresa_receptora']['puesto'] }}</div>
+                    @endif
+
+                    @if ($presupuesto['empresa_receptora']['correo'] ?? null)
+                        <div class="receptor-info"><strong>Email:</strong>
+                            {{ $presupuesto['empresa_receptora']['correo'] }}</div>
+                    @endif
+
+                    @if ($presupuesto['empresa_receptora']['telefono'] ?? null)
+                        <div class="receptor-info"><strong>Teléfono:</strong>
+                            {{ $presupuesto['empresa_receptora']['telefono'] }}</div>
+                    @endif
+
+                    @if ($presupuesto['empresa_receptora']['direccion'] ?? null)
+                        <div class="receptor-info"><strong>Dirección:</strong>
+                            {{ $presupuesto['empresa_receptora']['direccion'] }}</div>
+                    @endif
+                </div>
+
+                <!-- 3) DESCRIPCIÓN GENERAL -->
+                @if ($presupuesto['concepto_general'] ?? null)
+                    <div class="descripcion-section">
+                        <div class="descripcion-title">Descripción general</div>
+                        <div class="descripcion-text">{{ $presupuesto['concepto_general'] }}</div>
+                    </div>
                 @endif
-            </tbody>
-        </table>
 
-        <!-- 5) TOTALES -->
-        <div class="totales-section">
-            @php
-                $subtotalCalculado = $presupuesto['subtotal'] ?? $subtotal;
-                $conIva = $presupuesto['con_iva'] ?? false;
-                $ivaPorcentaje = $presupuesto['iva_porcentaje'] ?? 16;
-                $ivaTotal = $conIva ? ($subtotalCalculado * ($ivaPorcentaje / 100)) : 0;
-                $total = $subtotalCalculado + $ivaTotal;
-            @endphp
-            <table class="totales-table">
-                <tr>
-                    <td>Subtotal:</td>
-                    <td>${{ number_format($subtotalCalculado, 2, '.', ',') }}</td>
-                </tr>
-                @if($conIva)
-                    <tr>
-                        <td>IVA ({{ number_format($ivaPorcentaje, 0) }}%):</td>
-                        <td>${{ number_format($ivaTotal, 2, '.', ',') }}</td>
-                    </tr>
+                <!-- 4) TÍTULO Y TABLA PRESUPUESTO -->
+                <div class="presupuesto-title">Presupuesto</div>
+
+                <table class="presupuesto-table">
+                    <thead>
+                        <tr>
+                            <td>#</td>
+                            <td>Descripción</td>
+                            <td>Cantidad</td>
+                            <td>Unidad</td>
+                            <td>Precio Unitario</td>
+                            <td>Importe</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $conceptos = $presupuesto['conceptos'] ?? [];
+                            $subtotal = 0;
+                        @endphp
+                        @if (count($conceptos) > 0)
+                            @foreach ($conceptos as $index => $concepto)
+                                @php
+                                    $cantidad = $concepto['cantidad'] ?? 1;
+                                    $precioUnitario = $concepto['precio_unitario'] ?? 0;
+                                    $importe = $cantidad * $precioUnitario;
+                                    $subtotal += $importe;
+                                @endphp
+                                <tr>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ $concepto['descripcion'] ?? 'Sin descripción' }}</td>
+                                    <td>{{ number_format($cantidad, 2, '.', ',') }}</td>
+                                    <td>{{ strtoupper($concepto['unidad'] ?? 'PZA') }}</td>
+                                    <td>${{ number_format($precioUnitario, 2, '.', ',') }}</td>
+                                    <td>${{ number_format($importe, 2, '.', ',') }}</td>
+                                </tr>
+                            @endforeach
+                        @else
+                            <tr>
+                                <td colspan="6" class="no-conceptos">No hay conceptos registrados</td>
+                            </tr>
+                        @endif
+                    </tbody>
+                </table>
+
+                <!-- 5) TOTALES -->
+                <div class="totales-section">
+                    @php
+                        $subtotalCalculado = $presupuesto['subtotal'] ?? $subtotal;
+                        $conIva = $presupuesto['con_iva'] ?? false;
+                        $ivaPorcentaje = $presupuesto['iva_porcentaje'] ?? 16;
+                        $ivaTotal = $conIva ? $subtotalCalculado * ($ivaPorcentaje / 100) : 0;
+                        $total = $subtotalCalculado + $ivaTotal;
+                    @endphp
+                    <table class="totales-table">
+                        <tr>
+                            <td>Subtotal:</td>
+                            <td>${{ number_format($subtotalCalculado, 2, '.', ',') }}</td>
+                        </tr>
+                        @if ($conIva)
+                            <tr>
+                                <td>IVA ({{ number_format($ivaPorcentaje, 0) }}%):</td>
+                                <td>${{ number_format($ivaTotal, 2, '.', ',') }}</td>
+                            </tr>
+                        @endif
+                        <tr class="total-line-final">
+                            <td>TOTAL:</td>
+                            <td>${{ number_format($total, 2, '.', ',') }}</td>
+                        </tr>
+                    </table>
+                </div>
+
+            </div>
+            <div class="terms-spacer"></div>
+            <div class="terms-block">
+                <!-- 6) TÉRMINOS Y CONDICIONES -->
+                @if (count($terminosLista) > 0)
+                    <div class="terminos-section">
+                        <div class="terminos-main-title">Términos y Condiciones</div>
+                        <ul class="terminos-list">
+                            @foreach ($terminosLista as $idx => $item)
+                                <li>
+                                    <span class="termino-num">{{ $idx + 1 }}. @if (!empty($item['titulo']))<strong>{{ $item['titulo'] }}:</strong> @endif</span>{{ $item['texto'] }}
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
                 @endif
-                <tr class="total-line-final">
-                    <td>TOTAL:</td>
-                    <td>${{ number_format($total, 2, '.', ',') }}</td>
-                </tr>
-            </table>
-        </div>
 
-        </div>
-        <div class="terms-spacer"></div>
-        <div class="terms-block">
-        <!-- 6) TÉRMINOS Y CONDICIONES -->
-        @if(count($terminosLista) > 0)
-            <div class="terminos-section">
-                <div class="terminos-main-title">Términos y Condiciones</div>
-                <ul class="terminos-list">
-                    @foreach($terminosLista as $idx => $item)
-                        <li>
-                            <span class="termino-num">{{ $idx + 1 }}. @if(!empty($item['titulo'])){{ $item['titulo'] }}: @endif</span>{{ $item['texto'] }}
-                        </li>
-                    @endforeach
-                </ul>
+                <!-- 7) OBSERVACIONES GENERALES -->
+                @if (count($observacionesLista) > 0)
+                    <div class="observaciones-section">
+                        <div class="observaciones-title">Observaciones Generales</div>
+                        <ul class="observaciones-list">
+                            @foreach ($observacionesLista as $obs)
+                                <li>{{ $obs }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
             </div>
-        @endif
-
-        <!-- 7) OBSERVACIONES GENERALES -->
-        @if(count($observacionesLista) > 0)
-            <div class="observaciones-section">
-                <div class="observaciones-title">Observaciones Generales</div>
-                <ul class="observaciones-list">
-                    @foreach($observacionesLista as $obs)
-                        <li>{{ $obs }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-        </div>
         </div>
     </div>
     <div class="margin-bottom"></div>
 
-    <!-- 8) PIE DE PÁGINA -->
+    <!-- 8) PIE DE PÁGINA: logos+URLs izq | número página centro | QR der -->
     <div class="footer">
-        <div class="footer-content">
-            <div class="footer-pages">
-                Página <span class="page-number"></span> de <span class="total-pages"></span>
+        <div class="footer-left">
+            @php
+                $logos = $presupuesto['logos_base64'] ?? [];
+                $appUrls = [
+                    'facturapro' => 'https://facturapro.com',
+                    'constucc' => 'https://construcc.com',
+                    'gestionpro' => 'https://gestionpro.com',
+                ];
+            @endphp
+            <div class="footer-logos">
+                @if(!empty($logos['facturapro']))
+                    <a href="{{ $appUrls['facturapro'] }}" class="footer-logo-link" target="_blank">
+                        <img src="{{ $logos['facturapro'] }}" alt="FacturaPro" />
+                        <span>FacturaPro</span>
+                    </a>
+                @endif
+                @if(!empty($logos['constucc']))
+                    <a href="{{ $appUrls['constucc'] }}" class="footer-logo-link" target="_blank">
+                        <img src="{{ $logos['constucc'] }}" alt="Construcc" />
+                        <span>Construcc</span>
+                    </a>
+                @endif
+                @if(!empty($logos['gestionpro']))
+                    <a href="{{ $appUrls['gestionpro'] }}" class="footer-logo-link" target="_blank">
+                        <img src="{{ $logos['gestionpro'] }}" alt="GestiónPro" />
+                        <span>GestiónPro</span>
+                    </a>
+                @endif
             </div>
-            @if(isset($presupuesto['qr_code']))
+        </div>
+        <div class="footer-center">
+            <span class="footer-pages">Página <span class="page-number"></span> de <span class="total-pages"></span></span>
+        </div>
+        <div class="footer-right">
+            @if (isset($presupuesto['qr_code']) && $presupuesto['qr_code'])
                 <div class="footer-qr">
-                    <img src="{{ $presupuesto['qr_code'] }}" alt="QR Presupuesto" />
+                    <img src="{{ $presupuesto['qr_code'] }}" alt="Ver versión web" title="Ver versión web" />
                 </div>
             @endif
         </div>
@@ -898,12 +1078,14 @@
     <script type="text/php">
         if (isset($pdf)) {
             $text = "Página {PAGE_NUM} de {PAGE_COUNT}";
-            $size = 8;
+            $size = 6;
             $font = $fontMetrics->getFont("DejaVu Sans");
-            $x = 50;
-            $y = $pdf->get_height() - 25;
+            $width = $fontMetrics->get_text_width($text, $font, $size);
+            $x = ($pdf->get_width() - $width) / 2;
+            $y = $pdf->get_height() - 18;
             $pdf->page_text($x, $y, $text, $font, $size);
         }
     </script>
 </body>
+
 </html>
