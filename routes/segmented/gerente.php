@@ -191,6 +191,12 @@ Route::prefix('proveedores')
          * DASHBOARD PROVEEDOR
          */
         Route::prefix('{proveedor}/dashboard')->middleware(['proveedor.access'])->group(function () {
+
+            /** 
+             * TODO: Estas rutas son para el dashboard del proveedor
+             *  - Aqui se migraran los contadores que estan en las spp
+             *  - Ademas se agregaran los contadores para los presupuestos
+             */
             Route::get('/stats', [ProveedorDashboardController::class, 'getStats'])->middleware(['audit']);
             Route::get('/cotizaciones', [ProveedorDashboardController::class, 'cotizacionesDashboard'])->middleware(['audit']);
         });
@@ -228,19 +234,19 @@ Route::prefix('proveedores')
                 Route::patch('/{carteraCliente}', [ProveedorPresupuestoCarteraClientesController::class, 'update'])->middleware(['audit']);
                 Route::delete('/{carteraCliente}', [ProveedorPresupuestoCarteraClientesController::class, 'destroy'])->middleware(['audit']);
             });
- 
+
             Route::get('/next-folio', [ProveedorPresupuestoController::class, 'nextFolioByProveedor'])->middleware(['audit']);
             Route::get('/', [ProveedorPresupuestoController::class, 'index'])->middleware(['audit']);
             Route::post('/', [ProveedorPresupuestoController::class, 'store'])->middleware(['audit']);
-            
+
             // Generar PDF desde formulario (para borradores)
             Route::post('/generar-pdf', [ProveedorPresupuestoController::class, 'generarPdfDesdeFormulario'])->middleware(['audit']);
-            
+
             Route::get('/{presupuesto}', [ProveedorPresupuestoController::class, 'show'])->middleware(['audit']);
             Route::put('/{presupuesto}', [ProveedorPresupuestoController::class, 'update'])->middleware(['audit']);
             Route::patch('/{presupuesto}', [ProveedorPresupuestoController::class, 'update'])->middleware(['audit']);
             Route::delete('/{presupuesto}', [ProveedorPresupuestoController::class, 'destroy'])->middleware(['audit']);
-            
+
             // Generar PDF de presupuesto guardado
             Route::get('/{presupuesto}/pdf', [ProveedorPresupuestoController::class, 'generarPdf'])->middleware(['audit']);
             Route::post('/{presupuesto}/enviar', [ProveedorPresupuestoController::class, 'enviar'])->middleware(['audit']);
@@ -414,4 +420,3 @@ Route::prefix('proveedores')
         //     Route::patch('{pedido}/reject', [ProveedorPedidoController::class, 'rechazar'])->middleware(['audit'])->name('gerente.proveedor.pedidos.reject');
         //     Route::post('export', [ProveedorPedidoController::class, 'exportar'])->middleware(['audit'])->name('gerente.proveedor.pedidos.export');
         // });
-
