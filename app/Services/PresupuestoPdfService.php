@@ -76,7 +76,7 @@ class PresupuestoPdfService
             ->setOption('isPhpEnabled', true)
             ->setOption('defaultFont', 'DejaVu Sans')
             ->setOption('margin-top', 25)
-            ->setOption('margin-bottom', 25)
+            ->setOption('margin-bottom', 70)
             ->setOption('margin-left', 25)
             ->setOption('margin-right', 25)
             ->setOption('enable-local-file-access', false)

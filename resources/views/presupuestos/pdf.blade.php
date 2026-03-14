@@ -217,7 +217,10 @@
     <style>
         @page {
             size: letter;
-            margin: 0;
+            margin-top: {{ $margenMm }}mm;
+            margin-left: {{ $margenMm }}mm;
+            margin-right: {{ $margenMm }}mm;
+            margin-bottom: 32mm;
         }
 
         * {
@@ -824,7 +827,7 @@
 </head>
 
 <body>
-    {{-- Footer primero para que DomPDF lo repita en todas las páginas --}}
+    {{-- Pie de página: logos, numeración y QR (primero para que DomPDF lo repita en todas las páginas) --}}
     <div class="footer">
         <div class="footer-left">
             @php
@@ -840,7 +843,7 @@
                 @foreach ($appFooter as $app)
                     <div class="footer-logo-item">
                         <a href="{{ $app['url'] }}" class="footer-logo-link" target="_blank">
-                            @if(!empty($logos[$app['key']]))
+                            @if (!empty($logos[$app['key']]))
                                 <img src="{{ $logos[$app['key']] }}" alt="{{ $app['name'] }}" />
                             @else
                                 <span class="footer-logo-placeholder">{{ substr($app['name'], 0, 1) }}</span>
@@ -1087,7 +1090,9 @@
                         <div class="terminos-main-title">Términos y Condiciones</div>
                         <div class="terminos-parrafo">
                             @foreach ($terminosLista as $idx => $item)
-                                {{ $item['texto'] }}@if(!$loop->last). @endif
+                                {{ $item['texto'] }}@if (!$loop->last)
+                                    .
+                                @endif
                             @endforeach
                         </div>
                     </div>
@@ -1099,7 +1104,9 @@
                         <div class="observaciones-title">Observaciones Generales</div>
                         <div class="observaciones-parrafo">
                             @foreach ($observacionesLista as $obs)
-                                {{ $obs }}@if(!$loop->last). @endif
+                                {{ $obs }}@if (!$loop->last)
+                                    .
+                                @endif
                             @endforeach
                         </div>
                     </div>

@@ -375,7 +375,7 @@ class ProveedorPresupuestoController extends Controller
                 ->setOption('isPhpEnabled', true) // Requerido para script de número de página
                 ->setOption('defaultFont', 'DejaVu Sans')
                 ->setOption('margin-top', 25)
-                ->setOption('margin-bottom', 25)
+                ->setOption('margin-bottom', 70)
                 ->setOption('margin-left', 25)
                 ->setOption('margin-right', 25)
                 ->setOption('enable-local-file-access', false) // No necesitamos acceso a archivos locales si usamos base64
