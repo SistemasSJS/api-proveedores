@@ -16,10 +16,16 @@ class PresupuestoPdfService
     public function generarPdf(Presupuesto $presupuesto): Response
     {
         $presupuesto->load(Presupuesto::eagerLodable());
+        $presupuesto->asegurarTokenPublico();
 
         $logoProveedorBase64 = $this->convertirLogoProveedorABase64($presupuesto->proveedor);
         $logosBase64 = $this->convertirLogosABase64();
         $gdDisponible = extension_loaded('gd');
+
+        $qrCode = $this->generarQrCodeParaPresupuesto($presupuesto);
+        $qrUrl = $qrCode && $presupuesto->token_publico
+            ? rtrim(config('app.frontend_url', config('app.url')), '/') . '/public/presupuesto/' . $presupuesto->token_publico
+            : null;
 
         $datosPresupuesto = [
             'proveedor' => $presupuesto->proveedor,
@@ -57,7 +63,8 @@ class PresupuestoPdfService
             ])->toArray(),
             'condiciones' => $presupuesto->condiciones ?? [],
             'observaciones' => $presupuesto->observaciones,
-            'qr_code' => null,
+            'qr_code' => $qrCode,
+            'qr_url' => $qrUrl,
         ];
 
         $filename = "Presupuesto_{$presupuesto->numero_presupuesto}.pdf";
@@ -66,6 +73,7 @@ class PresupuestoPdfService
             ->setPaper('letter', 'portrait')
             ->setOption('isRemoteEnabled', false)
             ->setOption('isHtml5ParserEnabled', true)
+            ->setOption('isPhpEnabled', true)
             ->setOption('defaultFont', 'DejaVu Sans')
             ->setOption('margin-top', 25)
             ->setOption('margin-bottom', 25)
@@ -75,6 +83,36 @@ class PresupuestoPdfService
             ->setOption('chroot', public_path());
 
         return $pdf->download($filename);
+    }
+
+    private function generarQrCodeParaPresupuesto(Presupuesto $presupuesto): ?string
+    {
+        $presupuesto->asegurarTokenPublico();
+        $token = $presupuesto->token_publico;
+        if (! $token) {
+            return null;
+        }
+
+        $appUrl = config('app.frontend_url', config('app.url'));
+        $urlWeb = rtrim($appUrl, '/') . '/public/presupuesto/' . $token;
+        $qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' . rawurlencode($urlWeb);
+
+        try {
+            $context = stream_context_create([
+                'http' => ['timeout' => 5],
+            ]);
+            $qrImage = @file_get_contents($qrApiUrl, false, $context);
+            if ($qrImage !== false && ! empty($qrImage)) {
+                return 'data:image/png;base64,' . base64_encode($qrImage);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Error al generar QR para presupuesto', [
+                'presupuesto_id' => $presupuesto->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return null;
     }
 
     private function convertirLogosABase64(): array

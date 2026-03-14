@@ -372,6 +372,7 @@ class ProveedorPresupuestoController extends Controller
                 ->setPaper('letter', 'portrait') // Tamaño carta (8.5" x 11")
                 ->setOption('isRemoteEnabled', false) // Deshabilitar carga remota para evitar timeouts
                 ->setOption('isHtml5ParserEnabled', true)
+                ->setOption('isPhpEnabled', true) // Requerido para script de número de página
                 ->setOption('defaultFont', 'DejaVu Sans')
                 ->setOption('margin-top', 25)
                 ->setOption('margin-bottom', 25)
@@ -472,6 +473,7 @@ class ProveedorPresupuestoController extends Controller
      */
     private function generarQrCodeParaPresupuesto(Presupuesto $presupuesto): ?string
     {
+        $presupuesto->asegurarTokenPublico();
         $token = $presupuesto->token_publico;
         if (! $token) {
             return null;
@@ -479,7 +481,7 @@ class ProveedorPresupuestoController extends Controller
 
         $appUrl = config('app.frontend_url', config('app.url'));
         $urlWeb = rtrim($appUrl, '/') . '/public/presupuesto/' . $token;
-        $qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=' . rawurlencode($urlWeb);
+        $qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' . rawurlencode($urlWeb);
 
         try {
             $context = stream_context_create([
@@ -633,7 +635,8 @@ class ProveedorPresupuestoController extends Controller
                 })->toArray(),
                 'condiciones' => $presupuesto->condiciones ?? [],
                 'observaciones' => $presupuesto->observaciones,
-                'qr_code' => $this->generarQrCodeParaPresupuesto($presupuesto),
+                'qr_code' => $qrCode = $this->generarQrCodeParaPresupuesto($presupuesto),
+                'qr_url' => $qrCode ? (rtrim(config('app.frontend_url', config('app.url')), '/') . '/public/presupuesto/' . $presupuesto->token_publico) : null,
             ];
 
             return $this->generarPdfResponse($datosPresupuesto, $presupuesto->numero_presupuesto);

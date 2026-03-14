@@ -270,7 +270,7 @@
             overflow-x: hidden;
             display: flex;
             flex-direction: column;
-            min-height: 240mm;
+            min-height: 250mm;
         }
 
         .document-main {
@@ -279,16 +279,13 @@
 
         .terms-spacer {
             flex: 1 1 auto;
-            min-height: 2mm;
+            min-height: 8mm;
         }
 
         .terms-block {
             flex: 0 0 auto;
             margin-top: 0;
             margin-bottom: 0;
-            padding: 3mm 4mm 2mm;
-            background: #faf8f5;
-            border-radius: 2mm;
         }
 
         /* ========== 1) ENCABEZADO (igual que preview) ========== */
@@ -632,153 +629,190 @@
             color: #3498db;
         }
 
-        /* ========== 6) TÉRMINOS Y CONDICIONES (tipografía legal, tamaño reducido) ========== */
+        /* ========== 6) TÉRMINOS Y CONDICIONES (al final de la última página) ========== */
         .terminos-section {
-            margin-bottom: 1.5mm;
+            margin-bottom: 0;
             margin-top: 0;
+            padding: 4mm 6mm;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 2mm;
             page-break-inside: avoid;
         }
 
         .terminos-main-title {
-            font-family: 'DejaVu Serif', Georgia, serif;
-            font-size: 6.5pt;
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 8pt;
             font-weight: 700;
-            color: #9ca3af;
-            margin-bottom: 1mm;
+            color: #2c3e50;
+            margin-bottom: 2mm;
             text-transform: uppercase;
             letter-spacing: 0.5pt;
-            line-height: 1.1;
-        }
-
-        .terminos-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .terminos-list li {
-            font-family: 'DejaVu Serif', Georgia, serif;
-            font-size: 5.5pt;
-            color: #9ca3af;
-            margin-bottom: 0.4mm;
             line-height: 1.2;
-            padding-left: 0;
         }
 
-        .terminos-list .termino-num,
-        .terminos-list strong {
+        .terminos-parrafo {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 7pt;
+            color: #374151;
+            line-height: 1.5;
+            text-align: justify;
+        }
+
+        .terminos-parrafo strong {
             font-weight: 700;
-            color: #6b7280;
+            color: #2c3e50;
         }
 
         /* ========== 7) OBSERVACIONES GENERALES ========== */
         .observaciones-section {
-            margin-bottom: 2mm;
+            margin-bottom: 0;
+            margin-top: 3mm;
+            padding: 4mm 6mm;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 2mm;
             page-break-inside: avoid;
         }
 
         .observaciones-title {
-            font-family: 'DejaVu Serif', Georgia, serif;
-            font-size: 6.5pt;
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 8pt;
             font-weight: 700;
-            color: #9ca3af;
-            margin-bottom: 1mm;
+            color: #2c3e50;
+            margin-bottom: 2mm;
             text-transform: uppercase;
             letter-spacing: 0.5pt;
-            line-height: 1.1;
-        }
-
-        .observaciones-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .observaciones-list li {
-            font-family: 'DejaVu Serif', Georgia, serif;
-            font-size: 5.5pt;
-            color: #9ca3af;
-            margin-bottom: 0.4mm;
             line-height: 1.2;
-            padding-left: 4mm;
-            position: relative;
         }
 
-        .observaciones-list li::before {
-            content: "•";
-            position: absolute;
-            left: 0;
-            color: #9ca3af;
-            font-weight: bold;
+        .observaciones-parrafo {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 7pt;
+            color: #374151;
+            line-height: 1.5;
+            text-align: justify;
         }
 
-        /* ========== 8) PIE DE PÁGINA (logos izq | página centro | QR der) ========== */
+        /* ========== 8) PIE DE PÁGINA (estilo cotizaciones/facturas) ========== */
         .footer {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            height: 16mm;
-            padding: 2mm {{ $margenMm }}mm;
-            border-top: 1px solid #e9ecef;
-            background: #f9fafb;
+            min-height: 22mm;
+            padding: 3mm {{ $margenMm }}mm;
+            border-top: 1px solid #e5e7eb;
+            background: #f3f4f6;
             font-size: 5.5pt;
             color: #6b7280;
-            line-height: 1.2;
+            line-height: 1.3;
             display: table;
             width: 100%;
         }
 
         .footer-left {
             display: table-cell;
-            width: 38%;
+            width: 40%;
             vertical-align: middle;
         }
 
         .footer-center {
             display: table-cell;
-            width: 24%;
+            width: 20%;
             text-align: center;
             vertical-align: middle;
         }
 
         .footer-right {
             display: table-cell;
-            width: 38%;
+            width: 40%;
             text-align: right;
             vertical-align: middle;
         }
 
+        .footer-titulo {
+            font-size: 6pt;
+            font-weight: 700;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.5pt;
+            margin-bottom: 2mm;
+        }
+
         .footer-logos {
-            font-size: 0;
+            display: table;
+            width: 100%;
+        }
+
+        .footer-logo-item {
+            display: table-cell;
+            width: 33%;
+            text-align: center;
+            vertical-align: top;
+            padding-right: 2mm;
+        }
+
+        .footer-logo-item:last-child {
+            padding-right: 0;
         }
 
         .footer-logo-link {
-            display: inline-block;
-            vertical-align: middle;
+            display: block;
             color: #6b7280;
             text-decoration: none;
-            font-size: 5pt;
-            margin-right: 3mm;
         }
 
         .footer-logo-link img {
-            width: 8mm;
-            height: 8mm;
+            width: 10mm;
+            height: 10mm;
             object-fit: contain;
-            vertical-align: middle;
-            margin-right: 1mm;
+            display: block;
+            margin: 0 auto 1mm;
+        }
+
+        .footer-logo-placeholder {
+            width: 10mm;
+            height: 10mm;
+            display: block;
+            margin: 0 auto 1mm;
+            background: #e5e7eb;
+            border-radius: 2mm;
+            font-size: 6pt;
+            font-weight: 700;
+            color: #6b7280;
+            text-align: center;
+            line-height: 10mm;
+        }
+
+        .footer-logo-name {
+            font-weight: 600;
+            color: #4b5563;
+            font-size: 5.5pt;
+        }
+
+        .footer-logo-url {
+            font-size: 4.5pt;
+            color: #9ca3af;
+            word-break: break-all;
         }
 
         .footer-pages {
             font-weight: 600;
-            color: #4b5563;
+            color: #374151;
+            font-size: 6pt;
         }
 
         .footer-qr {
             display: inline-block;
-            width: 10mm;
-            height: 10mm;
+            width: 24mm;
+            height: 24mm;
+        }
+
+        .footer-qr a {
+            display: block;
+            width: 100%;
+            height: 100%;
         }
 
         .footer-qr img {
@@ -790,6 +824,52 @@
 </head>
 
 <body>
+    {{-- Footer primero para que DomPDF lo repita en todas las páginas --}}
+    <div class="footer">
+        <div class="footer-left">
+            @php
+                $logos = $presupuesto['logos_base64'] ?? [];
+                $appFooter = [
+                    ['key' => 'facturapro', 'name' => 'FacturaPro', 'url' => 'https://facturaspro.com.mx'],
+                    ['key' => 'constucc', 'name' => 'Construcc', 'url' => 'https://construcc.mx'],
+                    ['key' => 'gestionpro', 'name' => 'GestiónPro', 'url' => 'https://gestion.heventec.com'],
+                ];
+            @endphp
+            <div class="footer-titulo">Desarrollado con nuestras aplicaciones</div>
+            <div class="footer-logos">
+                @foreach ($appFooter as $app)
+                    <div class="footer-logo-item">
+                        <a href="{{ $app['url'] }}" class="footer-logo-link" target="_blank">
+                            @if(!empty($logos[$app['key']]))
+                                <img src="{{ $logos[$app['key']] }}" alt="{{ $app['name'] }}" />
+                            @else
+                                <span class="footer-logo-placeholder">{{ substr($app['name'], 0, 1) }}</span>
+                            @endif
+                            <span class="footer-logo-name">{{ $app['name'] }}</span>
+                            <span class="footer-logo-url">{{ $app['url'] }}</span>
+                        </a>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+        <div class="footer-center">
+            <span class="footer-pages">&nbsp;</span>
+        </div>
+        <div class="footer-right">
+            @if (isset($presupuesto['qr_code']) && $presupuesto['qr_code'])
+                <div class="footer-qr">
+                    @if (!empty($presupuesto['qr_url']))
+                        <a href="{{ $presupuesto['qr_url'] }}" target="_blank" rel="noopener" title="Ver versión web">
+                            <img src="{{ $presupuesto['qr_code'] }}" alt="Ver versión web" />
+                        </a>
+                    @else
+                        <img src="{{ $presupuesto['qr_code'] }}" alt="Ver versión web" title="Ver versión web" />
+                    @endif
+                </div>
+            @endif
+        </div>
+    </div>
+
     <div class="margin-top"></div>
     <div class="margin-sides">
         <div class="document-container">
@@ -1005,13 +1085,11 @@
                 @if (count($terminosLista) > 0)
                     <div class="terminos-section">
                         <div class="terminos-main-title">Términos y Condiciones</div>
-                        <ul class="terminos-list">
+                        <div class="terminos-parrafo">
                             @foreach ($terminosLista as $idx => $item)
-                                <li>
-                                    <span class="termino-num">{{ $idx + 1 }}. @if (!empty($item['titulo']))<strong>{{ $item['titulo'] }}:</strong> @endif</span>{{ $item['texto'] }}
-                                </li>
+                                {{ $item['texto'] }}@if(!$loop->last). @endif
                             @endforeach
-                        </ul>
+                        </div>
                     </div>
                 @endif
 
@@ -1019,11 +1097,11 @@
                 @if (count($observacionesLista) > 0)
                     <div class="observaciones-section">
                         <div class="observaciones-title">Observaciones Generales</div>
-                        <ul class="observaciones-list">
+                        <div class="observaciones-parrafo">
                             @foreach ($observacionesLista as $obs)
-                                <li>{{ $obs }}</li>
+                                {{ $obs }}@if(!$loop->last). @endif
                             @endforeach
-                        </ul>
+                        </div>
                     </div>
                 @endif
             </div>
@@ -1031,58 +1109,15 @@
     </div>
     <div class="margin-bottom"></div>
 
-    <!-- 8) PIE DE PÁGINA: logos+URLs izq | número página centro | QR der -->
-    <div class="footer">
-        <div class="footer-left">
-            @php
-                $logos = $presupuesto['logos_base64'] ?? [];
-                $appUrls = [
-                    'facturapro' => 'https://facturapro.com',
-                    'constucc' => 'https://construcc.com',
-                    'gestionpro' => 'https://gestionpro.com',
-                ];
-            @endphp
-            <div class="footer-logos">
-                @if(!empty($logos['facturapro']))
-                    <a href="{{ $appUrls['facturapro'] }}" class="footer-logo-link" target="_blank">
-                        <img src="{{ $logos['facturapro'] }}" alt="FacturaPro" />
-                        <span>FacturaPro</span>
-                    </a>
-                @endif
-                @if(!empty($logos['constucc']))
-                    <a href="{{ $appUrls['constucc'] }}" class="footer-logo-link" target="_blank">
-                        <img src="{{ $logos['constucc'] }}" alt="Construcc" />
-                        <span>Construcc</span>
-                    </a>
-                @endif
-                @if(!empty($logos['gestionpro']))
-                    <a href="{{ $appUrls['gestionpro'] }}" class="footer-logo-link" target="_blank">
-                        <img src="{{ $logos['gestionpro'] }}" alt="GestiónPro" />
-                        <span>GestiónPro</span>
-                    </a>
-                @endif
-            </div>
-        </div>
-        <div class="footer-center">
-            <span class="footer-pages">Página <span class="page-number"></span> de <span class="total-pages"></span></span>
-        </div>
-        <div class="footer-right">
-            @if (isset($presupuesto['qr_code']) && $presupuesto['qr_code'])
-                <div class="footer-qr">
-                    <img src="{{ $presupuesto['qr_code'] }}" alt="Ver versión web" title="Ver versión web" />
-                </div>
-            @endif
-        </div>
-    </div>
-
     <script type="text/php">
-        if (isset($pdf)) {
+        if (isset($pdf) && isset($fontMetrics)) {
             $text = "Página {PAGE_NUM} de {PAGE_COUNT}";
-            $size = 6;
-            $font = $fontMetrics->getFont("DejaVu Sans");
-            $width = $fontMetrics->get_text_width($text, $font, $size);
+            $size = 7;
+            $font = $fontMetrics->getFont("DejaVu Sans", "normal");
+            $sample = "Página 1 de 1";
+            $width = $fontMetrics->getTextWidth($sample, $font, $size);
             $x = ($pdf->get_width() - $width) / 2;
-            $y = $pdf->get_height() - 18;
+            $y = $pdf->get_height() - 22;
             $pdf->page_text($x, $y, $text, $font, $size);
         }
     </script>
