@@ -2,7 +2,7 @@
     use App\Helpers\PresupuestoCondicionesHelper;
 
     $margenMm = 18;
-    $footerHeightMm = 28; // Espacio reservado para pie de página en cada hoja (carta)
+    $footerHeightMm = 22; // Espacio reservado para pie de página en cada hoja (carta)
     $conIvaPdf = $presupuesto['con_iva'] ?? false;
     $ivaPct = (float) ($presupuesto['iva_porcentaje'] ?? 16);
 
@@ -78,12 +78,6 @@
             clear: both;
         }
 
-        .margin-bottom {
-            height: {{ $footerHeightMm }}mm;
-            min-height: {{ $footerHeightMm }}mm;
-            clear: both;
-        }
-
         .margin-sides {
             padding-left: {{ $margenMm }}mm;
             padding-right: {{ $margenMm }}mm;
@@ -96,24 +90,15 @@
             padding: 0;
             background: #ffffff;
             overflow-x: hidden;
-            display: flex;
-            flex-direction: column;
-            min-height: 250mm;
         }
 
         .document-main {
-            flex: 0 0 auto;
-        }
-
-        .terms-spacer {
-            flex: 1 1 auto;
-            min-height: 8mm;
+            margin-bottom: 4mm;
         }
 
         .terms-block {
-            flex: 0 0 auto;
             margin-top: 0;
-            margin-bottom: 8mm;
+            margin-bottom: 4mm;
         }
 
         /* ========== 1) ENCABEZADO (igual que preview) ========== */
@@ -917,7 +902,6 @@
                 </div>
 
             </div>
-            <div class="terms-spacer"></div>
             <div class="terms-block">
                 <!-- 6) TÉRMINOS Y CONDICIONES (listado como preview) -->
                 @if (count($terminosLista) > 0)
@@ -947,7 +931,6 @@
             </div>
         </div>
     </div>
-    <div class="margin-bottom"></div>
 
     <script type="text/php">
         if (isset($pdf) && isset($fontMetrics)) {
@@ -957,7 +940,7 @@
             $sample = "Página 1 de 1";
             $width = $fontMetrics->getTextWidth($sample, $font, $size);
             $x = ($pdf->get_width() - $width) / 2;
-            $y = $pdf->get_height() - 65;
+            $y = $pdf->get_height() - 14;
             $pdf->page_text($x, $y, $text, $font, $size);
         }
     </script>
