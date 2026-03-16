@@ -76,7 +76,7 @@ class PresupuestoPdfService
             ->setOption('isPhpEnabled', true)
             ->setOption('defaultFont', 'DejaVu Sans')
             ->setOption('margin-top', 25)
-            ->setOption('margin-bottom', 70)
+            ->setOption('margin-bottom', 90) // ~32mm: reserva espacio para pie de página en cada hoja
             ->setOption('margin-left', 25)
             ->setOption('margin-right', 25)
             ->setOption('enable-local-file-access', false)

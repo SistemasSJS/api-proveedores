@@ -61,6 +61,37 @@ class Presupuesto extends BaseModel
         'user_id',
     ];
 
+    /**
+     * Estructura del JSON `condiciones` (términos y condiciones del presupuesto).
+     *
+     * Términos (solo se incluyen si *_activo es true):
+     * - vigencia_activo, vigencia_dias, vigencia
+     * - moneda_activo
+     * - impuestos_activo (usa con_iva e iva_porcentaje del presupuesto)
+     * - anticipo_activo, anticipo_porcentaje
+     * - entrega_activo, entrega_tipo (antes|despues)
+     * - tiempo_entrega_activo, tiempo_entrega_dias, tiempo_entrega
+     * - disponibilidad_materiales_activo, disponibilidad_materiales_texto
+     * - trabajos_adicionales_activo
+     * - alcance_activo, alcance_texto
+     * - cancelacion_activo, cancelacion_texto
+     * - autorizacion_gestionpro_activo
+     * - condicionantes_adicionales_1..4 (solo si hay al menos un término activo)
+     *
+     * Observaciones (solo si *_activo es true):
+     * - garantia_activo, garantia_dias, garantia
+     * - gastos_traslado_activo, gastos_traslado (incluidos|no_incluidos)
+     * - viaticos_activo, viaticos (incluidos|no_incluidos)
+     * - revision_tecnica_activo, revision_tecnica_texto
+     * - condiciones_sitio_activo, condiciones_sitio_texto
+     * - observaciones_adicionales_1..4
+     *
+     * Emisor (cabecera PDF):
+     * - emisor_logo, emisor_razon_social, emisor_rfc, emisor_direccion,
+     *   emisor_ciudad_estado, emisor_telefono, emisor_email
+     *
+     * @see \App\Helpers\PresupuestoCondicionesHelper
+     */
     protected $casts = [
         'fecha_emision' => 'date',
         'fecha_vencimiento' => 'date',

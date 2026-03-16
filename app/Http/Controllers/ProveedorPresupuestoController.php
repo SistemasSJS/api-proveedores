@@ -232,6 +232,12 @@ class ProveedorPresupuestoController extends Controller
                 $presupuesto->update($payload);
                 $this->sincronizarConceptos($presupuesto, $validated['conceptos']);
                 $presupuesto->recalcularDesdeConceptos();
+
+                // Recalcular fecha_vencimiento cuando cambian condiciones.vigencia (solo borradores)
+                if ($presupuesto->estado === Presupuesto::ESTADO_BORRADOR && isset($payload['condiciones'])) {
+                    $presupuesto->fecha_vencimiento = $this->calcularFechaVencimiento($presupuesto);
+                }
+
                 $presupuesto->save();
 
                 return $presupuesto->fresh(Presupuesto::eagerLodable());
@@ -375,7 +381,7 @@ class ProveedorPresupuestoController extends Controller
                 ->setOption('isPhpEnabled', true) // Requerido para script de número de página
                 ->setOption('defaultFont', 'DejaVu Sans')
                 ->setOption('margin-top', 25)
-                ->setOption('margin-bottom', 70)
+                ->setOption('margin-bottom', 90) // ~32mm: reserva espacio para pie de página en cada hoja
                 ->setOption('margin-left', 25)
                 ->setOption('margin-right', 25)
                 ->setOption('enable-local-file-access', false) // No necesitamos acceso a archivos locales si usamos base64

@@ -1,196 +1,21 @@
 @php
+    use App\Helpers\PresupuestoCondicionesHelper;
+
     $margenMm = 18;
-    $condicionesDefault = [
-        'tiempo_entrega' => '3 días hábiles a partir de anticipo',
-        'condiciones_pago' => '50% anticipo, 50% contra entrega',
-        'garantia' => '30 días por mano de obra, no incluye mal uso',
-        'vigencia' => '7 días naturales',
-    ];
-    $cond = $presupuesto['condiciones'] ?? [];
-
-    // Construir lista de TÉRMINOS Y CONDICIONES (solo las que existen)
-    $terminosLista = [];
-
-    if (!empty($cond['vigencia_activo']) && !empty($cond['vigencia_dias'])) {
-        $terminosLista[] = [
-            'titulo' => 'Vigencia del presupuesto',
-            'texto' =>
-                'Este presupuesto tiene una vigencia de ' .
-                (int) $cond['vigencia_dias'] .
-                ' días naturales a partir de su fecha de emisión.',
-        ];
-    } elseif (!empty($cond['vigencia'])) {
-        $terminosLista[] = ['titulo' => 'Vigencia del presupuesto', 'texto' => $cond['vigencia']];
-    }
-
-    if (!empty($cond['moneda_activo'])) {
-        $terminosLista[] = [
-            'titulo' => 'Moneda',
-            'texto' => 'Los precios están expresados en moneda nacional (MXN), salvo que se indique lo contrario.',
-        ];
-    }
-
+    $footerHeightMm = 28; // Espacio reservado para pie de página en cada hoja (carta)
     $conIvaPdf = $presupuesto['con_iva'] ?? false;
-    $ivaPct = $presupuesto['iva_porcentaje'] ?? 16;
-    if (!empty($cond['impuestos_activo'])) {
-        $terminosLista[] = [
-            'titulo' => 'Impuestos',
-            'texto' => $conIvaPdf
-                ? 'Los precios incluyen el Impuesto al Valor Agregado (IVA) al ' . (int) $ivaPct . '%.'
-                : 'Los precios no incluyen el Impuesto al Valor Agregado (IVA).',
-        ];
-    }
+    $ivaPct = (float) ($presupuesto['iva_porcentaje'] ?? 16);
 
-    if (!empty($cond['anticipo_activo']) && isset($cond['anticipo_porcentaje'])) {
-        $terminosLista[] = [
-            'titulo' => 'Anticipo',
-            'texto' =>
-                'Para iniciar los trabajos se requiere un anticipo del ' .
-                (int) $cond['anticipo_porcentaje'] .
-                '% del monto total.',
-        ];
-    }
+    $terminosLista = PresupuestoCondicionesHelper::buildTerminosLista(
+        $presupuesto['condiciones'] ?? null,
+        $conIvaPdf,
+        $ivaPct
+    );
 
-    if (!empty($cond['entrega_activo']) && !empty($cond['entrega_tipo'])) {
-        $entregaTexto =
-            ($cond['entrega_tipo'] ?? '') === 'despues'
-                ? 'Una vez entregados los trabajos o productos se deberá cubrir el 100% del monto total del presupuesto.'
-                : 'Para la entrega de los trabajos o productos se deberá haber cubierto el 100% del monto total del presupuesto.';
-        $terminosLista[] = ['titulo' => 'Entrega de trabajos o productos', 'texto' => $entregaTexto];
-    }
-
-    if (!empty($cond['tiempo_entrega_activo']) && !empty($cond['tiempo_entrega_dias'])) {
-        $terminosLista[] = [
-            'titulo' => 'Tiempo de entrega o ejecución',
-            'texto' =>
-                'Una vez recibido el anticipo, el tiempo estimado de entrega o ejecución total de los trabajos será de ' .
-                (int) $cond['tiempo_entrega_dias'] .
-                ' días naturales.',
-        ];
-    } elseif (!empty($cond['tiempo_entrega'])) {
-        $terminosLista[] = ['titulo' => 'Tiempo de entrega', 'texto' => $cond['tiempo_entrega']];
-    }
-
-    if (!empty($cond['disponibilidad_materiales_activo'])) {
-        $terminosLista[] = [
-            'titulo' => 'Disponibilidad de materiales o refacciones',
-            'texto' =>
-                'Los tiempos de entrega o ejecución pueden variar dependiendo de la disponibilidad de materiales, refacciones o insumos necesarios.',
-        ];
-    }
-
-    if (!empty($cond['trabajos_adicionales_activo'])) {
-        $terminosLista[] = [
-            'titulo' => 'Trabajos o conceptos adicionales',
-            'texto' => 'Cualquier trabajo o concepto no incluido en este presupuesto será cotizado por separado.',
-        ];
-    }
-
-    if (!empty($cond['alcance_activo'])) {
-        $terminosLista[] = [
-            'titulo' => 'Alcance del presupuesto',
-            'texto' => 'Este presupuesto incluye únicamente los trabajos o productos descritos en este documento.',
-        ];
-    }
-
-    if (!empty($cond['cancelacion_activo'])) {
-        $terminosLista[] = [
-            'titulo' => 'Cancelación del pedido o servicio',
-            'texto' =>
-                'En caso de cancelación del servicio o pedido una vez autorizado el presupuesto, los gastos o trabajos ya realizados deberán ser cubiertos por el cliente.',
-        ];
-    }
-
-    if (!empty($cond['autorizacion_gestionpro_activo'])) {
-        $terminosLista[] = [
-            'titulo' => 'Autorización mediante GestiónPro',
-            'texto' =>
-                'La autorización de este presupuesto mediante la aplicación GestiónPro implica la confirmación del cliente para el inicio de los trabajos o suministros descritos.',
-        ];
-    }
-
-    foreach (
-        [
-            'condicionantes_adicionales_1',
-            'condicionantes_adicionales_2',
-            'condicionantes_adicionales_3',
-            'condicionantes_adicionales_4',
-        ]
-        as $key
-    ) {
-        if (!empty(trim($cond[$key] ?? ''))) {
-            $terminosLista[] = ['titulo' => '', 'texto' => trim($cond[$key])];
-        }
-    }
-
-    if (empty($terminosLista)) {
-        $tiempoEntrega = $cond['tiempo_entrega'] ?? $condicionesDefault['tiempo_entrega'];
-        $condicionesPago = $cond['condiciones_pago'] ?? $condicionesDefault['condiciones_pago'];
-        $garantia = $cond['garantia'] ?? $condicionesDefault['garantia'];
-        $vigencia = $cond['vigencia'] ?? $condicionesDefault['vigencia'];
-        $terminosLista = [
-            ['titulo' => 'Tiempo de entrega', 'texto' => $tiempoEntrega],
-            ['titulo' => 'Condiciones de pago', 'texto' => $condicionesPago],
-            ['titulo' => 'Garantía', 'texto' => $garantia],
-            ['titulo' => 'Vigencia del presupuesto', 'texto' => $vigencia],
-            ['titulo' => 'Moneda', 'texto' => 'Los precios están expresados en moneda nacional (MXN).'],
-        ];
-    }
-
-    // Construir lista de OBSERVACIONES GENERALES
-    $observacionesLista = [];
-
-    if (!empty($cond['garantia_activo']) && !empty($cond['garantia_dias'])) {
-        $observacionesLista[] =
-            'La garantía de los trabajos o productos tendrá una vigencia de ' .
-            (int) $cond['garantia_dias'] .
-            ' días a partir de la finalización de los trabajos o entrega de los productos.';
-    } elseif (!empty($cond['garantia'])) {
-        $observacionesLista[] = 'Garantía: ' . $cond['garantia'];
-    }
-
-    if (!empty($cond['gastos_traslado_activo']) && isset($cond['gastos_traslado'])) {
-        $incluidos = ($cond['gastos_traslado'] ?? '') === 'incluidos';
-        $observacionesLista[] =
-            'Los trabajos contemplados en este presupuesto ' .
-            ($incluidos ? 'sí' : 'no') .
-            ' incluyen los gastos de traslado al sitio donde se realizarán los trabajos.';
-    }
-
-    if (!empty($cond['viaticos_activo']) && isset($cond['viaticos'])) {
-        $incluidos = ($cond['viaticos'] ?? '') === 'incluidos';
-        $observacionesLista[] =
-            'Los trabajos contemplados en este presupuesto ' .
-            ($incluidos ? 'sí' : 'no') .
-            ' incluyen los gastos de viáticos derivados de la ubicación donde deberán realizarse los trabajos.';
-    }
-
-    if (!empty($cond['revision_tecnica_activo'])) {
-        $observacionesLista[] = 'El diagnóstico o alcance final podrá ajustarse una vez realizada la revisión técnica.';
-    }
-
-    if (!empty($cond['condiciones_sitio_activo'])) {
-        $observacionesLista[] =
-            'El cliente deberá proporcionar acceso y condiciones adecuadas para la ejecución de los trabajos.';
-    }
-
-    foreach (
-        [
-            'observaciones_adicionales_1',
-            'observaciones_adicionales_2',
-            'observaciones_adicionales_3',
-            'observaciones_adicionales_4',
-        ]
-        as $key
-    ) {
-        if (!empty(trim($cond[$key] ?? ''))) {
-            $observacionesLista[] = trim($cond[$key]);
-        }
-    }
-
-    if (!empty(trim($presupuesto['observaciones'] ?? ''))) {
-        $observacionesLista[] = trim($presupuesto['observaciones']);
-    }
+    $observacionesLista = PresupuestoCondicionesHelper::buildObservacionesLista(
+        $presupuesto['condiciones'] ?? null,
+        $presupuesto['observaciones'] ?? null
+    );
 
     if (!empty($presupuesto['proveedor']->datos_bancarios ?? null)) {
         $bancarios = is_string($presupuesto['proveedor']->datos_bancarios)
@@ -220,7 +45,7 @@
             margin-top: {{ $margenMm }}mm;
             margin-left: {{ $margenMm }}mm;
             margin-right: {{ $margenMm }}mm;
-            margin-bottom: 32mm;
+            margin-bottom: {{ $footerHeightMm }}mm;
         }
 
         * {
@@ -254,8 +79,8 @@
         }
 
         .margin-bottom {
-            height: {{ $margenMm }}mm;
-            min-height: {{ $margenMm }}mm;
+            height: {{ $footerHeightMm }}mm;
+            min-height: {{ $footerHeightMm }}mm;
             clear: both;
         }
 
@@ -288,7 +113,7 @@
         .terms-block {
             flex: 0 0 auto;
             margin-top: 0;
-            margin-bottom: 0;
+            margin-bottom: 8mm;
         }
 
         /* ========== 1) ENCABEZADO (igual que preview) ========== */
@@ -484,7 +309,6 @@
             max-width: 100%;
             border-collapse: collapse;
             margin-bottom: 4mm;
-            page-break-inside: avoid;
             table-layout: fixed;
             overflow: hidden;
         }
@@ -640,7 +464,6 @@
             background: #f8f9fa;
             border: 1px solid #e9ecef;
             border-radius: 2mm;
-            page-break-inside: avoid;
         }
 
         .terminos-main-title {
@@ -654,15 +477,21 @@
             line-height: 1.2;
         }
 
-        .terminos-parrafo {
-            font-family: 'DejaVu Sans', Arial, sans-serif;
+        .terminos-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .terminos-list li {
             font-size: 7pt;
             color: #374151;
             line-height: 1.5;
-            text-align: justify;
+            margin-bottom: 1.5mm;
+            padding-left: 0;
         }
 
-        .terminos-parrafo strong {
+        .terminos-list .termino-num {
             font-weight: 700;
             color: #2c3e50;
         }
@@ -675,7 +504,6 @@
             background: #f8f9fa;
             border: 1px solid #e9ecef;
             border-radius: 2mm;
-            page-break-inside: avoid;
         }
 
         .observaciones-title {
@@ -689,133 +517,143 @@
             line-height: 1.2;
         }
 
-        .observaciones-parrafo {
-            font-family: 'DejaVu Sans', Arial, sans-serif;
+        .observaciones-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .observaciones-list li {
             font-size: 7pt;
             color: #374151;
             line-height: 1.5;
-            text-align: justify;
+            margin-bottom: 1.5mm;
+            padding-left: 4mm;
+            position: relative;
         }
 
-        /* ========== 8) PIE DE PÁGINA (estilo cotizaciones/facturas) ========== */
+        .observaciones-list li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
+        /* ========== 8) PIE DE PÁGINA (ancho = página - márgenes, logos izq, centro, QR derecha) ========== */
         .footer {
             position: fixed;
             bottom: 0;
-            left: 0;
-            right: 0;
-            min-height: 22mm;
-            padding: 3mm {{ $margenMm }}mm;
-            border-top: 1px solid #e5e7eb;
-            background: #f3f4f6;
+            left: {{ $margenMm }}mm;
+            right: {{ $margenMm }}mm;
+            height: {{ $footerHeightMm - 2 }}mm;
+            min-height: {{ $footerHeightMm - 2 }}mm;
+            padding: 1mm 0 2mm;
             font-size: 5.5pt;
             color: #6b7280;
             line-height: 1.3;
+            overflow: visible;
+        }
+
+        .footer-table {
             display: table;
             width: 100%;
         }
 
         .footer-left {
             display: table-cell;
-            width: 40%;
+            width: 33%;
             vertical-align: middle;
         }
 
         .footer-center {
             display: table-cell;
-            width: 20%;
+            width: 34%;
             text-align: center;
             vertical-align: middle;
         }
 
         .footer-right {
             display: table-cell;
-            width: 40%;
+            width: 33%;
             text-align: right;
+            vertical-align: middle;
+            padding-left: 2mm;
+        }
+
+        .footer-logos-row {
+            display: table;
+        }
+
+        .footer-logo-cell {
+            display: table-cell;
+            padding-right: 2.5mm;
             vertical-align: middle;
         }
 
-        .footer-titulo {
-            font-size: 6pt;
-            font-weight: 700;
-            color: #374151;
-            text-transform: uppercase;
-            letter-spacing: 0.5pt;
-            margin-bottom: 2mm;
-        }
-
-        .footer-logos {
-            display: table;
-            width: 100%;
-        }
-
-        .footer-logo-item {
-            display: table-cell;
-            width: 33%;
-            text-align: center;
-            vertical-align: top;
-            padding-right: 2mm;
-        }
-
-        .footer-logo-item:last-child {
+        .footer-logo-cell:last-child {
             padding-right: 0;
         }
 
-        .footer-logo-link {
-            display: block;
-            color: #6b7280;
-            text-decoration: none;
-        }
-
-        .footer-logo-link img {
-            width: 10mm;
-            height: 10mm;
+        .footer-logo-img {
+            width: 8mm;
+            height: 8mm;
             object-fit: contain;
             display: block;
-            margin: 0 auto 1mm;
         }
 
         .footer-logo-placeholder {
-            width: 10mm;
-            height: 10mm;
-            display: block;
-            margin: 0 auto 1mm;
+            width: 8mm;
+            height: 8mm;
+            min-width: 8mm;
             background: #e5e7eb;
-            border-radius: 2mm;
-            font-size: 6pt;
+            border-radius: 1.5mm;
+            font-size: 5pt;
             font-weight: 700;
             color: #6b7280;
             text-align: center;
-            line-height: 10mm;
+            line-height: 8mm;
         }
 
-        .footer-logo-name {
-            font-weight: 600;
-            color: #4b5563;
-            font-size: 5.5pt;
-        }
-
-        .footer-logo-url {
-            font-size: 4.5pt;
-            color: #9ca3af;
-            word-break: break-all;
+        .footer-center-content {
+            text-align: center;
+            width: 100%;
         }
 
         .footer-pages {
             font-weight: 600;
             color: #374151;
             font-size: 6pt;
+            margin-bottom: 0.6mm;
+            min-height: 3mm;
+        }
+
+        .footer-slogan {
+            font-style: italic;
+            color: #6b7280;
+            font-size: 5pt;
+            margin-bottom: 0.4mm;
+        }
+
+        .footer-webs {
+            font-size: 5pt;
+        }
+
+        .footer-webs-link {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .footer-webs-sep {
+            color: #9ca3af;
+            margin: 0 1mm;
         }
 
         .footer-qr {
             display: inline-block;
-            width: 24mm;
-            height: 24mm;
-        }
-
-        .footer-qr a {
-            display: block;
-            width: 100%;
-            height: 100%;
+            width: 20mm;
+            height: 20mm;
+            vertical-align: middle;
         }
 
         .footer-qr img {
@@ -823,53 +661,50 @@
             height: 100%;
             object-fit: contain;
         }
+
+        .page-break-avoid {
+            page-break-inside: avoid;
+        }
     </style>
 </head>
 
 <body>
-    {{-- Pie de página: logos, numeración y QR (primero para que DomPDF lo repita en todas las páginas) --}}
+    {{-- Pie de página: logos izq, centro: Página N de N + slogan + urls, QR derecha --}}
     <div class="footer">
+        <div class="footer-table">
         <div class="footer-left">
             @php
                 $logos = $presupuesto['logos_base64'] ?? [];
-                $appFooter = [
-                    ['key' => 'facturapro', 'name' => 'FacturaPro', 'url' => 'https://facturaspro.com.mx'],
-                    ['key' => 'constucc', 'name' => 'Construcc', 'url' => 'https://construcc.mx'],
-                    ['key' => 'gestionpro', 'name' => 'GestiónPro', 'url' => 'https://gestion.heventec.com'],
-                ];
+                $appKeys = ['facturapro', 'constucc', 'gestionpro'];
             @endphp
-            <div class="footer-titulo">Desarrollado con nuestras aplicaciones</div>
-            <div class="footer-logos">
-                @foreach ($appFooter as $app)
-                    <div class="footer-logo-item">
-                        <a href="{{ $app['url'] }}" class="footer-logo-link" target="_blank">
-                            @if (!empty($logos[$app['key']]))
-                                <img src="{{ $logos[$app['key']] }}" alt="{{ $app['name'] }}" />
-                            @else
-                                <span class="footer-logo-placeholder">{{ substr($app['name'], 0, 1) }}</span>
-                            @endif
-                            <span class="footer-logo-name">{{ $app['name'] }}</span>
-                            <span class="footer-logo-url">{{ $app['url'] }}</span>
-                        </a>
+            <div class="footer-logos-row">
+                @foreach ($appKeys as $key)
+                    <div class="footer-logo-cell">
+                        @if (!empty($logos[$key]))
+                            <img src="{{ $logos[$key] }}" alt="" class="footer-logo-img" />
+                        @else
+                            <span class="footer-logo-placeholder">{{ strtoupper(substr($key, 0, 1)) }}</span>
+                        @endif
                     </div>
                 @endforeach
             </div>
         </div>
         <div class="footer-center">
-            <span class="footer-pages">&nbsp;</span>
+            <div class="footer-center-content">
+                <div class="footer-pages">&nbsp;</div>
+                <div class="footer-slogan">"Calidad y compromiso en cada proyecto"</div>
+                <div class="footer-webs">
+                    <a href="https://heventec.com" class="footer-webs-link">heventec.com</a><span class="footer-webs-sep">|</span><a href="https://gestionpro.com" class="footer-webs-link">gestionpro.com</a>
+                </div>
+            </div>
         </div>
         <div class="footer-right">
             @if (isset($presupuesto['qr_code']) && $presupuesto['qr_code'])
                 <div class="footer-qr">
-                    @if (!empty($presupuesto['qr_url']))
-                        <a href="{{ $presupuesto['qr_url'] }}" target="_blank" rel="noopener" title="Ver versión web">
-                            <img src="{{ $presupuesto['qr_code'] }}" alt="Ver versión web" />
-                        </a>
-                    @else
-                        <img src="{{ $presupuesto['qr_code'] }}" alt="Ver versión web" title="Ver versión web" />
-                    @endif
+                    <img src="{{ $presupuesto['qr_code'] }}" alt="Ver versión web" title="Ver versión web" />
                 </div>
             @endif
+        </div>
         </div>
     </div>
 
@@ -1084,31 +919,29 @@
             </div>
             <div class="terms-spacer"></div>
             <div class="terms-block">
-                <!-- 6) TÉRMINOS Y CONDICIONES -->
+                <!-- 6) TÉRMINOS Y CONDICIONES (listado como preview) -->
                 @if (count($terminosLista) > 0)
                     <div class="terminos-section">
                         <div class="terminos-main-title">Términos y Condiciones</div>
-                        <div class="terminos-parrafo">
+                        <ul class="terminos-list">
                             @foreach ($terminosLista as $idx => $item)
-                                {{ $item['texto'] }}@if (!$loop->last)
-                                    .
-                                @endif
+                                <li>
+                                    <span class="termino-num">{{ $idx + 1 }}. {{ $item['titulo'] }}{{ $item['titulo'] ? ': ' : '' }}</span>{{ $item['texto'] }}
+                                </li>
                             @endforeach
-                        </div>
+                        </ul>
                     </div>
                 @endif
 
-                <!-- 7) OBSERVACIONES GENERALES -->
+                <!-- 7) OBSERVACIONES GENERALES (listado como preview) -->
                 @if (count($observacionesLista) > 0)
                     <div class="observaciones-section">
                         <div class="observaciones-title">Observaciones Generales</div>
-                        <div class="observaciones-parrafo">
+                        <ul class="observaciones-list">
                             @foreach ($observacionesLista as $obs)
-                                {{ $obs }}@if (!$loop->last)
-                                    .
-                                @endif
+                                <li>{{ $obs }}</li>
                             @endforeach
-                        </div>
+                        </ul>
                     </div>
                 @endif
             </div>
@@ -1124,7 +957,7 @@
             $sample = "Página 1 de 1";
             $width = $fontMetrics->getTextWidth($sample, $font, $size);
             $x = ($pdf->get_width() - $width) / 2;
-            $y = $pdf->get_height() - 22;
+            $y = $pdf->get_height() - 65;
             $pdf->page_text($x, $y, $text, $font, $size);
         }
     </script>

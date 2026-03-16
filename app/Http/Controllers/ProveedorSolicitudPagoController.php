@@ -9,6 +9,7 @@ use App\Http\Resources\Proveedor\ProveedorPagoResource;
 use App\Http\Resources\SolicitudPago\SolicitudPagoResource;
 use App\Models\EmpresaConstrucc;
 use App\Models\PagoSPP;
+use App\Models\Presupuesto;
 use App\Models\Proveedor;
 use App\Models\SolicitudPago;
 use App\Notifications\SolicitudPago\SolicitudPagoComprobanteActualizado;
@@ -893,6 +894,8 @@ class ProveedorSolicitudPagoController extends Controller
             $baseQuery->filter($filters);
         }
 
+        // filtr 15 dias atras
+        $presupuestosCount = Presupuesto::where('proveedor_id', $proveedor->id)->where('created_at', '>=', now()->subDays(15))->count();
         // Rechazadas NO vistas
         // $rechazadasNoVistas = (clone $baseQuery)
         //     ->where('estado_solicitud', EstadoSP::RECHAZADA->value)
@@ -907,6 +910,7 @@ class ProveedorSolicitudPagoController extends Controller
             'sp_rechazadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::RECHAZADA->value)->where('item_visto', false)->count(),
             'sp_pagadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PAGADO->value)->where('item_visto', false)->count(),
             'sp_sin_factura' => (clone $baseQuery)->where('tiene_factura', false)->count(),
+            'presupuestos' => $presupuestosCount,
         ];
 
         return $this->success($conteos, 'Métricas del dashboard obtenidas correctamente');
