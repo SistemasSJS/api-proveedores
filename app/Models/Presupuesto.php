@@ -14,6 +14,7 @@ class Presupuesto extends BaseModel
     protected $table = 'presupuestos';
 
     protected static $filters = [
+        'search' => 'Search',
         'uuid' => 'Uuid',
         'numero_presupuesto' => 'NumeroPresupuesto',
         'proveedor_id' => 'ProveedorId',
@@ -22,6 +23,8 @@ class Presupuesto extends BaseModel
         'fecha_emision' => 'FechaEmision',
         'fecha_desde' => 'FechaDesde',
         'fecha_hasta' => 'FechaHasta',
+        'fecha_vencimiento_desde' => 'FechaVencimientoDesde',
+        'fecha_vencimiento_hasta' => 'FechaVencimientoHasta',
         'con_iva' => 'ConIva',
         'total' => 'Total',
         'estado' => 'Estado',
@@ -128,6 +131,12 @@ class Presupuesto extends BaseModel
         return $this->hasMany(PresupuestoConcepto::class);
     }
 
+
+    /**
+     * HELPERS
+     */
+
+
     /**
      * Calcula subtotal, IVA y total con base en conceptos y configuración del IVA.
      */
@@ -142,7 +151,7 @@ class Presupuesto extends BaseModel
     public function recalcularDesdeConceptos(): void
     {
         $subtotal = $this->relationLoaded('conceptos')
-            ? $this->conceptos->sum(fn (PresupuestoConcepto $concepto) => (float) $concepto->precio_total)
+            ? $this->conceptos->sum(fn(PresupuestoConcepto $concepto) => (float) $concepto->precio_total)
             : (float) $this->conceptos()->sum('precio_total');
 
         $this->subtotal = round($subtotal, 2);
@@ -215,6 +224,12 @@ class Presupuesto extends BaseModel
             ->update(['estado' => self::ESTADO_VENCIDO]);
     }
 
+
+    /**
+     * SCOPES
+     */
+
+
     /**
      * Filtra por UUID.
      */
@@ -245,8 +260,8 @@ class Presupuesto extends BaseModel
     public function scopeByFechaRango($query, ?string $desde, ?string $hasta)
     {
         return $query
-            ->when($desde, fn ($q) => $q->whereDate('fecha_emision', '>=', $desde))
-            ->when($hasta, fn ($q) => $q->whereDate('fecha_emision', '<=', $hasta));
+            ->when($desde, fn($q) => $q->whereDate('fecha_emision', '>=', $desde))
+            ->when($hasta, fn($q) => $q->whereDate('fecha_emision', '<=', $hasta));
     }
 
     /**
@@ -263,6 +278,29 @@ class Presupuesto extends BaseModel
     public function scopeSinIva($query)
     {
         return $query->where('con_iva', false);
+    }
+
+    /**
+     * FILTERS
+     */
+
+    /**
+     * Filtro por búsqueda general.
+     * Busca en: numero_presupuesto, concepto_general, empresa_receptora_nombre, empresaReceptora.nombre
+     */
+    public function filterBySearch($query, string $value)
+    {
+        return $query->where(function ($query) use ($value) {
+            $query
+                ->where('numero_presupuesto', 'like', "%{$value}%")
+                ->orWhere('concepto_general', 'like', "%{$value}%")
+                ->orWhere('empresa_receptora_nombre', 'like', "%{$value}%")
+                ->orWhere('empresa_receptora_empresa', 'like', "%{$value}%")
+                ->orWhereHas('empresaReceptora', function ($q) use ($value) {
+                    $q->where('nombre', 'like', "%{$value}%")
+                      ->orWhere('empresa', 'like', "%{$value}%");
+                });
+        });
     }
 
     /**
@@ -310,7 +348,7 @@ class Presupuesto extends BaseModel
      */
     public function filterByFechaEmision($query, string $value)
     {
-        return $query->whereDate('fecha_emision', $value);
+        return $query->whereDate('created_at', $value);
     }
 
     /**
@@ -318,7 +356,7 @@ class Presupuesto extends BaseModel
      */
     public function filterByFechaDesde($query, string $value)
     {
-        return $query->whereDate('fecha_emision', '>=', $value);
+        return $query->whereDate('created_at', '>=', $value);
     }
 
     /**
@@ -326,7 +364,23 @@ class Presupuesto extends BaseModel
      */
     public function filterByFechaHasta($query, string $value)
     {
-        return $query->whereDate('fecha_emision', '<=', $value);
+        return $query->whereDate('created_at', '<=', $value);
+    }
+
+    /**
+     * Filtro por fecha de vencimiento desde.
+     */
+    public function filterByFechaVencimientoDesde($query, string $value)
+    {
+        return $query->whereDate('fecha_vencimiento', '>=', $value);
+    }
+
+    /**
+     * Filtro por fecha de vencimiento hasta.
+     */
+    public function filterByFechaVencimientoHasta($query, string $value)
+    {
+        return $query->whereDate('fecha_vencimiento', '<=', $value);
     }
 
     /**
