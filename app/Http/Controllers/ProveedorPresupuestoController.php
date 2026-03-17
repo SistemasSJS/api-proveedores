@@ -353,13 +353,13 @@ class ProveedorPresupuestoController extends Controller
     {
         try {
             // Verificar si GD está disponible antes de generar el PDF
-            // $gdDisponible = extension_loaded('gd');
+            $gdDisponible = extension_loaded('gd');
             
-            // if (!$gdDisponible) {
-            //     $this->log('Advertencia: GD no está disponible. Las imágenes PNG/GIF no se mostrarán.', [
-            //         'numero_presupuesto' => $numeroPresupuesto,
-            //     ]);
-            // }
+            if (!$gdDisponible) {
+                $this->log('Advertencia: GD no está disponible. Las imágenes PNG/GIF no se mostrarán.', [
+                    'numero_presupuesto' => $numeroPresupuesto,
+                ]);
+            }
 
             // Generar nombre del archivo
             $filename = "Presupuesto_{$numeroPresupuesto}.pdf";
@@ -370,7 +370,7 @@ class ProveedorPresupuestoController extends Controller
 
             // Agregar los logos base64 a los datos del presupuesto
             $datosPresupuesto['logos_base64'] = $logosBase64;
-            // $datosPresupuesto['gd_disponible'] = $gdDisponible; // Información útil para la vista
+            $datosPresupuesto['gd_disponible'] = $gdDisponible; // Información útil para la vista
 
             // Generar PDF usando el facade PDF de barryvdh/laravel-dompdf
             // Tamaño carta (8.5" x 11") con márgenes estándar 1 pulgada (25.4mm)
