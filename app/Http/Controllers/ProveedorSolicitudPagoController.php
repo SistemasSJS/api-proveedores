@@ -35,26 +35,36 @@ class ProveedorSolicitudPagoController extends Controller
     public function index(Request $request, Proveedor $proveedor): JsonResponse
     {
         $filters = $request->only(SolicitudPago::getFilters());
+        $filters['proveedor_id'] = $proveedor->id;
         $sortBy = $request->input('sort_by', 'created_at');
         $order = $request->input('order', 'desc');
         $perPage = $request->input('per_page', 10);
 
+        $countFilters = array_diff_key($filters, array_flip(['estado_solicitud']));
+        $segmentCounts = SolicitudPago::query()
+            ->where('proveedor_id', $proveedor->id)
+            ->when(! empty($countFilters), fn($q) => $q->filter($countFilters))
+            ->selectRaw('estado_solicitud, COUNT(*) as total')
+            ->groupBy('estado_solicitud')
+            ->pluck('total', 'estado_solicitud')
+            ->toArray();
+
+        $segmentCountsFormatted = [
+            'pendiente' => (int) ($segmentCounts[EstadoSP::PENDIENTE->value] ?? 0),
+            'rechazada' => (int) ($segmentCounts[EstadoSP::RECHAZADA->value] ?? 0),
+            'autorizada' => (int) ($segmentCounts[EstadoSP::AUTORIZADA->value] ?? 0),
+            'pagado' => (int) ($segmentCounts[EstadoSP::PAGADO->value] ?? 0),
+        ];
+
         $query = SolicitudPago::query()
             ->with(SolicitudPago::eagerLodable())
-            ->where('proveedor_id', $proveedor->id)
-            ->filter($filters);
-
-        // 📌 Aplicar filtro default última semana
-        // $query = $this->aplicarFiltroUltimaSemana($query, $request);
-
-        // Orden y paginación
-        $originalPaginator = $query
+            ->filter($filters)
             ->orderBy($sortBy, $order)
             ->paginate($perPage);
 
-        $data = SolicitudPagoResource::collection($originalPaginator)->resolve();
+        $data = SolicitudPagoResource::collection($query)->resolve();
 
-        return $this->paginated($originalPaginator->setCollection(collect($data)));
+        return $this->paginated($query->setCollection(collect($data)), 'Datos paginados.', 200, ['segment_counts' => $segmentCountsFormatted]);
     }
 
     /**
@@ -881,13 +891,14 @@ class ProveedorSolicitudPagoController extends Controller
         $filters = $request->only(SolicitudPago::getFilters());
 
         // // Filtro por defecto: última semana (si el cliente no envía fechas)
-        // $fechaDesde = $request->input('fecha_registro_pendiente_desde', now()->subDays(7)->startOfDay());
-        // $fechaHasta = $request->input('fecha_registro_pendiente_hasta', now()->endOfDay());
+        $fechaDesde = $request->input('fecha_registro_pendiente_desde', now()->subDays(15)->startOfDay());
+        $fechaHasta = $request->input('fecha_registro_pendiente_hasta', now()->endOfDay());
 
         // Base query
         $baseQuery = SolicitudPago::query()
-            ->where('proveedor_id', $proveedor->id);
-        // ->whereBetween('created_at', [$fechaDesde, $fechaHasta]);
+            ->where('proveedor_id', $proveedor->id)
+            // ->whereBetween('created_at', [$fechaDesde, $fechaHasta]);
+            ->where('created_at', '>=', now()->subDays(15));
 
         // Aplicar filtros del sistema si existen
         if (!empty($filters)) {
@@ -895,7 +906,8 @@ class ProveedorSolicitudPagoController extends Controller
         }
 
         // filtr 15 dias atras
-        $presupuestosCount = Presupuesto::where('proveedor_id', $proveedor->id)->where('created_at', '>=', now()->subDays(15))->count();
+        $presupuestosCount = Presupuesto::where('proveedor_id', $proveedor->id)
+            ->where('created_at', '>=', now()->subDays(15))->count();
         // Rechazadas NO vistas
         // $rechazadasNoVistas = (clone $baseQuery)
         //     ->where('estado_solicitud', EstadoSP::RECHAZADA->value)
@@ -904,12 +916,12 @@ class ProveedorSolicitudPagoController extends Controller
         // Conteos por estado (RESPETANDO lo que ya retornas)
         $conteos = [
             'total_sp' => (clone $baseQuery)->count(),
-            'sp_pendientes' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->count(),
+            'sp_pendientes' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->where('item_visto', false)->count(),
             'sp_autorizadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::AUTORIZADA->value)->where('item_visto', false)->count(),
             'sp_en_proceso' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->where('item_visto', false)->count(),
             'sp_rechazadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::RECHAZADA->value)->where('item_visto', false)->count(),
             'sp_pagadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PAGADO->value)->where('item_visto', false)->count(),
-            'sp_sin_factura' => (clone $baseQuery)->where('tiene_factura', false)->count(),
+            'sp_sin_factura' => (clone $baseQuery)->where('tiene_factura', false)->where('item_visto', false)->count(),
             'presupuestos' => $presupuestosCount,
         ];
 
