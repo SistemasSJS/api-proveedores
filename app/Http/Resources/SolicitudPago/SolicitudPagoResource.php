@@ -28,6 +28,7 @@ class SolicitudPagoResource extends JsonResource
             'equipo' => $this->equipo,
             'equipo_id' => $this->equipo_id,
             'estado_solicitud' => $this->estado_solicitud,
+            'item_visto' => (bool) ($this->item_visto ?? false),
             'cuentas_bancarias' => SolicitudPagoCuentaBancariaResource::collection($this->whenLoaded('cuentasBancarias')),
 
             'proveedor' => $this->whenLoaded('proveedor', function () {
