@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
+use App\Traits\MarksAsNotified;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Str;
 
 class Presupuesto extends BaseModel
 {
-    use HasFactory;
+    use HasFactory, MarksAsNotified, Filterable;
 
     protected $table = 'presupuestos';
 
@@ -28,6 +31,7 @@ class Presupuesto extends BaseModel
         'con_iva' => 'ConIva',
         'total' => 'Total',
         'estado' => 'Estado',
+        'item_visto' => 'ItemVisto',
     ];
 
     public const ESTADO_BORRADOR = 'borrador';
@@ -55,6 +59,8 @@ class Presupuesto extends BaseModel
         'condiciones',
         'observaciones',
         'estado',
+        'item_visto',
+        'notification_id',
         'token_publico',
         'proveedor_id',
         'empresa_receptora_id',
@@ -96,6 +102,7 @@ class Presupuesto extends BaseModel
         'fecha_emision' => 'date',
         'fecha_vencimiento' => 'date',
         'con_iva' => 'boolean',
+        'item_visto' => 'boolean',
         'subtotal' => 'decimal:2',
         'iva_porcentaje' => 'decimal:2',
         'iva_total' => 'decimal:2',
@@ -114,6 +121,26 @@ class Presupuesto extends BaseModel
             }
         });
     }
+
+    // /**
+    //  * Marca el presupuesto como visto y la notificación del usuario como leída.
+    //  * Sobrescribe el trait para también buscar notificaciones por presupuesto_id,
+    //  * ya que cada usuario del proveedor tiene su propia notificación.
+    //  */
+    // public function markRead(?User $user = null): void
+    // {
+    //     MarksAsNotified::markRead($user);
+
+    //     // Marcar también cualquier notificación del usuario actual que referencie este presupuesto
+    //     if ($user) {
+    //         $notification = $user->unreadNotifications()
+    //             ->where('data->presupuesto_id', $this->id)
+    //             ->first();
+    //         if ($notification) {
+    //             $notification->markAsRead();
+    //         }
+    //     }
+    // }
 
     /**
      * Relaciones para carga eager estándar.
@@ -329,7 +356,7 @@ class Presupuesto extends BaseModel
                 ->orWhere('empresa_receptora_empresa', 'like', "%{$value}%")
                 ->orWhereHas('empresaReceptora', function ($q) use ($value) {
                     $q->where('nombre', 'like', "%{$value}%")
-                      ->orWhere('empresa', 'like', "%{$value}%");
+                        ->orWhere('empresa', 'like', "%{$value}%");
                 });
         });
     }
@@ -442,5 +469,19 @@ class Presupuesto extends BaseModel
     public function filterByEstado($query, $value)
     {
         return $query->where('estado', $value);
+    }
+
+    /**
+     * Filtro por item_visto (presupuesto visto/no visto).
+     */
+    public function filterByItemVisto($query, $value)
+    {
+        $boolValue = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+        if ($boolValue === null) {
+            return $query;
+        }
+
+        return $query->where('item_visto', $boolValue);
     }
 }

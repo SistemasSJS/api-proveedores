@@ -198,6 +198,9 @@ class ProveedorPresupuestoController extends Controller
             return $this->error('Presupuesto no pertenece a este proveedor.', null, 403);
         }
 
+        // Marcar como visto al abrir el detalle
+        $presupuesto->markRead(auth()->user());
+
         $presupuesto->load(Presupuesto::eagerLodable());
         $presupuesto->asegurarTokenPublico();
 
@@ -701,9 +704,17 @@ class ProveedorPresupuestoController extends Controller
                     );
                 }
 
-                foreach ($proveedor->usuariosActivos()->get() as $user) {
+                $usuarios = $proveedor->usuariosActivos()->get();
+                foreach ($usuarios as $user) {
                     $user->notify(new PresupuestoEnviado($presupuesto));
                 }
+                $primeraNotif = $usuarios->isNotEmpty()
+                    ? $usuarios->first()->notifications()
+                        ->where('type', PresupuestoEnviado::class)
+                        ->latest()
+                        ->first()
+                    : null;
+                $presupuesto->addNotification($primeraNotif?->id);
             });
 
             $presupuesto->refresh()->load(Presupuesto::eagerLodable());

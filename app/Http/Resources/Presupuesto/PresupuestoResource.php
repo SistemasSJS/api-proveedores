@@ -31,6 +31,7 @@ class PresupuestoResource extends JsonResource
             'condiciones' => $this->condiciones,
             'observaciones' => $this->observaciones,
             'estado' => $this->estado ?? Presupuesto::ESTADO_BORRADOR,
+            'item_visto' => (bool) ($this->item_visto ?? false),
             'token_publico' => $this->token_publico,
             'proveedor' => [
                 'id' => $this->proveedor?->id ?? $this->proveedor_id,

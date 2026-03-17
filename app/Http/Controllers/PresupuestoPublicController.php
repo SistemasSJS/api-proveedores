@@ -89,9 +89,17 @@ class PresupuestoPublicController extends Controller
 
         $proveedor = $presupuesto->proveedor;
         if ($proveedor) {
-            foreach ($proveedor->usuariosActivos()->get() as $user) {
+            $usuarios = $proveedor->usuariosActivos()->get();
+            foreach ($usuarios as $user) {
                 $user->notify(new PresupuestoAceptado($presupuesto));
             }
+            $primeraNotif = $usuarios->isNotEmpty()
+                ? $usuarios->first()->notifications()
+                    ->where('type', PresupuestoAceptado::class)
+                    ->latest()
+                    ->first()
+                : null;
+            $presupuesto->addNotification($primeraNotif?->id);
         }
 
         return $this->success(
@@ -142,9 +150,17 @@ class PresupuestoPublicController extends Controller
 
         $proveedor = $presupuesto->proveedor;
         if ($proveedor) {
-            foreach ($proveedor->usuariosActivos()->get() as $user) {
+            $usuarios = $proveedor->usuariosActivos()->get();
+            foreach ($usuarios as $user) {
                 $user->notify(new PresupuestoRechazado($presupuesto, $motivo));
             }
+            $primeraNotif = $usuarios->isNotEmpty()
+                ? $usuarios->first()->notifications()
+                    ->where('type', PresupuestoRechazado::class)
+                    ->latest()
+                    ->first()
+                : null;
+            $presupuesto->addNotification($primeraNotif?->id);
         }
 
         return $this->success(

@@ -905,9 +905,11 @@ class ProveedorSolicitudPagoController extends Controller
             $baseQuery->filter($filters);
         }
 
-        // filtr 15 dias atras
+        // filtr 15 dias atras - solo presupuestos no vistos (item_visto = false)
         $presupuestosCount = Presupuesto::where('proveedor_id', $proveedor->id)
-            ->where('created_at', '>=', now()->subDays(15))->count();
+            ->where('created_at', '>=', now()->subDays(15))
+            ->where('item_visto', false)
+            ->count();
         // Rechazadas NO vistas
         // $rechazadasNoVistas = (clone $baseQuery)
         //     ->where('estado_solicitud', EstadoSP::RECHAZADA->value)
