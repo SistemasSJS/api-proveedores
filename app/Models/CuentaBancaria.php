@@ -18,8 +18,9 @@ class CuentaBancaria extends BaseModel
         'alias',
         'banco_clave',
         'banco_nombre',
-        'tipo_cuenta',
-        'campo_dependiente',
+        'cuenta',
+        'clabe',
+        'tarjeta',
         'titular_cuenta',
         'referencia',
         'estatus',
@@ -38,8 +39,9 @@ class CuentaBancaria extends BaseModel
         'alias' => 'Alias',
         'banco_clave' => 'BancoClave',
         'banco_nombre' => 'BancoNombre',
-        'tipo_cuenta' => 'TipoCuenta',
-        'campo_dependiente' => 'CampoDependiente',
+        'cuenta' => 'Cuenta',
+        'clabe' => 'Clabe',
+        'tarjeta' => 'Tarjeta',
         'titular_cuenta' => 'TitularCuenta',
         'referencia' => 'Referencia',
         'estatus' => 'Estatus',
@@ -76,9 +78,19 @@ class CuentaBancaria extends BaseModel
         return $query->where('alias', 'like', "%{$alias}%");
     }
 
-    public function scopeTipo($query, string $tipo)
+    public function scopeCuenta($query, string $cuenta)
     {
-        return $query->where('tipo_cuenta', $tipo);
+        return $query->where('cuenta', 'like', "%{$cuenta}%");
+    }
+
+    public function scopeClabe($query, string $clabe)
+    {
+        return $query->where('clabe', 'like', "%{$clabe}%");
+    }
+
+    public function scopeTarjeta($query, string $tarjeta)
+    {
+        return $query->where('tarjeta', 'like', "%{$tarjeta}%");
     }
 
     public function scopeBanco($query, string $claveBanco)
@@ -101,11 +113,6 @@ class CuentaBancaria extends BaseModel
         return $query->where('referencia', 'like', "%{$referencia}%");
     }
 
-    public function scopeCampoDependiente($query, string $campo)
-    {
-        return $query->where('campo_dependiente', 'like', "%{$campo}%");
-    }
-
     public function scopeSucursal($query, string $sucursal)
     {
         return $query->where('sucursal', 'like', "%{$sucursal}%");
@@ -119,5 +126,13 @@ class CuentaBancaria extends BaseModel
     public function scopePreferida($query, bool $preferida = true)
     {
         return $query->where('preferida', $preferida);
+    }
+
+    /**
+     * Obtiene el número principal para pagos (clabe, cuenta o tarjeta según disponibilidad).
+     */
+    public function obtenerNumeroPago(): ?string
+    {
+        return $this->clabe ?? $this->cuenta ?? $this->tarjeta;
     }
 }

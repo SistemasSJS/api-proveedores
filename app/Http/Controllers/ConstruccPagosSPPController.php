@@ -563,7 +563,8 @@ class ConstruccPagosSPPController extends Controller
             }
 
             $cuentaBancaria = CuentaBancaria::findOrFail($validated['cuenta_destino_id']);
-            $campo = preg_replace('/\D+/', '', (string) $cuentaBancaria->campo_dependiente);
+            $numeroPago = $cuentaBancaria->obtenerNumeroPago();
+            $campo = preg_replace('/\D+/', '', (string) $numeroPago);
             $ultimos4 = substr($campo, -4);
 
             $pago = PagoSPP::create([

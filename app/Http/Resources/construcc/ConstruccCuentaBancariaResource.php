@@ -8,22 +8,7 @@ class ConstruccCuentaBancariaResource extends JsonResource
 {
     public function toArray($request)
     {
-        // Determinar qué campo usar según el tipo de cuenta
-        $cuentaValor = null;
-        $clabeValor = null;
-        $tarjetaValor = null;
-
-        switch ($this->tipo_cuenta) {
-            case 'cuenta':
-                $cuentaValor = $this->campo_dependiente;
-                break;
-            case 'clabe':
-                $clabeValor = $this->campo_dependiente;
-                break;
-            case 'tarjeta':
-                $tarjetaValor = $this->campo_dependiente;
-                break;
-        }
+        $tipoDerivado = $this->clabe ? 'clabe' : ($this->cuenta ? 'cuenta' : 'tarjeta');
 
         return [
             // ----------------------------
@@ -32,7 +17,7 @@ class ConstruccCuentaBancariaResource extends JsonResource
             'identificacion' => [
                 'id' => $this->id,
                 'alias' => $this->alias,
-                'tipo_cuenta' => $this->tipo_cuenta,
+                'tipo_cuenta' => $tipoDerivado,
                 'preferida' => $this->preferida,
             ],
 
@@ -59,9 +44,9 @@ class ConstruccCuentaBancariaResource extends JsonResource
             // Sección: Datos de pago
             // ----------------------------
             'datos_pago' => [
-                'cuenta' => $cuentaValor,
-                'clabe_interbancaria' => $clabeValor,
-                'tarjeta' => $tarjetaValor,
+                'cuenta' => $this->cuenta,
+                'clabe_interbancaria' => $this->clabe,
+                'tarjeta' => $this->tarjeta,
             ],
         ];
     }

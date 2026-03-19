@@ -135,11 +135,12 @@ class PagosSPPTestSeeder extends Seeder
                         [
                             'alias' => 'Cuenta Principal',
                             'banco_nombre' => 'BBVA Bancomer',
-                            'tipo_cuenta' => 'CUENTA_CORRIENTE',
-                            'campo_dependiente' => '012345678901234567',
+                            'clabe' => '012345678901234567',
+                            'cuenta' => '45678901234',
+                            'tarjeta' => null,
                             'titular_cuenta' => $proveedor->razon_social,
                             'preferida' => true,
-                            'estatus' => 'ACTIVA',
+                            'estatus' => 'activa',
                         ]
                     );
                 }

@@ -324,7 +324,7 @@ class Proveedor extends BaseModel
     public function scopeFilterByTipoCuenta($query, $tipoCuenta)
     {
         return $query->whereHas('cuentasBancarias', function ($q) use ($tipoCuenta) {
-            $q->where('tipo_cuenta', $tipoCuenta);
+            $q->whereNotNull($tipoCuenta)->where($tipoCuenta, '!=', '');
         });
     }
 

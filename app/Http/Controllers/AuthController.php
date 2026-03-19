@@ -383,11 +383,15 @@ class AuthController extends Controller
                             'email' => $proveedorExistente->email,
                             'telefono' => $proveedorExistente->telefono,
                             'cuentas_bancarias' => $proveedorExistente->cuentasBancarias->map(function ($cuenta) {
+                                $tipo = $cuenta->clabe ? 'clabe' : ($cuenta->cuenta ? 'cuenta' : 'tarjeta');
                                 return [
                                     'id' => $cuenta->id,
                                     'alias' => $cuenta->alias,
                                     'banco_nombre' => $cuenta->banco_nombre,
-                                    'tipo_cuenta' => $cuenta->tipo_cuenta,
+                                    'tipo_cuenta' => $tipo,
+                                    'cuenta' => $cuenta->cuenta,
+                                    'clabe' => $cuenta->clabe,
+                                    'tarjeta' => $cuenta->tarjeta,
                                     'preferida' => $cuenta->preferida,
                                 ];
                             }),

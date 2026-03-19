@@ -3,12 +3,26 @@
 namespace App\Http\Requests\Construcc;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class GenerarSolicitudPagoConstruccRequest extends FormRequest
 {
     public function authorize()
     {
         return true;
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            $cuenta = $this->input('cuenta_bancaria_cuenta');
+            $clabe = $this->input('cuenta_bancaria_clabe');
+            $tarjeta = $this->input('cuenta_bancaria_tarjeta');
+
+            if (empty($cuenta) && empty($clabe) && empty($tarjeta)) {
+                $validator->errors()->add('cuenta_bancaria_cuenta', 'Debe ingresar al menos uno: número de cuenta, CLABE o tarjeta.');
+            }
+        });
     }
 
     public function rules()
@@ -36,8 +50,9 @@ class GenerarSolicitudPagoConstruccRequest extends FormRequest
             'cuenta_bancaria_alias' => 'required|string|max:255',
             'cuenta_bancaria_banco_clave' => 'required|string|max:10',
             'cuenta_bancaria_banco_nombre' => 'required|string|max:255',
-            'cuenta_bancaria_tipo_cuenta' => 'required|string|max:255',
-            'cuenta_bancaria_campo_dependiente' => 'required|string|max:255',
+            'cuenta_bancaria_cuenta' => 'required_if:cuenta_bancaria_clabe,*|nullable|string|regex:/^\d{10,12}$/',
+            'cuenta_bancaria_clabe' => 'nullable|string|size:18|regex:/^\d+$/',
+            'cuenta_bancaria_tarjeta' => 'nullable|string|size:16|regex:/^\d+$/',
             'cuenta_bancaria_titular_cuenta' => 'required|string|max:255',
             'cuenta_bancaria_referencia' => 'nullable|string|max:255',
             'cuenta_bancaria_sucursal' => 'nullable|string|max:255',
@@ -105,10 +120,10 @@ class GenerarSolicitudPagoConstruccRequest extends FormRequest
             'cuenta_bancaria_banco_clave.max' => 'La clave del banco no debe exceder los 10 caracteres',
             'cuenta_bancaria_banco_nombre.required' => 'El nombre del banco es obligatorio',
             'cuenta_bancaria_banco_nombre.max' => 'El nombre del banco no debe exceder los 255 caracteres',
-            'cuenta_bancaria_tipo_cuenta.required' => 'El tipo de cuenta es obligatorio',
-            'cuenta_bancaria_tipo_cuenta.max' => 'El tipo de cuenta no debe exceder los 255 caracteres',
-            'cuenta_bancaria_campo_dependiente.required' => 'El campo dependiente (CLABE/número de cuenta) es obligatorio',
-            'cuenta_bancaria_campo_dependiente.max' => 'El campo dependiente no debe exceder los 255 caracteres',
+            'cuenta_bancaria_cuenta.required_if' => 'El número de cuenta es obligatorio cuando se ingresa CLABE.',
+            'cuenta_bancaria_cuenta.regex' => 'La cuenta debe tener entre 10 y 12 dígitos numéricos.',
+            'cuenta_bancaria_clabe.size' => 'La CLABE debe tener exactamente 18 dígitos.',
+            'cuenta_bancaria_tarjeta.size' => 'La tarjeta debe tener exactamente 16 dígitos.',
             'cuenta_bancaria_titular_cuenta.required' => 'El titular de la cuenta es obligatorio',
             'cuenta_bancaria_titular_cuenta.max' => 'El titular de la cuenta no debe exceder los 255 caracteres',
             'cuenta_bancaria_referencia.max' => 'La referencia no debe exceder los 255 caracteres',

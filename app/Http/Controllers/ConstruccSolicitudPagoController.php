@@ -1634,14 +1634,15 @@ class ConstruccSolicitudPagoController extends Controller
                 'alias' => $validated['cuenta_bancaria_alias'],
                 'banco_clave' => $validated['cuenta_bancaria_banco_clave'],
                 'banco_nombre' => $validated['cuenta_bancaria_banco_nombre'],
-                'tipo_cuenta' => $validated['cuenta_bancaria_tipo_cuenta'],
-                'campo_dependiente' => $validated['cuenta_bancaria_campo_dependiente'],
+                'cuenta' => $validated['cuenta_bancaria_cuenta'] ?? null,
+                'clabe' => $validated['cuenta_bancaria_clabe'] ?? null,
+                'tarjeta' => $validated['cuenta_bancaria_tarjeta'] ?? null,
                 'titular_cuenta' => $validated['cuenta_bancaria_titular_cuenta'],
                 'referencia' => $validated['cuenta_bancaria_referencia'] ?? null,
                 'estatus' => EstadoCuentaBancaria::ACTIVA,
                 'sucursal' => $validated['cuenta_bancaria_sucursal'] ?? null,
                 'swift' => $validated['cuenta_bancaria_swift'] ?? null,
-                'preferida' => $esPrimeraCuenta, // Solo la primera cuenta es preferida automáticamente
+                'preferida' => $esPrimeraCuenta,
             ]);
 
             // Log::info('✅ Cuenta bancaria registrada', [
@@ -1838,8 +1839,9 @@ class ConstruccSolicitudPagoController extends Controller
                         'alias' => $cuentaBancaria->alias,
                         'banco_clave' => $cuentaBancaria->banco_clave,
                         'banco_nombre' => $cuentaBancaria->banco_nombre,
-                        'tipo_cuenta' => $cuentaBancaria->tipo_cuenta,
-                        'campo_dependiente' => $cuentaBancaria->campo_dependiente,
+                        'cuenta' => $cuentaBancaria->cuenta,
+                        'clabe' => $cuentaBancaria->clabe,
+                        'tarjeta' => $cuentaBancaria->tarjeta,
                         'titular_cuenta' => $cuentaBancaria->titular_cuenta,
                         'referencia' => $cuentaBancaria->referencia,
                         'sucursal' => $cuentaBancaria->sucursal,
