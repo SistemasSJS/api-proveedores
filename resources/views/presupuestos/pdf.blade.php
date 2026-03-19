@@ -2,7 +2,7 @@
     use App\Helpers\PresupuestoCondicionesHelper;
 
     $margenMm = 18;
-    $footerHeightMm = 22; // Espacio reservado para pie de página en cada hoja (carta)
+    $footerHeightMm = 24; // Espacio reservado para pie de página en cada hoja (carta)
     $conIvaPdf = $presupuesto['con_iva'] ?? false;
     $ivaPct = (float) ($presupuesto['iva_porcentaje'] ?? 16);
 
@@ -17,21 +17,21 @@
         $presupuesto['observaciones'] ?? null
     );
 
-    if (!empty($presupuesto['proveedor']->datos_bancarios ?? null)) {
-        $bancarios = is_string($presupuesto['proveedor']->datos_bancarios)
-            ? json_decode($presupuesto['proveedor']->datos_bancarios, true)
-            : $presupuesto['proveedor']->datos_bancarios;
-        if ($bancarios) {
-            $observacionesLista[] =
-                'Datos bancarios: Banco ' .
-                ($bancarios['banco'] ?? 'N/A') .
-                ', CLABE ' .
-                ($bancarios['clabe_interbancaria'] ?? 'N/A') .
-                ', Cuenta ' .
-                ($bancarios['numero_cuenta'] ?? 'N/A') .
-                '.';
-        }
-    }
+    // if (!empty($presupuesto['proveedor']->datos_bancarios ?? null)) {
+    //     $bancarios = is_string($presupuesto['proveedor']->datos_bancarios)
+    //         ? json_decode($presupuesto['proveedor']->datos_bancarios, true)
+    //         : $presupuesto['proveedor']->datos_bancarios;
+    //     if ($bancarios) {
+    //         $observacionesLista[] =
+    //             'Datos bancarios: Banco ' .
+    //             ($bancarios['banco'] ?? 'N/A') .
+    //             ', CLABE ' .
+    //             ($bancarios['clabe_interbancaria'] ?? 'N/A') .
+    //             ', Cuenta ' .
+    //             ($bancarios['numero_cuenta'] ?? 'N/A') .
+    //             '.';
+    //     }
+    // }
 @endphp
 <!DOCTYPE html>
 <html lang="es">
@@ -42,10 +42,10 @@
     <style>
         @page {
             size: letter;
-            margin-top: {{ $margenMm }}mm;
+            margin-top: {{ $margenMm + 1000 }}mm;
             margin-left: {{ $margenMm }}mm;
             margin-right: {{ $margenMm }}mm;
-            margin-bottom: {{ $footerHeightMm }}mm;
+            margin-bottom: {{ $footerHeightMm + 2  }}mm;
         }
 
         * {
@@ -93,7 +93,7 @@
         }
 
         .document-main {
-            margin-bottom: 4mm;
+            margin-bottom: 6mm;
         }
 
         .terms-block {
@@ -186,7 +186,8 @@
         }
 
         .folio-number {
-            font-size: 14pt;
+            /* font-size: 14pt; */
+            font-size: 9pt; /* igual al tamaño de font del importe total*/
             font-weight: 700;
             color: #3498db;
             margin-bottom: 0.8mm;
@@ -222,7 +223,7 @@
         }
 
         .receptor-title {
-            font-size: 7pt;
+            /* font-size: 7pt;
             color: #3498db;
             text-transform: uppercase;
             font-weight: 700;
@@ -231,6 +232,13 @@
             padding-bottom: 1mm;
             border-bottom: 2px solid #3498db;
             display: inline-block;
+            line-height: 1.1; */
+            font-size: 6pt;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            margin-bottom: 0.8mm;
             line-height: 1.1;
         }
 
@@ -528,7 +536,7 @@
         /* ========== 8) PIE DE PÁGINA (ancho = página - márgenes, logos izq, centro, QR derecha) ========== */
         .footer {
             position: fixed;
-            bottom: 0;
+            bottom: 0mm;
             left: {{ $margenMm }}mm;
             right: {{ $margenMm }}mm;
             height: {{ $footerHeightMm - 2 }}mm;
@@ -783,45 +791,48 @@
                     </table>
                 </div>
 
-                <!-- 2) DATOS DEL RECEPTOR -->
+               <!-- 2) DATOS DEL RECEPTOR -->
                 <div class="receptor-section">
                     <div class="receptor-title">Datos del receptor</div>
 
                     @php
-                        $empresa = $presupuesto['empresa_receptora']['empresa'] ?? null;
-                        $nombre = $presupuesto['empresa_receptora']['nombre'] ?? null;
+                        $receptor = $presupuesto['empresa_receptora'] ?? [];
+
+                        $nombreCorto = $receptor['empresa'] ?? null;
+                        $nombre = $receptor['nombre'] ?? null;
+                        $puesto = $receptor['puesto'] ?? null;
+                        $empresa = $receptor['empresa'] ?? null;
+                        $correo = $receptor['correo'] ?? null;
+                        $telefono = $receptor['telefono'] ?? null;
+                        $direccion = $receptor['direccion'] ?? null;
                     @endphp
-                    @if ($empresa)
-                        <div class="receptor-name">{{ $empresa }}</div>
-                    @elseif($nombre)
-                        <div class="receptor-name">{{ $nombre }}</div>
+
+                    {{-- 1. Nombre corto --}}
+                    @if ($nombreCorto)
+                        <div class="receptor-name">{{ $nombreCorto }}</div>
                     @endif
 
+                    {{-- 2. Nombre de la persona --}}
                     @if ($nombre)
-                        <div class="receptor-info"><strong>Nombre:</strong> {{ $nombre }}</div>
+                        <div class="receptor-info">{{ $nombre }}</div>
                     @endif
 
-                    @if ($presupuesto['empresa_receptora']['puesto'] ?? null)
-                        <div class="receptor-info"><strong>Cargo o puesto:</strong>
-                            {{ $presupuesto['empresa_receptora']['puesto'] }}</div>
+                    {{-- 3. Cargo --}}
+                    @if ($puesto)
+                        <div class="receptor-info"></strong> {{ $puesto }}</div>
                     @endif
 
-                    @if ($presupuesto['empresa_receptora']['correo'] ?? null)
-                        <div class="receptor-info"><strong>Email:</strong>
-                            {{ $presupuesto['empresa_receptora']['correo'] }}</div>
+                    {{-- 4. Empresa --}}
+                    @if ($empresa)
+                        <div class="receptor-info">{{ $empresa }}</div>
                     @endif
 
-                    @if ($presupuesto['empresa_receptora']['telefono'] ?? null)
-                        <div class="receptor-info"><strong>Teléfono:</strong>
-                            {{ $presupuesto['empresa_receptora']['telefono'] }}</div>
-                    @endif
-
-                    @if ($presupuesto['empresa_receptora']['direccion'] ?? null)
-                        <div class="receptor-info"><strong>Dirección:</strong>
-                            {{ $presupuesto['empresa_receptora']['direccion'] }}</div>
-                    @endif
+                    {{-- Extras --}}
+                    {{-- @if ($correo)<div class="receptor-info">{{ $correo }}</div>@endif --}} 
+                    {{-- @if ($telefono)<div class="receptor-info">{{ $telefono }}</div>@endif --}}
+                    {{-- @if ($direccion)<div class="receptor-info">{{ $direccion }}</div>@endif --}}
                 </div>
-
+                
                 <!-- 3) DESCRIPCIÓN GENERAL -->
                 @if ($presupuesto['concepto_general'] ?? null)
                     <div class="descripcion-section">
@@ -940,7 +951,7 @@
             $sample = "Página 1 de 1";
             $width = $fontMetrics->getTextWidth($sample, $font, $size);
             $x = ($pdf->get_width() - $width) / 2;
-            $y = $pdf->get_height() - 14;
+            $y = $pdf->get_height() - 22;
             $pdf->page_text($x, $y, $text, $font, $size);
         }
     </script>
