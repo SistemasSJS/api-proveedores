@@ -9,12 +9,12 @@
     $terminosLista = PresupuestoCondicionesHelper::buildTerminosLista(
         $presupuesto['condiciones'] ?? null,
         $conIvaPdf,
-        $ivaPct
+        $ivaPct,
     );
 
     $observacionesLista = PresupuestoCondicionesHelper::buildObservacionesLista(
         $presupuesto['condiciones'] ?? null,
-        $presupuesto['observaciones'] ?? null
+        $presupuesto['observaciones'] ?? null,
     );
 
     // if (!empty($presupuesto['proveedor']->datos_bancarios ?? null)) {
@@ -32,6 +32,7 @@
     //             '.';
     //     }
     // }
+
 @endphp
 <!DOCTYPE html>
 <html lang="es">
@@ -45,7 +46,7 @@
             margin-top: {{ $margenMm + 1000 }}mm;
             margin-left: {{ $margenMm }}mm;
             margin-right: {{ $margenMm }}mm;
-            margin-bottom: {{ $footerHeightMm + 2  }}mm;
+            margin-bottom: {{ $footerHeightMm + 2 }}mm;
         }
 
         * {
@@ -53,6 +54,7 @@
             padding: 0;
             box-sizing: border-box;
         }
+
 
         html,
         body {
@@ -119,7 +121,7 @@
             width: 14%;
             min-width: 0;
             vertical-align: top;
-            padding-right: 2mm;
+            /* padding-right: 2mm; */
         }
 
         .header-info {
@@ -142,7 +144,7 @@
 
         .logo-img {
             max-width: 100%;
-            max-height: 16mm;
+            /* max-height: 16mm; */
             object-fit: contain;
             border-radius: 2mm;
         }
@@ -169,7 +171,7 @@
         }
 
         .company-header-info {
-            font-size: 6.5pt;
+            font-size: 7.5pt;
             color: #7f8c8d;
             margin-bottom: 0.6mm;
             line-height: 1.15;
@@ -187,7 +189,8 @@
 
         .folio-number {
             /* font-size: 14pt; */
-            font-size: 9pt; /* igual al tamaño de font del importe total*/
+            font-size: 9pt;
+            /* igual al tamaño de font del importe total*/
             font-weight: 700;
             color: #3498db;
             margin-bottom: 0.8mm;
@@ -264,6 +267,7 @@
 
         /* ========== 3) DESCRIPCIÓN GENERAL ========== */
         .descripcion-section {
+            margin-top: 4mm;
             margin-bottom: 4mm;
             page-break-inside: avoid;
         }
@@ -474,11 +478,15 @@
         }
 
         .terminos-list li {
-            font-size: 5.8pt; /* ligeramente más compacto */
+            font-size: 5.8pt;
+            /* ligeramente más compacto */
             color: #6b7280;
-            line-height: 1.05; /* MÁS PEGADO */
-            margin-bottom: 0.6mm; /* menos separación entre items */
+            line-height: 1.05;
+            /* MÁS PEGADO */
+            margin-bottom: 0.6mm;
+            /* menos separación entre items */
         }
+
         /* .terminos-section {
             margin-bottom: 0;
             margin-top: 0;
@@ -694,39 +702,41 @@
     {{-- Pie de página: logos izq, centro: Página N de N + slogan + urls, QR derecha --}}
     <div class="footer">
         <div class="footer-table">
-        <div class="footer-left">
-            @php
-                $logos = $presupuesto['logos_base64'] ?? [];
-                $appKeys = ['facturapro', 'constucc', 'gestionpro'];
-            @endphp
-            <div class="footer-logos-row">
-                @foreach ($appKeys as $key)
-                    <div class="footer-logo-cell">
-                        @if (!empty($logos[$key]))
-                            <img src="{{ $logos[$key] }}" alt="" class="footer-logo-img" />
-                        @else
-                            <span class="footer-logo-placeholder">{{ strtoupper(substr($key, 0, 1)) }}</span>
-                        @endif
+            <div class="footer-left">
+                @php
+                    $logos = $presupuesto['logos_base64'] ?? [];
+                    $appKeys = ['facturapro', 'constucc', 'gestionpro'];
+                @endphp
+                <div class="footer-logos-row">
+                    @foreach ($appKeys as $key)
+                        <div class="footer-logo-cell">
+                            @if (!empty($logos[$key]))
+                                <img src="{{ $logos[$key] }}" alt="" class="footer-logo-img" />
+                            @else
+                                <span class="footer-logo-placeholder">{{ strtoupper(substr($key, 0, 1)) }}</span>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            <div class="footer-center">
+                <div class="footer-center-content">
+                    <div class="footer-pages">&nbsp;</div>
+                    <div class="footer-slogan">"Calidad y compromiso en cada proyecto"</div>
+                    <div class="footer-webs">
+                        <a href="https://heventec.com" class="footer-webs-link">heventec.com</a><span
+                            class="footer-webs-sep">|</span><a href="https://gestionpro.com"
+                            class="footer-webs-link">gestionpro.com</a>
                     </div>
-                @endforeach
-            </div>
-        </div>
-        <div class="footer-center">
-            <div class="footer-center-content">
-                <div class="footer-pages">&nbsp;</div>
-                <div class="footer-slogan">"Calidad y compromiso en cada proyecto"</div>
-                <div class="footer-webs">
-                    <a href="https://heventec.com" class="footer-webs-link">heventec.com</a><span class="footer-webs-sep">|</span><a href="https://gestionpro.com" class="footer-webs-link">gestionpro.com</a>
                 </div>
             </div>
-        </div>
-        <div class="footer-right">
-            @if (isset($presupuesto['qr_code']) && $presupuesto['qr_code'])
-                <div class="footer-qr">
-                    <img src="{{ $presupuesto['qr_code'] }}" alt="Ver versión web" title="Ver versión web" />
-                </div>
-            @endif
-        </div>
+            <div class="footer-right">
+                @if (isset($presupuesto['qr_code']) && $presupuesto['qr_code'])
+                    <div class="footer-qr">
+                        <img src="{{ $presupuesto['qr_code'] }}" alt="Ver versión web" title="Ver versión web" />
+                    </div>
+                @endif
+            </div>
         </div>
     </div>
 
@@ -783,7 +793,7 @@
                                 @endphp
                                 <div class="company-header-name">{{ $emisorNombre }}</div>
                                 @if ($emisorRfc)
-                                    <div class="company-header-info">RFC: {{ $emisorRfc }}</div>
+                                    <div class="company-header-info">{{ $emisorRfc }}</div>
                                 @endif
                                 @if ($emisorDireccion)
                                     <div class="company-header-info">{{ $emisorDireccion }}</div>
@@ -792,10 +802,10 @@
                                     <div class="company-header-info">{{ $emisorCiudad }}</div>
                                 @endif
                                 @if ($emisorTel)
-                                    <div class="company-header-info">Tel: {{ $emisorTel }}</div>
+                                    <div class="company-header-info">Tel. {{ $emisorTel }}</div>
                                 @endif
                                 @if ($emisorEmail)
-                                    <div class="company-header-info">Email: {{ $emisorEmail }}</div>
+                                    <div class="company-header-info">{{ $emisorEmail }}</div>
                                 @endif
                             </td>
                             <td class="folio-section">
@@ -820,7 +830,7 @@
                     </table>
                 </div>
 
-               <!-- 2) DATOS DEL RECEPTOR -->
+                <!-- 2) DATOS DEL RECEPTOR -->
                 <div class="receptor-section">
                     <div class="receptor-title">Datos del receptor</div>
 
@@ -857,11 +867,11 @@
                     @endif
 
                     {{-- Extras --}}
-                    {{-- @if ($correo)<div class="receptor-info">{{ $correo }}</div>@endif --}} 
+                    {{-- @if ($correo)<div class="receptor-info">{{ $correo }}</div>@endif --}}
                     {{-- @if ($telefono)<div class="receptor-info">{{ $telefono }}</div>@endif --}}
                     {{-- @if ($direccion)<div class="receptor-info">{{ $direccion }}</div>@endif --}}
                 </div>
-                
+
                 <!-- 3) DESCRIPCIÓN GENERAL -->
                 @if ($presupuesto['concepto_general'] ?? null)
                     <div class="descripcion-section">
@@ -957,9 +967,9 @@
 
                 <!-- 7) OBSERVACIONES GENERALES (listado como preview) -->
                 @if (count($observacionesLista) > 0)
-                    <div class="observaciones-section">
-                        <div class="observaciones-title">Observaciones Generales</div>
-                        <ul class="observaciones-list">
+                    <div class="terminos-section">
+                        <div class="terminos-title">Observaciones Generales</div>
+                        <ul class="terminos-list">
                             @foreach ($observacionesLista as $obs)
                                 <li>{{ $obs }}</li>
                             @endforeach
