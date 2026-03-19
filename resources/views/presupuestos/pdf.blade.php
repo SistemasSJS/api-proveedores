@@ -451,6 +451,35 @@
 
         /* ========== 6) TÉRMINOS Y CONDICIONES (al final de la última página) ========== */
         .terminos-section {
+            margin-top: 2mm;
+            padding: 3mm 4mm;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 2mm;
+        }
+
+        .terminos-main-title {
+            font-size: 7pt;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 1.5mm;
+            text-transform: uppercase;
+            letter-spacing: 0.5pt;
+        }
+
+        .terminos-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .terminos-list li {
+            font-size: 5.8pt; /* ligeramente más compacto */
+            color: #6b7280;
+            line-height: 1.05; /* MÁS PEGADO */
+            margin-bottom: 0.6mm; /* menos separación entre items */
+        }
+        /* .terminos-section {
             margin-bottom: 0;
             margin-top: 0;
             padding: 4mm 6mm;
@@ -487,7 +516,7 @@
         .terminos-list .termino-num {
             font-weight: 700;
             color: #2c3e50;
-        }
+        } */
 
         /* ========== 7) OBSERVACIONES GENERALES ========== */
         .observaciones-section {
@@ -919,10 +948,8 @@
                     <div class="terminos-section">
                         <div class="terminos-main-title">Términos y Condiciones</div>
                         <ul class="terminos-list">
-                            @foreach ($terminosLista as $idx => $item)
-                                <li>
-                                    <span class="termino-num">{{ $idx + 1 }}. {{ $item['titulo'] }}{{ $item['titulo'] ? ': ' : '' }}</span>{{ $item['texto'] }}
-                                </li>
+                            @foreach ($terminosLista as $item)
+                                <li>{{ $item['texto'] }}</li>
                             @endforeach
                         </ul>
                     </div>
