@@ -323,7 +323,7 @@ Route::prefix('proveedores')
                 // Detalle de OC
                 Route::get('/consultar/{ordenCompraId}', [ProveedorOrdenCompraController::class, 'show'])->middleware(['audit']);
                 // Detalle de OC con las SP enlazadas
-                Route::get('/consultar/{ordenCompraId}/solicitud-pago', [ProveedorOrdenCompraController::class, 'show-con-sp'])->middleware(['audit']);
+                Route::get('/consultar/{ordenCompraId}/solicitud-pago', [ProveedorOrdenCompraController::class, 'show'])->middleware(['audit']);
 
                 /**
                  * LAS OC ESTAN ALMACENADAS EN LA API DE CONSTRUCCIONES

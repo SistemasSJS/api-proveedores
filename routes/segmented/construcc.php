@@ -158,7 +158,7 @@ Route::prefix('construcc')
             Route::get('/proveedor/{proveedor}/spp/{spp}', [ConstruccPagosSPPController::class, 'showSppProveedor'])->name('proveedor.spp.show');
 
             // GET /proveedor/{proveedor}/spp -> Listar SPP de un proveedor
-            Route::get('/proveedor/{proveedor}/spp', [ConstruccPagosSPPController::class, 'sppPorProveedor'])->name('proveedor.spp.index');
+            Route::get('/proveedor/{proveedor}/spp', [ConstruccPagosSPPController::class, 'sppPorProveedor'])->name('proveedor.spp.by-proveedor');
 
 
             // GET /proveedor -> Listar proveedores con SPP

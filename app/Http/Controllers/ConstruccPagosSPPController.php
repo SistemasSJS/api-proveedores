@@ -167,11 +167,9 @@ class ConstruccPagosSPPController extends Controller
      *
      * GET /api/construcc/pagos-spp/proveedor/{proveedor}/spp?empresas_construcc={id_empresa_construcc}
      */
-    public function sppPorProveedor(Request $request, int $proveedorId): JsonResponse
+    public function sppPorProveedor(Request $request, Proveedor $proveedor): JsonResponse
     {
         try {
-            $proveedor = Proveedor::findOrFail($proveedorId);
-
             $empresaConstruccId = $request->integer('empresa_construcc_id');
             $perPage = $request->input('per_page', 1000);
 
@@ -199,7 +197,7 @@ class ConstruccPagosSPPController extends Controller
             );
         } catch (\Exception $e) {
             Log::error('Error al listar SPP del proveedor', [
-                'proveedor_id' => $proveedorId,
+                'proveedor_id' => $proveedor->id ?? null,
                 'error'        => $e->getMessage(),
             ]);
 
