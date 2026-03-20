@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 use App\Enums\EstadoSP;
 
@@ -462,81 +463,149 @@ class ConstruccPagosSPPController extends Controller
         ConstruccPagosSPPRegistrarPagoRequest $request,
         Proveedor $proveedor
     ): JsonResponse {
-
-        $validated = $request->validated();
-
-        // Log::info('PAGO: Iniciando registro de pago SPP', [ 'proveedor_id' => $proveedor->id, 'empresa_construcc_id' => $validated['empresa_id'] ?? null, 'usuario_id' => $validated['usuario_id'], 'cantidad_spp' => count($validated['solicitudes']), 'monto_total_pago' => $validated['monto_total'],]);
-
-        /** @var User  */
-        $proveedorUsuarioPrincipal = $proveedor->usuarioPrincipal();
-        $empresaConstruccId = $validated['empresa_id'];
-
-        $listSPPIds = collect($validated['solicitudes'])
-            ->pluck('solicitud_id')
-            ->unique()
-            ->values();
-
-        // Log::info('PAGO: Antes de validar SPPs para el pago', [
-        //     'list_spp_ids' => $listSPPIds,
-        // ]);
-        $solicitudes = SolicitudPago::whereIn('id', $listSPPIds)
-            ->where('proveedor_id', $proveedor->id)
-            ->where('empresa_construcc_id', $empresaConstruccId)
-            ->where('estado_solicitud', 'autorizada')
-            ->get()
-            ->keyBy('id');
-        /**
-         * 
-         *--------------------------------------------------------------------------
-         * Obtener todas las SPP válidas antes de la transacción
-         *--------------------------------------------------------------------------
-         * 
-         * if ($solicitudes->count() !== $listSPPIds->count()) {
-         *     $idsValidos = $solicitudes->keys();
-         *     $idsInvalidos = $listSPPIds->diff($idsValidos)->values();
-         *     return $this->error(
-         *         'Una o más solicitudes de pago no pertenecen al proveedor o a la empresa indicada.',
-         *         [
-         *             'solicitudes_invalidas' => $idsInvalidos,
-         *         ],
-         *         422
-         *     );
-         * }
-         */
-
-        // Log::info('PAGO: Despues de validar SPPs para el pago', [
-        //     'list_spp_ids' => $listSPPIds,
-        // ]);
-
-        // Una sola consulta para saldos restantes (evita N+1 de calcularSaldoRestante() en el loop)
-        $totalesAplicadosPorSpp = PagoSolicitudPago::query()
-            ->whereIn('solicitud_pago_id', $listSPPIds)
-            ->whereIn('estado_pago', [
-                PagoSolicitudPago::ESTADO_APLICADO,
-                PagoSolicitudPago::ESTADO_COMPLETADO,
-                PagoSolicitudPago::ESTADO_PARCIAL,
-            ])
-            ->selectRaw('solicitud_pago_id, COALESCE(SUM(monto_aplicado), 0) as total_aplicado')
-            ->groupBy('solicitud_pago_id')
-            ->pluck('total_aplicado', 'solicitud_pago_id')
-            ->map(fn($v) => (float) $v);
-
-        $montoTotalPago = (float) $validated['info_comprobante']['monto'];
-        $sumaMontoSPPs = (float) collect($validated['solicitudes'])->sum(function ($item) {
-            return (float) $item['monto_pago'];
-        });
-
-        if (round($sumaMontoSPPs, 2) !== round($montoTotalPago, 2)) {
-            return $this->error(
-                'El monto del comprobante no coincide con el monto total aplicado a las solicitudes.',
-                ['monto_total' => $montoTotalPago, 'monto_aplicado' => $sumaMontoSPPs,],
-                422
-            );
-        }
-
-        $notificaciones = [];
-
         try {
+            $validated = $request->validated();
+
+            Log::info('PAGO: Iniciando registro de pago SPP', ['proveedor_id' => $proveedor->id, 'empresa_construcc_id' => $validated['empresa_id'] ?? null, 'usuario_id' => $validated['usuario_id'], 'cantidad_spp' => count($validated['solicitudes']), 'monto_total_pago' => $validated['monto_total'],]);
+
+            /** @var User  */
+            $proveedorUsuarioPrincipal = $proveedor->usuarioPrincipal();
+            $empresaConstruccId = $validated['empresa_id'];
+
+            if ((int) $validated['proveedor_id'] !== (int) $proveedor->id) {
+                return $this->error(
+                    'El proveedor del body no coincide con el proveedor de la ruta.',
+                    ['proveedor_id' => (int) $validated['proveedor_id'], 'proveedor_ruta' => (int) $proveedor->id],
+                    422
+                );
+            }
+
+            $proveedorPerteneceEmpresa = $proveedor->empresasConstrucc()
+                ->where('empresa_construcc.id', $empresaConstruccId)
+                ->exists()
+                || ((int) ($proveedor->empresa_construcc_alta ?? 0) === (int) $empresaConstruccId);
+
+            if (! $proveedorPerteneceEmpresa) {
+                return $this->error(
+                    'El proveedor no pertenece a la empresa indicada.',
+                    ['proveedor_id' => (int) $proveedor->id, 'empresa_id' => (int) $empresaConstruccId],
+                    422
+                );
+            }
+
+            $listSPPIds = collect($validated['solicitudes'])
+                ->pluck('solicitud_id')
+                ->unique()
+                ->values();
+
+            Log::info('PAGO: Antes de validar SPPs para el pago', [
+                'list_spp_ids' => $listSPPIds,
+            ]);
+
+            $solicitudes = SolicitudPago::whereIn('id', $listSPPIds)
+                ->get()
+                ->keyBy('id');
+
+            Log::info('PAGO: Despues de validar SPPs para el pago', [
+                'list_spp_ids' => $solicitudes->pluck('id'),
+            ]);
+
+            $erroresSolicitudes = [];
+
+            foreach ($listSPPIds as $solicitudId) {
+                $solicitud = $solicitudes->get($solicitudId);
+
+                if (! $solicitud) {
+                    $erroresSolicitudes[(int) $solicitudId] = ['La solicitud de pago no existe.'];
+                    continue;
+                }
+
+                $erroresPorSolicitud = [];
+
+                if ((int) $solicitud->proveedor_id !== (int) $proveedor->id) {
+                    $erroresPorSolicitud[] = 'La solicitud no pertenece al proveedor.';
+                }
+
+                if ((int) $solicitud->empresa_construcc_id !== (int) $empresaConstruccId) {
+                    $erroresPorSolicitud[] = 'La solicitud no pertenece a la empresa indicada.';
+                }
+
+                if ((string) $solicitud->estado_solicitud === EstadoSP::PAGADO->value) {
+                    $erroresPorSolicitud[] = 'La solicitud ya se encuentra liquidada.';
+                }
+
+                if ((string) $solicitud->estado_solicitud !== EstadoSP::AUTORIZADA->value && (string) $solicitud->estado_solicitud !== EstadoSP::PAGADO->value) {
+                    $erroresPorSolicitud[] = 'La solicitud no esta en estado autorizada.';
+                }
+
+
+                if (! empty($erroresPorSolicitud)) {
+                    $erroresSolicitudes[(int) $solicitudId] = $erroresPorSolicitud;
+                }
+            }
+
+            if (! empty($erroresSolicitudes)) {
+                return $this->error(
+                    'Existen solicitudes con errores de relacion/estado.',
+                    ['solicitudes' => $erroresSolicitudes],
+                    422
+                );
+            }
+
+            // Log::info('PAGO: Despues de validar SPPs para el pago', [
+            //     'list_spp_ids' => $listSPPIds,
+            // ]);
+
+            // Una sola consulta para saldos restantes (evita N+1 de calcularSaldoRestante() en el loop)
+            $totalesAplicadosPorSpp = PagoSolicitudPago::query()
+                ->whereIn('solicitud_pago_id', $listSPPIds)
+                ->whereIn('estado_pago', [
+                    PagoSolicitudPago::ESTADO_APLICADO,
+                    PagoSolicitudPago::ESTADO_COMPLETADO,
+                    PagoSolicitudPago::ESTADO_PARCIAL,
+                ])
+                ->selectRaw('solicitud_pago_id, COALESCE(SUM(monto_aplicado), 0) as total_aplicado')
+                ->groupBy('solicitud_pago_id')
+                ->pluck('total_aplicado', 'solicitud_pago_id')
+                ->map(fn($v) => (float) $v);
+
+            $montoSolicitadoPorSpp = collect($validated['solicitudes'])
+                ->groupBy('solicitud_id')
+                ->map(fn($items) => (float) $items->sum(fn($item) => (float) $item['monto_pago']));
+
+            foreach ($montoSolicitadoPorSpp as $solicitudId => $montoSolicitado) {
+                $solicitudPago = $solicitudes->get($solicitudId);
+                $totalAplicadoPrevio = $totalesAplicadosPorSpp->get($solicitudId, 0.0);
+                $saldoDisponible = max(0, (float) $solicitudPago->monto_total - $totalAplicadoPrevio);
+
+                if (round($montoSolicitado, 2) > round($saldoDisponible, 2)) {
+                    return $this->error(
+                        "La SPP {$solicitudId} excede el saldo disponible.",
+                        [
+                            'solicitud_id' => (int) $solicitudId,
+                            'saldo_disponible' => round($saldoDisponible, 2),
+                            'monto_solicitado' => round($montoSolicitado, 2),
+                        ],
+                        422
+                    );
+                }
+            }
+
+            $montoTotalPago = (float) ($validated['info_comprobante']['monto'] ?? $validated['monto_total'] ?? 0);
+            $sumaMontoSPPs = (float) collect($validated['solicitudes'])->sum(function ($item) {
+                return (float) $item['monto_pago'];
+            });
+
+            if (round($sumaMontoSPPs, 2) !== round($montoTotalPago, 2)) {
+                return $this->error(
+                    'El monto del comprobante no coincide con el monto total aplicado a las solicitudes.',
+                    ['monto_total' => $montoTotalPago, 'monto_aplicado' => $sumaMontoSPPs,],
+                    422
+                );
+            }
+
+            $notificaciones = [];
+
             // Log::info('PAGO: Begin Transaction', [
             //     'proveedor_id' => $proveedor->id,
             //     'empresa_construcc_id' => $empresaConstruccId,
@@ -749,18 +818,16 @@ class ConstruccPagosSPPController extends Controller
                 201
             );
         } catch (\Throwable $e) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
 
-            DB::rollBack();
-
-            Log::error('Error al registrar pago del proveedor', [
-                'proveedor_id' => $proveedor->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return $this->error(
-                'No se pudo registrar el pago.',
-                null,
-                500
+            return $this->handleRegistrarPagoError(
+                $e,
+                'Error inesperado al registrar el pago del proveedor.',
+                [
+                    'proveedor_id' => $proveedor->id,
+                ]
             );
         }
     }
@@ -798,5 +865,23 @@ class ConstruccPagosSPPController extends Controller
             ],
             'cuentas_bancarias' => $cuentas,
         ], 'Cuentas bancarias del proveedor obtenidas exitosamente.');
+    }
+
+    private function handleRegistrarPagoError(\Throwable $e, string $message, array $context = []): JsonResponse
+    {
+        $errorRef = (string) Str::uuid();
+
+        Log::error($message, array_merge($context, [
+            'error_ref' => $errorRef,
+            'exception_class' => get_class($e),
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ]));
+
+        return $this->error(
+            'No se pudo registrar el pago. Si el problema continua, comparte este codigo con soporte.',
+            ['error_ref' => $errorRef],
+            500
+        );
     }
 }
