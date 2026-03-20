@@ -117,7 +117,8 @@ class ConstruccSolicitudPagoController extends Controller
      * GET /api/construcc/solicitudes-pago/index-contadores?periodo=semana
      * GET /api/construcc/solicitudes-pago/index-contadores?periodo=dia
      * 
-     * GET .../indexPorEstadoContadores?periodo=mes&estado_solicitud=pendiente&rol_id=3
+     * GET /api/construcc/solicitudes-pago/indexPorEstadoContadores?periodo=mes&estado_solicitud=pendiente&rol_id=3
+     *  
      */
     public function indexPorEstadoContadores(Request $request): JsonResponse
     {
