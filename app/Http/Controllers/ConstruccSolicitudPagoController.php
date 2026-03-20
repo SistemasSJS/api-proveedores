@@ -103,6 +103,120 @@ class ConstruccSolicitudPagoController extends Controller
     }
 
     /**
+     *  completar el metododo similar al index. Se carga solo dato sespecificos de las SPP y contadores 
+     * 
+     * Estados: 
+     *  - Pendientes de autorizar -> verificada = true, estado_solicitud = pendiente
+     *  - Autorizadas -> estado_solicitud = autorizada
+     *  - Rechazadas -> estado_solicitud = rechazada
+     *  - Pagadas -> estado_solicitud = pagado
+     * 
+     * Estas se tiene que contabilizar dependiendo el filtro indicado: mes, semana, dia
+     *  
+     * GET /api/construcc/solicitudes-pago/index-contadores → trae SPP de este mes
+     * GET /api/construcc/solicitudes-pago/index-contadores?periodo=semana
+     * GET /api/construcc/solicitudes-pago/index-contadores?periodo=dia
+     * 
+     * GET .../indexPorEstadoContadores?periodo=mes&estado_solicitud=pendiente&rol_id=3
+     */
+    public function indexPorEstadoContadores(Request $request): JsonResponse
+    {
+        $filters = $request->only(SolicitudPago::getFilters());
+        $sortBy = $request->input('sort_by', 'created_at');
+        $order = $request->input('order', 'desc');
+        $perPage = $request->input('per_page', 10000);
+        $rolUsuario = $request->input('rol_id', $request->input('rol_usuario'));
+        $rolUsuario = is_numeric($rolUsuario) ? (int) $rolUsuario : null;
+        $periodo = strtolower((string) $request->input('periodo', 'mes'));
+        $periodo = in_array($periodo, ['dia', 'semana', 'mes'], true) ? $periodo : 'mes';
+
+        $aplicarPeriodo = function ($query) use ($periodo) {
+            if (! $periodo) {
+                return $query;
+            }
+
+            $inicio = match ($periodo) {
+                'dia' => Carbon::now()->startOfDay(),
+                'semana' => Carbon::now()->startOfWeek(),
+                'mes' => Carbon::now()->startOfMonth(),
+            };
+
+            return $query->whereBetween('created_at', [$inicio, Carbon::now()]);
+        };
+
+        $countFilters = array_diff_key($filters, array_flip(['verificada']));
+
+        $baseConteo = SolicitudPago::query()
+            ->when(! empty($countFilters), fn($q) => $q->filter($countFilters));
+
+        $aplicarPeriodo($baseConteo);
+
+        $segmentCounts = (clone $baseConteo)
+            ->where('verificada', true)
+            ->selectRaw('estado_solicitud, COUNT(*) as total')
+            ->groupBy('estado_solicitud')
+            ->pluck('total', 'estado_solicitud')
+            ->toArray();
+
+        $pendienteEstado = $rolUsuario === 3
+            ? EstadoSP::AUTORIZADA->value
+            : EstadoSP::PENDIENTE->value;
+
+        $conteo = [
+            'por_validar' => (clone $baseConteo)->where('verificada', false)->count(),
+            'pendiente' => (int) ($segmentCounts[$pendienteEstado] ?? 0),
+            'autorizadas' => (int) ($segmentCounts[EstadoSP::AUTORIZADA->value] ?? 0),
+            'rechazadas' => (int) ($segmentCounts[EstadoSP::RECHAZADA->value] ?? 0),
+            'pagadas' => (int) ($segmentCounts[EstadoSP::PAGADO->value] ?? 0),
+            'sin_factura' => (clone $baseConteo)
+                ->whereNull('folio_factura')
+                ->whereNotNull('ruta_archivo_factura_xml')
+                ->count(),
+        ];
+
+        $query = SolicitudPago::query()
+            ->select([
+                'id',
+                'numero_folio_solicitud',
+                'folio_factura',
+                'estado_solicitud',
+                'monto_total',
+                'empresa_construcc_id',
+                'monto_abonado',
+                'saldo_pendiente',
+                'verificada',
+                'proveedor_id',
+                'empresa_construcc_id',
+                'usuario_id',
+                'usuario_nombre',
+                'created_at',
+            ])
+            ->where('verificada', true)
+            ->filter($filters)
+            ->orderBy($sortBy, $order);
+
+        $aplicarPeriodo($query);
+
+        // Aquí debería limitar por la empresa del usuario ConstruccApp
+        // if ($request->user()->empresa_construcc_id) {
+        //     $query->where('empresa_construcc_id', $request->user()->empresa_construcc_id);
+        // }
+
+        $paginator = $query->paginate($perPage);
+
+        return $this->paginated(
+            $paginator,
+            'Datos paginados.',
+            200,
+            [
+                'conteo' => $conteo,
+                'periodo' => $periodo,
+                'estado_solicitud' => $filters['estado_solicitud'] ?? null,
+            ]
+        );
+    }
+
+    /**
      * Mostrar detalle de una solicitud
      */
     public function show(SolicitudPago $solicitudPago): JsonResponse
