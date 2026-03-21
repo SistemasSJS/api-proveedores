@@ -79,7 +79,8 @@
                 .header {
                     margin-bottom: 4mm;
                     padding-bottom: 3mm;
-                    border-bottom: 2px solid #3498db;
+                    /* border-bottom: 2px solid #3498db; */
+                    border-bottom: 1px solid #d1d5db;
                     page-break-inside: avoid;
                 }
 
@@ -189,32 +190,18 @@
                 /* ========== 2) DATOS DEL RECEPTOR (igual que preview) ========== */
                 .receptor-section {
                     width: 100%;
-                    margin-bottom: 4mm;
-                    padding: 3mm;
-                    background: #f8f9fa;
-                    border-radius: 2mm;
-                    border: 1px solid #e9ecef;
+                    margin-bottom: 3mm;
+                    padding-bottom: 2mm;
+                    /* border-bottom: 1.5px098 solid #3498db; */
                     page-break-inside: avoid;
                 }
 
                 .receptor-title {
-                    /* font-size: 7pt;
-                    color: #3498db;
-                    text-transform: uppercase;
-                    font-weight: 700;
-                    letter-spacing: 1px;
-                    margin-bottom: 2mm;
-                    padding-bottom: 1mm;
-                    border-bottom: 2px solid #3498db;
-                    display: inline-block;
-                    line-height: 1.1; */
                     font-size: 6pt;
-                    color: #7f8c8d;
+                    color: #3498db;
+                    font-weight: 700;
+                    margin-bottom: 1mm;
                     text-transform: uppercase;
-                    letter-spacing: 1px;
-                    font-weight: 600;
-                    margin-bottom: 0.8mm;
-                    line-height: 1.1;
                 }
 
                 .receptor-name {
@@ -435,7 +422,6 @@
 
                 .terminos-section-line {
 
-                    border-top: 1.5px solid #3498db;
                 }
 
                 .terminos-main-title,
