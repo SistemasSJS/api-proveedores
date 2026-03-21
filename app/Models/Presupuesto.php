@@ -54,10 +54,18 @@ class Presupuesto extends BaseModel
         'empresa_receptora_nombre',
         'empresa_receptora_puesto',
         'empresa_receptora_empresa',
+        'empresa_receptora_alias',
         'empresa_receptora_telefono',
         'empresa_receptora_correo',
-        'condiciones',
-        'observaciones',
+        'term_cond_dias_vigencia',
+        'term_cond_moneda',
+        'term_cond_iva',
+        'term_cond_anticipo_porcentaje',
+        'term_cond_tiempo_entrega_dias',
+        'obs_garantia_dias',
+        'obs_traslados',
+        'obs_viaticos',
+        'motivo_rechazo',
         'estado',
         'item_visto',
         'notification_id',
@@ -68,35 +76,8 @@ class Presupuesto extends BaseModel
     ];
 
     /**
-     * Estructura del JSON `condiciones` (términos y condiciones del presupuesto).
-     *
-     * Términos (solo se incluyen si *_activo es true):
-     * - vigencia_activo, vigencia_dias, vigencia
-     * - moneda_activo
-     * - impuestos_activo (usa con_iva e iva_porcentaje del presupuesto)
-     * - anticipo_activo, anticipo_porcentaje
-     * - entrega_activo, entrega_tipo (antes|despues)
-     * - tiempo_entrega_activo, tiempo_entrega_dias, tiempo_entrega
-     * - disponibilidad_materiales_activo, disponibilidad_materiales_texto
-     * - trabajos_adicionales_activo
-     * - alcance_activo, alcance_texto
-     * - cancelacion_activo, cancelacion_texto
-     * - autorizacion_gestionpro_activo
-     * - condicionantes_adicionales_1..4 (solo si hay al menos un término activo)
-     *
-     * Observaciones (solo si *_activo es true):
-     * - garantia_activo, garantia_dias, garantia
-     * - gastos_traslado_activo, gastos_traslado (incluidos|no_incluidos)
-     * - viaticos_activo, viaticos (incluidos|no_incluidos)
-     * - revision_tecnica_activo, revision_tecnica_texto
-     * - condiciones_sitio_activo, condiciones_sitio_texto
-     * - observaciones_adicionales_1..4
-     *
-     * Emisor (cabecera PDF):
-     * - emisor_logo, emisor_razon_social, emisor_rfc, emisor_direccion,
-     *   emisor_ciudad_estado, emisor_telefono, emisor_email
-     *
-     * @see \App\Helpers\PresupuestoCondicionesHelper
+     * Términos y condiciones: term_cond_* (columnas explícitas).
+     * Observaciones: obs_* (columnas explícitas).
      */
     protected $casts = [
         'fecha_emision' => 'date',
@@ -107,8 +88,146 @@ class Presupuesto extends BaseModel
         'iva_porcentaje' => 'decimal:2',
         'iva_total' => 'decimal:2',
         'total' => 'decimal:2',
-        'condiciones' => 'array',
+        'term_cond_iva' => 'decimal:2',
+        'term_cond_anticipo_porcentaje' => 'decimal:2',
+        'obs_traslados' => 'boolean',
+        'obs_viaticos' => 'boolean',
     ];
+
+    /**
+     * Constantes para enunciados de términos y condiciones.
+     */
+    public const ENUNCIADO_VIGENCIA = 'Este presupuesto tiene una vigencia de %d días naturales a partir de su fecha de emisión.';
+    public const ENUNCIADO_MONEDA = 'Los precios están expresados en moneda nacional (%s), salvo que se indique lo contrario.';
+    public const ENUNCIADO_IVA_INCLUIDO = 'Los precios incluyen el Impuesto al Valor Agregado (IVA) al %d%%.';
+    public const ENUNCIADO_IVA_NO_INCLUIDO = 'Los precios no incluyen el Impuesto al Valor Agregado (IVA).';
+    public const ENUNCIADO_ANTICIPO = 'Para iniciar los trabajos se requiere un anticipo del %d%% del monto total.';
+    public const ENUNCIADO_TIEMPO_ENTREGA = 'Una vez recibido el anticipo, el tiempo estimado de entrega o ejecución total de los trabajos será de %d días naturales.';
+
+    /**
+     * Constantes para enunciados de observaciones.
+     */
+    public const ENUNCIADO_GARANTIA = 'La garantía de los trabajos o productos tendrá una vigencia de %d días a partir de la finalización de los trabajos o entrega de los productos.';
+    public const ENUNCIADO_TRASLADOS_INCLUIDOS = 'Los trabajos contemplados en este presupuesto sí incluyen los gastos de traslado al sitio donde se realizarán los trabajos.';
+    public const ENUNCIADO_TRASLADOS_NO_INCLUIDOS = 'Los trabajos contemplados en este presupuesto no incluyen los gastos de traslado al sitio donde se realizarán los trabajos.';
+    public const ENUNCIADO_VIATICOS_INCLUIDOS = 'Los trabajos contemplados en este presupuesto sí incluyen los gastos de viáticos derivados de la ubicación donde deberán realizarse los trabajos.';
+    public const ENUNCIADO_VIATICOS_NO_INCLUIDOS = 'Los trabajos contemplados en este presupuesto no incluyen los gastos de viáticos derivados de la ubicación donde deberán realizarse los trabajos.';
+
+    /**
+     * Construye la lista de enunciados de términos y condiciones para el PDF.
+     *
+     * @return array<int, string>
+     */
+    public function getTerminosEnunciados(): array
+    {
+        $lista = [];
+
+        if ($this->term_cond_dias_vigencia > 0) {
+            $lista[] = sprintf(self::ENUNCIADO_VIGENCIA, (int) $this->term_cond_dias_vigencia);
+        }
+
+        $moneda = $this->term_cond_moneda ?: 'MXN';
+        $lista[] = sprintf(self::ENUNCIADO_MONEDA, $moneda);
+
+        $ivaPct = (float) ($this->term_cond_iva ?? 16);
+        $lista[] = $this->con_iva
+            ? sprintf(self::ENUNCIADO_IVA_INCLUIDO, (int) $ivaPct)
+            : self::ENUNCIADO_IVA_NO_INCLUIDO;
+
+        if ($this->term_cond_anticipo_porcentaje !== null && $this->term_cond_anticipo_porcentaje > 0) {
+            $lista[] = sprintf(self::ENUNCIADO_ANTICIPO, (int) $this->term_cond_anticipo_porcentaje);
+        }
+
+        if ($this->term_cond_tiempo_entrega_dias !== null && $this->term_cond_tiempo_entrega_dias > 0) {
+            $lista[] = sprintf(self::ENUNCIADO_TIEMPO_ENTREGA, (int) $this->term_cond_tiempo_entrega_dias);
+        }
+
+        return $lista;
+    }
+
+    /**
+     * Construye la lista de enunciados de observaciones para el PDF.
+     *
+     * @return array<int, string>
+     */
+    public function getObservacionesEnunciados(): array
+    {
+        $lista = [];
+
+        if ($this->obs_garantia_dias > 0) {
+            $lista[] = sprintf(self::ENUNCIADO_GARANTIA, (int) $this->obs_garantia_dias);
+        }
+
+        $lista[] = $this->obs_traslados
+            ? self::ENUNCIADO_TRASLADOS_INCLUIDOS
+            : self::ENUNCIADO_TRASLADOS_NO_INCLUIDOS;
+
+        $lista[] = $this->obs_viaticos
+            ? self::ENUNCIADO_VIATICOS_INCLUIDOS
+            : self::ENUNCIADO_VIATICOS_NO_INCLUIDOS;
+
+        return $lista;
+    }
+
+    /**
+     * Construye enunciados de términos desde un array (ej: datos de formulario).
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<int, string>
+     */
+    public static function buildTerminosEnunciadosFromArray(array $data): array
+    {
+        $lista = [];
+        $conIva = $data['con_iva'] ?? true;
+        $ivaPct = (float) ($data['term_cond_iva'] ?? $data['iva_porcentaje'] ?? 16);
+
+        if (! empty($data['term_cond_dias_vigencia']) && (int) $data['term_cond_dias_vigencia'] > 0) {
+            $lista[] = sprintf(self::ENUNCIADO_VIGENCIA, (int) $data['term_cond_dias_vigencia']);
+        }
+
+        $moneda = $data['term_cond_moneda'] ?? 'MXN';
+        $lista[] = sprintf(self::ENUNCIADO_MONEDA, $moneda);
+
+        $lista[] = $conIva
+            ? sprintf(self::ENUNCIADO_IVA_INCLUIDO, (int) $ivaPct)
+            : self::ENUNCIADO_IVA_NO_INCLUIDO;
+
+        $anticipo = $data['term_cond_anticipo_porcentaje'] ?? null;
+        if ($anticipo !== null && (float) $anticipo > 0) {
+            $lista[] = sprintf(self::ENUNCIADO_ANTICIPO, (int) $anticipo);
+        }
+
+        $tiempoEntrega = $data['term_cond_tiempo_entrega_dias'] ?? null;
+        if ($tiempoEntrega !== null && (int) $tiempoEntrega > 0) {
+            $lista[] = sprintf(self::ENUNCIADO_TIEMPO_ENTREGA, (int) $tiempoEntrega);
+        }
+
+        return $lista;
+    }
+
+    /**
+     * Construye enunciados de observaciones desde un array.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<int, string>
+     */
+    public static function buildObservacionesEnunciadosFromArray(array $data): array
+    {
+        $lista = [];
+
+        $garantiaDias = (int) ($data['obs_garantia_dias'] ?? 0);
+        if ($garantiaDias > 0) {
+            $lista[] = sprintf(self::ENUNCIADO_GARANTIA, $garantiaDias);
+        }
+
+        $traslados = (bool) ($data['obs_traslados'] ?? false);
+        $lista[] = $traslados ? self::ENUNCIADO_TRASLADOS_INCLUIDOS : self::ENUNCIADO_TRASLADOS_NO_INCLUIDOS;
+
+        $viaticos = (bool) ($data['obs_viaticos'] ?? false);
+        $lista[] = $viaticos ? self::ENUNCIADO_VIATICOS_INCLUIDOS : self::ENUNCIADO_VIATICOS_NO_INCLUIDOS;
+
+        return $lista;
+    }
 
     /**
      * Boot del modelo.

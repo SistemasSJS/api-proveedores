@@ -22,6 +22,7 @@ class CarteraCliente extends BaseModel
         'nombre',
         'puesto',
         'empresa',
+        'alias_empresa',
         'telefono',
         'correo',
     ];
@@ -97,6 +98,7 @@ class CarteraCliente extends BaseModel
         return $query->where(function ($q) use ($value, $numericId) {
             $q->where('nombre', 'like', "%{$value}%")
                 ->orWhere('empresa', 'like', "%{$value}%")
+                ->orWhere('alias_empresa', 'like', "%{$value}%")
                 ->orWhere('telefono', 'like', "%{$value}%")
                 ->orWhere('correo', 'like', "%{$value}%");
             if ($numericId !== null) {

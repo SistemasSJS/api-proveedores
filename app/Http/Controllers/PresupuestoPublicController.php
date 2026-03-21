@@ -141,10 +141,7 @@ class PresupuestoPublicController extends Controller
         $presupuesto->estado = Presupuesto::ESTADO_RECHAZADO;
         $motivo = $request->input('motivo');
         if ($motivo) {
-            $presupuesto->observaciones = trim(
-                ($presupuesto->observaciones ? $presupuesto->observaciones . "\n\n" : '') .
-                'Motivo de rechazo: ' . $motivo
-            );
+            $presupuesto->motivo_rechazo = trim($motivo);
         }
         $presupuesto->save();
 

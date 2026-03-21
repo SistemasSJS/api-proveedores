@@ -236,8 +236,8 @@ class ProveedorPresupuestoController extends Controller
                 $this->sincronizarConceptos($presupuesto, $validated['conceptos']);
                 $presupuesto->recalcularDesdeConceptos();
 
-                // Recalcular fecha_vencimiento cuando cambian condiciones.vigencia (solo borradores)
-                if ($presupuesto->estado === Presupuesto::ESTADO_BORRADOR && isset($payload['condiciones'])) {
+                // Recalcular fecha_vencimiento cuando cambian term_cond_dias_vigencia (solo borradores)
+                if ($presupuesto->estado === Presupuesto::ESTADO_BORRADOR && array_key_exists('term_cond_dias_vigencia', $payload)) {
                     $presupuesto->fecha_vencimiento = $this->calcularFechaVencimiento($presupuesto);
                 }
 
@@ -304,6 +304,7 @@ class ProveedorPresupuestoController extends Controller
         $payload['empresa_receptora_nombre'] = $cliente->nombre;
         $payload['empresa_receptora_puesto'] = $cliente->puesto;
         $payload['empresa_receptora_empresa'] = $cliente->empresa;
+        $payload['empresa_receptora_alias'] = $cliente->alias_empresa;
         $payload['empresa_receptora_telefono'] = $cliente->telefono;
         $payload['empresa_receptora_correo'] = $cliente->correo;
 
@@ -607,18 +608,20 @@ class ProveedorPresupuestoController extends Controller
             // Convertir logo del proveedor a base64
             $logoProveedorBase64 = $this->convertirLogoProveedorABase64($presupuesto->proveedor);
 
+            $proveedor = $presupuesto->proveedor;
+            $df = $proveedor?->direccion_fiscal;
+            $estado = \Illuminate\Support\Arr::get((array) ($df ?? []), 'estado', $proveedor->estado ?? 'México');
+            $lugar = $proveedor?->ciudad ? ($proveedor->ciudad . ', ' . $estado) : null;
+
             // Preparar datos para la vista
             $datosPresupuesto = [
-                'proveedor' => $presupuesto->proveedor,
+                'proveedor' => $proveedor,
                 'logo_proveedor_base64' => $logoProveedorBase64,
                 'numero_presupuesto' => $presupuesto->numero_presupuesto,
                 'uuid' => $presupuesto->uuid ?? null,
-                'clave_unica' => $presupuesto->id ?? null, // Clave única del presupuesto
+                'clave_unica' => $presupuesto->id ?? null,
                 'fecha_emision' => $presupuesto->fecha_emision,
-                'lugar' => ($presupuesto->condiciones['lugar'] ?? null) 
-                    ?: ($presupuesto->proveedor->ciudad 
-                        ? ($presupuesto->proveedor->ciudad . ', ' . ($presupuesto->proveedor->direccion_fiscal->estado ?? 'México'))
-                        : null),
+                'lugar' => $lugar,
                 'concepto_general' => $presupuesto->concepto_general,
                 'con_iva' => $presupuesto->con_iva,
                 'iva_porcentaje' => $presupuesto->iva_porcentaje,
@@ -627,11 +630,12 @@ class ProveedorPresupuestoController extends Controller
                 'total' => $presupuesto->total,
                 'empresa_receptora' => [
                     'nombre' => $presupuesto->empresa_receptora_nombre,
-                    'empresa' => $presupuesto->empresa_receptora_empresa,
                     'puesto' => $presupuesto->empresa_receptora_puesto,
+                    'empresa' => $presupuesto->empresa_receptora_empresa,
+                    'alias_empresa' => $presupuesto->empresa_receptora_alias,
                     'telefono' => $presupuesto->empresa_receptora_telefono,
                     'correo' => $presupuesto->empresa_receptora_correo,
-                    'direccion' => $presupuesto->condiciones['direccion'] ?? null,
+                    'direccion' => $presupuesto->empresa_receptora_direccion ?? $presupuesto->empresaReceptora?->direccion ?? null,
                 ],
                 'conceptos' => $presupuesto->conceptos->map(function ($concepto) {
                     return [
@@ -642,8 +646,8 @@ class ProveedorPresupuestoController extends Controller
                         'precio_total' => $concepto->precio_total,
                     ];
                 })->toArray(),
-                'condiciones' => $presupuesto->condiciones ?? [],
-                'observaciones' => $presupuesto->observaciones,
+                'terminos_enunciados' => $presupuesto->getTerminosEnunciados(),
+                'observaciones_enunciados' => $presupuesto->getObservacionesEnunciados(),
                 'qr_code' => $qrCode = $this->generarQrCodeParaPresupuesto($presupuesto),
                 'qr_url' => $qrCode ? (rtrim(config('app.frontend_url', config('app.url')), '/') . '/public/presupuesto/' . $presupuesto->token_publico) : null,
             ];
@@ -778,17 +782,13 @@ class ProveedorPresupuestoController extends Controller
     }
 
     /**
-     * Calcula fecha de vencimiento desde condiciones.vigencia (ej: "7 días naturales").
+     * Calcula fecha de vencimiento desde term_cond_dias_vigencia.
      */
     private function calcularFechaVencimiento(Presupuesto $presupuesto): \Carbon\Carbon
     {
-        $vigencia = $presupuesto->condiciones['vigencia'] ?? '7 días naturales';
-        $dias = 7;
-        if (preg_match('/(\d+)\s*d[ií]as?/i', $vigencia, $m)) {
-            $dias = (int) $m[1];
-        }
+        $dias = $presupuesto->term_cond_dias_vigencia ?? 7;
 
-        return $presupuesto->fecha_emision->copy()->addDays($dias);
+        return $presupuesto->fecha_emision->copy()->addDays((int) $dias);
     }
 
     /**
@@ -818,30 +818,40 @@ class ProveedorPresupuestoController extends Controller
             // Convertir logo del proveedor a base64
             $logoProveedorBase64 = $this->convertirLogoProveedorABase64($proveedor);
 
+            $df = $proveedor->direccion_fiscal ?? null;
+            $estado = \Illuminate\Support\Arr::get((array) ($df ?? []), 'estado', $proveedor->estado ?? 'México');
+            $lugar = $proveedor->ciudad ? ($proveedor->ciudad . ', ' . $estado) : null;
+
+            $formData = array_merge($validated, [
+                'con_iva' => $validated['con_iva'] ?? true,
+                'iva_porcentaje' => $validated['iva_porcentaje'] ?? 16,
+            ]);
+
             // Preparar datos para el PDF
             $datosPresupuesto = [
                 'proveedor' => $proveedor,
                 'logo_proveedor_base64' => $logoProveedorBase64,
                 'numero_presupuesto' => $validated['numero_presupuesto'] ?? $this->formatearFolioSiguiente($proveedor),
-                'uuid' => null, // Para borradores no hay UUID
-                'clave_unica' => null, // Para borradores no hay clave única
+                'uuid' => null,
+                'clave_unica' => null,
                 'fecha_emision' => $validated['fecha_emision'],
-                'lugar' => $validated['condiciones']['lugar'] ?? null,
+                'lugar' => $lugar,
                 'concepto_general' => $validated['concepto_general'],
                 'con_iva' => $validated['con_iva'] ?? true,
                 'iva_porcentaje' => $validated['iva_porcentaje'] ?? 16.00,
                 'empresa_receptora' => [
                     'nombre' => $validated['empresa_receptora_nombre'] ?? null,
-                    'empresa' => $validated['empresa_receptora_empresa'] ?? null,
                     'puesto' => $validated['empresa_receptora_puesto'] ?? null,
+                    'empresa' => $validated['empresa_receptora_empresa'] ?? null,
+                    'alias_empresa' => $validated['empresa_receptora_alias'] ?? null,
                     'telefono' => $validated['empresa_receptora_telefono'] ?? null,
                     'correo' => $validated['empresa_receptora_correo'] ?? null,
-                    'direccion' => $validated['condiciones']['direccion'] ?? null,
+                    'direccion' => $validated['empresa_receptora_direccion'] ?? null,
                 ],
                 'conceptos' => $validated['conceptos'] ?? [],
-                'condiciones' => $validated['condiciones'] ?? [],
-                'observaciones' => $validated['observaciones'] ?? null,
-                'qr_code' => null, // Borradores no tienen URL pública
+                'terminos_enunciados' => Presupuesto::buildTerminosEnunciadosFromArray($formData),
+                'observaciones_enunciados' => Presupuesto::buildObservacionesEnunciadosFromArray($formData),
+                'qr_code' => null,
             ];
 
             // Calcular totales

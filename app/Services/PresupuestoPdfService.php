@@ -27,8 +27,13 @@ class PresupuestoPdfService
             ? rtrim(config('app.frontend_url', config('app.url')), '/') . '/public/presupuesto/' . $presupuesto->token_publico
             : null;
 
+        $proveedor = $presupuesto->proveedor;
+        $df = $proveedor?->direccion_fiscal;
+        $estado = \Illuminate\Support\Arr::get((array) ($df ?? []), 'estado', $proveedor->estado ?? 'México');
+        $lugar = $proveedor?->ciudad ? ($proveedor->ciudad . ', ' . $estado) : null;
+
         $datosPresupuesto = [
-            'proveedor' => $presupuesto->proveedor,
+            'proveedor' => $proveedor,
             'logo_proveedor_base64' => $logoProveedorBase64,
             'logos_base64' => $logosBase64,
             'gd_disponible' => $gdDisponible,
@@ -36,10 +41,7 @@ class PresupuestoPdfService
             'uuid' => $presupuesto->uuid ?? null,
             'clave_unica' => $presupuesto->id,
             'fecha_emision' => $presupuesto->fecha_emision,
-            'lugar' => ($presupuesto->condiciones['lugar'] ?? null)
-                ?: ($presupuesto->proveedor?->ciudad
-                    ? ($presupuesto->proveedor->ciudad . ', ' . ($presupuesto->proveedor->estado ?? 'México'))
-                    : null),
+            'lugar' => $lugar,
             'concepto_general' => $presupuesto->concepto_general,
             'con_iva' => $presupuesto->con_iva,
             'iva_porcentaje' => $presupuesto->iva_porcentaje,
@@ -48,11 +50,12 @@ class PresupuestoPdfService
             'total' => $presupuesto->total,
             'empresa_receptora' => [
                 'nombre' => $presupuesto->empresa_receptora_nombre,
-                'empresa' => $presupuesto->empresa_receptora_empresa,
                 'puesto' => $presupuesto->empresa_receptora_puesto,
+                'empresa' => $presupuesto->empresa_receptora_empresa,
+                'alias_empresa' => $presupuesto->empresa_receptora_alias,
                 'telefono' => $presupuesto->empresa_receptora_telefono,
                 'correo' => $presupuesto->empresa_receptora_correo,
-                'direccion' => $presupuesto->condiciones['direccion'] ?? null,
+                'direccion' => $presupuesto->empresa_receptora_direccion ?? $presupuesto->empresaReceptora?->direccion ?? null,
             ],
             'conceptos' => $presupuesto->conceptos->map(fn ($c) => [
                 'descripcion' => $c->descripcion,
@@ -61,8 +64,8 @@ class PresupuestoPdfService
                 'precio_unitario' => $c->precio_unitario,
                 'precio_total' => $c->precio_total,
             ])->toArray(),
-            'condiciones' => $presupuesto->condiciones ?? [],
-            'observaciones' => $presupuesto->observaciones,
+            'terminos_enunciados' => $presupuesto->getTerminosEnunciados(),
+            'observaciones_enunciados' => $presupuesto->getObservacionesEnunciados(),
             'qr_code' => $qrCode,
             'qr_url' => $qrUrl,
         ];

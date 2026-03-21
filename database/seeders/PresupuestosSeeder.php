@@ -110,42 +110,19 @@ class PresupuestosSeeder extends Seeder
     }
 
     /**
-     * Condiciones según especificación del módulo (vigencia_activo, moneda_activo, etc.)
+     * Valores por defecto para term_cond_* y obs_*.
      */
-    private function condicionesBase(): array
+    private function termCondObsBase(): array
     {
         return [
-            'vigencia_activo' => true,
-            'vigencia_dias' => 15,
-            'moneda_activo' => true,
-            'impuestos_activo' => true,
-            'anticipo_activo' => true,
-            'anticipo_porcentaje' => 50,
-            'entrega_activo' => true,
-            'entrega_tipo' => 'antes',
-            'tiempo_entrega_activo' => true,
-            'tiempo_entrega_dias' => 10,
-            'disponibilidad_materiales_activo' => false,
-            'trabajos_adicionales_activo' => true,
-            'alcance_activo' => false,
-            'cancelacion_activo' => false,
-            'autorizacion_gestionpro_activo' => true,
-            'condicionantes_adicionales_1' => null,
-            'condicionantes_adicionales_2' => null,
-            'condicionantes_adicionales_3' => null,
-            'condicionantes_adicionales_4' => null,
-            'garantia_activo' => true,
-            'garantia_dias' => 60,
-            'gastos_traslado_activo' => true,
-            'gastos_traslado' => 'incluidos',
-            'viaticos_activo' => true,
-            'viaticos' => 'incluidos',
-            'revision_tecnica_activo' => false,
-            'condiciones_sitio_activo' => false,
-            'observaciones_adicionales_1' => null,
-            'observaciones_adicionales_2' => null,
-            'observaciones_adicionales_3' => null,
-            'observaciones_adicionales_4' => null,
+            'term_cond_dias_vigencia' => 15,
+            'term_cond_moneda' => 'MXN',
+            'term_cond_iva' => 16,
+            'term_cond_anticipo_porcentaje' => 50,
+            'term_cond_tiempo_entrega_dias' => 10,
+            'obs_garantia_dias' => 60,
+            'obs_traslados' => true,
+            'obs_viaticos' => true,
         ];
     }
 
@@ -165,7 +142,7 @@ class PresupuestosSeeder extends Seeder
                 'concepto_general' => 'Suministro e instalación de luminarias LED para área de oficinas.',
                 'con_iva' => true,
                 'iva_porcentaje' => 16.00,
-                'observaciones' => 'Incluye garantía de 12 meses por defecto de fabricación.',
+                'obs_garantia_dias' => 365,
                 'cliente_key' => 'alfa',
                 'empresa_receptora_nombre' => null,
                 'empresa_receptora_puesto' => null,
@@ -184,7 +161,6 @@ class PresupuestosSeeder extends Seeder
                 'concepto_general' => 'Mantenimiento preventivo a equipos de aire acondicionado.',
                 'con_iva' => false,
                 'iva_porcentaje' => 16.00,
-                'observaciones' => 'Se agenda visita técnica previa sin costo.',
                 'cliente_key' => 'beta',
                 'empresa_receptora_nombre' => null,
                 'empresa_receptora_puesto' => null,
@@ -203,7 +179,6 @@ class PresupuestosSeeder extends Seeder
                 'concepto_general' => 'Adecuación de red de voz y datos en área administrativa.',
                 'con_iva' => true,
                 'iva_porcentaje' => 16.00,
-                'observaciones' => 'No incluye obra civil ni canalización adicional.',
                 'cliente_key' => 'gamma',
                 'empresa_receptora_nombre' => null,
                 'empresa_receptora_puesto' => null,
@@ -223,7 +198,6 @@ class PresupuestosSeeder extends Seeder
                 'concepto_general' => 'Cotización para diseño de landing page y configuración de campañas digitales.',
                 'con_iva' => true,
                 'iva_porcentaje' => 16.00,
-                'observaciones' => 'Proyecto digital estimado en 3 semanas.',
                 'cliente_key' => null,
                 'empresa_receptora_nombre' => 'Alejandro Torres',
                 'empresa_receptora_puesto' => 'Director de Marketing',
@@ -243,7 +217,6 @@ class PresupuestosSeeder extends Seeder
                 'concepto_general' => 'Suministro de insumos de oficina para el trimestre Q1.',
                 'con_iva' => true,
                 'iva_porcentaje' => 16.00,
-                'observaciones' => null,
                 'cliente_key' => 'alfa',
                 'empresa_receptora_nombre' => null,
                 'empresa_receptora_puesto' => null,
@@ -262,7 +235,6 @@ class PresupuestosSeeder extends Seeder
                 'concepto_general' => 'Reparación de equipo de cómputo y actualización de software.',
                 'con_iva' => true,
                 'iva_porcentaje' => 16.00,
-                'observaciones' => 'Diagnóstico previo sin costo.',
                 'cliente_key' => null,
                 'empresa_receptora_nombre' => 'Roberto Sánchez',
                 'empresa_receptora_puesto' => 'Sistemas',
@@ -285,21 +257,17 @@ class PresupuestosSeeder extends Seeder
     {
         $cliente = $plantilla['cliente_key'] ? ($clientes[$plantilla['cliente_key']] ?? null) : null;
 
-        $condiciones = $this->condicionesBase();
-        $condiciones['emisor_razon_social'] = $proveedor->razon_social ?? $proveedor->nombre_comercial;
-        $condiciones['emisor_rfc'] = $proveedor->rfc;
-        $condiciones['emisor_direccion'] = $proveedor->direccion_empresa;
-        $condiciones['emisor_telefono'] = $proveedor->telefono;
-        $condiciones['emisor_email'] = $proveedor->email;
+        $termObs = $this->termCondObsBase();
+        if (isset($plantilla['obs_garantia_dias'])) {
+            $termObs['obs_garantia_dias'] = $plantilla['obs_garantia_dias'];
+        }
 
-        return [
+        return array_merge([
             'numero_presupuesto' => $folio,
             'fecha_emision' => $plantilla['fecha_emision'],
             'concepto_general' => $plantilla['concepto_general'],
             'con_iva' => $plantilla['con_iva'],
             'iva_porcentaje' => $plantilla['iva_porcentaje'],
-            'condiciones' => $condiciones,
-            'observaciones' => $plantilla['observaciones'],
             'proveedor_id' => $proveedor->id,
             'empresa_receptora_id' => $cliente?->id,
             'empresa_receptora_nombre' => $cliente?->nombre ?? $plantilla['empresa_receptora_nombre'],
@@ -308,7 +276,7 @@ class PresupuestosSeeder extends Seeder
             'empresa_receptora_telefono' => $cliente?->telefono ?? $plantilla['empresa_receptora_telefono'],
             'empresa_receptora_correo' => $cliente?->correo ?? $plantilla['empresa_receptora_correo'],
             'user_id' => $userId,
-        ];
+        ], $termObs);
     }
 
     private function resolverUserIdParaProveedor(Proveedor $proveedor): int

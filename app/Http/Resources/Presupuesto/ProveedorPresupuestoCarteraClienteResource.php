@@ -20,6 +20,7 @@ class ProveedorPresupuestoCarteraClienteResource extends JsonResource
             'nombre' => $this->nombre,
             'puesto' => $this->puesto,
             'empresa' => $this->empresa,
+            'alias_empresa' => $this->alias_empresa,
             'telefono' => $this->telefono,
             'correo' => $this->correo,
             'created_at' => $this->created_at,

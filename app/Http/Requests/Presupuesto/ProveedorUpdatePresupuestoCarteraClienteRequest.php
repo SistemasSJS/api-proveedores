@@ -25,6 +25,7 @@ class ProveedorUpdatePresupuestoCarteraClienteRequest extends FormRequest
             'nombre' => ['required', 'string', 'max:255'],
             'puesto' => ['nullable', 'string', 'max:255'],
             'empresa' => ['required', 'string', 'max:255'],
+            'alias_empresa' => ['nullable', 'string', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:30'],
             'correo' => ['nullable', 'email', 'max:255'],
         ];

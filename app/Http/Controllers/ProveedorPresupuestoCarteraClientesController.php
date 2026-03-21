@@ -66,6 +66,7 @@ class ProveedorPresupuestoCarteraClientesController extends Controller
                 'nombre' => $validated['nombre'],
                 'puesto' => $validated['puesto'] ?? null,
                 'empresa' => $validated['empresa'],
+                'alias_empresa' => $validated['alias_empresa'] ?? null,
                 'telefono' => $validated['telefono'] ?? null,
                 'correo' => $validated['correo'] ?? null,
             ]);
