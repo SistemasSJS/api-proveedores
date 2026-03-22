@@ -1,0 +1,14 @@
+---
+description: Ejecutar escaneo y seguimiento del backlog en api-proveedores (.TODO)
+alwaysApply: false
+---
+
+# Comando RUN-TODO-API
+
+Cuando el usuario escriba **`RUN-TODO-API`** o mencione esta regla con **`@run-todo-api`**:
+
+1. Leer el archivo `.TODO` en la raíz de **api-proveedores** (si está vacío o no existe, indicarlo y sugerir usar una plantilla alineada con `app-proveedores/.TODO.example` para tareas cruzadas).
+2. Listar las tareas con **estado** y **prioridad** si están indicadas.
+3. Para la tarea en curso o la que el usuario nombre, resumir criterios y notas sin inventar requisitos; si afecta autenticación o sesión, relacionar con convenciones del proyecto (ApiResponse, rutas segmentadas, `tieneAccesoAProveedor`, etc.).
+4. No implementar código salvo que el mismo mensaje pida explícitamente implementar o corregir algo.
+5. Responder en **español**, de forma breve y accionable.
