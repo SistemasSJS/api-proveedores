@@ -28,8 +28,10 @@ trait MarksAsNotified
   /**
    * Asocia una notificación (opcional)
    * y deja el item como NO visto.
+   *
+   * @param int|string|null $notificationId ID de la notificación (Laravel usa UUID string)
    */
-  public function addNotification(?int $notificationId = null): void
+  public function addNotification(int|string|null $notificationId = null): void
   {
     $this->withoutEvents(function () use ($notificationId) {
       $this->item_visto = false;

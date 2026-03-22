@@ -39,7 +39,7 @@
                 body {
                     font-family: 'DejaVu Sans', Arial, sans-serif;
                     font-size: 8.5pt;
-                    color: #2c3e50;
+                    color: #171a1d;
                     background: #ffffff;
                     line-height: 1.15;
                     margin: 0;
@@ -51,7 +51,7 @@
                 body {
                     font-family: 'DejaVu Sans', Arial, sans-serif;
                     font-size: 8.5pt;
-                    color: #2c3e50;
+                    color: #171a1d;
                     background: #ffffff;
                     line-height: 1.15;
                     margin: 0;
@@ -183,8 +183,8 @@
                 }
 
                 .folio-uuid {
-                    font-size: 5.5pt;
-                    color: #7f8c8d;
+                    font-size: 6pt;
+                    color: #171a1d;
                     margin-bottom: 0.6mm;
                     line-height: 1.1;
                     word-break: break-all;
@@ -192,7 +192,7 @@
 
                 .folio-date {
                     font-size: 7pt;
-                    color: #7f8c8d;
+                    color: #171a1d;
                     line-height: 1.15;
                 }
 
@@ -430,7 +430,7 @@
                     margin-top: 5mm;
                     padding-top: 2mm;
                     border-top: 1px solid #d1d5db;
-                    page-break-inside: avoid;
+                    page-break-inside: auto;
 
                 }
 
@@ -442,6 +442,7 @@
                     font-weight: 700;
                     color: #2c3e50;
                     margin-bottom: 1.5mm;
+                    page-break-after: avoid;
                 }
 
                 .terminos-list {

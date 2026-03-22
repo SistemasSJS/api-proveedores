@@ -32,12 +32,14 @@ class Presupuesto extends BaseModel
         'total' => 'Total',
         'estado' => 'Estado',
         'item_visto' => 'ItemVisto',
+        'segmento' => 'Segmento',
     ];
 
     public const ESTADO_BORRADOR = 'borrador';
     public const ESTADO_ENVIADO = 'enviado';
     public const ESTADO_ACEPTADO = 'aceptado';
     public const ESTADO_RECHAZADO = 'rechazado';
+    public const ESTADO_RECHAZADO_CON_OBSERVACION = 'rechazado_con_observacion';
     public const ESTADO_VENCIDO = 'vencido';
 
     protected $fillable = [
@@ -584,10 +586,56 @@ class Presupuesto extends BaseModel
 
     /**
      * Filtro por estado del presupuesto.
+     * Acepta valor único o varios separados por coma (ej: rechazado,vencido).
      */
     public function filterByEstado($query, $value)
     {
-        return $query->where('estado', $value);
+        if (empty($value)) {
+            return $query;
+        }
+        $estados = array_map('trim', explode(',', (string) $value));
+        $estados = array_filter($estados);
+
+        return $estados === [] ? $query : $query->whereIn('estado', $estados);
+    }
+
+    /**
+     * Filtro por segmento del listado.
+     * observados: rechazado con motivo_rechazo y no visto (item_visto=false)
+     * rechazados: el resto (rechazados sin motivo, vistos, o vencidos)
+     */
+    public function filterBySegmento($query, $value)
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return $query;
+        }
+
+        $estadosRechazados = [self::ESTADO_RECHAZADO, self::ESTADO_RECHAZADO_CON_OBSERVACION];
+
+        if ($value === 'observados') {
+            return $query
+                ->whereIn('estado', $estadosRechazados)
+                ->whereNotNull('motivo_rechazo')
+                ->whereRaw('TRIM(motivo_rechazo) != ?', [''])
+                ->where(function ($q) {
+                    $q->where('item_visto', false)->orWhereNull('item_visto');
+                });
+        }
+
+        if ($value === 'rechazados') {
+            return $query->where(function ($q) use ($estadosRechazados) {
+                $q->whereIn('estado', array_merge($estadosRechazados, [self::ESTADO_VENCIDO]))
+                    ->where(function ($sub) {
+                        // Sin motivo O está visto
+                        $sub->whereNull('motivo_rechazo')
+                            ->orWhereRaw('TRIM(COALESCE(motivo_rechazo, "")) = ?', [''])
+                            ->orWhere('item_visto', true);
+                    });
+            });
+        }
+
+        return $query;
     }
 
     /**

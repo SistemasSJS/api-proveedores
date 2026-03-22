@@ -99,25 +99,45 @@ class ProveedorPresupuestoController extends Controller
 
         $filters = $request->only(Presupuesto::getFilters());
         $filters['proveedor_id'] = $proveedor->id;
+
+        // Si hay segmento observados/rechazados, usar ese filtro y no estado
+        $segmento = $filters['segmento'] ?? null;
+        if (in_array($segmento, ['observados', 'rechazados'], true)) {
+            unset($filters['estado']);
+        } else {
+            unset($filters['segmento']);
+        }
+
         $sortBy = $request->input('sort_by', 'created_at');
         $order = $request->input('order', 'desc');
         $perPage = $request->input('per_page', 10);
 
-        $countFilters = array_diff_key($filters, array_flip(['estado']));
-        $segmentCounts = Presupuesto::query()
-            ->where('proveedor_id', $proveedor->id)
-            ->when(! empty($countFilters), fn ($q) => $q->filter($countFilters))
-            ->selectRaw('estado, COUNT(*) as total')
-            ->groupBy('estado')
-            ->pluck('total', 'estado')
-            ->toArray();
+        $countFilters = array_diff_key($filters, array_flip(['estado', 'segmento']));
+        $baseQuery = Presupuesto::query()->where('proveedor_id', $proveedor->id);
+        if (! empty($countFilters)) {
+            $baseQuery->filter($countFilters);
+        }
 
         $segmentCountsFormatted = [
-            'borrador' => (int) ($segmentCounts['borrador'] ?? 0),
-            'enviadas' => (int) ($segmentCounts['enviado'] ?? 0),
-            'aceptadas' => (int) ($segmentCounts['aceptado'] ?? 0),
-            'rechazadas' => (int) ($segmentCounts['rechazado'] ?? 0),
-            'vencidas' => (int) ($segmentCounts['vencido'] ?? 0),
+            'borrador' => (int) (clone $baseQuery)->where('estado', Presupuesto::ESTADO_BORRADOR)->count(),
+            'enviados' => (int) (clone $baseQuery)->where('estado', Presupuesto::ESTADO_ENVIADO)->count(),
+            'observados' => (int) (clone $baseQuery)
+                ->whereIn('estado', [Presupuesto::ESTADO_RECHAZADO, Presupuesto::ESTADO_RECHAZADO_CON_OBSERVACION])
+                ->whereNotNull('motivo_rechazo')
+                ->whereRaw('TRIM(motivo_rechazo) != ?', [''])
+                ->where(function ($q) {
+                    $q->where('item_visto', false)->orWhereNull('item_visto');
+                })
+                ->count(),
+            'rechazados' => (int) (clone $baseQuery)
+                ->whereIn('estado', [Presupuesto::ESTADO_RECHAZADO, Presupuesto::ESTADO_RECHAZADO_CON_OBSERVACION, Presupuesto::ESTADO_VENCIDO])
+                ->where(function ($q) {
+                    $q->whereNull('motivo_rechazo')
+                        ->orWhereRaw('TRIM(COALESCE(motivo_rechazo, "")) = ?', [''])
+                        ->orWhere('item_visto', true);
+                })
+                ->count(),
+            'aceptados' => (int) (clone $baseQuery)->where('estado', Presupuesto::ESTADO_ACEPTADO)->count(),
         ];
 
         $originalPaginator = Presupuesto::query()

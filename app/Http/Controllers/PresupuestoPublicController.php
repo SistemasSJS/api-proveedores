@@ -138,8 +138,8 @@ class PresupuestoPublicController extends Controller
             return $this->error('Datos inválidos.', $validator->errors()->all(), 422);
         }
 
-        $presupuesto->estado = Presupuesto::ESTADO_RECHAZADO;
         $motivo = $request->input('motivo');
+        $presupuesto->estado = Presupuesto::ESTADO_RECHAZADO;
         if ($motivo) {
             $presupuesto->motivo_rechazo = trim($motivo);
         }
