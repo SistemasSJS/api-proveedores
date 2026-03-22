@@ -6,12 +6,21 @@ use App\Models\Presupuesto;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 /**
  * Representación pública del presupuesto (sin datos sensibles).
  */
 class PresupuestoPublicResource extends JsonResource
 {
+    /**
+     * Convierte un string a mayúsculas (UTF-8). Null o vacío se devuelven tal cual.
+     */
+    private static function upper(?string $value): ?string
+    {
+        return $value !== null && $value !== '' ? Str::upper($value) : $value;
+    }
+
     public function toArray(Request $request): array
     {
         $proveedor = $this->proveedor;
@@ -46,12 +55,12 @@ class PresupuestoPublicResource extends JsonResource
             'estado' => $this->estado ?? Presupuesto::ESTADO_BORRADOR,
             'proveedor' => [
                 'id' => $proveedor?->id ?? $this->proveedor_id,
-                'nombre' => $proveedor?->nombre_comercial ?? $proveedor?->razon_social ?? null,
+                'nombre' => self::upper($proveedor?->nombre_comercial ?? $proveedor?->razon_social ?? null),
                 'logo' => $logoUrl,
                 'rfc' => $proveedor?->rfc ?? null,
-                'direccion_empresa' => $proveedor?->direccion_empresa ?? null,
-                'ciudad' => $proveedor?->ciudad ?? null,
-                'estado' => $proveedor?->estado ?? null,
+                'direccion_empresa' => self::upper($proveedor?->direccion_empresa ?? null),
+                'ciudad' => self::upper($proveedor?->ciudad ?? null),
+                'estado' => self::upper($proveedor?->estado ?? null),
                 'telefono' => $proveedor?->telefono ?? null,
                 'email' => $proveedor?->email ?? null,
             ],

@@ -3,9 +3,18 @@
 namespace App\Http\Resources\Proveedor;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Str;
 
 class ProveedorEmpresaResource extends JsonResource
 {
+    /**
+     * Convierte un string a mayúsculas (UTF-8). Null o vacío se devuelven tal cual.
+     */
+    private static function upper(?string $value): ?string
+    {
+        return $value !== null && $value !== '' ? Str::upper($value) : $value;
+    }
+
     /**
      * Transforma el recurso en un arreglo JSON.
      */
@@ -13,18 +22,18 @@ class ProveedorEmpresaResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'nombre' => $this->nombre,
-            'razon_social' => $this->razon_social,
+            'nombre' => self::upper($this->nombre),
+            'razon_social' => self::upper($this->razon_social),
             'rfc' => $this->rfc,
-            'direccion' => $this->direccion,
-            'ciudad' => $this->ciudad,
-            'estado' => $this->estado,
+            'direccion' => self::upper($this->direccion),
+            'ciudad' => self::upper($this->ciudad),
+            'estado' => self::upper($this->estado),
             'codigo_postal' => $this->codigo_postal,
             'telefono' => $this->telefono,
             'email' => $this->email,
-            'representante_legal' => $this->representante_legal,
+            'representante_legal' => self::upper($this->representante_legal),
             'activo' => (bool) $this->activo,
-            'nombre_completo' => $this->nombre_completo,
+            'nombre_completo' => self::upper($this->nombre_completo),
             'created_at' => optional($this->created_at)->toDateTimeString(),
             'updated_at' => optional($this->updated_at)->toDateTimeString(),
 
@@ -35,7 +44,7 @@ class ProveedorEmpresaResource extends JsonResource
                 return $this->proveedores->map(function ($proveedor) {
                     return [
                         'id' => $proveedor->id,
-                        'nombre' => $proveedor->nombre,
+                        'nombre' => self::upper($proveedor->nombre),
                         'rfc' => $proveedor->rfc,
                         'telefono' => $proveedor->telefono ?? null,
                         'email' => $proveedor->email ?? null,

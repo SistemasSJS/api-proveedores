@@ -4,9 +4,18 @@ namespace App\Http\Resources\Construcc;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Str;
 
 class ConstruccProveedorResource extends JsonResource
 {
+    /**
+     * Convierte un string a mayúsculas (UTF-8). Null o vacío se devuelven tal cual.
+     */
+    private static function upper(?string $value): ?string
+    {
+        return $value !== null && $value !== '' ? Str::upper($value) : $value;
+    }
+
     /**
      * Transform the resource into an array.
      *
@@ -16,8 +25,8 @@ class ConstruccProveedorResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'nombre_comercial' => $this->nombre_comercial,
-            'razon_social' => $this->razon_social,
+            'nombre_comercial' => self::upper($this->nombre_comercial),
+            'razon_social' => self::upper($this->razon_social),
             'rfc' => $this->rfc,
             'email' => $this->email,
             'telefono' => $this->telefono,
@@ -25,19 +34,19 @@ class ConstruccProveedorResource extends JsonResource
 
             // Información de contacto
             'contacto' => [
-                'nombre' => $this->contacto_nombre,
-                'cargo' => $this->contacto_cargo,
+                'nombre' => self::upper($this->contacto_nombre),
+                'cargo' => self::upper($this->contacto_cargo),
                 'telefono' => $this->contacto_telefono,
                 'correo' => $this->contacto_correo,
             ],
 
             // Información de ubicación
             'ubicacion' => [
-                'estado' => $this->estado,
-                'municipio' => $this->municipio,
+                'estado' => self::upper($this->estado),
+                'municipio' => self::upper($this->municipio),
                 'codigo_postal' => $this->codigo_postal,
-                'direccion_fiscal' => $this->direccion_fiscal,
-                'direccion_empresa' => $this->direccion_empresa,
+                'direccion_fiscal' => self::upper($this->direccion_fiscal),
+                'direccion_empresa' => self::upper($this->direccion_empresa),
             ],
 
             // Logo optimizado

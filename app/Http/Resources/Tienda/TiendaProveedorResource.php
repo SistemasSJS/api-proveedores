@@ -4,9 +4,18 @@ namespace App\Http\Resources\Tienda;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Str;
 
 class TiendaProveedorResource extends JsonResource
 {
+    /**
+     * Convierte un string a mayúsculas (UTF-8). Null o vacío se devuelven tal cual.
+     */
+    private static function upper(?string $value): ?string
+    {
+        return $value !== null && $value !== '' ? Str::upper($value) : $value;
+    }
+
     /**
      * Transform the resource into an array.
      *
@@ -16,7 +25,7 @@ class TiendaProveedorResource extends JsonResource
     {
         return [
             'id' => (string) $this->id,
-            'nombre' => $this->nombre,
+            'nombre' => self::upper($this->nombre),
             'logo' => asset('storage/'.$this->logo),
             'principal' => (bool) $this->principal,
             'activo' => (bool) $this->activo,

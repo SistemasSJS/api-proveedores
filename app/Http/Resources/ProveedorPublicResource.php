@@ -5,9 +5,18 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ProveedorPublicResource extends JsonResource
 {
+    /**
+     * Convierte un string a mayúsculas (UTF-8). Null o vacío se devuelven tal cual.
+     */
+    private static function upper(?string $value): ?string
+    {
+        return $value !== null && $value !== '' ? Str::upper($value) : $value;
+    }
+
     /**
      * Transform the resource into an array.
      *
@@ -20,10 +29,10 @@ class ProveedorPublicResource extends JsonResource
             'logo' => $this->logo
                 ? Storage::disk('public')->url($this->logo)
                 : null,
-            'nombre_comercial' => $this->nombre_comercial,
+            'nombre_comercial' => self::upper($this->nombre_comercial),
             'email' => $this->email,
             'telefono' => $this->telefono,
-            'direccion_empresa' => $this->direccion_empresa,
+            'direccion_empresa' => self::upper($this->direccion_empresa),
             'constancia_fiscal' => $this->constancia_fiscal
                 ? Storage::disk('public')->url($this->constancia_fiscal)
                 : null,

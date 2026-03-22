@@ -4,9 +4,18 @@ namespace App\Http\Resources\Construcc;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Str;
 
 class ConstruccProveedorDetalleResource extends JsonResource
 {
+    /**
+     * Convierte un string a mayúsculas (UTF-8). Null o vacío se devuelven tal cual.
+     */
+    private static function upper(?string $value): ?string
+    {
+        return $value !== null && $value !== '' ? Str::upper($value) : $value;
+    }
+
     /**
      * Transform the resource into an array.
      *
@@ -16,8 +25,8 @@ class ConstruccProveedorDetalleResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'nombre_comercial' => $this->nombre_comercial,
-            'razon_social' => $this->razon_social,
+            'nombre_comercial' => self::upper($this->nombre_comercial),
+            'razon_social' => self::upper($this->razon_social),
             'rfc' => $this->rfc,
             'email' => $this->email,
             'telefono' => $this->telefono,
@@ -27,20 +36,20 @@ class ConstruccProveedorDetalleResource extends JsonResource
             // Información empresarial
             'pagina_web' => $this->pagina_web,
             'tipo_persona' => $this->tipo_persona,
-            'descripcion_giro_empresa' => $this->descripcion_giro_empresa,
+            'descripcion_giro_empresa' => self::upper($this->descripcion_giro_empresa),
             
             // Información de contacto
-            'contacto_nombre' => $this->contacto_nombre,
-            'contacto_cargo' => $this->contacto_cargo,
+            'contacto_nombre' => self::upper($this->contacto_nombre),
+            'contacto_cargo' => self::upper($this->contacto_cargo),
             'contacto_telefono' => $this->contacto_telefono,
             'contacto_correo' => $this->contacto_correo,
             
             // Información de ubicación
-            'estado' => $this->estado,
-            'municipio' => $this->municipio,
+            'estado' => self::upper($this->estado),
+            'municipio' => self::upper($this->municipio),
             'codigo_postal' => $this->codigo_postal,
-            'direccion_fiscal' => $this->direccion_fiscal,
-            'direccion_empresa' => $this->direccion_empresa,
+            'direccion_fiscal' => self::upper($this->direccion_fiscal),
+            'direccion_empresa' => self::upper($this->direccion_empresa),
             
             // Logo
             'logo' => $this->logo
@@ -57,13 +66,13 @@ class ConstruccProveedorDetalleResource extends JsonResource
                 return $this->cuentasBancarias->map(function ($cuenta) {
                     return [
                         'id' => $cuenta->id,
-                        'alias' => $cuenta->alias,
-                        'banco_nombre' => $cuenta->banco_nombre,
+                        'alias' => self::upper($cuenta->alias),
+                        'banco_nombre' => self::upper($cuenta->banco_nombre),
                         'banco_clave' => $cuenta->banco_clave,
                         'cuenta' => $cuenta->cuenta,
                         'clabe' => $cuenta->clabe,
                         'tarjeta' => $cuenta->tarjeta,
-                        'titular_cuenta' => $cuenta->titular_cuenta,
+                        'titular_cuenta' => self::upper($cuenta->titular_cuenta),
                         'preferida' => (bool) $cuenta->preferida,
                         'estatus' => $cuenta->estatus,
                     ];
@@ -75,7 +84,7 @@ class ConstruccProveedorDetalleResource extends JsonResource
                 return $this->empresasConstrucc->map(function ($empresa) {
                     return [
                         'id' => $empresa->id,
-                        'nombre' => $empresa->nombre,
+                        'nombre' => self::upper($empresa->nombre),
                         'rfc' => $empresa->rfc,
                         'usuario_construcc_id' => $empresa->pivot->usuario_construcc_id ?? null,
                         'usuario_construcc_nombre' => $empresa->pivot->usuario_construcc_nombre ?? null,

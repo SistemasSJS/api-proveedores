@@ -5,6 +5,7 @@ namespace App\Http\Resources\Presupuesto;
 use App\Models\Presupuesto;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Str;
 
 /**
  * Representación completa del presupuesto básico.
@@ -12,10 +13,22 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class PresupuestoResource extends JsonResource
 {
     /**
+     * Convierte un string a mayúsculas (UTF-8). Null o vacío se devuelven tal cual.
+     */
+    private static function upper(?string $value): ?string
+    {
+        return $value !== null && $value !== '' ? Str::upper($value) : $value;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
+        $proveedorNombre = $this->proveedor?->nombre_comercial
+            ?? $this->proveedor?->razon_social
+            ?? null;
+
         return [
             'id' => $this->id,
             'uuid' => $this->uuid,
@@ -42,9 +55,7 @@ class PresupuestoResource extends JsonResource
             'token_publico' => $this->token_publico,
             'proveedor' => [
                 'id' => $this->proveedor?->id ?? $this->proveedor_id,
-                'nombre' => $this->proveedor?->nombre_comercial
-                    ?? $this->proveedor?->razon_social
-                    ?? null,
+                'nombre' => self::upper($proveedorNombre),
             ],
             'empresa_receptora' => [
                 'id' => $this->empresaReceptora?->id ?? $this->empresa_receptora_id,

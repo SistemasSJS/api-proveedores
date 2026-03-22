@@ -5,9 +5,18 @@ namespace App\Http\Resources\Construcc;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ConstruccPagoProveedorResource extends JsonResource
 {
+  /**
+   * Convierte un string a mayúsculas (UTF-8). Null o vacío se devuelven tal cual.
+   */
+  private static function upper(?string $value): ?string
+  {
+    return $value !== null && $value !== '' ? Str::upper($value) : $value;
+  }
+
   /**
    * Transform the resource into an array.
    *
@@ -20,7 +29,7 @@ class ConstruccPagoProveedorResource extends JsonResource
 
     return [
       'id' => $this->id,
-      'nombre_comercial' =>  $this->nombre_comercial,
+      'nombre_comercial' => self::upper($this->nombre_comercial),
 
       // Contadores
       'spp_autorizadas_count' => $count,

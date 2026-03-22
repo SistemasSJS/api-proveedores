@@ -5,9 +5,18 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ProveedorResource extends JsonResource
 {
+    /**
+     * Convierte un string a mayúsculas (UTF-8). Null o vacío se devuelven tal cual.
+     */
+    private static function upper(?string $value): ?string
+    {
+        return $value !== null && $value !== '' ? Str::upper($value) : $value;
+    }
+
     /**
      * Transform the resource into an array.
      */
@@ -19,9 +28,9 @@ class ProveedorResource extends JsonResource
              * Identificación
              * ========================= */
             'id' => $this->id,
-            'nombre' => $this->nombre_comercial,
-            'razon_social' => $this->razon_social,
-            'nombre_comercial' => $this->nombre_comercial,
+            'nombre' => self::upper($this->nombre_comercial),
+            'razon_social' => self::upper($this->razon_social),
+            'nombre_comercial' => self::upper($this->nombre_comercial),
             'rfc' => $this->rfc,
 
             /* =========================
@@ -47,35 +56,35 @@ class ProveedorResource extends JsonResource
              * ========================= */
             'tipo_persona' => $this->tipo_persona,
             'regimen_fiscal_clave' => $this->regimen_fiscal_clave,
-            'regimen_fiscal_nombre' => $this->regimen_fiscal_nombre,
+            'regimen_fiscal_nombre' => self::upper($this->regimen_fiscal_nombre),
 
-            'direccion' => $this->direccion_empresa,
+            'direccion' => self::upper($this->direccion_empresa),
 
             'direccion_fiscal' => [
-                'calle' => $this->calle,
+                'calle' => self::upper($this->calle),
                 'numero_exterior' => $this->numero_exterior,
                 'numero_interior' => $this->numero_interior,
-                'colonia' => $this->colonia,
-                'ciudad' => $this->ciudad,
-                'estado' => $this->estado,
+                'colonia' => self::upper($this->colonia),
+                'ciudad' => self::upper($this->ciudad),
+                'estado' => self::upper($this->estado),
                 'codigo_postal' => $this->codigo_postal,
-                'pais' => $this->pais,
+                'pais' => self::upper($this->pais),
             ],
 
             /* =========================
              * Información de la empresa
              * ========================= */
             'tipos_empresa_id' => $this->tipos_empresa_id,
-            'tipos_empresa_otro' => $this->tipos_empresa_otro,
-            'descripcion_giro_empresa' => $this->descripcion_giro_empresa,
+            'tipos_empresa_otro' => self::upper($this->tipos_empresa_otro),
+            'descripcion_giro_empresa' => self::upper($this->descripcion_giro_empresa),
             'categoria' => $this->categoria ?? null,
-            'ciudad' => $this->ciudad ?? null,
+            'ciudad' => self::upper($this->ciudad ?? null),
 
             /* =========================
              * Contacto principal
              * ========================= */
-            'contacto_nombre' => $this->contacto_nombre,
-            'contacto_cargo' => $this->contacto_cargo,
+            'contacto_nombre' => self::upper($this->contacto_nombre),
+            'contacto_cargo' => self::upper($this->contacto_cargo),
             'contacto_telefono' => $this->contacto_telefono,
             'contacto_correo' => $this->contacto_correo,
 
@@ -85,8 +94,8 @@ class ProveedorResource extends JsonResource
             'estatus' => $this->estatus,
             'notas' => $this->notas,
             'validado_por' => $this->validado_por,
-            'nombre_propietario' => $this->nombre_propietario,
-            'nombre_de_quien_registra' => $this->nombre_de_quien_registra,
+            'nombre_propietario' => self::upper($this->nombre_propietario),
+            'nombre_de_quien_registra' => self::upper($this->nombre_de_quien_registra),
 
             'principal' => $this->principal ?? null,
             'calificacion' => $this->calificacion ?? null,
@@ -102,7 +111,7 @@ class ProveedorResource extends JsonResource
             'tipos_empresa' => $this->whenLoaded('tipos_empresa', function () {
                 return [
                     'id' => $this->tipos_empresa->id,
-                    'nombre' => $this->tipos_empresa->nombre,
+                    'nombre' => self::upper($this->tipos_empresa->nombre),
                     'estatus' => $this->tipos_empresa->estatus,
                 ];
             }),
