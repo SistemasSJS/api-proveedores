@@ -288,6 +288,91 @@ class ProveedorPresupuestoController extends Controller
     }
 
     /**
+     * Duplica un presupuesto con un nuevo folio y estado borrador.
+     */
+    public function duplicar(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
+    {
+        try {
+            if ($presupuesto->proveedor_id !== $proveedor->id) {
+                return $this->error('Presupuesto no pertenece a este proveedor.', null, 403);
+            }
+
+            $user = $request->user();
+            if (! $user || ! $user->tieneAccesoAProveedor((int) $proveedor->id)) {
+                return $this->error('El usuario autenticado no tiene acceso al proveedor indicado.', null, 403);
+            }
+
+            $presupuesto->load('conceptos');
+
+            $nuevo = DB::transaction(function () use ($presupuesto, $user) {
+                $payload = $presupuesto->only([
+                    'proveedor_id',
+                    'empresa_receptora_id',
+                    'empresa_receptora_nombre',
+                    'empresa_receptora_puesto',
+                    'empresa_receptora_empresa',
+                    'empresa_receptora_alias',
+                    'empresa_receptora_telefono',
+                    'empresa_receptora_correo',
+                    'concepto_general',
+                    'con_iva',
+                    'iva_porcentaje',
+                    'term_cond_dias_vigencia',
+                    'term_cond_moneda',
+                    'term_cond_iva',
+                    'term_cond_anticipo_porcentaje',
+                    'term_cond_tiempo_entrega_dias',
+                    'obs_garantia_dias',
+                    'obs_traslados',
+                    'obs_viaticos',
+                ]);
+
+                $payload['numero_presupuesto'] = Presupuesto::generarNumeroPresupuesto((int) $presupuesto->proveedor_id);
+                $payload['fecha_emision'] = now()->toDateString();
+                $payload['estado'] = Presupuesto::ESTADO_BORRADOR;
+                $payload['user_id'] = $user->id;
+
+                $nuevo = Presupuesto::create($payload);
+                $nuevo->asegurarTokenPublico();
+
+                $conceptos = $presupuesto->conceptos->map(function (PresupuestoConcepto $c, int $index) {
+                    return [
+                        'descripcion' => $c->descripcion,
+                        'cantidad' => (float) $c->cantidad,
+                        'unidad' => $c->unidad,
+                        'precio_unitario' => (float) $c->precio_unitario,
+                    ];
+                })->values()->all();
+
+                $this->sincronizarConceptos($nuevo, $conceptos);
+                $nuevo->recalcularDesdeConceptos();
+                $nuevo->save();
+
+                return $nuevo->fresh(Presupuesto::eagerLodable());
+            });
+
+            $this->log('Presupuesto duplicado', [
+                'origen_id' => $presupuesto->id,
+                'nuevo_id' => $nuevo->id,
+                'numero_presupuesto' => $nuevo->numero_presupuesto,
+            ]);
+
+            return $this->success(
+                new PresupuestoResource($nuevo),
+                'Presupuesto duplicado correctamente.',
+                201
+            );
+        } catch (Throwable $e) {
+            $this->log('Error al duplicar presupuesto', [
+                'presupuesto_id' => $presupuesto->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->error('No fue posible duplicar el presupuesto.', [$e->getMessage()], 500);
+        }
+    }
+
+    /**
      * @param array<string, mixed> $payload
      * @return array<string, mixed>
      */

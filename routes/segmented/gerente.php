@@ -243,6 +243,7 @@ Route::prefix('proveedores')
             Route::post('/generar-pdf', [ProveedorPresupuestoController::class, 'generarPdfDesdeFormulario'])->middleware(['audit']);
 
             Route::get('/{presupuesto}', [ProveedorPresupuestoController::class, 'show'])->middleware(['audit']);
+            Route::post('/{presupuesto}/duplicar', [ProveedorPresupuestoController::class, 'duplicar'])->middleware(['audit']);
             Route::put('/{presupuesto}', [ProveedorPresupuestoController::class, 'update'])->middleware(['audit']);
             Route::patch('/{presupuesto}', [ProveedorPresupuestoController::class, 'update'])->middleware(['audit']);
             Route::delete('/{presupuesto}', [ProveedorPresupuestoController::class, 'destroy'])->middleware(['audit']);

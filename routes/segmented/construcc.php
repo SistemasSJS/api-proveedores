@@ -106,6 +106,12 @@ Route::prefix('construcc')
         /**
          * CRUD completo de proveedores registrados por usuarios construcción,
          * sus cuentas bancarias y generación de solicitudes de pago
+         * 
+         * NOTE: 
+         *      Se puede habilitar que el RO genere las SPP del proveedor, 
+         *  esto solo implicaria deshabilitar la validacion de tipo_proveedor 2.
+         *  Lo recomendado para este caso seria que se notificara al proveedor que se creo la SPP,
+         *  esto solo para el caso de que el proveedor sea del tipo 1.
          */
         Route::prefix('proveedor')->name('proveedor.')->group(function () {
             /** 

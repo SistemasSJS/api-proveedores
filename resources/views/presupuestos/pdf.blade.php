@@ -1,6 +1,6 @@
         @php
-            $margenMm = 18;
-            $footerHeightMm = 24; // Espacio reservado para pie de página en cada hoja (carta)
+            $margenMm = 25.4;
+            $footerHeightMm = 25.4; // Espacio reservado para pie de página en cada hoja (carta)
             $terminosLista = $presupuesto['terminos_enunciados'] ?? [];
             $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
         @endphp
@@ -13,10 +13,14 @@
             <style>
                 @page {
                     size: letter;
-                    margin-top: {{ $margenMm + 1000 }}mm;
-                    margin-left: {{ $margenMm }}mm;
+                    margin: 25.5mm;
+                    /* margin-left: {{ $margenMm }}mm;
                     margin-right: {{ $margenMm }}mm;
-                    margin-bottom: {{ $footerHeightMm + 8 }}mm;
+                    margin-bottom: {{ $footerHeightMm + 8 }}mm; */
+                }
+
+                .page-top-spacing {
+                    padding-top: {{ $margenMm }}mm;
                 }
 
                 * {
@@ -25,13 +29,23 @@
                     box-sizing: border-box;
                 }
 
+                .content-wrapper {
+                    min-height: calc(100vh - {{ $footerHeightMm + 20 }}mm);
+                    display: flex;
+                    flex-direction: column;
+                }
 
                 html,
                 body {
-                    width: 100%;
-                    max-width: 100%;
-                    overflow-x: hidden;
-                    padding-bottom: {{ $footerHeightMm + 6 }}mm;
+                    font-family: 'DejaVu Sans', Arial, sans-serif;
+                    font-size: 8.5pt;
+                    color: #2c3e50;
+                    background: #ffffff;
+                    line-height: 1.15;
+                    margin: 0;
+                    padding: 0;
+                    padding-bottom: {{ $footerHeightMm + 10 }}mm;
+                    /* 🔥 clave */
                 }
 
                 body {
@@ -69,11 +83,6 @@
                     margin-bottom: 6mm;
                 }
 
-                .terms-block {
-                    margin-top: 0;
-                    margin-bottom: 4mm;
-                    page-break-inside: avoid;
-                }
 
                 /* ========== 1) ENCABEZADO (igual que preview) ========== */
                 .header {
@@ -212,7 +221,7 @@
                     line-height: 1.15;
                 }
 
-                .receptor-info {
+                p .receptor-info {
                     font-size: 7pt;
                     color: #5f6f89;
                     margin-bottom: 0.8mm;
@@ -362,8 +371,13 @@
                 }
 
                 /* ========== 5) TOTALES (alineado con tabla) ========== */
-                .totales-section {
+                .terms-block {
                     margin-bottom: 4mm;
+                    page-break-inside: avoid;
+                    page-break-before: auto;
+                }
+
+                .totales-section {
                     page-break-inside: avoid;
                 }
 
@@ -420,9 +434,7 @@
 
                 }
 
-                .terminos-section-line {
-
-                }
+                .terminos-section-line {}
 
                 .terminos-main-title,
                 .terminos-title {
@@ -529,7 +541,8 @@
                 .footer-left {
                     display: table-cell;
                     width: 33%;
-                    vertical-align: middle;
+                    vertical-align: bottom;
+                    /* 🔥 clave */
                 }
 
                 .footer-center {
@@ -598,7 +611,7 @@
                     font-style: italic;
                     color: #6b7280;
                     font-size: 6pt;
-                    margin-bottom: 0.4mm;
+                    /* margin-bottom: 0.4mm; */
                 }
 
                 .footer-webs {
@@ -633,9 +646,7 @@
                 }
 
                 .after-table-space {
-                    height: 12mm;
-                    /* ajusta aquí */
-                    min-height: 25mm;
+                    height: 25mm;
                 }
             </style>
         </head>
@@ -664,12 +675,12 @@
                     </div>
                     <div class="footer-center">
                         <div class="footer-center-content">
-                            <div class="footer-pages">&nbsp;</div>
                             <div class="footer-slogan">"Calidad y compromiso en cada proyecto"</div>
                             <div class="footer-webs">
                                 <a href="https://heventec.com" class="footer-webs-link">heventec.com</a><span
                                     class="footer-webs-sep">|</span><a href="https://gestionpro.com"
                                     class="footer-webs-link">gestionpro.com</a>
+                                <div class="footer-pages">&nbsp;</div>
                             </div>
                         </div>
                     </div>
@@ -770,7 +781,6 @@
                         <!-- 2) DATOS DEL RECEPTOR -->
                         <div class="receptor-section">
                             <div class="receptor-title">Dirigido a:</div>
-                            {{-- TODO: Agregar los camps p --}}
 
                             @php
                                 $receptor = $presupuesto['empresa_receptora'] ?? [];
@@ -898,10 +908,11 @@
                         </div>
 
                     </div>
-                    <div class="terms-block">
+                    <div class="terms-block terms-block page-top-spacing">
                         <!-- 6) TÉRMINOS Y CONDICIONES (listado como preview) -->
                         @if (count($terminosLista) > 0)
-                            <div class="terminos-section terminos-section-line">
+                            <div class="terminos-section
+                        terminos-section-line">
                                 <div class="terminos-main-title">Términos y Condiciones</div>
                                 <ul class="terminos-list">
                                     @foreach ($terminosLista as $texto)
@@ -925,16 +936,21 @@
                     </div>
                 </div>
             </div>
-
             <script type="text/php">
                 if (isset($pdf) && isset($fontMetrics)) {
                     $text = "Página {PAGE_NUM} de {PAGE_COUNT}";
                     $size = 7;
                     $font = $fontMetrics->getFont("DejaVu Sans", "normal");
-                    $sample = "Página 1 de 1";
+            
+                    // 🔥 usar un ejemplo REAL para medir
+                    $sample = "Página 99 de 99";
                     $width = $fontMetrics->getTextWidth($sample, $font, $size);
-                    $x = ($pdf->get_width() - $width) / 2;
-                    $y = $pdf->get_height() - 22;
+            
+                    $x = ($pdf->get_width() - $width) / 2 + 5;
+            
+                    // 🔥 ya ajustado para no encimarse con footer
+                    $y = $pdf->get_height() - 45;
+            
                     $pdf->page_text($x, $y, $text, $font, $size);
                 }
             </script>
