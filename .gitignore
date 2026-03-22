@@ -39,6 +39,9 @@ yarn.lock
 # Mantener directorios importantes pero vacíos
 !/storage/app/.gitkeep
 !/storage/app/public/.gitkeep
+# Firebase Admin SDK: carpeta versionada; la clave JSON no se sube (ver abajo)
+!/storage/app/firebase/
+!/storage/app/firebase/.gitkeep
 !/storage/framework/cache/.gitkeep
 !/storage/framework/sessions/.gitkeep
 !/storage/framework/testing/.gitkeep
@@ -102,6 +105,9 @@ xdebug.log
 # ====================================================================================
 # ARCHIVOS SENSIBLES Y CONFIGURACIÓN
 # ====================================================================================
+
+# Firebase Cloud Messaging (Laravel) — credencial de cuenta de servicio (nunca en git)
+/storage/app/firebase/service-account.json
 
 # Claves y certificados
 *.pem
