@@ -47,19 +47,30 @@ class ConstruccProveedorController extends Controller
             $perPage = $request->input('per_page', 10);
 
             $query = Proveedor::query()
-                ->when($empresaId, function ($q) use ($empresaId) {
-                    $q->where(function ($sub) use ($empresaId) {
-                        $sub->whereNull('empresa_construcc_alta')
-                            ->orWhere('empresa_construcc_alta', $empresaId);
+
+                ->when($empresaId, function ($q) use ($empresaId, $usuarioId) {
+                    $q->where(function ($sub) use ($empresaId, $usuarioId) {
+
+                        // 🔥 1. Proveedores asociados/enlazados
+                        $sub->whereHas('empresasConstrucc', function ($rel) use ($empresaId, $usuarioId) {
+                            $rel->where('empresa_construcc_id', $empresaId);
+
+                            if ($usuarioId) {
+                                $rel->where('usuario_construcc_id', $usuarioId);
+                            }
+                        });
+
+                        // 🔥 2. Proveedores dados de alta por la empresa
+                        $sub->orWhere(function ($alta) use ($empresaId, $usuarioId) {
+                            $alta->where('empresa_construcc_alta', $empresaId);
+
+                            if ($usuarioId) {
+                                $alta->where('user_construcc_alta', $usuarioId);
+                            }
+                        });
                     });
                 })
-                ->when($usuarioId, function ($q) use ($usuarioId) {
-                    $q->where(function ($sub) use ($usuarioId) {
-                        $sub->whereNull('user_construcc_alta')
-                            ->orWhere('user_construcc_alta', $usuarioId);
-                    });
-                })
-                ->where('tipo_alta', 2) // Solo proveedores de construcciรณn
+
                 ->with(['cuentasBancarias', 'empresasConstrucc'])
                 ->withCount('solicitudesPago')
                 ->filter($filters)
@@ -71,15 +82,11 @@ class ConstruccProveedorController extends Controller
 
             return $this->paginated($originalPaginator->setCollection(collect($data)));
         } catch (\Exception $e) {
-            Log::error('Error al listar proveedores construcciรณn: ' . $e->getMessage(), [
+            Log::error('Error al listar proveedores construcción: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return $this->error(
-                'Error al obtener el listado de proveedores',
-                null,
-                500
-            );
+            return $this->error('Error al obtener el listado de proveedores', null, 500);
         }
     }
 
