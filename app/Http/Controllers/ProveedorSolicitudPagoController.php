@@ -512,7 +512,7 @@ class ProveedorSolicitudPagoController extends Controller
         }
 
         if (! $solicitudPago->ruta_archivo_factura_pdf || ! Storage::disk('private')->exists($solicitudPago->ruta_archivo_factura_pdf)) {
-            return $this->error('Factura PDF no disponible', 404);
+            return $this->success(['archivo_no_disponible' => true], 'Factura PDF no disponible', 200);
         }
 
         return response()->download(
@@ -530,7 +530,7 @@ class ProveedorSolicitudPagoController extends Controller
         }
 
         if (! $solicitudPago->ruta_archivo_factura_xml || ! Storage::disk('private')->exists($solicitudPago->ruta_archivo_factura_xml)) {
-            return $this->error('Factura XML no disponible', 404);
+            return $this->success(['archivo_no_disponible' => true], 'Factura XML no disponible', 200);
         }
 
         return response()->download(
@@ -548,7 +548,7 @@ class ProveedorSolicitudPagoController extends Controller
         }
 
         if (! $solicitudPago->ruta_archivo_comprobante_pago || ! Storage::disk('private')->exists($solicitudPago->ruta_archivo_comprobante_pago)) {
-            return $this->error('Comprobante no disponible', 404);
+            return $this->success(['archivo_no_disponible' => true], 'Comprobante no disponible', 200);
         }
 
         return response()->download(
@@ -566,7 +566,7 @@ class ProveedorSolicitudPagoController extends Controller
         }
 
         if (! $pago->comprobante_pago || ! Storage::disk('private')->exists($pago->comprobante_pago)) {
-            return $this->error('Comprobante no disponible', 404);
+            return $this->success(['archivo_no_disponible' => true], 'Comprobante no disponible', 200);
         }
 
         return response()->download(
@@ -584,7 +584,7 @@ class ProveedorSolicitudPagoController extends Controller
         }
 
         if (! $solicitudPago->ruta_archivo_cotizacion || ! Storage::disk('private')->exists($solicitudPago->ruta_archivo_cotizacion)) {
-            return $this->error('Cotización no disponible', 404);
+            return $this->success(['archivo_no_disponible' => true], 'Cotización no disponible', 200);
         }
 
         return response()->download(
