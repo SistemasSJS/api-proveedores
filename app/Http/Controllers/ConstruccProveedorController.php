@@ -164,9 +164,19 @@ class ConstruccProveedorController extends Controller
             // Solo existe el campo 'telefono' que puede almacenar cualquier número
 
             // PASO 2: Crear cuenta bancaria inicial (siempre preferida = true)
-            $cuentaData = $data['cuenta'];
-            $cuentaData['preferida'] = true; // Primera cuenta siempre es preferida
-            // $cuentaData['estatus'] = EstadoCuentaBancaria::ACTIVA->value;
+            // Migración: tipo_cuenta + campo_dependiente -> cuenta, clabe, tarjeta
+            $c = $data['cuenta'];
+            $tipo = $c['tipo_cuenta'] ?? 'cuenta';
+            $valor = $c['campo_dependiente'] ?? null;
+            $cuentaData = array_merge(
+                array_intersect_key($c, array_flip(['alias', 'banco_clave', 'banco_nombre', 'titular_cuenta', 'referencia', 'sucursal', 'swift'])),
+                [
+                    'cuenta' => $tipo === 'cuenta' ? $valor : null,
+                    'clabe' => $tipo === 'clabe' ? $valor : null,
+                    'tarjeta' => $tipo === 'tarjeta' ? $valor : null,
+                    'preferida' => true,
+                ]
+            );
 
             $cuenta = $proveedor->cuentasBancarias()->create($cuentaData);
 
@@ -194,16 +204,16 @@ class ConstruccProveedorController extends Controller
                     'cuenta_bancaria' => [
                         'id' => $cuenta->id,
                         'alias' => $cuenta->alias,
+                        'banco_clave' => $cuenta->banco_clave,
                         'banco_nombre' => $cuenta->banco_nombre,
-                        'preferida' => $cuenta->preferida,
-                        'referencia' => $cuenta->referencia,
-                        'sucursal' => $cuenta->sucursal,
-                        'swift' => $cuenta->swift,
                         'cuenta' => $cuenta->cuenta,
                         'clabe' => $cuenta->clabe,
                         'tarjeta' => $cuenta->tarjeta,
                         'titular_cuenta' => $cuenta->titular_cuenta,
-                        'banco_clave' => $cuenta->banco_clave,
+                        'referencia' => $cuenta->referencia,
+                        'sucursal' => $cuenta->sucursal,
+                        'swift' => $cuenta->swift,
+                        'preferida' => $cuenta->preferida,
                     ],
                 ],
                 'Proveedor creado exitosamente con cuenta bancaria.',
