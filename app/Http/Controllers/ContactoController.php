@@ -21,8 +21,17 @@ class ContactoController extends Controller
         try {
             $validated = $request->validated();
 
-            // Obtener el correo de destino desde las variables de entorno
-            $destinatario = 'contacto@sjsconstrucciones.com.mx';
+            // Obtener destinatarios de contacto desde configuración (env: MAIL_CONTACT_RECIPIENTS)
+            $destinatario = config('mail.contact_recipients', []);
+
+            if (empty($destinatario)) {
+                Log::error('MAIL_CONTACT_RECIPIENTS no está configurado');
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se pudo enviar el mensaje por configuración de correo incompleta.'
+                ], 500);
+            }
 
             // Enviar el correo
             Mail::to($destinatario)->send(new ContactoMail(

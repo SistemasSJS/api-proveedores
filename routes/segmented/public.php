@@ -68,18 +68,18 @@ Route::get('status', function (Request $request) {
 /**
  * CATÁLOGOS PÚBLICOS
  */
-Route::get('roles-index', [RoleController::class, 'index']);
-Route::get('tipos-empresa-index', [TipoEmpresaController::class, 'index']);
+// Route::get('roles-index', [RoleController::class, 'index']);
+// Route::get('tipos-empresa-index', [TipoEmpresaController::class, 'index']);
 
-// Catálogos generales
-Route::get('proveedores', [ProveedorController::class, 'index'])->middleware(['audit']);
-Route::get('sucursales', [SucursalController::class, 'index'])->middleware(['audit']);
-Route::get('productos', [ProductoController::class, 'index'])->middleware(['audit']);
-Route::get('imagenes', [ProductoImagenController::class, 'index'])->middleware(['audit']);
-Route::get('unidades-medida', [UnidadMedidaController::class, 'index'])->middleware(['audit']);
-Route::get('categorias', [CategoriaController::class, 'index'])->middleware(['audit']);
-Route::get('marcas', [MarcaController::class, 'index'])->middleware(['audit']);
-Route::get('tipos-empresa', [TipoEmpresaController::class, 'index'])->middleware(['audit']);
+// // Catálogos generales
+// Route::get('proveedores', [ProveedorController::class, 'index'])->middleware(['audit']);
+// Route::get('sucursales', [SucursalController::class, 'index'])->middleware(['audit']);
+// Route::get('productos', [ProductoController::class, 'index'])->middleware(['audit']);
+// Route::get('imagenes', [ProductoImagenController::class, 'index'])->middleware(['audit']);
+// Route::get('unidades-medida', [UnidadMedidaController::class, 'index'])->middleware(['audit']);
+// Route::get('categorias', [CategoriaController::class, 'index'])->middleware(['audit']);
+// Route::get('marcas', [MarcaController::class, 'index'])->middleware(['audit']);
+// Route::get('tipos-empresa', [TipoEmpresaController::class, 'index'])->middleware(['audit']);
 
 /**
  * CONSULTAS PÚBLICAS ESPECIALIZADAS

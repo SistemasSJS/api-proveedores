@@ -150,7 +150,7 @@ class SPPAutorizadaSeeder extends Seeder
                     
                     // Fechas del proceso
                     'fecha_registro_pendiente' => $fechaInicio,
-                    'fecha_inicio_procesamiento' => $fechaInicio->copy()->addDays(1),
+                    // 'fecha_inicio_procesamiento' => $fechaInicio->copy()->addDays(1),
                     'fecha_aprobado' => $fechaInicio->copy()->addDays(6),
                     
                     // Timestamps

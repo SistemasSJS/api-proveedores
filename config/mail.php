@@ -113,4 +113,15 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Contact Form Recipients
+    |--------------------------------------------------------------------------
+    |
+    | Lista de correos para recibir los mensajes del formulario de contacto.
+    | Debe venir separada por comas en MAIL_CONTACT_RECIPIENTS.
+    |
+    */
+    'contact_recipients' => array_filter(array_map('trim', explode(',', (string) env('MAIL_CONTACT_RECIPIENTS', '')))),
+
 ];
