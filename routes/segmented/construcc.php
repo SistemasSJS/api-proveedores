@@ -114,6 +114,16 @@ Route::prefix('construcc')
          *  esto solo para el caso de que el proveedor sea del tipo 1.
          */
         Route::prefix('proveedor')->name('proveedor.')->group(function () {
+
+            /**
+             * Búsqueda por criterio (GET, query params). Formato: success, message, data.
+             * Parámetros: {criterio}=valor, empresa_id=ID (opcional)
+             */
+            Route::get('buscar-por-rfc', [ConstruccProveedorController::class, 'buscarPorRfc'])->middleware(['audit'])->name('buscar-por-rfc');
+            Route::get('buscar-por-email', [ConstruccProveedorController::class, 'buscarPorEmail'])->middleware(['audit'])->name('buscar-por-email');
+            Route::get('buscar-por-razon-social', [ConstruccProveedorController::class, 'buscarPorRazonSocial'])->middleware(['audit'])->name('buscar-por-razon-social');
+            Route::get('buscar-por-telefono', [ConstruccProveedorController::class, 'buscarPorTelefono'])->middleware(['audit'])->name('buscar-por-telefono');
+
             /** 
              * GESTIÓN DE PROVEEDORES CONSTRUCCIÓN (tipo_alta = 2)
              */

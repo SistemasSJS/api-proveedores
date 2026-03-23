@@ -7,6 +7,7 @@ use App\Enums\EstadoUsuario;
 use App\Http\Requests\Construcc\ConstruccProveedorStoreRequest;
 use App\Http\Requests\Construcc\ConstruccProveedorUpdateRequest;
 use App\Http\Resources\Construcc\ConstruccProveedorDetalleResource;
+use App\Http\Resources\Construcc\ConstruccProveedorExistenteResource;
 use App\Models\CuentaBancaria;
 use App\Models\Proveedor;
 use App\Traits\ApiResponse;
@@ -136,6 +137,96 @@ class ConstruccProveedorController extends Controller
                 500
             );
         }
+    }
+
+    /**
+     * Aplica filtro por empresa construcción al query (opcional).
+     */
+    private function aplicarFiltroEmpresa($query, ?int $empresaId): void
+    {
+        if (!$empresaId) {
+            return;
+        }
+        $query->where(function ($q) use ($empresaId) {
+            $q->whereHas('empresasConstrucc', fn ($rel) => $rel->where('empresa_construcc_id', $empresaId))
+                ->orWhere('empresa_construcc_alta', $empresaId);
+        });
+    }
+
+    /**
+     * Búsqueda por RFC. GET ?rfc=XXX&empresa_id=ID (opcional)
+     */
+    public function buscarPorRfc(Request $request): JsonResponse
+    {
+        $rfc = $request->query('rfc');
+        if (empty($rfc)) {
+            return response()->json(['success' => false, 'message' => 'El RFC es obligatorio.', 'data' => null], 422);
+        }
+        $query = Proveedor::query();
+        $this->aplicarFiltroEmpresa($query, $request->filled('empresa_id') ? $request->integer('empresa_id') : null);
+        $proveedor = $query->where('rfc', strtoupper($rfc))->first();
+        return response()->json([
+            'success' => true,
+            'message' => $proveedor ? 'Proveedor encontrado' : 'No existe',
+            'data' => ConstruccProveedorExistenteResource::toBusquedaArray($proveedor),
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * Búsqueda por email. GET ?email=XXX&empresa_id=ID (opcional)
+     */
+    public function buscarPorEmail(Request $request): JsonResponse
+    {
+        $email = $request->query('email');
+        if (empty($email)) {
+            return response()->json(['success' => false, 'message' => 'El email es obligatorio.', 'data' => null], 422);
+        }
+        $query = Proveedor::query();
+        $this->aplicarFiltroEmpresa($query, $request->filled('empresa_id') ? $request->integer('empresa_id') : null);
+        $proveedor = $query->where('email', $email)->first();
+        return response()->json([
+            'success' => true,
+            'message' => $proveedor ? 'Proveedor encontrado' : 'No existe',
+            'data' => ConstruccProveedorExistenteResource::toBusquedaArray($proveedor),
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * Búsqueda por razón social. GET ?razon_social=XXX&empresa_id=ID (opcional)
+     */
+    public function buscarPorRazonSocial(Request $request): JsonResponse
+    {
+        $razonSocial = $request->query('razon_social');
+        if (empty($razonSocial)) {
+            return response()->json(['success' => false, 'message' => 'La razón social es obligatoria.', 'data' => null], 422);
+        }
+        $query = Proveedor::query();
+        $this->aplicarFiltroEmpresa($query, $request->filled('empresa_id') ? $request->integer('empresa_id') : null);
+        $proveedor = $query->where('razon_social', $razonSocial)->first();
+        return response()->json([
+            'success' => true,
+            'message' => $proveedor ? 'Proveedor encontrado' : 'No existe',
+            'data' => ConstruccProveedorExistenteResource::toBusquedaArray($proveedor),
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * Búsqueda por teléfono. GET ?telefono=XXX&empresa_id=ID (opcional)
+     */
+    public function buscarPorTelefono(Request $request): JsonResponse
+    {
+        $telefono = $request->query('telefono');
+        if (empty($telefono)) {
+            return response()->json(['success' => false, 'message' => 'El teléfono es obligatorio.', 'data' => null], 422);
+        }
+        $query = Proveedor::query();
+        $this->aplicarFiltroEmpresa($query, $request->filled('empresa_id') ? $request->integer('empresa_id') : null);
+        $proveedor = $query->where('telefono', $telefono)->first();
+        return response()->json([
+            'success' => true,
+            'message' => $proveedor ? 'Proveedor encontrado' : 'No existe',
+            'data' => ConstruccProveedorExistenteResource::toBusquedaArray($proveedor),
+        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 
     /**
