@@ -148,7 +148,7 @@ class ConstruccProveedorController extends Controller
             return;
         }
         $query->where(function ($q) use ($empresaId) {
-            $q->whereHas('empresasConstrucc', fn ($rel) => $rel->where('empresa_construcc_id', $empresaId))
+            $q->whereHas('empresasConstrucc', fn($rel) => $rel->where('empresa_construcc_id', $empresaId))
                 ->orWhere('empresa_construcc_alta', $empresaId);
         });
     }
@@ -239,16 +239,15 @@ class ConstruccProveedorController extends Controller
         try {
             $data = $request->validated();
 
-            // PASO 1: Crear proveedor con tipo_alta = 2
-            // La validación de duplicados (unique) se hace automáticamente en el FormRequest
+            // PASO 1: Crear proveedor
             $proveedor = Proveedor::create([
                 'razon_social' => $data['razon_social'],
                 'nombre_comercial' => $data['nombre_comercial'] ?? $data['razon_social'],
-                'rfc' => strtoupper($data['rfc']),
+                'rfc' => isset($data['rfc']) ? strtoupper($data['rfc']) : null,
                 'email' => $data['email'] ?? null,
                 'telefono' => $data['telefono'] ?? null,
                 'celular' => $data['celular'] ?? null,
-                'tipo_alta' => 2, // UserConstrucc
+                'tipo_alta' => 2,
                 'is_proveedor_sp' => true,
                 'is_proveedor_catalogo' => false,
                 'perfil_empresa_completo' => false,
@@ -258,27 +257,36 @@ class ConstruccProveedorController extends Controller
                 'estatus' => EstadoUsuario::REGISTRADO->value,
             ]);
 
-            // Nota: El campo celular no existe en la tabla proveedores
-            // Solo existe el campo 'telefono' que puede almacenar cualquier número
+            $cuenta = null;
 
-            // PASO 2: Crear cuenta bancaria inicial (siempre preferida = true)
-            // Migración: tipo_cuenta + campo_dependiente -> cuenta, clabe, tarjeta
-            $c = $data['cuenta'];
-            $tipo = $c['tipo_cuenta'] ?? 'cuenta';
-            $valor = $c['campo_dependiente'] ?? null;
-            $cuentaData = array_merge(
-                array_intersect_key($c, array_flip(['alias', 'banco_clave', 'banco_nombre', 'titular_cuenta', 'referencia', 'sucursal', 'swift'])),
-                [
-                    'cuenta' => $tipo === 'cuenta' ? $valor : null,
-                    'clabe' => $tipo === 'clabe' ? $valor : null,
-                    'tarjeta' => $tipo === 'tarjeta' ? $valor : null,
-                    'preferida' => true,
-                ]
-            );
+            // ✅ PASO 2: Crear cuenta SOLO si viene
+            if (!empty($data['cuenta'])) {
+                $c = $data['cuenta'];
+                $tipo = $c['tipo_cuenta'] ?? 'cuenta';
+                $valor = $c['campo_dependiente'] ?? null;
 
-            $cuenta = $proveedor->cuentasBancarias()->create($cuentaData);
+                $cuentaData = array_merge(
+                    array_intersect_key($c, array_flip([
+                        'alias',
+                        'banco_clave',
+                        'banco_nombre',
+                        'titular_cuenta',
+                        'referencia',
+                        'sucursal',
+                        'swift'
+                    ])),
+                    [
+                        'cuenta' => $tipo === 'cuenta' ? $valor : null,
+                        'clabe' => $tipo === 'clabe' ? $valor : null,
+                        'tarjeta' => $tipo === 'tarjeta' ? $valor : null,
+                        'preferida' => true,
+                    ]
+                );
 
-            // PASO 2.1: Asociar proveedor con empresa construcción
+                $cuenta = $proveedor->cuentasBancarias()->create($cuentaData);
+            }
+
+            // PASO 3: Relación con empresa
             $proveedor->empresasConstrucc()->attach($data['empresa_construcc_id'], [
                 'usuario_construcc_id' => $data['usuario_id'],
                 'usuario_construcc_nombre' => $data['usuario_nombre'],
@@ -299,7 +307,7 @@ class ConstruccProveedorController extends Controller
                         'tipo_alta' => $proveedor->tipo_alta,
                         'created_at' => $proveedor->created_at->format('Y-m-d H:i:s'),
                     ],
-                    'cuenta_bancaria' => [
+                    'cuenta_bancaria' => $cuenta ? [
                         'id' => $cuenta->id,
                         'alias' => $cuenta->alias,
                         'banco_clave' => $cuenta->banco_clave,
@@ -312,15 +320,17 @@ class ConstruccProveedorController extends Controller
                         'sucursal' => $cuenta->sucursal,
                         'swift' => $cuenta->swift,
                         'preferida' => $cuenta->preferida,
-                    ],
+                    ] : null,
                 ],
-                'Proveedor creado exitosamente con cuenta bancaria.',
+                $cuenta
+                    ? 'Proveedor creado exitosamente con cuenta bancaria.'
+                    : 'Proveedor creado exitosamente sin cuenta bancaria.',
                 201
             );
         } catch (\Exception $e) {
             DB::rollBack();
 
-            Log::error('Error al crear proveedor construcciรณn: ' . $e->getMessage(), [
+            Log::error('Error al crear proveedor construcción: ' . $e->getMessage(), [
                 'data' => $request->except(['cuenta']),
                 'trace' => $e->getTraceAsString(),
             ]);

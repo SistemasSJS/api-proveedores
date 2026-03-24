@@ -48,14 +48,16 @@ class ConstruccProveedorStoreRequest extends FormRequest
             'usuario_nombre' => 'required|string|max:255',
             'nivel_id' => 'nullable|integer|in:0,1,2,3,4,5,6', // 0=Admin, 1=DG, 2=DT, 3=DA, 4=SI, 5=PC, 6=RO
 
-            // Cuenta bancaria (solo una cuenta)
-            'cuenta' => 'required|array',
-            'cuenta.alias' => 'required|string|max:255',
-            'cuenta.banco_clave' => 'required|string|max:10',
-            'cuenta.banco_nombre' => 'required|string|max:255',
-            'cuenta.tipo_cuenta' => 'required|string|max:255',
-            'cuenta.campo_dependiente' => 'required|string|max:255',
-            'cuenta.titular_cuenta' => 'required|string|max:255',
+            // Cuenta bancaria (OPCIONAL)
+            'cuenta' => 'nullable|array|min:1',
+
+            'cuenta.alias' => 'required_with:cuenta|string|max:255',
+            'cuenta.banco_clave' => 'required_with:cuenta|string|max:10',
+            'cuenta.banco_nombre' => 'required_with:cuenta|string|max:255',
+            'cuenta.tipo_cuenta' => 'required_with:cuenta|string|max:255',
+            'cuenta.campo_dependiente' => 'required_with:cuenta|string|max:255',
+            'cuenta.titular_cuenta' => 'required_with:cuenta|string|max:255',
+
             'cuenta.referencia' => 'nullable|string|max:255',
             'cuenta.sucursal' => 'nullable|string|max:255',
             'cuenta.swift' => 'nullable|string|max:255',
