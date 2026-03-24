@@ -2,13 +2,32 @@
 
 namespace App\Http\Requests\Construcc;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rule;
 
 class ConstruccProveedorUpdateRequest extends FormRequest
 {
     public function authorize()
     {
         return true;
+    }
+
+    /**
+     * Misma respuesta JSON que {@see ConstruccProveedorStoreRequest} ante errores de validación.
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(
+            response()->json([
+                'status' => 'ERROR',
+                'code' => 422,
+                'message' => 'Error de validación',
+                'data' => null,
+                'errors' => $validator->errors(),
+            ], 422)
+        );
     }
 
     public function rules()

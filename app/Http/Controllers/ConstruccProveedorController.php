@@ -140,6 +140,35 @@ class ConstruccProveedorController extends Controller
     }
 
     /**
+     * Misma lógica que {@see store} al persistir cuenta: tipo_cuenta + campo_dependiente → cuenta/clabe/tarjeta.
+     *
+     * @param  array<string, mixed>  $c
+     * @return array<string, mixed>
+     */
+    private function atributosCuentaBancariaDesdePayloadConstrucc(array $c): array
+    {
+        $tipo = $c['tipo_cuenta'] ?? 'cuenta';
+        $valor = $c['campo_dependiente'] ?? null;
+
+        return array_merge(
+            array_intersect_key($c, array_flip([
+                'alias',
+                'banco_clave',
+                'banco_nombre',
+                'titular_cuenta',
+                'referencia',
+                'sucursal',
+                'swift',
+            ])),
+            [
+                'cuenta' => $tipo === 'cuenta' ? $valor : null,
+                'clabe' => $tipo === 'clabe' ? $valor : null,
+                'tarjeta' => $tipo === 'tarjeta' ? $valor : null,
+            ]
+        );
+    }
+
+    /**
      * Aplica filtro por empresa construcción al query (opcional).
      */
     private function aplicarFiltroEmpresa($query, ?int $empresaId): void
@@ -261,27 +290,8 @@ class ConstruccProveedorController extends Controller
 
             // ✅ PASO 2: Crear cuenta SOLO si viene
             if (!empty($data['cuenta'])) {
-                $c = $data['cuenta'];
-                $tipo = $c['tipo_cuenta'] ?? 'cuenta';
-                $valor = $c['campo_dependiente'] ?? null;
-
-                $cuentaData = array_merge(
-                    array_intersect_key($c, array_flip([
-                        'alias',
-                        'banco_clave',
-                        'banco_nombre',
-                        'titular_cuenta',
-                        'referencia',
-                        'sucursal',
-                        'swift'
-                    ])),
-                    [
-                        'cuenta' => $tipo === 'cuenta' ? $valor : null,
-                        'clabe' => $tipo === 'clabe' ? $valor : null,
-                        'tarjeta' => $tipo === 'tarjeta' ? $valor : null,
-                        'preferida' => true,
-                    ]
-                );
+                $cuentaData = $this->atributosCuentaBancariaDesdePayloadConstrucc($data['cuenta']);
+                $cuentaData['preferida'] = true;
 
                 $cuenta = $proveedor->cuentasBancarias()->create($cuentaData);
             }
@@ -354,7 +364,7 @@ class ConstruccProveedorController extends Controller
         DB::beginTransaction();
 
         try {
-            // Validar tipo_alta
+            // FIXME: Proveedor Creados en construcc (Tipo 2): Update Validar tipo_alta
             if ($proveedor->tipo_alta !== 2) {
                 return $this->error(
                     'Solo se pueden actualizar proveedores registrados por usuarios construcción (tipo_alta = 2).',
@@ -371,6 +381,7 @@ class ConstruccProveedorController extends Controller
             $usuarioCreadorId = $pivotData?->pivot->usuario_construcc_id;
             $esCreador = $request->usuario_id == $usuarioCreadorId;
 
+            // FIXME: Proveedor Creados en construcc (Tipo 2): Update Validar usuasrio creador
             if (!$esDirector && !$esCreador) {
                 return $this->error(
                     'No tiene permisos para actualizar este proveedor.',
@@ -410,6 +421,11 @@ class ConstruccProveedorController extends Controller
                 }
 
                 foreach ($cuentas as $cuentaData) {
+                    $attrs = $this->atributosCuentaBancariaDesdePayloadConstrucc($cuentaData);
+                    if (array_key_exists('preferida', $cuentaData)) {
+                        $attrs['preferida'] = (bool) $cuentaData['preferida'];
+                    }
+
                     // Si tiene ID, actualizar cuenta existente
                     if (isset($cuentaData['id']) && !empty($cuentaData['id'])) {
                         $cuenta = $proveedor->cuentasBancarias()
@@ -417,14 +433,15 @@ class ConstruccProveedorController extends Controller
                             ->first();
 
                         if ($cuenta) {
-                            // Extraer solo los campos actualizables (sin el id)
-                            $datosActualizar = collect($cuentaData)->except('id')->toArray();
-                            $cuenta->update($datosActualizar);
+                            $cuenta->update($attrs);
                             $cuentasActualizadas[] = $cuenta->fresh();
                         }
                     } else {
-                        // Crear nueva cuenta bancaria
-                        $nuevaCuenta = $proveedor->cuentasBancarias()->create($cuentaData);
+                        // Crear nueva cuenta bancaria (mismo criterio que store si no envían preferida)
+                        if (!array_key_exists('preferida', $cuentaData)) {
+                            $attrs['preferida'] = true;
+                        }
+                        $nuevaCuenta = $proveedor->cuentasBancarias()->create($attrs);
                         $cuentasActualizadas[] = $nuevaCuenta;
                     }
                 }
@@ -450,8 +467,10 @@ class ConstruccProveedorController extends Controller
                         'created_at' => $proveedor->created_at->format('Y-m-d H:i:s'),
                         'updated_at' => $proveedor->updated_at->format('Y-m-d H:i:s'),
                     ],
+                    // Todas las cuentas (no solo preferida): filtrar por preferida dejaba [] si ninguna tenía preferida=true
                     'cuenta_bancaria' => $proveedor->cuentasBancarias
-                        ->where('preferida', true)
+                        ->sortByDesc(fn($c) => $c->preferida ? 1 : 0)
+                        ->values()
                         ->map(function ($cuenta) {
                             return [
                                 'id' => $cuenta->id,
