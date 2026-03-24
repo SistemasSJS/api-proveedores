@@ -364,8 +364,20 @@ class ConstruccProveedorController extends Controller
         DB::beginTransaction();
 
         try {
+            Log::info('[construcc.proveedor.update] inicio', [
+                'proveedor_id' => $proveedor->id,
+                'usuario_id' => $request->usuario_id,
+                'nivel_id' => $request->nivel_id,
+                'tipo_alta_actual' => $proveedor->tipo_alta,
+            ]);
+
             // FIXME: Proveedor Creados en construcc (Tipo 2): Update Validar tipo_alta
             if ($proveedor->tipo_alta !== 2) {
+                Log::warning('[construcc.proveedor.update] rechazado: tipo_alta distinto de 2', [
+                    'proveedor_id' => $proveedor->id,
+                    'tipo_alta' => $proveedor->tipo_alta,
+                ]);
+
                 return $this->error(
                     'Solo se pueden actualizar proveedores registrados por usuarios construcción (tipo_alta = 2).',
                     null,
@@ -383,6 +395,14 @@ class ConstruccProveedorController extends Controller
 
             // FIXME: Proveedor Creados en construcc (Tipo 2): Update Validar usuasrio creador
             if (!$esCreador) { //!$esDirector &&
+                Log::warning('[construcc.proveedor.update] rechazado: sin permiso (no es creador)', [
+                    'proveedor_id' => $proveedor->id,
+                    'usuario_solicitante_id' => $request->usuario_id,
+                    'usuario_creador_id' => $usuarioCreadorId,
+                    'es_director' => $esDirector,
+                    'es_creador' => $esCreador,
+                ]);
+
                 return $this->error(
                     'No tiene permisos para actualizar este proveedor.',
                     null,
@@ -404,6 +424,11 @@ class ConstruccProveedorController extends Controller
                 $dataToUpdate['rfc'] = strtoupper($dataToUpdate['rfc']);
             }
 
+            Log::info('[construcc.proveedor.update] actualizando datos generales', [
+                'proveedor_id' => $proveedor->id,
+                'campos' => array_keys($dataToUpdate),
+            ]);
+
             $proveedor->update($dataToUpdate);
 
             // Procesar cuentas bancarias (si vienen)
@@ -415,6 +440,17 @@ class ConstruccProveedorController extends Controller
                 $hayPreferida = collect($cuentas)->contains(
                     fn($c) => isset($c['preferida']) && $c['preferida'] === true
                 );
+
+                Log::info('[construcc.proveedor.update] cuentas bancarias en payload', [
+                    'proveedor_id' => $proveedor->id,
+                    'cantidad' => count($cuentas),
+                    'hay_preferida_en_payload' => $hayPreferida,
+                    'ids_en_payload' => collect($cuentas)
+                        ->pluck('id')
+                        ->filter()
+                        ->values()
+                        ->all(),
+                ]);
 
                 if ($hayPreferida) {
                     $proveedor->cuentasBancarias()->update(['preferida' => false]);
@@ -445,9 +481,19 @@ class ConstruccProveedorController extends Controller
                         $cuentasActualizadas[] = $nuevaCuenta;
                     }
                 }
+
+                Log::info('[construcc.proveedor.update] cuentas procesadas', [
+                    'proveedor_id' => $proveedor->id,
+                    'registros_tocados' => count($cuentasActualizadas),
+                    'cuenta_ids_resultado' => collect($cuentasActualizadas)->pluck('id')->filter()->values()->all(),
+                ]);
             }
 
             DB::commit();
+
+            Log::info('[construcc.proveedor.update] commit ok', [
+                'proveedor_id' => $proveedor->id,
+            ]);
 
             // Recargar relaciones
             $proveedor->load(['cuentasBancarias', 'empresasConstrucc']);
@@ -496,6 +542,9 @@ class ConstruccProveedorController extends Controller
             Log::error('Error al actualizar proveedor construcción', [
                 'proveedor_id' => $proveedor->id,
                 'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'exception' => $e,
             ]);
 
             return $this->error(
