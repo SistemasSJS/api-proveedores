@@ -68,9 +68,9 @@ Route::get('status', function (Request $request) {
 /**
  * CATÁLOGOS PÚBLICOS
  */
-// Route::get('roles-index', [RoleController::class, 'index']);
-// Route::get('tipos-empresa-index', [TipoEmpresaController::class, 'index']);
-
+Route::get('roles-index', [RoleController::class, 'index']);
+Route::get('tipos-empresa-index', [TipoEmpresaController::class, 'index']);
+ 
 // // Catálogos generales
 Route::get('proveedores', [ProveedorController::class, 'index'])->middleware(['audit']);
 Route::get('sucursales', [SucursalController::class, 'index'])->middleware(['audit']);
