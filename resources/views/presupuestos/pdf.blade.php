@@ -23,11 +23,12 @@
                     padding-top: {{ $margenMm }}mm;
                 }
 
+                /*
                 * {
                     margin: 0;
                     padding: 0;
                     box-sizing: border-box;
-                }
+                } */
 
                 .content-wrapper {
                     min-height: calc(100vh - {{ $footerHeightMm + 20 }}mm);
@@ -44,7 +45,7 @@
                     line-height: 1.15;
                     margin: 0;
                     padding: 0;
-                    padding-bottom: {{ $footerHeightMm + 10 }}mm;
+                    padding-bottom: {{ $footerHeightMm }}mm;
                     /* 🔥 clave */
                 }
 
@@ -54,16 +55,12 @@
                     color: #171a1d;
                     background: #ffffff;
                     line-height: 1.15;
-                    margin: 0;
-                    padding: 0;
+                    /* margin: 0; */
+                    padding-top: {{ $margenMm }}mm;
                 }
 
                 /* Elementos de margen (cuando @page margin no funciona) */
-                .margin-top {
-                    height: {{ $margenMm }}mm;
-                    min-height: {{ $margenMm }}mm;
-                    clear: both;
-                }
+
 
                 .margin-sides {
                     padding-left: {{ $margenMm }}mm;
@@ -272,12 +269,18 @@
                     width: 100%;
                     max-width: 100%;
                     border-collapse: collapse;
-                    margin-bottom: 4mm;
+                    margin-bottom: 10mm;
                     table-layout: fixed;
                     overflow: hidden;
                 }
 
+                /*
+                .presupuesto-table tr {
+                    page-break-inside: avoid;
+                } */
+
                 .presupuesto-table thead {
+                    display: table-header-group;
                     background: #3498db;
                     color: #ffffff;
                 }
@@ -631,8 +634,8 @@
 
                 .footer-qr {
                     display: inline-block;
-                    width: 20mm;
-                    height: 20mm;
+                    width: 12mm;
+                    height: 12mm;
                     vertical-align: middle;
                 }
 
@@ -647,8 +650,66 @@
                 }
 
                 .after-table-space {
-                    height: 25mm;
+                    height: {{ $footerHeightMm + 5 }}mm;
                 }
+
+                /* .tabla-wrapper {
+                    max-height: 140mm;
+                    overflow: hidden; */
+                /* } */
+
+                /* .page-break {
+                    page-break-before: always;
+                } */
+
+                /* DEBUG VISUAL — quitar después */
+                /* .header {
+                    border: 1px solid red;
+                }
+
+                .receptor-section {
+                    border: 1px solid blue;
+                }
+
+                .descripcion-section {
+                    border: 1px solid green;
+                }
+
+                .presupuesto-title {
+                    border: 1px dashed purple;
+                }
+
+                .tabla-wrapper {
+                    border: 2px solid orange;
+                }
+
+                .presupuesto-table {
+                    border: 1px solid brown;
+                }
+
+                .totales-section {
+                    border: 2px solid cyan;
+                }
+
+                .terms-block {
+                    border: 2px solid magenta;
+                }
+
+                .terminos-section {
+                    border: 1px solid black;
+                }
+
+                .footer {
+                    border: 2px solid gray;
+                }
+
+                .margin-sides {
+                    border: 2px dashed pink;
+                }
+
+                body {
+                    border: 3px solid lime;
+                } */
             </style>
         </head>
 
@@ -696,7 +757,6 @@
                 </div>
             </div>
 
-            <div class="margin-top"></div>
             <div class="margin-sides">
                 <div class="document-container">
                     <div class="document-main">
@@ -838,7 +898,6 @@
 
                         <!-- 4) TÍTULO Y TABLA PRESUPUESTO -->
                         <div class="presupuesto-title">Presupuesto</div>
-
                         <table class="presupuesto-table">
                             <thead>
                                 <tr>
@@ -874,7 +933,8 @@
                                     @endforeach
                                 @else
                                     <tr>
-                                        <td colspan="6" class="no-conceptos">No hay conceptos registrados</td>
+                                        <td colspan="6" class="no-conceptos">No hay conceptos registrados
+                                        </td>
                                     </tr>
                                 @endif
                             </tbody>
@@ -909,7 +969,8 @@
                         </div>
 
                     </div>
-                    <div class="terms-block terms-block page-top-spacing">
+                    <div class="page-break"></div>
+                    <div class="terms-block">
                         <!-- 6) TÉRMINOS Y CONDICIONES (listado como preview) -->
                         @if (count($terminosLista) > 0)
                             <div class="terminos-section
