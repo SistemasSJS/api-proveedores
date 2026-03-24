@@ -11,8 +11,8 @@
     <meta charset="UTF-8">
     <title>Presupuesto {{ $presupuesto['numero_presupuesto'] ?? 'N/A' }}</title>
     {{--
-      Plantilla PDF alternativa (estilo Tailwind: paleta slate + indigo).
-      DomPDF no carga CDN remoto: utilidades expresadas como CSS embebido.
+      Plantilla PDF alternativa (utilidades estilo Tailwind embebidas).
+      Acento corporativo azul #3498db (alineado con pdf.blade.php). DomPDF: sin CDN.
     --}}
     <style>
         @page {
@@ -30,12 +30,14 @@
             --tw-slate-700: #334155;
             --tw-slate-800: #1e293b;
             --tw-slate-900: #0f172a;
-            --tw-indigo-50: #eef2ff;
-            --tw-indigo-100: #e0e7ff;
-            --tw-indigo-500: #6366f1;
-            --tw-indigo-600: #4f46e5;
-            --tw-indigo-700: #4338ca;
+            --accent: #3498db;
+            --accent-dark: #2980b9;
+            --accent-soft: #eaf4fc;
+            --accent-border: #d6eaf8;
+            --heading: #2c3e50;
             --tw-white: #ffffff;
+            /* Interlineado unificado en bloques de texto del cuerpo */
+            --section-line-height: 1.18;
         }
 
         html,
@@ -64,26 +66,23 @@
             background: var(--tw-white);
         }
 
-        /* —— Encabezado: barra lateral + rejilla —— */
+        /* —— Encabezado: barra lateral + rejilla (sin recuadro exterior) —— */
         .tw-header-wrap {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 4mm;
+            margin-bottom: 3mm;
             page-break-inside: avoid;
-            border: 1px solid var(--tw-slate-200);
-            border-radius: 3mm;
-            overflow: hidden;
         }
 
         .tw-accent {
-            width: 4mm;
-            background: linear-gradient(180deg, var(--tw-indigo-600), var(--tw-indigo-700));
+            width: 3mm;
+            background: var(--accent);
         }
 
         .tw-header-main {
             vertical-align: top;
-            padding: 3mm 4mm;
-            background: var(--tw-slate-50);
+            padding: 0;
+            background: transparent;
         }
 
         .tw-header-top {
@@ -92,24 +91,24 @@
         }
 
         .tw-logo-cell {
-            width: 18%;
+            width: 22%;
             vertical-align: top;
+            padding-right: 2mm;
         }
 
         .tw-logo-img {
             max-width: 100%;
-            max-height: 18mm;
+            max-height: 24mm;
             object-fit: contain;
-            border-radius: 2mm;
         }
 
         .tw-logo-fallback {
-            width: 14mm;
-            height: 14mm;
-            background: var(--tw-indigo-600);
+            width: 18mm;
+            height: 18mm;
+            background: var(--accent);
             border-radius: 2mm;
             text-align: center;
-            line-height: 14mm;
+            line-height: 18mm;
             color: var(--tw-white);
             font-size: 11pt;
             font-weight: bold;
@@ -117,21 +116,24 @@
 
         .tw-emisor-cell {
             vertical-align: top;
-            padding-left: 3mm;
-            width: 52%;
+            padding-left: 0;
+            width: 48%;
         }
 
         .tw-emisor-name {
             font-size: 9.5pt;
             font-weight: 700;
-            color: var(--tw-slate-900);
-            margin-bottom: 1mm;
+            color: var(--heading);
+            margin-bottom: 0.4mm;
+            letter-spacing: 0.02em;
+            line-height: var(--section-line-height);
         }
 
         .tw-emisor-line {
             font-size: 7pt;
             color: var(--tw-slate-600);
-            margin-bottom: 0.5mm;
+            margin-bottom: 0.2mm;
+            line-height: var(--section-line-height);
         }
 
         .tw-folio-cell {
@@ -145,15 +147,15 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.08em;
-            color: var(--tw-indigo-600);
+            color: var(--accent);
             margin-bottom: 1mm;
         }
 
         .tw-badge-folio {
             display: inline-block;
-            background: var(--tw-indigo-50);
-            border: 1px solid var(--tw-indigo-100);
-            color: var(--tw-indigo-700);
+            background: var(--accent-soft);
+            border: 1px solid var(--accent-border);
+            color: var(--accent-dark);
             font-size: 10pt;
             font-weight: 700;
             padding: 1.5mm 3mm;
@@ -174,14 +176,13 @@
             margin-top: 1mm;
         }
 
-        /* Receptor */
+        /* Receptor (sin línea lateral azul ni padding vertical extra) */
         .tw-card {
-            margin-bottom: 4mm;
-            padding: 3mm 4mm;
-            background: var(--tw-white);
-            border: 1px solid var(--tw-slate-200);
-            border-left: 4px solid var(--tw-indigo-500);
-            border-radius: 2mm;
+            margin-bottom: 3mm;
+            padding: 0 0 0 0;
+            background: transparent;
+            border: none;
+            border-radius: 0;
             page-break-inside: avoid;
         }
 
@@ -190,55 +191,64 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.06em;
-            color: var(--tw-indigo-600);
-            margin-bottom: 2mm;
+            color: var(--accent);
+            margin: 0 0 1mm 0;
+            padding: 0;
+            border: none;
         }
 
         .tw-receptor-strong {
             font-size: 9pt;
             font-weight: 700;
-            color: var(--tw-slate-900);
-            margin-bottom: 0.8mm;
+            color: var(--heading);
+            margin-bottom: 0.3mm;
+            line-height: var(--section-line-height);
         }
 
         .tw-receptor-line {
             font-size: 7pt;
             color: var(--tw-slate-600);
-            margin-bottom: 0.5mm;
+            margin-bottom: 0.2mm;
+            line-height: var(--section-line-height);
         }
 
         /* Descripción */
         .tw-desc-box {
-            margin-bottom: 4mm;
-            padding: 3mm 4mm;
-            background: var(--tw-slate-50);
-            border-radius: 2mm;
-            border: 1px dashed var(--tw-slate-200);
+            margin-bottom: 3mm;
+            padding: 0;
+            background: transparent;
+            border: none;
             page-break-inside: avoid;
         }
 
         .tw-desc-title {
             font-size: 6.5pt;
             font-weight: 700;
-            color: var(--tw-slate-700);
-            margin-bottom: 1.5mm;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent);
+            margin: 0 0 1mm 0;
         }
 
         .tw-desc-text {
             font-size: 7pt;
             color: var(--tw-slate-600);
             text-align: justify;
-            line-height: 1.35;
+            line-height: var(--section-line-height);
         }
 
         /* Tabla conceptos */
         .tw-section-title {
-            font-size: 10pt;
+            font-size: 9pt;
             font-weight: 700;
-            color: var(--tw-slate-900);
-            margin: 5mm 0 2mm 0;
-            padding-bottom: 1mm;
-            border-bottom: 2px solid var(--tw-indigo-100);
+            color: var(--heading);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            text-align: center;
+            margin: 6mm 0 2.5mm 0;
+            padding-bottom: 2mm;
+            border-bottom: 1px solid var(--accent);
+            width: 100%;
         }
 
         .tw-table {
@@ -253,38 +263,47 @@
         }
 
         .tw-table thead tr {
-            background: var(--tw-slate-800);
-            color: var(--tw-white);
+            background: var(--accent) !important;
+            color: var(--tw-white) !important;
         }
 
-        .tw-table thead td {
-            padding: 2mm 1.5mm;
-            font-size: 6pt;
+        .tw-table thead th {
+            padding: 1.2mm 0.8mm;
+            font-size: 6.5pt;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
+            text-transform: none;
+            letter-spacing: 0.02em;
             text-align: center;
-            border: 1px solid var(--tw-slate-700);
+            color: var(--tw-white) !important;
+            background: var(--accent) !important;
+            border: 1px solid var(--accent-dark);
+            line-height: 1.15;
         }
 
-        .tw-table thead td:nth-child(2) {
+        .tw-table thead th:nth-child(2) {
             text-align: left;
+            padding-left: 1.5mm;
         }
 
-        .tw-table thead td:nth-child(5),
-        .tw-table thead td:nth-child(6) {
+        .tw-table thead th:nth-child(5),
+        .tw-table thead th:nth-child(6) {
             text-align: right;
+            padding-right: 1mm;
         }
 
         .tw-table tbody td {
-            padding: 1.5mm 1.5mm;
+            padding: 1.2mm 1mm;
             font-size: 6.5pt;
             border: 1px solid var(--tw-slate-200);
             vertical-align: top;
         }
 
+        .tw-table tbody tr:nth-child(odd) {
+            background: var(--tw-white);
+        }
+
         .tw-table tbody tr:nth-child(even) {
-            background: var(--tw-slate-50);
+            background: #eef6fc;
         }
 
         .tw-table tbody td:first-child {
@@ -295,7 +314,8 @@
 
         .tw-table tbody td:nth-child(2) {
             text-align: left;
-            color: var(--tw-slate-800);
+            color: var(--heading);
+            padding-left: 1.2mm;
         }
 
         .tw-table tbody td:nth-child(3),
@@ -359,11 +379,11 @@
         }
 
         .tw-totals-table .tw-total-row td {
-            background: var(--tw-indigo-50);
-            border-top: 2px solid var(--tw-indigo-500);
+            background: var(--accent-soft);
+            border-top: 2px solid var(--accent);
             font-size: 9pt;
             font-weight: 700;
-            color: var(--tw-indigo-700);
+            color: var(--accent-dark);
         }
 
         .after-table-space {
@@ -377,42 +397,66 @@
         }
 
         .tw-terms {
-            margin-top: 4mm;
-            padding-top: 3mm;
-            border-top: 1px solid var(--tw-slate-200);
+            margin-top: 3mm;
+            padding-top: 0;
+            border-top: none;
         }
 
         .tw-terms h3 {
-            font-size: 8pt;
+            font-size: 7.5pt;
             font-weight: 700;
-            color: var(--tw-slate-900);
-            margin: 0 0 2mm 0;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin: 0 0 1mm 0;
+            line-height: var(--section-line-height);
         }
 
         .tw-terms ul {
             list-style: none;
             padding: 0;
             margin: 0;
+        }
+
+        .tw-terms ul.tw-terms-num {
             counter-reset: twi;
         }
 
-        .tw-terms li {
+        .tw-terms ul.tw-terms-num li {
             font-size: 6.2pt;
             color: var(--tw-slate-600);
-            line-height: 1.15;
-            margin-bottom: 1mm;
+            line-height: var(--section-line-height);
+            margin-bottom: 0.6mm;
             padding-left: 5mm;
             position: relative;
             text-align: justify;
         }
 
-        .tw-terms li::before {
+        .tw-terms ul.tw-terms-num li::before {
             counter-increment: twi;
             content: counter(twi) ".";
             position: absolute;
             left: 0;
             font-weight: 600;
-            color: var(--tw-indigo-500);
+            color: var(--accent);
+        }
+
+        .tw-terms ul.tw-obs-list li {
+            font-size: 6.2pt;
+            color: var(--tw-slate-600);
+            line-height: var(--section-line-height);
+            margin-bottom: 0.6mm;
+            padding-left: 4mm;
+            position: relative;
+            text-align: justify;
+        }
+
+        .tw-terms ul.tw-obs-list li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: bold;
         }
 
         /* Footer fijo (igual que plantilla clásica) */
@@ -514,7 +558,7 @@
         }
 
         .footer-webs-link {
-            color: var(--tw-indigo-600);
+            color: var(--accent);
             text-decoration: none;
         }
 
@@ -661,7 +705,7 @@
             </table>
 
             <div class="tw-card">
-                <div class="tw-card-title">Dirigido a</div>
+                <div class="tw-card-title">Dirigido a:</div>
                 @php
                     $receptor = $presupuesto['empresa_receptora'] ?? [];
                     $aliasEmpresa = $receptor['alias_empresa'] ?? null;
@@ -690,16 +734,16 @@
                 </div>
             @endif
 
-            <div class="tw-section-title">Detalle de conceptos</div>
+            <div class="tw-section-title">Presupuesto</div>
             <table class="tw-table">
                 <thead>
                     <tr>
-                        <td style="width:6%;">#</td>
-                        <td style="width:36%;">Descripción</td>
-                        <td style="width:12%;">Cant.</td>
-                        <td style="width:12%;">Unidad</td>
-                        <td style="width:17%;">P. unitario</td>
-                        <td style="width:17%;">Importe</td>
+                        <th scope="col" style="width:5%;">#</th>
+                        <th scope="col" style="width:38%;">Descripción</th>
+                        <th scope="col" style="width:10%;">Cantidad</th>
+                        <th scope="col" style="width:10%;">Unidad</th>
+                        <th scope="col" style="width:18%;">Precio Unitario</th>
+                        <th scope="col" style="width:18%;">Importe</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -761,12 +805,11 @@
                 <div class="after-table-space"></div>
             </div>
 
-            <div class="page-break"></div>
             <div class="terms-block">
                 @if (count($terminosLista) > 0)
                     <div class="tw-terms">
-                        <h3>Términos y condiciones</h3>
-                        <ul>
+                        <h3>Términos y Condiciones</h3>
+                        <ul class="tw-terms-num">
                             @foreach ($terminosLista as $texto)
                                 <li>{{ $texto }}</li>
                             @endforeach
@@ -775,8 +818,8 @@
                 @endif
                 @if (count($observacionesLista) > 0)
                     <div class="tw-terms">
-                        <h3>Observaciones generales</h3>
-                        <ul>
+                        <h3>Observaciones Generales</h3>
+                        <ul class="tw-obs-list">
                             @foreach ($observacionesLista as $obs)
                                 <li>{{ $obs }}</li>
                             @endforeach
