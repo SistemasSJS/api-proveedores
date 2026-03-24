@@ -35,6 +35,7 @@ class UpdatePresupuestoRequest extends FormRequest
             'iva_porcentaje' => 'nullable|numeric|min:0|max:100',
             'term_cond_dias_vigencia' => 'nullable|integer|min:0',
             'term_cond_moneda' => 'nullable|string|max:10',
+            'term_cond_impuestos_en_pdf' => 'nullable|boolean',
             'term_cond_iva' => 'nullable|numeric|min:0|max:100',
             'term_cond_anticipo_porcentaje' => 'nullable|numeric|min:0|max:100',
             'term_cond_tiempo_entrega_dias' => 'nullable|integer|min:0',

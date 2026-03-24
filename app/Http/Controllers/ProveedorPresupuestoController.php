@@ -340,6 +340,7 @@ class ProveedorPresupuestoController extends Controller
                     'iva_porcentaje',
                     'term_cond_dias_vigencia',
                     'term_cond_moneda',
+                    'term_cond_impuestos_en_pdf',
                     'term_cond_iva',
                     'term_cond_anticipo_porcentaje',
                     'term_cond_tiempo_entrega_dias',
@@ -484,6 +485,7 @@ class ProveedorPresupuestoController extends Controller
 
             // Generar PDF usando el facade PDF de barryvdh/laravel-dompdf
             // Tamaño carta (8.5" x 11") con márgenes estándar 1 pulgada (25.4mm)
+            // $pdf = Pdf::loadView('presupuestos.pdf', ['presupuesto' => $datosPresupuesto])
             $pdf = Pdf::loadView(PresupuestoPdfTemplate::viewName(), ['presupuesto' => $datosPresupuesto])
                 ->setPaper('letter', 'portrait') // Tamaño carta (8.5" x 11")
                 ->setOption('isRemoteEnabled', false) // Deshabilitar carga remota para evitar timeouts

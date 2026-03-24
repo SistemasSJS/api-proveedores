@@ -61,6 +61,7 @@ class Presupuesto extends BaseModel
         'empresa_receptora_correo',
         'term_cond_dias_vigencia',
         'term_cond_moneda',
+        'term_cond_impuestos_en_pdf',
         'term_cond_iva',
         'term_cond_anticipo_porcentaje',
         'term_cond_tiempo_entrega_dias',
@@ -85,6 +86,7 @@ class Presupuesto extends BaseModel
         'fecha_emision' => 'date',
         'fecha_vencimiento' => 'date',
         'con_iva' => 'boolean',
+        'term_cond_impuestos_en_pdf' => 'boolean',
         'item_visto' => 'boolean',
         'subtotal' => 'decimal:2',
         'iva_porcentaje' => 'decimal:2',
@@ -131,10 +133,12 @@ class Presupuesto extends BaseModel
         $moneda = $this->term_cond_moneda ?: 'MXN';
         $lista[] = sprintf(self::ENUNCIADO_MONEDA, $moneda);
 
-        $ivaPct = (float) ($this->term_cond_iva ?? 16);
-        $lista[] = $this->con_iva
-            ? sprintf(self::ENUNCIADO_IVA_INCLUIDO, (int) $ivaPct)
-            : self::ENUNCIADO_IVA_NO_INCLUIDO;
+        if ($this->term_cond_impuestos_en_pdf !== false) {
+            $ivaPct = (float) ($this->term_cond_iva ?? 16);
+            $lista[] = $this->con_iva
+                ? sprintf(self::ENUNCIADO_IVA_INCLUIDO, (int) $ivaPct)
+                : self::ENUNCIADO_IVA_NO_INCLUIDO;
+        }
 
         if ($this->term_cond_anticipo_porcentaje !== null && $this->term_cond_anticipo_porcentaje > 0) {
             $lista[] = sprintf(self::ENUNCIADO_ANTICIPO, (int) $this->term_cond_anticipo_porcentaje);
@@ -160,13 +164,17 @@ class Presupuesto extends BaseModel
             $lista[] = sprintf(self::ENUNCIADO_GARANTIA, (int) $this->obs_garantia_dias);
         }
 
-        $lista[] = $this->obs_traslados
-            ? self::ENUNCIADO_TRASLADOS_INCLUIDOS
-            : self::ENUNCIADO_TRASLADOS_NO_INCLUIDOS;
+        if ($this->obs_traslados !== null) {
+            $lista[] = $this->obs_traslados
+                ? self::ENUNCIADO_TRASLADOS_INCLUIDOS
+                : self::ENUNCIADO_TRASLADOS_NO_INCLUIDOS;
+        }
 
-        $lista[] = $this->obs_viaticos
-            ? self::ENUNCIADO_VIATICOS_INCLUIDOS
-            : self::ENUNCIADO_VIATICOS_NO_INCLUIDOS;
+        if ($this->obs_viaticos !== null) {
+            $lista[] = $this->obs_viaticos
+                ? self::ENUNCIADO_VIATICOS_INCLUIDOS
+                : self::ENUNCIADO_VIATICOS_NO_INCLUIDOS;
+        }
 
         return $lista;
     }
@@ -190,9 +198,12 @@ class Presupuesto extends BaseModel
         $moneda = $data['term_cond_moneda'] ?? 'MXN';
         $lista[] = sprintf(self::ENUNCIADO_MONEDA, $moneda);
 
-        $lista[] = $conIva
-            ? sprintf(self::ENUNCIADO_IVA_INCLUIDO, (int) $ivaPct)
-            : self::ENUNCIADO_IVA_NO_INCLUIDO;
+        $mostrarImpuestos = $data['term_cond_impuestos_en_pdf'] ?? true;
+        if ($mostrarImpuestos !== false) {
+            $lista[] = $conIva
+                ? sprintf(self::ENUNCIADO_IVA_INCLUIDO, (int) $ivaPct)
+                : self::ENUNCIADO_IVA_NO_INCLUIDO;
+        }
 
         $anticipo = $data['term_cond_anticipo_porcentaje'] ?? null;
         if ($anticipo !== null && (float) $anticipo > 0) {
@@ -222,11 +233,21 @@ class Presupuesto extends BaseModel
             $lista[] = sprintf(self::ENUNCIADO_GARANTIA, $garantiaDias);
         }
 
-        $traslados = (bool) ($data['obs_traslados'] ?? false);
-        $lista[] = $traslados ? self::ENUNCIADO_TRASLADOS_INCLUIDOS : self::ENUNCIADO_TRASLADOS_NO_INCLUIDOS;
+        if (! array_key_exists('obs_traslados', $data)) {
+            $lista[] = self::ENUNCIADO_TRASLADOS_NO_INCLUIDOS;
+        } elseif ($data['obs_traslados'] !== null) {
+            $lista[] = ((bool) $data['obs_traslados'])
+                ? self::ENUNCIADO_TRASLADOS_INCLUIDOS
+                : self::ENUNCIADO_TRASLADOS_NO_INCLUIDOS;
+        }
 
-        $viaticos = (bool) ($data['obs_viaticos'] ?? false);
-        $lista[] = $viaticos ? self::ENUNCIADO_VIATICOS_INCLUIDOS : self::ENUNCIADO_VIATICOS_NO_INCLUIDOS;
+        if (! array_key_exists('obs_viaticos', $data)) {
+            $lista[] = self::ENUNCIADO_VIATICOS_NO_INCLUIDOS;
+        } elseif ($data['obs_viaticos'] !== null) {
+            $lista[] = ((bool) $data['obs_viaticos'])
+                ? self::ENUNCIADO_VIATICOS_INCLUIDOS
+                : self::ENUNCIADO_VIATICOS_NO_INCLUIDOS;
+        }
 
         return $lista;
     }

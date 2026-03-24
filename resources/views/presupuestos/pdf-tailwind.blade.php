@@ -1,5 +1,5 @@
 @php
-    $margenMm = 25.4;
+    $margenMm = 20  ;
     $footerHeightMm = 25.4;
     $terminosLista = $presupuesto['terminos_enunciados'] ?? [];
     $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
@@ -37,7 +37,7 @@
             --heading: #2c3e50;
             --tw-white: #ffffff;
             /* Interlineado unificado en bloques de texto del cuerpo */
-            --section-line-height: 1.18;
+            --section-line-height: 1.05;
         }
 
         html,
@@ -66,23 +66,31 @@
             background: var(--tw-white);
         }
 
-        /* —— Encabezado: barra lateral + rejilla (sin recuadro exterior) —— */
+        /* —— Encabezado (rejilla 3 columnas, sin barra lateral) —— */
         .tw-header-wrap {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 3mm;
+            margin-bottom: 0;
             page-break-inside: avoid;
-        }
-
-        .tw-accent {
-            width: 3mm;
-            background: var(--accent);
         }
 
         .tw-header-main {
             vertical-align: top;
             padding: 0;
             background: transparent;
+        }
+
+        /* Línea gris completa bajo el encabezado (como referencia) */
+        .tw-header-rule {
+            width: 100%;
+            height: 0;
+            margin: 3mm 0 4mm 0;
+            padding: 0;
+            border: 0;
+            border-top: 1px solid var(--tw-slate-200);
+            font-size: 0;
+            line-height: 0;
+            overflow: hidden;
         }
 
         .tw-header-top {
@@ -98,17 +106,20 @@
 
         .tw-logo-img {
             max-width: 100%;
-            max-height: 24mm;
+            max-height: 18mm;
             object-fit: contain;
+            border: none;
+            outline: none;
+            display: block;
         }
 
         .tw-logo-fallback {
-            width: 18mm;
-            height: 18mm;
+            width: 20mm;
+            height: 20mm;
             background: var(--accent);
-            border-radius: 2mm;
+            border-radius: 1mm;
             text-align: center;
-            line-height: 18mm;
+            line-height: 20mm;
             color: var(--tw-white);
             font-size: 11pt;
             font-weight: bold;
@@ -124,8 +135,9 @@
             font-size: 9.5pt;
             font-weight: 700;
             color: var(--heading);
+            text-transform: uppercase;
             margin-bottom: 0.4mm;
-            letter-spacing: 0.02em;
+            letter-spacing: 0.03em;
             line-height: var(--section-line-height);
         }
 
@@ -147,20 +159,20 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.08em;
-            color: var(--accent);
-            margin-bottom: 1mm;
+            color: var(--tw-slate-500);
+            margin-bottom: 0.6mm;
         }
 
         .tw-badge-folio {
-            display: inline-block;
-            background: var(--accent-soft);
-            border: 1px solid var(--accent-border);
-            color: var(--accent-dark);
-            font-size: 10pt;
+            display: block;
+            background: transparent;
+            border: none;
+            color: var(--accent);
+            font-size: 13pt;
             font-weight: 700;
-            padding: 1.5mm 3mm;
-            border-radius: 2mm;
-            margin-bottom: 1mm;
+            padding: 0;
+            margin: 0 0 1mm 0;
+            line-height: 1.1;
         }
 
         .tw-uuid {
@@ -172,17 +184,17 @@
 
         .tw-date {
             font-size: 7pt;
-            color: var(--tw-slate-700);
-            margin-top: 1mm;
+            color: var(--tw-slate-800);
+            margin-top: 0.6mm;
         }
 
-        /* Receptor (sin línea lateral azul ni padding vertical extra) */
+        /* Cajas grises (referencia): fondo claro, borde suave, sin acento lateral */
         .tw-card {
             margin-bottom: 3mm;
-            padding: 0 0 0 0;
-            background: transparent;
-            border: none;
-            border-radius: 0;
+            padding: 1mm 2mm;
+            /* background: var(--tw-slate-100); */
+            /* border: 1px solid var(--tw-slate-200); */
+            border-radius: 1mm;
             page-break-inside: avoid;
         }
 
@@ -215,9 +227,10 @@
         /* Descripción */
         .tw-desc-box {
             margin-bottom: 3mm;
-            padding: 0;
-            background: transparent;
-            border: none;
+            padding: 1mm 2mm;
+            /* background: var(--tw-slate-100); */
+            /* border: 1px solid var(--tw-slate-200); */
+            border-radius: 1mm;
             page-break-inside: avoid;
         }
 
@@ -232,22 +245,22 @@
 
         .tw-desc-text {
             font-size: 7pt;
-            color: var(--tw-slate-600);
+            color: var(--tw-slate-900);
             text-align: justify;
             line-height: var(--section-line-height);
         }
 
-        /* Tabla conceptos */
+        /* Título bloque tabla (referencia: centrado, negro, sin subrayado azul) */
         .tw-section-title {
-            font-size: 9pt;
+            font-size: 9.5pt;
             font-weight: 700;
             color: var(--heading);
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
+            text-transform: none;
+            letter-spacing: 0.02em;
             text-align: center;
-            margin: 6mm 0 2.5mm 0;
-            padding-bottom: 2mm;
-            border-bottom: 1px solid var(--accent);
+            margin: 4mm 0 2mm 0;
+            padding: 0;
+            border: none;
             width: 100%;
         }
 
@@ -268,16 +281,16 @@
         }
 
         .tw-table thead th {
-            padding: 1.2mm 0.8mm;
-            font-size: 6.5pt;
+            padding: 1mm 0.5mm;
+            font-size: 5.8pt;
             font-weight: 700;
-            text-transform: none;
-            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
             text-align: center;
             color: var(--tw-white) !important;
             background: var(--accent) !important;
             border: 1px solid var(--accent-dark);
-            line-height: 1.15;
+            line-height: 1.12;
         }
 
         .tw-table thead th:nth-child(2) {
@@ -349,11 +362,12 @@
         }
 
         .tw-totals-inner {
-            width: 55%;
-            margin-left: 45%;
+            width: 52%;
+            margin-left: 48%;
             border: 1px solid var(--tw-slate-200);
-            border-radius: 2mm;
+            border-radius: 1mm;
             overflow: hidden;
+            background: var(--tw-white);
         }
 
         .tw-totals-table {
@@ -362,7 +376,7 @@
         }
 
         .tw-totals-table td {
-            padding: 2mm 3mm;
+            padding: 1mm 2mm;
             font-size: 7pt;
         }
 
@@ -379,21 +393,33 @@
         }
 
         .tw-totals-table .tw-total-row td {
-            background: var(--accent-soft);
+            background: var(--tw-white);
             border-top: 2px solid var(--accent);
-            font-size: 9pt;
+            font-size: 10pt;
             font-weight: 700;
-            color: var(--accent-dark);
+        }
+
+        .tw-totals-table .tw-total-row td:first-child {
+            color: var(--heading);
+            text-transform: uppercase;
+        }
+
+        .tw-totals-table .tw-total-row td:last-child {
+            color: var(--accent);
         }
 
         .after-table-space {
-            height: {{ $footerHeightMm + 5 }}mm;
+            height: 8mm;
         }
 
         /* Términos */
         .terms-block {
-            margin-bottom: 4mm;
+            margin-bottom: 3mm;
             page-break-inside: auto;
+        }
+
+        .tw-terms + .tw-terms {
+            margin-top: 2mm;
         }
 
         .tw-terms {
@@ -403,11 +429,11 @@
         }
 
         .tw-terms h3 {
-            font-size: 7.5pt;
+            font-size: 6.5pt;
             font-weight: 700;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
+            color: var(--heading);
+            text-transform: none;
+            letter-spacing: 0.02em;
             margin: 0 0 1mm 0;
             line-height: var(--section-line-height);
         }
@@ -438,7 +464,12 @@
             position: absolute;
             left: 0;
             font-weight: 600;
-            color: var(--accent);
+            color: var(--tw-slate-800);
+        }
+
+        /* Observaciones: lista numerada (contador independiente de términos) */
+        .tw-terms ul.tw-obs-list {
+            counter-reset: twobs;
         }
 
         .tw-terms ul.tw-obs-list li {
@@ -446,17 +477,18 @@
             color: var(--tw-slate-600);
             line-height: var(--section-line-height);
             margin-bottom: 0.6mm;
-            padding-left: 4mm;
+            padding-left: 5mm;
             position: relative;
             text-align: justify;
         }
 
         .tw-terms ul.tw-obs-list li::before {
-            content: "•";
+            counter-increment: twobs;
+            content: counter(twobs) ".";
             position: absolute;
             left: 0;
-            color: var(--accent);
-            font-weight: bold;
+            font-weight: 600;
+            color: var(--tw-slate-800);
         }
 
         /* Footer fijo (igual que plantilla clásica) */
@@ -515,16 +547,16 @@
         }
 
         .footer-logo-img {
-            width: 8mm;
-            height: 8mm;
+            width: 12mm;
+            height: 12mm;
             object-fit: contain;
             display: block;
         }
 
         .footer-logo-placeholder {
-            width: 8mm;
-            height: 8mm;
-            min-width: 8mm;
+            width: 12mm;
+            height: 12mm;
+            min-width: 12mm;
             background: var(--tw-slate-200);
             border-radius: 1.5mm;
             font-size: 5pt;
@@ -549,7 +581,7 @@
 
         .footer-slogan {
             font-style: italic;
-            color: var(--tw-slate-500);
+            color: var(--accent);
             font-size: 6pt;
         }
 
@@ -627,7 +659,6 @@
         <div class="document-container">
             <table class="tw-header-wrap" cellpadding="0" cellspacing="0">
                 <tr>
-                    <td class="tw-accent"></td>
                     <td class="tw-header-main">
                         <table class="tw-header-top">
                             <tr>
@@ -703,6 +734,7 @@
                     </td>
                 </tr>
             </table>
+            <div class="tw-header-rule" role="presentation"></div>
 
             <div class="tw-card">
                 <div class="tw-card-title">Dirigido a:</div>
@@ -738,12 +770,12 @@
             <table class="tw-table">
                 <thead>
                     <tr>
-                        <th scope="col" style="width:5%;">#</th>
-                        <th scope="col" style="width:38%;">Descripción</th>
-                        <th scope="col" style="width:10%;">Cantidad</th>
-                        <th scope="col" style="width:10%;">Unidad</th>
-                        <th scope="col" style="width:18%;">Precio Unitario</th>
-                        <th scope="col" style="width:18%;">Importe</th>
+                        <th scope="col" style="width:5%;background:#3498db;color:#ffffff;">#</th>
+                        <th scope="col" style="width:36%;background:#3498db;color:#ffffff;">Descripción</th>
+                        <th scope="col" style="width:10%;background:#3498db;color:#ffffff;">Cantidad</th>
+                        <th scope="col" style="width:10%;background:#3498db;color:#ffffff;">Unidad</th>
+                        <th scope="col" style="width:19%;background:#3498db;color:#ffffff;">Precio unitario</th>
+                        <th scope="col" style="width:20%;background:#3498db;color:#ffffff;">Importe</th>
                     </tr>
                 </thead>
                 <tbody>

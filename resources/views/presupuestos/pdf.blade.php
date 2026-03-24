@@ -11,6 +11,15 @@
             <meta charset="UTF-8">
             <title>Presupuesto {{ $presupuesto['numero_presupuesto'] ?? 'N/A' }}</title>
             <style>
+                :root {
+                    --accent: #3498db;
+                    --accent-dark: #2980b9;
+                    --accent-muted: #5dade2;
+                    --text-heading: #2c3e50;
+                    --text-body: #34495e;
+                    --border-doc: #d1d5db;
+                }
+
                 @page {
                     size: letter;
                     margin: 25.5mm;
@@ -19,13 +28,6 @@
                 .page-top-spacing {
                     padding-top: {{ $margenMm }}mm;
                 }
-
-                /*
-                * {
-                    margin: 0;
-                    padding: 0;
-                    box-sizing: border-box;
-                } */
 
                 .content-wrapper {
                     min-height: calc(100vh - {{ $footerHeightMm + 20 }}mm);
@@ -78,12 +80,11 @@
                 }
 
 
-                /* ========== 1) ENCABEZADO (igual que preview) ========== */
+                /* ========== 1) ENCABEZADO ========== */
                 .header {
                     margin-bottom: 4mm;
-                    padding-bottom: 3mm;
-                    /* border-bottom: 2px solid #3498db; */
-                    border-bottom: 1px solid #d1d5db;
+                    padding-bottom: 3.5mm;
+                    border-bottom: 2px solid var(--accent);
                     page-break-inside: avoid;
                 }
 
@@ -128,22 +129,22 @@
                 .logo-fallback {
                     width: 14mm;
                     height: 14mm;
-                    background: #3498db;
+                    background: var(--accent);
                     border-radius: 2mm;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
                     color: #ffffff;
                     font-size: 11pt;
                     font-weight: bold;
+                    text-align: center;
+                    line-height: 14mm;
                 }
 
                 .company-header-name {
                     font-size: 9pt;
                     font-weight: 700;
-                    color: #2c3e50;
+                    color: var(--text-heading);
                     margin-bottom: 0.8mm;
                     line-height: 1.15;
+                    letter-spacing: 0.02em;
                 }
 
                 .company-header-info {
@@ -155,7 +156,7 @@
 
                 .folio-label {
                     font-size: 6pt;
-                    color: #7f8c8d;
+                    color: var(--accent);
                     text-transform: uppercase;
                     letter-spacing: 1px;
                     font-weight: 600;
@@ -164,11 +165,9 @@
                 }
 
                 .folio-number {
-                    /* font-size: 14pt; */
                     font-size: 9pt;
-                    /* igual al tamaño de font del importe total*/
                     font-weight: 700;
-                    color: #3498db;
+                    color: var(--accent);
                     margin-bottom: 0.8mm;
                     letter-spacing: -0.5pt;
                     word-wrap: break-word;
@@ -197,14 +196,13 @@
                     padding: 3mm 4mm;
                     background: #f8fafc;
                     border: 1px solid #e2e8f0;
-                    /* border-left: 3px solid #3498db; */
-                    
+                    border-left: 3px solid var(--accent);
                     page-break-inside: avoid;
                 }
 
                 .receptor-title {
                     font-size: 6.5pt;
-                    color: #3498db;
+                    color: var(--accent);
                     font-weight: 700;
                     margin-bottom: 1.5mm;
                     text-transform: uppercase;
@@ -233,14 +231,14 @@
                     padding: 3mm 4mm;
                     background: #f8fafc;
                     border: 1px solid #e2e8f0;
-                    /* border-left: 3px solid #3498db; */
+                    border-left: 3px solid var(--accent);
                     page-break-inside: avoid;
                 }
 
                 .descripcion-title {
                     font-size: 6.5pt;
                     font-weight: 700;
-                    color: #3498db;
+                    color: var(--accent);
                     margin-bottom: 1.5mm;
                     text-transform: uppercase;
                     letter-spacing: 0.5px;
@@ -257,11 +255,16 @@
                 .presupuesto-title {
                     font-size: 9pt;
                     font-weight: 700;
-                    color: #2c3e50;
-                    margin-top: 10mm;
-                    margin-bottom: 2mm;
+                    color: var(--text-heading);
+                    margin-top: 8mm;
+                    margin-bottom: 3mm;
                     line-height: 1.15;
                     text-align: center;
+                    text-transform: uppercase;
+                    letter-spacing: 0.12em;
+                    padding-bottom: 2mm;
+                    border-bottom: 1px solid var(--accent);
+                    width: 100%;
                 }
 
                 .presupuesto-table {
@@ -280,41 +283,41 @@
 
                 .presupuesto-table thead {
                     display: table-header-group;
-                    background: #3498db;
+                    background: var(--accent);
                     color: #ffffff;
                 }
 
-                .presupuesto-table thead td {
+                .presupuesto-table thead th {
                     padding: 1.5mm 1mm;
                     font-size: 6pt;
                     font-weight: 700;
                     text-transform: uppercase;
                     letter-spacing: 0.5px;
                     text-align: center;
-                    border: 1px solid #2980b9;
+                    border: 1px solid var(--accent-dark);
                     line-height: 1.1;
                 }
 
-                .presupuesto-table thead td:first-child {
+                .presupuesto-table thead th:first-child {
                     width: 5%;
                 }
 
-                .presupuesto-table thead td:nth-child(2) {
+                .presupuesto-table thead th:nth-child(2) {
                     width: 38%;
                     text-align: left;
                     padding-left: 1.5mm;
                 }
 
-                .presupuesto-table thead td:nth-child(3) {
+                .presupuesto-table thead th:nth-child(3) {
                     width: 10%;
                 }
 
-                .presupuesto-table thead td:nth-child(4) {
+                .presupuesto-table thead th:nth-child(4) {
                     width: 10%;
                 }
 
-                .presupuesto-table thead td:nth-child(5),
-                .presupuesto-table thead td:nth-child(6) {
+                .presupuesto-table thead th:nth-child(5),
+                .presupuesto-table thead th:nth-child(6) {
                     width: 18%;
                     text-align: right;
                     padding-right: 1mm;
@@ -412,19 +415,19 @@
 
                 .totales-table .total-line-final td {
                     padding-top: 2mm;
-                    border-top: 2px solid #3498db;
+                    border-top: 2px solid var(--accent);
                 }
 
                 .totales-table .total-line-final td:first-child {
                     font-size: 9pt;
                     font-weight: 700;
-                    color: #2c3e50;
+                    color: var(--text-heading);
                 }
 
                 .totales-table .total-line-final td:last-child {
                     font-size: 10pt;
                     font-weight: 700;
-                    color: #3498db;
+                    color: var(--accent);
                 }
 
                 /* ========== 6) TÉRMINOS Y CONDICIONES (al final de la última página) ========== */
@@ -436,13 +439,13 @@
 
                 }
 
-                .terminos-section-line {}
-
                 .terminos-main-title,
                 .terminos-title {
                     font-size: 7.5pt;
                     font-weight: 700;
-                    color: #2c3e50;
+                    color: var(--accent);
+                    text-transform: uppercase;
+                    letter-spacing: 0.06em;
                     margin-bottom: 1.5mm;
                     page-break-after: avoid;
                 }
@@ -473,8 +476,7 @@
                     left: 0;
                     top: 0;
                     font-weight: 600;
-                    color: #6b7280;
-                    /* 🔥 más discreto */
+                    color: var(--accent);
                 }
 
                 /* ========== 7) OBSERVACIONES GENERALES ========== */
@@ -491,7 +493,7 @@
                     font-family: 'DejaVu Sans', Arial, sans-serif;
                     font-size: 8pt;
                     font-weight: 700;
-                    color: #2c3e50;
+                    color: var(--accent);
                     margin-bottom: 2mm;
                     text-transform: uppercase;
                     letter-spacing: 0.5pt;
@@ -517,7 +519,7 @@
                     content: "•";
                     position: absolute;
                     left: 0;
-                    color: #2c3e50;
+                    color: var(--accent);
                     font-weight: bold;
                 }
 
@@ -622,7 +624,7 @@
                 }
 
                 .footer-webs-link {
-                    color: #2563eb;
+                    color: var(--accent);
                     text-decoration: none;
                 }
 
@@ -651,64 +653,6 @@
                 .after-table-space {
                     height: {{ $footerHeightMm + 5 }}mm;
                 }
-
-                /* .tabla-wrapper {
-                    max-height: 140mm;
-                    overflow: hidden; */
-                /* } */
-
-                /* .page-break {
-                    page-break-before: always;
-                } */
-
-                /* DEBUG VISUAL — quitar después */
-                /* .header {
-                    border: 1px solid red;
-                }
-
-                .receptor-section {
-                    border: 1px solid blue;
-                }
-
-                .descripcion-section {
-                    border: 1px solid green;
-                }
-
-                .presupuesto-title {
-                    border: 1px dashed purple;
-                }
-
-                .tabla-wrapper {
-                    border: 2px solid orange;
-                }
-
-                .presupuesto-table {
-                    border: 1px solid brown;
-                }
-
-                .totales-section {
-                    border: 2px solid cyan;
-                }
-
-                .terms-block {
-                    border: 2px solid magenta;
-                }
-
-                .terminos-section {
-                    border: 1px solid black;
-                }
-
-                .footer {
-                    border: 2px solid gray;
-                }
-
-                .margin-sides {
-                    border: 2px dashed pink;
-                }
-
-                body {
-                    border: 3px solid lime;
-                } */
             </style>
         </head>
 
@@ -900,12 +844,12 @@
                         <table class="presupuesto-table">
                             <thead>
                                 <tr>
-                                    <td>#</td>
-                                    <td>Descripción</td>
-                                    <td>Cantidad</td>
-                                    <td>Unidad</td>
-                                    <td>Precio Unitario</td>
-                                    <td>Importe</td>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Descripción</th>
+                                    <th scope="col">Cantidad</th>
+                                    <th scope="col">Unidad</th>
+                                    <th scope="col">Precio Unitario</th>
+                                    <th scope="col">Importe</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -968,12 +912,10 @@
                         </div>
 
                     </div>
-                    <div class="page-break"></div>
                     <div class="terms-block">
-                        <!-- 6) TÉRMINOS Y CONDICIONES (listado como preview) -->
+                        <!-- 6) TÉRMINOS Y CONDICIONES -->
                         @if (count($terminosLista) > 0)
-                            <div class="terminos-section
-                        terminos-section-line">
+                            <div class="terminos-section">
                                 <div class="terminos-main-title">Términos y Condiciones</div>
                                 <ul class="terminos-list">
                                     @foreach ($terminosLista as $texto)
@@ -985,9 +927,9 @@
 
                         <!-- 7) OBSERVACIONES GENERALES -->
                         @if (count($observacionesLista) > 0)
-                            <div class="terminos-section">
-                                <div class="terminos-title">Observaciones Generales</div>
-                                <ul class="terminos-list">
+                            <div class="terminos-section observaciones-section">
+                                <div class="terminos-title observaciones-title">Observaciones Generales</div>
+                                <ul class="observaciones-list">
                                     @foreach ($observacionesLista as $obs)
                                         <li>{{ $obs }}</li>
                                     @endforeach
