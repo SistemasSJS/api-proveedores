@@ -382,7 +382,7 @@ class ConstruccProveedorController extends Controller
             $esCreador = $request->usuario_id == $usuarioCreadorId;
 
             // FIXME: Proveedor Creados en construcc (Tipo 2): Update Validar usuasrio creador
-            if (!$esDirector && !$esCreador) {
+            if (!$esCreador) { //!$esDirector &&
                 return $this->error(
                     'No tiene permisos para actualizar este proveedor.',
                     null,
