@@ -140,35 +140,6 @@ class ConstruccProveedorController extends Controller
     }
 
     /**
-     * Misma lógica que {@see store} al persistir cuenta: tipo_cuenta + campo_dependiente → cuenta/clabe/tarjeta.
-     *
-     * @param  array<string, mixed>  $c
-     * @return array<string, mixed>
-     */
-    private function atributosCuentaBancariaDesdePayloadConstrucc(array $c): array
-    {
-        $tipo = $c['tipo_cuenta'] ?? 'cuenta';
-        $valor = $c['campo_dependiente'] ?? null;
-
-        return array_merge(
-            array_intersect_key($c, array_flip([
-                'alias',
-                'banco_clave',
-                'banco_nombre',
-                'titular_cuenta',
-                'referencia',
-                'sucursal',
-                'swift',
-            ])),
-            [
-                'cuenta' => $tipo === 'cuenta' ? $valor : null,
-                'clabe' => $tipo === 'clabe' ? $valor : null,
-                'tarjeta' => $tipo === 'tarjeta' ? $valor : null,
-            ]
-        );
-    }
-
-    /**
      * Aplica filtro por empresa construcción al query (opcional).
      */
     private function aplicarFiltroEmpresa($query, ?int $empresaId): void
@@ -288,12 +259,31 @@ class ConstruccProveedorController extends Controller
 
             $cuenta = null;
 
-            // ✅ PASO 2: Crear cuenta SOLO si viene
-            if (!empty($data['cuenta'])) {
-                $cuentaData = $this->atributosCuentaBancariaDesdePayloadConstrucc($data['cuenta']);
-                $cuentaData['preferida'] = true;
+            // ✅ PASO 2: Crear cuenta SOLO si viene (misma forma que alta: $data['cuenta'] con tipo_cuenta + campo_dependiente)
+            if (!empty($data['cuenta']) && is_array($data['cuenta'])) {
+                $c = $data['cuenta'];
+                $tipo = $c['tipo_cuenta'] ?? 'cuenta';
+                $valor = $c['campo_dependiente'] ?? null;
 
-                $cuenta = $proveedor->cuentasBancarias()->create($cuentaData);
+                $cuentaAttrs = array_merge(
+                    array_intersect_key($c, array_flip([
+                        'alias',
+                        'banco_clave',
+                        'banco_nombre',
+                        'titular_cuenta',
+                        'referencia',
+                        'sucursal',
+                        'swift',
+                    ])),
+                    [
+                        'cuenta' => $tipo === 'cuenta' ? $valor : null,
+                        'clabe' => $tipo === 'clabe' ? $valor : null,
+                        'tarjeta' => $tipo === 'tarjeta' ? $valor : null,
+                        'preferida' => true,
+                    ]
+                );
+
+                $cuenta = $proveedor->cuentasBancarias()->create($cuentaAttrs);
             }
 
             // PASO 3: Relación con empresa
@@ -457,7 +447,28 @@ class ConstruccProveedorController extends Controller
                 }
 
                 foreach ($cuentas as $cuentaData) {
-                    $attrs = $this->atributosCuentaBancariaDesdePayloadConstrucc($cuentaData);
+                    $c = (isset($cuentaData['cuenta']) && is_array($cuentaData['cuenta']))
+                        ? $cuentaData['cuenta']
+                        : $cuentaData;
+                    $tipo = $c['tipo_cuenta'] ?? 'cuenta';
+                    $valor = $c['campo_dependiente'] ?? null;
+
+                    $attrs = array_merge(
+                        array_intersect_key($c, array_flip([
+                            'alias',
+                            'banco_clave',
+                            'banco_nombre',
+                            'titular_cuenta',
+                            'referencia',
+                            'sucursal',
+                            'swift',
+                        ])),
+                        [
+                            'cuenta' => $tipo === 'cuenta' ? $valor : null,
+                            'clabe' => $tipo === 'clabe' ? $valor : null,
+                            'tarjeta' => $tipo === 'tarjeta' ? $valor : null,
+                        ]
+                    );
                     if (array_key_exists('preferida', $cuentaData)) {
                         $attrs['preferida'] = (bool) $cuentaData['preferida'];
                     }
