@@ -193,21 +193,25 @@
                     line-height: 1.15;
                 }
 
-                /* ========== 2) DATOS DEL RECEPTOR (igual que preview) ========== */
+                /* ========== 2) DATOS DEL RECEPTOR ========== */
                 .receptor-section {
                     width: 100%;
-                    margin-bottom: 3mm;
-                    padding-bottom: 2mm;
-                    /* border-bottom: 1.5px098 solid #3498db; */
+                    margin-bottom: 4mm;
+                    padding: 3mm 4mm;
+                    background: #f8fafc;
+                    border: 1px solid #e2e8f0;
+                    /* border-left: 3px solid #3498db; */
+                    
                     page-break-inside: avoid;
                 }
 
                 .receptor-title {
-                    font-size: 6pt;
+                    font-size: 6.5pt;
                     color: #3498db;
                     font-weight: 700;
-                    margin-bottom: 1mm;
+                    margin-bottom: 1.5mm;
                     text-transform: uppercase;
+                    letter-spacing: 0.5px;
                 }
 
                 .receptor-name {
@@ -218,33 +222,31 @@
                     line-height: 1.15;
                 }
 
-                p .receptor-info {
+                .receptor-info {
                     font-size: 7pt;
                     color: #5f6f89;
                     margin-bottom: 0.8mm;
                     line-height: 1.15;
                 }
 
-                .receptor-info strong {
-                    color: #34495e;
-                    font-weight: 600;
-                }
-
                 /* ========== 3) DESCRIPCIÓN GENERAL ========== */
                 .descripcion-section {
-                    margin-top: 4mm;
+                    width: 100%;
                     margin-bottom: 4mm;
+                    padding: 3mm 4mm;
+                    background: #f8fafc;
+                    border: 1px solid #e2e8f0;
+                    /* border-left: 3px solid #3498db; */
                     page-break-inside: avoid;
                 }
 
                 .descripcion-title {
-                    font-size: 8pt;
+                    font-size: 6.5pt;
                     font-weight: 700;
-                    color: #2c3e50;
-                    margin-bottom: 1mm;
+                    color: #3498db;
+                    margin-bottom: 1.5mm;
                     text-transform: uppercase;
-                    letter-spacing: 0.5pt;
-                    line-height: 1.1;
+                    letter-spacing: 0.5px;
                 }
 
                 .descripcion-text {
