@@ -34,7 +34,7 @@ class PresupuestosVariadosConceptosSeeder extends Seeder
             $proveedores = Proveedor::withoutGlobalScopes()
                 ->whereIn('id', UserProveedor::where('activo', true)->pluck('proveedor_id'))
                 ->orderBy('id')
-                ->limit(2)
+                // ->limit(2)
                 ->get();
 
             if ($proveedores->isEmpty()) {
