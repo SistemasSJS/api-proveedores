@@ -6,6 +6,7 @@ use App\Http\Requests\Presupuesto\StorePresupuestoRequest;
 use App\Http\Requests\Presupuesto\UpdatePresupuestoRequest;
 use App\Http\Resources\Presupuesto\PresupuestoResource;
 use App\Http\Resources\ProveedorResource;
+use App\Support\PresupuestoPdfTemplate;
 use App\Models\CarteraCliente;
 use App\Models\Presupuesto;
 use App\Models\PresupuestoConcepto;
@@ -483,7 +484,7 @@ class ProveedorPresupuestoController extends Controller
 
             // Generar PDF usando el facade PDF de barryvdh/laravel-dompdf
             // Tamaño carta (8.5" x 11") con márgenes estándar 1 pulgada (25.4mm)
-            $pdf = Pdf::loadView('presupuestos.pdf', ['presupuesto' => $datosPresupuesto])
+            $pdf = Pdf::loadView(PresupuestoPdfTemplate::viewName(), ['presupuesto' => $datosPresupuesto])
                 ->setPaper('letter', 'portrait') // Tamaño carta (8.5" x 11")
                 ->setOption('isRemoteEnabled', false) // Deshabilitar carga remota para evitar timeouts
                 ->setOption('isHtml5ParserEnabled', true)

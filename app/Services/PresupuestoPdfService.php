@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Presupuesto;
 use App\Models\Proveedor;
+use App\Support\PresupuestoPdfTemplate;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
@@ -72,7 +73,7 @@ class PresupuestoPdfService
 
         $filename = "Presupuesto_{$presupuesto->numero_presupuesto}.pdf";
 
-        $pdf = Pdf::loadView('presupuestos.pdf', ['presupuesto' => $datosPresupuesto])
+        $pdf = Pdf::loadView(PresupuestoPdfTemplate::viewName(), ['presupuesto' => $datosPresupuesto])
             ->setPaper('letter', 'portrait')
             ->setOption('isRemoteEnabled', false)
             ->setOption('isHtml5ParserEnabled', true)

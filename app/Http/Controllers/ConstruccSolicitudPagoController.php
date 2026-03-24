@@ -1183,18 +1183,35 @@ class ConstruccSolicitudPagoController extends Controller
         $usuarioConstruccId = $request->input('usuario_construcc_id');
 
         $proveedores = \App\Models\Proveedor::query()
+
+            // 🔥 Mantienes tu exclusión
             ->where(function ($q) {
                 $q->where('tipo_alta', '!=', 2)
                     ->orWhereNull('tipo_alta');
-            }) // 🔥 Excluir tipo_alta = 2
-            ->whereHas('empresasConstrucc', function ($q) use ($empresaId, $usuarioConstruccId) {
-                $q->where('empresa_construcc_id', $empresaId);
-
-                // Filtrar por usuario si se proporciona el parámetro
-                if ($usuarioConstruccId) {
-                    $q->where('usuario_construcc_id', $usuarioConstruccId);
-                }
             })
+
+            // 🔥 AQUÍ está la magia: mismo patrón que index
+            ->where(function ($q) use ($empresaId, $usuarioConstruccId) {
+
+                // 1. Proveedores asociados/enlazados
+                $q->whereHas('empresasConstrucc', function ($rel) use ($empresaId, $usuarioConstruccId) {
+                    $rel->where('empresa_construcc_id', $empresaId);
+
+                    if ($usuarioConstruccId) {
+                        $rel->where('usuario_construcc_id', $usuarioConstruccId);
+                    }
+                });
+
+                // 2. Proveedores dados de alta por la empresa
+                $q->orWhere(function ($alta) use ($empresaId, $usuarioConstruccId) {
+                    $alta->where('empresa_construcc_alta', $empresaId);
+
+                    if ($usuarioConstruccId) {
+                        $alta->where('user_construcc_alta', $usuarioConstruccId);
+                    }
+                });
+            })
+
             ->select('id', 'nombre_comercial', 'razon_social', 'rfc')
             ->orderBy('nombre_comercial')
             ->get();
@@ -1205,7 +1222,7 @@ class ConstruccSolicitudPagoController extends Controller
 
         return $this->success($proveedores, 'Proveedores asociados a la empresa constructora.');
     }
-
+    
     /**
      * Listar proveedores NO asociados a una empresa constructora
      * Opcionalmente filtra por usuario_construcc_id mediante parámetro GET

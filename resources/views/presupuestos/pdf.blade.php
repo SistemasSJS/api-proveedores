@@ -14,9 +14,6 @@
                 @page {
                     size: letter;
                     margin: 25.5mm;
-                    /* margin-left: {{ $margenMm }}mm;
-                    margin-right: {{ $margenMm }}mm;
-                    margin-bottom: {{ $footerHeightMm + 8 }}mm; */
                 }
 
                 .page-top-spacing {
