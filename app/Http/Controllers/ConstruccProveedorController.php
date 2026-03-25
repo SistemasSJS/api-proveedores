@@ -423,8 +423,7 @@ class ConstruccProveedorController extends Controller
 
             // Procesar cuentas bancarias (si vienen)
             $cuentasActualizadas = [];
-            if ($request->filled('
-            /')) {
+            if ($request->filled('cuentas_bancarias')) {
                 $cuentas = $request->cuentas_bancarias;
 
                 // Si alguna cuenta tiene preferida=true, desmarcar todas las demás
