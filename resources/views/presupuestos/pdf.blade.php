@@ -653,6 +653,29 @@
                 .after-table-space {
                     height: {{ $footerHeightMm + 5 }}mm;
                 }
+
+                /* ===== DEBUG VISUAL SIN MODIFICAR HTML =====
+
+                .header { border: 1px solid red; }
+                .logo-section { border: 1px solid blue; }
+                .header-info { border: 1px solid green; }
+                .folio-section { border: 1px solid orange; }
+
+                .receptor-section { border: 1px solid purple; }
+                .descripcion-section { border: 1px solid teal; }
+
+                .presupuesto-title { border: 1px solid brown; }
+                .presupuesto-table { border: 1px solid black; }
+
+                .totales-section { border: 1px solid darkgreen; }
+
+                .terminos-section { border: 1px solid magenta; }
+                .observaciones-section { border: 1px solid cyan; }
+
+                .footer { border: 2px dashed red; }
+                .footer-left { border: 1px solid blue; }
+                .footer-center { border: 1px solid green; }
+                .footer-right { border: 1px solid orange; } */
             </style>
         </head>
 

@@ -1,5 +1,5 @@
 @php
-    $margenMm = 20  ;
+    $margenMm = 20;
     $footerHeightMm = 25.4;
     $terminosLista = $presupuesto['terminos_enunciados'] ?? [];
     $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
@@ -101,16 +101,17 @@
         .tw-logo-cell {
             width: 22%;
             vertical-align: top;
-            padding-right: 2mm;
+            /* 🔥 arriba */
+            text-align: left;
+            /* 🔥 izquierda */
         }
 
         .tw-logo-img {
-            max-width: 100%;
+            max-width: 90%;
             max-height: 18mm;
             object-fit: contain;
-            border: none;
-            outline: none;
             display: block;
+            /* 🔥 evita centrados raros */
         }
 
         .tw-logo-fallback {
@@ -418,7 +419,7 @@
             page-break-inside: auto;
         }
 
-        .tw-terms + .tw-terms {
+        .tw-terms+.tw-terms {
             margin-top: 2mm;
         }
 
@@ -611,6 +612,95 @@
             height: 100%;
             object-fit: contain;
         }
+
+        /* ===== DEBUG VISUAL (TW VERSION) ===== */
+
+        /* .tw-header-wrap {
+            outline: 2px solid red;
+        }
+
+        .tw-header-main {
+            outline: 1px solid purple;
+        }
+
+        .tw-header-top {
+            outline: 1px dashed gray;
+        }
+
+        .tw-logo-cell {
+            outline: 2px solid blue;
+        }
+
+        .tw-emisor-cell {
+            outline: 2px solid green;
+        }
+
+        .tw-folio-cell {
+            outline: 2px solid orange;
+        }
+
+        .tw-header-rule {
+            outline: 1px solid black;
+        }
+
+        .tw-card {
+            outline: 2px solid purple;
+        }
+
+        .tw-desc-box {
+            outline: 2px solid teal;
+        }
+
+        .tw-section-title {
+            outline: 1px solid brown;
+        }
+
+        .tw-table {
+            outline: 2px solid black;
+        }
+
+        .tw-table thead {
+            outline: 2px solid red;
+        }
+
+        .tw-table tbody {
+            outline: 2px solid blue;
+        }
+
+        .tw-totals-wrap {
+            outline: 2px solid darkgreen;
+        }
+
+        .tw-totals-inner {
+            outline: 2px dashed green;
+        }
+
+        .after-table-space {
+            outline: 1px solid red;
+        }
+        .terms-block {
+            outline: 2px solid magenta;
+        }
+
+        .tw-terms {
+            outline: 1px solid pink;
+        }
+
+        .footer {
+            outline: 2px dashed red;
+        }
+
+        .footer-left {
+            outline: 2px solid blue;
+        }
+
+        .footer-center {
+            outline: 2px solid green;
+        }
+
+        .footer-right {
+            outline: 2px solid orange;
+        } */
     </style>
 </head>
 
@@ -714,7 +804,8 @@
                                 </td>
                                 <td class="tw-folio-cell">
                                     <div class="tw-badge-label">Presupuesto</div>
-                                    <div class="tw-badge-folio">{{ $presupuesto['numero_presupuesto'] ?? 'PRES-000001' }}</div>
+                                    <div class="tw-badge-folio">
+                                        {{ $presupuesto['numero_presupuesto'] ?? 'PRES-000001' }}</div>
                                     @if (!empty($presupuesto['uuid']))
                                         <div class="tw-uuid">{{ $presupuesto['uuid'] }}</div>
                                     @endif
@@ -724,7 +815,9 @@
                                             if (is_string($fecha)) {
                                                 $fecha = \Carbon\Carbon::parse($fecha);
                                             }
-                                            $fechaFormateada = $fecha->locale('es')->translatedFormat('d \d\e F \d\e\l Y');
+                                            $fechaFormateada = $fecha
+                                                ->locale('es')
+                                                ->translatedFormat('d \d\e F \d\e\l Y');
                                         @endphp
                                         {{ $fechaFormateada }}
                                     </div>
