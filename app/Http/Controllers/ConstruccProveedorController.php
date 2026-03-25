@@ -360,6 +360,12 @@ class ConstruccProveedorController extends Controller
                 'nivel_id' => $request->nivel_id,
             ]);
 
+
+            Log::info('[construcc.proveedor.update] request validado', [
+                'payload' => $request->validated()
+            ]);
+
+
             // 🔒 Validar tipo_alta
             if ($proveedor->tipo_alta !== 2) {
                 return $this->error(
@@ -414,21 +420,27 @@ class ConstruccProveedorController extends Controller
                 foreach ($cuentas as $c) {
 
                     $tipo = $c['tipo_cuenta'] ?? 'cuenta';
-                    $valor = $c['campo_dependiente'] ?? null;
+                    $valor = $c['campo_dependiente'] ?? '';
 
                     $dataCuenta = [
                         'alias' => $c['alias'] ?? '',
-                        'banco_clave' => $c['banco_clave'] ?? null,
-                        'banco_nombre' => $c['banco_nombre'] ?? null,
-                        'titular_cuenta' => $c['titular_cuenta'] ?? null,
-                        'referencia' => $c['referencia'] ?? null,
-                        'sucursal' => $c['sucursal'] ?? null,
-                        'swift' => $c['swift'] ?? null,
-                        'preferida' => $c['preferida'] ?? false,
+                        'banco_clave' => $c['banco_clave'] ?? '',
+                        'banco_nombre' => $c['banco_nombre'] ?? '',
+                        'titular_cuenta' => $c['titular_cuenta'] ?? '',
+                        'referencia' => $c['referencia'] ?? '',
+                        'sucursal' => $c['sucursal'] ?? '',
+                        'swift' => $c['swift'] ?? '',
 
-                        'cuenta' => $tipo === 'cuenta' ? $valor : null,
-                        'clabe' => $tipo === 'clabe' ? $valor : null,
-                        'tarjeta' => $tipo === 'tarjeta' ? $valor : null,
+                        // 🔥 clave del modelo
+                        'tipo_cuenta' => $tipo,
+                        'campo_dependiente' => $valor,
+
+                        // 🔥 mapeo SIN NULLS
+                        'cuenta' => $tipo === 'cuenta' ? $valor : '',
+                        'clabe' => $tipo === 'clabe' ? $valor : '',
+                        'tarjeta' => $tipo === 'tarjeta' ? $valor : '',
+
+                        'preferida' => $c['preferida'] ?? false,
                     ];
 
                     if (!empty($c['id'])) {
