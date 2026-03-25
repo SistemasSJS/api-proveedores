@@ -235,6 +235,14 @@ class ProveedorPresupuestoController extends Controller
                 return $this->error('Presupuesto no pertenece a este proveedor.', null, 403);
             }
 
+            if (! $this->puedeEditarPresupuesto($presupuesto)) {
+                return $this->error(
+                    'No se puede modificar este presupuesto. Solo se editan borradores o presupuestos con observaciones del cliente.',
+                    ['estado_actual' => $presupuesto->estado],
+                    422
+                );
+            }
+
             $validated = $request->validated();
             if ((int) $validated['proveedor_id'] !== (int) $proveedor->id) {
                 return $this->error('El proveedor del payload no coincide con el proveedor de la ruta.', null, 422);
@@ -254,6 +262,10 @@ class ProveedorPresupuestoController extends Controller
                 $payload = $this->normalizarEmpresaReceptora($payload, (int) $payload['proveedor_id']);
 
                 $presupuesto->update($payload);
+                if ($presupuesto->estado === Presupuesto::ESTADO_BORRADOR) {
+                    $presupuesto->motivo_rechazo = null;
+                    $presupuesto->save();
+                }
                 $this->sincronizarConceptos($presupuesto, $validated['conceptos']);
                 $presupuesto->recalcularDesdeConceptos();
 
@@ -288,6 +300,14 @@ class ProveedorPresupuestoController extends Controller
         try {
             if ($presupuesto->proveedor_id !== $proveedor->id) {
                 return $this->error('Presupuesto no pertenece a este proveedor.', null, 403);
+            }
+
+            if ($presupuesto->estado !== Presupuesto::ESTADO_BORRADOR) {
+                return $this->error(
+                    'Solo se pueden eliminar presupuestos en borrador.',
+                    ['estado_actual' => $presupuesto->estado],
+                    422
+                );
             }
 
             $presupuesto->delete();
@@ -392,6 +412,22 @@ class ProveedorPresupuestoController extends Controller
 
             return $this->error('No fue posible duplicar el presupuesto.', [$e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Borrador: editable. Rechazado con motivo (observaciones del cliente): editable.
+     */
+    private function puedeEditarPresupuesto(Presupuesto $presupuesto): bool
+    {
+        if ($presupuesto->estado === Presupuesto::ESTADO_BORRADOR) {
+            return true;
+        }
+
+        if (in_array($presupuesto->estado, [Presupuesto::ESTADO_RECHAZADO, Presupuesto::ESTADO_RECHAZADO_CON_OBSERVACION], true)) {
+            return $presupuesto->motivo_rechazo && trim((string) $presupuesto->motivo_rechazo) !== '';
+        }
+
+        return false;
     }
 
     /**

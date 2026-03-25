@@ -206,6 +206,9 @@ class SolicitudPago extends BaseModel
         // Filtro bandera: incluir datos de facturación en la respuesta
         'with_datos_facturacion' => 'WithDatosFacturacion',
 
+        // Limitar al listado a las N solicitudes más recientes (por fecha_registro_pendiente)
+        'ultimas_spp' => 'UltimasSpp',
+
     ];
 
     protected $casts = [
@@ -619,6 +622,11 @@ class SolicitudPago extends BaseModel
         return $query; // No se modifica el query
     }
 
+    public function filterByUltimasSpp($query, $value)
+    {
+        return $query->ultimasSpp((int) $value);
+    }
+
     /** ----------------
      * Métodos para manejo de pagos parciales
      * ----------------- */
@@ -771,6 +779,36 @@ class SolicitudPago extends BaseModel
     public function scopeWhereFromOrdenCompra(Builder $query): Builder
     {
         return $query->where('origen_oc', true);
+    }
+
+    /**
+     * Restringe el query a las N solicitudes más recientes según fecha_registro_pendiente (y desempate por PK).
+     * Debe aplicarse cuando ya están el resto de condiciones (proveedor, filtros, etc.).
+     */
+    public function scopeUltimasSpp(Builder $query, int $n): Builder
+    {
+        if ($n <= 0) {
+            return $query;
+        }
+
+        $model = $query->getModel();
+        $table = $model->getTable();
+        $pk = $model->getKeyName();
+
+        $clone = clone $query;
+        $clone->reorder();
+
+        $ids = $clone
+            ->orderByDesc("{$table}.fecha_registro_pendiente")
+            ->orderByDesc("{$table}.{$pk}")
+            ->limit($n)
+            ->pluck("{$table}.{$pk}");
+
+        if ($ids->isEmpty()) {
+            return $query->whereRaw('0 = 1');
+        }
+
+        return $query->whereIn("{$table}.{$pk}", $ids);
     }
 
     public function getOrdenCompraAsociada()

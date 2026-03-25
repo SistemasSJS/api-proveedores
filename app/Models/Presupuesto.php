@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\Filterable;
 use App\Traits\MarksAsNotified;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -33,6 +34,7 @@ class Presupuesto extends BaseModel
         'estado' => 'Estado',
         'item_visto' => 'ItemVisto',
         'segmento' => 'Segmento',
+        'ultimas_presupuestos' => 'UltimasPresupuestos',
     ];
 
     public const ESTADO_BORRADOR = 'borrador';
@@ -483,6 +485,36 @@ class Presupuesto extends BaseModel
     }
 
     /**
+     * Restringe el query a los N presupuestos más recientes según created_at (y desempate por PK).
+     * Debe aplicarse cuando ya están el resto de condiciones (proveedor, filtros, etc.).
+     */
+    public function scopeUltimasPresupuestos(Builder $query, int $n): Builder
+    {
+        if ($n <= 0) {
+            return $query;
+        }
+
+        $model = $query->getModel();
+        $table = $model->getTable();
+        $pk = $model->getKeyName();
+
+        $clone = clone $query;
+        $clone->reorder();
+
+        $ids = $clone
+            ->orderByDesc("{$table}.created_at")
+            ->orderByDesc("{$table}.{$pk}")
+            ->limit($n)
+            ->pluck("{$table}.{$pk}");
+
+        if ($ids->isEmpty()) {
+            return $query->whereRaw('0 = 1');
+        }
+
+        return $query->whereIn("{$table}.{$pk}", $ids);
+    }
+
+    /**
      * FILTERS
      */
 
@@ -673,5 +705,10 @@ class Presupuesto extends BaseModel
         }
 
         return $query->where('item_visto', $boolValue);
+    }
+
+    public function filterByUltimasPresupuestos($query, $value)
+    {
+        return $query->ultimasPresupuestos((int) $value);
     }
 }
