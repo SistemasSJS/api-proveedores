@@ -42,6 +42,7 @@ class StorePresupuestoRequest extends FormRequest
             'obs_garantia_dias' => 'nullable|integer|min:0',
             'obs_traslados' => 'nullable|boolean',
             'obs_viaticos' => 'nullable|boolean',
+            'configuracion_condiciones' => 'nullable|array',
             'estado' => 'nullable|string|in:borrador,enviado,aceptado,rechazado,rechazado_con_observacion,vencido',
             'conceptos' => 'required|array|min:1',
             'conceptos.*.descripcion' => 'required|string',

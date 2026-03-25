@@ -50,6 +50,7 @@ class PresupuestoResource extends JsonResource
             'obs_garantia_dias' => (int) ($this->obs_garantia_dias ?? 0),
             'obs_traslados' => $this->obs_traslados === null ? null : (bool) $this->obs_traslados,
             'obs_viaticos' => $this->obs_viaticos === null ? null : (bool) $this->obs_viaticos,
+            'configuracion_condiciones' => $this->configuracion_condiciones,
             'estado' => $this->estado ?? Presupuesto::ESTADO_BORRADOR,
             'motivo_rechazo' => $this->motivo_rechazo,
             'item_visto' => (bool) ($this->item_visto ?? false),

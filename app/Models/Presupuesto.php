@@ -68,6 +68,7 @@ class Presupuesto extends BaseModel
         'obs_garantia_dias',
         'obs_traslados',
         'obs_viaticos',
+        'configuracion_condiciones',
         'motivo_rechazo',
         'estado',
         'item_visto',
@@ -96,6 +97,7 @@ class Presupuesto extends BaseModel
         'term_cond_anticipo_porcentaje' => 'decimal:2',
         'obs_traslados' => 'boolean',
         'obs_viaticos' => 'boolean',
+        'configuracion_condiciones' => 'array',
     ];
 
     /**
