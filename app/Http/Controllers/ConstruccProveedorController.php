@@ -417,7 +417,7 @@ class ConstruccProveedorController extends Controller
                     $valor = $c['campo_dependiente'] ?? null;
 
                     $dataCuenta = [
-                        'alias' => $c['alias'] ?? null,
+                        'alias' => $c['alias'] ?? '',
                         'banco_clave' => $c['banco_clave'] ?? null,
                         'banco_nombre' => $c['banco_nombre'] ?? null,
                         'titular_cuenta' => $c['titular_cuenta'] ?? null,
