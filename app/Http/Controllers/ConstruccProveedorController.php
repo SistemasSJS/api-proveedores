@@ -540,7 +540,7 @@ class ConstruccProveedorController extends Controller
                         ->sortByDesc(fn($c) => $c->preferida ? 1 : 0)
                         ->values()
                         ->map(function ($cuenta) {
-                            return [
+                        return [
                                 'id' => $cuenta->id,
                                 'alias' => $cuenta->alias,
                                 'banco_clave' => $cuenta->banco_clave,
