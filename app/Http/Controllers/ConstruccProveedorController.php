@@ -428,7 +428,9 @@ class ConstruccProveedorController extends Controller
 
                 // Si alguna cuenta tiene preferida=true, desmarcar todas las demás
                 $hayPreferida = collect($cuentas)->contains(
-                    fn($c) => isset($c['preferida']) && $c['preferida'] === true
+                    fn($item) => is_array($item)
+                        && isset($item['preferida'])
+                        && $item['preferida'] === true
                 );
 
                 Log::info('[construcc.proveedor.update] cuentas bancarias en payload', [
@@ -447,9 +449,19 @@ class ConstruccProveedorController extends Controller
                 }
 
                 foreach ($cuentas as $cuentaData) {
-                    $c = (isset($cuentaData['cuenta']) && is_array($cuentaData['cuenta']))
-                        ? $cuentaData['cuenta']
-                        : $cuentaData;
+                    if (!is_array($cuentaData)) {
+                        Log::warning('[construcc.proveedor.update] entrada cuentas_bancarias ignorada (no es objeto)', [
+                            'proveedor_id' => $proveedor->id,
+                            'tipo' => gettype($cuentaData),
+                        ]);
+
+                        continue;
+                    }
+
+                    // Solo si `cuenta` es un objeto anidado (alta); si es string es el nº de cuenta (columna), no anidar.
+                    $nested = $cuentaData['cuenta'] ?? null;
+                    $c = is_array($nested) ? $nested : $cuentaData;
+
                     $tipo = $c['tipo_cuenta'] ?? 'cuenta';
                     $valor = $c['campo_dependiente'] ?? null;
 
