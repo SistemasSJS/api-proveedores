@@ -351,28 +351,24 @@ class ConstruccProveedorController extends Controller
         ConstruccProveedorUpdateRequest $request,
         Proveedor $proveedor
     ): JsonResponse {
+
         DB::beginTransaction();
 
         try {
-            Log::info('[construcc.proveedor.update] inicio', [
+
+            Log::info('[construcc.proveedor.update] Payload', [
                 'proveedor_id' => $proveedor->id,
-                'usuario_id' => $request->usuario_id,
-                'nivel_id' => $request->nivel_id,
-            ]);
-
-
-            Log::info('[construcc.proveedor.update] request validado', [
                 'payload' => $request->validated()
             ]);
 
+            Log::info('[construcc.proveedor.update] Toda la peticion', [
+                'proveedor_id' => $proveedor->id,
+                'request' => $request->all()
+            ]);
 
-            // 🔒 Validar tipo_alta
+            // 🔒 Validar tipo
             if ($proveedor->tipo_alta !== 2) {
-                return $this->error(
-                    'Solo se pueden actualizar proveedores tipo construcción.',
-                    null,
-                    403
-                );
+                return $this->error('Solo se pueden actualizar proveedores tipo construcción.', null, 403);
             }
 
             // 🔒 Validar permisos
@@ -380,11 +376,7 @@ class ConstruccProveedorController extends Controller
             $usuarioCreadorId = $pivot?->pivot->usuario_construcc_id;
 
             if ($request->usuario_id != $usuarioCreadorId) {
-                return $this->error(
-                    'No tiene permisos para actualizar este proveedor.',
-                    null,
-                    403
-                );
+                return $this->error('No tiene permisos para actualizar este proveedor.', null, 403);
             }
 
             // =========================
@@ -406,99 +398,78 @@ class ConstruccProveedorController extends Controller
             $proveedor->update($data);
 
             // =========================
-            // 🏦 CUENTAS BANCARIAS (UPSERT)
+            // 🏦 CUENTAS BANCARIAS
             // =========================
-            if ($request->filled('cuentas_bancarias')) {
+            // if ($request->filled('cuentas_bancarias')) {
 
-                $cuentas = collect($request->cuentas_bancarias);
+            //     $cuentas = collect($request->cuentas_bancarias)
+            //         ->filter(
+            //             fn($c) =>
+            //             is_array($c) &&
+            //                 !empty($c['campo_dependiente']) // 🔥 evita basura
+            //         )
+            //         ->unique(
+            //             fn($c) => ($c['tipo_cuenta'] ?? '') . '|' . ($c['campo_dependiente'] ?? '')
+            //         )
+            //         ->values();
 
-                // 🔥 Solo una preferida
-                if ($cuentas->contains('preferida', true)) {
-                    $proveedor->cuentasBancarias()->update(['preferida' => false]);
-                }
+            //     // 🔥 Reset preferidas si alguna viene marcada
+            //     if ($cuentas->contains('preferida', true)) {
+            //         $proveedor->cuentasBancarias()->update(['preferida' => false]);
+            //     }
 
-                foreach ($cuentas as $c) {
+            //     foreach ($cuentas as $c) {
 
-                    $tipo = $c['tipo_cuenta'] ?? 'cuenta';
-                    $valor = $c['campo_dependiente'] ?? '';
+            //         $tipo = $c['tipo_cuenta'] ?? 'cuenta';
+            //         $valor = $c['campo_dependiente'];
 
-                    $dataCuenta = [
-                        'alias' => $c['alias'] ?? '',
-                        'banco_clave' => $c['banco_clave'] ?? '',
-                        'banco_nombre' => $c['banco_nombre'] ?? '',
-                        'titular_cuenta' => $c['titular_cuenta'] ?? '',
-                        'referencia' => $c['referencia'] ?? '',
-                        'sucursal' => $c['sucursal'] ?? '',
-                        'swift' => $c['swift'] ?? '',
+            //         $dataCuenta = [
+            //             'alias' => $c['alias'] ?? '',
+            //             'banco_clave' => $c['banco_clave'] ?? '',
+            //             'banco_nombre' => $c['banco_nombre'] ?? '',
+            //             'titular_cuenta' => $c['titular_cuenta'] ?? '',
+            //             'referencia' => $c['referencia'] ?? '',
+            //             'sucursal' => $c['sucursal'] ?? '',
+            //             'swift' => $c['swift'] ?? '',
 
-                        // 🔥 clave del modelo
-                        'tipo_cuenta' => $tipo,
-                        'campo_dependiente' => $valor,
+            //             'tipo_cuenta' => $tipo,
+            //             'campo_dependiente' => $valor,
 
-                        // 🔥 mapeo SIN NULLS
-                        'cuenta' => $tipo === 'cuenta' ? $valor : '',
-                        'clabe' => $tipo === 'clabe' ? $valor : '',
-                        'tarjeta' => $tipo === 'tarjeta' ? $valor : '',
+            //             // 🔥 SIN NULLS
+            //             'cuenta' => $tipo === 'cuenta' ? $valor : '',
+            //             'clabe' => $tipo === 'clabe' ? $valor : '',
+            //             'tarjeta' => $tipo === 'tarjeta' ? $valor : '',
 
-                        'preferida' => $c['preferida'] ?? false,
-                    ];
+            //             'preferida' => $c['preferida'] ?? false,
+            //         ];
 
-                    if (!empty($c['id'])) {
-                        // 🔄 UPDATE seguro (solo si pertenece al proveedor)
-                        $cuenta = $proveedor->cuentasBancarias()
-                            ->where('id', $c['id'])
-                            ->first();
+            //         // 🔥 UPSERT REAL
+            //         $cuenta = $proveedor->cuentasBancarias()
+            //             ->where('tipo_cuenta', $tipo)
+            //             ->where('campo_dependiente', $valor)
+            //             ->first();
 
-                        if ($cuenta) {
-                            $cuenta->update($dataCuenta);
-                        }
-                    } else {
-                        // ➕ CREATE
-                        $proveedor->cuentasBancarias()->create($dataCuenta);
-                    }
-                }
-            }
+            //         if ($cuenta) {
+            //             $cuenta->update($dataCuenta);
+            //         } else {
+            //             $proveedor->cuentasBancarias()->create($dataCuenta);
+            //         }
+            //     }
+            // }
 
             DB::commit();
 
-            // 🔄 Recargar relaciones
-            $proveedor->load(['cuentasBancarias', 'empresasConstrucc']);
+            $proveedor->load('cuentasBancarias');
 
             return $this->success(
                 [
-                    'proveedor' => [
-                        'id' => $proveedor->id,
-                        'nombre_comercial' => $proveedor->nombre_comercial,
-                        'razon_social' => $proveedor->razon_social,
-                        'rfc' => $proveedor->rfc,
-                        'email' => $proveedor->email,
-                        'telefono' => $proveedor->telefono,
-                        'celular' => $proveedor->celular,
-                        'estatus' => $proveedor->estatus,
-                        'tipo_alta' => $proveedor->tipo_alta,
-                    ],
+                    'proveedor' => $proveedor,
                     'cuentas_bancarias' => $proveedor->cuentasBancarias
-                        ->sortByDesc(fn($c) => $c->preferida)
-                        ->values()
-                        ->map(fn($c) => [
-                            'id' => $c->id,
-                            'alias' => $c->alias,
-                            'banco_clave' => $c->banco_clave,
-                            'banco_nombre' => $c->banco_nombre,
-                            'cuenta' => $c->cuenta,
-                            'clabe' => $c->clabe,
-                            'tarjeta' => $c->tarjeta,
-                            'titular_cuenta' => $c->titular_cuenta,
-                            'preferida' => (bool) $c->preferida,
-                            'referencia' => $c->referencia,
-                            'sucursal' => $c->sucursal,
-                            'swift' => $c->swift,
-                        ])
-                        ->toArray(),
                 ],
-                'Proveedor actualizado exitosamente.'
+                'Proveedor actualizado correctamente'
             );
         } catch (\Throwable $e) {
+
             DB::rollBack();
 
             Log::error('[construcc.proveedor.update] error', [
@@ -506,13 +477,10 @@ class ConstruccProveedorController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->error(
-                'Error al actualizar el proveedor',
-                null,
-                500
-            );
+            return $this->error('Error al actualizar el proveedor', null, 500);
         }
     }
+
     /**
      * Marca un proveedor como dado de baja (soft delete)
      * Solo pueden eliminar: Directores (DG, DT, DA, PC) o el usuario que lo registrรณ
