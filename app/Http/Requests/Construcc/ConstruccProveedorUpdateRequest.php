@@ -48,18 +48,30 @@ class ConstruccProveedorUpdateRequest extends FormRequest
             'nivel_id' => 'required|integer|min:0|max:6', // 0: Admin, 1: DG, 2: DT, 3: DA, 4: SI, 5: PC, 6: RO
 
             // Cuentas bancarias (opcional, array de cuentas)
-            'cuentas_bancarias' => 'sometimes|array',
-            'cuentas_bancarias.*.id' => 'sometimes|integer|exists:cuentas_bancarias,id',
-            'cuentas_bancarias.*.alias' => 'sometimes|string|max:255',
-            'cuentas_bancarias.*.banco_clave' => 'sometimes|string|max:10',
-            'cuentas_bancarias.*.banco_nombre' => 'sometimes|string|max:255',
-            'cuentas_bancarias.*.tipo_cuenta' => 'sometimes|string|max:255',
-            'cuentas_bancarias.*.campo_dependiente' => 'sometimes|string|max:255',
-            'cuentas_bancarias.*.titular_cuenta' => 'sometimes|string|max:255',
-            'cuentas_bancarias.*.referencia' => 'sometimes|nullable|string|max:255',
-            'cuentas_bancarias.*.sucursal' => 'sometimes|nullable|string|max:255',
-            'cuentas_bancarias.*.swift' => 'sometimes|nullable|string|max:255',
-            'cuentas_bancarias.*.preferida' => 'sometimes|boolean',
+            // 'cuentas_bancarias' => 'sometimes|array',
+            // 'cuentas_bancarias.*.id' => 'sometimes|integer|exists:cuentas_bancarias,id',
+            // 'cuentas_bancarias.*.alias' => 'sometimes|string|max:255',
+            // 'cuentas_bancarias.*.banco_clave' => 'sometimes|string|max:10',
+            // 'cuentas_bancarias.*.banco_nombre' => 'sometimes|string|max:255',
+            // 'cuentas_bancarias.*.tipo_cuenta' => 'sometimes|string|max:255',
+            // 'cuentas_bancarias.*.campo_dependiente' => 'sometimes|string|max:255',
+            // 'cuentas_bancarias.*.titular_cuenta' => 'sometimes|string|max:255',
+            // 'cuentas_bancarias.*.referencia' => 'sometimes|nullable|string|max:255',
+            // 'cuentas_bancarias.*.sucursal' => 'sometimes|nullable|string|max:255',
+            // 'cuentas_bancarias.*.swift' => 'sometimes|nullable|string|max:255',
+            // 'cuentas_bancarias.*.preferida' => 'sometimes|boolean',
+            'cuentas_bancarias.id' => 'sometimes|integer|exists:cuentas_bancarias,id',
+            'cuentas_bancarias.alias' => 'sometimes|string|max:255',
+            'cuentas_bancarias.banco_clave' => 'sometimes|string|max:10',
+            'cuentas_bancarias.banco_nombre' => 'sometimes|string|max:255',
+            'cuentas_bancarias.tipo_cuenta' => 'sometimes|string|max:255',
+            'cuentas_bancarias.campo_dependiente' => 'sometimes|string|max:255',
+            'cuentas_bancarias.titular_cuenta' => 'sometimes|string|max:255',
+            'cuentas_bancarias.referencia' => 'sometimes|nullable|string|max:255',
+            'cuentas_bancarias.sucursal' => 'sometimes|nullable|string|max:255',
+            'cuentas_bancarias.swift' => 'sometimes|nullable|string|max:255',
+            'cuentas_bancarias.preferida' => 'sometimes|boolean',
+
         ];
     }
 

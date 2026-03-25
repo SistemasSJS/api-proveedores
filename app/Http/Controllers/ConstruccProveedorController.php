@@ -370,7 +370,7 @@ class ConstruccProveedorController extends Controller
             if ($proveedor->tipo_alta !== 2) {
                 return $this->error('Solo se pueden actualizar proveedores tipo construcción.', null, 403);
             }
-
+            // 
             // 🔒 Validar permisos
             $pivot = $proveedor->empresasConstrucc()->first();
             $usuarioCreadorId = $pivot?->pivot->usuario_construcc_id;
@@ -398,64 +398,58 @@ class ConstruccProveedorController extends Controller
             $proveedor->update($data);
 
             // =========================
-            // 🏦 CUENTAS BANCARIAS
+            // 🏦 CUENTA BANCARIA (OBJETO)
             // =========================
-            // if ($request->filled('cuentas_bancarias')) {
+            if ($request->filled('cuentas_bancarias')) {
 
-            //     $cuentas = collect($request->cuentas_bancarias)
-            //         ->filter(
-            //             fn($c) =>
-            //             is_array($c) &&
-            //                 !empty($c['campo_dependiente']) // 🔥 evita basura
-            //         )
-            //         ->unique(
-            //             fn($c) => ($c['tipo_cuenta'] ?? '') . '|' . ($c['campo_dependiente'] ?? '')
-            //         )
-            //         ->values();
+                $c = $request->cuentas_bancarias;
 
-            //     // 🔥 Reset preferidas si alguna viene marcada
-            //     if ($cuentas->contains('preferida', true)) {
-            //         $proveedor->cuentasBancarias()->update(['preferida' => false]);
-            //     }
+                // 🚫 Evitar guardar basura (todo vacío)
+                $hayDatos = collect($c)->filter(fn($v) => $v !== null && $v !== '')->isNotEmpty();
 
-            //     foreach ($cuentas as $c) {
+                if ($hayDatos) {
 
-            //         $tipo = $c['tipo_cuenta'] ?? 'cuenta';
-            //         $valor = $c['campo_dependiente'];
+                    $tipo = $c['tipo_cuenta'] ?? 'cuenta';
+                    $valor = $c['campo_dependiente'] ?? '';
 
-            //         $dataCuenta = [
-            //             'alias' => $c['alias'] ?? '',
-            //             'banco_clave' => $c['banco_clave'] ?? '',
-            //             'banco_nombre' => $c['banco_nombre'] ?? '',
-            //             'titular_cuenta' => $c['titular_cuenta'] ?? '',
-            //             'referencia' => $c['referencia'] ?? '',
-            //             'sucursal' => $c['sucursal'] ?? '',
-            //             'swift' => $c['swift'] ?? '',
+                    $dataCuenta = [
+                        'alias' => $c['alias'] ?? '',
+                        'banco_clave' => $c['banco_clave'] ?? '',
+                        'banco_nombre' => $c['banco_nombre'] ?? '',
+                        'titular_cuenta' => $c['titular_cuenta'] ?? '',
+                        'referencia' => $c['referencia'] ?? '',
+                        'sucursal' => $c['sucursal'] ?? '',
+                        'swift' => $c['swift'] ?? '',
 
-            //             'tipo_cuenta' => $tipo,
-            //             'campo_dependiente' => $valor,
+                        'tipo_cuenta' => $tipo,
+                        'campo_dependiente' => $valor,
 
-            //             // 🔥 SIN NULLS
-            //             'cuenta' => $tipo === 'cuenta' ? $valor : '',
-            //             'clabe' => $tipo === 'clabe' ? $valor : '',
-            //             'tarjeta' => $tipo === 'tarjeta' ? $valor : '',
+                        // 🔥 SIN NULLS
+                        'cuenta' => $tipo === 'cuenta' ? $valor : '',
+                        'clabe' => $tipo === 'clabe' ? $valor : '',
+                        'tarjeta' => $tipo === 'tarjeta' ? $valor : '',
 
-            //             'preferida' => $c['preferida'] ?? false,
-            //         ];
+                        'preferida' => $c['preferida'] ?? true,
+                    ];
 
-            //         // 🔥 UPSERT REAL
-            //         $cuenta = $proveedor->cuentasBancarias()
-            //             ->where('tipo_cuenta', $tipo)
-            //             ->where('campo_dependiente', $valor)
-            //             ->first();
+                    if (!empty($c['id'])) {
+                        // 🔄 UPDATE
+                        $cuenta = $proveedor->cuentasBancarias()
+                            ->where('id', $c['id'])
+                            ->first();
 
-            //         if ($cuenta) {
-            //             $cuenta->update($dataCuenta);
-            //         } else {
-            //             $proveedor->cuentasBancarias()->create($dataCuenta);
-            //         }
-            //     }
-            // }
+                        if ($cuenta) {
+                            $cuenta->update($dataCuenta);
+                        }
+                    } else {
+                        // 🧹 OPCIONAL: borrar anteriores si solo quieres UNA cuenta
+                        $proveedor->cuentasBancarias()->delete();
+
+                        // ➕ CREATE
+                        $proveedor->cuentasBancarias()->create($dataCuenta);
+                    }
+                }
+            }
 
             DB::commit();
 
