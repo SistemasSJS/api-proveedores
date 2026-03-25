@@ -52,14 +52,14 @@ class ConstruccProveedorController extends Controller
                 ->when($empresaId, function ($q) use ($empresaId, $usuarioId) {
                     $q->where(function ($sub) use ($empresaId, $usuarioId) {
 
-                        // 🔥 1. Proveedores asociados/enlazados
-                        $sub->whereHas('empresasConstrucc', function ($rel) use ($empresaId, $usuarioId) {
-                            $rel->where('empresa_construcc_id', $empresaId);
+                        // // 🔥 1. Proveedores asociados/enlazados
+                        // $sub->whereHas('empresasConstrucc', function ($rel) use ($empresaId, $usuarioId) {
+                        //     $rel->where('empresa_construcc_id', $empresaId);
 
-                            if ($usuarioId) {
-                                $rel->where('usuario_construcc_id', $usuarioId);
-                            }
-                        });
+                        //     if ($usuarioId) {
+                        //         $rel->where('usuario_construcc_id', $usuarioId);
+                        //     }
+                        // });
 
                         // 🔥 2. Proveedores dados de alta por la empresa
                         $sub->orWhere(function ($alta) use ($empresaId, $usuarioId) {
@@ -423,7 +423,8 @@ class ConstruccProveedorController extends Controller
 
             // Procesar cuentas bancarias (si vienen)
             $cuentasActualizadas = [];
-            if ($request->filled('cuentas_bancarias')) {
+            if ($request->filled('
+            /')) {
                 $cuentas = $request->cuentas_bancarias;
 
                 // Si alguna cuenta tiene preferida=true, desmarcar todas las demás
@@ -458,10 +459,8 @@ class ConstruccProveedorController extends Controller
                         continue;
                     }
 
-                    // Solo si `cuenta` es un objeto anidado (alta); si es string es el nº de cuenta (columna), no anidar.
-                    $nested = $cuentaData['cuenta'] ?? null;
-                    $c = is_array($nested) ? $nested : $cuentaData;
-
+                    // Misma forma que alta (PASO 2): cada elemento = $data['cuenta'] con tipo_cuenta + campo_dependiente
+                    $c = $cuentaData;
                     $tipo = $c['tipo_cuenta'] ?? 'cuenta';
                     $valor = $c['campo_dependiente'] ?? null;
 
