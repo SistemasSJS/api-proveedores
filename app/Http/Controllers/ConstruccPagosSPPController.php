@@ -66,6 +66,9 @@ class ConstruccPagosSPPController extends Controller
             $usuarioNivel = $request->input('usuario_nivel');
             $usuarioIdFiltro = $request->input('usuario_id');
 
+            Log::info('Usuario nivel', ['usuario_nivel' => $usuarioNivel, 'usuario_id' => $usuarioIdFiltro,]);
+            Log::info('Filters', ['filters' => $filters,]);
+
             $query = PagoSPP::query()
                 ->with([
                     'proveedor',
@@ -74,16 +77,23 @@ class ConstruccPagosSPPController extends Controller
                 ])
                 ->withCount('solicitudesPago')
                 ->filter($filters)
-                ->when(
-                    (int) $usuarioNivel === 6,
-                    function ($q) use ($usuarioIdFiltro) {
-                        $q->whereHas('solicitudesPago', function ($sp) use ($usuarioIdFiltro) {
-                            $sp->where('usuario_id', (int) $usuarioIdFiltro);
-                        });
-                    }
-                )
+                // ->when(
+                //     (int) $usuarioNivel === 6,
+                //     function ($q) use ($usuarioIdFiltro) {
+                //         $q->whereHas('solicitudesPago', function ($sp) use ($usuarioIdFiltro) {
+                //             $sp->where('usuario_id', (int) $usuarioIdFiltro);
+                //         });
+                //     }
+                // )
                 ->orderBy($sortBy, $order);
+            if ($usuarioNivel === 6) {
+                Log::info('Usuario nivel 6', ['usuario_id' => $usuarioIdFiltro,]);
 
+                $query->whereHas('solicitudesPago', function ($sp) use ($usuarioIdFiltro) {
+                    $sp->where('usuario_id', (int) $usuarioIdFiltro);
+                });
+            }
+            Log::info('Query', ['query' => $query->toSql(), 'bindings' => $query->getBindings(),]);
             $paginator = $query->paginate($perPage);
 
             return $this->paginated(
