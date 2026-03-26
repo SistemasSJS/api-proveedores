@@ -36,7 +36,7 @@ class SolicitudPago extends BaseModel
         'estado_solicitud',
         'ruta_archivo_comprobante_pago',
         'proveedor_id',
-        // Datos del usuario que registra la SP en Construcc
+        // Datos del usuario que registra la SP en  
         'empresa_construcc_id',
         'usuario_id',
         'usuario_nombre',
@@ -150,7 +150,7 @@ class SolicitudPago extends BaseModel
         'estado_solicitud' => 'EstadoSolicitud',
         'proveedor_id' => 'ProveedorId',
         'empresa_construcc_id' => 'EmpresaConstruccId',
-        'usuario_id' => 'UsuarioId',
+        // 'usuario_id' => 'UsuarioId',
         'usuario_nombre' => 'UsuarioNombre',
         'cotizacion_id' => 'CotizacionId',
 
