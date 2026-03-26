@@ -48,8 +48,12 @@ class ConstruccPagosSPPController extends Controller
 
     /**
      * Lista de pagos con filtros y paginación.
-     * 
+     *
      * GET /api/construcc/pagos-spp/
+     * Parámetros adicionales:
+     * - usuario_nivel: si es 6 (Residente de Obra), restringe el listado.
+     * - usuario_id: id de usuario construcc; con usuario_nivel=6 solo se listan pagos
+     *   que aplican a al menos una SPP creada por ese usuario (solicitudes_pago.usuario_id).
      */
     public function index(Request $request): JsonResponse
     {
@@ -59,15 +63,25 @@ class ConstruccPagosSPPController extends Controller
             $order   = $request->input('order', 'desc');
             $perPage = $request->input('per_page', 10000);
 
+            $usuarioNivel = $request->input('usuario_nivel');
+            $usuarioIdFiltro = $request->input('usuario_id');
+
             $query = PagoSPP::query()
                 ->with([
                     'proveedor',
                     'empresaConstrucc',
-                    // Opcional: si quieres ver las solicitudes relacionadas en el index
                     'solicitudesPago',
                 ])
-                ->withCount('solicitudesPago') // 👈 agrega el conteo
+                ->withCount('solicitudesPago')
                 ->filter($filters)
+                ->when(
+                    (int) $usuarioNivel === 6 && $usuarioIdFiltro !== null && $usuarioIdFiltro !== '',
+                    function ($q) use ($usuarioIdFiltro) {
+                        $q->whereHas('solicitudesPago', function ($sp) use ($usuarioIdFiltro) {
+                            $sp->where('usuario_id', (int) $usuarioIdFiltro);
+                        });
+                    }
+                )
                 ->orderBy($sortBy, $order);
 
             $paginator = $query->paginate($perPage);
