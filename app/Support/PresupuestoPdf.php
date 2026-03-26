@@ -1,29 +1,47 @@
 <?php
 
-namespace App\Services;
+namespace App\Support;
 
 use App\Models\Presupuesto;
 use App\Models\Proveedor;
-use App\Support\PresupuestoPdfTemplate;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
-class PresupuestoPdfService
+/**
+ * Generación de PDF de presupuestos (DomPDF).
+ */
+final class PresupuestoPdf
 {
     /**
      * Genera y retorna la respuesta PDF de un presupuesto.
      */
-    public function generarPdf(Presupuesto $presupuesto): Response
+    public static function generarPdf(Presupuesto $presupuesto): Response
+    {
+        $pdf = self::buildPdf($presupuesto);
+        $filename = "Presupuesto_{$presupuesto->numero_presupuesto}.pdf";
+
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Contenido binario del PDF (adjuntos en correo, etc.).
+     */
+    public static function renderPdfBinary(Presupuesto $presupuesto): string
+    {
+        return self::buildPdf($presupuesto)->output();
+    }
+
+    private static function buildPdf(Presupuesto $presupuesto)
     {
         $presupuesto->load(Presupuesto::eagerLodable());
         $presupuesto->asegurarTokenPublico();
 
-        $logoProveedorBase64 = $this->convertirLogoProveedorABase64($presupuesto->proveedor);
-        $logosBase64 = $this->convertirLogosABase64();
+        $logoProveedorBase64 = self::convertirLogoProveedorABase64($presupuesto->proveedor);
+        $logosBase64 = self::convertirLogosABase64();
         $gdDisponible = extension_loaded('gd');
 
-        $qrCode = $this->generarQrCodeParaPresupuesto($presupuesto);
+        $qrCode = self::generarQrCodeParaPresupuesto($presupuesto);
         $qrUrl = $qrCode && $presupuesto->token_publico
             ? rtrim(config('app.frontend_url', config('app.url')), '/') . '/public/presupuesto/' . $presupuesto->token_publico
             : null;
@@ -71,9 +89,7 @@ class PresupuestoPdfService
             'qr_url' => $qrUrl,
         ];
 
-        $filename = "Presupuesto_{$presupuesto->numero_presupuesto}.pdf";
-
-        $pdf = Pdf::loadView(PresupuestoPdfTemplate::viewName(), ['presupuesto' => $datosPresupuesto])
+        return Pdf::loadView(PresupuestoPdfTemplate::viewName(), ['presupuesto' => $datosPresupuesto])
             ->setPaper('letter', 'portrait')
             ->setOption('isRemoteEnabled', false)
             ->setOption('isHtml5ParserEnabled', true)
@@ -85,11 +101,9 @@ class PresupuestoPdfService
             ->setOption('margin-right', 25)
             ->setOption('enable-local-file-access', false)
             ->setOption('chroot', public_path());
-
-        return $pdf->download($filename);
     }
 
-    private function generarQrCodeParaPresupuesto(Presupuesto $presupuesto): ?string
+    private static function generarQrCodeParaPresupuesto(Presupuesto $presupuesto): ?string
     {
         $presupuesto->asegurarTokenPublico();
         $token = $presupuesto->token_publico;
@@ -119,7 +133,7 @@ class PresupuestoPdfService
         return null;
     }
 
-    private function convertirLogosABase64(): array
+    private static function convertirLogosABase64(): array
     {
         $logos = ['facturapro' => '', 'constucc' => '', 'gestionpro' => ''];
 
@@ -145,7 +159,7 @@ class PresupuestoPdfService
         return $logos;
     }
 
-    private function convertirLogoProveedorABase64(?Proveedor $proveedor): string
+    private static function convertirLogoProveedorABase64(?Proveedor $proveedor): string
     {
         if (! $proveedor || empty($proveedor->logo)) {
             return '';

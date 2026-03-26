@@ -15,7 +15,10 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Mail\PresupuestoEnviadoMail;
+use App\Models\User;
 use App\Notifications\Presupuesto\PresupuestoEnviadoNotification;
+use App\Notifications\Presupuesto\PresupuestoRecibidoClienteProveedorNotification;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -863,6 +866,8 @@ class ProveedorPresupuestoController extends Controller
                         ->first()
                     : null;
                 $presupuesto->addNotification($primeraNotif?->id);
+
+                $this->notificarClienteProveedorRegistrado($presupuesto, false);
             });
 
             $presupuesto->refresh()->load(Presupuesto::eagerLodable());
@@ -908,6 +913,8 @@ class ProveedorPresupuestoController extends Controller
             Mail::to($presupuesto->empresa_receptora_correo)->send(
                 new PresupuestoEnviadoMail($presupuesto, $enlacePublico, $nombreReceptor)
             );
+
+            $this->notificarClienteProveedorRegistrado($presupuesto, true);
 
             $this->log('Presupuesto reenviado por correo', ['presupuesto_id' => $presupuesto->id]);
 
@@ -1028,6 +1035,39 @@ class ProveedorPresupuestoController extends Controller
                 'message' => 'No fue posible generar el PDF.',
                 'errors' => [$e->getMessage()],
             ], 500);
+        }
+    }
+
+    /**
+     * Usuarios con cuenta en la plataforma, correo = cliente del presupuesto y proveedor activo distinto al emisor.
+     *
+     * @return Collection<int, User>
+     */
+    private function usuariosClienteProveedorRegistrado(Presupuesto $presupuesto): Collection
+    {
+        $email = strtolower(trim((string) $presupuesto->empresa_receptora_correo));
+        if ($email === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return collect();
+        }
+
+        $emisorId = (int) $presupuesto->proveedor_id;
+
+        return User::query()
+            ->whereRaw('LOWER(email) = ?', [$email])
+            ->whereHas('proveedoresActivos', function ($q) use ($emisorId) {
+                $q->where('proveedores.id', '!=', $emisorId);
+            })
+            ->get();
+    }
+
+    /**
+     * Notifica en app (y FCM) a clientes que también son usuarios de otro proveedor.
+     */
+    private function notificarClienteProveedorRegistrado(Presupuesto $presupuesto, bool $esReenvio = false): void
+    {
+        $usuarios = $this->usuariosClienteProveedorRegistrado($presupuesto);
+        foreach ($usuarios as $user) {
+            $user->notify(new PresupuestoRecibidoClienteProveedorNotification($presupuesto, $esReenvio));
         }
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Console\Scheduling\Schedule;
+
 use App\Http\Middleware\EnsureCategoriaBelongsToProveedor;
 use App\Http\Middleware\EnsureMarcaBelongsToProveedor;
 use App\Http\Middleware\EnsureProductoBelongsToProveedor;
@@ -65,5 +67,8 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Aquí puedes configurar el manejo de excepciones
+    })
+    ->withSchedule(function (Schedule $schedule) {
+        $schedule->command('presupuestos:notificar-cierre-pendiente')->dailyAt('08:00');
     })
     ->create();

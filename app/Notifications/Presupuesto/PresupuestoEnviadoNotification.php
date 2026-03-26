@@ -4,6 +4,7 @@ namespace App\Notifications\Presupuesto;
 
 use App\Models\Presupuesto;
 use App\Services\FcmService;
+use App\Support\PresupuestoPdf;
 use App\Traits\NotificationStyleTrait;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Messages\BroadcastMessage;
@@ -56,13 +57,26 @@ class PresupuestoEnviadoNotification extends Notification implements ShouldBroad
         $frontendUrl = config('app.frontend_url', config('app.url'));
         $urlDetalle = $frontendUrl . '/pages/proveedor/presupuestos/detalle/' . $this->presupuesto->id;
 
-        return (new MailMessage)
+        $mail = (new MailMessage)
             ->subject('Presupuesto enviado #' . $this->presupuesto->numero_presupuesto)
             ->view('emails.presupuesto.notificacion-enviado', [
                 'notifiable' => $notifiable,
                 'presupuesto' => $this->presupuesto,
                 'urlDetalle' => $urlDetalle,
             ]);
+
+        try {
+            $this->presupuesto->loadMissing(Presupuesto::eagerLodable());
+            $pdf = PresupuestoPdf::renderPdfBinary($this->presupuesto);
+            $mail->attachData(
+                $pdf,
+                'Presupuesto_' . $this->presupuesto->numero_presupuesto . '.pdf',
+                ['mime' => 'application/pdf']
+            );
+        } catch (\Throwable $e) {
+        }
+
+        return $mail;
     }
 
     public function toFcm(object $notifiable): void
