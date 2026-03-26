@@ -69,31 +69,30 @@ class ConstruccPagosSPPController extends Controller
             Log::info('Usuario nivel', ['usuario_nivel' => $usuarioNivel, 'usuario_id' => $usuarioIdFiltro,]);
             Log::info('Filters', ['filters' => $filters,]);
 
-            $query = PagoSPP::query()
-                ->with([
-                    'proveedor',
-                    'empresaConstrucc',
-                    'solicitudesPago',
-                ])
-                ->withCount('solicitudesPago')
-                ->filter($filters)
-                // ->when(
-                //     (int) $usuarioNivel === 6,
-                //     function ($q) use ($usuarioIdFiltro) {
-                //         $q->whereHas('solicitudesPago', function ($sp) use ($usuarioIdFiltro) {
-                //             $sp->where('usuario_id', (int) $usuarioIdFiltro);
-                //         });
-                //     }
-                // )
-                ->orderBy($sortBy, $order);
-            if ($usuarioNivel === 6) {
-                Log::info('Usuario nivel 6', ['usuario_id' => $usuarioIdFiltro,]);
-
-                $query->whereHas('solicitudesPago', function ($sp) use ($usuarioIdFiltro) {
-                    $sp->where('usuario_id', (int) $usuarioIdFiltro);
-                });
+            if ((int) $usuarioNivel === 6) {
+                $query = PagoSPP::query()
+                    ->with([
+                        'proveedor',
+                        'empresaConstrucc',
+                        'solicitudesPago',
+                    ])
+                    ->withCount('solicitudesPago')
+                    ->filter($filters)
+                    ->whereHas('solicitudesPago', function ($sp) use ($usuarioIdFiltro) {
+                        $sp->where('usuario_id', (int) $usuarioIdFiltro);
+                    })
+                    ->orderBy($sortBy, $order);
+            } else {
+                $query = PagoSPP::query()
+                    ->with([
+                        'proveedor',
+                        'empresaConstrucc',
+                        'solicitudesPago',
+                    ])
+                    ->withCount('solicitudesPago')
+                    ->filter($filters)
+                    ->orderBy($sortBy, $order);
             }
-            Log::info('Query', ['query' => $query->toSql(), 'bindings' => $query->getBindings(),]);
             $paginator = $query->paginate($perPage);
 
             return $this->paginated(
