@@ -82,11 +82,24 @@ class ConstruccSolicitudPagoController extends Controller
         $order = $request->input('order', 'desc');
         $perPage = $request->input('per_page', 10000);
 
-        $query = SolicitudPago::query()
-            ->with(SolicitudPago::eagerLodable())
-            ->where('verificada', true)
-            ->filter($filters)
-            ->orderBy($sortBy, $order);
+
+        $usuarioNivel = $request->input('usuario_nivel');
+        $usuarioIdFiltro = $request->input('usuario_id');
+
+        if ((int) $usuarioNivel === 6) {
+            $query = SolicitudPago::query()
+                ->with(SolicitudPago::eagerLodable())
+                ->where('verificada', true)
+                ->filter($filters)
+                ->whereIn('usuario_id', (int) $usuarioIdFiltro)
+                ->orderBy($sortBy, $order);
+        } else {
+            $query = SolicitudPago::query()
+                ->with(SolicitudPago::eagerLodable())
+                ->where('verificada', true)
+                ->filter($filters)
+                ->orderBy($sortBy, $order);
+        }
 
         // Aquí debería limitar por la empresa del usuario ConstruccApp
         // if ($request->user()->empresa_construcc_id) {
@@ -1222,7 +1235,7 @@ class ConstruccSolicitudPagoController extends Controller
 
         return $this->success($proveedores, 'Proveedores asociados a la empresa constructora.');
     }
-    
+
     /**
      * Listar proveedores NO asociados a una empresa constructora
      * Opcionalmente filtra por usuario_construcc_id mediante parámetro GET
