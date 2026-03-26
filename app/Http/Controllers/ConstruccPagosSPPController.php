@@ -54,66 +54,47 @@ class ConstruccPagosSPPController extends Controller
      * - usuario_nivel: si es 6 (Residente de Obra), restringe el listado.
      * - usuario_id: id de usuario construcc; con usuario_nivel=6 solo se listan pagos
      *   que aplican a al menos una SPP creada por ese usuario (solicitudes_pago.usuario_id).
-     */
-    public function index(Request $request): JsonResponse
-    {
-        try {
-            $filters = $request->only(PagoSPP::getFilters());
-            $sortBy  = $request->input('sort_by', 'fecha_pago');
-            $order   = $request->input('order', 'desc');
-            $perPage = $request->input('per_page', 10000);
-
-            $usuarioNivel = $request->input('usuario_nivel');
-            $usuarioIdFiltro = $request->input('usuario_id');
-
-            Log::info('Usuario nivel', ['usuario_nivel' => $usuarioNivel, 'usuario_id' => $usuarioIdFiltro,]);
-            Log::info('Filters', ['filters' => $filters,]);
-
-            if ((int) $usuarioNivel === 6) {
-                $query = PagoSPP::query()
-                    ->with([
-                        'proveedor',
-                        'empresaConstrucc',
-                        'solicitudesPago',
-                    ])
-                    ->withCount('solicitudesPago')
-                    ->filter($filters)
-                    ->whereHas('solicitudesPago', function ($sp) use ($usuarioIdFiltro) {
-                        $sp->where('usuario_id', (int) $usuarioIdFiltro);
-                    })
-                    ->orderBy($sortBy, $order);
-            } else {
-                $query = PagoSPP::query()
-                    ->with([
-                        'proveedor',
-                        'empresaConstrucc',
-                        'solicitudesPago',
-                    ])
-                    ->withCount('solicitudesPago')
-                    ->filter($filters)
-                    ->orderBy($sortBy, $order);
-            }
-            $paginator = $query->paginate($perPage);
-
-            return $this->paginated(
-                $paginator->setCollection(
-                    ConstruccPagoIndexResource::collection($paginator)->collection
-                ),
-                'Pagos SPP obtenidos exitosamente.'
-            );
-        } catch (\Throwable $e) {
-            Log::error('Error al listar pagos SPP', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return $this->error(
-                'No se pudieron obtener los pagos SPP. Por favor, intente nuevamente.',
-                null,
-                500
-            );
-        }
-    }
+      */
+      public function index(Request $request): JsonResponse
+      {
+          try {
+              $filters = $request->only(PagoSPP::getFilters());
+              $sortBy  = $request->input('sort_by', 'fecha_pago');
+              $order   = $request->input('order', 'desc');
+              $perPage = $request->input('per_page', 10000);
+  
+              $query = PagoSPP::query()
+                  ->with([
+                      'proveedor',
+                      'empresaConstrucc',
+                      // Opcional: si quieres ver las solicitudes relacionadas en el index
+                      'solicitudesPago',
+                  ])
+                  ->withCount('solicitudesPago') // 👈 agrega el conteo
+                  ->filter($filters)
+                  ->orderBy($sortBy, $order);
+  
+              $paginator = $query->paginate($perPage);
+  
+              return $this->paginated(
+                  $paginator->setCollection(
+                      ConstruccPagoIndexResource::collection($paginator)->collection
+                  ),
+                  'Pagos SPP obtenidos exitosamente.'
+              );
+          } catch (\Throwable $e) {
+              Log::error('Error al listar pagos SPP', [
+                  'error' => $e->getMessage(),
+                  'trace' => $e->getTraceAsString(),
+              ]);
+  
+              return $this->error(
+                  'No se pudieron obtener los pagos SPP. Por favor, intente nuevamente.',
+                  null,
+                  500
+              );
+          }
+      }
 
     /**
      * Mostrar un pago
