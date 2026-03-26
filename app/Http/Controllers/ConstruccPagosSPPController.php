@@ -75,7 +75,7 @@ class ConstruccPagosSPPController extends Controller
                 ->withCount('solicitudesPago')
                 ->filter($filters)
                 ->when(
-                    (int) $usuarioNivel === 6 && $usuarioIdFiltro !== null && $usuarioIdFiltro !== '',
+                    (int) $usuarioNivel === 6,
                     function ($q) use ($usuarioIdFiltro) {
                         $q->whereHas('solicitudesPago', function ($sp) use ($usuarioIdFiltro) {
                             $sp->where('usuario_id', (int) $usuarioIdFiltro);
