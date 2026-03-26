@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Notifications;
 
 use App\Http\Controllers\Controller;
 use App\Models\Proveedor;
-use App\Notifications\OrdenCompra\NuevaOrdenCompra;
+use App\Notifications\OrdenCompra\NuevaOrdenCompraNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -73,7 +73,7 @@ class OrdenCompraNotificationController extends Controller
             }
 
             // 5. Enviar notificación Laravel
-            $usuarioPrincipal->notify(new NuevaOrdenCompra(
+            $usuarioPrincipal->notify(new NuevaOrdenCompraNotification(
                 $validated['orden_compra_id'],
                 $validated['proveedor_id'],
                 $validated['empresa_id'],

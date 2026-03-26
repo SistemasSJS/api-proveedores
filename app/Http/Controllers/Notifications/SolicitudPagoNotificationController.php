@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Notifications;
 
 use App\Http\Controllers\Controller;
 use App\Models\Proveedor;
-use App\Notifications\SolicitudPago\SolicitudPagoPagada;
-use App\Notifications\SolicitudPago\SolicitudPagoRechazada;
+use App\Notifications\SolicitudPago\SolicitudPagoPagadaNotification;
+use App\Notifications\SolicitudPago\SolicitudPagoRechazadaNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -57,7 +57,7 @@ class SolicitudPagoNotificationController extends Controller
             $usuarioPrincipal->setConnection('mysql5');
 
             // 4. Enviar notificación Laravel
-            $usuarioPrincipal->notify(new SolicitudPagoPagada(
+            $usuarioPrincipal->notify(new SolicitudPagoPagadaNotification(
                 $validated['solicitud_pago_folio'],
                 $validated['proveedor_id'],
                 $validated['empresa_id'],
@@ -148,7 +148,7 @@ class SolicitudPagoNotificationController extends Controller
             $usuarioPrincipal->setConnection('mysql5');
 
             // 4. Enviar notificación Laravel
-            $usuarioPrincipal->notify(new SolicitudPagoRechazada(
+            $usuarioPrincipal->notify(new SolicitudPagoRechazadaNotification(
                 $validated['solicitud_pago_folio'],
                 $validated['proveedor_id'],
                 $validated['empresa_id'],

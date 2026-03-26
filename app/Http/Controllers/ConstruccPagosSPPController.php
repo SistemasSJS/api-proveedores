@@ -24,10 +24,10 @@ use App\Models\PagoSPP;
 use App\Models\Proveedor;
 use App\Models\SolicitudPago;
 use App\Models\PagoSolicitudPago;
-use App\Notifications\SolicitudPago\SolicitudPagoAbonada;
-use App\Notifications\SolicitudPago\SolicitudPagoComprobanteActualizado;
-use App\Notifications\SolicitudPago\SolicitudPagoFacturaPendiente;
-use App\Notifications\SolicitudPago\SolicitudPagoPagada;
+use App\Notifications\SolicitudPago\SolicitudPagoAbonadaNotification;
+use App\Notifications\SolicitudPago\SolicitudPagoComprobanteActualizadoNotification;
+use App\Notifications\SolicitudPago\SolicitudPagoFacturaPendienteNotification;
+use App\Notifications\SolicitudPago\SolicitudPagoPagadaNotification;
 use App\Services\InterApiService;
 use Carbon\Carbon;
 
@@ -416,7 +416,7 @@ class ConstruccPagosSPPController extends Controller
             ]);
 
             $proveedor->notify(
-                new SolicitudPagoComprobanteActualizado(
+                new SolicitudPagoComprobanteActualizadoNotification(
                     $spp->numero_folio_solicitud,
                     $spp->id,
                     $proveedor->id,
@@ -776,17 +776,17 @@ class ConstruccPagosSPPController extends Controller
                     switch ($n['tipo']) {
 
                         case 'pagada':
-                            $proveedorUsuarioPrincipal?->notify(new SolicitudPagoPagada(...$n['data']));
+                            $proveedorUsuarioPrincipal?->notify(new SolicitudPagoPagadaNotification(...$n['data']));
                             // Log::info('✅ Notificación enviada a InterAPI: Pagada', [ 'data' => $n['data'], ]);
                             break;
 
                         case 'abonada':
-                            $proveedorUsuarioPrincipal?->notify(new SolicitudPagoAbonada(...$n['data']));
+                            $proveedorUsuarioPrincipal?->notify(new SolicitudPagoAbonadaNotification(...$n['data']));
                             // Log::info('✅ Notificación enviada a InterAPI: Abonada', [ 'data' => $n['data'], ]);
                             break;
 
                         case 'factura_pendiente':
-                            $proveedorUsuarioPrincipal?->notify(new SolicitudPagoFacturaPendiente(...$n['data']));
+                            $proveedorUsuarioPrincipal?->notify(new SolicitudPagoFacturaPendienteNotification(...$n['data']));
                             // Log::info('✅ Notificación enviada a InterAPI: Factura pendiente', [ 'data' => $n['data'], ]);
                             break;
 

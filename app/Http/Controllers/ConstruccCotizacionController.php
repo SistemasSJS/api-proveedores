@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Cotizacion;
 use App\Models\CotizacionDetalle;
 use App\Models\Proveedor;
-use App\Notifications\CotizacionCreada;
+use App\Notifications\CotizacionCreadaNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -295,7 +295,7 @@ class ConstruccCotizacionController extends Controller
             // Enviar notificación a cada usuario del proveedor
             foreach ($usuariosProveedor as $usuario) {
                 try {
-                    $usuario->notify(new CotizacionCreada(
+                    $usuario->notify(new CotizacionCreadaNotification(
                         $cotizacion,
                         $solicitante,
                         'construccion'

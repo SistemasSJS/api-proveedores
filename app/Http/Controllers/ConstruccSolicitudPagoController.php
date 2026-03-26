@@ -15,11 +15,11 @@ use App\Models\SolicitudPago;
 use App\Models\Proveedor;
 use App\Models\CuentaBancaria;
 use App\Enums\EstadoCuentaBancaria;
-use App\Notifications\SolicitudPago\SolicitudPagoPagada;
-use App\Notifications\SolicitudPago\SolicitudPagoRechazada;
-use App\Notifications\SolicitudPago\SolicitudPagoRechazadaSinAutorizacion;
-use App\Notifications\SolicitudPago\SolicitudPagoFacturaSubida;
-use App\Notifications\ProveedorEmpresa\ProveedorAsociadoAEmpresa;
+use App\Notifications\SolicitudPago\SolicitudPagoPagadaNotification;
+use App\Notifications\SolicitudPago\SolicitudPagoRechazadaNotification;
+use App\Notifications\SolicitudPago\SolicitudPagoRechazadaSinAutorizacionNotification;
+use App\Notifications\SolicitudPago\SolicitudPagoFacturaSubidaNotification;
+use App\Notifications\ProveedorEmpresa\ProveedorAsociadoAEmpresaNotification;
 use App\Services\InterApiService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use App\Http\Requests\Construcc\SolicitudPagoUpdateConprobantePagoRequest;
-use App\Notifications\SolicitudPago\SolicitudPagoComprobanteActualizado;
+use App\Notifications\SolicitudPago\SolicitudPagoComprobanteActualizadoNotification;
 use Carbon\Carbon;
 
 class ConstruccSolicitudPagoController extends Controller
@@ -434,7 +434,7 @@ class ConstruccSolicitudPagoController extends Controller
                 $countBefore = $usuarioPrincipal->notifications()->count();
 
                 // Enviar notificación
-                $usuarioPrincipal->notify(new SolicitudPagoRechazadaSinAutorizacion(
+                $usuarioPrincipal->notify(new SolicitudPagoRechazadaSinAutorizacionNotification(
                     $solicitudPago->numero_folio_solicitud,
                     $solicitudPago->id,
                     $proveedor->id,
@@ -690,7 +690,7 @@ class ConstruccSolicitudPagoController extends Controller
                 $countBefore = $usuarioPrincipal->notifications()->count();
 
                 // Enviar notificación
-                $usuarioPrincipal->notify(new SolicitudPagoRechazada(
+                $usuarioPrincipal->notify(new SolicitudPagoRechazadaNotification(
                     $solicitudPago->numero_folio_solicitud,
                     $solicitudPago->id,
                     $proveedor->id,
@@ -856,7 +856,7 @@ class ConstruccSolicitudPagoController extends Controller
             $usuarioPrincipal = $proveedor->usuarioPrincipal();
 
             if ($usuarioPrincipal) {
-                $usuarioPrincipal->notify(new SolicitudPagoPagada(
+                $usuarioPrincipal->notify(new SolicitudPagoPagadaNotification(
                     $solicitudPago->numero_folio_solicitud,
                     $solicitudPago->id,
                     $proveedor->id,
@@ -1299,7 +1299,7 @@ class ConstruccSolicitudPagoController extends Controller
 
         // Enviar notificación al proveedor
         try {
-            $proveedor->notify(new ProveedorAsociadoAEmpresa(
+            $proveedor->notify(new ProveedorAsociadoAEmpresaNotification(
                 $proveedor->id,
                 $proveedor->nombre_comercial ?? $proveedor->razon_social,
                 $empresa->id,
@@ -2284,7 +2284,7 @@ class ConstruccSolicitudPagoController extends Controller
 
                 /** 🔔 Notificación interna (Laravel Notifications) */
                 $usuarioPrincipal->notify(
-                    new SolicitudPagoComprobanteActualizado(
+                    new SolicitudPagoComprobanteActualizadoNotification(
                         $solicitudPago->numero_folio_solicitud,
                         $solicitudPago->id,
                         $proveedor->id,
@@ -2462,7 +2462,7 @@ class ConstruccSolicitudPagoController extends Controller
         $solicitudPago->load('empresaConstrucc');
         if ($solicitudPago->empresaConstrucc) {
             $solicitudPago->empresaConstrucc->notify(
-                new SolicitudPagoFacturaSubida(
+                new SolicitudPagoFacturaSubidaNotification(
                     $solicitudPago->numero_folio_solicitud,
                     $solicitudPago->id,
                     $solicitudPago->proveedor_id,

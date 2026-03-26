@@ -12,8 +12,8 @@ use App\Models\PagoSPP;
 use App\Models\Presupuesto;
 use App\Models\Proveedor;
 use App\Models\SolicitudPago;
-use App\Notifications\SolicitudPago\SolicitudPagoComprobanteActualizado;
-use App\Notifications\SolicitudPago\SolicitudPagoFacturaSubida;
+use App\Notifications\SolicitudPago\SolicitudPagoComprobanteActualizadoNotification;
+use App\Notifications\SolicitudPago\SolicitudPagoFacturaSubidaNotification;
 use App\Services\InterApiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -486,7 +486,7 @@ class ProveedorSolicitudPagoController extends Controller
         ]);
 
         $proveedor->notify(
-            new SolicitudPagoComprobanteActualizado(
+            new SolicitudPagoComprobanteActualizadoNotification(
                 $solicitudPago->numero_folio_solicitud,
                 $solicitudPago->id,
                 $proveedor->id,
@@ -1101,7 +1101,7 @@ class ProveedorSolicitudPagoController extends Controller
         $solicitudPago->load('empresaConstrucc');
         if ($solicitudPago->empresaConstrucc) {
             $solicitudPago->empresaConstrucc->notify(
-                new SolicitudPagoFacturaSubida(
+                new SolicitudPagoFacturaSubidaNotification(
                     $solicitudPago->numero_folio_solicitud,
                     $solicitudPago->id,
                     $solicitudPago->proveedor_id,

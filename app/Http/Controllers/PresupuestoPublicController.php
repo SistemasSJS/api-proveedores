@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\Presupuesto\PresupuestoPublicResource;
 use App\Models\Presupuesto;
-use App\Notifications\Presupuesto\PresupuestoAceptado;
-use App\Notifications\Presupuesto\PresupuestoRechazado;
+use App\Notifications\Presupuesto\PresupuestoAceptadoNotification;
+use App\Notifications\Presupuesto\PresupuestoRechazadoNotification;
 use App\Services\PresupuestoPdfService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -91,11 +91,11 @@ class PresupuestoPublicController extends Controller
         if ($proveedor) {
             $usuarios = $proveedor->usuariosActivos()->get();
             foreach ($usuarios as $user) {
-                $user->notify(new PresupuestoAceptado($presupuesto));
+                $user->notify(new PresupuestoAceptadoNotification($presupuesto));
             }
             $primeraNotif = $usuarios->isNotEmpty()
                 ? $usuarios->first()->notifications()
-                    ->where('type', PresupuestoAceptado::class)
+                    ->where('type', PresupuestoAceptadoNotification::class)
                     ->latest()
                     ->first()
                 : null;
@@ -149,11 +149,11 @@ class PresupuestoPublicController extends Controller
         if ($proveedor) {
             $usuarios = $proveedor->usuariosActivos()->get();
             foreach ($usuarios as $user) {
-                $user->notify(new PresupuestoRechazado($presupuesto, $motivo));
+                $user->notify(new PresupuestoRechazadoNotification($presupuesto, $motivo));
             }
             $primeraNotif = $usuarios->isNotEmpty()
                 ? $usuarios->first()->notifications()
-                    ->where('type', PresupuestoRechazado::class)
+                    ->where('type', PresupuestoRechazadoNotification::class)
                     ->latest()
                     ->first()
                 : null;

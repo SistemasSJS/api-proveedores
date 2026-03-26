@@ -9,25 +9,33 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Storage;
 
-class SolicitudPagoFacturaPendiente extends Notification implements ShouldBroadcastNow
+class SolicitudPagoComprobanteActualizadoNotification extends Notification implements ShouldBroadcastNow
 {
   use NotificationStyleTrait;
 
   public $solicitudPagoId;
   public $solicitudPagoFolio;
   public $proveedorId;
-  public $monto;
   public $userId;
+  public $rutaComprobante;
+  public $diskComprobante;
 
-  public function __construct(string $solicitudPagoFolio, int $solicitudPagoId, int $proveedorId, float $monto = null, int $userId = null)
-  {
+  public function __construct(
+    string $solicitudPagoFolio,
+    int $solicitudPagoId,
+    int $proveedorId,
+    ?int $userId = null,
+    ?string $rutaComprobante = null,
+    string $diskComprobante = 'private'
+  ) {
     $this->solicitudPagoFolio = $solicitudPagoFolio;
     $this->solicitudPagoId = $solicitudPagoId;
     $this->proveedorId = $proveedorId;
-    $this->monto = $monto;
     $this->userId = $userId;
-    $this->solicitudPagoFolio = $solicitudPagoFolio;
+    $this->rutaComprobante = $rutaComprobante;
+    $this->diskComprobante = $diskComprobante;
   }
 
   /**
@@ -35,14 +43,16 @@ class SolicitudPagoFacturaPendiente extends Notification implements ShouldBroadc
    */
   public function via(object $notifiable): array
   {
-    $via = ['database'];
+    $via = ['broadcast', 'database'];
 
-    // Solo agregar email si el correo es válido
     if ($notifiable->email && filter_var($notifiable->email, FILTER_VALIDATE_EMAIL)) {
       $via[] = 'mail';
     }
 
-    if (method_exists($notifiable, 'deviceTokens') && $notifiable->deviceTokens()->where('is_active', true)->exists()) {
+    if (
+      method_exists($notifiable, 'deviceTokens') &&
+      $notifiable->deviceTokens()->where('is_active', true)->exists()
+    ) {
       $via[] = 'fcm';
     }
 
@@ -56,15 +66,14 @@ class SolicitudPagoFacturaPendiente extends Notification implements ShouldBroadc
   {
     $data = [
       'tipo' => 'solicitud_pago',
-      'subtipo' => 'factura_pendiente',
-      'titulo' => 'Factura pendiente de la solicitud de pago #' . $this->solicitudPagoFolio,
-      'mensaje' => "La solicitud de pago #{$this->solicitudPagoFolio} fue pagada, pero falta la factura correspondiente. Emite y sube el CFDI conforme a los datos fiscales indicados.",
+      'subtipo' => 'comprobante_actualizado',
+      'titulo' => 'Comprobante de pago actualizado #' . $this->solicitudPagoFolio,
+      'mensaje' => "El comprobante de la solicitud de pago #{$this->solicitudPagoFolio} fue actualizado.",
       'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       'data' => [
         'solicitud_pago_folio' => $this->solicitudPagoFolio,
         'proveedor_id' => $this->proveedorId,
-        'monto' => $this->monto,
-        'estatus' => 'factura_pendiente',
+        'estatus' => 'pagada',
       ],
       'timestamp' => now()->toIso8601String(),
     ];
@@ -84,15 +93,14 @@ class SolicitudPagoFacturaPendiente extends Notification implements ShouldBroadc
   {
     $data = [
       'tipo' => 'solicitud_pago',
-      'subtipo' => 'factura_pendiente',
-      'titulo' => 'Factura pendiente de la solicitud de pago #' . $this->solicitudPagoFolio,
-      'mensaje' => "La solicitud de pago #{$this->solicitudPagoFolio} fue pagada, pero falta la factura correspondiente. Emite y sube el CFDI conforme a los datos fiscales indicados.",
+      'subtipo' => 'comprobante_actualizado',
+      'titulo' => 'Comprobante de pago actualizado #' . $this->solicitudPagoFolio,
+      'mensaje' => "El comprobante de la solicitud de pago #{$this->solicitudPagoFolio} fue actualizado.",
       'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       'solicitud_pago_id' => $this->solicitudPagoId,
       'solicitud_pago_folio' => $this->solicitudPagoFolio,
       'proveedor_id' => $this->proveedorId,
-      'monto' => $this->monto,
-      'estatus' => 'factura_pendiente',
+      'estatus' => 'pagada',
       'timestamp' => now()->toIso8601String(),
     ];
 
@@ -107,20 +115,39 @@ class SolicitudPagoFacturaPendiente extends Notification implements ShouldBroadc
     $frontendUrl = config('app.frontend_url', config('app.url'));
     $urlSolicitud = $frontendUrl . '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId;
 
-    return (new MailMessage)
-      ->subject('Factura pendiente de la solicitud de pago #' . $this->solicitudPagoFolio)
-      ->view('emails.solicitud-pago.factura-pendiente', [
+    $mailMessage = (new MailMessage)
+      ->subject('Comprobante de pago actualizado #' . $this->solicitudPagoFolio)
+      ->view('emails.solicitud-pago.comprobante-actualizado', [
         'notifiable' => $notifiable,
         'solicitudPagoFolio' => $this->solicitudPagoFolio,
         'solicitudPagoId' => $this->solicitudPagoId,
         'proveedorId' => $this->proveedorId,
-        'monto' => $this->monto,
         'urlSolicitud' => $urlSolicitud,
       ]);
+
+    if ($this->rutaComprobante && Storage::disk($this->diskComprobante)->exists($this->rutaComprobante)) {
+      $extension = pathinfo($this->rutaComprobante, PATHINFO_EXTENSION);
+      $mimeTypes = [
+        'pdf' => 'application/pdf',
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+      ];
+
+      $mailMessage->attach(
+        Storage::disk($this->diskComprobante)->path($this->rutaComprobante),
+        [
+          'as' => 'comprobante_' . $this->solicitudPagoFolio . '.' . $extension,
+          'mime' => $mimeTypes[$extension] ?? 'application/octet-stream',
+        ]
+      );
+    }
+
+    return $mailMessage;
   }
 
   /**
-   * Canal FCM personalizado
+   * Canal FCM
    */
   public function toFcm(object $notifiable): void
   {
@@ -134,27 +161,27 @@ class SolicitudPagoFacturaPendiente extends Notification implements ShouldBroadc
     }
 
     $notification = [
-      'title' => 'Factura pendiente - SPP #' . $this->solicitudPagoFolio,
-      'body' => 'La solicitud ya fue pagada, pero falta la factura (CFDI).',
+      'title' => 'Comprobante actualizado #' . $this->solicitudPagoFolio,
+      'body' => 'El comprobante de tu solicitud de pago fue actualizado.',
     ];
 
     $data = [
       'tipo' => 'solicitud_pago',
-      'subtipo' => 'factura_pendiente',
+      'subtipo' => 'comprobante_actualizado',
       'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       'solicitud_pago_folio' => $this->solicitudPagoFolio,
       'proveedor_id' => (string) $this->proveedorId,
-      'monto' => $this->monto ? (string) $this->monto : null,
-      'estatus' => 'factura_pendiente',
+      'estatus' => 'pagada',
       'timestamp' => now()->toIso8601String(),
     ];
 
     $data = $this->addStylesToData($data);
+
     app(FcmService::class)->sendToTokens($tokens, $notification, $data);
   }
 
   /**
-   * Implementación de métodos abstractos del trait
+   * Tipos del trait
    */
   protected function getNotificationTipo(): string
   {
@@ -163,6 +190,6 @@ class SolicitudPagoFacturaPendiente extends Notification implements ShouldBroadc
 
   protected function getNotificationSubtipo(): string
   {
-    return 'factura_pendiente';
+    return 'comprobante_actualizado';
   }
 }

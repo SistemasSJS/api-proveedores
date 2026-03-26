@@ -12,7 +12,7 @@ class ReverbNotification extends Notification implements ShouldBroadcastNow
 {
     public function via(object $notifiable): array
     {
-        return ['mail', 'broadcast'];
+        return ['mail', 'broadcast', 'database'];
     }
 
     public function toMail(object $notifiable): MailMessage

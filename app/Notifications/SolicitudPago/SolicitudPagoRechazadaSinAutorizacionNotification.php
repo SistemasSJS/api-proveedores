@@ -11,7 +11,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Notifications\Notification;
 
-class SolicitudPagoRechazadaSinAutorizacion extends Notification implements ShouldBroadcastNow
+class SolicitudPagoRechazadaSinAutorizacionNotification extends Notification implements ShouldBroadcastNow
 {
     use NotificationStyleTrait;
 
@@ -36,8 +36,7 @@ class SolicitudPagoRechazadaSinAutorizacion extends Notification implements Shou
      */
     public function via(object $notifiable): array
     {
-        // $via = ['broadcast', 'database'];
-        $via = ['database'];
+        $via = ['broadcast', 'database'];
 
         // Solo agregar email si el correo es válido
         if ($notifiable->email && filter_var($notifiable->email, FILTER_VALIDATE_EMAIL)) {

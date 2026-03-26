@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\URL;
  * Notificación enviada al proveedor cuando se crea una nueva cotización
  * desde el módulo de construcción
  */
-class CotizacionCreada extends Notification implements ShouldBroadcastNow
+class CotizacionCreadaNotification extends Notification implements ShouldBroadcastNow
 {
     use Queueable;
 

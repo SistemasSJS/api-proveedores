@@ -15,7 +15,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Mail\PresupuestoEnviadoMail;
-use App\Notifications\Presupuesto\PresupuestoEnviado;
+use App\Notifications\Presupuesto\PresupuestoEnviadoNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -854,11 +854,11 @@ class ProveedorPresupuestoController extends Controller
 
                 $usuarios = $proveedor->usuariosActivos()->get();
                 foreach ($usuarios as $user) {
-                    $user->notify(new PresupuestoEnviado($presupuesto));
+                    $user->notify(new PresupuestoEnviadoNotification($presupuesto));
                 }
                 $primeraNotif = $usuarios->isNotEmpty()
                     ? $usuarios->first()->notifications()
-                        ->where('type', PresupuestoEnviado::class)
+                        ->where('type', PresupuestoEnviadoNotification::class)
                         ->latest()
                         ->first()
                     : null;

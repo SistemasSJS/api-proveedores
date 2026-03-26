@@ -20,7 +20,7 @@ class CuentaVerificadaNotification extends Notification implements ShouldBroadca
 
     public function via(object $notifiable): array
     {
-        $via = ['database'];
+        $via = ['broadcast', 'database'];
 
         if (method_exists($notifiable, 'deviceTokens') && $notifiable->deviceTokens()->where('is_active', true)->exists()) {
             $via[] = 'fcm';

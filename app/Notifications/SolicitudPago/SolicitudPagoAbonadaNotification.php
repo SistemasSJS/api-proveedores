@@ -9,33 +9,39 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Storage;
 
-class SolicitudPagoComprobanteActualizado extends Notification implements ShouldBroadcastNow
+class SolicitudPagoAbonadaNotification extends Notification implements ShouldBroadcastNow
 {
   use NotificationStyleTrait;
 
   public $solicitudPagoId;
   public $solicitudPagoFolio;
   public $proveedorId;
+  public $montoAbonado;
+  public $montoRestante;
+  public $montoAcumulado;
+  public $saldoInicial;
   public $userId;
-  public $rutaComprobante;
-  public $diskComprobante;
 
   public function __construct(
     string $solicitudPagoFolio,
     int $solicitudPagoId,
     int $proveedorId,
-    ?int $userId = null,
-    ?string $rutaComprobante = null,
-    string $diskComprobante = 'private'
+    float $montoAbonado = null,
+    float $montoRestante = null,
+    int $userId = null,
+    float $montoAcumulado = null,
+    float $saldoInicial = null
   ) {
     $this->solicitudPagoFolio = $solicitudPagoFolio;
     $this->solicitudPagoId = $solicitudPagoId;
     $this->proveedorId = $proveedorId;
+    $this->montoAbonado = $montoAbonado;
+    $this->montoRestante = $montoRestante;
     $this->userId = $userId;
-    $this->rutaComprobante = $rutaComprobante;
-    $this->diskComprobante = $diskComprobante;
+    $this->montoAcumulado = $montoAcumulado;
+    $this->saldoInicial = $saldoInicial;
+    $this->solicitudPagoFolio = $solicitudPagoFolio;
   }
 
   /**
@@ -43,16 +49,13 @@ class SolicitudPagoComprobanteActualizado extends Notification implements Should
    */
   public function via(object $notifiable): array
   {
-    $via = ['database'];
+    $via = ['broadcast', 'database'];
 
     if ($notifiable->email && filter_var($notifiable->email, FILTER_VALIDATE_EMAIL)) {
       $via[] = 'mail';
     }
 
-    if (
-      method_exists($notifiable, 'deviceTokens') &&
-      $notifiable->deviceTokens()->where('is_active', true)->exists()
-    ) {
+    if (method_exists($notifiable, 'deviceTokens') && $notifiable->deviceTokens()->where('is_active', true)->exists()) {
       $via[] = 'fcm';
     }
 
@@ -60,20 +63,24 @@ class SolicitudPagoComprobanteActualizado extends Notification implements Should
   }
 
   /**
-   * Canal Broadcast (WebSocket)
+   * Canal Broadcast
    */
   public function toBroadcast(object $notifiable): BroadcastMessage
   {
     $data = [
       'tipo' => 'solicitud_pago',
-      'subtipo' => 'comprobante_actualizado',
-      'titulo' => 'Comprobante de pago actualizado #' . $this->solicitudPagoFolio,
-      'mensaje' => "El comprobante de la solicitud de pago #{$this->solicitudPagoFolio} fue actualizado.",
+      'subtipo' => 'abonada',
+      'titulo' => 'Abono registrado en solicitud de pago #' . $this->solicitudPagoFolio,
+      'mensaje' => "Se registró un abono en tu solicitud de pago #{$this->solicitudPagoFolio}.",
       'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       'data' => [
         'solicitud_pago_folio' => $this->solicitudPagoFolio,
         'proveedor_id' => $this->proveedorId,
-        'estatus' => 'pagada',
+        'monto_abonado' => $this->montoAbonado,
+        'monto_acumulado' => $this->montoAcumulado,
+        'saldo_inicial' => $this->saldoInicial,
+        'monto_restante' => $this->montoRestante,
+        'estatus' => 'abonada',
       ],
       'timestamp' => now()->toIso8601String(),
     ];
@@ -93,14 +100,18 @@ class SolicitudPagoComprobanteActualizado extends Notification implements Should
   {
     $data = [
       'tipo' => 'solicitud_pago',
-      'subtipo' => 'comprobante_actualizado',
-      'titulo' => 'Comprobante de pago actualizado #' . $this->solicitudPagoFolio,
-      'mensaje' => "El comprobante de la solicitud de pago #{$this->solicitudPagoFolio} fue actualizado.",
+      'subtipo' => 'abonada',
+      'titulo' => 'Abono registrado en solicitud de pago #' . $this->solicitudPagoFolio,
+      'mensaje' => "Se registró un abono en tu solicitud de pago #{$this->solicitudPagoFolio}.",
       'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       'solicitud_pago_id' => $this->solicitudPagoId,
       'solicitud_pago_folio' => $this->solicitudPagoFolio,
       'proveedor_id' => $this->proveedorId,
-      'estatus' => 'pagada',
+      'monto_abonado' => $this->montoAbonado,
+      'monto_acumulado' => $this->montoAcumulado,
+      'saldo_inicial' => $this->saldoInicial,
+      'monto_restante' => $this->montoRestante,
+      'estatus' => 'abonada',
       'timestamp' => now()->toIso8601String(),
     ];
 
@@ -115,39 +126,23 @@ class SolicitudPagoComprobanteActualizado extends Notification implements Should
     $frontendUrl = config('app.frontend_url', config('app.url'));
     $urlSolicitud = $frontendUrl . '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId;
 
-    $mailMessage = (new MailMessage)
-      ->subject('Comprobante de pago actualizado #' . $this->solicitudPagoFolio)
-      ->view('emails.solicitud-pago.comprobante-actualizado', [
+    return (new MailMessage)
+      ->subject('Abono registrado en solicitud de pago #' . $this->solicitudPagoFolio)
+      ->view('emails.solicitud-pago.abonada', [
         'notifiable' => $notifiable,
         'solicitudPagoFolio' => $this->solicitudPagoFolio,
         'solicitudPagoId' => $this->solicitudPagoId,
         'proveedorId' => $this->proveedorId,
+        'montoAbonado' => $this->montoAbonado,
+        'montoAcumulado' => $this->montoAcumulado,
+        'saldoInicial' => $this->saldoInicial,
+        'montoRestante' => $this->montoRestante,
         'urlSolicitud' => $urlSolicitud,
       ]);
-
-    if ($this->rutaComprobante && Storage::disk($this->diskComprobante)->exists($this->rutaComprobante)) {
-      $extension = pathinfo($this->rutaComprobante, PATHINFO_EXTENSION);
-      $mimeTypes = [
-        'pdf' => 'application/pdf',
-        'jpg' => 'image/jpeg',
-        'jpeg' => 'image/jpeg',
-        'png' => 'image/png',
-      ];
-
-      $mailMessage->attach(
-        Storage::disk($this->diskComprobante)->path($this->rutaComprobante),
-        [
-          'as' => 'comprobante_' . $this->solicitudPagoFolio . '.' . $extension,
-          'mime' => $mimeTypes[$extension] ?? 'application/octet-stream',
-        ]
-      );
-    }
-
-    return $mailMessage;
   }
 
   /**
-   * Canal FCM
+   * Canal FCM personalizado
    */
   public function toFcm(object $notifiable): void
   {
@@ -161,27 +156,30 @@ class SolicitudPagoComprobanteActualizado extends Notification implements Should
     }
 
     $notification = [
-      'title' => 'Comprobante actualizado #' . $this->solicitudPagoFolio,
-      'body' => 'El comprobante de tu solicitud de pago fue actualizado.',
+      'title' => 'Abono registrado - SPP #' . $this->solicitudPagoFolio,
+      'body' => 'Se registró un abono en tu solicitud de pago.',
     ];
 
     $data = [
       'tipo' => 'solicitud_pago',
-      'subtipo' => 'comprobante_actualizado',
+      'subtipo' => 'abonada',
       'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       'solicitud_pago_folio' => $this->solicitudPagoFolio,
       'proveedor_id' => (string) $this->proveedorId,
-      'estatus' => 'pagada',
+      'monto_abonado' => $this->montoAbonado  ? (string) $this->montoAbonado : null,
+      'monto_acumulado' => $this->montoAcumulado  ? (string) $this->montoAcumulado : null,
+      'saldo_inicial' => $this->saldoInicial  ? (string) $this->saldoInicial : null,
+      'monto_restante' => $this->montoRestante  ? (string) $this->montoRestante : null,
+      'estatus' => 'abonada',
       'timestamp' => now()->toIso8601String(),
     ];
 
     $data = $this->addStylesToData($data);
-
     app(FcmService::class)->sendToTokens($tokens, $notification, $data);
   }
 
   /**
-   * Tipos del trait
+   * Implementación de métodos abstractos del trait
    */
   protected function getNotificationTipo(): string
   {
@@ -190,6 +188,6 @@ class SolicitudPagoComprobanteActualizado extends Notification implements Should
 
   protected function getNotificationSubtipo(): string
   {
-    return 'comprobante_actualizado';
+    return 'abonada';
   }
 }

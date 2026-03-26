@@ -2,7 +2,6 @@
 
 namespace App\Notifications\OrdenCompra;
 
-use App\Notifications\Traits\NotificationStyleTrait;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;

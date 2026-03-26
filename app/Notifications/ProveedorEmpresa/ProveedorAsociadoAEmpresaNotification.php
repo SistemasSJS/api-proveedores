@@ -11,7 +11,7 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Support\Facades\Log;
 
-class ProveedorAsociadoAEmpresa extends Notification implements ShouldBroadcastNow
+class ProveedorAsociadoAEmpresaNotification extends Notification implements ShouldBroadcastNow
 {
     use Queueable;
 
@@ -51,7 +51,7 @@ class ProveedorAsociadoAEmpresa extends Notification implements ShouldBroadcastN
      */
     public function via(object $notifiable): array
     {
-        $channels = ['database'];
+        $channels = ['broadcast', 'database'];
 
         // Agregar canal de email si el proveedor tiene email válido
         if (!empty($notifiable->email) && filter_var($notifiable->email, FILTER_VALIDATE_EMAIL)) {

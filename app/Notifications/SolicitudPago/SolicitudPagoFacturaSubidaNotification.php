@@ -9,25 +9,33 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Storage;
 
-class SolicitudPagoSinFactura extends Notification implements ShouldBroadcastNow
+class SolicitudPagoFacturaSubidaNotification extends Notification implements ShouldBroadcastNow
 {
   use NotificationStyleTrait;
-  public string $solicitudPagoFolio;
-  public int $solicitudPagoId;
-  public int $proveedorId;
-  public int $userId;
+
+    public string $solicitudPagoFolio;
+    public int $solicitudPagoId;
+    public int $proveedorId;
+    public int $userId;
+    public ?string $rutaFacturaPdf;
+    public ?string $rutaFacturaXml;
 
   public function __construct(
-    string $solicitudPagoFolio,
-    int $solicitudPagoId,
-    int $proveedorId,
-    int $userId = null
+     string $solicitudPagoFolio,
+     int $solicitudPagoId,
+     int $proveedorId,
+     ?int $userId = null,
+     ?string $rutaFacturaPdf = null,
+     ?string $rutaFacturaXml = null
   ) {
-    $this->solicitudPagoFolio = $solicitudPagoFolio;
-    $this->solicitudPagoId = $solicitudPagoId;
-    $this->proveedorId = $proveedorId;
-    $this->userId = $userId;
+   $this->solicitudPagoFolio= $solicitudPagoFolio;
+   $this->solicitudPagoId= $solicitudPagoId;
+   $this->proveedorId= $proveedorId;
+   $this->userId= $userId;
+   $this->rutaFacturaPdf= $rutaFacturaPdf;
+   $this->rutaFacturaXml= $rutaFacturaXml;
   }
 
   /**
@@ -35,7 +43,7 @@ class SolicitudPagoSinFactura extends Notification implements ShouldBroadcastNow
    */
   public function via(object $notifiable): array
   {
-    $via = ['database'];
+    $via = ['broadcast', 'database'];
 
     if ($notifiable->email && filter_var($notifiable->email, FILTER_VALIDATE_EMAIL)) {
       $via[] = 'mail';
@@ -81,13 +89,35 @@ class SolicitudPagoSinFactura extends Notification implements ShouldBroadcastNow
   {
     $frontendUrl = config('app.frontend_url', config('app.url'));
 
-    return (new MailMessage)
-      ->subject('Solicitud de pago sin factura #' . $this->solicitudPagoFolio)
-      ->view('emails.solicitud-pago.sin-factura', [
+    $mailMessage = (new MailMessage)
+      ->subject('Factura subida - Solicitud de pago #' . $this->solicitudPagoFolio)
+      ->view('emails.solicitud-pago.factura-subida', [
         'notifiable' => $notifiable,
         'solicitudPagoFolio' => $this->solicitudPagoFolio,
-        'urlSolicitud' => $frontendUrl . '/pages/proveedor/sp/subir-factura/' . $this->solicitudPagoId,
+        'urlSolicitud' => $frontendUrl . '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       ]);
+
+    if ($this->rutaFacturaPdf && Storage::disk('private')->exists($this->rutaFacturaPdf)) {
+      $mailMessage->attach(
+        Storage::disk('private')->path($this->rutaFacturaPdf),
+        [
+          'as' => 'factura_' . $this->solicitudPagoFolio . '.pdf',
+          'mime' => 'application/pdf',
+        ]
+      );
+    }
+
+    if ($this->rutaFacturaXml && Storage::disk('private')->exists($this->rutaFacturaXml)) {
+      $mailMessage->attach(
+        Storage::disk('private')->path($this->rutaFacturaXml),
+        [
+          'as' => 'factura_' . $this->solicitudPagoFolio . '.xml',
+          'mime' => 'application/xml',
+        ]
+      );
+    }
+
+    return $mailMessage;
   }
 
   /**
@@ -107,11 +137,11 @@ class SolicitudPagoSinFactura extends Notification implements ShouldBroadcastNow
     app(FcmService::class)->sendToTokens(
       $tokens,
       [
-        'title' => 'Solicitud de pago sin factura',
-        'body' => "La solicitud #{$this->solicitudPagoFolio} no tiene factura.",
+        'title' => 'Factura subida',
+        'body' => "La solicitud #{$this->solicitudPagoFolio} ya cuenta con factura.",
       ],
       $this->addStylesToData([
-        'action_url' => '/pages/proveedor/sp/subir-factura/' . $this->solicitudPagoId,
+        'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       ])
     );
   }
@@ -123,14 +153,14 @@ class SolicitudPagoSinFactura extends Notification implements ShouldBroadcastNow
   {
     return [
       'tipo' => 'solicitud_pago',
-      'subtipo' => 'sin_factura',
-      'titulo' => 'Solicitud de pago sin factura #' . $this->solicitudPagoFolio,
-      'mensaje' => "La solicitud de pago #{$this->solicitudPagoFolio} no tiene factura.",
-      'action_url' => '/pages/proveedor/sp/subir-factura/' . $this->solicitudPagoId,
+      'subtipo' => 'factura_subida',
+      'titulo' => 'Factura subida #' . $this->solicitudPagoFolio,
+      'mensaje' => "La solicitud de pago #{$this->solicitudPagoFolio} ya cuenta con factura.",
+      'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       'solicitud_pago_id' => $this->solicitudPagoId,
       'solicitud_pago_folio' => $this->solicitudPagoFolio,
       'proveedor_id' => $this->proveedorId,
-      'estatus' => 'sin_factura',
+      'estatus' => 'factura_subida',
       'timestamp' => now()->toIso8601String(),
     ];
   }
@@ -142,6 +172,6 @@ class SolicitudPagoSinFactura extends Notification implements ShouldBroadcastNow
 
   protected function getNotificationSubtipo(): string
   {
-    return 'sin_factura';
+    return 'factura_subida';
   }
 }

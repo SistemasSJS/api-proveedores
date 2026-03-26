@@ -11,9 +11,9 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * Notificación al proveedor cuando el cliente acepta el presupuesto.
+ * Notificación al proveedor cuando envía un presupuesto al cliente.
  */
-class PresupuestoAceptado extends Notification implements ShouldBroadcastNow
+class PresupuestoEnviadoNotification extends Notification implements ShouldBroadcastNow
 {
     use NotificationStyleTrait;
 
@@ -23,7 +23,7 @@ class PresupuestoAceptado extends Notification implements ShouldBroadcastNow
 
     public function via(object $notifiable): array
     {
-        $via = ['database'];
+        $via = ['broadcast', 'database'];
 
         if ($notifiable->email && filter_var($notifiable->email, FILTER_VALIDATE_EMAIL)) {
             $via[] = 'mail';
@@ -57,8 +57,8 @@ class PresupuestoAceptado extends Notification implements ShouldBroadcastNow
         $urlDetalle = $frontendUrl . '/pages/proveedor/presupuestos/detalle/' . $this->presupuesto->id;
 
         return (new MailMessage)
-            ->subject('Presupuesto aceptado #' . $this->presupuesto->numero_presupuesto)
-            ->view('emails.presupuesto.notificacion-aceptado', [
+            ->subject('Presupuesto enviado #' . $this->presupuesto->numero_presupuesto)
+            ->view('emails.presupuesto.notificacion-enviado', [
                 'notifiable' => $notifiable,
                 'presupuesto' => $this->presupuesto,
                 'urlDetalle' => $urlDetalle,
@@ -76,13 +76,11 @@ class PresupuestoAceptado extends Notification implements ShouldBroadcastNow
             return;
         }
 
-        $cliente = $this->presupuesto->empresa_receptora_empresa ?? $this->presupuesto->empresa_receptora_nombre ?? 'el cliente';
-
         app(FcmService::class)->sendToTokens(
             $tokens,
             [
-                'title' => 'Presupuesto aceptado #' . $this->presupuesto->numero_presupuesto,
-                'body' => $cliente . ' aceptó tu presupuesto.',
+                'title' => 'Presupuesto enviado #' . $this->presupuesto->numero_presupuesto,
+                'body' => 'Se envió el presupuesto a ' . ($this->presupuesto->empresa_receptora_empresa ?? $this->presupuesto->empresa_receptora_nombre ?? 'el cliente') . '.',
             ],
             $this->addStylesToData([
                 'action_url' => '/pages/proveedor/presupuestos/detalle/' . $this->presupuesto->id,
@@ -92,18 +90,16 @@ class PresupuestoAceptado extends Notification implements ShouldBroadcastNow
 
     private function baseData(): array
     {
-        $cliente = $this->presupuesto->empresa_receptora_empresa ?? $this->presupuesto->empresa_receptora_nombre ?? 'el cliente';
-
         return [
             'tipo' => 'presupuesto',
-            'subtipo' => 'aceptado',
-            'titulo' => 'Presupuesto aceptado #' . $this->presupuesto->numero_presupuesto,
-            'mensaje' => $cliente . ' aceptó tu presupuesto.',
+            'subtipo' => 'enviado',
+            'titulo' => 'Presupuesto enviado #' . $this->presupuesto->numero_presupuesto,
+            'mensaje' => 'Se envió el presupuesto a ' . ($this->presupuesto->empresa_receptora_empresa ?? $this->presupuesto->empresa_receptora_nombre ?? 'el cliente') . '.',
             'action_url' => '/pages/proveedor/presupuestos/detalle/' . $this->presupuesto->id,
             'presupuesto_id' => $this->presupuesto->id,
             'presupuesto_numero' => $this->presupuesto->numero_presupuesto,
             'proveedor_id' => $this->presupuesto->proveedor_id,
-            'estatus' => 'aceptado',
+            'estatus' => 'enviado',
             'timestamp' => now()->toIso8601String(),
         ];
     }
@@ -115,6 +111,6 @@ class PresupuestoAceptado extends Notification implements ShouldBroadcastNow
 
     protected function getNotificationSubtipo(): string
     {
-        return 'aceptado';
+        return 'enviado';
     }
 }

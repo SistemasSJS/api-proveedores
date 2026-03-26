@@ -30,7 +30,7 @@ use App\Models\EmpresaConstrucc;
 use App\Models\Role;
 use App\Models\User;
 use App\Notifications\Auth\CuentaVerificadaNotification;
-use App\Notifications\ProveedorEmpresa\ProveedorAsociadoAEmpresa;
+use App\Notifications\ProveedorEmpresa\ProveedorAsociadoAEmpresaNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -730,7 +730,7 @@ class AuthController extends Controller
                 $usuario = $proveedor->usuarioPrincipal();
 
                 if ($usuario) {
-                    $usuario->notify(new ProveedorAsociadoAEmpresa(
+                    $usuario->notify(new ProveedorAsociadoAEmpresaNotification(
                         $proveedor->id,
                         $proveedor->nombre_comercial ?? $proveedor->razon_social,
                         $empresa->id,

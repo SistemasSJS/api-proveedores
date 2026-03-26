@@ -73,7 +73,7 @@ trait MarksAsNotified
 
 /**
  * 🔹 Con notificación
-$notification = $user->notify(new SolicitudPagoCreada($sp));
+$notification = $user->notify(new \App\Notifications\...\AlgunaNotificacion::class());
 $sp->addNotification($notification->id);
 
 // luego...

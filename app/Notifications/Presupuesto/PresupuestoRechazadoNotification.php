@@ -11,19 +11,20 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * Notificación al proveedor cuando envía un presupuesto al cliente.
+ * Notificación al proveedor cuando el cliente rechaza el presupuesto.
  */
-class PresupuestoEnviado extends Notification implements ShouldBroadcastNow
+class PresupuestoRechazadoNotification extends Notification implements ShouldBroadcastNow
 {
     use NotificationStyleTrait;
 
     public function __construct(
-        public Presupuesto $presupuesto
+        public Presupuesto $presupuesto,
+        public ?string $motivoRechazo = null
     ) {}
 
     public function via(object $notifiable): array
     {
-        $via = ['database'];
+        $via = ['broadcast', 'database'];
 
         if ($notifiable->email && filter_var($notifiable->email, FILTER_VALIDATE_EMAIL)) {
             $via[] = 'mail';
@@ -57,10 +58,11 @@ class PresupuestoEnviado extends Notification implements ShouldBroadcastNow
         $urlDetalle = $frontendUrl . '/pages/proveedor/presupuestos/detalle/' . $this->presupuesto->id;
 
         return (new MailMessage)
-            ->subject('Presupuesto enviado #' . $this->presupuesto->numero_presupuesto)
-            ->view('emails.presupuesto.notificacion-enviado', [
+            ->subject('Presupuesto rechazado #' . $this->presupuesto->numero_presupuesto)
+            ->view('emails.presupuesto.notificacion-rechazado', [
                 'notifiable' => $notifiable,
                 'presupuesto' => $this->presupuesto,
+                'motivoRechazo' => $this->motivoRechazo,
                 'urlDetalle' => $urlDetalle,
             ]);
     }
@@ -76,11 +78,17 @@ class PresupuestoEnviado extends Notification implements ShouldBroadcastNow
             return;
         }
 
+        $cliente = $this->presupuesto->empresa_receptora_empresa ?? $this->presupuesto->empresa_receptora_nombre ?? 'el cliente';
+        $body = $cliente . ' rechazó tu presupuesto.';
+        if ($this->motivoRechazo) {
+            $body .= ' Motivo: ' . \Illuminate\Support\Str::limit($this->motivoRechazo, 80);
+        }
+
         app(FcmService::class)->sendToTokens(
             $tokens,
             [
-                'title' => 'Presupuesto enviado #' . $this->presupuesto->numero_presupuesto,
-                'body' => 'Se envió el presupuesto a ' . ($this->presupuesto->empresa_receptora_empresa ?? $this->presupuesto->empresa_receptora_nombre ?? 'el cliente') . '.',
+                'title' => 'Presupuesto rechazado #' . $this->presupuesto->numero_presupuesto,
+                'body' => $body,
             ],
             $this->addStylesToData([
                 'action_url' => '/pages/proveedor/presupuestos/detalle/' . $this->presupuesto->id,
@@ -90,16 +98,23 @@ class PresupuestoEnviado extends Notification implements ShouldBroadcastNow
 
     private function baseData(): array
     {
+        $cliente = $this->presupuesto->empresa_receptora_empresa ?? $this->presupuesto->empresa_receptora_nombre ?? 'el cliente';
+        $mensaje = $cliente . ' rechazó tu presupuesto.';
+        if ($this->motivoRechazo) {
+            $mensaje .= ' Motivo: ' . \Illuminate\Support\Str::limit($this->motivoRechazo, 100);
+        }
+
         return [
             'tipo' => 'presupuesto',
-            'subtipo' => 'enviado',
-            'titulo' => 'Presupuesto enviado #' . $this->presupuesto->numero_presupuesto,
-            'mensaje' => 'Se envió el presupuesto a ' . ($this->presupuesto->empresa_receptora_empresa ?? $this->presupuesto->empresa_receptora_nombre ?? 'el cliente') . '.',
+            'subtipo' => 'rechazado',
+            'titulo' => 'Presupuesto rechazado #' . $this->presupuesto->numero_presupuesto,
+            'mensaje' => $mensaje,
+            'motivo_rechazo' => $this->motivoRechazo,
             'action_url' => '/pages/proveedor/presupuestos/detalle/' . $this->presupuesto->id,
             'presupuesto_id' => $this->presupuesto->id,
             'presupuesto_numero' => $this->presupuesto->numero_presupuesto,
             'proveedor_id' => $this->presupuesto->proveedor_id,
-            'estatus' => 'enviado',
+            'estatus' => 'rechazado',
             'timestamp' => now()->toIso8601String(),
         ];
     }
@@ -111,6 +126,6 @@ class PresupuestoEnviado extends Notification implements ShouldBroadcastNow
 
     protected function getNotificationSubtipo(): string
     {
-        return 'enviado';
+        return 'rechazado';
     }
 }

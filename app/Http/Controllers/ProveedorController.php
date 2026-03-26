@@ -312,7 +312,14 @@ class ProveedorController extends Controller
 
             $datosFiscales = $constanciaService->extraerDatosFiscales($fullPath);
 
-            if ($datosFiscales && !empty($datosFiscales['rfc'])) {
+            $tieneIdentificacion = $datosFiscales && (
+                ! empty($datosFiscales['rfc'])
+                || ! empty($datosFiscales['razon_social'])
+                || ! empty($datosFiscales['nombre_completo'])
+                || ! empty($datosFiscales['denominacion_razon_social'])
+            );
+
+            if ($tieneIdentificacion) {
                 Log::info('Datos fiscales extraídos exitosamente:', ['datos' => $datosFiscales]);
 
                 // Procesar regímenes para agregar claves
@@ -351,8 +358,15 @@ class ProveedorController extends Controller
         return $this->success([
             'proveedor' => new ProveedorResource($proveedor->fresh()),
             'extraccion_datos' => $datosExtraccion['datos'],
-            'message' => 'Constancia fiscal actualizada con éxito.',
-        ], 200);
+            'extraccion_meta' => [
+                'exito' => $datosExtraccion['exito'],
+                'mensaje' => $datosExtraccion['mensaje'] ?: (
+                    $datosExtraccion['exito']
+                        ? 'Datos fiscales extraídos correctamente.'
+                        : 'No se pudieron extraer datos del documento. Puedes completarlos manualmente.'
+                ),
+            ],
+        ], 'Constancia fiscal actualizada con éxito.', 200);
     }
 
     /**

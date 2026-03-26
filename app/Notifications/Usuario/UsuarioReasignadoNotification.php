@@ -37,7 +37,7 @@ class UsuarioReasignadoNotification extends Notification implements ShouldBroadc
      */
     public function via(object $notifiable): array
     {
-        $via = ['database'];
+        $via = ['broadcast', 'database'];
 
         // Solo agregar email si el correo es válido
         if ($notifiable->email && filter_var($notifiable->email, FILTER_VALIDATE_EMAIL)) {

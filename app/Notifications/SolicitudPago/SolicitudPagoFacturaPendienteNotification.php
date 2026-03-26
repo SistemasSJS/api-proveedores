@@ -10,37 +10,23 @@ use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class SolicitudPagoAbonada extends Notification implements ShouldBroadcastNow
+class SolicitudPagoFacturaPendienteNotification extends Notification implements ShouldBroadcastNow
 {
   use NotificationStyleTrait;
 
   public $solicitudPagoId;
   public $solicitudPagoFolio;
   public $proveedorId;
-  public $montoAbonado;
-  public $montoRestante;
-  public $montoAcumulado;
-  public $saldoInicial;
+  public $monto;
   public $userId;
 
-  public function __construct(
-    string $solicitudPagoFolio,
-    int $solicitudPagoId,
-    int $proveedorId,
-    float $montoAbonado = null,
-    float $montoRestante = null,
-    int $userId = null,
-    float $montoAcumulado = null,
-    float $saldoInicial = null
-  ) {
+  public function __construct(string $solicitudPagoFolio, int $solicitudPagoId, int $proveedorId, float $monto = null, int $userId = null)
+  {
     $this->solicitudPagoFolio = $solicitudPagoFolio;
     $this->solicitudPagoId = $solicitudPagoId;
     $this->proveedorId = $proveedorId;
-    $this->montoAbonado = $montoAbonado;
-    $this->montoRestante = $montoRestante;
+    $this->monto = $monto;
     $this->userId = $userId;
-    $this->montoAcumulado = $montoAcumulado;
-    $this->saldoInicial = $saldoInicial;
     $this->solicitudPagoFolio = $solicitudPagoFolio;
   }
 
@@ -49,8 +35,9 @@ class SolicitudPagoAbonada extends Notification implements ShouldBroadcastNow
    */
   public function via(object $notifiable): array
   {
-    $via = ['database'];
+    $via = ['broadcast', 'database'];
 
+    // Solo agregar email si el correo es válido
     if ($notifiable->email && filter_var($notifiable->email, FILTER_VALIDATE_EMAIL)) {
       $via[] = 'mail';
     }
@@ -63,24 +50,21 @@ class SolicitudPagoAbonada extends Notification implements ShouldBroadcastNow
   }
 
   /**
-   * Canal Broadcast
+   * Canal Broadcast (WebSocket)
    */
   public function toBroadcast(object $notifiable): BroadcastMessage
   {
     $data = [
       'tipo' => 'solicitud_pago',
-      'subtipo' => 'abonada',
-      'titulo' => 'Abono registrado en solicitud de pago #' . $this->solicitudPagoFolio,
-      'mensaje' => "Se registró un abono en tu solicitud de pago #{$this->solicitudPagoFolio}.",
+      'subtipo' => 'factura_pendiente',
+      'titulo' => 'Factura pendiente de la solicitud de pago #' . $this->solicitudPagoFolio,
+      'mensaje' => "La solicitud de pago #{$this->solicitudPagoFolio} fue pagada, pero falta la factura correspondiente. Emite y sube el CFDI conforme a los datos fiscales indicados.",
       'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       'data' => [
         'solicitud_pago_folio' => $this->solicitudPagoFolio,
         'proveedor_id' => $this->proveedorId,
-        'monto_abonado' => $this->montoAbonado,
-        'monto_acumulado' => $this->montoAcumulado,
-        'saldo_inicial' => $this->saldoInicial,
-        'monto_restante' => $this->montoRestante,
-        'estatus' => 'abonada',
+        'monto' => $this->monto,
+        'estatus' => 'factura_pendiente',
       ],
       'timestamp' => now()->toIso8601String(),
     ];
@@ -100,18 +84,15 @@ class SolicitudPagoAbonada extends Notification implements ShouldBroadcastNow
   {
     $data = [
       'tipo' => 'solicitud_pago',
-      'subtipo' => 'abonada',
-      'titulo' => 'Abono registrado en solicitud de pago #' . $this->solicitudPagoFolio,
-      'mensaje' => "Se registró un abono en tu solicitud de pago #{$this->solicitudPagoFolio}.",
+      'subtipo' => 'factura_pendiente',
+      'titulo' => 'Factura pendiente de la solicitud de pago #' . $this->solicitudPagoFolio,
+      'mensaje' => "La solicitud de pago #{$this->solicitudPagoFolio} fue pagada, pero falta la factura correspondiente. Emite y sube el CFDI conforme a los datos fiscales indicados.",
       'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       'solicitud_pago_id' => $this->solicitudPagoId,
       'solicitud_pago_folio' => $this->solicitudPagoFolio,
       'proveedor_id' => $this->proveedorId,
-      'monto_abonado' => $this->montoAbonado,
-      'monto_acumulado' => $this->montoAcumulado,
-      'saldo_inicial' => $this->saldoInicial,
-      'monto_restante' => $this->montoRestante,
-      'estatus' => 'abonada',
+      'monto' => $this->monto,
+      'estatus' => 'factura_pendiente',
       'timestamp' => now()->toIso8601String(),
     ];
 
@@ -127,16 +108,13 @@ class SolicitudPagoAbonada extends Notification implements ShouldBroadcastNow
     $urlSolicitud = $frontendUrl . '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId;
 
     return (new MailMessage)
-      ->subject('Abono registrado en solicitud de pago #' . $this->solicitudPagoFolio)
-      ->view('emails.solicitud-pago.abonada', [
+      ->subject('Factura pendiente de la solicitud de pago #' . $this->solicitudPagoFolio)
+      ->view('emails.solicitud-pago.factura-pendiente', [
         'notifiable' => $notifiable,
         'solicitudPagoFolio' => $this->solicitudPagoFolio,
         'solicitudPagoId' => $this->solicitudPagoId,
         'proveedorId' => $this->proveedorId,
-        'montoAbonado' => $this->montoAbonado,
-        'montoAcumulado' => $this->montoAcumulado,
-        'saldoInicial' => $this->saldoInicial,
-        'montoRestante' => $this->montoRestante,
+        'monto' => $this->monto,
         'urlSolicitud' => $urlSolicitud,
       ]);
   }
@@ -156,21 +134,18 @@ class SolicitudPagoAbonada extends Notification implements ShouldBroadcastNow
     }
 
     $notification = [
-      'title' => 'Abono registrado - SPP #' . $this->solicitudPagoFolio,
-      'body' => 'Se registró un abono en tu solicitud de pago.',
+      'title' => 'Factura pendiente - SPP #' . $this->solicitudPagoFolio,
+      'body' => 'La solicitud ya fue pagada, pero falta la factura (CFDI).',
     ];
 
     $data = [
       'tipo' => 'solicitud_pago',
-      'subtipo' => 'abonada',
+      'subtipo' => 'factura_pendiente',
       'action_url' => '/pages/proveedor/sp/detalle/' . $this->solicitudPagoId,
       'solicitud_pago_folio' => $this->solicitudPagoFolio,
       'proveedor_id' => (string) $this->proveedorId,
-      'monto_abonado' => $this->montoAbonado  ? (string) $this->montoAbonado : null,
-      'monto_acumulado' => $this->montoAcumulado  ? (string) $this->montoAcumulado : null,
-      'saldo_inicial' => $this->saldoInicial  ? (string) $this->saldoInicial : null,
-      'monto_restante' => $this->montoRestante  ? (string) $this->montoRestante : null,
-      'estatus' => 'abonada',
+      'monto' => $this->monto ? (string) $this->monto : null,
+      'estatus' => 'factura_pendiente',
       'timestamp' => now()->toIso8601String(),
     ];
 
@@ -188,6 +163,6 @@ class SolicitudPagoAbonada extends Notification implements ShouldBroadcastNow
 
   protected function getNotificationSubtipo(): string
   {
-    return 'abonada';
+    return 'factura_pendiente';
   }
 }
