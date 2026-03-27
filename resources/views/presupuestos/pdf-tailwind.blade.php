@@ -831,25 +831,9 @@
 
             <div class="tw-card">
                 <div class="tw-card-title">Dirigido a:</div>
-                @php
-                    $receptor = $presupuesto['empresa_receptora'] ?? [];
-                    $aliasEmpresa = $receptor['alias_empresa'] ?? null;
-                    $nombre = $receptor['nombre'] ?? null;
-                    $empresa = $receptor['empresa'] ?? null;
-                    $puesto = $receptor['puesto'] ?? null;
-                @endphp
-                @if ($aliasEmpresa)
-                    <div class="tw-receptor-strong">{{ $aliasEmpresa }}</div>
-                @endif
-                @if ($nombre)
-                    <div class="tw-receptor-line">{{ $nombre }}</div>
-                @endif
-                @if ($puesto)
-                    <div class="tw-receptor-line">{{ $puesto }}</div>
-                @endif
-                @if ($empresa)
-                    <div class="tw-receptor-line">{{ $empresa }}</div>
-                @endif
+                @foreach ($presupuesto['receptor_lineas'] ?? [] as $idx => $linea)
+                    <div class="{{ $idx === 0 ? 'tw-receptor-strong' : 'tw-receptor-line' }}">{{ $linea }}</div>
+                @endforeach
             </div>
 
             @if ($presupuesto['concepto_general'] ?? null)

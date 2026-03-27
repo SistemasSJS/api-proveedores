@@ -76,6 +76,12 @@ final class PresupuestoPdf
                 'correo' => $presupuesto->empresa_receptora_correo,
                 'direccion' => $presupuesto->empresa_receptora_direccion ?? $presupuesto->empresaReceptora?->direccion ?? null,
             ],
+            'receptor_lineas' => self::lineasDirigidoUnicas([
+                'empresa' => $presupuesto->empresa_receptora_empresa,
+                'nombre' => $presupuesto->empresa_receptora_nombre,
+                'puesto' => $presupuesto->empresa_receptora_puesto,
+                'alias_empresa' => $presupuesto->empresa_receptora_alias,
+            ]),
             'conceptos' => $presupuesto->conceptos->map(fn ($c) => [
                 'descripcion' => $c->descripcion,
                 'cantidad' => $c->cantidad,
@@ -194,5 +200,47 @@ final class PresupuestoPdf
         }
 
         return '';
+    }
+
+    /**
+     * Líneas para «Dirigido a:» sin repetir el mismo texto (comparación insensible a mayúsculas y espacios).
+     * Orden: empresa, nombre de contacto, puesto, alias.
+     *
+     * @param  array{nombre?: string|null, puesto?: string|null, empresa?: string|null, alias_empresa?: string|null}  $r
+     * @return list<string>
+     */
+    private static function lineasDirigidoUnicas(array $r): array
+    {
+        $empresa = trim((string) ($r['empresa'] ?? ''));
+        $nombre = trim((string) ($r['nombre'] ?? ''));
+        $puesto = trim((string) ($r['puesto'] ?? ''));
+        $alias = trim((string) ($r['alias_empresa'] ?? ''));
+
+        $norm = static function (string $s): string {
+            $s = preg_replace('/\s+/u', ' ', $s) ?? $s;
+
+            return mb_strtolower(trim($s));
+        };
+
+        $seen = [];
+        $lines = [];
+        $push = static function (string $v) use (&$lines, &$seen, $norm): void {
+            if ($v === '') {
+                return;
+            }
+            $k = $norm($v);
+            if (isset($seen[$k])) {
+                return;
+            }
+            $seen[$k] = true;
+            $lines[] = $v;
+        };
+
+        $push($empresa);
+        $push($nombre);
+        $push($puesto);
+        $push($alias);
+
+        return $lines;
     }
 }

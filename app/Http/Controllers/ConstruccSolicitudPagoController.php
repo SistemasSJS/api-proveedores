@@ -325,17 +325,24 @@ class ConstruccSolicitudPagoController extends Controller
             'utilizara' => ['nullable', 'string'],
             'equipo' => ['nullable', 'string'],
             'equipo_id' => ['nullable', 'integer'],
+            //  
+            'monto_autorizado' => ['nullable', 'numeric'],
+            'notas_autorizacion' => ['nullable', 'string'],
         ]);
-
-        if ($solicitudPago->verificada) {
-            // Log::warning('⚠️ Intento de verificar SP ya verificada', ['solicitud_pago_id' => $solicitudPago->id,]);
-            return $this->error('Esta solicitud ya ha sido verificada.', null, 400);
-        }
-
 
         DB::beginTransaction();
         try {
-            $updateData = ['verificada' => true];
+            $updateData = [
+                'verificada' => true,
+            ];
+
+            // Si se proporciona un monto autorizado, se actualiza el monto autorizado y se registra el usuario que autorizó.
+            if ($request->has('monto_autorizado')) {
+                $updateData['ro_monto'] = $request->monto_autorizado;
+                $updateData['ro_usuario_id'] = $request->usuario_id;
+                $updateData['ro_validacion_fecha'] = now();
+                $updateData['ro_motivo'] = $request->notas_autorizacion;
+            }
 
             foreach (['tipo', 'tipo_id', 'obra_id', 'notas', 'utilizara', 'equipo', 'equipo_id'] as $field) {
                 if ($request->has($field)) {

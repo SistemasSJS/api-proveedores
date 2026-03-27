@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             UserSeeder::class,
-            // TipoEmpresaSeeder::class,
+            TipoEmpresaSeeder::class,
         ]);
 
         if (config('app.debug')) {
