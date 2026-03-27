@@ -1218,11 +1218,11 @@ class ConstruccSolicitudPagoController extends Controller
 
         $proveedores = \App\Models\Proveedor::query()
 
-            // // 🔥 Mantienes tu exclusión
-            // ->where(function ($q) {
-            //     $q->where('tipo_alta', '!=', 2)
-            //         ->orWhereNull('tipo_alta');
-            // })
+            // 🔥 Mantienes tu exclusión
+            ->where(function ($q) {
+                $q->where('tipo_alta', '!=', 2)
+                    ->orWhereNull('tipo_alta');
+            })
 
             // 🔥 AQUÍ está la magia: mismo patrón que index
             ->where(function ($q) use ($empresaId, $usuarioConstruccId) {
@@ -1236,14 +1236,14 @@ class ConstruccSolicitudPagoController extends Controller
                     }
                 });
 
-                // // 2. Proveedores dados de alta por la empresa
-                // $q->orWhere(function ($alta) use ($empresaId, $usuarioConstruccId) {
-                //     $alta->where('empresa_construcc_alta', $empresaId);
+                // 2. Proveedores dados de alta por la empresa
+                $q->orWhere(function ($alta) use ($empresaId, $usuarioConstruccId) {
+                    $alta->where('empresa_construcc_alta', $empresaId);
 
-                //     if ($usuarioConstruccId) {
-                //         $alta->where('user_construcc_alta', $usuarioConstruccId);
-                //     }
-                // });
+                    if ($usuarioConstruccId) {
+                        $alta->where('user_construcc_alta', $usuarioConstruccId);
+                    }
+                });
             })
 
             ->select('id', 'nombre_comercial', 'razon_social', 'rfc')

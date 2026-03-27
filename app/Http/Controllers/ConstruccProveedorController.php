@@ -45,7 +45,7 @@ class ConstruccProveedorController extends Controller
 
             $sortBy = $request->input('sort_by', 'nombre_comercial');
             $order = $request->input('order', 'asc');
-            $perPage = $request->input('per_page', 10);
+            $perPage = $request->input('per_page', 1000);
 
             $query = Proveedor::query()
 
