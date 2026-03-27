@@ -190,6 +190,7 @@ class ProveedorPresupuestoController extends Controller
                 }
             }
 
+    
             $presupuesto = DB::transaction(function () use ($request, $validated) {
                 $payload = collect($validated)->except(['conceptos'])->toArray();
                 $payload['user_id'] = $request->user()->id;
@@ -206,14 +207,6 @@ class ProveedorPresupuestoController extends Controller
                 $this->sincronizarConceptos($presupuesto, $validated['conceptos']);
                 $presupuesto->recalcularDesdeConceptos();
                 $presupuesto->save();
-
-                // si el proveedor al que se le envia el presupuesto esta registrado en la cartera de clientes, se notifica al cliente
-                if (! empty($payload['empresa_receptora_id'])) {
-                    // utilizar 
-                }
-                else {
-
-
 
                 return $presupuesto->fresh(Presupuesto::eagerLodable());
             });
@@ -267,7 +260,13 @@ class ProveedorPresupuestoController extends Controller
                 return $this->error('El proveedor del payload no coincide con el proveedor de la ruta.', null, 422);
             }
 
-            if (! empty($validated['empresa_receptora_id']) && ! CarteraCliente::query()
+            if (! empty($validated['es_proveedor_receptor']) && $validated['es_proveedor_receptor'] === true) {
+                if (! empty($validated['empresa_receptora_id']) && ! Proveedor::query()
+                    ->whereKey((int) $validated['empresa_receptora_id'])
+                    ->exists()) {
+                    return $this->error('El proveedor no existe.', null, 422);
+                }
+            } elseif (! empty($validated['empresa_receptora_id']) && ! CarteraCliente::query()
                 ->where('proveedor_id', $proveedor->id)
                 ->whereKey((int) $validated['empresa_receptora_id'])
                 ->exists()) {
@@ -455,22 +454,113 @@ class ProveedorPresupuestoController extends Controller
      */
     private function normalizarEmpresaReceptora(array $payload, int $proveedorId): array
     {
+        $esProveedorReceptor = ! empty($payload['es_proveedor_receptor']);
+
         if (empty($payload['empresa_receptora_id'])) {
+            $payload['configuracion_condiciones'] = $this->mergeReceptorMetaEnConfiguracion(
+                $payload['configuracion_condiciones'] ?? null,
+                false
+            );
+            unset($payload['es_proveedor_receptor']);
+
             return $payload;
         }
 
-        $cliente = CarteraCliente::query()
-            ->where('proveedor_id', $proveedorId)
-            ->findOrFail((int) $payload['empresa_receptora_id']);
+        if ($esProveedorReceptor) {
+            $receptor = Proveedor::query()->findOrFail((int) $payload['empresa_receptora_id']);
 
-        $payload['empresa_receptora_nombre'] = $cliente->nombre;
-        $payload['empresa_receptora_puesto'] = $cliente->puesto;
-        $payload['empresa_receptora_empresa'] = $cliente->empresa;
-        $payload['empresa_receptora_alias'] = $cliente->alias_empresa;
-        $payload['empresa_receptora_telefono'] = $cliente->telefono;
-        $payload['empresa_receptora_correo'] = $cliente->correo;
+            $payload['empresa_receptora_nombre'] = $receptor->contacto_nombre ?: $receptor->nombre_propietario;
+            $payload['empresa_receptora_puesto'] = $receptor->contacto_cargo;
+            $payload['empresa_receptora_empresa'] = $receptor->nombre_comercial ?: $receptor->razon_social;
+            $payload['empresa_receptora_alias'] = null;
+            $payload['empresa_receptora_telefono'] = $receptor->contacto_telefono ?: $receptor->telefono ?: $receptor->celular;
+            $payload['empresa_receptora_correo'] = $receptor->contacto_correo ?: $receptor->email;
+            $payload['configuracion_condiciones'] = $this->mergeReceptorMetaEnConfiguracion(
+                $payload['configuracion_condiciones'] ?? null,
+                true
+            );
+        } else {
+            $cliente = CarteraCliente::query()
+                ->where('proveedor_id', $proveedorId)
+                ->findOrFail((int) $payload['empresa_receptora_id']);
+
+            $payload['empresa_receptora_nombre'] = $cliente->nombre;
+            $payload['empresa_receptora_puesto'] = $cliente->puesto;
+            $payload['empresa_receptora_empresa'] = $cliente->empresa;
+            $payload['empresa_receptora_alias'] = $cliente->alias_empresa;
+            $payload['empresa_receptora_telefono'] = $cliente->telefono;
+            $payload['empresa_receptora_correo'] = $cliente->correo;
+            $payload['configuracion_condiciones'] = $this->mergeReceptorMetaEnConfiguracion(
+                $payload['configuracion_condiciones'] ?? null,
+                false
+            );
+        }
+
+        unset($payload['es_proveedor_receptor']);
 
         return $payload;
+    }
+
+    /**
+     * Marca en JSON si el id en empresa_receptora_id corresponde a un proveedor del catálogo (no hay columna dedicada).
+     *
+     * @param  array<string, mixed>|null  $configuracion
+     * @return array<string, mixed>
+     */
+    private function mergeReceptorMetaEnConfiguracion(?array $configuracion, bool $receptorEsProveedorCatalogo): array
+    {
+        $config = is_array($configuracion) ? $configuracion : [];
+        $config['receptor_es_proveedor_catalogo'] = $receptorEsProveedorCatalogo;
+
+        return $config;
+    }
+
+    /**
+     * Al enviar: si el receptor es otro proveedor del catálogo, notificar a sus usuarios activos en app/FCM.
+     */
+    private function notificarUsuariosProveedorReceptor(Presupuesto $presupuesto, bool $esReenvio = false): void
+    {
+        $id = $presupuesto->empresa_receptora_id;
+        if (! $id) {
+            return;
+        }
+
+        $proveedorReceptor = Proveedor::query()->find((int) $id);
+        if (! $proveedorReceptor) {
+            return;
+        }
+
+        foreach ($proveedorReceptor->usuariosActivos()->get() as $user) {
+            $user->notify(new PresupuestoRecibidoClienteProveedorNotification($presupuesto, $esReenvio));
+        }
+    }
+
+    /**
+     * Usa la meta guardada en configuracion_condiciones al normalizar; si falta (registros viejos), infiere por tablas.
+     */
+    private function debeNotificarComoProveedorCatalogo(Presupuesto $presupuesto): bool
+    {
+        $config = $presupuesto->configuracion_condiciones;
+        if (is_array($config) && array_key_exists('receptor_es_proveedor_catalogo', $config)) {
+            return (bool) $config['receptor_es_proveedor_catalogo'];
+        }
+
+        $id = $presupuesto->empresa_receptora_id;
+        if (! $id) {
+            return false;
+        }
+
+        $emisorId = (int) $presupuesto->proveedor_id;
+        $enCartera = CarteraCliente::query()
+            ->where('proveedor_id', $emisorId)
+            ->whereKey((int) $id)
+            ->exists();
+
+        if ($enCartera) {
+            return false;
+        }
+
+        return Proveedor::query()->whereKey((int) $id)->exists();
     }
 
     /**
@@ -883,7 +973,11 @@ class ProveedorPresupuestoController extends Controller
                     : null;
                 $presupuesto->addNotification($primeraNotif?->id);
 
-                $this->notificarClienteProveedorRegistrado($presupuesto, false);
+                if ($this->debeNotificarComoProveedorCatalogo($presupuesto)) {
+                    $this->notificarUsuariosProveedorReceptor($presupuesto, false);
+                } else {
+                    $this->notificarClienteProveedorRegistrado($presupuesto, false);
+                }
             });
 
             $presupuesto->refresh()->load(Presupuesto::eagerLodable());
@@ -933,7 +1027,11 @@ class ProveedorPresupuestoController extends Controller
                 new PresupuestoEnviadoMail($presupuesto, $enlacePublico, $nombreReceptor)
             );
 
-            $this->notificarClienteProveedorRegistrado($presupuesto, true);
+            if ($this->debeNotificarComoProveedorCatalogo($presupuesto)) {
+                $this->notificarUsuariosProveedorReceptor($presupuesto, true);
+            } else {
+                $this->notificarClienteProveedorRegistrado($presupuesto, true);
+            }
 
             $this->log('Presupuesto reenviado por correo', ['presupuesto_id' => $presupuesto->id]);
 

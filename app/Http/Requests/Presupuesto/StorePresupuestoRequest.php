@@ -23,7 +23,8 @@ class StorePresupuestoRequest extends FormRequest
             'numero_presupuesto' => 'nullable|string|max:255',
             'proveedor_id' => 'required|exists:proveedores,id',
             'es_proveedor_receptor' => 'nullable|boolean', // es para indicar si el receptor es un proveedor
-            'empresa_receptora_id' => 'nullable|integer|exists:cartera_clientes,id|exists:proveedores,id', // existe en la cartera de clientes o en proveedores
+            // Validación de cartera vs proveedor: en el controlador (exists en ambas tablas no es compatible con una sola regla).
+            'empresa_receptora_id' => 'nullable|integer',
             'empresa_receptora_nombre' => 'nullable|string|max:255', //|required_without:empresa_receptora_id',
             'empresa_receptora_puesto' => 'nullable|string|max:255',
             'empresa_receptora_empresa' => 'nullable|string|max:255', //|required_without:empresa_receptora_id',

@@ -44,6 +44,15 @@ class Presupuesto extends BaseModel
     public const ESTADO_RECHAZADO_CON_OBSERVACION = 'rechazado_con_observacion';
     public const ESTADO_VENCIDO = 'vencido';
 
+    /**
+     * Receptor del presupuesto (quien recibe la cotización):
+     * - Sin empresa_receptora_id: solo datos en texto (empresa_receptora_*), p. ej. cliente que no está en cartera.
+     * - Con empresa_receptora_id + cartera: id de {@see CarteraCliente} del proveedor emisor; la relación empresaReceptora() aplica.
+     * - Con empresa_receptora_id + proveedor catálogo: mismo campo numérico apunta a {@see Proveedor}; la relación empresaReceptora() no
+     *   coincide con ese id (no hay columna nueva). El tipo queda en configuracion_condiciones.receptor_es_proveedor_catalogo.
+     * proveedor_id: proveedor emisor del presupuesto. user_id: usuario que creó/editó el registro.
+     * configuracion_condiciones: JSON (términos/opciones); puede incluir receptor_es_proveedor_catalogo (bool) sin migración adicional.
+     */
     protected $fillable = [
         'uuid',
         'numero_presupuesto',
@@ -214,8 +223,8 @@ class Presupuesto extends BaseModel
             $lista[] = sprintf(self::ENUNCIADO_ANTICIPO, (int) $anticipo);
         }
 
-        $tiempoEntrega = $data['term_cond_tiempo_entrega_dias'] ?? null;
-        if ($tiempoEntrega !== null && (int) $tiempoEntrega > 0) {
+            $tiempoEntrega = $data['term_cond_tiempo_entrega_dias'] ?? null;
+            if ($tiempoEntrega !== null && (int) $tiempoEntrega > 0) {
             $lista[] = sprintf(self::ENUNCIADO_TIEMPO_ENTREGA, (int) $tiempoEntrega);
         }
 
@@ -312,7 +321,8 @@ class Presupuesto extends BaseModel
     }
 
     /**
-     * Relación con cliente de cartera receptora.
+     * Cliente de cartera del emisor cuando empresa_receptora_id es un id de {@see CarteraCliente}.
+     * Si el receptor es un proveedor del catálogo, el id no corresponde a cartera: no usar esta relación o será incoherente.
      */
     public function empresaReceptora(): BelongsTo
     {

@@ -22,7 +22,8 @@ class UpdatePresupuestoRequest extends FormRequest
         return [
             'numero_presupuesto' => 'nullable|string|max:255',
             'proveedor_id' => 'required|exists:proveedores,id',
-            'empresa_receptora_id' => 'nullable|exists:cartera_clientes,id',
+            'es_proveedor_receptor' => 'nullable|boolean',
+            'empresa_receptora_id' => 'nullable|integer',
             'empresa_receptora_nombre' => 'nullable|string|max:255|required_without:empresa_receptora_id',
             'empresa_receptora_puesto' => 'nullable|string|max:255',
             'empresa_receptora_empresa' => 'nullable|string|max:255|required_without:empresa_receptora_id',
