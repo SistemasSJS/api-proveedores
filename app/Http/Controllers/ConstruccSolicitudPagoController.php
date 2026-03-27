@@ -325,17 +325,32 @@ class ConstruccSolicitudPagoController extends Controller
             'utilizara' => ['nullable', 'string'],
             'equipo' => ['nullable', 'string'],
             'equipo_id' => ['nullable', 'integer'],
+            //  
+            'monto_autorizado' => ['nullable', 'numeric'],
+            'notas_autorizacion' => ['nullable', 'string'],
         ]);
-
-        if ($solicitudPago->verificada) {
-            // Log::warning('⚠️ Intento de verificar SP ya verificada', ['solicitud_pago_id' => $solicitudPago->id,]);
-            return $this->error('Esta solicitud ya ha sido verificada.', null, 400);
-        }
-
 
         DB::beginTransaction();
         try {
-            $updateData = ['verificada' => true];
+            $updateData = [
+                'verificada' => true,
+            ];
+
+            // Si se proporciona un monto autorizado, se actualiza el monto autorizado y se registra el usuario que autorizó.
+            if ($request->has('monto_autorizado')) {
+                $updateData['validacion_monto'] = $request->monto_autorizado;
+                $updateData['validacion_usuario_id'] = $request->usuario_id;
+                $updateData['validacion_fecha'] = now();
+                $updateData['validacion_motivo'] = $request->notas_autorizacion;
+
+                // los campos de validacion de monto parcial se actualizan en el endpoint de autorizar parcial
+                // estos campos se actualizan en el endpoint de autorizar parcial
+                // si no cambian se toman como el monto autorizado y el usuario que autorizo.
+                $updateData['monto_autorizado'] = $request->monto_autorizado;
+                $updateData['usuario_autorizo_parcial_id'] = $request->usuario_id;
+                $updateData['fecha_autorizacion_parcial'] = now();
+                $updateData['motivo_autorizacion_parcial'] = $request->notas_autorizacion;
+            }
 
             foreach (['tipo', 'tipo_id', 'obra_id', 'notas', 'utilizara', 'equipo', 'equipo_id'] as $field) {
                 if ($request->has($field)) {

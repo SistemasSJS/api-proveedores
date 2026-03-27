@@ -140,6 +140,12 @@ class SolicitudPago extends BaseModel
         'usuario_creador_id',
 
 
+        // CAMPOS PARA VALIDACION DE MONTO PARCIAL
+        'validacion_monto',
+        'validacion_usuario_id',
+        'validacion_fecha',
+        'validacion_motivo',
+
     ];
 
     protected static $filters = [
