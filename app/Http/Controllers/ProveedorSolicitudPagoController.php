@@ -40,11 +40,18 @@ class ProveedorSolicitudPagoController extends Controller
         $order = $request->input('order', 'desc');
         $perPage = $request->input('per_page', 10);
 
-        // Los contadores por pestaña deben reflejar totales sin el límite «últimas N» ni el filtro de estado activo
-        $countFilters = array_diff_key($filters, array_flip(['estado_solicitud', 'ultimas_spp']));
-        $segmentCounts = SolicitudPago::query()
-            ->where('proveedor_id', $proveedor->id)
-            ->when(! empty($countFilters), fn($q) => $q->filter($countFilters))
+        $ultimasN = isset($filters['ultimas_spp']) ? (int) $filters['ultimas_spp'] : 0;
+        $hasUltimas = $ultimasN > 0;
+
+        // Pool: últimas N por fecha, sin filtrar por estado (ni por tiene_factura: el segmento se aplica después)
+        $poolFilters = array_diff_key($filters, array_flip(['estado_solicitud', 'tiene_factura']));
+
+        $baseQuery = SolicitudPago::query()->where('proveedor_id', $proveedor->id);
+        if (! empty($poolFilters)) {
+            $baseQuery->filter($poolFilters);
+        }
+
+        $segmentCounts = (clone $baseQuery)
             ->selectRaw('estado_solicitud, COUNT(*) as total')
             ->groupBy('estado_solicitud')
             ->pluck('total', 'estado_solicitud')
@@ -55,13 +62,28 @@ class ProveedorSolicitudPagoController extends Controller
             'rechazada' => (int) ($segmentCounts[EstadoSP::RECHAZADA->value] ?? 0),
             'autorizada' => (int) ($segmentCounts[EstadoSP::AUTORIZADA->value] ?? 0),
             'pagado' => (int) ($segmentCounts[EstadoSP::PAGADO->value] ?? 0),
+            'sin_factura' => (int) (clone $baseQuery)->where('tiene_factura', false)->count(),
         ];
 
-        $query = SolicitudPago::query()
-            ->with(SolicitudPago::eagerLodable())
-            ->filter($filters)
-            ->orderBy($sortBy, $order)
-            ->paginate($perPage);
+        if ($hasUltimas) {
+            $ids = (clone $baseQuery)->pluck('id');
+            $listQuery = SolicitudPago::query()
+                ->with(SolicitudPago::eagerLodable())
+                ->whereIn('id', $ids);
+
+            $statusFilters = array_intersect_key($filters, array_flip(['estado_solicitud', 'tiene_factura']));
+            if (! empty($statusFilters)) {
+                $listQuery->filter($statusFilters);
+            }
+
+            $query = $listQuery->orderBy($sortBy, $order)->paginate($perPage);
+        } else {
+            $query = SolicitudPago::query()
+                ->with(SolicitudPago::eagerLodable())
+                ->filter($filters)
+                ->orderBy($sortBy, $order)
+                ->paginate($perPage);
+        }
 
         $data = SolicitudPagoResource::collection($query)->resolve();
 
@@ -808,9 +830,9 @@ class ProveedorSolicitudPagoController extends Controller
     public function conteoPorEstado(Request $request, Proveedor $proveedor): JsonResponse
     {
         $filters = $request->only(SolicitudPago::getFilters());
-        unset($filters['ultimas_spp'], $filters['estado_solicitud']);
+        unset($filters['estado_solicitud']);
 
-        // Base query con filtros opcionales (sin limitar a últimas N ni a un solo estado)
+        // Base query con los mismos filtros que el listado (incl. ultimas_spp), sin filtro de estado
         $baseQuery = SolicitudPago::query()
             ->where('proveedor_id', $proveedor->id);
 

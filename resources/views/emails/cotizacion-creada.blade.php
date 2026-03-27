@@ -222,7 +222,7 @@
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-            <img src="{{ config('app.url') }}/assets/logos/logo-gestionpro.png" alt="Gesti?nPro" class="logo">
+            @include('emails.partials.logo-app')
             <h1>🏭 Nueva Cotización Solicitada</h1>
             <p>Sistema de Gestión de Proveedores</p>
         </div>

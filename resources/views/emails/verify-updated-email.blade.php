@@ -22,6 +22,11 @@
             padding: 36px 20px;
             text-align: center;
         }
+        .logo {
+            max-width: 80px;
+            height: auto;
+            margin-bottom: 16px;
+        }
         .header-title {
             color: #000000;
             font-size: 28px;
@@ -83,6 +88,7 @@
 <body>
     <div class="email-container">
         <div class="header">
+            @include('emails.partials.logo-app')
             <h1 class="header-title">Valida tu correo</h1>
         </div>
 

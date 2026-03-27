@@ -102,7 +102,18 @@ class ProveedorPresupuestoController extends Controller
         Presupuesto::actualizarVencidos();
 
         $filters = $request->only(Presupuesto::getFilters());
-        $filters['proveedor_id'] = $proveedor->id;
+        $listado = $request->input('listado', 'enviados');
+        if (! in_array($listado, ['enviados', 'recibidos'], true)) {
+            $listado = 'enviados';
+        }
+
+        if ($listado === 'recibidos') {
+            unset($filters['proveedor_id']);
+            $filters['proveedor_receptor_id'] = $proveedor->id;
+        } else {
+            $filters['proveedor_id'] = $proveedor->id;
+            unset($filters['proveedor_receptor_id']);
+        }
 
         // Si hay segmento observados/rechazados, usar ese filtro y no estado
         $segmento = $filters['segmento'] ?? null;
@@ -116,10 +127,16 @@ class ProveedorPresupuestoController extends Controller
         $order = $request->input('order', 'desc');
         $perPage = $request->input('per_page', 10);
 
-        $countFilters = array_diff_key($filters, array_flip(['estado', 'segmento']));
-        $baseQuery = Presupuesto::query()->where('proveedor_id', $proveedor->id);
-        if (! empty($countFilters)) {
-            $baseQuery->filter($countFilters);
+        $ultimasN = isset($filters['ultimas_presupuestos']) ? (int) $filters['ultimas_presupuestos'] : 0;
+        $hasUltimas = $ultimasN > 0;
+
+        // Pool: últimas N por fecha, sin filtrar por estado/segmento (el segmento se aplica después)
+        $poolFilters = array_diff_key($filters, array_flip(['estado', 'segmento']));
+        $baseQuery = $listado === 'recibidos'
+            ? Presupuesto::query()->where('proveedor_receptor_id', $proveedor->id)
+            : Presupuesto::query()->where('proveedor_id', $proveedor->id);
+        if (! empty($poolFilters)) {
+            $baseQuery->filter($poolFilters);
         }
 
         $segmentCountsFormatted = [
@@ -144,11 +161,25 @@ class ProveedorPresupuestoController extends Controller
             'aceptados' => (int) (clone $baseQuery)->where('estado', Presupuesto::ESTADO_ACEPTADO)->count(),
         ];
 
-        $originalPaginator = Presupuesto::query()
-            ->with(Presupuesto::eagerLodable())
-            ->filter($filters)
-            ->orderBy($sortBy, $order)
-            ->paginate($perPage);
+        if ($hasUltimas) {
+            $ids = (clone $baseQuery)->pluck('id');
+            $listQuery = Presupuesto::query()
+                ->with(Presupuesto::eagerLodable())
+                ->whereIn('id', $ids);
+
+            $statusFilters = array_intersect_key($filters, array_flip(['estado', 'segmento']));
+            if (! empty($statusFilters)) {
+                $listQuery->filter($statusFilters);
+            }
+
+            $originalPaginator = $listQuery->orderBy($sortBy, $order)->paginate($perPage);
+        } else {
+            $originalPaginator = Presupuesto::query()
+                ->with(Presupuesto::eagerLodable())
+                ->filter($filters)
+                ->orderBy($sortBy, $order)
+                ->paginate($perPage);
+        }
 
         $data = PresupuestoResource::collection($originalPaginator)->resolve();
 
@@ -174,21 +205,22 @@ class ProveedorPresupuestoController extends Controller
                 return $this->error('El proveedor del payload no coincide con el proveedor de la ruta.', null, 422);
             }
 
-            if (! empty($validated['es_proveedor_receptor']) && $validated['es_proveedor_receptor'] === true) {
-                if (! empty($validated['empresa_receptora_id']) && ! Proveedor::query()
-                    ->whereKey((int) $validated['empresa_receptora_id'])
-                    ->exists()) {
-                    return $this->error('El proveedor no existe.', null, 422);
-                }
-            } else {
-                if (! empty($validated['empresa_receptora_id']) && ! CarteraCliente::query()
+            $validated = $this->resolverReceptorEmpresaParaValidacion($validated, $proveedor);
+
+            if (! empty($validated['empresa_receptora_id'])) {
+                $idReceptor = (int) $validated['empresa_receptora_id'];
+                $esProveedorReceptor = ! empty($validated['es_proveedor_receptor']) && filter_var($validated['es_proveedor_receptor'], FILTER_VALIDATE_BOOLEAN);
+                if ($esProveedorReceptor) {
+                    if (! Proveedor::query()->whereKey($idReceptor)->exists()) {
+                        return $this->error('El proveedor no existe.', null, 422);
+                    }
+                } elseif (! CarteraCliente::query()
                     ->where('proveedor_id', $proveedor->id)
-                    ->whereKey((int) $validated['empresa_receptora_id'])
+                    ->whereKey($idReceptor)
                     ->exists()) {
                     return $this->error('El cliente de cartera no pertenece al proveedor indicado.', null, 422);
                 }
             }
-
 
             $presupuesto = DB::transaction(function () use ($request, $validated) {
                 $payload = collect($validated)->except(['conceptos'])->toArray();
@@ -226,7 +258,7 @@ class ProveedorPresupuestoController extends Controller
 
     public function show(Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
     {
-        if ($presupuesto->proveedor_id !== $proveedor->id) {
+        if (! $this->presupuestoAccesiblePorProveedor($proveedor, $presupuesto)) {
             return $this->error('Presupuesto no pertenece a este proveedor.', null, 403);
         }
 
@@ -242,7 +274,7 @@ class ProveedorPresupuestoController extends Controller
     public function update(UpdatePresupuestoRequest $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
     {
         try {
-            if ($presupuesto->proveedor_id !== $proveedor->id) {
+            if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
                 return $this->error('Presupuesto no pertenece a este proveedor.', null, 403);
             }
 
@@ -259,17 +291,21 @@ class ProveedorPresupuestoController extends Controller
                 return $this->error('El proveedor del payload no coincide con el proveedor de la ruta.', null, 422);
             }
 
-            if (! empty($validated['es_proveedor_receptor']) && $validated['es_proveedor_receptor'] === true) {
-                if (! empty($validated['empresa_receptora_id']) && ! Proveedor::query()
-                    ->whereKey((int) $validated['empresa_receptora_id'])
+            $validated = $this->resolverReceptorEmpresaParaValidacion($validated, $proveedor);
+
+            if (! empty($validated['empresa_receptora_id'])) {
+                $idReceptor = (int) $validated['empresa_receptora_id'];
+                $esProveedorReceptor = ! empty($validated['es_proveedor_receptor']) && filter_var($validated['es_proveedor_receptor'], FILTER_VALIDATE_BOOLEAN);
+                if ($esProveedorReceptor) {
+                    if (! Proveedor::query()->whereKey($idReceptor)->exists()) {
+                        return $this->error('El proveedor no existe.', null, 422);
+                    }
+                } elseif (! CarteraCliente::query()
+                    ->where('proveedor_id', $proveedor->id)
+                    ->whereKey($idReceptor)
                     ->exists()) {
-                    return $this->error('El proveedor no existe.', null, 422);
+                    return $this->error('El cliente de cartera no pertenece al proveedor indicado.', null, 422);
                 }
-            } elseif (! empty($validated['empresa_receptora_id']) && ! CarteraCliente::query()
-                ->where('proveedor_id', $proveedor->id)
-                ->whereKey((int) $validated['empresa_receptora_id'])
-                ->exists()) {
-                return $this->error('El cliente de cartera no pertenece al proveedor indicado.', null, 422);
             }
 
             $presupuesto = DB::transaction(function () use ($validated, $presupuesto) {
@@ -315,7 +351,7 @@ class ProveedorPresupuestoController extends Controller
     public function destroy(Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
     {
         try {
-            if ($presupuesto->proveedor_id !== $proveedor->id) {
+            if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
                 return $this->error('Presupuesto no pertenece a este proveedor.', null, 403);
             }
 
@@ -351,7 +387,7 @@ class ProveedorPresupuestoController extends Controller
     public function duplicar(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
     {
         try {
-            if ($presupuesto->proveedor_id !== $proveedor->id) {
+            if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
                 return $this->error('Presupuesto no pertenece a este proveedor.', null, 403);
             }
 
@@ -366,12 +402,14 @@ class ProveedorPresupuestoController extends Controller
                 $payload = $presupuesto->only([
                     'proveedor_id',
                     'empresa_receptora_id',
+                    'proveedor_receptor_id',
                     'empresa_receptora_nombre',
                     'empresa_receptora_puesto',
                     'empresa_receptora_empresa',
                     'empresa_receptora_alias',
                     'empresa_receptora_telefono',
                     'empresa_receptora_correo',
+                    'configuracion_condiciones',
                     'concepto_general',
                     'con_iva',
                     'iva_porcentaje',
@@ -432,6 +470,23 @@ class ProveedorPresupuestoController extends Controller
     }
 
     /**
+     * El usuario del proveedor de la ruta puede ver el presupuesto si es emisor o receptor (catálogo).
+     */
+    private function presupuestoAccesiblePorProveedor(Proveedor $proveedor, Presupuesto $presupuesto): bool
+    {
+        return (int) $presupuesto->proveedor_id === (int) $proveedor->id
+            || (int) ($presupuesto->proveedor_receptor_id ?? 0) === (int) $proveedor->id;
+    }
+
+    /**
+     * Solo el proveedor emisor puede editar, eliminar, enviar, duplicar, etc.
+     */
+    private function presupuestoEsEmisor(Proveedor $proveedor, Presupuesto $presupuesto): bool
+    {
+        return (int) $presupuesto->proveedor_id === (int) $proveedor->id;
+    }
+
+    /**
      * Borrador: editable. Rechazado con motivo (observaciones del cliente): editable.
      */
     private function puedeEditarPresupuesto(Presupuesto $presupuesto): bool
@@ -448,17 +503,56 @@ class ProveedorPresupuestoController extends Controller
     }
 
     /**
+     * Si el cliente no envía es_proveedor_receptor pero el id corresponde a otro proveedor (no a cartera del emisor), infiere true.
+     * Evita 422 al confundir id de proveedor del catálogo con cliente de cartera.
+     *
+     * @param  array<string, mixed>  $validated
+     * @return array<string, mixed>
+     */
+    private function resolverReceptorEmpresaParaValidacion(array $validated, Proveedor $proveedorEmisor): array
+    {
+        if (empty($validated['empresa_receptora_id'])) {
+            return $validated;
+        }
+
+        if (! empty($validated['es_proveedor_receptor']) && filter_var($validated['es_proveedor_receptor'], FILTER_VALIDATE_BOOLEAN)) {
+            return $validated;
+        }
+
+        $id = (int) $validated['empresa_receptora_id'];
+
+        $enCartera = CarteraCliente::query()
+            ->where('proveedor_id', $proveedorEmisor->id)
+            ->whereKey($id)
+            ->exists();
+
+        if ($enCartera) {
+            $validated['es_proveedor_receptor'] = false;
+
+            return $validated;
+        }
+
+        if (Proveedor::query()->whereKey($id)->exists()) {
+            $validated['es_proveedor_receptor'] = true;
+
+            return $validated;
+        }
+
+        return $validated;
+    }
+
+    /**
      * @param array<string, mixed> $payload
      * @return array<string, mixed>
      */
     private function normalizarEmpresaReceptora(array $payload, int $proveedorId): array
     {
-        $esProveedorReceptor = ! empty($payload['es_proveedor_receptor']);
+        $esProveedorReceptor = filter_var($payload['es_proveedor_receptor'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
         if (empty($payload['empresa_receptora_id'])) {
-            $payload['configuracion_condiciones'] = $this->mergeReceptorMetaEnConfiguracion(
-                $payload['configuracion_condiciones'] ?? null,
-                false
+            $payload['proveedor_receptor_id'] = null;
+            $payload['configuracion_condiciones'] = $this->limpiarMetaReceptorEnConfiguracionJson(
+                $payload['configuracion_condiciones'] ?? null
             );
             unset($payload['es_proveedor_receptor']);
 
@@ -466,32 +560,52 @@ class ProveedorPresupuestoController extends Controller
         }
 
         if ($esProveedorReceptor) {
-            $receptor = Proveedor::query()->findOrFail((int) $payload['empresa_receptora_id']);
+            /** La FK empresa_receptora_id solo admite cartera; el id del proveedor catálogo va en proveedor_receptor_id. */
+            $proveedorReceptorId = (int) $payload['empresa_receptora_id'];
+            $receptor = Proveedor::query()->findOrFail($proveedorReceptorId);
 
-            $payload['empresa_receptora_nombre'] = $receptor->contacto_nombre ?: $receptor->nombre_propietario;
+            $payload['empresa_receptora_nombre'] = $this->valorReceptorNoVacio(
+                $receptor->contacto_nombre,
+                $receptor->nombre_propietario,
+                $receptor->nombre_comercial,
+                $receptor->razon_social,
+                'Contacto'
+            );
             $payload['empresa_receptora_puesto'] = $receptor->contacto_cargo;
-            $payload['empresa_receptora_empresa'] = $receptor->nombre_comercial ?: $receptor->razon_social;
+            $payload['empresa_receptora_empresa'] = $this->valorReceptorNoVacio(
+                $receptor->nombre_comercial,
+                $receptor->razon_social,
+                'Empresa'
+            );
             $payload['empresa_receptora_alias'] = null;
-            $payload['empresa_receptora_telefono'] = $receptor->contacto_telefono ?: $receptor->telefono ?: $receptor->celular;
-            $payload['empresa_receptora_correo'] = $receptor->contacto_correo ?: $receptor->email;
-            $payload['configuracion_condiciones'] = $this->mergeReceptorMetaEnConfiguracion(
-                $payload['configuracion_condiciones'] ?? null,
-                true
+            $payload['empresa_receptora_telefono'] = $this->primerTextoReceptorOpcional(
+                $receptor->contacto_telefono,
+                $receptor->telefono,
+                $receptor->celular
+            );
+            $payload['empresa_receptora_correo'] = $this->primerTextoReceptorOpcional(
+                $receptor->contacto_correo,
+                $receptor->email
+            );
+            $payload['empresa_receptora_id'] = null;
+            $payload['proveedor_receptor_id'] = $proveedorReceptorId;
+            $payload['configuracion_condiciones'] = $this->limpiarMetaReceptorEnConfiguracionJson(
+                $payload['configuracion_condiciones'] ?? null
             );
         } else {
             $cliente = CarteraCliente::query()
                 ->where('proveedor_id', $proveedorId)
                 ->findOrFail((int) $payload['empresa_receptora_id']);
 
-            $payload['empresa_receptora_nombre'] = $cliente->nombre;
+            $payload['empresa_receptora_nombre'] = $this->valorReceptorNoVacio($cliente->nombre, 'Contacto');
             $payload['empresa_receptora_puesto'] = $cliente->puesto;
-            $payload['empresa_receptora_empresa'] = $cliente->empresa;
+            $payload['empresa_receptora_empresa'] = $this->valorReceptorNoVacio($cliente->empresa, 'Empresa');
             $payload['empresa_receptora_alias'] = $cliente->alias_empresa;
             $payload['empresa_receptora_telefono'] = $cliente->telefono;
             $payload['empresa_receptora_correo'] = $cliente->correo;
-            $payload['configuracion_condiciones'] = $this->mergeReceptorMetaEnConfiguracion(
-                $payload['configuracion_condiciones'] ?? null,
-                false
+            $payload['proveedor_receptor_id'] = null;
+            $payload['configuracion_condiciones'] = $this->limpiarMetaReceptorEnConfiguracionJson(
+                $payload['configuracion_condiciones'] ?? null
             );
         }
 
@@ -501,17 +615,90 @@ class ProveedorPresupuestoController extends Controller
     }
 
     /**
-     * Marca en JSON si el id en empresa_receptora_id corresponde a un proveedor del catálogo (no hay columna dedicada).
+     * Primer texto no vacío; si no hay, usa el último argumento (reserva) o «—».
+     *
+     * @param  string|null  ...$candidatos  último puede ser reserva fija
+     */
+    private function valorReceptorNoVacio(?string $primero, ?string ...$candidatos): string
+    {
+        $todos = array_merge([$primero], $candidatos);
+        foreach ($todos as $c) {
+            if ($c === null) {
+                continue;
+            }
+            $t = trim((string) $c);
+            if ($t !== '') {
+                return $t;
+            }
+        }
+
+        return '—';
+    }
+
+    /**
+     * @param  string|null  ...$vals
+     */
+    private function primerTextoReceptorOpcional(?string ...$vals): ?string
+    {
+        foreach ($vals as $v) {
+            if ($v === null) {
+                continue;
+            }
+            $t = trim((string) $v);
+            if ($t !== '') {
+                return $t;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Quita claves legadas del JSON (el id de receptor catálogo vive en proveedor_receptor_id).
      *
      * @param  array<string, mixed>|null  $configuracion
      * @return array<string, mixed>
      */
-    private function mergeReceptorMetaEnConfiguracion(?array $configuracion, bool $receptorEsProveedorCatalogo): array
+    private function limpiarMetaReceptorEnConfiguracionJson(?array $configuracion): array
     {
         $config = is_array($configuracion) ? $configuracion : [];
-        $config['receptor_es_proveedor_catalogo'] = $receptorEsProveedorCatalogo;
+        unset($config['proveedor_receptor_id'], $config['receptor_es_proveedor_catalogo']);
 
         return $config;
+    }
+
+    /**
+     * Id del proveedor del catálogo receptor: columna proveedor_receptor_id; compatibilidad JSON / empresa_receptora_id antigua.
+     */
+    private function resolverIdProveedorReceptorCatalogo(Presupuesto $presupuesto): ?int
+    {
+        if ($presupuesto->proveedor_receptor_id) {
+            return (int) $presupuesto->proveedor_receptor_id;
+        }
+
+        $config = $presupuesto->configuracion_condiciones;
+        if (is_array($config) && isset($config['proveedor_receptor_id'])) {
+            $id = (int) $config['proveedor_receptor_id'];
+
+            return $id > 0 ? $id : null;
+        }
+
+        $id = $presupuesto->empresa_receptora_id;
+        if (! $id) {
+            return null;
+        }
+
+        $emisorId = (int) $presupuesto->proveedor_id;
+        $enCartera = CarteraCliente::query()
+            ->where('proveedor_id', $emisorId)
+            ->whereKey((int) $id)
+            ->exists();
+
+        if ($enCartera) {
+            return null;
+        }
+
+        return Proveedor::query()->whereKey((int) $id)->exists() ? (int) $id : null;
     }
 
     /**
@@ -519,7 +706,7 @@ class ProveedorPresupuestoController extends Controller
      */
     private function notificarUsuariosProveedorReceptor(Presupuesto $presupuesto, bool $esReenvio = false): void
     {
-        $id = $presupuesto->empresa_receptora_id;
+        $id = $this->resolverIdProveedorReceptorCatalogo($presupuesto);
         if (! $id) {
             return;
         }
@@ -539,27 +726,16 @@ class ProveedorPresupuestoController extends Controller
      */
     private function debeNotificarComoProveedorCatalogo(Presupuesto $presupuesto): bool
     {
+        if ($presupuesto->proveedor_receptor_id) {
+            return true;
+        }
+
         $config = $presupuesto->configuracion_condiciones;
         if (is_array($config) && array_key_exists('receptor_es_proveedor_catalogo', $config)) {
             return (bool) $config['receptor_es_proveedor_catalogo'];
         }
 
-        $id = $presupuesto->empresa_receptora_id;
-        if (! $id) {
-            return false;
-        }
-
-        $emisorId = (int) $presupuesto->proveedor_id;
-        $enCartera = CarteraCliente::query()
-            ->where('proveedor_id', $emisorId)
-            ->whereKey((int) $id)
-            ->exists();
-
-        if ($enCartera) {
-            return false;
-        }
-
-        return Proveedor::query()->whereKey((int) $id)->exists();
+        return $this->resolverIdProveedorReceptorCatalogo($presupuesto) !== null;
     }
 
     /**
@@ -843,7 +1019,7 @@ class ProveedorPresupuestoController extends Controller
     public function generarPdf(Proveedor $proveedor, Presupuesto $presupuesto): Response
     {
         try {
-            if ($presupuesto->proveedor_id !== $proveedor->id) {
+            if (! $this->presupuestoAccesiblePorProveedor($proveedor, $presupuesto)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Presupuesto no pertenece a este proveedor.',
@@ -925,7 +1101,7 @@ class ProveedorPresupuestoController extends Controller
     public function enviar(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
     {
         try {
-            if ($presupuesto->proveedor_id !== $proveedor->id) {
+            if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
                 return $this->error('Presupuesto no pertenece a este proveedor.', null, 403);
             }
 
@@ -1010,7 +1186,7 @@ class ProveedorPresupuestoController extends Controller
     public function reenviar(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
     {
         try {
-            if ($presupuesto->proveedor_id !== $proveedor->id) {
+            if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
                 return $this->error('Presupuesto no pertenece a este proveedor.', null, 403);
             }
 

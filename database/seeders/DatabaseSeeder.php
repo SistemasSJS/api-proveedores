@@ -46,9 +46,9 @@ class DatabaseSeeder extends Seeder
                 CotizacionesSeeder::class,
 
                 // Presupuestos para todos los proveedores (borrador, enviado, aceptado, rechazado, vencido)
-                PresupuestosSeeder::class,
+                // PresupuestosSeeder::class,
                 // Presupuestos con 1, 5, 10, 20, 30, 50 conceptos (para pruebas de duplicación/listas)
-                PresupuestosVariadosConceptosSeeder::class,
+                // PresupuestosVariadosConceptosSeeder::class,
                 // PedidosSeeder::class,
 
                 // OrdenCompraSeeder::class,
@@ -77,9 +77,9 @@ class DatabaseSeeder extends Seeder
                 // OrdenCompraSeeder::class,
 
                 // 5. Solicitudes de pago basadas en cotizaciones
-                SolicitudPagoSeeder::class,
+                // SolicitudPagoSeeder::class,
 
-                PagosSPPTestSeeder::class,
+                // PagosSPPTestSeeder::class,
             ]);
 
             echo "\n";

@@ -211,7 +211,7 @@
   <div class="email-container">
     <!-- Header -->
     <div class="header">
-      <img src="{{ config('app.url') }}/assets/logos/logo-gestionpro.png" alt="GestiónPro" class="logo">
+      @include('emails.partials.logo-app')
       <h1>Abono en solicitud de pago</h1>
       <p>Sistema de Gestion de Proveedores</p>
     </div>

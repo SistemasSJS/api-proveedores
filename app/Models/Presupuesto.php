@@ -22,6 +22,7 @@ class Presupuesto extends BaseModel
         'uuid' => 'Uuid',
         'numero_presupuesto' => 'NumeroPresupuesto',
         'proveedor_id' => 'ProveedorId',
+        'proveedor_receptor_id' => 'ProveedorReceptorId',
         'empresa_receptora_id' => 'EmpresaReceptoraId',
         'user_id' => 'UserId',
         'fecha_emision' => 'FechaEmision',
@@ -47,11 +48,10 @@ class Presupuesto extends BaseModel
     /**
      * Receptor del presupuesto (quien recibe la cotización):
      * - Sin empresa_receptora_id: solo datos en texto (empresa_receptora_*), p. ej. cliente que no está en cartera.
-     * - Con empresa_receptora_id + cartera: id de {@see CarteraCliente} del proveedor emisor; la relación empresaReceptora() aplica.
-     * - Con empresa_receptora_id + proveedor catálogo: mismo campo numérico apunta a {@see Proveedor}; la relación empresaReceptora() no
-     *   coincide con ese id (no hay columna nueva). El tipo queda en configuracion_condiciones.receptor_es_proveedor_catalogo.
+     * - Con empresa_receptora_id: id de {@see CarteraCliente} del emisor (FK); la relación empresaReceptora() aplica.
+     * - Proveedor del catálogo: empresa_receptora_id null; proveedor_receptor_id → {@see Proveedor} (FK).
      * proveedor_id: proveedor emisor del presupuesto. user_id: usuario que creó/editó el registro.
-     * configuracion_condiciones: JSON (términos/opciones); puede incluir receptor_es_proveedor_catalogo (bool) sin migración adicional.
+     * configuracion_condiciones: JSON (términos/opciones); no usar para id de receptor (columna dedicada).
      */
     protected $fillable = [
         'uuid',
@@ -87,6 +87,7 @@ class Presupuesto extends BaseModel
         'token_publico',
         'proveedor_id',
         'empresa_receptora_id',
+        'proveedor_receptor_id',
         'user_id',
     ];
 
@@ -307,6 +308,7 @@ class Presupuesto extends BaseModel
         return [
             'proveedor',
             'empresaReceptora',
+            'proveedorReceptor',
             'user',
             'conceptos',
         ];
@@ -322,11 +324,18 @@ class Presupuesto extends BaseModel
 
     /**
      * Cliente de cartera del emisor cuando empresa_receptora_id es un id de {@see CarteraCliente}.
-     * Si el receptor es un proveedor del catálogo, el id no corresponde a cartera: no usar esta relación o será incoherente.
      */
     public function empresaReceptora(): BelongsTo
     {
         return $this->belongsTo(CarteraCliente::class, 'empresa_receptora_id');
+    }
+
+    /**
+     * Proveedor del catálogo receptor (si aplica); mutuamente excluyente con cartera salvo datos legados.
+     */
+    public function proveedorReceptor(): BelongsTo
+    {
+        return $this->belongsTo(Proveedor::class, 'proveedor_receptor_id');
     }
 
     /**
@@ -569,6 +578,14 @@ class Presupuesto extends BaseModel
     public function filterByProveedorId($query, $value)
     {
         return $query->whereIn('proveedor_id', explode(',', (string) $value));
+    }
+
+    /**
+     * Filtro por proveedor receptor (presupuestos recibidos en el catálogo).
+     */
+    public function filterByProveedorReceptorId($query, $value)
+    {
+        return $query->whereIn('proveedor_receptor_id', explode(',', (string) $value));
     }
 
     /**

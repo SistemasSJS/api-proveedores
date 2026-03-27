@@ -9,6 +9,7 @@
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f8f9fa; }
     .email-container { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     .header { background: linear-gradient(135deg, #2196F3, #42A5F5); color: #fff; padding: 30px 20px; text-align: center; }
+    .logo { max-width: 80px; height: auto; margin-bottom: 15px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
     .content { padding: 30px 20px; }
     .greeting { font-size: 18px; font-weight: 500; margin-bottom: 20px; color: #2c3e50; }
     .success-box { background: #d4edda; border-left: 4px solid #28a745; padding: 15px; margin: 20px 0; border-radius: 4px; color: #155724; }
@@ -19,6 +20,7 @@
 <body>
   <div class="email-container">
     <div class="header">
+      @include('emails.partials.logo-app')
       <h1>Presupuesto enviado</h1>
       <p>Sistema de Gestión de Proveedores</p>
     </div>

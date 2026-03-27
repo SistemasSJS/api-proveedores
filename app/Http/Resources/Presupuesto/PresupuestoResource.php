@@ -29,6 +29,20 @@ class PresupuestoResource extends JsonResource
             ?? $this->proveedor?->razon_social
             ?? null;
 
+        $configCond = $this->configuracion_condiciones;
+        $proveedorReceptorId = (int) ($this->proveedor_receptor_id ?? 0);
+        if ($proveedorReceptorId <= 0 && is_array($configCond) && isset($configCond['proveedor_receptor_id'])) {
+            $proveedorReceptorId = (int) $configCond['proveedor_receptor_id'];
+        }
+        $receptorEsProveedorCatalogo = $proveedorReceptorId > 0
+            || (is_array($configCond) && ! empty($configCond['receptor_es_proveedor_catalogo']));
+        $empresaReceptoraIdRespuesta = $this->empresaReceptora?->id
+            ?? ($proveedorReceptorId > 0 ? $proveedorReceptorId : null)
+            ?? $this->empresa_receptora_id;
+        $origenReceptor = $receptorEsProveedorCatalogo
+            ? 'proveedor'
+            : ($this->empresa_receptora_id ? 'cartera' : 'captura');
+
         return [
             'id' => $this->id,
             'uuid' => $this->uuid,
@@ -59,15 +73,18 @@ class PresupuestoResource extends JsonResource
                 'id' => $this->proveedor?->id ?? $this->proveedor_id,
                 'nombre' => self::upper($proveedorNombre),
             ],
+            'proveedor_receptor_id' => $this->proveedor_receptor_id !== null
+                ? (int) $this->proveedor_receptor_id
+                : null,
             'empresa_receptora' => [
-                'id' => $this->empresaReceptora?->id ?? $this->empresa_receptora_id,
+                'id' => $empresaReceptoraIdRespuesta,
                 'nombre' => $this->empresaReceptora?->nombre ?? $this->empresa_receptora_nombre,
                 'puesto' => $this->empresaReceptora?->puesto ?? $this->empresa_receptora_puesto,
                 'empresa' => $this->empresaReceptora?->empresa ?? $this->empresa_receptora_empresa,
                 'alias_empresa' => $this->empresa_receptora_alias ?? $this->empresaReceptora?->alias_empresa,
                 'telefono' => $this->empresa_receptora_telefono,
                 'correo' => $this->empresa_receptora_correo,
-                'origen' => $this->empresa_receptora_id ? 'cartera' : 'captura',
+                'origen' => $origenReceptor,
             ],
             'user' => $this->whenLoaded('user', function () {
                 return [
