@@ -326,6 +326,8 @@ class ConstruccSolicitudPagoController extends Controller
             'equipo' => ['nullable', 'string'],
             'equipo_id' => ['nullable', 'integer'],
             //  
+            // usuario que valido la spp con monto parcial
+            'usuario_monto_nombre' => ['nullable', 'string'],
             'monto_autorizado' => ['nullable', 'numeric'],
             'notas_autorizacion' => ['nullable', 'string'],
         ]);
@@ -336,11 +338,14 @@ class ConstruccSolicitudPagoController extends Controller
                 'verificada' => true,
             ];
 
+            // REgistro para el usuario que valido la spp
+            $updateData['validacion_usuario_id'] = $request->usuario_id;
+            $updateData['validacion_usuario_nombre'] = $request->usuario_monto_nombre;
+            $updateData['validacion_fecha'] = now();
+
             // Si se proporciona un monto autorizado, se actualiza el monto autorizado y se registra el usuario que autorizó.
             if ($request->has('monto_autorizado')) {
                 $updateData['validacion_monto'] = $request->monto_autorizado;
-                $updateData['validacion_usuario_id'] = $request->usuario_id;
-                $updateData['validacion_fecha'] = now();
                 $updateData['validacion_motivo'] = $request->notas_autorizacion;
 
                 // los campos de validacion de monto parcial se actualizan en el endpoint de autorizar parcial
@@ -348,6 +353,7 @@ class ConstruccSolicitudPagoController extends Controller
                 // si no cambian se toman como el monto autorizado y el usuario que autorizo.
                 $updateData['monto_autorizado'] = $request->monto_autorizado;
                 $updateData['usuario_autorizo_parcial_id'] = $request->usuario_id;
+                $updateData['usuario_autorizo_parcial_nombre'] = $request->usuario_monto_nombre;
                 $updateData['fecha_autorizacion_parcial'] = now();
                 $updateData['motivo_autorizacion_parcial'] = $request->notas_autorizacion;
             }

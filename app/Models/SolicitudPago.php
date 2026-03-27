@@ -141,9 +141,12 @@ class SolicitudPago extends BaseModel
 
 
         // CAMPOS PARA VALIDACION DE MONTO PARCIAL
-        'validacion_monto',
+        // datos del usuario que valido la spp
         'validacion_usuario_id',
+        'validacion_usuario_nombre',
         'validacion_fecha',
+        // monto validado por el usuario
+        'validacion_monto',
         'validacion_motivo',
 
     ];
