@@ -180,8 +180,7 @@ class ProveedorPresupuestoController extends Controller
                     ->exists()) {
                     return $this->error('El proveedor no existe.', null, 422);
                 }
-            }
-            else {
+            } else {
                 if (! empty($validated['empresa_receptora_id']) && ! CarteraCliente::query()
                     ->where('proveedor_id', $proveedor->id)
                     ->whereKey((int) $validated['empresa_receptora_id'])
@@ -190,7 +189,7 @@ class ProveedorPresupuestoController extends Controller
                 }
             }
 
-    
+
             $presupuesto = DB::transaction(function () use ($request, $validated) {
                 $payload = collect($validated)->except(['conceptos'])->toArray();
                 $payload['user_id'] = $request->user()->id;
@@ -960,17 +959,22 @@ class ProveedorPresupuestoController extends Controller
                         new PresupuestoEnviadoMail($presupuesto, $enlacePublico, $nombreReceptor)
                     );
                 }
-
                 $usuarios = $proveedor->usuariosActivos()->get();
+
                 foreach ($usuarios as $user) {
                     $user->notify(new PresupuestoEnviadoNotification($presupuesto));
                 }
-                $primeraNotif = $usuarios->isNotEmpty()
-                    ? $usuarios->first()->notifications()
+
+                // 🔥 usar usuario principal, no el primero random
+                $usuarioPrincipal = $proveedor->usuarioPrincipal();
+
+                $primeraNotif = $usuarioPrincipal
+                    ? $usuarioPrincipal->notifications()
                     ->where('type', PresupuestoEnviadoNotification::class)
                     ->latest()
                     ->first()
                     : null;
+
                 $presupuesto->addNotification($primeraNotif?->id);
 
                 if ($this->debeNotificarComoProveedorCatalogo($presupuesto)) {

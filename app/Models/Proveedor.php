@@ -246,9 +246,11 @@ class Proveedor extends BaseModel
 
     public function usuariosActivos(): BelongsToMany
     {
-        return $this->users()->wherePivot('activo', true);
+        return $this->users()
+            ->wherePivot('activo', true)
+            ->wherePivotNull('fecha_desasignacion')
+            ->where('users.status', true);
     }
-
     public function usuariosSecundarios(): BelongsToMany
     {
         return $this->users()

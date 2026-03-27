@@ -77,9 +77,9 @@ class DatabaseSeeder extends Seeder
                 // OrdenCompraSeeder::class,
 
                 // 5. Solicitudes de pago basadas en cotizaciones
-                // SolicitudPagoSeeder::class,
+                SolicitudPagoSeeder::class,
 
-                // PagosSPPTestSeeder::class,
+                PagosSPPTestSeeder::class,
             ]);
 
             echo "\n";
