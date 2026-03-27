@@ -12,7 +12,7 @@ return new class extends Migration
             $table->decimal('validacion_monto', 12, 2)->nullable()->after('monto_autorizado');
             $table->unsignedBigInteger('validacion_usuario_id')->nullable()->after('validacion_monto');
             $table->timestamp('validacion_fecha')->nullable()->after('validacion_usuario_id');
-            $table->text('validacion_motivo')->nullable()->after('validacion_validacion_fecha');
+            $table->text('validacion_motivo')->nullable()->after('validacion_fecha');
         });
     }
 
