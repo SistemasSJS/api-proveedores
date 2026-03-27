@@ -15,7 +15,10 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Mail\PresupuestoEnviadoMail;
+use App\Models\User;
 use App\Notifications\Presupuesto\PresupuestoEnviadoNotification;
+use App\Notifications\Presupuesto\PresupuestoRecibidoClienteProveedorNotification;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -171,11 +174,20 @@ class ProveedorPresupuestoController extends Controller
                 return $this->error('El proveedor del payload no coincide con el proveedor de la ruta.', null, 422);
             }
 
-            if (! empty($validated['empresa_receptora_id']) && ! CarteraCliente::query()
-                ->where('proveedor_id', $proveedor->id)
-                ->whereKey((int) $validated['empresa_receptora_id'])
-                ->exists()) {
-                return $this->error('El cliente de cartera no pertenece al proveedor indicado.', null, 422);
+            if (! empty($validated['es_proveedor_receptor']) && $validated['es_proveedor_receptor'] === true) {
+                if (! empty($validated['empresa_receptora_id']) && ! Proveedor::query()
+                    ->whereKey((int) $validated['empresa_receptora_id'])
+                    ->exists()) {
+                    return $this->error('El proveedor no existe.', null, 422);
+                }
+            }
+            else {
+                if (! empty($validated['empresa_receptora_id']) && ! CarteraCliente::query()
+                    ->where('proveedor_id', $proveedor->id)
+                    ->whereKey((int) $validated['empresa_receptora_id'])
+                    ->exists()) {
+                    return $this->error('El cliente de cartera no pertenece al proveedor indicado.', null, 422);
+                }
             }
 
             $presupuesto = DB::transaction(function () use ($request, $validated) {
@@ -194,7 +206,14 @@ class ProveedorPresupuestoController extends Controller
                 $this->sincronizarConceptos($presupuesto, $validated['conceptos']);
                 $presupuesto->recalcularDesdeConceptos();
                 $presupuesto->save();
-                
+
+                // si el proveedor al que se le envia el presupuesto esta registrado en la cartera de clientes, se notifica al cliente
+                if (! empty($payload['empresa_receptora_id'])) {
+                    // utilizar 
+                }
+                else {
+
+
 
                 return $presupuesto->fresh(Presupuesto::eagerLodable());
             });
@@ -501,7 +520,7 @@ class ProveedorPresupuestoController extends Controller
         try {
             // Verificar si GD está disponible antes de generar el PDF
             $gdDisponible = extension_loaded('gd');
-            
+
             if (!$gdDisponible) {
                 $this->log('Advertencia: GD no está disponible. Las imágenes PNG/GIF no se mostrarán.', [
                     'numero_presupuesto' => $numeroPresupuesto,
@@ -539,7 +558,7 @@ class ProveedorPresupuestoController extends Controller
             return $pdf->download($filename);
         } catch (\Exception $e) {
             $errorMessage = $e->getMessage();
-            
+
             // Mensaje más claro si el error es por falta de GD
             if (stripos($errorMessage, 'GD extension') !== false || stripos($errorMessage, 'gd') !== false) {
                 $errorMessage = 'La extensión GD de PHP es requerida para generar PDFs con imágenes. Por favor, instala la extensión GD en tu servidor PHP.';
@@ -673,7 +692,7 @@ class ProveedorPresupuestoController extends Controller
 
         try {
             $logoPath = null;
-            
+
             // Si el logo es una URL completa, no podemos convertirla sin GD
             if (filter_var($proveedor->logo, FILTER_VALIDATE_URL)) {
                 return '';
@@ -694,7 +713,7 @@ class ProveedorPresupuestoController extends Controller
 
             // Detectar el tipo de imagen por extensión
             $extension = strtolower(pathinfo($logoPath, PATHINFO_EXTENSION));
-            
+
             // Verificar si GD está disponible para PNG/GIF
             // JPEG puede procesarse sin GD
             if (in_array($extension, ['png', 'gif']) && !extension_loaded('gd')) {
@@ -717,7 +736,7 @@ class ProveedorPresupuestoController extends Controller
             } elseif ($extension === 'gif') {
                 $mimeType = 'image/gif';
             }
-            
+
             return 'data:' . $mimeType . ';base64,' . base64_encode($imageData);
         } catch (\Exception $e) {
             $this->log('Error al convertir logo del proveedor a base64', [
@@ -858,11 +877,13 @@ class ProveedorPresupuestoController extends Controller
                 }
                 $primeraNotif = $usuarios->isNotEmpty()
                     ? $usuarios->first()->notifications()
-                        ->where('type', PresupuestoEnviadoNotification::class)
-                        ->latest()
-                        ->first()
+                    ->where('type', PresupuestoEnviadoNotification::class)
+                    ->latest()
+                    ->first()
                     : null;
                 $presupuesto->addNotification($primeraNotif?->id);
+
+                $this->notificarClienteProveedorRegistrado($presupuesto, false);
             });
 
             $presupuesto->refresh()->load(Presupuesto::eagerLodable());
@@ -876,6 +897,9 @@ class ProveedorPresupuestoController extends Controller
             $this->log('Error al enviar presupuesto', [
                 'presupuesto_id' => $presupuesto->id,
                 'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+                'code' => $e->getCode(),
             ]);
 
             return $this->error('No fue posible enviar el presupuesto.', [$e->getMessage()], 500);
@@ -908,6 +932,8 @@ class ProveedorPresupuestoController extends Controller
             Mail::to($presupuesto->empresa_receptora_correo)->send(
                 new PresupuestoEnviadoMail($presupuesto, $enlacePublico, $nombreReceptor)
             );
+
+            $this->notificarClienteProveedorRegistrado($presupuesto, true);
 
             $this->log('Presupuesto reenviado por correo', ['presupuesto_id' => $presupuesto->id]);
 
@@ -1028,6 +1054,39 @@ class ProveedorPresupuestoController extends Controller
                 'message' => 'No fue posible generar el PDF.',
                 'errors' => [$e->getMessage()],
             ], 500);
+        }
+    }
+
+    /**
+     * Usuarios con cuenta en la plataforma, correo = cliente del presupuesto y proveedor activo distinto al emisor.
+     *
+     * @return Collection<int, User>
+     */
+    private function usuariosClienteProveedorRegistrado(Presupuesto $presupuesto): Collection
+    {
+        $email = strtolower(trim((string) $presupuesto->empresa_receptora_correo));
+        if ($email === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return collect();
+        }
+
+        $emisorId = (int) $presupuesto->proveedor_id;
+
+        return User::query()
+            ->whereRaw('LOWER(email) = ?', [$email])
+            ->whereHas('proveedoresActivos', function ($q) use ($emisorId) {
+                $q->where('proveedores.id', '!=', $emisorId);
+            })
+            ->get();
+    }
+
+    /**
+     * Notifica en app (y FCM) a clientes que también son usuarios de otro proveedor.
+     */
+    private function notificarClienteProveedorRegistrado(Presupuesto $presupuesto, bool $esReenvio = false): void
+    {
+        $usuarios = $this->usuariosClienteProveedorRegistrado($presupuesto);
+        foreach ($usuarios as $user) {
+            $user->notify(new PresupuestoRecibidoClienteProveedorNotification($presupuesto, $esReenvio));
         }
     }
 }

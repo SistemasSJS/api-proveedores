@@ -40,7 +40,8 @@ class ProveedorSolicitudPagoController extends Controller
         $order = $request->input('order', 'desc');
         $perPage = $request->input('per_page', 10);
 
-        $countFilters = array_diff_key($filters, array_flip(['estado_solicitud']));
+        // Los contadores por pestaña deben reflejar totales sin el límite «últimas N» ni el filtro de estado activo
+        $countFilters = array_diff_key($filters, array_flip(['estado_solicitud', 'ultimas_spp']));
         $segmentCounts = SolicitudPago::query()
             ->where('proveedor_id', $proveedor->id)
             ->when(! empty($countFilters), fn($q) => $q->filter($countFilters))
@@ -806,15 +807,14 @@ class ProveedorSolicitudPagoController extends Controller
      */
     public function conteoPorEstado(Request $request, Proveedor $proveedor): JsonResponse
     {
-        // Obtener TODOS los filtros disponibles del modelo
         $filters = $request->only(SolicitudPago::getFilters());
+        unset($filters['ultimas_spp'], $filters['estado_solicitud']);
 
-        // Base query con filtros opcionales
+        // Base query con filtros opcionales (sin limitar a últimas N ni a un solo estado)
         $baseQuery = SolicitudPago::query()
             ->where('proveedor_id', $proveedor->id);
 
-        // Aplicar filtros si existen
-        if (!empty($filters)) {
+        if (! empty($filters)) {
             $baseQuery->filter($filters);
         }
 
@@ -829,7 +829,7 @@ class ProveedorSolicitudPagoController extends Controller
             // => (clone $baseQuery)->where('estado_solicitud', 'rechazada')->count(),
             'pagadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PAGADO->value)->count(),
             // => (clone $baseQuery)->where('estado_solicitud', 'pagada')->count(),
-            // 'sin_factura' => (clone $baseQuery)->where('tiene_factura', false)->count(),
+            'sin_factura' => (clone $baseQuery)->where('tiene_factura', false)->count(),
         ];
 
         return $this->success($conteos, 'Conteo por estado obtenido correctamente');

@@ -60,8 +60,11 @@
         </div>
         @endif
       </div>
+      <div style="text-align:left;margin:20px 0;">
+        @include('emails.presupuesto.partials.detalles-presupuesto', ['presupuesto' => $presupuesto])
+      </div>
       <div class="info-box">
-        <strong>Puedes ver el presupuesto completo, descargarlo en PDF, compartirlo, aceptarlo o rechazarlo desde el siguiente enlace:</strong>
+        <strong>En este correo va adjunto el PDF del presupuesto.</strong> También puedes verlo, compartirlo, aceptarlo o rechazarlo desde el enlace seguro:
       </div>
       <div style="text-align: center;">
         <a href="{{ $enlacePublico }}" class="action-button">Ver presupuesto</a>

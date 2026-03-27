@@ -27,6 +27,10 @@
       <div class="success-box">
         El presupuesto #{{ $presupuesto->numero_presupuesto }} fue enviado correctamente a {{ $presupuesto->empresa_receptora_empresa ?? $presupuesto->empresa_receptora_nombre ?? 'el cliente' }}.
       </div>
+      <div style="background:#f8f9fa;border:1px solid #e9ecef;border-radius:8px;padding:16px;margin:20px 0;">
+        @include('emails.presupuesto.partials.detalles-presupuesto', ['presupuesto' => $presupuesto])
+      </div>
+      <p style="font-size:14px;color:#6c757d;">Adjuntamos el PDF del presupuesto para tu archivo.</p>
       <p><a href="{{ $urlDetalle }}" class="action-button">Ver detalle del presupuesto</a></p>
     </div>
     <div class="footer">Mensaje automático - Sistema de Gestión de Proveedores</div>

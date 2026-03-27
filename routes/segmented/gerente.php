@@ -26,7 +26,7 @@ use App\Http\Controllers\ProveedorPresupuestoController;
 use App\Http\Controllers\ProveedorPresupuestoCarteraClientesController;
 
 /**
- * GESTIÃ“N DE PROVEEDORES
+ * GESTIÓN DE PROVEEDORES
  */
 Route::prefix('proveedores')
     ->middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::GERENTE->value])
@@ -100,7 +100,7 @@ Route::prefix('proveedores')
         });
 
         /**
-         * CATEGORÃAS DEL PROVEEDOR
+         * CATEGORÍAS DEL PROVEEDOR
          */
         Route::prefix('{proveedor}/categorias')->middleware(['proveedor.access'])->group(function () {
             Route::get('/', [ProveedorCategoriaController::class, 'index'])->middleware(['audit']);
@@ -207,7 +207,7 @@ Route::prefix('proveedores')
         Route::prefix('{proveedor}/cotizaciones')->middleware(['proveedor.access'])->group(function () {
             // Listados
             Route::get('/', [ProveedorCotizacionController::class, 'index'])->middleware(['audit']);        // Paginado
-            Route::get('/all', [ProveedorCotizacionController::class, 'uindex'])->middleware(['audit']);    // Sin paginaciÃ³n
+            Route::get('/all', [ProveedorCotizacionController::class, 'uindex'])->middleware(['audit']);    // Sin paginación
 
             // CRUD
             Route::post('/', [ProveedorCotizacionController::class, 'store'])->middleware(['audit']);
@@ -265,19 +265,19 @@ Route::prefix('proveedores')
 
             // Listados
             Route::get('/', [ProveedorSolicitudPagoController::class, 'index'])->middleware(['audit']);        // Paginado
-            Route::get('/all', [ProveedorSolicitudPagoController::class, 'uindex'])->middleware(['audit']);    // Sin paginaciÃ³n
-            Route::get('/historico', [ProveedorSolicitudPagoController::class, 'historico'])->middleware(['audit']); // HistÃ³rico OC y SP
+            Route::get('/all', [ProveedorSolicitudPagoController::class, 'uindex'])->middleware(['audit']);    // Sin paginación
+            Route::get('/historico', [ProveedorSolicitudPagoController::class, 'historico'])->middleware(['audit']); // Histórico OC y SP
             Route::get('/conteo-por-estado', [ProveedorSolicitudPagoController::class, 'conteoPorEstado'])->middleware(['audit']); // Conteo por segmento
-            Route::get('/dashboard/metricas', [ProveedorSolicitudPagoController::class, 'getDashboardMetrics'])->middleware(['audit']); // MÃ©tricas dashboard
+            Route::get('/dashboard/metricas', [ProveedorSolicitudPagoController::class, 'getDashboardMetrics'])->middleware(['audit']); // Métricas dashboard
 
-            // Empresas de construcciÃ³n para bÃºsqueda
+            // Empresas de construcción para búsqueda
             Route::get('/empresas-constructoras', [ProveedorSolicitudPagoController::class, 'empresasConstructoras'])->middleware(['audit']);
 
             // Crear solicitud
             Route::post('/', [ProveedorSolicitudPagoController::class, 'store'])->middleware(['audit']);
             Route::post('/sin-factura', [ProveedorSolicitudPagoController::class, 'storeSinFactura'])->middleware(['audit']);
 
-            // Operaciones sobre una solicitud especÃ­fica
+            // Operaciones sobre una solicitud específica
             Route::get('/{solicitudPago}', [ProveedorSolicitudPagoController::class, 'show'])->middleware(['audit']);       // Detalle
             Route::put('/{solicitudPago}', [ProveedorSolicitudPagoController::class, 'update'])->middleware(['audit']);     // Actualizar
             Route::delete('/{solicitudPago}', [ProveedorSolicitudPagoController::class, 'destroy'])->middleware(['audit']); // Eliminar
@@ -305,7 +305,7 @@ Route::prefix('proveedores')
             ->name('proveedores.pagos-spp.descargar-comprobante');
 
         /**
-         * GESTIÃ“N DE Ã“RDENES DE COMPRA
+         * GESTIÓN DE ÓRDENES DE COMPRA
          */
         Route::prefix('{proveedor}/ordenes-compra')
             ->middleware(['proveedor.access'])
@@ -331,11 +331,11 @@ Route::prefix('proveedores')
                  * ESTAS RUTAS SON SOLO DE CONSULTA, Y SE HACE MEDIATE API_KEY
                  * NO SE PERMITE CREAR, ACTUALIZAR O ELIMINAR DESDE AQUI
                  */
-                // // === DASHBOARD Y ESTADÃSTICAS ===
+                // // === DASHBOARD Y ESTADÍSTICAS ===
                 // Route::get('/dashboard', [ProveedorOrdenCompraDashboardController::class, 'dashboard'])->middleware(['audit']); // Dashboard completo
                 // Route::get('/dashboard/estado-general', [ProveedorOrdenCompraDashboardController::class, 'estadoGeneral'])->middleware(['audit']); // Estado OC/SP
                 // Route::get('/dashboard/actividad-reciente', [ProveedorOrdenCompraDashboardController::class, 'actividadReciente'])->middleware(['audit']); // Actividad
-                // Route::get('/dashboard/metricas', [ProveedorOrdenCompraDashboardController::class, 'metricas'])->middleware(['audit']); // MÃ©tricas rendimiento
+                // Route::get('/dashboard/metricas', [ProveedorOrdenCompraDashboardController::class, 'metricas'])->middleware(['audit']); // Métricas rendimiento
                 // Route::get('/dashboard/estadisticas', [ProveedorOrdenCompraDashboardController::class, 'estadisticas'])->middleware(['audit']); // Legacy (compatibilidad)
                 // Route::get('/alertas/sin-solicitudes', [ProveedorOrdenCompraDashboardController::class, 'ordenesSinSolicitudes'])->middleware(['audit']);
                 // Route::get('/contadores/sp', [ProveedorOrdenCompraDashboardController::class, 'contadores'])->middleware(['audit']);
@@ -353,57 +353,57 @@ Route::prefix('proveedores')
             });
 
         /**
-         * CONVERSIÃ“N DE Ã“RDENES DE COMPRA A SOLICITUDES DE PAGO
+         * CONVERSIÓN DE ÓRDENES DE COMPRA A SOLICITUDES DE PAGO
          */
         Route::prefix('{proveedor}/ordenes-compra-sp')
             ->middleware(['proveedor.access'])
             ->group(function () {
 
-                // === RUTAS DE CONVERSIÃ“N ===
+                // === RUTAS DE CONVERSIÓN ===
                 Route::post('/convert', [OrdenCompraSolicitudPagoController::class, 'store'])->middleware(['audit']); // Crear SP desde OC
-                Route::post('/validate', [OrdenCompraSolicitudPagoController::class, 'validateConversion'])->middleware(['audit']); // Pre-validar conversiÃ³n
+                Route::post('/validate', [OrdenCompraSolicitudPagoController::class, 'validateConversion'])->middleware(['audit']); // Pre-validar conversión
                 Route::get('/preview', [OrdenCompraSolicitudPagoController::class, 'getConversionPreview'])->middleware(['audit']); // Preview (datos pre-llenados)
                 Route::delete('/unlink', [OrdenCompraSolicitudPagoController::class, 'unlinkSolicitudPago'])->middleware(['audit']); // Desasociar SP de OC
 
-                // === RUTAS DE CONSULTA / MÃ‰TRICAS ===
+                // === RUTAS DE CONSULTA / MÉTRICAS ===
                 Route::get('/{ordenCompra}/history', [OrdenCompraSolicitudPagoController::class, 'getConversionHistory'])->middleware(['audit']); // Historial de conversiones
-                Route::get('/metricas', [OrdenCompraSolicitudPagoController::class, 'getMetricasConversion'])->middleware(['audit']); // MÃ©tricas de conversiÃ³n
+                Route::get('/metricas', [OrdenCompraSolicitudPagoController::class, 'getMetricasConversion'])->middleware(['audit']); // Métricas de conversión
                 Route::get('/recientes', [OrdenCompraSolicitudPagoController::class, 'getConversionesRecientes'])->middleware(['audit']); // Conversiones recientes
             });
 
 
         /**
-         * GESTIÃ“N DE EMPRESAS DE CONSTRUCCIÃ“N
+         * GESTIÓN DE EMPRESAS DE CONSTRUCCIÓN
          */
         /**
-         * GESTIÃ“N DE EMPRESAS DE CONSTRUCCIÃ“N
+         * GESTIÓN DE EMPRESAS DE CONSTRUCCIÓN
          */
         Route::prefix('{proveedor}/empresas-constructoras')
             ->middleware(['proveedor.access'])
             ->group(function () {
 
-                // ðŸ” Buscar empresas (por nombre, razÃ³n social o RFC)
+                // 🔍 Buscar empresas (por nombre, razón social o RFC)
                 Route::get('/search', [EmpresaConstruccController::class, 'search'])->middleware(['audit']);
 
-                // âœ… NUEVA RUTA: Obtener todas las empresas (sin paginaciÃ³n)
+                // ✅ NUEVA RUTA: Obtener todas las empresas (sin paginación)
                 Route::get('/all', [EmpresaConstruccController::class, 'all'])->middleware(['audit']);
 
-                // ðŸ“‹ Listado paginado de empresas
+                // 📋 Listado paginado de empresas
                 Route::get('/', [EmpresaConstruccController::class, 'index'])->middleware(['audit']);
 
-                // ðŸ†• Crear empresa y asociar a proveedor
+                // 🆕 Crear empresa y asociar a proveedor
                 Route::post('/', [EmpresaConstruccController::class, 'store'])->middleware(['audit']);
 
-                // ðŸ“ Obtener detalle de una empresa
+                // 📝 Obtener detalle de una empresa
                 Route::get('/{empresaConstrucc}', [EmpresaConstruccController::class, 'show'])->middleware(['audit']);
 
-                // ðŸ‘¥ Obtener usuarios de una empresa
+                // 👥 Obtener usuarios de una empresa
                 Route::get('/{empresaConstrucc}/usuarios', [EmpresaConstruccController::class, 'usuarios'])->middleware(['audit']);
 
-                // âœï¸ Actualizar empresa existente
+                // ✏️ Actualizar empresa existente
                 Route::put('/{empresaConstrucc}', [EmpresaConstruccController::class, 'update'])->middleware(['audit']);
 
-                // âŒ Desasociar o desactivar empresa
+                // ❌ Desasociar o desactivar empresa
                 Route::delete('/{empresaConstrucc}', [EmpresaConstruccController::class, 'destroy'])->middleware(['audit']);
             });
     });

@@ -14,6 +14,7 @@
     .success-box { background: #d4edda; border-left: 4px solid #28a745; padding: 15px; margin: 20px 0; border-radius: 4px; color: #155724; }
     .action-button { display: inline-block; background: #28a745; color: #fff; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 20px 0; }
     .footer { background: #343a40; color: #fff; padding: 15px; text-align: center; font-size: 12px; }
+    .card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 16px; margin: 16px 0; }
   </style>
 </head>
 <body>
@@ -27,6 +28,10 @@
       <div class="success-box">
         {{ $presupuesto->empresa_receptora_empresa ?? $presupuesto->empresa_receptora_nombre ?? 'El cliente' }} aceptó el presupuesto #{{ $presupuesto->numero_presupuesto }}.
       </div>
+      <div class="card">
+        @include('emails.presupuesto.partials.detalles-presupuesto', ['presupuesto' => $presupuesto])
+      </div>
+      <p style="font-size:14px;color:#6c757d;">Adjuntamos el PDF del presupuesto aceptado.</p>
       <p><a href="{{ $urlDetalle }}" class="action-button">Ver detalle del presupuesto</a></p>
     </div>
     <div class="footer">Mensaje automático - Sistema de Gestión de Proveedores</div>

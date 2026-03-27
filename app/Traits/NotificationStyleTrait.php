@@ -236,6 +236,18 @@ trait NotificationStyleTrait
                     'style_class' => 'medium-notification',
                     'is_payment' => false,
                 ],
+                'recibido_cliente_proveedor' => [
+                    'color' => 'primary',
+                    'icon' => 'mail-unread-outline',
+                    'style_class' => 'primary-notification',
+                    'is_payment' => false,
+                ],
+                'cierre_pendiente' => [
+                    'color' => 'warning',
+                    'icon' => 'hourglass-outline',
+                    'style_class' => 'warning-notification',
+                    'is_payment' => false,
+                ],
                 'vencido' => [
                     'color' => 'medium',
                     'icon' => 'time-outline',

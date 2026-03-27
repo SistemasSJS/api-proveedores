@@ -6,7 +6,7 @@ use App\Http\Resources\Presupuesto\PresupuestoPublicResource;
 use App\Models\Presupuesto;
 use App\Notifications\Presupuesto\PresupuestoAceptadoNotification;
 use App\Notifications\Presupuesto\PresupuestoRechazadoNotification;
-use App\Services\PresupuestoPdfService;
+use App\Support\PresupuestoPdf;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,10 +15,6 @@ use Illuminate\Support\Facades\Validator;
 class PresupuestoPublicController extends Controller
 {
     use ApiResponse;
-
-    public function __construct(
-        private PresupuestoPdfService $pdfService
-    ) {}
 
     /**
      * Obtiene el presupuesto por token público (sin autenticación).
@@ -56,7 +52,7 @@ class PresupuestoPublicController extends Controller
         }
 
         try {
-            return $this->pdfService->generarPdf($presupuesto);
+            return PresupuestoPdf::generarPdf($presupuesto);
         } catch (\Throwable $e) {
             return $this->error('No fue posible generar el PDF.', [$e->getMessage()], 500);
         }

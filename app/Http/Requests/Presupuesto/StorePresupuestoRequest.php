@@ -22,10 +22,11 @@ class StorePresupuestoRequest extends FormRequest
         return [
             'numero_presupuesto' => 'nullable|string|max:255',
             'proveedor_id' => 'required|exists:proveedores,id',
-            'empresa_receptora_id' => 'nullable|exists:cartera_clientes,id',
-            'empresa_receptora_nombre' => 'nullable|string|max:255|required_without:empresa_receptora_id',
+            'es_proveedor_receptor' => 'nullable|boolean', // es para indicar si el receptor es un proveedor
+            'empresa_receptora_id' => 'nullable|integer|exists:cartera_clientes,id|exists:proveedores,id', // existe en la cartera de clientes o en proveedores
+            'empresa_receptora_nombre' => 'nullable|string|max:255', //|required_without:empresa_receptora_id',
             'empresa_receptora_puesto' => 'nullable|string|max:255',
-            'empresa_receptora_empresa' => 'nullable|string|max:255|required_without:empresa_receptora_id',
+            'empresa_receptora_empresa' => 'nullable|string|max:255', //|required_without:empresa_receptora_id',
             'empresa_receptora_alias' => 'nullable|string|max:255',
             'empresa_receptora_telefono' => 'nullable|string|max:30',
             'empresa_receptora_correo' => 'nullable|email|max:255',

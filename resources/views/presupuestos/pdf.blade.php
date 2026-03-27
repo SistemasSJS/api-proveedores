@@ -661,7 +661,6 @@
                 .header-info { border: 1px solid green; }
                 .folio-section { border: 1px solid orange; }
 
-                .receptor-section { border: 1px solid purple; }
                 .descripcion-section { border: 1px solid teal; }
 
                 .presupuesto-title { border: 1px solid brown; }
@@ -809,49 +808,9 @@
                         <div class="receptor-section">
                             <div class="receptor-title">Dirigido a:</div>
 
-                            @php
-                                $receptor = $presupuesto['empresa_receptora'] ?? [];
-                                $alias_empresa = $receptor['alias_empresa'] ?? null;
-                                $nombre = $receptor['nombre'] ?? null;
-                                $empresa = $receptor['empresa'] ?? null;
-                                $puesto = $receptor['puesto'] ?? null;
-                                $aliasEmpresa = $receptor['alias_empresa'] ?? null;
-                                // $telefono = $receptor['telefono'] ?? null;
-                                // $correo = $receptor['correo'] ?? null;
-                                // $direccion = $receptor['direccion'] ?? null;
-                            @endphp
-
-                            {{-- Alias de la emp (opc) --}}
-                            {{-- Nombre corto --}}
-
-                            @if ($aliasEmpresa)
-                                <div class="receptor-name">{{ $aliasEmpresa }}</div>
-                            @endif
-
-                            {{-- Nombre de la persona --}}
-                            @if ($nombre)
-                                <div class="receptor-info">{{ $nombre }}</div>
-                            @endif
-
-                            {{-- Cargo --}}
-                            @if ($puesto)
-                                <div class="receptor-info">{{ $puesto }}</div>
-                            @endif
-
-                            {{-- Empresa --}}
-                            @if ($empresa)
-                                <div class="receptor-info">{{ $empresa }}</div>
-                            @endif
-
-                            {{-- @if ($telefono)
-                                <div class="receptor-info">{{ $telefono }}</div>
-                            @endif
-                            @if ($correo)
-                                <div class="receptor-info">{{ $correo }}</div>
-                            @endif
-                            @if ($direccion)
-                                <div class="receptor-info">{{ $direccion }}</div>
-                            @endif --}}
+                            @foreach ($presupuesto['receptor_lineas'] ?? [] as $idx => $linea)
+                                <div class="{{ $idx === 0 ? 'receptor-name' : 'receptor-info' }}">{{ $linea }}</div>
+                            @endforeach
                         </div>
 
                         <!-- 3) DESCRIPCIÓN GENERAL -->

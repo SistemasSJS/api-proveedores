@@ -12,9 +12,9 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * Notificación al proveedor cuando el cliente acepta el presupuesto.
+ * Recordatorio al equipo emisor: el presupuesto vigente vence pronto y sigue sin respuesta del cliente.
  */
-class PresupuestoAceptadoNotification extends Notification implements ShouldBroadcastNow
+class PresupuestoCierrePendienteNotification extends Notification implements ShouldBroadcastNow
 {
     use NotificationStyleTrait;
 
@@ -56,13 +56,15 @@ class PresupuestoAceptadoNotification extends Notification implements ShouldBroa
     {
         $frontendUrl = config('app.frontend_url', config('app.url'));
         $urlDetalle = $frontendUrl . '/pages/proveedor/presupuestos/detalle/' . $this->presupuesto->id;
+        $fechaVenc = $this->presupuesto->fecha_vencimiento?->format('d/m/Y') ?? '—';
 
         $mail = (new MailMessage)
-            ->subject('Presupuesto aceptado #' . $this->presupuesto->numero_presupuesto)
-            ->view('emails.presupuesto.notificacion-aceptado', [
+            ->subject('Cierre pendiente: presupuesto #' . $this->presupuesto->numero_presupuesto)
+            ->view('emails.presupuesto.notificacion-cierre-pendiente', [
                 'notifiable' => $notifiable,
                 'presupuesto' => $this->presupuesto,
                 'urlDetalle' => $urlDetalle,
+                'fechaVencimiento' => $fechaVenc,
             ]);
 
         try {
@@ -74,7 +76,6 @@ class PresupuestoAceptadoNotification extends Notification implements ShouldBroa
                 ['mime' => 'application/pdf']
             );
         } catch (\Throwable $e) {
-            // El correo sigue enviándose sin adjunto si falla el PDF
         }
 
         return $mail;
@@ -91,34 +92,36 @@ class PresupuestoAceptadoNotification extends Notification implements ShouldBroa
             return;
         }
 
-        $cliente = $this->presupuesto->empresa_receptora_empresa ?? $this->presupuesto->empresa_receptora_nombre ?? 'el cliente';
-
+        $data = $this->baseData();
         app(FcmService::class)->sendToTokens(
             $tokens,
             [
-                'title' => 'Presupuesto aceptado #' . $this->presupuesto->numero_presupuesto,
-                'body' => $cliente . ' aceptó tu presupuesto.',
+                'title' => $data['titulo'],
+                'body' => $data['mensaje'],
             ],
             $this->addStylesToData([
-                'action_url' => '/pages/proveedor/presupuestos/detalle/' . $this->presupuesto->id,
+                'action_url' => $data['action_url'],
             ])
         );
     }
 
     private function baseData(): array
     {
-        $cliente = $this->presupuesto->empresa_receptora_empresa ?? $this->presupuesto->empresa_receptora_nombre ?? 'el cliente';
+        $fechaVenc = $this->presupuesto->fecha_vencimiento?->format('d/m/Y') ?? '';
+        $cliente = $this->presupuesto->empresa_receptora_empresa
+            ?? $this->presupuesto->empresa_receptora_nombre
+            ?? 'el cliente';
 
         return [
             'tipo' => 'presupuesto',
-            'subtipo' => 'aceptado',
-            'titulo' => 'Presupuesto aceptado #' . $this->presupuesto->numero_presupuesto,
-            'mensaje' => $cliente . ' aceptó tu presupuesto.',
+            'subtipo' => 'cierre_pendiente',
+            'titulo' => 'Presupuesto por vencer #' . $this->presupuesto->numero_presupuesto,
+            'mensaje' => 'El presupuesto enviado a ' . $cliente . ' vence el ' . $fechaVenc . '. Aún no hay respuesta.',
             'action_url' => '/pages/proveedor/presupuestos/detalle/' . $this->presupuesto->id,
             'presupuesto_id' => $this->presupuesto->id,
             'presupuesto_numero' => $this->presupuesto->numero_presupuesto,
             'proveedor_id' => $this->presupuesto->proveedor_id,
-            'estatus' => 'aceptado',
+            'fecha_vencimiento' => $this->presupuesto->fecha_vencimiento?->toIso8601String(),
             'timestamp' => now()->toIso8601String(),
         ];
     }
@@ -130,6 +133,6 @@ class PresupuestoAceptadoNotification extends Notification implements ShouldBroa
 
     protected function getNotificationSubtipo(): string
     {
-        return 'aceptado';
+        return 'cierre_pendiente';
     }
 }
