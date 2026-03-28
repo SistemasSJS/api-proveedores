@@ -57,17 +57,17 @@ class EnsureProveedorOwnership
         }
 
         $proveedorId = is_numeric($proveedorId) ? $proveedorId : $proveedorId->id;
-        // Verificar si el usuario tiene acceso al proveedor
-        if (! $this->proveedorAccessService->hasAccessToProveedor($user->id, $proveedorId)) {
+
+        $tipoRelacion = $this->proveedorAccessService->resolveProveedorAccess((int) $user->id, (int) $proveedorId);
+        if ($tipoRelacion === null) {
             throw new UnauthorizedProveedorAccessException(
                 'No tienes permisos para acceder a los recursos de este proveedor.'
             );
         }
 
-        // Agregar información del proveedor al request para uso posterior
         $request->merge([
-            '_proveedor_id' => $proveedorId,
-            '_user_proveedor_relation' => $this->proveedorAccessService->getUserProveedorRelationType($user->id, $proveedorId),
+            '_proveedor_id' => (int) $proveedorId,
+            '_user_proveedor_relation' => $tipoRelacion,
         ]);
 
         return $next($request);
