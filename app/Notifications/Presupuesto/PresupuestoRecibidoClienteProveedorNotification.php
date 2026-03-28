@@ -103,6 +103,7 @@ class PresupuestoRecibidoClienteProveedorNotification extends Notification imple
             'presupuesto_id' => $this->presupuesto->id,
             'presupuesto_numero' => $this->presupuesto->numero_presupuesto,
             'proveedor_emisor_id' => $this->presupuesto->proveedor_id,
+            'proveedor_receptor_id' => $this->presupuesto->proveedor_receptor_id,
             'es_reenvio' => $this->esReenvio,
             'timestamp' => now()->toIso8601String(),
         ];

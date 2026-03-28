@@ -262,8 +262,15 @@ class ProveedorPresupuestoController extends Controller
             return $this->error('Presupuesto no pertenece a este proveedor.', null, 403);
         }
 
-        // Marcar como visto al abrir el detalle
-        $presupuesto->markRead(auth()->user());
+        $user = auth()->user();
+        // Emisor: item_visto + notificación ligada al presupuesto (dashboard enviados).
+        // Receptor (catálogo): no tocar item_visto; solo marcar como leídas las notificaciones
+        // PresupuestoRecibidoClienteProveedorNotification del usuario (badge recibidos / campana).
+        if ($this->presupuestoEsEmisor($proveedor, $presupuesto)) {
+            $presupuesto->markRead($user);
+        } else {
+            $this->marcarNotificacionesPresupuestoRecibidoLeidas($user, (int) $presupuesto->id);
+        }
 
         $presupuesto->load(Presupuesto::eagerLodable());
         $presupuesto->asegurarTokenPublico();
@@ -484,6 +491,23 @@ class ProveedorPresupuestoController extends Controller
     private function presupuestoEsEmisor(Proveedor $proveedor, Presupuesto $presupuesto): bool
     {
         return (int) $presupuesto->proveedor_id === (int) $proveedor->id;
+    }
+
+    /**
+     * Marca como leídas en Laravel las notificaciones de “presupuesto recibido” para este folio.
+     * No usa item_visto del presupuesto (ese flag es del flujo emisor).
+     */
+    private function marcarNotificacionesPresupuestoRecibidoLeidas(?User $user, int $presupuestoId): void
+    {
+        if (! $user || $presupuestoId <= 0) {
+            return;
+        }
+
+        $user->unreadNotifications()
+            ->where('type', PresupuestoRecibidoClienteProveedorNotification::class)
+            ->where('data->presupuesto_id', $presupuestoId)
+            ->get()
+            ->each->markAsRead();
     }
 
     /**
