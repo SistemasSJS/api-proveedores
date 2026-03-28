@@ -33,6 +33,13 @@
             padding: 30px 20px;
             text-align: center;
         }
+
+        .logo {
+            max-width: 80px;
+            height: auto;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
         
         .header-icon {
             font-size: 48px;
@@ -239,7 +246,7 @@
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-            <div class="header-icon">🏢</div>
+            @include('emails.partials.logo-app')
             <h1>Nueva Asociación con Empresa</h1>
             <p>¡Tu red de proveedores está creciendo!</p>
         </div>

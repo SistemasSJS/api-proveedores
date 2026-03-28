@@ -43,7 +43,6 @@ class FcmService
                     "priority" => "high",
                     "notification" => [
                         "sound" => "default",
-                        "click_action" => "FLUTTER_NOTIFICATION_CLICK",
                         "channel_id" => "app_proveedores_notifications",
                     ],
                 ],
@@ -77,7 +76,6 @@ class FcmService
                     "priority" => "high",
                     "notification" => [
                         "sound" => "default",
-                        "click_action" => "FLUTTER_NOTIFICATION_CLICK",
                         "channel_id" => "app_proveedores_notifications",
                     ],
                 ],

@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Channels\FcmChannel;
 use App\Models\Cotizacion;
 use App\Models\User;
+use App\Traits\NotificationCorrelationId;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Messages\BroadcastMessage;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\URL;
  */
 class CotizacionCreadaNotification extends Notification implements ShouldBroadcastNow
 {
+    use NotificationCorrelationId;
     use Queueable;
 
     protected Cotizacion $cotizacion;
@@ -85,7 +87,7 @@ class CotizacionCreadaNotification extends Notification implements ShouldBroadca
                 'icon' => '/assets/icon/favicon.png',
                 'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
             ],
-            'data' => [
+            'data' => $this->withNotificationCorrelationId([
                 'type' => 'cotizacion',
                 'entityId' => (string) $this->cotizacion->id,
                 'proveedorId' => (string) ($this->cotizacion->proveedor_id ?? ''),
@@ -95,7 +97,7 @@ class CotizacionCreadaNotification extends Notification implements ShouldBroadca
                 'moduloOrigen' => $this->moduloOrigen,
                 'url' => '/admin/cotizaciones/' . $this->cotizacion->id,
                 'timestamp' => now()->toISOString(),
-            ],
+            ]),
         ];
     }
 
@@ -106,7 +108,7 @@ class CotizacionCreadaNotification extends Notification implements ShouldBroadca
 
     private function getPayloadCotizacion(): array
     {
-        return [
+        return $this->withNotificationCorrelationId([
             'tipo' => 'Cotizaciones',
             'titulo' => 'Nueva Cotización',
             'mensaje' => 'Se ha creado una nueva cotización #' . $this->cotizacion->id,
@@ -125,6 +127,6 @@ class CotizacionCreadaNotification extends Notification implements ShouldBroadca
             'url' => URL::to('/pages/proveedor/cotizacion/' . $this->cotizacion->id . '/view'),
             'modulo_origen' => $this->moduloOrigen,
             'timestamp' => now()->toISOString(),
-        ];
+        ]);
     }
 }

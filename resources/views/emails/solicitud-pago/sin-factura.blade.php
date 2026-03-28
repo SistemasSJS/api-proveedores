@@ -74,7 +74,7 @@
 
  <div class="email-container">
   <div class="header">
-   <img src="{{ config('app.url') }}/assets/logos/logo-gestionpro.png" alt="GestinPro" class="logo">
+   @include('emails.partials.logo-app')
       <h1>Solicitud de pago sin factura</h1>
       <p>Sistema de Gestion de Proveedores</p>
   </div>

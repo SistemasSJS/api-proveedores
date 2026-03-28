@@ -19,18 +19,30 @@ use Illuminate\Support\Facades\Log;
 class ProveedorAccessService
 {
     /**
+     * Resuelve acceso y tipo de relación en una sola consulta y una entrada de caché
+     * (el middleware proveedor.access llamaba antes hasAccess + relation = 2 hits).
+     *
+     * @return string|null 'PRINCIPAL', 'SECUNDARIO' o null si no hay relación activa
+     */
+    public function resolveProveedorAccess(int $userId, int $proveedorId): ?string
+    {
+        $cacheKey = "user_proveedor_access_ctx_{$userId}_{$proveedorId}";
+
+        return Cache::remember($cacheKey, 300, function () use ($userId, $proveedorId) {
+            return UserProveedor::query()
+                ->where('user_id', $userId)
+                ->where('proveedor_id', $proveedorId)
+                ->where('activo', true)
+                ->value('tipo_relacion');
+        });
+    }
+
+    /**
      * Verifica si un usuario tiene acceso a un proveedor específico.
      */
     public function hasAccessToProveedor(int $userId, int $proveedorId): bool
     {
-        $cacheKey = "user_proveedor_access_{$userId}_{$proveedorId}";
-
-        return Cache::remember($cacheKey, 300, function () use ($userId, $proveedorId) {
-            return UserProveedor::where('user_id', $userId)
-                ->where('proveedor_id', $proveedorId)
-                ->where('activo', true)
-                ->exists();
-        });
+        return $this->resolveProveedorAccess($userId, $proveedorId) !== null;
     }
 
     /**
@@ -40,14 +52,7 @@ class ProveedorAccessService
      */
     public function getUserProveedorRelationType(int $userId, int $proveedorId): ?string
     {
-        $cacheKey = "user_proveedor_relation_{$userId}_{$proveedorId}";
-
-        return Cache::remember($cacheKey, 300, function () use ($userId, $proveedorId) {
-            return UserProveedor::where('user_id', $userId)
-                ->where('proveedor_id', $proveedorId)
-                ->where('activo', true)
-                ->value('tipo_relacion');
-        });
+        return $this->resolveProveedorAccess($userId, $proveedorId);
     }
 
     /**
@@ -200,6 +205,7 @@ class ProveedorAccessService
     {
         $patterns = [
             "user_proveedor_access_{$userId}_*",
+            "user_proveedor_access_ctx_{$userId}_*",
             "user_proveedor_relation_{$userId}_*",
             "user_proveedores_{$userId}_*",
             "user_main_proveedor_{$userId}",
@@ -218,6 +224,7 @@ class ProveedorAccessService
         $patterns = [
             "proveedor_users_{$proveedorId}_*",
             "user_proveedor_access_*_{$proveedorId}",
+            "user_proveedor_access_ctx_*_{$proveedorId}",
             "user_proveedor_relation_*_{$proveedorId}",
         ];
 

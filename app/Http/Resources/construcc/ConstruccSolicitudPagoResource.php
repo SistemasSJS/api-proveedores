@@ -112,6 +112,13 @@ class ConstruccSolicitudPagoResource extends JsonResource
             'motivo_autorizacion_parcial' => $this->motivo_autorizacion_parcial,
             'fecha_autorizacion_parcial' => $this->fecha_autorizacion_parcial,
             // ?->format('Y-m-d H:i:s'),
+            'validacion_con_monto' => [
+                'monto' => (float) $this->validacion_monto,
+                'usuario_id' => $this->validacion_usuario_id,
+                'usuario_nombre' => $this->validacion_usuario_nombre,
+                'fecha' => $this->validacion_fecha,
+                'motivo' => $this->validacion_motivo,
+            ]
         ];
     }
 }

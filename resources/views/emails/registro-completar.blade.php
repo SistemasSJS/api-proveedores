@@ -118,7 +118,7 @@
     <div class="email-container">
         <!-- Header con logo -->
         <div class="header">
-            <img src="{{ config('app.url') }}/assets/logos/logo-gestionpro.png" alt="Gesti?nPro" class="logo">
+            @include('emails.partials.logo-app')
             <h1 class="header-title">¡Completa tu registro!</h1>
         </div>
 

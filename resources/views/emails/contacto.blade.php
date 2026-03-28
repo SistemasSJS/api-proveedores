@@ -25,6 +25,11 @@
             padding-bottom: 20px;
             margin-bottom: 30px;
         }
+        .header .logo {
+            max-width: 80px;
+            height: auto;
+            margin-bottom: 12px;
+        }
         .header h1 {
             color: #0066cc;
             margin: 0;
@@ -67,6 +72,7 @@
 <body>
     <div class="container">
         <div class="header">
+            @include('emails.partials.logo-app')
             <h1>Nuevo Mensaje de Contacto</h1>
         </div>
 

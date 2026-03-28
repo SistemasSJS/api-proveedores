@@ -189,17 +189,16 @@ Route::prefix('proveedores')
 
         /**
          * DASHBOARD PROVEEDOR
+         * Métricas agregadas del catálogo / cotizaciones.
+         * Contadores SP: GET {proveedor}/solicitudes-pago/dashboard/metricas (ProveedorSolicitudPagoController).
+         * Presupuestos: consolidar en este grupo cuando se migre el front desde métricas sueltas.
          */
-        Route::prefix('{proveedor}/dashboard')->middleware(['proveedor.access'])->group(function () {
-
-            /** 
-             * TODO: Estas rutas son para el dashboard del proveedor
-             *  - Aqui se migraran los contadores que estan en las spp
-             *  - Ademas se agregaran los contadores para los presupuestos
-             */
-            Route::get('/stats', [ProveedorDashboardController::class, 'getStats'])->middleware(['audit']);
-            Route::get('/cotizaciones', [ProveedorDashboardController::class, 'cotizacionesDashboard'])->middleware(['audit']);
-        });
+        Route::prefix('{proveedor}/dashboard')
+            ->middleware(['proveedor.access', 'audit'])
+            ->group(function () {
+                Route::get('/stats', [ProveedorDashboardController::class, 'getStats']);
+                Route::get('/cotizaciones', [ProveedorDashboardController::class, 'cotizacionesDashboard']);
+            });
 
         /**
          * COTIZACIONES DEL PROVEEDOR
@@ -221,47 +220,49 @@ Route::prefix('proveedores')
 
         /**
          * PRESUPUESTOS DEL PROVEEDOR
+         * Orden: literales (proveedores-registrados, next-folio, generar-pdf) antes de /{presupuesto}.
          */
-        Route::prefix('{proveedor}/presupuestos')->middleware(['proveedor.access'])->group(function () {
+        Route::prefix('{proveedor}/presupuestos')
+            ->middleware(['proveedor.access', 'audit'])
+            ->group(function () {
 
-            Route::get('proveedores-registrados', [ProveedorPresupuestoController::class, 'proveedoresRegistrados'])->middleware(['audit']);
+                Route::get('/proveedores-registrados', [ProveedorPresupuestoController::class, 'proveedoresRegistrados']);
 
-            Route::prefix('cartera-clientes')->group(function () {
-                Route::get('/', [ProveedorPresupuestoCarteraClientesController::class, 'index'])->middleware(['audit']);
-                Route::post('/', [ProveedorPresupuestoCarteraClientesController::class, 'store'])->middleware(['audit']);
-                Route::get('/{carteraCliente}', [ProveedorPresupuestoCarteraClientesController::class, 'show'])->middleware(['audit']);
-                Route::put('/{carteraCliente}', [ProveedorPresupuestoCarteraClientesController::class, 'update'])->middleware(['audit']);
-                Route::patch('/{carteraCliente}', [ProveedorPresupuestoCarteraClientesController::class, 'update'])->middleware(['audit']);
-                Route::delete('/{carteraCliente}', [ProveedorPresupuestoCarteraClientesController::class, 'destroy'])->middleware(['audit']);
+                Route::prefix('cartera-clientes')->group(function () {
+                    Route::get('/', [ProveedorPresupuestoCarteraClientesController::class, 'index']);
+                    Route::post('/', [ProveedorPresupuestoCarteraClientesController::class, 'store']);
+                    Route::get('/{carteraCliente}', [ProveedorPresupuestoCarteraClientesController::class, 'show']);
+                    Route::put('/{carteraCliente}', [ProveedorPresupuestoCarteraClientesController::class, 'update']);
+                    Route::patch('/{carteraCliente}', [ProveedorPresupuestoCarteraClientesController::class, 'update']);
+                    Route::delete('/{carteraCliente}', [ProveedorPresupuestoCarteraClientesController::class, 'destroy']);
+                });
+
+                Route::get('/next-folio', [ProveedorPresupuestoController::class, 'nextFolioByProveedor']);
+                Route::get('/', [ProveedorPresupuestoController::class, 'index']);
+                Route::post('/', [ProveedorPresupuestoController::class, 'store']);
+                Route::post('/generar-pdf', [ProveedorPresupuestoController::class, 'generarPdfDesdeFormulario']);
+
+                Route::get('/{presupuesto}/pdf', [ProveedorPresupuestoController::class, 'generarPdf']);
+                Route::post('/{presupuesto}/duplicar', [ProveedorPresupuestoController::class, 'duplicar']);
+                Route::post('/{presupuesto}/enviar', [ProveedorPresupuestoController::class, 'enviar']);
+                Route::post('/{presupuesto}/reenviar', [ProveedorPresupuestoController::class, 'reenviar']);
+                Route::get('/{presupuesto}', [ProveedorPresupuestoController::class, 'show']);
+                Route::put('/{presupuesto}', [ProveedorPresupuestoController::class, 'update']);
+                Route::patch('/{presupuesto}', [ProveedorPresupuestoController::class, 'update']);
+                Route::delete('/{presupuesto}', [ProveedorPresupuestoController::class, 'destroy']);
             });
-
-            Route::get('/next-folio', [ProveedorPresupuestoController::class, 'nextFolioByProveedor'])->middleware(['audit']);
-            Route::get('/', [ProveedorPresupuestoController::class, 'index'])->middleware(['audit']);
-            Route::post('/', [ProveedorPresupuestoController::class, 'store'])->middleware(['audit']);
-
-            // Generar PDF desde formulario (para borradores)
-            Route::post('/generar-pdf', [ProveedorPresupuestoController::class, 'generarPdfDesdeFormulario'])->middleware(['audit']);
-
-            Route::get('/{presupuesto}', [ProveedorPresupuestoController::class, 'show'])->middleware(['audit']);
-            Route::post('/{presupuesto}/duplicar', [ProveedorPresupuestoController::class, 'duplicar'])->middleware(['audit']);
-            Route::put('/{presupuesto}', [ProveedorPresupuestoController::class, 'update'])->middleware(['audit']);
-            Route::patch('/{presupuesto}', [ProveedorPresupuestoController::class, 'update'])->middleware(['audit']);
-            Route::delete('/{presupuesto}', [ProveedorPresupuestoController::class, 'destroy'])->middleware(['audit']);
-
-            // Generar PDF de presupuesto guardado
-            Route::get('/{presupuesto}/pdf', [ProveedorPresupuestoController::class, 'generarPdf'])->middleware(['audit']);
-            Route::post('/{presupuesto}/enviar', [ProveedorPresupuestoController::class, 'enviar'])->middleware(['audit']);
-            Route::post('/{presupuesto}/reenviar', [ProveedorPresupuestoController::class, 'reenviar'])->middleware(['audit']);
-        });
 
         // Route::get('imports/products/template', [ProductoImportController::class, 'downloadTemplate']);
 
 
 
         /**
-         * GESTION DE SP POR PROVEEDOR
+         * GESTIÓN DE SP POR PROVEEDOR
+         * Rutas literales (all, historico, dashboard/metricas, sin-factura) antes de /{solicitudPago}.
          */
-        Route::prefix('{proveedor}/solicitudes-pago')->middleware(['proveedor.access'])->group(function () {
+        Route::prefix('{proveedor}/solicitudes-pago')
+            ->middleware(['proveedor.access', 'audit'])
+            ->group(function () {
 
             // Listados
             Route::get('/', [ProveedorSolicitudPagoController::class, 'index'])->middleware(['audit']);        // Paginado
@@ -273,9 +274,16 @@ Route::prefix('proveedores')
             // Empresas de construcción para búsqueda
             Route::get('/empresas-constructoras', [ProveedorSolicitudPagoController::class, 'empresasConstructoras'])->middleware(['audit']);
 
-            // Crear solicitud
-            Route::post('/', [ProveedorSolicitudPagoController::class, 'store'])->middleware(['audit']);
-            Route::post('/sin-factura', [ProveedorSolicitudPagoController::class, 'storeSinFactura'])->middleware(['audit']);
+                Route::post('/{solicitudPago}/subir-comprobante', [ProveedorSolicitudPagoController::class, 'subirComprobantePago']);
+                Route::post('/{solicitudPago}/subir-factura', [ProveedorSolicitudPagoController::class, 'uploadFacturaPdfXml']);
+                Route::post('/{solicitudPago}/subir-factura-pdf', [ProveedorSolicitudPagoController::class, 'uploadFacturaPdf']);
+                Route::post('/{solicitudPago}/subir-factura-xml', [ProveedorSolicitudPagoController::class, 'uploadFacturaXml']);
+                Route::get('/{solicitudPago}/descargar-comprobante', [ProveedorSolicitudPagoController::class, 'descargarComprobantePago']);
+                Route::get('/{solicitudPago}/descargar-factura-pdf', [ProveedorSolicitudPagoController::class, 'descargarFacturaPdf']);
+                Route::get('/{solicitudPago}/descargar-factura-xml', [ProveedorSolicitudPagoController::class, 'descargarFacturaXml']);
+                Route::get('/{solicitudPago}/descargar-cotizacion', [ProveedorSolicitudPagoController::class, 'descargarCotizacion']);
+                Route::post('/{solicitudPago}/confirmar-pago', [ProveedorSolicitudPagoController::class, 'confirmarPagoSP']);
+                Route::post('/{solicitudPago}/procesando', [ProveedorSolicitudPagoController::class, 'procesando']);
 
             // Operaciones sobre una solicitud específica
             Route::get('/{solicitudPago}', [ProveedorSolicitudPagoController::class, 'show'])->middleware(['audit']);       // Detalle

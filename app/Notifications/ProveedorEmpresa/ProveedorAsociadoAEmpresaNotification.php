@@ -3,6 +3,7 @@
 namespace App\Notifications\ProveedorEmpresa;
 
 use App\Services\FcmService;
+use App\Traits\NotificationCorrelationId;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 
 class ProveedorAsociadoAEmpresaNotification extends Notification implements ShouldBroadcastNow
 {
+    use NotificationCorrelationId;
     use Queueable;
 
     private int $proveedorId;
@@ -71,7 +73,7 @@ class ProveedorAsociadoAEmpresaNotification extends Notification implements Shou
      */
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
-        return new BroadcastMessage([
+        return new BroadcastMessage($this->withNotificationCorrelationId([
             'tipo' => 'asociacion_empresa',
             'subtipo' => 'nueva_asociacion',
             'titulo' => 'Nueva Asociación con Empresa',
@@ -88,7 +90,7 @@ class ProveedorAsociadoAEmpresaNotification extends Notification implements Shou
                 'estatus' => 'asociado',
             ],
             'timestamp' => now()->toIso8601String(),
-        ]);
+        ]));
     }
 
     /**
@@ -114,7 +116,7 @@ class ProveedorAsociadoAEmpresaNotification extends Notification implements Shou
      */
     public function toArray(object $notifiable): array
     {
-        return [
+        return $this->withNotificationCorrelationId([
             'tipo' => 'asociacion_empresa',
             'subtipo' => 'nueva_asociacion',
             'titulo' => 'Nueva Asociación con Empresa',
@@ -129,7 +131,7 @@ class ProveedorAsociadoAEmpresaNotification extends Notification implements Shou
             'usuario_construcc_nombre' => $this->usuarioConstruccNombre,
             'estatus' => 'asociado',
             'timestamp' => now()->toIso8601String(),
-        ];
+        ]);
     }
 
     /**
@@ -172,7 +174,7 @@ class ProveedorAsociadoAEmpresaNotification extends Notification implements Shou
                 'body' => "Has sido vinculado con {$this->empresaNombre}. Ahora puedes gestionar solicitudes de pago con esta empresa.",
             ];
 
-            $data = [
+            $data = $this->withNotificationCorrelationId([
                 'tipo' => 'asociacion_empresa',
                 'subtipo' => 'nueva_asociacion',
                 'proveedor_id' => (string)$this->proveedorId,
@@ -182,7 +184,7 @@ class ProveedorAsociadoAEmpresaNotification extends Notification implements Shou
                 'usuario_construcc_nombre' => $this->usuarioConstruccNombre,
                 'estatus' => 'asociado',
                 'timestamp' => now()->toIso8601String(),
-            ];
+            ]);
 
             $fcmService->sendToTokens($tokens, $notification, $data);
 

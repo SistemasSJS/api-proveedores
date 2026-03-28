@@ -12,6 +12,7 @@ use App\Models\PagoSPP;
 use App\Models\Presupuesto;
 use App\Models\Proveedor;
 use App\Models\SolicitudPago;
+use App\Notifications\Presupuesto\PresupuestoRecibidoClienteProveedorNotification;
 use App\Notifications\SolicitudPago\SolicitudPagoComprobanteActualizadoNotification;
 use App\Notifications\SolicitudPago\SolicitudPagoFacturaSubidaNotification;
 use App\Services\InterApiService;
@@ -55,13 +56,28 @@ class ProveedorSolicitudPagoController extends Controller
             'rechazada' => (int) ($segmentCounts[EstadoSP::RECHAZADA->value] ?? 0),
             'autorizada' => (int) ($segmentCounts[EstadoSP::AUTORIZADA->value] ?? 0),
             'pagado' => (int) ($segmentCounts[EstadoSP::PAGADO->value] ?? 0),
+            'sin_factura' => (int) (clone $baseQuery)->where('tiene_factura', false)->count(),
         ];
 
-        $query = SolicitudPago::query()
-            ->with(SolicitudPago::eagerLodable())
-            ->filter($filters)
-            ->orderBy($sortBy, $order)
-            ->paginate($perPage);
+        if ($hasUltimas) {
+            $ids = (clone $baseQuery)->pluck('id');
+            $listQuery = SolicitudPago::query()
+                ->with(SolicitudPago::eagerLodable())
+                ->whereIn('id', $ids);
+
+            $statusFilters = array_intersect_key($filters, array_flip(['estado_solicitud', 'tiene_factura']));
+            if (! empty($statusFilters)) {
+                $listQuery->filter($statusFilters);
+            }
+
+            $query = $listQuery->orderBy($sortBy, $order)->paginate($perPage);
+        } else {
+            $query = SolicitudPago::query()
+                ->with(SolicitudPago::eagerLodable())
+                ->filter($filters)
+                ->orderBy($sortBy, $order)
+                ->paginate($perPage);
+        }
 
         $data = SolicitudPagoResource::collection($query)->resolve();
 
@@ -911,6 +927,23 @@ class ProveedorSolicitudPagoController extends Controller
             ->where('created_at', '>=', now()->subDays(15))
             ->where('item_visto', false)
             ->count();
+
+        // Presupuestos recibidos (otro proveedor te cotiza): sin usar item_visto;
+        // conteo = notificaciones DB no leídas PresupuestoRecibidoClienteProveedor cuyo presupuesto
+        // pertenece a este proveedor como receptor (misma ventana de 15 días que el listado).
+        $presupuestosRecibidosIds = Presupuesto::query()
+            ->where('proveedor_receptor_id', $proveedor->id)
+            ->where('created_at', '>=', now()->subDays(15))
+            ->pluck('id');
+
+        $presupuestosRecibidosNoLeidos = 0;
+        if ($presupuestosRecibidosIds->isNotEmpty() && $request->user()) {
+            $presupuestosRecibidosNoLeidos = $request->user()
+                ->unreadNotifications()
+                ->where('type', PresupuestoRecibidoClienteProveedorNotification::class)
+                ->whereIn('data->presupuesto_id', $presupuestosRecibidosIds->all())
+                ->count();
+        }
         // Rechazadas NO vistas
         // $rechazadasNoVistas = (clone $baseQuery)
         //     ->where('estado_solicitud', EstadoSP::RECHAZADA->value)
@@ -926,6 +959,7 @@ class ProveedorSolicitudPagoController extends Controller
             'sp_pagadas' => (clone $baseQuery)->where('estado_solicitud', EstadoSP::PAGADO->value)->where('item_visto', false)->count(),
             'sp_sin_factura' => (clone $baseQuery)->where('tiene_factura', false)->where('item_visto', false)->count(),
             'presupuestos' => $presupuestosCount,
+            'presupuestos_recibidos' => $presupuestosRecibidosNoLeidos,
         ];
 
         return $this->success($conteos, 'Métricas del dashboard obtenidas correctamente');

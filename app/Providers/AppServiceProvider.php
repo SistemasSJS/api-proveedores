@@ -15,8 +15,10 @@ use App\Services\ProductoSearchService;
 use App\Services\ReporteService;
 use App\Services\SucursalService;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use App\Support\EmailLogoHelper;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Sanctum\PersonalAccessToken;
 use Laravel\Sanctum\Sanctum;
@@ -76,6 +78,10 @@ class AppServiceProvider extends ServiceProvider
         // Registrar canal personalizado FCM
         Notification::extend('fcm', function ($app) {
             return $app->make(FcmChannel::class);
+        });
+
+        View::composer('emails.*', function ($view) {
+            $view->with('logoAppDataUri', EmailLogoHelper::logoGestionProDataUri());
         });
     }
 }

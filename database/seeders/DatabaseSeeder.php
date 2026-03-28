@@ -46,9 +46,9 @@ class DatabaseSeeder extends Seeder
                 CotizacionesSeeder::class,
 
                 // Presupuestos para todos los proveedores (borrador, enviado, aceptado, rechazado, vencido)
-                PresupuestosSeeder::class,
+                // PresupuestosSeeder::class,
                 // Presupuestos con 1, 5, 10, 20, 30, 50 conceptos (para pruebas de duplicación/listas)
-                PresupuestosVariadosConceptosSeeder::class,
+                // PresupuestosVariadosConceptosSeeder::class,
                 // PedidosSeeder::class,
 
                 // OrdenCompraSeeder::class,

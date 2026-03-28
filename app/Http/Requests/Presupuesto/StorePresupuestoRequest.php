@@ -3,15 +3,27 @@
 namespace App\Http\Requests\Presupuesto;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 /**
  * Valida la creación de un presupuesto básico con sus conceptos.
+ *
+ * Receptor: con empresa_receptora_id el servidor completa datos desde cartera o proveedor;
+ * sin id, captura manual → nombre y empresa obligatorios.
  */
 class StorePresupuestoRequest extends FormRequest
 {
     public function authorize(): bool
     {
         return true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $id = $this->input('empresa_receptora_id');
+        if ($id === '' || $id === false) {
+            $this->merge(['empresa_receptora_id' => null]);
+        }
     }
 
     /**
@@ -22,10 +34,12 @@ class StorePresupuestoRequest extends FormRequest
         return [
             'numero_presupuesto' => 'nullable|string|max:255',
             'proveedor_id' => 'required|exists:proveedores,id',
-            'empresa_receptora_id' => 'nullable|exists:cartera_clientes,id',
-            'empresa_receptora_nombre' => 'nullable|string|max:255|required_without:empresa_receptora_id',
+            'es_proveedor_receptor' => 'nullable|boolean', // es para indicar si el receptor es un proveedor
+            // Validación de cartera vs proveedor: en el controlador (exists en ambas tablas no es compatible con una sola regla).
+            'empresa_receptora_id' => 'nullable|integer',
+            'empresa_receptora_nombre' => 'nullable|string|max:255', //|required_without:empresa_receptora_id',
             'empresa_receptora_puesto' => 'nullable|string|max:255',
-            'empresa_receptora_empresa' => 'nullable|string|max:255|required_without:empresa_receptora_id',
+            'empresa_receptora_empresa' => 'nullable|string|max:255', //|required_without:empresa_receptora_id',
             'empresa_receptora_alias' => 'nullable|string|max:255',
             'empresa_receptora_telefono' => 'nullable|string|max:30',
             'empresa_receptora_correo' => 'nullable|email|max:255',
@@ -50,6 +64,43 @@ class StorePresupuestoRequest extends FormRequest
             'conceptos.*.unidad' => 'required|string|max:50',
             'conceptos.*.precio_unitario' => 'required|numeric|min:0',
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $v): void {
+            $data = $v->getData();
+            $id = $data['empresa_receptora_id'] ?? null;
+            $esProveedorReceptor = filter_var($data['es_proveedor_receptor'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+            if ($esProveedorReceptor && ($id === null || $id === '')) {
+                $v->errors()->add(
+                    'empresa_receptora_id',
+                    'Debe indicar el id del proveedor del catálogo cuando es_proveedor_receptor es verdadero.'
+                );
+
+                return;
+            }
+
+            if ($id !== null && $id !== '') {
+                return;
+            }
+
+            $nombre = trim((string) ($data['empresa_receptora_nombre'] ?? ''));
+            $empresa = trim((string) ($data['empresa_receptora_empresa'] ?? ''));
+            if ($nombre === '') {
+                $v->errors()->add(
+                    'empresa_receptora_nombre',
+                    'El nombre del contacto es obligatorio en captura manual (sin cliente de cartera ni proveedor del catálogo).'
+                );
+            }
+            if ($empresa === '') {
+                $v->errors()->add(
+                    'empresa_receptora_empresa',
+                    'La razón social o empresa es obligatoria en captura manual (sin cliente de cartera ni proveedor del catálogo).'
+                );
+            }
+        });
     }
 
     /**

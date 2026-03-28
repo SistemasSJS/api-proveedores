@@ -31,7 +31,17 @@
 <body>
   <div class="email-container">
     <div class="header">
-      <img src="{{ config('app.url') }}/assets/logos/logo-gestionpro.png" alt="GestiónPro" class="logo">
+      @php
+        $logoProveedorDataUri = \App\Support\EmailLogoHelper::proveedorDataUri($presupuesto->proveedor ?? null);
+      @endphp
+      <div style="display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:8px;">
+        @if(!empty($logoProveedorDataUri))
+        <img src="{{ $logoProveedorDataUri }}" alt="" class="logo" style="max-width:72px;height:auto;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
+        @endif
+        @if(!empty($logoAppDataUri))
+        <img src="{{ $logoAppDataUri }}" alt="GestiónPro" class="logo" style="max-width:80px;height:auto;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
+        @endif
+      </div>
       <h1>Presupuesto recibido</h1>
       <p>Sistema de Gestión de Proveedores</p>
     </div>

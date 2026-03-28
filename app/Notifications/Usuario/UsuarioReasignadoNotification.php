@@ -7,9 +7,12 @@ use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use App\Services\FcmService;
+use App\Traits\NotificationCorrelationId;
 
 class UsuarioReasignadoNotification extends Notification implements ShouldBroadcastNow
 {
+    use NotificationCorrelationId;
+
     public $usuarioNombre;
     public $usuarioEmail;
     public $rolNombre;
@@ -56,7 +59,7 @@ class UsuarioReasignadoNotification extends Notification implements ShouldBroadc
      */
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
-        return new BroadcastMessage([
+        return new BroadcastMessage($this->withNotificationCorrelationId([
             'tipo' => 'usuario',
             'subtipo' => 'reasignado',
             'titulo' => 'Nuevo Usuario Asignado',
@@ -70,7 +73,7 @@ class UsuarioReasignadoNotification extends Notification implements ShouldBroadc
                 'proveedor_nombre' => $this->proveedorNombre,
             ],
             'timestamp' => $this->fechaAsignacion,
-        ]);
+        ]));
     }
 
     public function broadcastType(): string
@@ -88,7 +91,7 @@ class UsuarioReasignadoNotification extends Notification implements ShouldBroadc
      */
     public function toArray(object $notifiable): array
     {
-        return [
+        return $this->withNotificationCorrelationId([
             'tipo' => 'usuario',
             'subtipo' => 'reasignado',
             'titulo' => 'Nuevo Usuario Asignado',
@@ -100,7 +103,7 @@ class UsuarioReasignadoNotification extends Notification implements ShouldBroadc
             'tipo_relacion' => $this->tipoRelacion,
             'proveedor_nombre' => $this->proveedorNombre,
             'timestamp' => $this->fechaAsignacion,
-        ];
+        ]);
     }
 
     /**
@@ -146,7 +149,7 @@ class UsuarioReasignadoNotification extends Notification implements ShouldBroadc
             'body' => "Se ha asignado a {$this->usuarioNombre} como usuario {$tipoTexto} de {$this->proveedorNombre}",
         ];
 
-        $data = [
+        $data = $this->withNotificationCorrelationId([
             'tipo' => 'usuario',
             'subtipo' => 'reasignado',
             'action_url' => '/panel-admin/usuarios',
@@ -156,7 +159,7 @@ class UsuarioReasignadoNotification extends Notification implements ShouldBroadc
             'tipo_relacion' => $this->tipoRelacion,
             'proveedor_nombre' => $this->proveedorNombre,
             'timestamp' => $this->fechaAsignacion,
-        ];
+        ]);
 
         app(FcmService::class)->sendToTokens($tokens, $notification, $data);
     }

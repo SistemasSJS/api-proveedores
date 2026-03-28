@@ -22,6 +22,7 @@ class Presupuesto extends BaseModel
         'uuid' => 'Uuid',
         'numero_presupuesto' => 'NumeroPresupuesto',
         'proveedor_id' => 'ProveedorId',
+        'proveedor_receptor_id' => 'ProveedorReceptorId',
         'empresa_receptora_id' => 'EmpresaReceptoraId',
         'user_id' => 'UserId',
         'fecha_emision' => 'FechaEmision',
@@ -44,6 +45,14 @@ class Presupuesto extends BaseModel
     public const ESTADO_RECHAZADO_CON_OBSERVACION = 'rechazado_con_observacion';
     public const ESTADO_VENCIDO = 'vencido';
 
+    /**
+     * Receptor del presupuesto (quien recibe la cotización):
+     * - Sin empresa_receptora_id: solo datos en texto (empresa_receptora_*), p. ej. cliente que no está en cartera.
+     * - Con empresa_receptora_id: id de {@see CarteraCliente} del emisor (FK); la relación empresaReceptora() aplica.
+     * - Proveedor del catálogo: empresa_receptora_id null; proveedor_receptor_id → {@see Proveedor} (FK).
+     * proveedor_id: proveedor emisor del presupuesto. user_id: usuario que creó/editó el registro.
+     * configuracion_condiciones: JSON (términos/opciones); no usar para id de receptor (columna dedicada).
+     */
     protected $fillable = [
         'uuid',
         'numero_presupuesto',
@@ -78,6 +87,7 @@ class Presupuesto extends BaseModel
         'token_publico',
         'proveedor_id',
         'empresa_receptora_id',
+        'proveedor_receptor_id',
         'user_id',
     ];
 
@@ -214,8 +224,8 @@ class Presupuesto extends BaseModel
             $lista[] = sprintf(self::ENUNCIADO_ANTICIPO, (int) $anticipo);
         }
 
-        $tiempoEntrega = $data['term_cond_tiempo_entrega_dias'] ?? null;
-        if ($tiempoEntrega !== null && (int) $tiempoEntrega > 0) {
+            $tiempoEntrega = $data['term_cond_tiempo_entrega_dias'] ?? null;
+            if ($tiempoEntrega !== null && (int) $tiempoEntrega > 0) {
             $lista[] = sprintf(self::ENUNCIADO_TIEMPO_ENTREGA, (int) $tiempoEntrega);
         }
 
@@ -298,6 +308,7 @@ class Presupuesto extends BaseModel
         return [
             'proveedor',
             'empresaReceptora',
+            'proveedorReceptor',
             'user',
             'conceptos',
         ];
@@ -312,11 +323,19 @@ class Presupuesto extends BaseModel
     }
 
     /**
-     * Relación con cliente de cartera receptora.
+     * Cliente de cartera del emisor cuando empresa_receptora_id es un id de {@see CarteraCliente}.
      */
     public function empresaReceptora(): BelongsTo
     {
         return $this->belongsTo(CarteraCliente::class, 'empresa_receptora_id');
+    }
+
+    /**
+     * Proveedor del catálogo receptor (si aplica); mutuamente excluyente con cartera salvo datos legados.
+     */
+    public function proveedorReceptor(): BelongsTo
+    {
+        return $this->belongsTo(Proveedor::class, 'proveedor_receptor_id');
     }
 
     /**
@@ -559,6 +578,14 @@ class Presupuesto extends BaseModel
     public function filterByProveedorId($query, $value)
     {
         return $query->whereIn('proveedor_id', explode(',', (string) $value));
+    }
+
+    /**
+     * Filtro por proveedor receptor (presupuestos recibidos en el catálogo).
+     */
+    public function filterByProveedorReceptorId($query, $value)
+    {
+        return $query->whereIn('proveedor_receptor_id', explode(',', (string) $value));
     }
 
     /**

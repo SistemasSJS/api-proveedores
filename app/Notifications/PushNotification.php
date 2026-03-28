@@ -8,9 +8,11 @@ use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Notifications\Notification;
+use App\Traits\NotificationCorrelationId;
 
 class PushNotification extends Notification implements ShouldBroadcastNow
 {
+    use NotificationCorrelationId;
     use Queueable;
 
     public $title;
@@ -55,14 +57,14 @@ class PushNotification extends Notification implements ShouldBroadcastNow
      */
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
-        return new BroadcastMessage([
+        return new BroadcastMessage($this->withNotificationCorrelationId([
             'tipo' => $this->type,
             'titulo' => $this->title,
             'mensaje' => $this->message,
             'action_url' => $this->actionUrl,
             'data' => $this->data,
             'timestamp' => now()->toIso8601String(),
-        ]);
+        ]));
     }
 
     public function broadcastType(): string
@@ -91,14 +93,14 @@ class PushNotification extends Notification implements ShouldBroadcastNow
      */
     public function toArray(object $notifiable): array
     {
-        return [
+        return $this->withNotificationCorrelationId([
             'tipo' => $this->type,
             'titulo' => $this->title,
             'mensaje' => $this->message,
             'action_url' => $this->actionUrl,
             'data' => $this->data,
             'timestamp' => now()->toIso8601String(),
-        ];
+        ]);
     }
 
     /**
@@ -120,14 +122,14 @@ class PushNotification extends Notification implements ShouldBroadcastNow
                 'title' => $icon . ' ' . $this->title,
                 'body' => $this->message,
             ],
-            'data' => array_merge(
+            'data' => $this->withNotificationCorrelationId(array_merge(
                 $this->data,
                 [
                     'tipo' => $this->type,
                     'action_url' => $this->actionUrl,
                     'timestamp' => now()->toIso8601String(),
                 ]
-            ),
+            )),
         ];
     }
 }
