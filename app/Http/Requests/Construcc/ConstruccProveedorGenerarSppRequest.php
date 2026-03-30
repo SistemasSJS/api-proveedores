@@ -43,6 +43,10 @@ class ConstruccProveedorGenerarSppRequest extends FormRequest
             'utilizara' => 'nullable|string|max:255',
             'equipo' => 'nullable|string|max:255',
             'equipo_id' => 'nullable|integer',
+
+            // Monto parcial
+            'monto_parcial' => 'nullable|numeric|min:0',
+            'motivo_parcial' => 'nullable|string|max:1000',
         ];
 
         // Validación condicional de factura
