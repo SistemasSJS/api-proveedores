@@ -49,16 +49,16 @@ class ConstruccProveedorSolicitudPagoController extends Controller
             // ============================================
             // PASO 1: Validar que el proveedor sea tipo_alta = 2
             // ============================================
-            if ($proveedor->tipo_alta !== 2) {
-                return $this->error(
-                    'Solo se pueden generar SPP con proveedores registrados por usuarios construcción (tipo_alta = 2).',
-                    [
-                        'proveedor_id' => $proveedor->id,
-                        'tipo_alta_actual' => $proveedor->tipo_alta,
-                    ],
-                    422
-                );
-            }
+            // if ($proveedor->tipo_alta !== 2) {
+            //     return $this->error(
+            //         'Solo se pueden generar SPP con proveedores registrados por usuarios construcción (tipo_alta = 2).',
+            //         [
+            //             'proveedor_id' => $proveedor->id,
+            //             'tipo_alta_actual' => $proveedor->tipo_alta,
+            //         ],
+            //         422
+            //     );
+            // }
 
             // ============================================
             // PASO 2: Validar que la cuenta bancaria pertenezca al proveedor
