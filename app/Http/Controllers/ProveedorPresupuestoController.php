@@ -89,6 +89,7 @@ class ProveedorPresupuestoController extends Controller
         $perPage = min((int) $request->input('per_page', 50), 100);
 
         $proveedores = Proveedor::with(Proveedor::eagerLodable())
+            ->where('id', '!=', $proveedor->id)
             ->filter($filters)
             ->orderBy('nombre_comercial', 'asc')
             ->paginate($perPage);
