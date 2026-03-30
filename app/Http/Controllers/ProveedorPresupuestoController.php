@@ -1148,22 +1148,24 @@ class ProveedorPresupuestoController extends Controller
                 }
                 $presupuesto->save();
 
-                $appUrl = config('app.frontend_url', config('app.url'));
-                $enlacePublico = $appUrl . '/public/presupuesto/' . $presupuesto->token_publico;
-                $nombreReceptor = $presupuesto->empresa_receptora_nombre
-                    ?? $presupuesto->empresa_receptora_empresa
-                    ?? 'Cliente';
+                // FIXME: EL envio de correo se desactivo para evitar que se cuelgue la app. el metodo enviar esta muy cargado.
+                // TODO: Generar ruta para enviar presupuesto por correo | notifacion | ... .
+                /**
+                 * $appUrl = config('app.frontend_url', config('app.url'));
+                 * $enlacePublico = $appUrl . '/public/presupuesto/' . $presupuesto->token_publico;
+                 * $nombreReceptor = $presupuesto->empresa_receptora_nombre ?? $presupuesto->empresa_receptora_empresa ?? 'Cliente';
+                 * if ($presupuesto->empresa_receptora_correo && filter_var($presupuesto->empresa_receptora_correo, FILTER_VALIDATE_EMAIL)) {
+                 *     Mail::to($presupuesto->empresa_receptora_correo)->send(
+                 *         new PresupuestoEnviadoMail($presupuesto, $enlacePublico, $nombreReceptor)
+                 *     );
+                 * }
+                 */
 
-                if ($presupuesto->empresa_receptora_correo && filter_var($presupuesto->empresa_receptora_correo, FILTER_VALIDATE_EMAIL)) {
-                    Mail::to($presupuesto->empresa_receptora_correo)->send(
-                        new PresupuestoEnviadoMail($presupuesto, $enlacePublico, $nombreReceptor)
-                    );
-                }
-                $usuarios = $proveedor->usuariosActivos()->get();
-
-                foreach ($usuarios as $user) {
-                    $user->notify(new PresupuestoEnviadoNotification($presupuesto));
-                }
+                // FIXME: El envio de notificacion solo queda para el usuario principal del proveedor.
+                // $usuarios = $proveedor->usuariosActivos()->get();
+                // foreach ($usuarios as $user) {
+                //     $user->notify(new PresupuestoEnviadoNotification($presupuesto));
+                // }
 
                 // 🔥 usar usuario principal, no el primero random
                 $usuarioPrincipal = $proveedor->usuarioPrincipal();
@@ -1176,12 +1178,14 @@ class ProveedorPresupuestoController extends Controller
                     : null;
 
                 $presupuesto->addNotification($primeraNotif?->id);
+                $this->notificarUsuariosProveedorReceptor($presupuesto, false);
 
-                if ($this->debeNotificarComoProveedorCatalogo($presupuesto)) {
-                    $this->notificarUsuariosProveedorReceptor($presupuesto, false);
-                } else {
-                    $this->notificarClienteProveedorRegistrado($presupuesto, false);
-                }
+                // FIXME: Revisar el metodo, el if es innecesario.
+                // if ($this->debeNotificarComoProveedorCatalogo($presupuesto)) {
+                //     $this->notificarUsuariosProveedorReceptor($presupuesto, false);
+                // } else {
+                //     $this->notificarClienteProveedorRegistrado($presupuesto, false);
+                // }
             });
 
             $presupuesto->refresh()->load(Presupuesto::eagerLodable());
