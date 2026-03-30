@@ -395,34 +395,40 @@ class Presupuesto extends BaseModel
             ];
         }
 
+        if ($this->empresa_receptora_id) {
+            $this->loadMissing('empresaReceptora');
+        }
+
+        $cartera = $this->empresaReceptora;
+
         return [
             'nombre' => self::primerTextoNoVacio(
                 $this->empresa_receptora_nombre,
-                $this->empresaReceptora?->nombre
+                $cartera?->nombre
             ),
             'puesto' => self::primerTextoNoVacio(
                 $this->empresa_receptora_puesto,
-                $this->empresaReceptora?->puesto
+                $cartera?->puesto
             ),
             'empresa' => self::primerTextoNoVacio(
                 $this->empresa_receptora_empresa,
-                $this->empresaReceptora?->empresa
+                $cartera?->empresa
             ),
             'alias_empresa' => self::primerTextoNoVacio(
                 $this->empresa_receptora_alias,
-                $this->empresaReceptora?->alias_empresa
+                $cartera?->alias_empresa
             ),
             'telefono' => self::primerTextoNoVacio(
                 $this->empresa_receptora_telefono,
-                $this->empresaReceptora?->telefono
+                $cartera?->telefono
             ),
             'correo' => self::primerTextoNoVacio(
                 $this->empresa_receptora_correo,
-                $this->empresaReceptora?->correo
+                $cartera?->correo
             ),
             'direccion' => self::primerTextoNoVacio(
                 $this->empresa_receptora_direccion,
-                $this->empresaReceptora?->direccion
+                $cartera?->direccion
             ),
         ];
     }

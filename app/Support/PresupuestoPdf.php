@@ -197,43 +197,27 @@ final class PresupuestoPdf
     }
 
     /**
-     * Líneas para «Dirigido a:» sin repetir el mismo texto (comparación insensible a mayúsculas y espacios).
-     * Orden: empresa, nombre de contacto, puesto, alias.
+     * Líneas para «Dirigido a:» en el PDF. Orden fijo: empresa, contacto, puesto, alias.
+     * No se eliminan duplicados entre campos (antes el nombre igual a la empresa ocultaba puesto u otros datos).
      *
      * @param  array{nombre?: string|null, puesto?: string|null, empresa?: string|null, alias_empresa?: string|null}  $r
      * @return list<string>
      */
     public static function lineasDirigidoUnicas(array $r): array
     {
-        $empresa = trim((string) ($r['empresa'] ?? ''));
-        $nombre = trim((string) ($r['nombre'] ?? ''));
-        $puesto = trim((string) ($r['puesto'] ?? ''));
-        $alias = trim((string) ($r['alias_empresa'] ?? ''));
+        $ordenados = [
+            trim((string) ($r['empresa'] ?? '')),
+            trim((string) ($r['nombre'] ?? '')),
+            trim((string) ($r['puesto'] ?? '')),
+            trim((string) ($r['alias_empresa'] ?? '')),
+        ];
 
-        $norm = static function (string $s): string {
-            $s = preg_replace('/\s+/u', ' ', $s) ?? $s;
-
-            return mb_strtolower(trim($s));
-        };
-
-        $seen = [];
         $lines = [];
-        $push = static function (string $v) use (&$lines, &$seen, $norm): void {
-            if ($v === '') {
-                return;
+        foreach ($ordenados as $v) {
+            if ($v !== '') {
+                $lines[] = $v;
             }
-            $k = $norm($v);
-            if (isset($seen[$k])) {
-                return;
-            }
-            $seen[$k] = true;
-            $lines[] = $v;
-        };
-
-        $push($empresa);
-        $push($nombre);
-        $push($puesto);
-        $push($alias);
+        }
 
         return $lines;
     }
