@@ -22,7 +22,9 @@ class ConstruccProveedorGenerarSppRequest extends FormRequest
             // Archivos - Validación condicional
             // Si hay cotización, factura no es obligatoria
             // Si NO hay cotización, factura SÍ es obligatoria
-            'cotizacion' => 'nullable|file|mimes:pdf,jpg,jpeg,png,bmp,gif,webp,doc,docx,xls,xlsx|max:10240',
+            // 'cotizacion' => 'nullable|file|mimes:pdf,jpg,jpeg,png,bmp,gif,webp,doc,docx,xls,xlsx|max:10240',
+            'cotizacion' => 'nullable|file|max:10240',
+
 
             // Cuenta bancaria del proveedor (debe existir y pertenecer al proveedor)
             'cuenta_bancaria_id' => 'required|exists:cuentas_bancarias,id',
@@ -108,4 +110,3 @@ class ConstruccProveedorGenerarSppRequest extends FormRequest
         ];
     }
 }
- 
