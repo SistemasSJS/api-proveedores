@@ -6,6 +6,7 @@ use App\Http\Requests\Presupuesto\StorePresupuestoRequest;
 use App\Http\Requests\Presupuesto\UpdatePresupuestoRequest;
 use App\Http\Resources\Presupuesto\PresupuestoResource;
 use App\Http\Resources\ProveedorResource;
+use App\Support\PresupuestoPdf;
 use App\Support\PresupuestoPdfTemplate;
 use App\Models\CarteraCliente;
 use App\Models\Presupuesto;
@@ -728,6 +729,18 @@ class ProveedorPresupuestoController extends Controller
     /**
      * Al enviar: si el receptor es otro proveedor del catálogo, notificar a sus usuarios activos en app/FCM.
      */
+    /**
+     * El usuario que creó el presupuesto no debe recibir la notificación de “recibido” (emisor ≠ receptor en la app).
+     */
+    private function usuarioDebeExcluirseDeNotificacionReceptor(Presupuesto $presupuesto, User $user): bool
+    {
+        if (! $presupuesto->user_id) {
+            return false;
+        }
+
+        return (int) $presupuesto->user_id === (int) $user->id;
+    }
+
     private function notificarUsuariosProveedorReceptor(Presupuesto $presupuesto, bool $esReenvio = false): void
     {
         $id = $this->resolverIdProveedorReceptorCatalogo($presupuesto);
@@ -741,6 +754,9 @@ class ProveedorPresupuestoController extends Controller
         }
 
         foreach ($proveedorReceptor->usuariosActivos()->get() as $user) {
+            if ($this->usuarioDebeExcluirseDeNotificacionReceptor($presupuesto, $user)) {
+                continue;
+            }
             $user->notify(new PresupuestoRecibidoClienteProveedorNotification($presupuesto, $esReenvio));
         }
     }
@@ -1065,6 +1081,8 @@ class ProveedorPresupuestoController extends Controller
             $estado = \Illuminate\Support\Arr::get((array) ($df ?? []), 'estado', $proveedor->estado ?? 'México');
             $lugar = $proveedor?->ciudad ? ($proveedor->ciudad . ', ' . $estado) : null;
 
+            $empDoc = $presupuesto->empresaReceptoraParaDocumento();
+
             // Preparar datos para la vista
             $datosPresupuesto = [
                 'proveedor' => $proveedor,
@@ -1080,15 +1098,13 @@ class ProveedorPresupuestoController extends Controller
                 'subtotal' => $presupuesto->subtotal,
                 'iva_total' => $presupuesto->iva_total,
                 'total' => $presupuesto->total,
-                'empresa_receptora' => [
-                    'nombre' => $presupuesto->empresa_receptora_nombre,
-                    'puesto' => $presupuesto->empresa_receptora_puesto,
-                    'empresa' => $presupuesto->empresa_receptora_empresa,
-                    'alias_empresa' => $presupuesto->empresa_receptora_alias,
-                    'telefono' => $presupuesto->empresa_receptora_telefono,
-                    'correo' => $presupuesto->empresa_receptora_correo,
-                    'direccion' => $presupuesto->empresa_receptora_direccion ?? $presupuesto->empresaReceptora?->direccion ?? null,
-                ],
+                'empresa_receptora' => $empDoc,
+                'receptor_lineas' => PresupuestoPdf::lineasDirigidoUnicas([
+                    'empresa' => $empDoc['empresa'],
+                    'nombre' => $empDoc['nombre'],
+                    'puesto' => $empDoc['puesto'],
+                    'alias_empresa' => $empDoc['alias_empresa'],
+                ]),
                 'conceptos' => $presupuesto->conceptos->map(function ($concepto) {
                     return [
                         'descripcion' => $concepto->descripcion,
@@ -1120,7 +1136,10 @@ class ProveedorPresupuestoController extends Controller
     }
 
     /**
-     * Envía el presupuesto al cliente: cambia estado a enviado, envía email y notifica.
+     * Marca el presupuesto como enviado (estado, token público, vigencia). Correo y notificación in-app van en endpoints dedicados.
+     *
+     * @see enviarCorreo
+     * @see notificarReceptorApp
      */
     public function enviar(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
     {
@@ -1137,9 +1156,21 @@ class ProveedorPresupuestoController extends Controller
                 );
             }
 
+            $usuarioPrincipal = $proveedor->usuarioPrincipal();
+
+            $primeraNotif = $usuarioPrincipal
+                ? $usuarioPrincipal->notifications()
+                ->where('type', PresupuestoEnviadoNotification::class)
+                ->latest()
+                ->first()
+                : null;
+
+            $presupuesto->addNotification($primeraNotif?->id);
+            $this->notificarUsuariosProveedorReceptor($presupuesto, false);
+
             $presupuesto->load(Presupuesto::eagerLodable());
 
-            DB::transaction(function () use ($presupuesto, $proveedor) {
+            DB::transaction(function () use ($presupuesto) {
                 $presupuesto->estado = Presupuesto::ESTADO_ENVIADO;
                 $presupuesto->asegurarTokenPublico();
 
@@ -1147,53 +1178,14 @@ class ProveedorPresupuestoController extends Controller
                     $presupuesto->fecha_vencimiento = $this->calcularFechaVencimiento($presupuesto);
                 }
                 $presupuesto->save();
-
-                // FIXME: EL envio de correo se desactivo para evitar que se cuelgue la app. el metodo enviar esta muy cargado.
-                // TODO: Generar ruta para enviar presupuesto por correo | notifacion | ... .
-                /**
-                 * $appUrl = config('app.frontend_url', config('app.url'));
-                 * $enlacePublico = $appUrl . '/public/presupuesto/' . $presupuesto->token_publico;
-                 * $nombreReceptor = $presupuesto->empresa_receptora_nombre ?? $presupuesto->empresa_receptora_empresa ?? 'Cliente';
-                 * if ($presupuesto->empresa_receptora_correo && filter_var($presupuesto->empresa_receptora_correo, FILTER_VALIDATE_EMAIL)) {
-                 *     Mail::to($presupuesto->empresa_receptora_correo)->send(
-                 *         new PresupuestoEnviadoMail($presupuesto, $enlacePublico, $nombreReceptor)
-                 *     );
-                 * }
-                 */
-
-                // FIXME: El envio de notificacion solo queda para el usuario principal del proveedor.
-                // $usuarios = $proveedor->usuariosActivos()->get();
-                // foreach ($usuarios as $user) {
-                //     $user->notify(new PresupuestoEnviadoNotification($presupuesto));
-                // }
-
-                // 🔥 usar usuario principal, no el primero random
-                $usuarioPrincipal = $proveedor->usuarioPrincipal();
-
-                $primeraNotif = $usuarioPrincipal
-                    ? $usuarioPrincipal->notifications()
-                    ->where('type', PresupuestoEnviadoNotification::class)
-                    ->latest()
-                    ->first()
-                    : null;
-
-                $presupuesto->addNotification($primeraNotif?->id);
-                $this->notificarUsuariosProveedorReceptor($presupuesto, false);
-
-                // FIXME: Revisar el metodo, el if es innecesario.
-                // if ($this->debeNotificarComoProveedorCatalogo($presupuesto)) {
-                //     $this->notificarUsuariosProveedorReceptor($presupuesto, false);
-                // } else {
-                //     $this->notificarClienteProveedorRegistrado($presupuesto, false);
-                // }
             });
 
             $presupuesto->refresh()->load(Presupuesto::eagerLodable());
-            $this->log('Presupuesto enviado', ['presupuesto_id' => $presupuesto->id]);
+            $this->log('Presupuesto enviado (estado)', ['presupuesto_id' => $presupuesto->id]);
 
             return $this->success(
                 new PresupuestoResource($presupuesto),
-                'Presupuesto enviado correctamente al cliente.'
+                'Presupuesto marcado como enviado.'
             );
         } catch (Throwable $e) {
             $this->log('Error al enviar presupuesto', [
@@ -1225,21 +1217,8 @@ class ProveedorPresupuestoController extends Controller
             $presupuesto->load(Presupuesto::eagerLodable());
             $presupuesto->asegurarTokenPublico();
 
-            $appUrl = config('app.frontend_url', config('app.url'));
-            $enlacePublico = $appUrl . '/public/presupuesto/' . $presupuesto->token_publico;
-            $nombreReceptor = $presupuesto->empresa_receptora_nombre
-                ?? $presupuesto->empresa_receptora_empresa
-                ?? 'Cliente';
-
-            Mail::to($presupuesto->empresa_receptora_correo)->send(
-                new PresupuestoEnviadoMail($presupuesto, $enlacePublico, $nombreReceptor)
-            );
-
-            if ($this->debeNotificarComoProveedorCatalogo($presupuesto)) {
-                $this->notificarUsuariosProveedorReceptor($presupuesto, true);
-            } else {
-                $this->notificarClienteProveedorRegistrado($presupuesto, true);
-            }
+            $this->despacharCorreoPresupuesto($presupuesto);
+            $this->despacharNotificacionesReceptor($presupuesto, true);
 
             $this->log('Presupuesto reenviado por correo', ['presupuesto_id' => $presupuesto->id]);
 
@@ -1291,6 +1270,9 @@ class ProveedorPresupuestoController extends Controller
                 ], 422);
             }
 
+            $validated = $this->resolverReceptorEmpresaParaValidacion($validated, $proveedor);
+            $normalized = $this->normalizarEmpresaReceptora($validated, (int) $proveedor->id);
+
             // Convertir logo del proveedor a base64
             $logoProveedorBase64 = $this->convertirLogoProveedorABase64($proveedor);
 
@@ -1298,33 +1280,49 @@ class ProveedorPresupuestoController extends Controller
             $estado = \Illuminate\Support\Arr::get((array) ($df ?? []), 'estado', $proveedor->estado ?? 'México');
             $lugar = $proveedor->ciudad ? ($proveedor->ciudad . ', ' . $estado) : null;
 
-            $formData = array_merge($validated, [
-                'con_iva' => $validated['con_iva'] ?? true,
-                'iva_porcentaje' => $validated['iva_porcentaje'] ?? 16,
+            $formData = array_merge($normalized, [
+                'con_iva' => $normalized['con_iva'] ?? true,
+                'iva_porcentaje' => $normalized['iva_porcentaje'] ?? 16,
             ]);
+
+            $stubPdf = new Presupuesto;
+            $stubPdf->empresa_receptora_nombre = $normalized['empresa_receptora_nombre'] ?? null;
+            $stubPdf->empresa_receptora_puesto = $normalized['empresa_receptora_puesto'] ?? null;
+            $stubPdf->empresa_receptora_empresa = $normalized['empresa_receptora_empresa'] ?? null;
+            $stubPdf->empresa_receptora_alias = $normalized['empresa_receptora_alias'] ?? null;
+            $stubPdf->empresa_receptora_telefono = $normalized['empresa_receptora_telefono'] ?? null;
+            $stubPdf->empresa_receptora_correo = $normalized['empresa_receptora_correo'] ?? null;
+            $stubPdf->setAttribute('empresa_receptora_direccion', $normalized['empresa_receptora_direccion'] ?? null);
+            $stubPdf->proveedor_receptor_id = $normalized['proveedor_receptor_id'] ?? null;
+            $stubPdf->empresa_receptora_id = $normalized['empresa_receptora_id'] ?? null;
+            if ($stubPdf->proveedor_receptor_id) {
+                $stubPdf->setRelation(
+                    'proveedorReceptor',
+                    Proveedor::query()->find((int) $stubPdf->proveedor_receptor_id)
+                );
+            }
+            $empDocForm = $stubPdf->empresaReceptoraParaDocumento();
 
             // Preparar datos para el PDF
             $datosPresupuesto = [
                 'proveedor' => $proveedor,
                 'logo_proveedor_base64' => $logoProveedorBase64,
-                'numero_presupuesto' => $validated['numero_presupuesto'] ?? $this->formatearFolioSiguiente($proveedor),
+                'numero_presupuesto' => $normalized['numero_presupuesto'] ?? $this->formatearFolioSiguiente($proveedor),
                 'uuid' => null,
                 'clave_unica' => null,
-                'fecha_emision' => $validated['fecha_emision'],
+                'fecha_emision' => $normalized['fecha_emision'],
                 'lugar' => $lugar,
-                'concepto_general' => $validated['concepto_general'],
-                'con_iva' => $validated['con_iva'] ?? true,
-                'iva_porcentaje' => $validated['iva_porcentaje'] ?? 16.00,
-                'empresa_receptora' => [
-                    'nombre' => $validated['empresa_receptora_nombre'] ?? null,
-                    'puesto' => $validated['empresa_receptora_puesto'] ?? null,
-                    'empresa' => $validated['empresa_receptora_empresa'] ?? null,
-                    'alias_empresa' => $validated['empresa_receptora_alias'] ?? null,
-                    'telefono' => $validated['empresa_receptora_telefono'] ?? null,
-                    'correo' => $validated['empresa_receptora_correo'] ?? null,
-                    'direccion' => $validated['empresa_receptora_direccion'] ?? null,
-                ],
-                'conceptos' => $validated['conceptos'] ?? [],
+                'concepto_general' => $normalized['concepto_general'],
+                'con_iva' => $normalized['con_iva'] ?? true,
+                'iva_porcentaje' => $normalized['iva_porcentaje'] ?? 16.00,
+                'empresa_receptora' => $empDocForm,
+                'receptor_lineas' => PresupuestoPdf::lineasDirigidoUnicas([
+                    'empresa' => $empDocForm['empresa'],
+                    'nombre' => $empDocForm['nombre'],
+                    'puesto' => $empDocForm['puesto'],
+                    'alias_empresa' => $empDocForm['alias_empresa'],
+                ]),
+                'conceptos' => $normalized['conceptos'] ?? [],
                 'terminos_enunciados' => Presupuesto::buildTerminosEnunciadosFromArray($formData),
                 'observaciones_enunciados' => Presupuesto::buildObservacionesEnunciadosFromArray($formData),
                 'qr_code' => null,
@@ -1392,7 +1390,120 @@ class ProveedorPresupuestoController extends Controller
     {
         $usuarios = $this->usuariosClienteProveedorRegistrado($presupuesto);
         foreach ($usuarios as $user) {
+            if ($this->usuarioDebeExcluirseDeNotificacionReceptor($presupuesto, $user)) {
+                continue;
+            }
             $user->notify(new PresupuestoRecibidoClienteProveedorNotification($presupuesto, $esReenvio));
+        }
+    }
+
+    private function despacharCorreoPresupuesto(Presupuesto $presupuesto): void
+    {
+        $appUrl = config('app.frontend_url', config('app.url'));
+        $enlacePublico = $appUrl . '/public/presupuesto/' . $presupuesto->token_publico;
+        $nombreReceptor = $presupuesto->empresa_receptora_nombre
+            ?? $presupuesto->empresa_receptora_empresa
+            ?? 'Cliente';
+
+        Mail::to($presupuesto->empresa_receptora_correo)->send(
+            new PresupuestoEnviadoMail($presupuesto, $enlacePublico, $nombreReceptor)
+        );
+    }
+
+    private function despacharNotificacionesReceptor(Presupuesto $presupuesto, bool $esReenvio): void
+    {
+        if ($this->debeNotificarComoProveedorCatalogo($presupuesto)) {
+            $this->notificarUsuariosProveedorReceptor($presupuesto, $esReenvio);
+        } else {
+            $this->notificarClienteProveedorRegistrado($presupuesto, $esReenvio);
+        }
+    }
+
+    /**
+     * Envía el correo al cliente con enlace público (operación aparte del cambio de estado).
+     * Requiere presupuesto ya en estado enviado.
+     */
+    public function enviarCorreo(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
+    {
+        try {
+            if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
+                return $this->error('Presupuesto no pertenece a este proveedor.', null, 403);
+            }
+
+            if ($presupuesto->estado !== Presupuesto::ESTADO_ENVIADO) {
+                return $this->error(
+                    'Solo se puede enviar el correo cuando el presupuesto está en estado enviado.',
+                    ['estado_actual' => $presupuesto->estado],
+                    422
+                );
+            }
+
+            if (! $presupuesto->empresa_receptora_correo || ! filter_var($presupuesto->empresa_receptora_correo, FILTER_VALIDATE_EMAIL)) {
+                return $this->error('No hay correo del cliente válido para enviar.', null, 422);
+            }
+
+            $presupuesto->load(Presupuesto::eagerLodable());
+            $presupuesto->asegurarTokenPublico();
+
+            $this->despacharCorreoPresupuesto($presupuesto);
+
+            $this->log('Presupuesto: correo al cliente enviado', ['presupuesto_id' => $presupuesto->id]);
+
+            return $this->success(
+                new PresupuestoResource($presupuesto->fresh(Presupuesto::eagerLodable())),
+                'Correo enviado correctamente al cliente.'
+            );
+        } catch (Throwable $e) {
+            $this->log('Error al enviar correo de presupuesto', [
+                'presupuesto_id' => $presupuesto->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->error('No fue posible enviar el correo.', [$e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Notifica en la app (y FCM) al receptor: proveedor catálogo o cliente con cuenta en otro proveedor.
+     * No notifica al usuario que generó el presupuesto (user_id).
+     */
+    public function notificarReceptorApp(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
+    {
+        try {
+            if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
+                return $this->error('Presupuesto no pertenece a este proveedor.', null, 403);
+            }
+
+            if ($presupuesto->estado !== Presupuesto::ESTADO_ENVIADO) {
+                return $this->error(
+                    'Solo se puede notificar cuando el presupuesto está en estado enviado.',
+                    ['estado_actual' => $presupuesto->estado],
+                    422
+                );
+            }
+
+            $presupuesto->load(Presupuesto::eagerLodable());
+
+            $esReenvio = $request->boolean('es_reenvio');
+
+            $this->despacharNotificacionesReceptor($presupuesto, $esReenvio);
+
+            $this->log('Presupuesto: notificación a receptor en app', [
+                'presupuesto_id' => $presupuesto->id,
+                'es_reenvio' => $esReenvio,
+            ]);
+
+            return $this->success(
+                new PresupuestoResource($presupuesto->fresh(Presupuesto::eagerLodable())),
+                'Notificación enviada a los usuarios del receptor.'
+            );
+        } catch (Throwable $e) {
+            $this->log('Error al notificar receptor de presupuesto', [
+                'presupuesto_id' => $presupuesto->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->error('No fue posible enviar la notificación.', [$e->getMessage()], 500);
         }
     }
 }

@@ -58,7 +58,7 @@ class Presupuesto extends BaseModel
         'numero_presupuesto',
         'fecha_emision',
         'fecha_vencimiento',
-        'concepto_general',
+        'concepto_general', 
         'subtotal',
         'con_iva',
         'iva_porcentaje',
@@ -336,6 +336,113 @@ class Presupuesto extends BaseModel
     public function proveedorReceptor(): BelongsTo
     {
         return $this->belongsTo(Proveedor::class, 'proveedor_receptor_id');
+    }
+
+    /**
+     * Datos del bloque «Dirigido a» para PDF y API: si el receptor es proveedor de catálogo,
+     * se completan desde {@see Proveedor} cuando faltan columnas en el presupuesto.
+     *
+     * @return array{nombre: ?string, puesto: ?string, empresa: ?string, alias_empresa: ?string, telefono: ?string, correo: ?string, direccion: ?string}
+     */
+    public function empresaReceptoraParaDocumento(): array
+    {
+        $prov = null;
+        if ($this->proveedor_receptor_id) {
+            $prov = $this->relationLoaded('proveedorReceptor')
+                ? $this->proveedorReceptor
+                : $this->proveedorReceptor()->first();
+        }
+
+        if ($prov) {
+            $nombre = self::primerTextoNoVacio(
+                $this->empresa_receptora_nombre,
+                $prov->contacto_nombre,
+                $prov->nombre_propietario,
+                $prov->nombre_comercial,
+                $prov->razon_social
+            );
+            $empresa = self::primerTextoNoVacio(
+                $this->empresa_receptora_empresa,
+                $prov->nombre_comercial,
+                $prov->razon_social
+            );
+            $puesto = self::primerTextoNoVacio($this->empresa_receptora_puesto, $prov->contacto_cargo);
+            $alias = self::primerTextoNoVacio($this->empresa_receptora_alias);
+            $telefono = self::primerTextoNoVacio(
+                $this->empresa_receptora_telefono,
+                $prov->contacto_telefono,
+                $prov->telefono,
+                $prov->celular
+            );
+            $correo = self::primerTextoNoVacio(
+                $this->empresa_receptora_correo,
+                $prov->contacto_correo,
+                $prov->email
+            );
+            $direccion = self::primerTextoNoVacio(
+                $this->empresa_receptora_direccion,
+                $prov->direccion_empresa
+            );
+
+            return [
+                'nombre' => $nombre,
+                'puesto' => $puesto,
+                'empresa' => $empresa,
+                'alias_empresa' => $alias,
+                'telefono' => $telefono,
+                'correo' => $correo,
+                'direccion' => $direccion,
+            ];
+        }
+
+        return [
+            'nombre' => self::primerTextoNoVacio(
+                $this->empresa_receptora_nombre,
+                $this->empresaReceptora?->nombre
+            ),
+            'puesto' => self::primerTextoNoVacio(
+                $this->empresa_receptora_puesto,
+                $this->empresaReceptora?->puesto
+            ),
+            'empresa' => self::primerTextoNoVacio(
+                $this->empresa_receptora_empresa,
+                $this->empresaReceptora?->empresa
+            ),
+            'alias_empresa' => self::primerTextoNoVacio(
+                $this->empresa_receptora_alias,
+                $this->empresaReceptora?->alias_empresa
+            ),
+            'telefono' => self::primerTextoNoVacio(
+                $this->empresa_receptora_telefono,
+                $this->empresaReceptora?->telefono
+            ),
+            'correo' => self::primerTextoNoVacio(
+                $this->empresa_receptora_correo,
+                $this->empresaReceptora?->correo
+            ),
+            'direccion' => self::primerTextoNoVacio(
+                $this->empresa_receptora_direccion,
+                $this->empresaReceptora?->direccion
+            ),
+        ];
+    }
+
+    /**
+     * @param  string|null  ...$candidatos
+     */
+    private static function primerTextoNoVacio(?string ...$candidatos): ?string
+    {
+        foreach ($candidatos as $c) {
+            if ($c === null) {
+                continue;
+            }
+            $t = trim((string) $c);
+            if ($t !== '') {
+                return $t;
+            }
+        }
+
+        return null;
     }
 
     /**

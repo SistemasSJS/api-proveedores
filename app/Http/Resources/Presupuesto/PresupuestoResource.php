@@ -43,6 +43,8 @@ class PresupuestoResource extends JsonResource
             ? 'proveedor'
             : ($this->empresa_receptora_id ? 'cartera' : 'captura');
 
+        $doc = $this->resource->empresaReceptoraParaDocumento();
+
         return [
             'id' => $this->id,
             'uuid' => $this->uuid,
@@ -78,12 +80,12 @@ class PresupuestoResource extends JsonResource
                 : null,
             'empresa_receptora' => [
                 'id' => $empresaReceptoraIdRespuesta,
-                'nombre' => $this->empresaReceptora?->nombre ?? $this->empresa_receptora_nombre,
-                'puesto' => $this->empresaReceptora?->puesto ?? $this->empresa_receptora_puesto,
-                'empresa' => $this->empresaReceptora?->empresa ?? $this->empresa_receptora_empresa,
-                'alias_empresa' => $this->empresa_receptora_alias ?? $this->empresaReceptora?->alias_empresa,
-                'telefono' => $this->empresa_receptora_telefono,
-                'correo' => $this->empresa_receptora_correo,
+                'nombre' => $doc['nombre'],
+                'puesto' => $doc['puesto'],
+                'empresa' => $doc['empresa'],
+                'alias_empresa' => $doc['alias_empresa'],
+                'telefono' => $doc['telefono'],
+                'correo' => $doc['correo'],
                 'origen' => $origenReceptor,
             ],
             'user' => $this->whenLoaded('user', function () {
@@ -92,12 +94,12 @@ class PresupuestoResource extends JsonResource
                     'name' => $this->user?->name,
                 ];
             }),
-            'empresa_receptora_nombre' => $this->empresa_receptora_nombre,
-            'empresa_receptora_puesto' => $this->empresa_receptora_puesto,
-            'empresa_receptora_empresa' => $this->empresa_receptora_empresa,
-            'empresa_receptora_alias' => $this->empresa_receptora_alias,
-            'empresa_receptora_telefono' => $this->empresa_receptora_telefono,
-            'empresa_receptora_correo' => $this->empresa_receptora_correo,
+            'empresa_receptora_nombre' => $doc['nombre'],
+            'empresa_receptora_puesto' => $doc['puesto'],
+            'empresa_receptora_empresa' => $doc['empresa'],
+            'empresa_receptora_alias' => $doc['alias_empresa'],
+            'empresa_receptora_telefono' => $doc['telefono'],
+            'empresa_receptora_correo' => $doc['correo'],
             'conceptos' => PresupuestoConceptoResource::collection($this->whenLoaded('conceptos')),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),

@@ -51,6 +51,8 @@ final class PresupuestoPdf
         $estado = \Illuminate\Support\Arr::get((array) ($df ?? []), 'estado', $proveedor->estado ?? 'México');
         $lugar = $proveedor?->ciudad ? ($proveedor->ciudad . ', ' . $estado) : null;
 
+        $empDoc = $presupuesto->empresaReceptoraParaDocumento();
+
         $datosPresupuesto = [
             'proveedor' => $proveedor,
             'logo_proveedor_base64' => $logoProveedorBase64,
@@ -67,20 +69,12 @@ final class PresupuestoPdf
             'subtotal' => $presupuesto->subtotal,
             'iva_total' => $presupuesto->iva_total,
             'total' => $presupuesto->total,
-            'empresa_receptora' => [
-                'nombre' => $presupuesto->empresa_receptora_nombre,
-                'puesto' => $presupuesto->empresa_receptora_puesto,
-                'empresa' => $presupuesto->empresa_receptora_empresa,
-                'alias_empresa' => $presupuesto->empresa_receptora_alias,
-                'telefono' => $presupuesto->empresa_receptora_telefono,
-                'correo' => $presupuesto->empresa_receptora_correo,
-                'direccion' => $presupuesto->empresa_receptora_direccion ?? $presupuesto->empresaReceptora?->direccion ?? null,
-            ],
+            'empresa_receptora' => $empDoc,
             'receptor_lineas' => self::lineasDirigidoUnicas([
-                'empresa' => $presupuesto->empresa_receptora_empresa,
-                'nombre' => $presupuesto->empresa_receptora_nombre,
-                'puesto' => $presupuesto->empresa_receptora_puesto,
-                'alias_empresa' => $presupuesto->empresa_receptora_alias,
+                'empresa' => $empDoc['empresa'],
+                'nombre' => $empDoc['nombre'],
+                'puesto' => $empDoc['puesto'],
+                'alias_empresa' => $empDoc['alias_empresa'],
             ]),
             'conceptos' => $presupuesto->conceptos->map(fn ($c) => [
                 'descripcion' => $c->descripcion,
@@ -209,7 +203,7 @@ final class PresupuestoPdf
      * @param  array{nombre?: string|null, puesto?: string|null, empresa?: string|null, alias_empresa?: string|null}  $r
      * @return list<string>
      */
-    private static function lineasDirigidoUnicas(array $r): array
+    public static function lineasDirigidoUnicas(array $r): array
     {
         $empresa = trim((string) ($r['empresa'] ?? ''));
         $nombre = trim((string) ($r['nombre'] ?? ''));

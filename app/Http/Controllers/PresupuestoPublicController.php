@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\Presupuesto\PresupuestoPublicResource;
 use App\Models\Presupuesto;
 use App\Notifications\Presupuesto\PresupuestoAceptadoNotification;
+use App\Notifications\Presupuesto\PresupuestoEnviadoNotification;
 use App\Notifications\Presupuesto\PresupuestoRechazadoNotification;
 use App\Support\PresupuestoPdf;
 use App\Traits\ApiResponse;
@@ -85,16 +86,26 @@ class PresupuestoPublicController extends Controller
 
         $proveedor = $presupuesto->proveedor;
         if ($proveedor) {
-            $usuarios = $proveedor->usuariosActivos()->get();
-            foreach ($usuarios as $user) {
-                $user->notify(new PresupuestoAceptadoNotification($presupuesto));
-            }
-            $primeraNotif = $usuarios->isNotEmpty()
-                ? $usuarios->first()->notifications()
-                    ->where('type', PresupuestoAceptadoNotification::class)
-                    ->latest()
-                    ->first()
+            // $usuarios = $proveedor->usuariosActivos()->get();
+            // foreach ($usuarios as $user) {
+            //     $user->notify(new PresupuestoAceptadoNotification($presupuesto));
+            // }
+            // $primeraNotif = $usuarios->isNotEmpty()
+            //     ? $usuarios->first()->notifications()
+            //         ->where('type', PresupuestoAceptadoNotification::class)
+            //         ->latest()
+            //         ->first()
+            //     : null;
+            // $presupuesto->addNotification($primeraNotif?->id);
+            $usuarioPrincipal = $proveedor->usuarioPrincipal();
+
+            $primeraNotif = $usuarioPrincipal
+                ? $usuarioPrincipal->notifications()
+                ->where('type', PresupuestoEnviadoNotification::class)
+                ->latest()
+                ->first()
                 : null;
+
             $presupuesto->addNotification($primeraNotif?->id);
         }
 
@@ -149,9 +160,9 @@ class PresupuestoPublicController extends Controller
             }
             $primeraNotif = $usuarios->isNotEmpty()
                 ? $usuarios->first()->notifications()
-                    ->where('type', PresupuestoRechazadoNotification::class)
-                    ->latest()
-                    ->first()
+                ->where('type', PresupuestoRechazadoNotification::class)
+                ->latest()
+                ->first()
                 : null;
             $presupuesto->addNotification($primeraNotif?->id);
         }

@@ -243,6 +243,8 @@ Route::prefix('proveedores')
                 Route::get('/{presupuesto}/pdf', [ProveedorPresupuestoController::class, 'generarPdf']);
                 Route::post('/{presupuesto}/duplicar', [ProveedorPresupuestoController::class, 'duplicar']);
                 Route::post('/{presupuesto}/enviar', [ProveedorPresupuestoController::class, 'enviar']);
+                Route::post('/{presupuesto}/enviar-correo', [ProveedorPresupuestoController::class, 'enviarCorreo']);
+                Route::post('/{presupuesto}/notificar-receptor-app', [ProveedorPresupuestoController::class, 'notificarReceptorApp']);
                 Route::post('/{presupuesto}/reenviar', [ProveedorPresupuestoController::class, 'reenviar']);
                 Route::get('/{presupuesto}', [ProveedorPresupuestoController::class, 'show']);
                 Route::put('/{presupuesto}', [ProveedorPresupuestoController::class, 'update']);
