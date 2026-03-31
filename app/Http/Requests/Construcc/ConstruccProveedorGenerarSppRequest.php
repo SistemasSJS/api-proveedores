@@ -27,7 +27,7 @@ class ConstruccProveedorGenerarSppRequest extends FormRequest
 
 
             // Cuenta bancaria del proveedor: Es opcional para las SPP generadas desde usuarios cosntrucc
-            'cuenta_bancaria_id' => 'nullable|integer',
+            'cuenta_bancaria_id' => 'nullable',
 
             // Recursos de construcción
             'empresa_construcc_id' => 'required|exists:empresa_construcc,id',
@@ -61,6 +61,15 @@ class ConstruccProveedorGenerarSppRequest extends FormRequest
         }
 
         return $rules;
+    }
+
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'cuenta_bancaria_id' => $this->cuenta_bancaria_id ?: null,
+            'monto_parcial' => $this->monto_parcial ?: null,
+            'motivo_parcial' => $this->motivo_parcial ?: null,
+        ]);
     }
 
     public function messages()
