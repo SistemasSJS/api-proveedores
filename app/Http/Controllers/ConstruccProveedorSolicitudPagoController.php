@@ -301,7 +301,7 @@ class ConstruccProveedorSolicitudPagoController extends Controller
             }
 
             // Cargar relaciones para el resource
-            $solicitud->load(['proveedor', 'cuentasBancarias', 'empresaConstrucc']);
+            $solicitud->load(['proveedor', 'empresaConstrucc']);
 
             return $this->success(
                 new ConstruccProveedorSppResource($solicitud),
