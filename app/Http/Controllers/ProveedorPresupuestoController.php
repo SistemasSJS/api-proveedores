@@ -758,12 +758,27 @@ class ProveedorPresupuestoController extends Controller
             return;
         }
 
-        foreach ($proveedorReceptor->usuariosActivos()->get() as $user) {
+        foreach ($proveedorReceptor->usuariosActivos()->get()->unique('id') as $user) {
             if ($this->usuarioDebeExcluirseDeNotificacionReceptor($presupuesto, $user)) {
+                continue;
+            }
+            if ($this->yaSeNotificoReceptorPresupuesto($user, (int) $presupuesto->id, $esReenvio)) {
                 continue;
             }
             $user->notify(new PresupuestoRecibidoClienteProveedorNotification($presupuesto, $esReenvio));
         }
+    }
+
+    private function yaSeNotificoReceptorPresupuesto(User $user, int $presupuestoId, bool $esReenvio): bool
+    {
+        $tituloEsperado = $esReenvio ? 'Presupuesto actualizado #' : 'Nuevo presupuesto recibido #';
+
+        return $user->notifications()
+            ->where('type', PresupuestoRecibidoClienteProveedorNotification::class)
+            ->where('data->presupuesto_id', $presupuestoId)
+            ->where('data->titulo', 'like', $tituloEsperado . '%')
+            ->where('created_at', '>=', now()->subMinutes(5))
+            ->exists();
     }
 
     /**
@@ -1161,8 +1176,6 @@ class ProveedorPresupuestoController extends Controller
                 );
             }
 
-            $this->notificarUsuariosProveedorReceptor($presupuesto, false);
-
             $presupuesto->load(Presupuesto::eagerLodable());
 
             DB::transaction(function () use ($presupuesto) {
@@ -1385,9 +1398,12 @@ class ProveedorPresupuestoController extends Controller
      */
     private function notificarClienteProveedorRegistrado(Presupuesto $presupuesto, bool $esReenvio = false): void
     {
-        $usuarios = $this->usuariosClienteProveedorRegistrado($presupuesto);
+        $usuarios = $this->usuariosClienteProveedorRegistrado($presupuesto)->unique('id');
         foreach ($usuarios as $user) {
             if ($this->usuarioDebeExcluirseDeNotificacionReceptor($presupuesto, $user)) {
+                continue;
+            }
+            if ($this->yaSeNotificoReceptorPresupuesto($user, (int) $presupuesto->id, $esReenvio)) {
                 continue;
             }
             $user->notify(new PresupuestoRecibidoClienteProveedorNotification($presupuesto, $esReenvio));
@@ -1418,21 +1434,13 @@ class ProveedorPresupuestoController extends Controller
 
     /**
      * Envía el correo al cliente con enlace público (operación aparte del cambio de estado).
-     * Requiere presupuesto ya en estado enviado.
+     * Permitido para cualquier estado del presupuesto.
      */
     public function enviarCorreo(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
     {
         try {
             if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
                 return $this->error('Presupuesto no pertenece a este proveedor.', null, 403);
-            }
-
-            if ($presupuesto->estado !== Presupuesto::ESTADO_ENVIADO) {
-                return $this->error(
-                    'Solo se puede enviar el correo cuando el presupuesto está en estado enviado.',
-                    ['estado_actual' => $presupuesto->estado],
-                    422
-                );
             }
 
             if (! $presupuesto->empresa_receptora_correo || ! filter_var($presupuesto->empresa_receptora_correo, FILTER_VALIDATE_EMAIL)) {
@@ -1463,20 +1471,13 @@ class ProveedorPresupuestoController extends Controller
     /**
      * Notifica en la app (y FCM) al receptor: proveedor catálogo o cliente con cuenta en otro proveedor.
      * No notifica al usuario que generó el presupuesto (user_id).
+     * Permitido para cualquier estado del presupuesto.
      */
     public function notificarReceptorApp(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
     {
         try {
             if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
                 return $this->error('Presupuesto no pertenece a este proveedor.', null, 403);
-            }
-
-            if ($presupuesto->estado !== Presupuesto::ESTADO_ENVIADO) {
-                return $this->error(
-                    'Solo se puede notificar cuando el presupuesto está en estado enviado.',
-                    ['estado_actual' => $presupuesto->estado],
-                    422
-                );
             }
 
             $presupuesto->load(Presupuesto::eagerLodable());

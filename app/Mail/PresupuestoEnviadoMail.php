@@ -3,10 +3,8 @@
 namespace App\Mail;
 
 use App\Models\Presupuesto;
-use App\Support\PresupuestoPdf;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -35,20 +33,9 @@ class PresupuestoEnviadoMail extends Mailable
         );
     }
 
-    /**
-     * @return array<int, Attachment>
-     */
     public function attachments(): array
     {
-        return [
-            Attachment::fromData(
-                function () {
-                    $p = $this->presupuesto->loadMissing(Presupuesto::eagerLodable());
-
-                    return PresupuestoPdf::renderPdfBinary($p);
-                },
-                'Presupuesto_' . $this->presupuesto->numero_presupuesto . '.pdf'
-            )->withMime('application/pdf'),
-        ];
+        // En envío por correo de presupuesto solo se comparte enlace público.
+        return [];
     }
 }

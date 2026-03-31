@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Storage;
  */
 final class EmailLogoHelper
 {
+    private const MAX_DIMENSION = 320;
+    private const MAX_BYTES_RAW = 350000;
+
     public static function logoGestionProDataUri(): ?string
     {
         return self::fileToDataUri(public_path('assets/logos/logo-gestionpro.png'));
@@ -55,15 +58,95 @@ final class EmailLogoHelper
             return null;
         }
 
+        [$normalizedData, $mime] = self::normalizeForEmail($imageData, $absolutePath);
+
+        return 'data:'.$mime.';base64,'.base64_encode($normalizedData);
+    }
+
+    /**
+     * Normaliza imagen para mayor compatibilidad con Gmail:
+     * - evita formatos pesados/inestables para cliente de correo
+     * - limita dimensiones y tamaño para evitar recortes o fallos de render
+     *
+     * @return array{0:string,1:string}
+     */
+    private static function normalizeForEmail(string $imageData, string $absolutePath): array
+    {
+        $fallbackMime = self::mimeFromExtension($absolutePath);
+
+        if (! function_exists('imagecreatefromstring')) {
+            return [$imageData, $fallbackMime];
+        }
+
+        $sourceImage = @imagecreatefromstring($imageData);
+        if (! $sourceImage) {
+            return [$imageData, $fallbackMime];
+        }
+
+        try {
+            $width = imagesx($sourceImage);
+            $height = imagesy($sourceImage);
+            if ($width <= 0 || $height <= 0) {
+                return [$imageData, $fallbackMime];
+            }
+
+            $scale = min(
+                1,
+                self::MAX_DIMENSION / $width,
+                self::MAX_DIMENSION / $height
+            );
+
+            $targetWidth = max(1, (int) round($width * $scale));
+            $targetHeight = max(1, (int) round($height * $scale));
+
+            $targetImage = imagecreatetruecolor($targetWidth, $targetHeight);
+            imagealphablending($targetImage, false);
+            imagesavealpha($targetImage, true);
+            $transparent = imagecolorallocatealpha($targetImage, 0, 0, 0, 127);
+            imagefilledrectangle($targetImage, 0, 0, $targetWidth, $targetHeight, $transparent);
+
+            imagecopyresampled(
+                $targetImage,
+                $sourceImage,
+                0,
+                0,
+                0,
+                0,
+                $targetWidth,
+                $targetHeight,
+                $width,
+                $height
+            );
+
+            ob_start();
+            imagepng($targetImage, null, 7);
+            $optimizedData = (string) ob_get_clean();
+            imagedestroy($targetImage);
+
+            if ($optimizedData === '') {
+                return [$imageData, $fallbackMime];
+            }
+
+            if (strlen($optimizedData) <= self::MAX_BYTES_RAW || strlen($optimizedData) <= strlen($imageData)) {
+                return [$optimizedData, 'image/png'];
+            }
+
+            return [$imageData, $fallbackMime];
+        } finally {
+            imagedestroy($sourceImage);
+        }
+    }
+
+    private static function mimeFromExtension(string $absolutePath): string
+    {
         $extension = strtolower(pathinfo($absolutePath, PATHINFO_EXTENSION));
-        $mime = match ($extension) {
+
+        return match ($extension) {
             'jpg', 'jpeg' => 'image/jpeg',
             'gif' => 'image/gif',
             'webp' => 'image/webp',
             'png' => 'image/png',
             default => 'image/png',
         };
-
-        return 'data:'.$mime.';base64,'.base64_encode($imageData);
     }
 }

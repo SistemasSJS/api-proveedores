@@ -164,8 +164,8 @@
     }
     
     .footer {
-      background-color: #343a40;
-      color: #ffffff;
+      background-color: #f1f5f9;
+      color: #475569;
       padding: 20px;
       text-align: center;
       font-size: 12px;

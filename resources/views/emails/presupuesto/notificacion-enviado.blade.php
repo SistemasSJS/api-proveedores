@@ -14,7 +14,7 @@
     .greeting { font-size: 18px; font-weight: 500; margin-bottom: 20px; color: #2c3e50; }
     .success-box { background: #d4edda; border-left: 4px solid #28a745; padding: 15px; margin: 20px 0; border-radius: 4px; color: #155724; }
     .action-button { display: inline-block; background: #2196F3; color: #fff; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 20px 0; }
-    .footer { background: #343a40; color: #fff; padding: 15px; text-align: center; font-size: 12px; }
+    .footer { background: #f1f5f9; color: #475569; padding: 15px; text-align: center; font-size: 12px; }
   </style>
 </head>
 <body>

@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Resources\Presupuesto\PresupuestoPublicResource;
 use App\Models\Presupuesto;
 use App\Notifications\Presupuesto\PresupuestoAceptadoNotification;
-use App\Notifications\Presupuesto\PresupuestoEnviadoNotification;
 use App\Notifications\Presupuesto\PresupuestoRechazadoNotification;
 use App\Support\PresupuestoPdf;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Validator;
 
 class PresupuestoPublicController extends Controller
@@ -65,7 +65,7 @@ class PresupuestoPublicController extends Controller
     public function aceptar(string $token): JsonResponse
     {
         $presupuesto = Presupuesto::query()
-            ->with('proveedor')
+            ->with(['proveedor', 'user'])
             ->where('token_publico', $token)
             ->first();
 
@@ -84,25 +84,7 @@ class PresupuestoPublicController extends Controller
         $presupuesto->estado = Presupuesto::ESTADO_ACEPTADO;
         $presupuesto->save();
 
-        $proveedor = $presupuesto->proveedor;
-        if ($proveedor) {
-            // $usuarios = $proveedor->usuariosActivos()->get();
-            // foreach ($usuarios as $user) {
-            //     $user->notify(new PresupuestoAceptadoNotification($presupuesto));
-            // }
-            // $primeraNotif = $usuarios->isNotEmpty()
-            //     ? $usuarios->first()->notifications()
-            //         ->where('type', PresupuestoAceptadoNotification::class)
-            //         ->latest()
-            //         ->first()
-            //     : null;
-            // $presupuesto->addNotification($primeraNotif?->id);
-            $usuarioPrincipal = $proveedor->usuarioPrincipal();
-            if ($usuarioPrincipal) {
-                $primeraNotif = $usuarioPrincipal->notify(new PresupuestoAceptadoNotification($presupuesto));
-                $presupuesto->addNotification($primeraNotif->id);
-            }
-        }
+        $this->notificarCreadorUnaSolaVez($presupuesto, new PresupuestoAceptadoNotification($presupuesto), PresupuestoAceptadoNotification::class);
 
         return $this->success(
             new PresupuestoPublicResource($presupuesto->fresh(Presupuesto::eagerLodable())),
@@ -116,7 +98,7 @@ class PresupuestoPublicController extends Controller
     public function rechazar(Request $request, string $token): JsonResponse
     {
         $presupuesto = Presupuesto::query()
-            ->with('proveedor')
+            ->with(['proveedor', 'user'])
             ->where('token_publico', $token)
             ->first();
 
@@ -147,24 +129,43 @@ class PresupuestoPublicController extends Controller
         }
         $presupuesto->save();
 
-        $proveedor = $presupuesto->proveedor;
-        if ($proveedor) {
-            $usuarios = $proveedor->usuariosActivos()->get();
-            foreach ($usuarios as $user) {
-                $user->notify(new PresupuestoRechazadoNotification($presupuesto, $motivo));
-            }
-            $primeraNotif = $usuarios->isNotEmpty()
-                ? $usuarios->first()->notifications()
-                ->where('type', PresupuestoRechazadoNotification::class)
-                ->latest()
-                ->first()
-                : null;
-            $presupuesto->addNotification($primeraNotif?->id);
-        }
+        $this->notificarCreadorUnaSolaVez($presupuesto, new PresupuestoRechazadoNotification($presupuesto, $motivo), PresupuestoRechazadoNotification::class);
 
         return $this->success(
             new PresupuestoPublicResource($presupuesto->fresh(Presupuesto::eagerLodable())),
             'Presupuesto rechazado.'
         );
+    }
+
+    private function notificarCreadorUnaSolaVez(Presupuesto $presupuesto, Notification $notification, string $notificationClass): void
+    {
+        $creador = $presupuesto->user;
+        if (! $creador) {
+            return;
+        }
+
+        if (method_exists($creador, 'tieneAccesoAProveedor') && ! $creador->tieneAccesoAProveedor((int) $presupuesto->proveedor_id)) {
+            return;
+        }
+
+        $yaExiste = $creador->notifications()
+            ->where('type', $notificationClass)
+            ->where('data->presupuesto_id', (int) $presupuesto->id)
+            ->where('created_at', '>=', now()->subMinutes(5))
+            ->exists();
+
+        if ($yaExiste) {
+            return;
+        }
+
+        $creador->notify($notification);
+
+        $notif = $creador->notifications()
+            ->where('type', $notificationClass)
+            ->where('data->presupuesto_id', (int) $presupuesto->id)
+            ->latest()
+            ->first();
+
+        $presupuesto->addNotification($notif?->id);
     }
 }

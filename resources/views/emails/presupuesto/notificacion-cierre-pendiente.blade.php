@@ -14,7 +14,7 @@
     .greeting { font-size: 18px; font-weight: 500; margin-bottom: 20px; color: #2c3e50; }
     .info-box { background: #fff8e1; border-left: 4px solid #ff9800; padding: 15px; margin: 20px 0; border-radius: 4px; color: #5d4037; }
     .action-button { display: inline-block; background: #ff9800; color: #fff; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 20px 0; }
-    .footer { background: #343a40; color: #fff; padding: 15px; text-align: center; font-size: 12px; }
+    .footer { background: #f1f5f9; color: #475569; padding: 15px; text-align: center; font-size: 12px; }
     .card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 16px; margin: 16px 0; }
   </style>
 </head>

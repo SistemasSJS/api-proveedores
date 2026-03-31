@@ -15,7 +15,7 @@
     .info-box { background: #f8f9fa; border-left: 4px solid #6c757d; padding: 15px; margin: 20px 0; border-radius: 4px; color: #495057; }
     .motivo-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 15px 0; border-radius: 4px; color: #856404; }
     .action-button { display: inline-block; background: #6c757d; color: #fff; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 20px 0; }
-    .footer { background: #343a40; color: #fff; padding: 15px; text-align: center; font-size: 12px; }
+    .footer { background: #f1f5f9; color: #475569; padding: 15px; text-align: center; font-size: 12px; }
     .card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 16px; margin: 16px 0; }
   </style>
 </head>

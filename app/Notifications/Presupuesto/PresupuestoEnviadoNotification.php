@@ -24,17 +24,8 @@ class PresupuestoEnviadoNotification extends Notification implements ShouldBroad
 
     public function via(object $notifiable): array
     {
-        $via = ['broadcast', 'database'];
-
-        if ($notifiable->email && filter_var($notifiable->email, FILTER_VALIDATE_EMAIL)) {
-            $via[] = 'mail';
-        }
-
-        if (method_exists($notifiable, 'deviceTokens') && $notifiable->deviceTokens()->where('is_active', true)->exists()) {
-            $via[] = 'fcm';
-        }
-
-        return $via;
+        // Solo notificación en app (campana): database + broadcast.
+        return ['broadcast', 'database'];
     }
 
     public function toBroadcast(object $notifiable): BroadcastMessage

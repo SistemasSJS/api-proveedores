@@ -23,13 +23,8 @@ class PresupuestoRecibidoClienteProveedorNotification extends Notification imple
 
     public function via(object $notifiable): array
     {
-        $via = ['broadcast', 'database'];
-
-        if (method_exists($notifiable, 'deviceTokens') && $notifiable->deviceTokens()->where('is_active', true)->exists()) {
-            $via[] = 'fcm';
-        }
-
-        return $via;
+        // Solo notificación en app (campana): database + broadcast.
+        return ['broadcast', 'database'];
     }
 
     public function toBroadcast(object $notifiable): BroadcastMessage
