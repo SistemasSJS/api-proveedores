@@ -1,8 +1,8 @@
 @php
-$margenMm = 20;
-$footerHeightMm = 25.4;
-$terminosLista = $presupuesto['terminos_enunciados'] ?? [];
-$observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
+    $margenMm = 20;
+    $footerHeightMm = 25.4;
+    $terminosLista = $presupuesto['terminos_enunciados'] ?? [];
+    $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
 @endphp
 <!DOCTYPE html>
 <html lang="es">
@@ -49,42 +49,16 @@ $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
             line-height: 1.2;
             margin: 0;
             padding: 0;
-
-            padding-bottom: {
-                    {
-                    $footerHeightMm
-                }
-            }
-
-            mm;
+            padding-bottom: {{ $footerHeightMm }}mm;
         }
 
         body {
-            padding-top: {
-                    {
-                    $margenMm
-                }
-            }
-
-            mm;
+            padding-top: {{ $margenMm }}mm;
         }
 
         .margin-sides {
-            padding-left: {
-                    {
-                    $margenMm
-                }
-            }
-
-            mm;
-
-            padding-right: {
-                    {
-                    $margenMm
-                }
-            }
-
-            mm;
+            padding-left: {{ $margenMm }}mm;
+            padding-right: {{ $margenMm }}mm;
         }
 
         .document-container {
@@ -522,38 +496,10 @@ $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
         .footer {
             position: fixed;
             bottom: 6mm;
-
-            left: {
-                    {
-                    $margenMm
-                }
-            }
-
-            mm;
-
-            right: {
-                    {
-                    $margenMm
-                }
-            }
-
-            mm;
-
-            height: {
-                    {
-                    $footerHeightMm - 2
-                }
-            }
-
-            mm;
-
-            min-height: {
-                    {
-                    $footerHeightMm - 2
-                }
-            }
-
-            mm;
+            left: {{ $margenMm }}mm;
+            right: {{ $margenMm }}mm;
+            height: {{ $footerHeightMm - 2 }}mm;
+            min-height: {{ $footerHeightMm - 2 }}mm;
             padding: 1mm 0 2mm;
             font-size: 6.5pt;
             color: var(--tw-slate-500);
@@ -763,18 +709,18 @@ $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
         <div class="footer-table">
             <div class="footer-left">
                 @php
-                $logos = $presupuesto['logos_base64'] ?? [];
-                $appKeys = ['gestionpro'];
+                    $logos = $presupuesto['logos_base64'] ?? [];
+                    $appKeys = ['gestionpro'];
                 @endphp
                 <div class="footer-logos-row">
                     @foreach ($appKeys as $key)
-                    <div class="footer-logo-cell">
-                        @if (!empty($logos[$key]))
-                        <img src="{{ $logos[$key] }}" alt="" class="footer-logo-img" />
-                        @else
-                        <span class="footer-logo-placeholder">{{ strtoupper(substr($key, 0, 1)) }}</span>
-                        @endif
-                    </div>
+                        <div class="footer-logo-cell">
+                            @if (!empty($logos[$key]))
+                                <img src="{{ $logos[$key] }}" alt="" class="footer-logo-img" />
+                            @else
+                                <span class="footer-logo-placeholder">{{ strtoupper(substr($key, 0, 1)) }}</span>
+                            @endif
+                        </div>
                     @endforeach
                 </div>
             </div>
@@ -782,8 +728,8 @@ $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
                 <div class="footer-center-content">
                     <div class="footer-slogan">"Calidad y compromiso en cada proyecto"</div>
                     <div class="footer-webs">
-                        <a href="https://heventec.com" class="footer-webs-link">heventec.com</a><span
-                            class="footer-webs-sep">|</span><a href="https://gestion.heventec.com/"
+                        <a href="https://heventec.com" class="footer-webs-link" target="_blank">heventec.com</a><span
+                            class="footer-webs-sep">|</span><a href="https://gestion.heventec.com/" target="_blank"
                             class="footer-webs-link">gestion.heventec.com</a>
                         <div class="footer-pages">&nbsp;</div>
                     </div>
@@ -791,9 +737,9 @@ $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
             </div>
             <div class="footer-right">
                 @if (isset($presupuesto['qr_code']) && $presupuesto['qr_code'])
-                <div class="footer-qr">
-                    <img src="{{ $presupuesto['qr_code'] }}" alt="Ver versión web" title="Ver versión web" />
-                </div>
+                    <div class="footer-qr">
+                        <img src="{{ $presupuesto['qr_code'] }}" alt="Ver versión web" title="Ver versión web" />
+                    </div>
                 @endif
             </div>
         </div>
@@ -808,71 +754,70 @@ $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
                             <tr>
                                 <td class="tw-logo-cell">
                                     @php
-                                    $logoProveedorBase64 = $presupuesto['logo_proveedor_base64'] ?? null;
-                                    $nombreEmpresa =
-                                    $presupuesto['proveedor']->razon_social ??
-                                    ($presupuesto['proveedor']->nombre_comercial ?? 'P');
-                                    $inicial = strtoupper(substr($nombreEmpresa, 0, 1));
+                                        $logoProveedorBase64 = $presupuesto['logo_proveedor_base64'] ?? null;
+                                        $nombreEmpresa =
+                                            $presupuesto['proveedor']->razon_social ??
+                                            ($presupuesto['proveedor']->nombre_comercial ?? 'P');
+                                        $inicial = strtoupper(substr($nombreEmpresa, 0, 1));
                                     @endphp
                                     @if ($logoProveedorBase64)
-                                    <img src="{{ $logoProveedorBase64 }}" alt="Logo" class="tw-logo-img" />
+                                        <img src="{{ $logoProveedorBase64 }}" alt="Logo" class="tw-logo-img" />
                                     @else
-                                    <div class="tw-logo-fallback">{{ $inicial }}</div>
+                                        <div class="tw-logo-fallback">{{ $inicial }}</div>
                                     @endif
                                 </td>
                                 <td class="tw-emisor-cell">
                                     @php
-                                    $p = $presupuesto['proveedor'];
-                                    $emisorNombre =
-                                    $p->razon_social ??
-                                    ($p->nombre_comercial ?? 'Empresa Proveedora S.A. de C.V.');
-                                    $emisorRfc = $p->rfc ?? null;
-                                    $emisorDireccion = $p->direccion_empresa ?? null;
-                                    $df = $p->direccion_fiscal ?? null;
-                                    $ciudad =
-                                    $p->ciudad ??
-                                    (is_array($df)
-                                    ? $df['ciudad'] ?? 'Ciudad de México'
-                                    : $df->ciudad ?? 'Ciudad de México');
-                                    $estado = is_array($df) ? $df['estado'] ?? 'CDMX' : $df->estado ?? 'CDMX';
-                                    $emisorCiudad = $ciudad . ', ' . $estado . ', México';
-                                    $emisorTel = $p->telefono ?? null;
-                                    $emisorEmail = $p->email ?? null;
+                                        $p = $presupuesto['proveedor'];
+                                        $emisorNombre =
+                                            $p->razon_social ??
+                                            ($p->nombre_comercial ?? 'Empresa Proveedora S.A. de C.V.');
+                                        $emisorRfc = $p->rfc ?? null;
+                                        $emisorDireccion = $p->direccion_empresa ?? null;
+                                        $df = $p->direccion_fiscal ?? null;
+                                        $ciudad =
+                                            $p->ciudad ??
+                                            (is_array($df)
+                                                ? $df['ciudad'] ?? 'Ciudad de México'
+                                                : $df->ciudad ?? 'Ciudad de México');
+                                        $estado = is_array($df) ? $df['estado'] ?? 'CDMX' : $df->estado ?? 'CDMX';
+                                        $emisorCiudad = $ciudad . ', ' . $estado . ', México';
+                                        $emisorTel = $p->telefono ?? null;
+                                        $emisorEmail = $p->email ?? null;
                                     @endphp
                                     <div class="tw-emisor-name">{{ $emisorNombre }}</div>
                                     @if ($emisorRfc)
-                                    <div class="tw-emisor-line">{{ $emisorRfc }}</div>
+                                        <div class="tw-emisor-line">{{ $emisorRfc }}</div>
                                     @endif
                                     @if ($emisorDireccion)
-                                    <div class="tw-emisor-line">{{ $emisorDireccion }}</div>
+                                        <div class="tw-emisor-line">{{ $emisorDireccion }}</div>
                                     @endif
                                     @if ($emisorCiudad)
-                                    <div class="tw-emisor-line">{{ $emisorCiudad }}</div>
+                                        <div class="tw-emisor-line">{{ $emisorCiudad }}</div>
                                     @endif
                                     @if ($emisorTel)
-                                    <div class="tw-emisor-line">Tel. {{ $emisorTel }}</div>
+                                        <div class="tw-emisor-line">Tel. {{ $emisorTel }}</div>
                                     @endif
                                     @if ($emisorEmail)
-                                    <div class="tw-emisor-line">{{ $emisorEmail }}</div>
+                                        <div class="tw-emisor-line">{{ $emisorEmail }}</div>
                                     @endif
                                 </td>
                                 <td class="tw-folio-cell">
                                     <div class="tw-badge-label">Presupuesto</div>
                                     <div class="tw-badge-folio">
-                                        {{ $presupuesto['numero_presupuesto'] ?? 'PRES-000001' }}
-                                    </div>
+                                        {{ $presupuesto['numero_presupuesto'] ?? 'PRES-000001' }}</div>
                                     @if (!empty($presupuesto['uuid']))
-                                    <div class="tw-uuid">{{ $presupuesto['uuid'] }}</div>
+                                        <div class="tw-uuid">{{ $presupuesto['uuid'] }}</div>
                                     @endif
                                     <div class="tw-date">
                                         @php
-                                        $fecha = $presupuesto['fecha_emision'] ?? now();
-                                        if (is_string($fecha)) {
-                                        $fecha = \Carbon\Carbon::parse($fecha);
-                                        }
-                                        $fechaFormateada = $fecha
-                                        ->locale('es')
-                                        ->translatedFormat('d \d\e F \d\e\l Y');
+                                            $fecha = $presupuesto['fecha_emision'] ?? now();
+                                            if (is_string($fecha)) {
+                                                $fecha = \Carbon\Carbon::parse($fecha);
+                                            }
+                                            $fechaFormateada = $fecha
+                                                ->locale('es')
+                                                ->translatedFormat('d \d\e F \d\e\l Y');
                                         @endphp
                                         {{ $fechaFormateada }}
                                     </div>
@@ -887,15 +832,15 @@ $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
             <div class="tw-card">
                 <div class="tw-card-title">Dirigido a:</div>
                 @foreach ($presupuesto['receptor_lineas'] ?? [] as $idx => $linea)
-                <div class="{{ $idx === 0 ? 'tw-receptor-strong' : 'tw-receptor-line' }}">{{ $linea }}</div>
+                    <div class="{{ $idx === 0 ? 'tw-receptor-strong' : 'tw-receptor-line' }}">{{ $linea }}</div>
                 @endforeach
             </div>
 
             @if ($presupuesto['concepto_general'] ?? null)
-            <div class="tw-desc-box">
-                <div class="tw-desc-title">Descripción general</div>
-                <div class="tw-desc-text">{{ $presupuesto['concepto_general'] }}</div>
-            </div>
+                <div class="tw-desc-box">
+                    <div class="tw-desc-title">Descripción general</div>
+                    <div class="tw-desc-text">{{ $presupuesto['concepto_general'] }}</div>
+                </div>
             @endif
 
             <div class="tw-section-title">Presupuesto</div>
@@ -912,41 +857,41 @@ $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
                 </thead>
                 <tbody>
                     @php
-                    $conceptos = $presupuesto['conceptos'] ?? [];
-                    $subtotal = 0;
+                        $conceptos = $presupuesto['conceptos'] ?? [];
+                        $subtotal = 0;
                     @endphp
                     @if (count($conceptos) > 0)
-                    @foreach ($conceptos as $index => $concepto)
-                    @php
-                    $cantidad = $concepto['cantidad'] ?? 1;
-                    $precioUnitario = $concepto['precio_unitario'] ?? 0;
-                    $importe = $cantidad * $precioUnitario;
-                    $subtotal += $importe;
-                    @endphp
-                    <tr>
-                        <td>{{ $index + 1 }}</td>
-                        <td>{{ $concepto['descripcion'] ?? 'Sin descripción' }}</td>
-                        <td>{{ number_format($cantidad, 2, '.', ',') }}</td>
-                        <td>{{ strtoupper($concepto['unidad'] ?? 'PZA') }}</td>
-                        <td>${{ number_format($precioUnitario, 2, '.', ',') }}</td>
-                        <td>${{ number_format($importe, 2, '.', ',') }}</td>
-                    </tr>
-                    @endforeach
+                        @foreach ($conceptos as $index => $concepto)
+                            @php
+                                $cantidad = $concepto['cantidad'] ?? 1;
+                                $precioUnitario = $concepto['precio_unitario'] ?? 0;
+                                $importe = $cantidad * $precioUnitario;
+                                $subtotal += $importe;
+                            @endphp
+                            <tr>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $concepto['descripcion'] ?? 'Sin descripción' }}</td>
+                                <td>{{ number_format($cantidad, 2, '.', ',') }}</td>
+                                <td>{{ strtoupper($concepto['unidad'] ?? 'PZA') }}</td>
+                                <td>${{ number_format($precioUnitario, 2, '.', ',') }}</td>
+                                <td>${{ number_format($importe, 2, '.', ',') }}</td>
+                            </tr>
+                        @endforeach
                     @else
-                    <tr>
-                        <td colspan="6" class="tw-no-rows">No hay conceptos registrados</td>
-                    </tr>
+                        <tr>
+                            <td colspan="6" class="tw-no-rows">No hay conceptos registrados</td>
+                        </tr>
                     @endif
                 </tbody>
             </table>
 
             <div class="tw-totals-wrap">
                 @php
-                $subtotalCalculado = $presupuesto['subtotal'] ?? $subtotal;
-                $conIva = $presupuesto['con_iva'] ?? false;
-                $ivaPorcentaje = $presupuesto['iva_porcentaje'] ?? 16;
-                $ivaTotal = $conIva ? $subtotalCalculado * ($ivaPorcentaje / 100) : 0;
-                $total = $subtotalCalculado + $ivaTotal;
+                    $subtotalCalculado = $presupuesto['subtotal'] ?? $subtotal;
+                    $conIva = $presupuesto['con_iva'] ?? false;
+                    $ivaPorcentaje = $presupuesto['iva_porcentaje'] ?? 16;
+                    $ivaTotal = $conIva ? $subtotalCalculado * ($ivaPorcentaje / 100) : 0;
+                    $total = $subtotalCalculado + $ivaTotal;
                 @endphp
                 <div class="tw-totals-inner">
                     <table class="tw-totals-table">
@@ -955,10 +900,10 @@ $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
                             <td>${{ number_format($subtotalCalculado, 2, '.', ',') }}</td>
                         </tr>
                         @if ($conIva)
-                        <tr>
-                            <td>IVA ({{ number_format($ivaPorcentaje, 0) }}%)</td>
-                            <td>${{ number_format($ivaTotal, 2, '.', ',') }}</td>
-                        </tr>
+                            <tr>
+                                <td>IVA ({{ number_format($ivaPorcentaje, 0) }}%)</td>
+                                <td>${{ number_format($ivaTotal, 2, '.', ',') }}</td>
+                            </tr>
                         @endif
                         <tr class="tw-total-row">
                             <td>Total</td>
@@ -971,24 +916,24 @@ $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
 
             <div class="terms-block">
                 @if (count($terminosLista) > 0)
-                <div class="tw-terms">
-                    <h3>Términos y Condiciones</h3>
-                    <ul class="tw-terms-num">
-                        @foreach ($terminosLista as $texto)
-                        <li>{{ $texto }}</li>
-                        @endforeach
-                    </ul>
-                </div>
+                    <div class="tw-terms">
+                        <h3>Términos y Condiciones</h3>
+                        <ul class="tw-terms-num">
+                            @foreach ($terminosLista as $texto)
+                                <li>{{ $texto }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
                 @endif
                 @if (count($observacionesLista) > 0)
-                <div class="tw-terms">
-                    <h3>Observaciones Generales</h3>
-                    <ul class="tw-obs-list">
-                        @foreach ($observacionesLista as $obs)
-                        <li>{{ $obs }}</li>
-                        @endforeach
-                    </ul>
-                </div>
+                    <div class="tw-terms">
+                        <h3>Observaciones Generales</h3>
+                        <ul class="tw-obs-list">
+                            @foreach ($observacionesLista as $obs)
+                                <li>{{ $obs }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
                 @endif
             </div>
         </div>
