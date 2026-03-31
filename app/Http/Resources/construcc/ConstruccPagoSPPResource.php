@@ -56,7 +56,14 @@ class ConstruccPagoSPPResource extends JsonResource
                 ];
             }),
 
-
+            // Campos de validación con monto parcial (si existen)
+            'validacion_con_monto' => [
+                'monto' => (float) $this->validacion_monto ?? null,
+                'usuario_id' => $this->validacion_usuario_id ?? null,
+                'usuario_nombre' => $this->validacion_usuario_nombre ?? null,
+                'fecha' => $this->validacion_fecha ?? null,
+                'motivo' => $this->validacion_motivo ?? null,
+            ],
 
             'fecha_registro' => optional($this->created_at)?->format('Y-m-d H:i:s'),
         ];

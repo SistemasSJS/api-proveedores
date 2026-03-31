@@ -26,8 +26,8 @@ class ConstruccProveedorGenerarSppRequest extends FormRequest
             'cotizacion' => 'nullable|file|max:10240',
 
 
-            // Cuenta bancaria del proveedor (debe existir y pertenecer al proveedor)
-            'cuenta_bancaria_id' => 'required|exists:cuentas_bancarias,id',
+            // Cuenta bancaria del proveedor: Es opcional para las SPP generadas desde usuarios cosntrucc
+            'cuenta_bancaria_id' => 'nullable|exists:cuentas_bancarias,id',
 
             // Recursos de construcción
             'empresa_construcc_id' => 'required|exists:empresa_construcc,id',
@@ -89,7 +89,7 @@ class ConstruccProveedorGenerarSppRequest extends FormRequest
             'cotizacion.max' => 'El archivo de cotización no debe superar los 10MB',
 
             // Mensajes para cuenta bancaria
-            'cuenta_bancaria_id.required' => 'La cuenta bancaria es obligatoria',
+            'cuenta_bancaria_id.nullable' => 'La cuenta bancaria es opcional',
             'cuenta_bancaria_id.exists' => 'La cuenta bancaria seleccionada no existe',
 
             // Mensajes para recursos de construcción

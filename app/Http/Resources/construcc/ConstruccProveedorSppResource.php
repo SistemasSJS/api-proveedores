@@ -44,6 +44,14 @@ class ConstruccProveedorSppResource extends JsonResource
 
                 'pagos' => ConstruccPagoResource::collection($this->whenLoaded('pagos')),
 
+                // Campos de validación con monto parcial (si existen)
+                'validacion_con_monto' => [
+                    'monto' => (float) $this->validacion_monto ?? null,
+                    'usuario_id' => $this->validacion_usuario_id ?? null,
+                    'usuario_nombre' => $this->validacion_usuario_nombre ?? null,
+                    'fecha' => $this->validacion_fecha ?? null,
+                    'motivo' => $this->validacion_motivo ?? null,
+                ],
                 // Fechas
                 'fecha_registro_pendiente' => $this->fecha_registro_pendiente?->format('Y-m-d H:i:s'),
                 'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
