@@ -98,15 +98,10 @@ class PresupuestoPublicController extends Controller
             //     : null;
             // $presupuesto->addNotification($primeraNotif?->id);
             $usuarioPrincipal = $proveedor->usuarioPrincipal();
-
-            $primeraNotif = $usuarioPrincipal
-                ? $usuarioPrincipal->notifications()
-                ->where('type', PresupuestoEnviadoNotification::class)
-                ->latest()
-                ->first()
-                : null;
-
-            $presupuesto->addNotification($primeraNotif?->id);
+            if ($usuarioPrincipal) {
+                $primeraNotif = $usuarioPrincipal->notify(new PresupuestoAceptadoNotification($presupuesto));
+                $presupuesto->addNotification($primeraNotif->id);
+            }
         }
 
         return $this->success(
