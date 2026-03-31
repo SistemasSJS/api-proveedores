@@ -279,11 +279,10 @@ class ConstruccProveedorSolicitudPagoController extends Controller
             // PASO 5: Sincronizar cuenta bancaria con solicitud de pago
             // ============================================
             // $solicitud->sincronizarCuentasBancarias([$cuentaBancaria->id]);
-
-            Log::info('✅ Cuenta bancaria sincronizada con solicitud de pago', [
-                'solicitud_pago_id' => $solicitud->id,
-                'cuenta_bancaria_id' => $cuentaBancaria->id,
-            ]);
+            // Log::info('✅ Cuenta bancaria sincronizada con solicitud de pago', [
+            //     'solicitud_pago_id' => $solicitud->id,
+            //     'cuenta_bancaria_id' => $cuentaBancaria->id,
+            // ]);
 
             DB::commit();
 
