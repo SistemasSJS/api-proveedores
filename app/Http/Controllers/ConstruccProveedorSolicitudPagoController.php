@@ -46,6 +46,11 @@ class ConstruccProveedorSolicitudPagoController extends Controller
         try {
             $validated = $request->validated();
 
+            Log::info('🧪 VALIDATED DATA', [
+                'keys' => array_keys($validated),
+                'data' => $validated,
+            ]);
+            
             // ============================================
             // PASO 1: Validar que el proveedor sea tipo_alta = 2
             // ============================================
