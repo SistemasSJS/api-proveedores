@@ -50,7 +50,7 @@ class ConstruccProveedorSolicitudPagoController extends Controller
                 'keys' => array_keys($validated),
                 'data' => $validated,
             ]);
-            
+
             // ============================================
             // PASO 1: Validar que el proveedor sea tipo_alta = 2
             // ============================================
@@ -219,20 +219,21 @@ class ConstruccProveedorSolicitudPagoController extends Controller
                 $datosSP['fecha_registro_pendiente'] = now();
             }
 
+            $montoParcial = $validated['monto_parcial'] ?? null;
+            $motivoParcial = $validated['motivo_parcial'] ?? null;
 
-            if ($validated['monto_parcial'] && $validated['motivo_parcial']) {
-                $datosSP['monto_autorizado'] = $validated['monto_parcial'];
-                $datosSP['usuario_autorizo_parcial_id'] = $validated['usuario_id'];
-                $datosSP['usuario_autorizo_parcial_nombre'] = $validated['usuario_nombre'];
+            if (!is_null($montoParcial) && !is_null($motivoParcial)) {
+                $datosSP['monto_autorizado'] = $montoParcial;
+                $datosSP['usuario_autorizo_parcial_id'] = $usuarioId;
+                $datosSP['usuario_autorizo_parcial_nombre'] = $usuarioNombre;
                 $datosSP['fecha_autorizacion_parcial'] = now();
-                $datosSP['motivo_autorizacion_parcial'] = $validated['motivo_parcial'];
+                $datosSP['motivo_autorizacion_parcial'] = $motivoParcial;
 
-                // se actualiza el usuario que autorizo la spp
-                $datosSP['validacion_usuario_id'] = $validated['usuario_id'];
-                $datosSP['validacion_usuario_nombre'] = $validated['usuario_nombre'];
+                $datosSP['validacion_usuario_id'] = $usuarioId;
+                $datosSP['validacion_usuario_nombre'] = $usuarioNombre;
                 $datosSP['validacion_fecha'] = now();
-                $datosSP['validacion_monto'] = $validated['monto_parcial'];
-                $datosSP['validacion_motivo'] = $validated['motivo_parcial'];
+                $datosSP['validacion_monto'] = $montoParcial;
+                $datosSP['validacion_motivo'] = $motivoParcial;
             }
 
             DB::beginTransaction();
