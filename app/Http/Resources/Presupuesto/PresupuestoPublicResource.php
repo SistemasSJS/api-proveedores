@@ -24,6 +24,20 @@ class PresupuestoPublicResource extends JsonResource
     public function toArray(Request $request): array
     {
         $proveedor = $this->proveedor;
+        $condiciones = is_array($this->configuracion_condiciones) ? $this->configuracion_condiciones : [];
+        $condiciones = array_merge($condiciones, [
+            'vigencia_dias' => $this->term_cond_dias_vigencia,
+            'impuestos_activo' => $this->term_cond_impuestos_en_pdf !== false,
+            'anticipo_porcentaje' => $this->term_cond_anticipo_porcentaje,
+            'tiempo_entrega_dias' => $this->term_cond_tiempo_entrega_dias,
+            'garantia_dias' => $this->obs_garantia_dias,
+            'gastos_traslado' => $this->obs_traslados === null
+                ? null
+                : ($this->obs_traslados ? 'incluidos' : 'no_incluidos'),
+            'viaticos' => $this->obs_viaticos === null
+                ? null
+                : ($this->obs_viaticos ? 'incluidos' : 'no_incluidos'),
+        ]);
         $logoUrl = null;
         if ($proveedor && $proveedor->logo) {
             $logoUrl = preg_match('/^https?:\/\//', $proveedor->logo)
@@ -43,7 +57,7 @@ class PresupuestoPublicResource extends JsonResource
             'iva_porcentaje' => (float) $this->iva_porcentaje,
             'iva_total' => (float) $this->iva_total,
             'total' => (float) $this->total,
-            'condiciones' => $this->configuracion_condiciones,
+            'condiciones' => $condiciones,
             'observaciones' => null,
             'term_cond_dias_vigencia' => $this->term_cond_dias_vigencia,
             'term_cond_moneda' => $this->term_cond_moneda ?? 'MXN',
@@ -51,8 +65,8 @@ class PresupuestoPublicResource extends JsonResource
             'term_cond_anticipo_porcentaje' => $this->term_cond_anticipo_porcentaje,
             'term_cond_tiempo_entrega_dias' => $this->term_cond_tiempo_entrega_dias,
             'obs_garantia_dias' => (int) ($this->obs_garantia_dias ?? 0),
-            'obs_traslados' => (bool) ($this->obs_traslados ?? false),
-            'obs_viaticos' => (bool) ($this->obs_viaticos ?? false),
+            'obs_traslados' => $this->obs_traslados === null ? null : (bool) $this->obs_traslados,
+            'obs_viaticos' => $this->obs_viaticos === null ? null : (bool) $this->obs_viaticos,
             'motivo_rechazo' => $this->motivo_rechazo,
             'estado' => $this->estado ?? Presupuesto::ESTADO_BORRADOR,
             'proveedor' => [

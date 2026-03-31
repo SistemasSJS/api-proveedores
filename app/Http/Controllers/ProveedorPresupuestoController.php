@@ -731,15 +731,19 @@ class ProveedorPresupuestoController extends Controller
      * Al enviar: si el receptor es otro proveedor del catálogo, notificar a sus usuarios activos en app/FCM.
      */
     /**
-     * El usuario que creó el presupuesto no debe recibir la notificación de “recibido” (emisor ≠ receptor en la app).
+     * Evita duplicados cuando un usuario pertenece al emisor y también al receptor.
+     * En esos casos solo debe recibir la notificación del lado emisor.
      */
     private function usuarioDebeExcluirseDeNotificacionReceptor(Presupuesto $presupuesto, User $user): bool
     {
-        if (! $presupuesto->user_id) {
-            return false;
+        // Si el usuario tiene acceso al proveedor emisor, no debe recibir la notificación de receptor.
+        if (method_exists($user, 'tieneAccesoAProveedor') && $user->tieneAccesoAProveedor((int) $presupuesto->proveedor_id)) {
+            return true;
         }
 
-        return (int) $presupuesto->user_id === (int) $user->id;
+        return $presupuesto->user_id
+            ? (int) $presupuesto->user_id === (int) $user->id
+            : false;
     }
 
     private function notificarUsuariosProveedorReceptor(Presupuesto $presupuesto, bool $esReenvio = false): void
@@ -1157,21 +1161,13 @@ class ProveedorPresupuestoController extends Controller
                 );
             }
 
-            $usuarioPrincipal = $proveedor->usuarioPrincipal();
-
-            $primeraNotif = $usuarioPrincipal
-                ? $usuarioPrincipal->notifications()
-                ->where('type', PresupuestoEnviadoNotification::class)
-                ->latest()
-                ->first()
-                : null;
-
-            $presupuesto->addNotification($primeraNotif?->id);
             $this->notificarUsuariosProveedorReceptor($presupuesto, false);
 
             $presupuesto->load(Presupuesto::eagerLodable());
 
             DB::transaction(function () use ($presupuesto) {
+                // Al enviar desde borrador, la fecha de emision se fija al dia actual.
+                $presupuesto->fecha_emision = now()->toDateString();
                 $presupuesto->estado = Presupuesto::ESTADO_ENVIADO;
                 $presupuesto->asegurarTokenPublico();
 

@@ -130,6 +130,8 @@ class Presupuesto extends BaseModel
     public const ENUNCIADO_TRASLADOS_NO_INCLUIDOS = 'Los trabajos contemplados en este presupuesto no incluyen los gastos de traslado al sitio donde se realizarán los trabajos.';
     public const ENUNCIADO_VIATICOS_INCLUIDOS = 'Los trabajos contemplados en este presupuesto sí incluyen los gastos de viáticos derivados de la ubicación donde deberán realizarse los trabajos.';
     public const ENUNCIADO_VIATICOS_NO_INCLUIDOS = 'Los trabajos contemplados en este presupuesto no incluyen los gastos de viáticos derivados de la ubicación donde deberán realizarse los trabajos.';
+    public const ENUNCIADO_REVISION_TECNICA = 'Requiere revisión técnica previa.';
+    public const ENUNCIADO_CONDICIONES_SITIO = 'Condiciones del sitio de trabajo deben ser adecuadas.';
 
     /**
      * Construye la lista de enunciados de términos y condiciones para el PDF.
@@ -139,6 +141,7 @@ class Presupuesto extends BaseModel
     public function getTerminosEnunciados(): array
     {
         $lista = [];
+        $config = is_array($this->configuracion_condiciones) ? $this->configuracion_condiciones : [];
 
         if ($this->term_cond_dias_vigencia > 0) {
             $lista[] = sprintf(self::ENUNCIADO_VIGENCIA, (int) $this->term_cond_dias_vigencia);
@@ -162,6 +165,18 @@ class Presupuesto extends BaseModel
             $lista[] = sprintf(self::ENUNCIADO_TIEMPO_ENTREGA, (int) $this->term_cond_tiempo_entrega_dias);
         }
 
+        foreach ([
+            'condicionantes_adicionales_1',
+            'condicionantes_adicionales_2',
+            'condicionantes_adicionales_3',
+            'condicionantes_adicionales_4',
+        ] as $key) {
+            $txt = trim((string) ($config[$key] ?? ''));
+            if ($txt !== '') {
+                $lista[] = $txt;
+            }
+        }
+
         return $lista;
     }
 
@@ -173,6 +188,7 @@ class Presupuesto extends BaseModel
     public function getObservacionesEnunciados(): array
     {
         $lista = [];
+        $config = is_array($this->configuracion_condiciones) ? $this->configuracion_condiciones : [];
 
         if ($this->obs_garantia_dias > 0) {
             $lista[] = sprintf(self::ENUNCIADO_GARANTIA, (int) $this->obs_garantia_dias);
@@ -190,6 +206,26 @@ class Presupuesto extends BaseModel
                 : self::ENUNCIADO_VIATICOS_NO_INCLUIDOS;
         }
 
+        if (! empty($config['revision_tecnica_activo'])) {
+            $lista[] = self::ENUNCIADO_REVISION_TECNICA;
+        }
+
+        if (! empty($config['condiciones_sitio_activo'])) {
+            $lista[] = self::ENUNCIADO_CONDICIONES_SITIO;
+        }
+
+        foreach ([
+            'observaciones_adicionales_1',
+            'observaciones_adicionales_2',
+            'observaciones_adicionales_3',
+            'observaciones_adicionales_4',
+        ] as $key) {
+            $txt = trim((string) ($config[$key] ?? ''));
+            if ($txt !== '') {
+                $lista[] = $txt;
+            }
+        }
+
         return $lista;
     }
 
@@ -204,6 +240,7 @@ class Presupuesto extends BaseModel
         $lista = [];
         $conIva = $data['con_iva'] ?? true;
         $ivaPct = (float) ($data['term_cond_iva'] ?? $data['iva_porcentaje'] ?? 16);
+        $config = is_array($data['configuracion_condiciones'] ?? null) ? $data['configuracion_condiciones'] : [];
 
         if (! empty($data['term_cond_dias_vigencia']) && (int) $data['term_cond_dias_vigencia'] > 0) {
             $lista[] = sprintf(self::ENUNCIADO_VIGENCIA, (int) $data['term_cond_dias_vigencia']);
@@ -229,6 +266,18 @@ class Presupuesto extends BaseModel
             $lista[] = sprintf(self::ENUNCIADO_TIEMPO_ENTREGA, (int) $tiempoEntrega);
         }
 
+        foreach ([
+            'condicionantes_adicionales_1',
+            'condicionantes_adicionales_2',
+            'condicionantes_adicionales_3',
+            'condicionantes_adicionales_4',
+        ] as $key) {
+            $txt = trim((string) ($config[$key] ?? ''));
+            if ($txt !== '') {
+                $lista[] = $txt;
+            }
+        }
+
         return $lista;
     }
 
@@ -241,6 +290,7 @@ class Presupuesto extends BaseModel
     public static function buildObservacionesEnunciadosFromArray(array $data): array
     {
         $lista = [];
+        $config = is_array($data['configuracion_condiciones'] ?? null) ? $data['configuracion_condiciones'] : [];
 
         $garantiaDias = (int) ($data['obs_garantia_dias'] ?? 0);
         if ($garantiaDias > 0) {
@@ -261,6 +311,26 @@ class Presupuesto extends BaseModel
             $lista[] = ((bool) $data['obs_viaticos'])
                 ? self::ENUNCIADO_VIATICOS_INCLUIDOS
                 : self::ENUNCIADO_VIATICOS_NO_INCLUIDOS;
+        }
+
+        if (! empty($config['revision_tecnica_activo'])) {
+            $lista[] = self::ENUNCIADO_REVISION_TECNICA;
+        }
+
+        if (! empty($config['condiciones_sitio_activo'])) {
+            $lista[] = self::ENUNCIADO_CONDICIONES_SITIO;
+        }
+
+        foreach ([
+            'observaciones_adicionales_1',
+            'observaciones_adicionales_2',
+            'observaciones_adicionales_3',
+            'observaciones_adicionales_4',
+        ] as $key) {
+            $txt = trim((string) ($config[$key] ?? ''));
+            if ($txt !== '') {
+                $lista[] = $txt;
+            }
         }
 
         return $lista;
