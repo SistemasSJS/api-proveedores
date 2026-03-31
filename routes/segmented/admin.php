@@ -43,100 +43,100 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
     Route::prefix('catalogos')->group(function () {
         // Proveedores
         Route::get('proveedores', [AdminProveedorController::class, 'index']);
-        Route::post('proveedores', [AdminProveedorController::class, 'store'])->middleware('audit');
+        Route::post('proveedores', [AdminProveedorController::class, 'store']);
         Route::get('proveedores/{proveedor}', [AdminProveedorController::class, 'show']);
-        Route::put('proveedores/{proveedor}', [AdminProveedorController::class, 'update'])->middleware('audit');
-        Route::patch('proveedores/{proveedor}', [AdminProveedorController::class, 'update'])->middleware('audit');
-        Route::delete('proveedores/{proveedor}', [AdminProveedorController::class, 'destroy'])->middleware('audit');
-        Route::get('proveedores/{proveedor}/productos', [AdminProveedorController::class, 'destroy'])->middleware('audit');
-        Route::get('proveedores/all/count-categorias', [AdminProveedorController::class, 'proveedoresConCategoriasConSubcatCountProductos'])->middleware('audit');
+        Route::put('proveedores/{proveedor}', [AdminProveedorController::class, 'update']);
+        Route::patch('proveedores/{proveedor}', [AdminProveedorController::class, 'update']);
+        Route::delete('proveedores/{proveedor}', [AdminProveedorController::class, 'destroy']);
+        Route::get('proveedores/{proveedor}/productos', [AdminProveedorController::class, 'productos']);
+        Route::get('proveedores/all/count-categorias', [AdminProveedorController::class, 'proveedoresConCategoriasConSubcatCountProductos']);
 
         // Sucursales
         Route::get('sucursales', [SucursalController::class, 'index']);
-        Route::post('sucursales', [SucursalController::class, 'store'])->middleware('audit');
-        Route::get('sucursales/groupedByProveedor', [SucursalController::class, 'indexGroupedByProveedor'])->middleware('audit');
+        Route::post('sucursales', [SucursalController::class, 'store']);
+        Route::get('sucursales/groupedByProveedor', [SucursalController::class, 'indexGroupedByProveedor']);
         Route::get('sucursales/{sucursal}', [SucursalController::class, 'show']);
-        Route::put('sucursales/{sucursal}', [SucursalController::class, 'update'])->middleware('audit');
-        Route::patch('sucursales/{sucursal}', [SucursalController::class, 'update'])->middleware('audit');
-        Route::delete('sucursales/{sucursal}', [SucursalController::class, 'destroy'])->middleware('audit');
+        Route::put('sucursales/{sucursal}', [SucursalController::class, 'update']);
+        Route::patch('sucursales/{sucursal}', [SucursalController::class, 'update']);
+        Route::delete('sucursales/{sucursal}', [SucursalController::class, 'destroy']);
 
         // Productos
         Route::get('productos', [ProductoController::class, 'index']);
-        Route::post('productos', [ProductoController::class, 'store'])->middleware('audit');
+        Route::post('productos', [ProductoController::class, 'store']);
         Route::get('productos/{producto}', [ProductoController::class, 'show']);
-        Route::put('productos/{producto}', [ProductoController::class, 'update'])->middleware('audit');
-        Route::patch('productos/{producto}', [ProductoController::class, 'update'])->middleware('audit');
-        Route::delete('productos/{producto}', [ProductoController::class, 'destroy'])->middleware('audit');
+        Route::put('productos/{producto}', [ProductoController::class, 'update']);
+        Route::patch('productos/{producto}', [ProductoController::class, 'update']);
+        Route::delete('productos/{producto}', [ProductoController::class, 'destroy']);
 
         // Imágenes
         Route::get('imagenes', [ProductoImagenController::class, 'index']);
-        Route::post('imagenes', [ProductoImagenController::class, 'store'])->middleware('audit');
+        Route::post('imagenes', [ProductoImagenController::class, 'store']);
         Route::get('imagenes/{imagen}', [ProductoImagenController::class, 'show']);
-        Route::put('imagenes/{imagen}', [ProductoImagenController::class, 'update'])->middleware('audit');
-        Route::patch('imagenes/{imagen}', [ProductoImagenController::class, 'update'])->middleware('audit');
-        Route::delete('imagenes/{imagen}', [ProductoImagenController::class, 'destroy'])->middleware('audit');
+        Route::put('imagenes/{imagen}', [ProductoImagenController::class, 'update']);
+        Route::patch('imagenes/{imagen}', [ProductoImagenController::class, 'update']);
+        Route::delete('imagenes/{imagen}', [ProductoImagenController::class, 'destroy']);
 
         // Unidades de medida
         Route::get('unidades-medida', [UnidadMedidaController::class, 'index']);
-        Route::post('unidades-medida', [UnidadMedidaController::class, 'store'])->middleware('audit');
+        Route::post('unidades-medida', [UnidadMedidaController::class, 'store']);
         Route::get('unidades-medida/{unidad_medida}', [UnidadMedidaController::class, 'show']);
-        Route::put('unidades-medida/{unidad_medida}', [UnidadMedidaController::class, 'update'])->middleware('audit');
-        Route::patch('unidades-medida/{unidad_medida}', [UnidadMedidaController::class, 'update'])->middleware('audit');
-        Route::delete('unidades-medida/{unidad_medida}', [UnidadMedidaController::class, 'destroy'])->middleware('audit');
+        Route::put('unidades-medida/{unidad_medida}', [UnidadMedidaController::class, 'update']);
+        Route::patch('unidades-medida/{unidad_medida}', [UnidadMedidaController::class, 'update']);
+        Route::delete('unidades-medida/{unidad_medida}', [UnidadMedidaController::class, 'destroy']);
 
         // Categorías
         Route::get('categorias', [CategoriaController::class, 'index']);
-        Route::post('categorias', [CategoriaController::class, 'store'])->middleware('audit');
+        Route::post('categorias', [CategoriaController::class, 'store']);
         Route::get('categorias/{categoria}', [CategoriaController::class, 'show']);
-        Route::put('categorias/{categoria}', [CategoriaController::class, 'update'])->middleware('audit');
-        Route::patch('categorias/{categoria}', [CategoriaController::class, 'update'])->middleware('audit');
-        Route::delete('categorias/{categoria}', [CategoriaController::class, 'destroy'])->middleware('audit');
+        Route::put('categorias/{categoria}', [CategoriaController::class, 'update']);
+        Route::patch('categorias/{categoria}', [CategoriaController::class, 'update']);
+        Route::delete('categorias/{categoria}', [CategoriaController::class, 'destroy']);
 
         // Marcas
         Route::get('marcas', [MarcaController::class, 'index']);
-        Route::post('marcas', [MarcaController::class, 'store'])->middleware('audit');
+        Route::post('marcas', [MarcaController::class, 'store']);
         Route::get('marcas/{marca}', [MarcaController::class, 'show']);
-        Route::put('marcas/{marca}', [MarcaController::class, 'update'])->middleware('audit');
-        Route::patch('marcas/{marca}', [MarcaController::class, 'update'])->middleware('audit');
-        Route::delete('marcas/{marca}', [MarcaController::class, 'destroy'])->middleware('audit');
+        Route::put('marcas/{marca}', [MarcaController::class, 'update']);
+        Route::patch('marcas/{marca}', [MarcaController::class, 'update']);
+        Route::delete('marcas/{marca}', [MarcaController::class, 'destroy']);
 
         // Tipos de empresa
         Route::get('tipos-empresa', [TipoEmpresaController::class, 'index']);
-        Route::post('tipos-empresa', [TipoEmpresaController::class, 'store'])->middleware('audit');
+        Route::post('tipos-empresa', [TipoEmpresaController::class, 'store']);
         Route::get('tipos-empresa/{tipo_empresa}', [TipoEmpresaController::class, 'show']);
-        Route::put('tipos-empresa/{tipo_empresa}', [TipoEmpresaController::class, 'update'])->middleware('audit');
-        Route::patch('tipos-empresa/{tipo_empresa}', [TipoEmpresaController::class, 'update'])->middleware('audit');
-        Route::delete('tipos-empresa/{tipo_empresa}', [TipoEmpresaController::class, 'destroy'])->middleware('audit');
+        Route::put('tipos-empresa/{tipo_empresa}', [TipoEmpresaController::class, 'update']);
+        Route::patch('tipos-empresa/{tipo_empresa}', [TipoEmpresaController::class, 'update']);
+        Route::delete('tipos-empresa/{tipo_empresa}', [TipoEmpresaController::class, 'destroy']);
     });
 
     /**
      * GESTIÓN ADMINISTRATIVA DE PEDIDOS
      */
-    Route::prefix('pedidos')->group(function () {
-        Route::get('/', [AdminPedidosController::class, 'adminIndex'])
-            ->middleware(['audit'])
-            ->name('admin.pedidos.index');
+    // Route::prefix('pedidos')->group(function () {
+    //     Route::get('/', [AdminPedidosController::class, 'adminIndex'])
+    //         ->middleware(['audit'])
+    //         ->name('admin.pedidos.index');
 
-        Route::get('stats', [AdminPedidosController::class, 'adminStats'])
-            ->middleware(['audit'])
-            ->name('admin.pedidos.stats');
+    //     Route::get('stats', [AdminPedidosController::class, 'adminStats'])
+    //         ->middleware(['audit'])
+    //         ->name('admin.pedidos.stats');
 
-        Route::patch('{pedido}/force-status', [AdminPedidosController::class, 'forceStatus'])
-            ->middleware(['audit'])
-            ->name('admin.pedidos.force-status');
+    //     Route::patch('{pedido}/force-status', [AdminPedidosController::class, 'forceStatus'])
+    //         ->middleware(['audit'])
+    //         ->name('admin.pedidos.force-status');
 
-        Route::delete('{pedido}', [AdminPedidosController::class, 'destroy'])
-            ->middleware(['audit'])
-            ->name('admin.pedidos.destroy');
+    //     Route::delete('{pedido}', [AdminPedidosController::class, 'destroy'])
+    //         ->middleware(['audit'])
+    //         ->name('admin.pedidos.destroy');
 
-        Route::get('reports', [AdminPedidosController::class, 'adminReports'])
-            ->middleware(['audit'])
-            ->name('admin.pedidos.reports');
+    //     Route::get('reports', [AdminPedidosController::class, 'adminReports'])
+    //         ->middleware(['audit'])
+    //         ->name('admin.pedidos.reports');
 
-        Route::get('{pedido}/audit', [AdminPedidosController::class, 'auditLog'])
-            ->middleware(['audit'])
-            ->name('admin.pedidos.audit');
-    });
+    //     Route::get('{pedido}/audit', [AdminPedidosController::class, 'auditLog'])
+    //         ->middleware(['audit'])
+    //         ->name('admin.pedidos.audit');
+    // });
 
     /**
      * DASHBOARD ADMINISTRATIVO
@@ -145,60 +145,61 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
         Route::get('catalogos-resumen', [AdminHomeControler::class, 'getCatalogosCountItems'])->middleware(['audit']);
         Route::get('stats-completas', [AdminDashboardController::class, 'getStatsCompletas'])->middleware(['audit']);
         Route::get('metricas-rendimiento', [AdminDashboardController::class, 'getMetricasRendimiento'])->middleware(['audit']);
+        Route::get('spp-proveedores', [AdminDashboardController::class, 'getMetricasSppPorProveedor'])->middleware(['audit']);
     });
 
     /**
      * HOMOLOGACIÓN DE PROVEEDORES DUPLICADOS
      * Sistema para reasignar usuarios entre proveedores con la misma razón social
      */
-    Route::prefix('homologacion')->group(function () {
-        // Reporte de proveedores duplicados con metricas de SPP
-        Route::get('reporte-proveedores-duplicados', [ProveedorHomologacionController::class, 'reporteProveedoresDuplicados'])
-            ->middleware(['audit'])
-            ->name('admin.homologacion.proveedores.reporte-duplicados');
+    // Route::prefix('homologacion')->group(function () {
+    //     // Reporte de proveedores duplicados con metricas de SPP
+    //     Route::get('reporte-proveedores-duplicados', [ProveedorHomologacionController::class, 'reporteProveedoresDuplicados'])
+    //         ->middleware(['audit'])
+    //         ->name('admin.homologacion.proveedores.reporte-duplicados');
 
-        // Listar proveedores para homologación
-        Route::get('proveedores', [ProveedorHomologacionController::class, 'listarProveedores'])
-            ->middleware(['audit'])
-            ->name('admin.homologacion.proveedores.index');
+    //     // Listar proveedores para homologación
+    //     Route::get('proveedores', [ProveedorHomologacionController::class, 'listarProveedores'])
+    //         ->middleware(['audit'])
+    //         ->name('admin.homologacion.proveedores.index');
 
-        // Obtener detalle de un proveedor específico
-        Route::get('proveedores/{id}', [ProveedorHomologacionController::class, 'obtenerDetalleProveedor'])
-            ->middleware(['audit'])
-            ->name('admin.homologacion.proveedores.show');
+    //     // Obtener detalle de un proveedor específico
+    //     Route::get('proveedores/{id}', [ProveedorHomologacionController::class, 'obtenerDetalleProveedor'])
+    //         ->middleware(['audit'])
+    //         ->name('admin.homologacion.proveedores.show');
 
-        // Obtener usuarios de múltiples proveedores para reasignar
-        Route::post('usuarios-para-reasignar', [ProveedorHomologacionController::class, 'obtenerUsuariosParaReasignar'])
-            ->middleware(['audit'])
-            ->name('admin.homologacion.usuarios-para-reasignar');
+    //     // Obtener usuarios de múltiples proveedores para reasignar
+    //     Route::post('usuarios-para-reasignar', [ProveedorHomologacionController::class, 'obtenerUsuariosParaReasignar'])
+    //         ->middleware(['audit'])
+    //         ->name('admin.homologacion.usuarios-para-reasignar');
 
-        // Previsualizar la homologación (sin ejecutar)
-        Route::post('previsualizar', [ProveedorHomologacionController::class, 'previsualizarHomologacion'])
-            ->middleware(['audit'])
-            ->name('admin.homologacion.previsualizar');
+    //     // Previsualizar la homologación (sin ejecutar)
+    //     Route::post('previsualizar', [ProveedorHomologacionController::class, 'previsualizarHomologacion'])
+    //         ->middleware(['audit'])
+    //         ->name('admin.homologacion.previsualizar');
 
-        // Ejecutar la homologación
-        Route::post('ejecutar', [ProveedorHomologacionController::class, 'ejecutarHomologacion'])
-            ->middleware(['audit'])
-            ->name('admin.homologacion.ejecutar');
-    });
+    //     // Ejecutar la homologación
+    //     Route::post('ejecutar', [ProveedorHomologacionController::class, 'ejecutarHomologacion'])
+    //         ->middleware(['audit'])
+    //         ->name('admin.homologacion.ejecutar');
+    // });
 
     /**
      * INTEGRACIÓN CON SERVICIOS EXTERNOS
      */
-    Route::prefix('integracion')->group(function () {
-        Route::post('pedidos/{pedido}/sync-billing', [PedidoController::class, 'syncBilling'])
-            ->middleware(['audit'])
-            ->name('admin.integration.pedidos.sync-billing');
+    // Route::prefix('integracion')->group(function () {
+    //     Route::post('pedidos/{pedido}/sync-billing', [PedidoController::class, 'syncBilling'])
+    //         ->middleware(['audit'])
+    //         ->name('admin.integration.pedidos.sync-billing');
 
-        Route::post('pedidos/{pedido}/generate-invoice', [PedidoController::class, 'generateInvoice'])
-            ->middleware(['audit'])
-            ->name('admin.integration.pedidos.generate-invoice');
+    //     Route::post('pedidos/{pedido}/generate-invoice', [PedidoController::class, 'generateInvoice'])
+    //         ->middleware(['audit'])
+    //         ->name('admin.integration.pedidos.generate-invoice');
 
-        Route::post('pedidos/{pedido}/payment-confirmed', [PedidoController::class, 'paymentConfirmed'])
-            ->middleware(['audit'])
-            ->name('admin.integration.pedidos.payment-confirmed');
-    });
+    //     Route::post('pedidos/{pedido}/payment-confirmed', [PedidoController::class, 'paymentConfirmed'])
+    //         ->middleware(['audit'])
+    //         ->name('admin.integration.pedidos.payment-confirmed');
+    // });
 });
 
 /**
@@ -276,4 +277,3 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
 //     Route::post('pedidos/{pedido}/payment-confirmed', [PedidoController::class, 'paymentConfirmed'])
 //         ->name('integration.pedidos.payment-confirmed');
 // });
-

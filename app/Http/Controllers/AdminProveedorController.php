@@ -6,6 +6,7 @@ use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Http\Requests\Admin\AdminProveedorStoreRequest;
 use App\Http\Requests\Proveedor\ProveedorUpdateRequest;
 use App\Http\Resources\Admin\AdminProveedorAcordeonResource;
+use App\Http\Resources\ProductoResource;
 use App\Http\Resources\ProveedorResource;
 use App\Models\Proveedor;
 use Illuminate\Http\Request;
@@ -108,6 +109,28 @@ class AdminProveedorController extends Controller
         return $this->success(
             AdminProveedorAcordeonResource::collection($proveedores),
             'Listado de proveedores con sus categorías, subcategorías y contador de productos.'
+        );
+    }
+
+    /**
+     * Lista productos de un proveedor con paginación.
+     */
+    public function productos(Request $request, Proveedor $proveedor)
+    {
+        $perPage = (int) $request->input('per_page', 10);
+        $sortBy = $request->input('sort_by', 'nombre');
+        $order = $request->input('order', 'asc');
+
+        $paginator = $proveedor->productos()
+            ->with(['marca', 'categoria', 'subcategoria', 'unidad_medida'])
+            ->orderBy($sortBy, $order)
+            ->paginate($perPage);
+
+        $data = ProductoResource::collection($paginator)->resolve();
+
+        return $this->paginated(
+            $paginator->setCollection(collect($data)),
+            'Listado de productos del proveedor.'
         );
     }
 }
