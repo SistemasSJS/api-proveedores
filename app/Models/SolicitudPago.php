@@ -159,7 +159,7 @@ class SolicitudPago extends BaseModel
         'estado_solicitud' => 'EstadoSolicitud',
         'proveedor_id' => 'ProveedorId',
         'empresa_construcc_id' => 'EmpresaConstruccId',
-        // 'usuario_id' => 'UsuarioId',
+        'usuario_id' => 'UsuarioId',
         'usuario_nombre' => 'UsuarioNombre',
         'cotizacion_id' => 'CotizacionId',
 
