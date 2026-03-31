@@ -222,7 +222,7 @@ class ConstruccProveedorSolicitudPagoController extends Controller
             $montoParcial = $validated['monto_parcial'] ?? null;
             $motivoParcial = $validated['motivo_parcial'] ?? null;
 
-            if (!is_null($montoParcial) && !is_null($motivoParcial)) {
+            if (!is_null($montoParcial) && (float) $montoParcial > 0 && !is_null($motivoParcial)) {
                 $datosSP['monto_autorizado'] = $montoParcial;
                 $datosSP['usuario_autorizo_parcial_id'] = $usuarioId;
                 $datosSP['usuario_autorizo_parcial_nombre'] = $usuarioNombre;
