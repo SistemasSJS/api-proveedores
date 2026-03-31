@@ -163,6 +163,45 @@ class ProveedorPresupuestoController extends Controller
             'aceptados' => (int) (clone $baseQuery)->where('estado', Presupuesto::ESTADO_ACEPTADO)->count(),
         ];
 
+        $unreadSegmentCountsFormatted = [
+            'borrador' => (int) (clone $baseQuery)
+                ->where('estado', Presupuesto::ESTADO_BORRADOR)
+                ->where(function ($q) {
+                    $q->where('item_visto', false)->orWhereNull('item_visto');
+                })
+                ->count(),
+            'enviados' => (int) (clone $baseQuery)
+                ->where('estado', Presupuesto::ESTADO_ENVIADO)
+                ->where(function ($q) {
+                    $q->where('item_visto', false)->orWhereNull('item_visto');
+                })
+                ->count(),
+            'observados' => (int) (clone $baseQuery)
+                ->whereIn('estado', [Presupuesto::ESTADO_RECHAZADO, Presupuesto::ESTADO_RECHAZADO_CON_OBSERVACION])
+                ->whereNotNull('motivo_rechazo')
+                ->whereRaw('TRIM(motivo_rechazo) != ?', [''])
+                ->where(function ($q) {
+                    $q->where('item_visto', false)->orWhereNull('item_visto');
+                })
+                ->count(),
+            'rechazados' => (int) (clone $baseQuery)
+                ->whereIn('estado', [Presupuesto::ESTADO_RECHAZADO, Presupuesto::ESTADO_RECHAZADO_CON_OBSERVACION, Presupuesto::ESTADO_VENCIDO])
+                ->where(function ($q) {
+                    $q->whereNull('motivo_rechazo')
+                        ->orWhereRaw('TRIM(COALESCE(motivo_rechazo, "")) = ?', ['']);
+                })
+                ->where(function ($q) {
+                    $q->where('item_visto', false)->orWhereNull('item_visto');
+                })
+                ->count(),
+            'aceptados' => (int) (clone $baseQuery)
+                ->where('estado', Presupuesto::ESTADO_ACEPTADO)
+                ->where(function ($q) {
+                    $q->where('item_visto', false)->orWhereNull('item_visto');
+                })
+                ->count(),
+        ];
+
         if ($hasUltimas) {
             $ids = (clone $baseQuery)->pluck('id');
             $listQuery = Presupuesto::query()
@@ -189,7 +228,10 @@ class ProveedorPresupuestoController extends Controller
             $originalPaginator->setCollection(collect($data)),
             'Datos paginados.',
             200,
-            ['segment_counts' => $segmentCountsFormatted]
+            [
+                'segment_counts' => $segmentCountsFormatted,
+                'unread_segment_counts' => $unreadSegmentCountsFormatted,
+            ]
         );
     }
 

@@ -66,6 +66,39 @@ class ProveedorSolicitudPagoController extends Controller
             'sin_factura' => (int) (clone $baseQuery)->where('tiene_factura', false)->count(),
         ];
 
+        $unreadSegmentCountsFormatted = [
+            'pendiente' => (int) (clone $baseQuery)
+                ->where('estado_solicitud', EstadoSP::PENDIENTE->value)
+                ->where(function ($q) {
+                    $q->where('item_visto', false)->orWhereNull('item_visto');
+                })
+                ->count(),
+            'rechazada' => (int) (clone $baseQuery)
+                ->where('estado_solicitud', EstadoSP::RECHAZADA->value)
+                ->where(function ($q) {
+                    $q->where('item_visto', false)->orWhereNull('item_visto');
+                })
+                ->count(),
+            'autorizada' => (int) (clone $baseQuery)
+                ->where('estado_solicitud', EstadoSP::AUTORIZADA->value)
+                ->where(function ($q) {
+                    $q->where('item_visto', false)->orWhereNull('item_visto');
+                })
+                ->count(),
+            'pagado' => (int) (clone $baseQuery)
+                ->where('estado_solicitud', EstadoSP::PAGADO->value)
+                ->where(function ($q) {
+                    $q->where('item_visto', false)->orWhereNull('item_visto');
+                })
+                ->count(),
+            'sin_factura' => (int) (clone $baseQuery)
+                ->where('tiene_factura', false)
+                ->where(function ($q) {
+                    $q->where('item_visto', false)->orWhereNull('item_visto');
+                })
+                ->count(),
+        ];
+
         if ($hasUltimas) {
             $ids = (clone $baseQuery)->pluck('id');
             $listQuery = SolicitudPago::query()
@@ -88,7 +121,15 @@ class ProveedorSolicitudPagoController extends Controller
 
         $data = SolicitudPagoResource::collection($query)->resolve();
 
-        return $this->paginated($query->setCollection(collect($data)), 'Datos paginados.', 200, ['segment_counts' => $segmentCountsFormatted]);
+        return $this->paginated(
+            $query->setCollection(collect($data)),
+            'Datos paginados.',
+            200,
+            [
+                'segment_counts' => $segmentCountsFormatted,
+                'unread_segment_counts' => $unreadSegmentCountsFormatted,
+            ]
+        );
     }
 
     /**
