@@ -63,20 +63,22 @@ class ConstruccProveedorSolicitudPagoController extends Controller
             // ============================================
             // PASO 2: Validar que la cuenta bancaria pertenezca al proveedor
             // ============================================
-            if ($validated['cuenta_bancaria_id']) {
-                $cuentaBancaria = CuentaBancaria::find($validated['cuenta_bancaria_id']);
+            $cuentaBancariaId = $validated['cuenta_bancaria_id'] ?? null;
+
+            if ($cuentaBancariaId) {
+                $cuentaBancaria = CuentaBancaria::find($cuentaBancariaId);
+
                 if (!$cuentaBancaria || $cuentaBancaria->proveedor_id !== $proveedor->id) {
                     return $this->error(
                         'La cuenta bancaria seleccionada no pertenece a este proveedor.',
                         [
-                            'cuenta_bancaria_id' => $validated['cuenta_bancaria_id'],
+                            'cuenta_bancaria_id' => $cuentaBancariaId,
                             'proveedor_id' => $proveedor->id,
                         ],
                         422
                     );
                 }
             }
-
             // ============================================
             // PASO 3: Almacenar archivos
             // ============================================
