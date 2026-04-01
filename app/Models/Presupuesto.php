@@ -57,7 +57,7 @@ class Presupuesto extends BaseModel
         'numero_presupuesto',
         'fecha_emision',
         'fecha_vencimiento',
-        'concepto_general', 
+        'concepto_general',
         'subtotal',
         'con_iva',
         'iva_porcentaje',
@@ -75,6 +75,13 @@ class Presupuesto extends BaseModel
         'term_cond_iva',
         'term_cond_anticipo_porcentaje',
         'term_cond_tiempo_entrega_dias',
+        /**
+         * null: no se llista para exporttar
+         * 1.Los trabajos se iniciarán una vez confirmada la autorización del presupuesto (por defaul)
+         * 2.Los trabajos iniciarán una vez Recibido el anticipo del porcentaje de ___ %
+         */
+        'term_cond_inicio_trabajo',
+        'term_cond_inicio_trabajo_porcentaje', // solo aplica para el numero 2. 
         'obs_garantia_dias',
         'obs_traslados',
         'obs_viaticos',
@@ -115,11 +122,22 @@ class Presupuesto extends BaseModel
      * Constantes para enunciados de términos y condiciones.
      */
     public const ENUNCIADO_VIGENCIA = 'Este presupuesto tiene una vigencia de %d días naturales a partir de su fecha de emisión.';
-    public const ENUNCIADO_MONEDA = 'Los precios están expresados en moneda nacional (%s), salvo que se indique lo contrario.';
+    public const ENUNCIADOS_MONEDA = [
+        'MXN' => 'Los precios están expresados en pesos mexicanos (MXN).',
+        'USD' => 'Los precios están expresados en dólares estadounidenses (USD).',
+        'EUR' => 'Los precios están expresados en euros (EUR).',
+    ];
     public const ENUNCIADO_IVA_INCLUIDO = 'Los precios incluyen el Impuesto al Valor Agregado (IVA) al %d%%.';
     public const ENUNCIADO_IVA_NO_INCLUIDO = 'Los precios no incluyen el Impuesto al Valor Agregado (IVA).';
     public const ENUNCIADO_ANTICIPO = 'Para iniciar los trabajos se requiere un anticipo del %d%% del monto total.';
     public const ENUNCIADO_TIEMPO_ENTREGA = 'Una vez recibido el anticipo, el tiempo estimado de entrega o ejecución total de los trabajos será de %d días naturales.';
+    public const ENUNCIADO_INICIO_TRABAJOS_AUTORIZACION = 'Los trabajos se iniciarán una vez confirmada la autorización del presupuesto.';
+
+    /** Modo anticipo: porcentaje acordado (config inicio_trabajos_anticipo_pct). */
+    public const ENUNCIADO_INICIO_TRABAJOS_ANTICIPO = 'Los trabajos se iniciarán una vez recibido el anticipo del porcentaje de %d%% del monto total.';
+
+    /** Mismo enunciado que ENUNCIADO_INICIO_TRABAJOS_ANTICIPO cuando aún no hay % definido. */
+    public const ENUNCIADO_INICIO_TRABAJOS_ANTICIPO_PLACEHOLDER = 'Los trabajos se iniciarán una vez recibido el anticipo del porcentaje de ___ %.';
 
     /**
      * Constantes para enunciados de observaciones.
@@ -146,8 +164,13 @@ class Presupuesto extends BaseModel
             $lista[] = sprintf(self::ENUNCIADO_VIGENCIA, (int) $this->term_cond_dias_vigencia);
         }
 
+        // moneda puede ser MXN USD EUR
+        // enerar mmensaje para cada una 
+        //  public const ENUNCIADO_MONEDA = 'Los precios están expresados en moneda nacional (%s).';
         $moneda = $this->term_cond_moneda ?: 'MXN';
-        $lista[] = sprintf(self::ENUNCIADO_MONEDA, $moneda);
+
+        $lista[] = self::ENUNCIADOS_MONEDA[$moneda]
+            ?? sprintf('Los precios están expresados en la moneda %s.', $moneda);
 
         if ($this->term_cond_impuestos_en_pdf !== false) {
             $ivaPct = (float) ($this->term_cond_iva ?? 16);
@@ -164,12 +187,25 @@ class Presupuesto extends BaseModel
             $lista[] = sprintf(self::ENUNCIADO_TIEMPO_ENTREGA, (int) $this->term_cond_tiempo_entrega_dias);
         }
 
-        foreach ([
-            'condicionantes_adicionales_1',
-            'condicionantes_adicionales_2',
-            'condicionantes_adicionales_3',
-            'condicionantes_adicionales_4',
-        ] as $key) {
+        if ($this->term_cond_inicio_trabajo !== null) {
+
+            if ($this->term_cond_inicio_trabajo == 1) {
+                $lista[] = sprintf(self::ENUNCIADO_INICIO_TRABAJOS_AUTORIZACION, (int) $this->term_cond_tiempo_entrega_dias);
+            } else {
+                $lista[] = sprintf(self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO, (int) $$this->term_cond_inicio_trabajo_porcentaje);
+            }
+        }
+
+        self::appendInicioTrabajosEnunciados($lista, $config);
+
+        foreach (
+            [
+                'condicionantes_adicionales_1',
+                'condicionantes_adicionales_2',
+                'condicionantes_adicionales_3',
+                'condicionantes_adicionales_4',
+            ] as $key
+        ) {
             $txt = trim((string) ($config[$key] ?? ''));
             if ($txt !== '') {
                 $lista[] = $txt;
@@ -213,12 +249,14 @@ class Presupuesto extends BaseModel
             $lista[] = self::ENUNCIADO_CONDICIONES_SITIO;
         }
 
-        foreach ([
-            'observaciones_adicionales_1',
-            'observaciones_adicionales_2',
-            'observaciones_adicionales_3',
-            'observaciones_adicionales_4',
-        ] as $key) {
+        foreach (
+            [
+                'observaciones_adicionales_1',
+                'observaciones_adicionales_2',
+                'observaciones_adicionales_3',
+                'observaciones_adicionales_4',
+            ] as $key
+        ) {
             $txt = trim((string) ($config[$key] ?? ''));
             if ($txt !== '') {
                 $lista[] = $txt;
@@ -246,7 +284,9 @@ class Presupuesto extends BaseModel
         }
 
         $moneda = $data['term_cond_moneda'] ?? 'MXN';
-        $lista[] = sprintf(self::ENUNCIADO_MONEDA, $moneda);
+        $lista[] = self::ENUNCIADOS_MONEDA[$moneda]
+            ?? sprintf('Los precios están expresados en la moneda %s.', $moneda);
+
 
         $mostrarImpuestos = $data['term_cond_impuestos_en_pdf'] ?? true;
         if ($mostrarImpuestos !== false) {
@@ -260,17 +300,21 @@ class Presupuesto extends BaseModel
             $lista[] = sprintf(self::ENUNCIADO_ANTICIPO, (int) $anticipo);
         }
 
-            $tiempoEntrega = $data['term_cond_tiempo_entrega_dias'] ?? null;
-            if ($tiempoEntrega !== null && (int) $tiempoEntrega > 0) {
+        $tiempoEntrega = $data['term_cond_tiempo_entrega_dias'] ?? null;
+        if ($tiempoEntrega !== null && (int) $tiempoEntrega > 0) {
             $lista[] = sprintf(self::ENUNCIADO_TIEMPO_ENTREGA, (int) $tiempoEntrega);
         }
 
-        foreach ([
-            'condicionantes_adicionales_1',
-            'condicionantes_adicionales_2',
-            'condicionantes_adicionales_3',
-            'condicionantes_adicionales_4',
-        ] as $key) {
+        self::appendInicioTrabajosEnunciados($lista, $config);
+
+        foreach (
+            [
+                'condicionantes_adicionales_1',
+                'condicionantes_adicionales_2',
+                'condicionantes_adicionales_3',
+                'condicionantes_adicionales_4',
+            ] as $key
+        ) {
             $txt = trim((string) ($config[$key] ?? ''));
             if ($txt !== '') {
                 $lista[] = $txt;
@@ -278,6 +322,31 @@ class Presupuesto extends BaseModel
         }
 
         return $lista;
+    }
+
+    /**
+     * Inicio de trabajos: autorización del presupuesto (por defecto) o anticipo recibido (% en configuración).
+     *
+     * @param  array<int, string>  $lista
+     * @param  array<string, mixed>  $config
+     */
+    private static function appendInicioTrabajosEnunciados(array &$lista, array $config): void
+    {
+        if (array_key_exists('inicio_trabajos_activo', $config) && $config['inicio_trabajos_activo'] === false) {
+            return;
+        }
+
+        $modo = $config['inicio_trabajos_modo'] ?? 'autorizacion';
+        if ($modo === 'anticipo') {
+            $pct = (int) ($config['inicio_trabajos_anticipo_pct'] ?? 0);
+            $lista[] = $pct > 0
+                ? sprintf(self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO, $pct)
+                : self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO_PLACEHOLDER;
+
+            return;
+        }
+
+        $lista[] = self::ENUNCIADO_INICIO_TRABAJOS_AUTORIZACION;
     }
 
     /**
@@ -320,12 +389,14 @@ class Presupuesto extends BaseModel
             $lista[] = self::ENUNCIADO_CONDICIONES_SITIO;
         }
 
-        foreach ([
-            'observaciones_adicionales_1',
-            'observaciones_adicionales_2',
-            'observaciones_adicionales_3',
-            'observaciones_adicionales_4',
-        ] as $key) {
+        foreach (
+            [
+                'observaciones_adicionales_1',
+                'observaciones_adicionales_2',
+                'observaciones_adicionales_3',
+                'observaciones_adicionales_4',
+            ] as $key
+        ) {
             $txt = trim((string) ($config[$key] ?? ''));
             if ($txt !== '') {
                 $lista[] = $txt;

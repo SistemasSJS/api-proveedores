@@ -53,6 +53,8 @@ class StorePresupuestoRequest extends FormRequest
             'term_cond_iva' => 'nullable|numeric|min:0|max:100',
             'term_cond_anticipo_porcentaje' => 'nullable|numeric|min:0|max:100',
             'term_cond_tiempo_entrega_dias' => 'nullable|integer|min:0',
+            'term_cond_inicio_trabajo' => 'nullable|integer',
+            'term_cond_inicio_trabajo_porcentaje' => 'nullable|integer|min:0|max:100',
             'obs_garantia_dias' => 'nullable|integer|min:0',
             'obs_traslados' => 'nullable|boolean',
             'obs_viaticos' => 'nullable|boolean',

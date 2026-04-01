@@ -63,6 +63,8 @@ class PresupuestoResource extends JsonResource
             'term_cond_iva' => (float) ($this->term_cond_iva ?? 16),
             'term_cond_anticipo_porcentaje' => $this->term_cond_anticipo_porcentaje,
             'term_cond_tiempo_entrega_dias' => $this->term_cond_tiempo_entrega_dias,
+            'term_cond_inicio_trabajo' => $this->term_cond_inicio_trabajo,
+            'term_cond_inicio_trabajo_porcentaje' => $this->term_cond_inicio_trabajo_porcentaje,
             'obs_garantia_dias' => (int) ($this->obs_garantia_dias ?? 0),
             'obs_traslados' => $this->obs_traslados === null ? null : (bool) $this->obs_traslados,
             'obs_viaticos' => $this->obs_viaticos === null ? null : (bool) $this->obs_viaticos,
