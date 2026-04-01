@@ -4,6 +4,8 @@ namespace App\Support;
 
 use App\Models\Presupuesto;
 use App\Models\Proveedor;
+use BaconQrCode\Renderer\GDLibRenderer;
+use BaconQrCode\Writer;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
@@ -113,15 +115,14 @@ final class PresupuestoPdf
 
         $appUrl = config('app.frontend_url', config('app.url'));
         $urlWeb = rtrim($appUrl, '/') . '/public/presupuesto/' . $token;
-        $qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' . rawurlencode($urlWeb);
 
         try {
-            $context = stream_context_create([
-                'http' => ['timeout' => 5],
-            ]);
-            $qrImage = @file_get_contents($qrApiUrl, false, $context);
-            if ($qrImage !== false && ! empty($qrImage)) {
-                return 'data:image/png;base64,' . base64_encode($qrImage);
+            $renderer = new GDLibRenderer(200);
+            $writer = new Writer($renderer);
+            $qrPng = $writer->writeString($urlWeb);
+
+            if ($qrPng !== '') {
+                return 'data:image/png;base64,' . base64_encode($qrPng);
             }
         } catch (\Throwable $e) {
             Log::warning('Error al generar QR para presupuesto', [
