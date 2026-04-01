@@ -172,7 +172,6 @@ Route::prefix('proveedores')
         });
 
         Route::get('{proveedor}/puede-generar-sp', [ProveedorController::class, 'puedeGenerarSP']);
-        Route::get('{proveedor}/perfil-completado', [ProveedorController::class, 'validarPerfilCompletado'])->middleware(['audit']);
 
 
         /**

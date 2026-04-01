@@ -81,4 +81,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/cleanup', [DeviceTokenController::class, 'cleanup'])->middleware(['audit']);
         Route::post('/test', [DeviceTokenController::class, 'testNotification'])->middleware(['audit']);
     });
+
+    /**
+     * Estado de perfil empresa (lectura): usuarios con relación al proveedor (no solo GERENTE).
+     * Registrado aquí para que aplique antes que el grupo exclusivo de gerente.php.
+     */
+    Route::prefix('proveedores')->group(function () {
+        Route::get('{proveedor}/perfil-completado', [ProveedorController::class, 'validarPerfilCompletado'])
+            ->middleware(['proveedor.access', 'audit']);
+    });
 });

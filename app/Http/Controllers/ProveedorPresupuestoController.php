@@ -813,14 +813,20 @@ class ProveedorPresupuestoController extends Controller
 
     private function yaSeNotificoReceptorPresupuesto(User $user, int $presupuestoId, bool $esReenvio): bool
     {
-        $tituloEsperado = $esReenvio ? 'Presupuesto actualizado #' : 'Nuevo presupuesto recibido #';
-
-        return $user->notifications()
+        $q = $user->notifications()
             ->where('type', PresupuestoRecibidoClienteProveedorNotification::class)
             ->where('data->presupuesto_id', $presupuestoId)
-            ->where('data->titulo', 'like', $tituloEsperado . '%')
-            ->where('created_at', '>=', now()->subMinutes(5))
-            ->exists();
+            ->where('created_at', '>=', now()->subMinutes(5));
+
+        if ($esReenvio) {
+            return $q->where('data->es_reenvio', true)->exists();
+        }
+
+        // Primera entrega: es_reenvio false o ausente en registros antiguos.
+        return $q->where(function ($sub) {
+            $sub->where('data->es_reenvio', false)
+                ->orWhereNull('data->es_reenvio');
+        })->exists();
     }
 
     /**

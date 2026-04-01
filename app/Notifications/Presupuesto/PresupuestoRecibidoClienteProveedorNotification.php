@@ -3,7 +3,6 @@
 namespace App\Notifications\Presupuesto;
 
 use App\Models\Presupuesto;
-use App\Services\FcmService;
 use App\Traits\NotificationStyleTrait;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Messages\BroadcastMessage;
@@ -23,8 +22,15 @@ class PresupuestoRecibidoClienteProveedorNotification extends Notification imple
 
     public function via(object $notifiable): array
     {
-        // Solo notificación en app (campana): database + broadcast.
-        return ['broadcast', 'database'];
+        $via = ['broadcast', 'database'];
+        if (
+            method_exists($notifiable, 'deviceTokens')
+            && $notifiable->deviceTokens()->where('is_active', true)->exists()
+        ) {
+            $via[] = 'fcm';
+        }
+
+        return $via;
     }
 
     public function toBroadcast(object $notifiable): BroadcastMessage
@@ -42,28 +48,28 @@ class PresupuestoRecibidoClienteProveedorNotification extends Notification imple
         return $this->addStylesToData($this->baseData());
     }
 
-    public function toFcm(object $notifiable): void
+    public function toFcm(object $notifiable): array
     {
-        $tokens = $notifiable->deviceTokens()
-            ->where('is_active', true)
-            ->pluck('token')
-            ->toArray();
+        $data = $this->addStylesToData($this->baseData());
 
-        if (empty($tokens)) {
-            return;
-        }
-
-        $data = $this->baseData();
-        app(FcmService::class)->sendToTokens(
-            $tokens,
-            [
+        return [
+            'notification' => [
                 'title' => $data['titulo'],
                 'body' => $data['mensaje'],
+                'icon' => '/assets/icon/favicon.png',
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
             ],
-            $this->addStylesToData([
-                'action_url' => $data['action_url'],
-            ])
-        );
+            'data' => [
+                'type' => 'presupuesto',
+                'subtipo' => (string) $data['subtipo'],
+                'titulo' => (string) $data['titulo'],
+                'mensaje' => (string) $data['mensaje'],
+                'action_url' => (string) $data['action_url'],
+                'presupuesto_id' => (string) $data['presupuesto_id'],
+                'es_reenvio' => $data['es_reenvio'] ? '1' : '0',
+                'timestamp' => (string) $data['timestamp'],
+            ],
+        ];
     }
 
     private function baseData(): array

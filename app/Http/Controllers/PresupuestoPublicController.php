@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\Presupuesto\PresupuestoPublicResource;
 use App\Models\Presupuesto;
+use App\Models\User;
 use App\Notifications\Presupuesto\PresupuestoAceptadoNotification;
 use App\Notifications\Presupuesto\PresupuestoRechazadoNotification;
 use App\Support\PresupuestoPdf;
@@ -139,16 +140,12 @@ class PresupuestoPublicController extends Controller
 
     private function notificarCreadorUnaSolaVez(Presupuesto $presupuesto, Notification $notification, string $notificationClass): void
     {
-        $creador = $presupuesto->user;
-        if (! $creador) {
+        $destinatario = $this->resolverUsuarioNotificarEmisorPresupuesto($presupuesto);
+        if (! $destinatario) {
             return;
         }
 
-        if (method_exists($creador, 'tieneAccesoAProveedor') && ! $creador->tieneAccesoAProveedor((int) $presupuesto->proveedor_id)) {
-            return;
-        }
-
-        $yaExiste = $creador->notifications()
+        $yaExiste = $destinatario->notifications()
             ->where('type', $notificationClass)
             ->where('data->presupuesto_id', (int) $presupuesto->id)
             ->where('created_at', '>=', now()->subMinutes(5))
@@ -158,14 +155,43 @@ class PresupuestoPublicController extends Controller
             return;
         }
 
-        $creador->notify($notification);
+        $destinatario->notify($notification);
 
-        $notif = $creador->notifications()
+        $notif = $destinatario->notifications()
             ->where('type', $notificationClass)
             ->where('data->presupuesto_id', (int) $presupuesto->id)
             ->latest()
             ->first();
 
         $presupuesto->addNotification($notif?->id);
+    }
+
+    /**
+     * Usuario al que notificar en el proveedor emisor: creador del presupuesto si aplica;
+     * si no hay user_id (registros viejos), un único usuario activo con acceso al proveedor.
+     */
+    private function resolverUsuarioNotificarEmisorPresupuesto(Presupuesto $presupuesto): ?User
+    {
+        $presupuesto->loadMissing(['user', 'proveedor']);
+
+        $creador = $presupuesto->user;
+        if (
+            $creador
+            && method_exists($creador, 'tieneAccesoAProveedor')
+            && $creador->tieneAccesoAProveedor((int) $presupuesto->proveedor_id)
+        ) {
+            return $creador;
+        }
+
+        $proveedor = $presupuesto->proveedor;
+        if (! $proveedor) {
+            return null;
+        }
+
+        return $proveedor->usuariosActivos()->get()->unique('id')->first(function ($u) use ($presupuesto) {
+            return $u instanceof User
+                && method_exists($u, 'tieneAccesoAProveedor')
+                && $u->tieneAccesoAProveedor((int) $presupuesto->proveedor_id);
+        });
     }
 }
