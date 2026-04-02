@@ -32,6 +32,7 @@ class StorePresupuestoRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'presupuesto_id' => 'nullable|integer|exists:presupuestos,id',
             'numero_presupuesto' => 'nullable|string|max:255',
             'proveedor_id' => 'required|exists:proveedores,id',
             'es_proveedor_receptor' => 'nullable|boolean', // es para indicar si el receptor es un proveedor

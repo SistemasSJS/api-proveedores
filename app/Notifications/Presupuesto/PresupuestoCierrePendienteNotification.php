@@ -92,17 +92,27 @@ class PresupuestoCierrePendienteNotification extends Notification implements Sho
             return;
         }
 
-        $data = $this->baseData();
-        app(FcmService::class)->sendToTokens(
-            $tokens,
-            [
-                'title' => $data['titulo'],
-                'body' => $data['mensaje'],
-            ],
-            $this->addStylesToData([
-                'action_url' => $data['action_url'],
-            ])
-        );
+        $base = $this->addStylesToData($this->baseData());
+
+        $notification = [
+            'title' => $base['titulo'],
+            'body' => $base['mensaje'],
+        ];
+
+        $data = [
+            'tipo' => 'presupuesto',
+            'subtipo' => (string) $base['subtipo'],
+            'action_url' => (string) $base['action_url'],
+            'presupuesto_id' => (string) $base['presupuesto_id'],
+            'presupuesto_numero' => (string) $base['presupuesto_numero'],
+            'proveedor_id' => (string) $base['proveedor_id'],
+            'fecha_vencimiento' => (string) ($base['fecha_vencimiento'] ?? ''),
+            'timestamp' => (string) $base['timestamp'],
+        ];
+
+        $data = $this->addStylesToData($data);
+
+        app(FcmService::class)->sendToTokens($tokens, $notification, $data);
     }
 
     private function baseData(): array

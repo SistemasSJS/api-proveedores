@@ -435,6 +435,53 @@ class ProveedorPresupuestoController extends Controller
     }
 
     /**
+     * Guarda o actualiza un borrador antes de generar el PDF de preview.
+     *
+     * @param  array<string, mixed>  $validated
+     */
+    private function guardarBorradorParaPreview(Request $request, Proveedor $proveedor, array $validated): Presupuesto
+    {
+        return DB::transaction(function () use ($request, $proveedor, $validated) {
+            $payload = collect($validated)->except(['conceptos', 'presupuesto_id'])->toArray();
+            $payload['user_id'] = $request->user()->id;
+            $payload['proveedor_id'] = (int) $validated['proveedor_id'];
+            $payload['con_iva'] = $payload['con_iva'] ?? true;
+            $payload['iva_porcentaje'] = $payload['iva_porcentaje'] ?? 16.00;
+            $payload['estado'] = Presupuesto::ESTADO_BORRADOR;
+            $payload = $this->normalizarEmpresaReceptora($payload, (int) $payload['proveedor_id']);
+
+            $presupuestoId = (int) ($validated['presupuesto_id'] ?? 0);
+            if ($presupuestoId > 0) {
+                $presupuesto = Presupuesto::query()->findOrFail($presupuestoId);
+
+                if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
+                    abort(403, 'Presupuesto no pertenece a este proveedor.');
+                }
+
+                if (! $this->puedeEditarPresupuesto($presupuesto)) {
+                    abort(422, 'No se puede modificar este presupuesto.');
+                }
+
+                $payload['numero_presupuesto'] = $payload['numero_presupuesto'] ?? $presupuesto->numero_presupuesto;
+                $presupuesto->update($payload);
+            } else {
+                $payload['numero_presupuesto'] = $payload['numero_presupuesto'] ?? Presupuesto::generarNumeroPresupuesto((int) $payload['proveedor_id']);
+                $presupuesto = Presupuesto::create($payload);
+            }
+
+            $presupuesto->asegurarTokenPublico();
+            $this->sincronizarConceptos($presupuesto, $validated['conceptos']);
+            $presupuesto->recalcularDesdeConceptos();
+            $presupuesto->fecha_vencimiento = array_key_exists('term_cond_dias_vigencia', $payload)
+                ? $this->calcularFechaVencimiento($presupuesto)
+                : $presupuesto->fecha_vencimiento;
+            $presupuesto->save();
+
+            return $presupuesto->fresh(Presupuesto::eagerLodable());
+        });
+    }
+
+    /**
      * Duplica un presupuesto con un nuevo folio y estado borrador.
      */
     public function duplicar(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
@@ -1363,6 +1410,7 @@ class ProveedorPresupuestoController extends Controller
 
             $validated = $this->resolverReceptorEmpresaParaValidacion($validated, $proveedor);
             $normalized = $this->normalizarEmpresaReceptora($validated, (int) $proveedor->id);
+            $presupuestoGuardado = $this->guardarBorradorParaPreview($request, $proveedor, $validated);
 
             // Convertir logo del proveedor a base64
             $logoProveedorBase64 = $this->convertirLogoProveedorABase64($proveedor);
@@ -1398,10 +1446,10 @@ class ProveedorPresupuestoController extends Controller
             $datosPresupuesto = [
                 'proveedor' => $proveedor,
                 'logo_proveedor_base64' => $logoProveedorBase64,
-                'numero_presupuesto' => $normalized['numero_presupuesto'] ?? $this->formatearFolioSiguiente($proveedor),
-                'uuid' => null,
-                'clave_unica' => null,
-                'fecha_emision' => $normalized['fecha_emision'],
+                'numero_presupuesto' => $presupuestoGuardado->numero_presupuesto,
+                'uuid' => $presupuestoGuardado->uuid,
+                'clave_unica' => $presupuestoGuardado->id,
+                'fecha_emision' => $presupuestoGuardado->fecha_emision,
                 'lugar' => $lugar,
                 'concepto_general' => $normalized['concepto_general'],
                 'con_iva' => $normalized['con_iva'] ?? true,
@@ -1437,7 +1485,11 @@ class ProveedorPresupuestoController extends Controller
                 'numero_presupuesto' => $datosPresupuesto['numero_presupuesto'],
             ]);
 
-            return $this->generarPdfResponse($datosPresupuesto, $datosPresupuesto['numero_presupuesto']);
+            $response = $this->generarPdfResponse($datosPresupuesto, $datosPresupuesto['numero_presupuesto']);
+            $response->headers->set('X-Presupuesto-Id', (string) $presupuestoGuardado->id);
+            $response->headers->set('X-Presupuesto-Numero', (string) $presupuestoGuardado->numero_presupuesto);
+
+            return $response;
         } catch (Throwable $e) {
             $this->log('Error al generar PDF desde formulario', [
                 'proveedor_id' => $proveedor->id,

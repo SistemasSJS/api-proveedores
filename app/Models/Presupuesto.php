@@ -160,7 +160,67 @@ class Presupuesto extends BaseModel
         $lista = [];
         $config = is_array($this->configuracion_condiciones) ? $this->configuracion_condiciones : [];
 
-        if ($this->term_cond_dias_vigencia > 0) {
+        if (self::terminoActivoPersistido($config, 'vigencia_activo', $this->term_cond_dias_vigencia > 0) && $this->term_cond_dias_vigencia > 0) {
+            $lista[] = sprintf(self::ENUNCIADO_VIGENCIA, (int) $this->term_cond_dias_vigencia);
+        }
+
+        if (self::terminoActivoPersistido($config, 'moneda_activo', ! empty($this->term_cond_moneda))) {
+            $moneda = $this->term_cond_moneda ?: 'MXN';
+            $lista[] = self::ENUNCIADOS_MONEDA[$moneda]
+                ?? sprintf('Los precios estÃ¡n expresados en la moneda %s.', $moneda);
+        }
+
+        if (self::terminoActivoPersistido($config, 'impuestos_activo', $this->term_cond_impuestos_en_pdf !== false) && $this->term_cond_impuestos_en_pdf !== false) {
+            $ivaPct = (float) ($this->term_cond_iva ?? 16);
+            $lista[] = $this->con_iva
+                ? sprintf(self::ENUNCIADO_IVA_INCLUIDO, (int) $ivaPct)
+                : self::ENUNCIADO_IVA_NO_INCLUIDO;
+        }
+
+        if (self::terminoActivoPersistido($config, 'anticipo_activo', $this->term_cond_anticipo_porcentaje !== null && $this->term_cond_anticipo_porcentaje > 0)
+            && $this->term_cond_anticipo_porcentaje !== null
+            && $this->term_cond_anticipo_porcentaje > 0) {
+            $lista[] = sprintf(self::ENUNCIADO_ANTICIPO, (int) $this->term_cond_anticipo_porcentaje);
+        }
+
+        if (self::terminoActivoPersistido($config, 'tiempo_entrega_activo', $this->term_cond_tiempo_entrega_dias !== null && $this->term_cond_tiempo_entrega_dias > 0)
+            && $this->term_cond_tiempo_entrega_dias !== null
+            && $this->term_cond_tiempo_entrega_dias > 0) {
+            $lista[] = sprintf(self::ENUNCIADO_TIEMPO_ENTREGA, (int) $this->term_cond_tiempo_entrega_dias);
+        }
+
+        if (self::terminoActivoPersistido($config, 'inicio_trabajos_activo', $this->term_cond_inicio_trabajo !== null)) {
+            if (($config['inicio_trabajos_modo'] ?? null) === 'anticipo') {
+                $pct = (int) ($config['inicio_trabajos_anticipo_pct'] ?? 0);
+                $lista[] = $pct > 0
+                    ? sprintf(self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO, $pct)
+                    : self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO_PLACEHOLDER;
+            } elseif (($config['inicio_trabajos_modo'] ?? null) === 'autorizacion') {
+                $lista[] = self::ENUNCIADO_INICIO_TRABAJOS_AUTORIZACION;
+            } elseif ($this->term_cond_inicio_trabajo !== null) {
+                $lista[] = (int) $this->term_cond_inicio_trabajo === 1
+                    ? self::ENUNCIADO_INICIO_TRABAJOS_AUTORIZACION
+                    : sprintf(self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO, (int) $this->term_cond_inicio_trabajo_porcentaje);
+            }
+        }
+
+        foreach (
+            [
+                'condicionantes_adicionales_1',
+                'condicionantes_adicionales_2',
+                'condicionantes_adicionales_3',
+                'condicionantes_adicionales_4',
+            ] as $key
+        ) {
+            $txt = trim((string) ($config[$key] ?? ''));
+            if ($txt !== '') {
+                $lista[] = $txt;
+            }
+        }
+
+        return $lista;
+
+        if (self::terminoActivoPersistido($config, 'vigencia_activo', $this->term_cond_dias_vigencia > 0) && $this->term_cond_dias_vigencia > 0) {
             $lista[] = sprintf(self::ENUNCIADO_VIGENCIA, (int) $this->term_cond_dias_vigencia);
         }
 
@@ -279,6 +339,63 @@ class Presupuesto extends BaseModel
         $ivaPct = (float) ($data['term_cond_iva'] ?? $data['iva_porcentaje'] ?? 16);
         $config = is_array($data['configuracion_condiciones'] ?? null) ? $data['configuracion_condiciones'] : [];
 
+        if (self::terminoActivoFormulario($config, 'vigencia_activo')
+            && ! empty($data['term_cond_dias_vigencia'])
+            && (int) $data['term_cond_dias_vigencia'] > 0) {
+            $lista[] = sprintf(self::ENUNCIADO_VIGENCIA, (int) $data['term_cond_dias_vigencia']);
+        }
+
+        if (self::terminoActivoFormulario($config, 'moneda_activo')) {
+            $moneda = $data['term_cond_moneda'] ?? 'MXN';
+            $lista[] = self::ENUNCIADOS_MONEDA[$moneda]
+                ?? sprintf('Los precios estÃ¡n expresados en la moneda %s.', $moneda);
+        }
+
+        $mostrarImpuestos = $data['term_cond_impuestos_en_pdf'] ?? false;
+        if (self::terminoActivoFormulario($config, 'impuestos_activo') && $mostrarImpuestos !== false) {
+            $lista[] = $conIva
+                ? sprintf(self::ENUNCIADO_IVA_INCLUIDO, (int) $ivaPct)
+                : self::ENUNCIADO_IVA_NO_INCLUIDO;
+        }
+
+        $anticipo = $data['term_cond_anticipo_porcentaje'] ?? null;
+        if (self::terminoActivoFormulario($config, 'anticipo_activo') && $anticipo !== null && (float) $anticipo > 0) {
+            $lista[] = sprintf(self::ENUNCIADO_ANTICIPO, (int) $anticipo);
+        }
+
+        $tiempoEntrega = $data['term_cond_tiempo_entrega_dias'] ?? null;
+        if (self::terminoActivoFormulario($config, 'tiempo_entrega_activo') && $tiempoEntrega !== null && (int) $tiempoEntrega > 0) {
+            $lista[] = sprintf(self::ENUNCIADO_TIEMPO_ENTREGA, (int) $tiempoEntrega);
+        }
+
+        if (self::terminoActivoFormulario($config, 'inicio_trabajos_activo')) {
+            $modo = $config['inicio_trabajos_modo'] ?? 'autorizacion';
+            if ($modo === 'anticipo') {
+                $pct = (int) ($config['inicio_trabajos_anticipo_pct'] ?? 0);
+                $lista[] = $pct > 0
+                    ? sprintf(self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO, $pct)
+                    : self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO_PLACEHOLDER;
+            } else {
+                $lista[] = self::ENUNCIADO_INICIO_TRABAJOS_AUTORIZACION;
+            }
+        }
+
+        foreach (
+            [
+                'condicionantes_adicionales_1',
+                'condicionantes_adicionales_2',
+                'condicionantes_adicionales_3',
+                'condicionantes_adicionales_4',
+            ] as $key
+        ) {
+            $txt = trim((string) ($config[$key] ?? ''));
+            if ($txt !== '') {
+                $lista[] = $txt;
+            }
+        }
+
+        return $lista;
+
         if (! empty($data['term_cond_dias_vigencia']) && (int) $data['term_cond_dias_vigencia'] > 0) {
             $lista[] = sprintf(self::ENUNCIADO_VIGENCIA, (int) $data['term_cond_dias_vigencia']);
         }
@@ -347,6 +464,26 @@ class Presupuesto extends BaseModel
         }
 
         $lista[] = self::ENUNCIADO_INICIO_TRABAJOS_AUTORIZACION;
+    }
+
+    /**
+     * En formularios nuevos, ausencia de bandera implica inactivo.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    private static function terminoActivoFormulario(array $config, string $key): bool
+    {
+        return array_key_exists($key, $config) ? (bool) $config[$key] : false;
+    }
+
+    /**
+     * En registros persistidos, si la bandera no existe se conserva el comportamiento legado.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    private static function terminoActivoPersistido(array $config, string $key, bool $legacyDefault): bool
+    {
+        return array_key_exists($key, $config) ? (bool) $config[$key] : $legacyDefault;
     }
 
     /**

@@ -5,14 +5,12 @@ namespace App\Notifications\Presupuesto;
 use App\Models\Presupuesto;
 use App\Support\PresupuestoPdf;
 use App\Traits\NotificationStyleTrait;
+use App\Services\FcmService;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/**
- * Notificación al proveedor cuando el cliente acepta el presupuesto.
- */
 class PresupuestoAceptadoNotification extends Notification implements ShouldBroadcastNow
 {
     use NotificationStyleTrait;
@@ -24,9 +22,10 @@ class PresupuestoAceptadoNotification extends Notification implements ShouldBroa
     public function via(object $notifiable): array
     {
         $via = ['broadcast', 'database'];
+
         if (
-            method_exists($notifiable, 'deviceTokens')
-            && $notifiable->deviceTokens()->where('is_active', true)->exists()
+            method_exists($notifiable, 'deviceTokens') &&
+            $notifiable->deviceTokens()->where('is_active', true)->exists()
         ) {
             $via[] = 'fcm';
         }
@@ -34,6 +33,9 @@ class PresupuestoAceptadoNotification extends Notification implements ShouldBroa
         return $via;
     }
 
+    /**
+     * Broadcast
+     */
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage($this->addStylesToData($this->baseData()));
@@ -44,11 +46,17 @@ class PresupuestoAceptadoNotification extends Notification implements ShouldBroa
         return 'presupuesto';
     }
 
+    /**
+     * Database
+     */
     public function toArray(object $notifiable): array
     {
         return $this->addStylesToData($this->baseData());
     }
 
+    /**
+     * Mail
+     */
     public function toMail(object $notifiable): MailMessage
     {
         $frontendUrl = config('app.frontend_url', config('app.url'));
@@ -65,44 +73,64 @@ class PresupuestoAceptadoNotification extends Notification implements ShouldBroa
         try {
             $this->presupuesto->loadMissing(Presupuesto::eagerLodable());
             $pdf = PresupuestoPdf::renderPdfBinary($this->presupuesto);
+
             $mail->attachData(
                 $pdf,
                 'Presupuesto_' . $this->presupuesto->numero_presupuesto . '.pdf',
                 ['mime' => 'application/pdf']
             );
         } catch (\Throwable $e) {
-            // El correo sigue enviándose sin adjunto si falla el PDF
+            // opcional: log si quieres visibilidad
         }
 
         return $mail;
     }
 
-    public function toFcm(object $notifiable): array
+    /**
+     * FCM (correcto)
+     */
+    public function toFcm(object $notifiable): void
     {
-        $data = $this->addStylesToData($this->baseData());
+        $tokens = $notifiable->deviceTokens()
+            ->where('is_active', true)
+            ->pluck('token')
+            ->toArray();
 
-        return [
-            'notification' => [
-                'title' => $data['titulo'],
-                'body' => $data['mensaje'],
-                'icon' => '/assets/icon/favicon.png',
-                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-            ],
-            'data' => [
-                'type' => 'presupuesto',
-                'subtipo' => (string) $data['subtipo'],
-                'titulo' => (string) $data['titulo'],
-                'mensaje' => (string) $data['mensaje'],
-                'action_url' => (string) $data['action_url'],
-                'presupuesto_id' => (string) $data['presupuesto_id'],
-                'timestamp' => (string) $data['timestamp'],
-            ],
+        if (empty($tokens)) {
+            return;
+        }
+
+        $base = $this->addStylesToData($this->baseData());
+
+        $notification = [
+            'title' => $base['titulo'],
+            'body' => $base['mensaje'],
         ];
+
+        $data = [
+            'tipo' => 'presupuesto',
+            'subtipo' => (string) $base['subtipo'],
+            'action_url' => (string) $base['action_url'],
+            'presupuesto_id' => (string) $base['presupuesto_id'],
+            'presupuesto_numero' => (string) $base['presupuesto_numero'],
+            'proveedor_id' => (string) $base['proveedor_id'],
+            'estatus' => (string) $base['estatus'],
+            'timestamp' => (string) $base['timestamp'],
+        ];
+
+        $data = $this->addStylesToData($data);
+
+        app(FcmService::class)->sendToTokens($tokens, $notification, $data);
     }
 
+    /**
+     * Base data
+     */
     private function baseData(): array
     {
-        $cliente = $this->presupuesto->empresa_receptora_empresa ?? $this->presupuesto->empresa_receptora_nombre ?? 'el cliente';
+        $cliente = $this->presupuesto->empresa_receptora_empresa
+            ?? $this->presupuesto->empresa_receptora_nombre
+            ?? 'el cliente';
 
         return [
             'tipo' => 'presupuesto',

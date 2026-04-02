@@ -3,6 +3,7 @@
 namespace App\Notifications\Presupuesto;
 
 use App\Models\Presupuesto;
+use App\Services\FcmService;
 use App\Traits\NotificationStyleTrait;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Messages\BroadcastMessage;
@@ -48,28 +49,40 @@ class PresupuestoRecibidoClienteProveedorNotification extends Notification imple
         return $this->addStylesToData($this->baseData());
     }
 
-    public function toFcm(object $notifiable): array
+    public function toFcm(object $notifiable): void
     {
-        $data = $this->addStylesToData($this->baseData());
+        $tokens = $notifiable->deviceTokens()
+            ->where('is_active', true)
+            ->pluck('token')
+            ->toArray();
 
-        return [
-            'notification' => [
-                'title' => $data['titulo'],
-                'body' => $data['mensaje'],
-                'icon' => '/assets/icon/favicon.png',
-                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-            ],
-            'data' => [
-                'type' => 'presupuesto',
-                'subtipo' => (string) $data['subtipo'],
-                'titulo' => (string) $data['titulo'],
-                'mensaje' => (string) $data['mensaje'],
-                'action_url' => (string) $data['action_url'],
-                'presupuesto_id' => (string) $data['presupuesto_id'],
-                'es_reenvio' => $data['es_reenvio'] ? '1' : '0',
-                'timestamp' => (string) $data['timestamp'],
-            ],
+        if (empty($tokens)) {
+            return;
+        }
+
+        $base = $this->addStylesToData($this->baseData());
+
+        $notification = [
+            'title' => $base['titulo'],
+            'body' => $base['mensaje'],
         ];
+
+        $data = [
+            'tipo' => 'presupuesto',
+            'subtipo' => (string) $base['subtipo'],
+            'action_url' => (string) $base['action_url'],
+            'url_publica' => (string) ($base['url_publica'] ?? ''),
+            'presupuesto_id' => (string) $base['presupuesto_id'],
+            'presupuesto_numero' => (string) $base['presupuesto_numero'],
+            'proveedor_emisor_id' => (string) $base['proveedor_emisor_id'],
+            'proveedor_receptor_id' => (string) ($base['proveedor_receptor_id'] ?? ''),
+            'es_reenvio' => $base['es_reenvio'] ? '1' : '0',
+            'timestamp' => (string) $base['timestamp'],
+        ];
+
+        $data = $this->addStylesToData($data);
+
+        app(FcmService::class)->sendToTokens($tokens, $notification, $data);
     }
 
     private function baseData(): array
