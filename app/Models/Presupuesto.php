@@ -167,7 +167,7 @@ class Presupuesto extends BaseModel
         if (self::terminoActivoPersistido($config, 'moneda_activo', ! empty($this->term_cond_moneda))) {
             $moneda = $this->term_cond_moneda ?: 'MXN';
             $lista[] = self::ENUNCIADOS_MONEDA[$moneda]
-                ?? sprintf('Los precios estÃ¡n expresados en la moneda %s.', $moneda);
+                ?? sprintf('Los precios estan expresados en la moneda %s.', $moneda);
         }
 
         if (self::terminoActivoPersistido($config, 'impuestos_activo', $this->term_cond_impuestos_en_pdf !== false) && $this->term_cond_impuestos_en_pdf !== false) {
@@ -252,7 +252,7 @@ class Presupuesto extends BaseModel
             if ($this->term_cond_inicio_trabajo == 1) {
                 $lista[] = sprintf(self::ENUNCIADO_INICIO_TRABAJOS_AUTORIZACION, (int) $this->term_cond_tiempo_entrega_dias);
             } else {
-                $lista[] = sprintf(self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO, (int) $$this->term_cond_inicio_trabajo_porcentaje);
+                $lista[] = sprintf(self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO, (int) $this->term_cond_inicio_trabajo_porcentaje);
             }
         }
 
