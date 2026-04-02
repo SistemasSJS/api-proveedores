@@ -142,13 +142,18 @@ class Presupuesto extends BaseModel
     /**
      * Constantes para enunciados de observaciones.
      */
-    public const ENUNCIADO_GARANTIA = 'La garantía de los trabajos o productos tendrá una vigencia de %d días a partir de la finalización de los trabajos o entrega de los productos.';
-    public const ENUNCIADO_TRASLADOS_INCLUIDOS = 'Los trabajos contemplados en este presupuesto sí incluyen los gastos de traslado al sitio donde se realizarán los trabajos.';
-    public const ENUNCIADO_TRASLADOS_NO_INCLUIDOS = 'Los trabajos contemplados en este presupuesto no incluyen los gastos de traslado al sitio donde se realizarán los trabajos.';
-    public const ENUNCIADO_VIATICOS_INCLUIDOS = 'Los trabajos contemplados en este presupuesto sí incluyen los gastos de viáticos derivados de la ubicación donde deberán realizarse los trabajos.';
-    public const ENUNCIADO_VIATICOS_NO_INCLUIDOS = 'Los trabajos contemplados en este presupuesto no incluyen los gastos de viáticos derivados de la ubicación donde deberán realizarse los trabajos.';
-    public const ENUNCIADO_REVISION_TECNICA = 'Requiere revisión técnica previa.';
-    public const ENUNCIADO_CONDICIONES_SITIO = 'Condiciones del sitio de trabajo deben ser adecuadas.';
+    public const ENUNCIADO_GARANTIA = 'Garantía de %d días a partir de la finalización o entrega.';
+    public const ENUNCIADO_TRASLADOS_INCLUIDOS = 'El presupuesto incluye gastos de traslado al sitio de trabajo.';
+    // public const ENUNCIADO_TRASLADOS_NO_INCLUIDOS = 'El presupuesto no incluye gastos de traslado.';
+    public const ENUNCIADO_VIATICOS_INCLUIDOS = 'Viáticos incluidos según la ubicación y necesidades del servicio.';
+    // public const ENUNCIADO_VIATICOS_NO_INCLUIDOS = 'Viáticos no incluidos.';
+
+    /** @deprecated Obs que ya no se utilizan */
+    /* public const ENUNCIADO_REVISION_TECNICA = 'Requiere revisión técnica previa.'; */
+    /** @deprecated Obs que ya no se utilizan */
+    /* public const ENUNCIADO_CONDICIONES_SITIO = 'Condiciones del sitio de trabajo deben ser adecuadas.'; */
+
+
 
     /**
      * Construye la lista de enunciados de términos y condiciones para el PDF.
@@ -177,15 +182,19 @@ class Presupuesto extends BaseModel
                 : self::ENUNCIADO_IVA_NO_INCLUIDO;
         }
 
-        if (self::terminoActivoPersistido($config, 'anticipo_activo', $this->term_cond_anticipo_porcentaje !== null && $this->term_cond_anticipo_porcentaje > 0)
+        if (
+            self::terminoActivoPersistido($config, 'anticipo_activo', $this->term_cond_anticipo_porcentaje !== null && $this->term_cond_anticipo_porcentaje > 0)
             && $this->term_cond_anticipo_porcentaje !== null
-            && $this->term_cond_anticipo_porcentaje > 0) {
+            && $this->term_cond_anticipo_porcentaje > 0
+        ) {
             $lista[] = sprintf(self::ENUNCIADO_ANTICIPO, (int) $this->term_cond_anticipo_porcentaje);
         }
 
-        if (self::terminoActivoPersistido($config, 'tiempo_entrega_activo', $this->term_cond_tiempo_entrega_dias !== null && $this->term_cond_tiempo_entrega_dias > 0)
+        if (
+            self::terminoActivoPersistido($config, 'tiempo_entrega_activo', $this->term_cond_tiempo_entrega_dias !== null && $this->term_cond_tiempo_entrega_dias > 0)
             && $this->term_cond_tiempo_entrega_dias !== null
-            && $this->term_cond_tiempo_entrega_dias > 0) {
+            && $this->term_cond_tiempo_entrega_dias > 0
+        ) {
             $lista[] = sprintf(self::ENUNCIADO_TIEMPO_ENTREGA, (int) $this->term_cond_tiempo_entrega_dias);
         }
 
@@ -289,25 +298,23 @@ class Presupuesto extends BaseModel
             $lista[] = sprintf(self::ENUNCIADO_GARANTIA, (int) $this->obs_garantia_dias);
         }
 
-        if ($this->obs_traslados !== null) {
-            $lista[] = $this->obs_traslados
-                ? self::ENUNCIADO_TRASLADOS_INCLUIDOS
-                : self::ENUNCIADO_TRASLADOS_NO_INCLUIDOS;
+        if ($this->obs_traslados !== null && $this->obs_traslados) {
+            $lista[] = self::ENUNCIADO_TRASLADOS_INCLUIDOS;
         }
 
-        if ($this->obs_viaticos !== null) {
-            $lista[] = $this->obs_viaticos
-                ? self::ENUNCIADO_VIATICOS_INCLUIDOS
-                : self::ENUNCIADO_VIATICOS_NO_INCLUIDOS;
+        if ($this->obs_viaticos !== null && $this->obs_viaticos) {
+            $lista[] = self::ENUNCIADO_VIATICOS_INCLUIDOS;
         }
 
-        if (! empty($config['revision_tecnica_activo'])) {
-            $lista[] = self::ENUNCIADO_REVISION_TECNICA;
-        }
+        /** @deprecated  */
+        // if (! empty($config['revision_tecnica_activo'])) {
+        //     $lista[] = self::ENUNCIADO_REVISION_TECNICA;
+        // }
 
-        if (! empty($config['condiciones_sitio_activo'])) {
-            $lista[] = self::ENUNCIADO_CONDICIONES_SITIO;
-        }
+        /** @deprecated  */
+        // if (! empty($config['condiciones_sitio_activo'])) {
+        //     $lista[] = self::ENUNCIADO_CONDICIONES_SITIO;
+        // }
 
         foreach (
             [
@@ -339,9 +346,11 @@ class Presupuesto extends BaseModel
         $ivaPct = (float) ($data['term_cond_iva'] ?? $data['iva_porcentaje'] ?? 16);
         $config = is_array($data['configuracion_condiciones'] ?? null) ? $data['configuracion_condiciones'] : [];
 
-        if (self::terminoActivoFormulario($config, 'vigencia_activo')
+        if (
+            self::terminoActivoFormulario($config, 'vigencia_activo')
             && ! empty($data['term_cond_dias_vigencia'])
-            && (int) $data['term_cond_dias_vigencia'] > 0) {
+            && (int) $data['term_cond_dias_vigencia'] > 0
+        ) {
             $lista[] = sprintf(self::ENUNCIADO_VIGENCIA, (int) $data['term_cond_dias_vigencia']);
         }
 
@@ -503,28 +512,22 @@ class Presupuesto extends BaseModel
         }
 
         if (! array_key_exists('obs_traslados', $data)) {
-            $lista[] = self::ENUNCIADO_TRASLADOS_NO_INCLUIDOS;
-        } elseif ($data['obs_traslados'] !== null) {
-            $lista[] = ((bool) $data['obs_traslados'])
-                ? self::ENUNCIADO_TRASLADOS_INCLUIDOS
-                : self::ENUNCIADO_TRASLADOS_NO_INCLUIDOS;
+            $lista[] = self::ENUNCIADO_TRASLADOS_INCLUIDOS;
         }
 
-        if (! array_key_exists('obs_viaticos', $data)) {
-            $lista[] = self::ENUNCIADO_VIATICOS_NO_INCLUIDOS;
-        } elseif ($data['obs_viaticos'] !== null) {
-            $lista[] = ((bool) $data['obs_viaticos'])
-                ? self::ENUNCIADO_VIATICOS_INCLUIDOS
-                : self::ENUNCIADO_VIATICOS_NO_INCLUIDOS;
+        if (array_key_exists('obs_viaticos', $data)) {
+            $lista[] = self::ENUNCIADO_VIATICOS_INCLUIDOS;
         }
 
-        if (! empty($config['revision_tecnica_activo'])) {
-            $lista[] = self::ENUNCIADO_REVISION_TECNICA;
-        }
+        /** @deprecated */
+        // if (! empty($config['revision_tecnica_activo'])) {
+        //     $lista[] = self::ENUNCIADO_REVISION_TECNICA;
+        // }
 
-        if (! empty($config['condiciones_sitio_activo'])) {
-            $lista[] = self::ENUNCIADO_CONDICIONES_SITIO;
-        }
+        /** @deprecated */
+        // if (! empty($config['condiciones_sitio_activo'])) {
+        //     $lista[] = self::ENUNCIADO_CONDICIONES_SITIO;
+        // }
 
         foreach (
             [
