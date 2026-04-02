@@ -30,12 +30,12 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
     /**
      * GESTIÓN GENERAL DE USUARIOS
      */
-    Route::apiResource('usuarios', UserController::class)->middleware(['audit']);
+    Route::apiResource('usuarios', UserController::class);
 
     /**
      * REASIGNACIÓN DE USUARIOS A PROVEEDORES
      */
-    Route::post('usuarios/{user}/reasignar', [ProveedorUsuarioController::class, 'reasignarUsuario'])->middleware(['audit']);
+    Route::post('usuarios/{user}/reasignar', [ProveedorUsuarioController::class, 'reasignarUsuario']);
 
     /**
      * GESTIÓN DE CATÁLOGOS MAESTROS
@@ -114,27 +114,27 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
      */
     // Route::prefix('pedidos')->group(function () {
     //     Route::get('/', [AdminPedidosController::class, 'adminIndex'])
-    //         ->middleware(['audit'])
+    //         
     //         ->name('admin.pedidos.index');
 
     //     Route::get('stats', [AdminPedidosController::class, 'adminStats'])
-    //         ->middleware(['audit'])
+    //         
     //         ->name('admin.pedidos.stats');
 
     //     Route::patch('{pedido}/force-status', [AdminPedidosController::class, 'forceStatus'])
-    //         ->middleware(['audit'])
+    //         
     //         ->name('admin.pedidos.force-status');
 
     //     Route::delete('{pedido}', [AdminPedidosController::class, 'destroy'])
-    //         ->middleware(['audit'])
+    //         
     //         ->name('admin.pedidos.destroy');
 
     //     Route::get('reports', [AdminPedidosController::class, 'adminReports'])
-    //         ->middleware(['audit'])
+    //         
     //         ->name('admin.pedidos.reports');
 
     //     Route::get('{pedido}/audit', [AdminPedidosController::class, 'auditLog'])
-    //         ->middleware(['audit'])
+    //         
     //         ->name('admin.pedidos.audit');
     // });
 
@@ -142,10 +142,10 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
      * DASHBOARD ADMINISTRATIVO
      */
     Route::prefix('dashboard')->group(function () {
-        Route::get('catalogos-resumen', [AdminHomeControler::class, 'getCatalogosCountItems'])->middleware(['audit']);
-        Route::get('stats-completas', [AdminDashboardController::class, 'getStatsCompletas'])->middleware(['audit']);
-        Route::get('metricas-rendimiento', [AdminDashboardController::class, 'getMetricasRendimiento'])->middleware(['audit']);
-        Route::get('spp-proveedores', [AdminDashboardController::class, 'getMetricasSppPorProveedor'])->middleware(['audit']);
+        Route::get('catalogos-resumen', [AdminHomeControler::class, 'getCatalogosCountItems']);
+        Route::get('stats-completas', [AdminDashboardController::class, 'getStatsCompletas']);
+        Route::get('metricas-rendimiento', [AdminDashboardController::class, 'getMetricasRendimiento']);
+        Route::get('spp-proveedores', [AdminDashboardController::class, 'getMetricasSppPorProveedor']);
     });
 
     /**
@@ -155,32 +155,32 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
     // Route::prefix('homologacion')->group(function () {
     //     // Reporte de proveedores duplicados con metricas de SPP
     //     Route::get('reporte-proveedores-duplicados', [ProveedorHomologacionController::class, 'reporteProveedoresDuplicados'])
-    //         ->middleware(['audit'])
+    //         
     //         ->name('admin.homologacion.proveedores.reporte-duplicados');
 
     //     // Listar proveedores para homologación
     //     Route::get('proveedores', [ProveedorHomologacionController::class, 'listarProveedores'])
-    //         ->middleware(['audit'])
+    //         
     //         ->name('admin.homologacion.proveedores.index');
 
     //     // Obtener detalle de un proveedor específico
     //     Route::get('proveedores/{id}', [ProveedorHomologacionController::class, 'obtenerDetalleProveedor'])
-    //         ->middleware(['audit'])
+    //         
     //         ->name('admin.homologacion.proveedores.show');
 
     //     // Obtener usuarios de múltiples proveedores para reasignar
     //     Route::post('usuarios-para-reasignar', [ProveedorHomologacionController::class, 'obtenerUsuariosParaReasignar'])
-    //         ->middleware(['audit'])
+    //         
     //         ->name('admin.homologacion.usuarios-para-reasignar');
 
     //     // Previsualizar la homologación (sin ejecutar)
     //     Route::post('previsualizar', [ProveedorHomologacionController::class, 'previsualizarHomologacion'])
-    //         ->middleware(['audit'])
+    //         
     //         ->name('admin.homologacion.previsualizar');
 
     //     // Ejecutar la homologación
     //     Route::post('ejecutar', [ProveedorHomologacionController::class, 'ejecutarHomologacion'])
-    //         ->middleware(['audit'])
+    //         
     //         ->name('admin.homologacion.ejecutar');
     // });
 
@@ -189,15 +189,15 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
      */
     // Route::prefix('integracion')->group(function () {
     //     Route::post('pedidos/{pedido}/sync-billing', [PedidoController::class, 'syncBilling'])
-    //         ->middleware(['audit'])
+    //         
     //         ->name('admin.integration.pedidos.sync-billing');
 
     //     Route::post('pedidos/{pedido}/generate-invoice', [PedidoController::class, 'generateInvoice'])
-    //         ->middleware(['audit'])
+    //         
     //         ->name('admin.integration.pedidos.generate-invoice');
 
     //     Route::post('pedidos/{pedido}/payment-confirmed', [PedidoController::class, 'paymentConfirmed'])
-    //         ->middleware(['audit'])
+    //         
     //         ->name('admin.integration.pedidos.payment-confirmed');
     // });
 });
@@ -209,18 +209,18 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
 Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->value])->group(function () {
 
     // Resumen de catálogos (compatibilidad)
-    Route::get('catalogos-resumen', [AdminHomeControler::class, 'getCatalogosCountItems'])->middleware(['audit']);
+    Route::get('catalogos-resumen', [AdminHomeControler::class, 'getCatalogosCountItems']);
 
     // API Resources (compatibilidad)
-    Route::apiResource('users', UserController::class)->middleware(['audit']);
-    Route::apiResource('proveedores', AdminProveedorController::class)->middleware(['audit'])->except(['index']);
-    Route::apiResource('sucursales', SucursalController::class)->middleware(['audit'])->except(['index']);
-    Route::apiResource('productos', ProductoController::class)->middleware(['audit'])->except(['index']);
-    Route::apiResource('imagenes', ProductoImagenController::class)->middleware(['audit'])->except(['index']);
-    Route::apiResource('unidades-medida', UnidadMedidaController::class)->middleware(['audit'])->except(['index']);
-    Route::apiResource('categorias', CategoriaController::class)->middleware(['audit'])->except(['index']);
-    Route::apiResource('marcas', MarcaController::class)->middleware(['audit'])->except(['index']);
-    Route::apiResource('tipos-empresa', TipoEmpresaController::class)->middleware(['audit'])->except(['index']);
+    Route::apiResource('users', UserController::class);
+    Route::apiResource('proveedores', AdminProveedorController::class)->except(['index']);
+    Route::apiResource('sucursales', SucursalController::class)->except(['index']);
+    Route::apiResource('productos', ProductoController::class)->except(['index']);
+    Route::apiResource('imagenes', ProductoImagenController::class)->except(['index']);
+    Route::apiResource('unidades-medida', UnidadMedidaController::class)->except(['index']);
+    Route::apiResource('categorias', CategoriaController::class)->except(['index']);
+    Route::apiResource('marcas', MarcaController::class)->except(['index']);
+    Route::apiResource('tipos-empresa', TipoEmpresaController::class)->except(['index']);
 
     // Dashboard stats (compatibilidad)
     Route::get('dashboard/admin/stats-completas', [AdminDashboardController::class, 'getStatsCompletas']);

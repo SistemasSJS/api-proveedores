@@ -32,20 +32,20 @@ Route::prefix('proveedores')
     ->middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::GERENTE->value])
     ->group(function () {
         Route::prefix('api-proveedor/presupuestos')->group(function () {
-            Route::get('/next-folio', [ProveedorPresupuestoController::class, 'nextFolio'])->middleware(['audit']);
+            Route::get('/next-folio', [ProveedorPresupuestoController::class, 'nextFolio']);
         });
 
         /**
          * CRUD BASICO
          */
-        Route::post('/', [ProveedorController::class, 'store'])->middleware(['audit']);
+        Route::post('/', [ProveedorController::class, 'store']);
         Route::get('{proveedor}', [ProveedorController::class, 'show'])->middleware(['api.access', 'audit']);
         Route::patch('{proveedor}', [ProveedorController::class, 'update'])->middleware(['api.access', 'audit']);
         Route::delete('{proveedor}', [ProveedorController::class, 'destroy'])->middleware(['api.access', 'audit']);
         Route::post('{proveedor}/logo', [ProveedorController::class, 'updateLogo'])->middleware(['api.access', 'audit']);
 
         // Consultas especiales
-        Route::get('user/{id}', [ProveedorController::class, 'getProveedorByUserId'])->middleware(['audit']);
+        Route::get('user/{id}', [ProveedorController::class, 'getProveedorByUserId']);
 
         /**
          * CUENTAS BANCARIAS
@@ -63,17 +63,17 @@ Route::prefix('proveedores')
         });
 
         Route::prefix('{proveedor}/constancia-fiscal')->middleware(['proveedor.access'])->group(function () {
-            Route::post('/', [ProveedorController::class, 'updateConstanciaFiscal'])->middleware(['audit']);
-            Route::get('/preview', [ProveedorController::class, 'previewConstanciaFiscal'])->middleware(['audit']);
-            Route::get('/download', [ProveedorController::class, 'downloadConstanciaFiscal'])->middleware(['audit']);
+            Route::post('/', [ProveedorController::class, 'updateConstanciaFiscal']);
+            Route::get('/preview', [ProveedorController::class, 'previewConstanciaFiscal']);
+            Route::get('/download', [ProveedorController::class, 'downloadConstanciaFiscal']);
         });
 
         /**
          * USUARIOS DEL PROVEEDOR
          */
         Route::prefix('{proveedor}/users')->middleware(['proveedor.access'])->group(function () {
-            Route::get('/', [ProveedorUsuarioController::class, 'index'])->middleware(['audit']);
-            Route::post('/', [ProveedorUsuarioController::class, 'store'])->middleware(['audit']);
+            Route::get('/', [ProveedorUsuarioController::class, 'index']);
+            Route::post('/', [ProveedorUsuarioController::class, 'store']);
             Route::middleware(['api.access', 'proveedor.user', 'audit'])->group(function () {
                 Route::get('{user}', [ProveedorUsuarioController::class, 'show']);
                 Route::patch('{user}', [ProveedorUsuarioController::class, 'update']);
@@ -89,8 +89,8 @@ Route::prefix('proveedores')
          * PRODUCTOS DEL PROVEEDOR
          */
         Route::prefix('{proveedor}/productos')->middleware(['proveedor.access'])->group(function () {
-            Route::get('/', [ProveedorProductoController::class, 'index'])->middleware(['audit']);
-            Route::post('/', [ProveedorProductoController::class, 'store'])->middleware(['audit']);
+            Route::get('/', [ProveedorProductoController::class, 'index']);
+            Route::post('/', [ProveedorProductoController::class, 'store']);
             Route::middleware(['proveedor.producto', 'audit'])->group(function () {
                 Route::get('{producto}', [ProveedorProductoController::class, 'show']);
                 Route::patch('{producto}', [ProveedorProductoController::class, 'update']);
@@ -103,10 +103,10 @@ Route::prefix('proveedores')
          * CATEGORÍAS DEL PROVEEDOR
          */
         Route::prefix('{proveedor}/categorias')->middleware(['proveedor.access'])->group(function () {
-            Route::get('/', [ProveedorCategoriaController::class, 'index'])->middleware(['audit']);
-            Route::post('/', [ProveedorCategoriaController::class, 'store'])->middleware(['audit']);
-            Route::get('/all', [ProveedorCategoriaController::class, 'all'])->middleware(['audit']);
-            Route::get('/all/count-products', [ProveedorCategoriaController::class, 'categoriasConSubcatCountProductos'])->middleware(['audit']);
+            Route::get('/', [ProveedorCategoriaController::class, 'index']);
+            Route::post('/', [ProveedorCategoriaController::class, 'store']);
+            Route::get('/all', [ProveedorCategoriaController::class, 'all']);
+            Route::get('/all/count-products', [ProveedorCategoriaController::class, 'categoriasConSubcatCountProductos']);
 
             Route::middleware(['proveedor.categoria', 'audit'])->group(function () {
                 Route::get('{categoria}', [ProveedorCategoriaController::class, 'show']);
@@ -121,9 +121,9 @@ Route::prefix('proveedores')
          * MARCAS DEL PROVEEDOR
          */
         Route::prefix('{proveedor}/marcas')->middleware(['proveedor.access'])->group(function () {
-            Route::get('/', [ProveedorMarcaController::class, 'index'])->middleware(['audit']);
-            Route::post('/', [ProveedorMarcaController::class, 'store'])->middleware(['audit']);
-            Route::get('/all', [ProveedorMarcaController::class, 'all'])->middleware(['audit']);
+            Route::get('/', [ProveedorMarcaController::class, 'index']);
+            Route::post('/', [ProveedorMarcaController::class, 'store']);
+            Route::get('/all', [ProveedorMarcaController::class, 'all']);
             Route::middleware(['proveedor.marca', 'audit'])->group(function () {
                 Route::get('{marca}', [ProveedorMarcaController::class, 'show']);
                 Route::patch('{marca}', [ProveedorMarcaController::class, 'update']);
@@ -137,9 +137,9 @@ Route::prefix('proveedores')
          * UNIDA MEDIDA DEL PROVEEDOR
          */
         Route::prefix('{proveedor}/unidades')->middleware(['proveedor.access'])->group(function () {
-            Route::get('/', [ProveedorUnidadMedidaController::class, 'index'])->middleware(['audit']);
-            Route::post('/', [ProveedorUnidadMedidaController::class, 'store'])->middleware(['audit']);
-            Route::get('/all', [ProveedorUnidadMedidaController::class, 'all'])->middleware(['audit']);
+            Route::get('/', [ProveedorUnidadMedidaController::class, 'index']);
+            Route::post('/', [ProveedorUnidadMedidaController::class, 'store']);
+            Route::get('/all', [ProveedorUnidadMedidaController::class, 'all']);
             Route::middleware(['proveedor.unidad', 'audit'])->group(function () {
                 Route::get('{unidad}', [ProveedorUnidadMedidaController::class, 'show']);
                 Route::patch('{unidad}', [ProveedorUnidadMedidaController::class, 'update']);
@@ -152,8 +152,8 @@ Route::prefix('proveedores')
          * SUCURSALES DEL PROVEEDOR
          */
         Route::prefix('{proveedor}/sucursales')->middleware(['proveedor.access'])->group(function () {
-            Route::get('/', [ProveedorSucursalController::class, 'index'])->middleware(['audit']);
-            Route::post('/', [ProveedorSucursalController::class, 'store'])->middleware(['audit']);
+            Route::get('/', [ProveedorSucursalController::class, 'index']);
+            Route::post('/', [ProveedorSucursalController::class, 'store']);
             Route::middleware(['proveedor.sucursal', 'audit'])->group(function () {
                 Route::get('{sucursal}', [ProveedorSucursalController::class, 'show']);
                 Route::delete('{sucursal}', [ProveedorSucursalController::class, 'destroy']);
@@ -163,10 +163,10 @@ Route::prefix('proveedores')
                  * PRODUCTOS POR SUCURSAL
                  */
                 Route::prefix('productos')->group(function () {
-                    Route::get('/', [SucursalProductoController::class, 'index'])->middleware(['audit']);
-                    Route::post('asignar', [SucursalProductoController::class, 'asignarProductos'])->middleware(['audit']);
-                    Route::delete('desasignar', [SucursalProductoController::class, 'desasignarProductos'])->middleware(['audit']);
-                    Route::patch('{producto}', [SucursalProductoController::class, 'updateStock'])->middleware(['audit']);
+                    Route::get('/', [SucursalProductoController::class, 'index']);
+                    Route::post('asignar', [SucursalProductoController::class, 'asignarProductos']);
+                    Route::delete('desasignar', [SucursalProductoController::class, 'desasignarProductos']);
+                    Route::patch('{producto}', [SucursalProductoController::class, 'updateStock']);
                 });
             });
         });
@@ -178,12 +178,12 @@ Route::prefix('proveedores')
          * CSV IMPORT ROUTES
          */
         Route::prefix('{proveedor}/csv-import')->middleware(['proveedor.access'])->group(function () {
-            Route::post('/upload', [CsvImportController::class, 'upload'])->middleware(['audit']);
-            // Route::post('/validate-producto', [CsvImportController::class, 'validateProducto'])->middleware(['audit']);
-            Route::post('/confirm', [CsvImportController::class, 'confirm'])->middleware(['audit']);
-            Route::get('/status/{auditId}', [CsvImportController::class, 'getImportStatus'])->middleware(['audit']);
-            Route::get('/results/{auditId}', [CsvImportController::class, 'getImportResults'])->middleware(['audit']);
-            Route::get('/results/{auditId}/export', [CsvImportController::class, 'export'])->middleware(['audit']);
+            Route::post('/upload', [CsvImportController::class, 'upload']);
+            // Route::post('/validate-producto', [CsvImportController::class, 'validateProducto']);
+            Route::post('/confirm', [CsvImportController::class, 'confirm']);
+            Route::get('/status/{auditId}', [CsvImportController::class, 'getImportStatus']);
+            Route::get('/results/{auditId}', [CsvImportController::class, 'getImportResults']);
+            Route::get('/results/{auditId}/export', [CsvImportController::class, 'export']);
         });
 
         /**
@@ -303,18 +303,18 @@ Route::prefix('proveedores')
 
                 // === RUTAS DE REGISTRO (desde frontend) ===
                 /** ESTAS YA NO SON NECESARIAS */
-                // Route::post('/registro', [OrdenCompraRegistroController::class, 'store'])->middleware(['audit']);
-                // Route::put('/registro/upsert', [OrdenCompraRegistroController::class, 'upsert'])->middleware(['audit']);
-                // Route::post('/registro/batch', [OrdenCompraRegistroController::class, 'storeBatch'])->middleware(['audit']);
-                // Route::post('/registro/check-existence', [OrdenCompraRegistroController::class, 'checkExistence'])->middleware(['audit']);
+                // Route::post('/registro', [OrdenCompraRegistroController::class, 'store']);
+                // Route::put('/registro/upsert', [OrdenCompraRegistroController::class, 'upsert']);
+                // Route::post('/registro/batch', [OrdenCompraRegistroController::class, 'storeBatch']);
+                // Route::post('/registro/check-existence', [OrdenCompraRegistroController::class, 'checkExistence']);
 
                 // === NUEVAS RUTAS: CONSULTA DESDE API CONSTRUCCIONES ===
                 // Listado de OC del proveedor
-                Route::get('/consultar', [ProveedorOrdenCompraController::class, 'index'])->middleware(['audit']);
+                Route::get('/consultar', [ProveedorOrdenCompraController::class, 'index']);
                 // Detalle de OC
-                Route::get('/consultar/{ordenCompraId}', [ProveedorOrdenCompraController::class, 'show'])->middleware(['audit']);
+                Route::get('/consultar/{ordenCompraId}', [ProveedorOrdenCompraController::class, 'show']);
                 // Detalle de OC con las SP enlazadas
-                Route::get('/consultar/{ordenCompraId}/solicitud-pago', [ProveedorOrdenCompraController::class, 'show'])->middleware(['audit']);
+                Route::get('/consultar/{ordenCompraId}/solicitud-pago', [ProveedorOrdenCompraController::class, 'show']);
 
                 /**
                  * LAS OC ESTAN ALMACENADAS EN LA API DE CONSTRUCCIONES
@@ -322,24 +322,24 @@ Route::prefix('proveedores')
                  * NO SE PERMITE CREAR, ACTUALIZAR O ELIMINAR DESDE AQUI
                  */
                 // // === DASHBOARD Y ESTADÍSTICAS ===
-                // Route::get('/dashboard', [ProveedorOrdenCompraDashboardController::class, 'dashboard'])->middleware(['audit']); // Dashboard completo
-                // Route::get('/dashboard/estado-general', [ProveedorOrdenCompraDashboardController::class, 'estadoGeneral'])->middleware(['audit']); // Estado OC/SP
-                // Route::get('/dashboard/actividad-reciente', [ProveedorOrdenCompraDashboardController::class, 'actividadReciente'])->middleware(['audit']); // Actividad
-                // Route::get('/dashboard/metricas', [ProveedorOrdenCompraDashboardController::class, 'metricas'])->middleware(['audit']); // Métricas rendimiento
-                // Route::get('/dashboard/estadisticas', [ProveedorOrdenCompraDashboardController::class, 'estadisticas'])->middleware(['audit']); // Legacy (compatibilidad)
-                // Route::get('/alertas/sin-solicitudes', [ProveedorOrdenCompraDashboardController::class, 'ordenesSinSolicitudes'])->middleware(['audit']);
-                // Route::get('/contadores/sp', [ProveedorOrdenCompraDashboardController::class, 'contadores'])->middleware(['audit']);
+                // Route::get('/dashboard', [ProveedorOrdenCompraDashboardController::class, 'dashboard']); // Dashboard completo
+                // Route::get('/dashboard/estado-general', [ProveedorOrdenCompraDashboardController::class, 'estadoGeneral']); // Estado OC/SP
+                // Route::get('/dashboard/actividad-reciente', [ProveedorOrdenCompraDashboardController::class, 'actividadReciente']); // Actividad
+                // Route::get('/dashboard/metricas', [ProveedorOrdenCompraDashboardController::class, 'metricas']); // Métricas rendimiento
+                // Route::get('/dashboard/estadisticas', [ProveedorOrdenCompraDashboardController::class, 'estadisticas']); // Legacy (compatibilidad)
+                // Route::get('/alertas/sin-solicitudes', [ProveedorOrdenCompraDashboardController::class, 'ordenesSinSolicitudes']);
+                // Route::get('/contadores/sp', [ProveedorOrdenCompraDashboardController::class, 'contadores']);
 
                 // // === RUTAS PRINCIPALES DE CONSULTA ===
-                // Route::get('/', [ProveedorOrdenCompraDashboardController::class, 'index'])->middleware(['audit']); // Dashboard con listado y filtros
-                // Route::get('/disponibles/conversion', [ProveedorOrdenCompraDashboardController::class, 'getOrdenesDisponibles'])->middleware(['audit']);
-                // Route::get('/{ordenCompra}', [ProveedorOrdenCompraDashboardController::class, 'show'])->middleware(['audit']); // Detalle OC
-                // Route::get('/{ordenCompra}/solicitudes-pago', [ProveedorOrdenCompraDashboardController::class, 'getSolicitudesPago'])->middleware(['audit']); // SP enlazadas
+                // Route::get('/', [ProveedorOrdenCompraDashboardController::class, 'index']); // Dashboard con listado y filtros
+                // Route::get('/disponibles/conversion', [ProveedorOrdenCompraDashboardController::class, 'getOrdenesDisponibles']);
+                // Route::get('/{ordenCompra}', [ProveedorOrdenCompraDashboardController::class, 'show']); // Detalle OC
+                // Route::get('/{ordenCompra}/solicitudes-pago', [ProveedorOrdenCompraDashboardController::class, 'getSolicitudesPago']); // SP enlazadas
 
                 // // === RUTAS DIRECTAS CON CONTEXTO DE PROVEEDOR ===
-                // Route::get('/id/{ordenCompra}', [ProveedorOrdenCompraDashboardController::class, 'showDirecto'])->middleware(['audit']); // Detalle OC por ID
-                // Route::get('/id/{ordenCompra}/solicitudes-pago', [ProveedorOrdenCompraDashboardController::class, 'getSolicitudesPagoDirecto'])->middleware(['audit']); // SP de OC por ID
-                // Route::get('/general', [ProveedorOrdenCompraDashboardController::class, 'indexGeneral'])->middleware(['audit']); // Listado general
+                // Route::get('/id/{ordenCompra}', [ProveedorOrdenCompraDashboardController::class, 'showDirecto']); // Detalle OC por ID
+                // Route::get('/id/{ordenCompra}/solicitudes-pago', [ProveedorOrdenCompraDashboardController::class, 'getSolicitudesPagoDirecto']); // SP de OC por ID
+                // Route::get('/general', [ProveedorOrdenCompraDashboardController::class, 'indexGeneral']); // Listado general
             });
 
         /**
@@ -350,15 +350,15 @@ Route::prefix('proveedores')
             ->group(function () {
 
                 // === RUTAS DE CONVERSIÓN ===
-                Route::post('/convert', [OrdenCompraSolicitudPagoController::class, 'store'])->middleware(['audit']); // Crear SP desde OC
-                Route::post('/validate', [OrdenCompraSolicitudPagoController::class, 'validateConversion'])->middleware(['audit']); // Pre-validar conversión
-                Route::get('/preview', [OrdenCompraSolicitudPagoController::class, 'getConversionPreview'])->middleware(['audit']); // Preview (datos pre-llenados)
-                Route::delete('/unlink', [OrdenCompraSolicitudPagoController::class, 'unlinkSolicitudPago'])->middleware(['audit']); // Desasociar SP de OC
+                Route::post('/convert', [OrdenCompraSolicitudPagoController::class, 'store']); // Crear SP desde OC
+                Route::post('/validate', [OrdenCompraSolicitudPagoController::class, 'validateConversion']); // Pre-validar conversión
+                Route::get('/preview', [OrdenCompraSolicitudPagoController::class, 'getConversionPreview']); // Preview (datos pre-llenados)
+                Route::delete('/unlink', [OrdenCompraSolicitudPagoController::class, 'unlinkSolicitudPago']); // Desasociar SP de OC
 
                 // === RUTAS DE CONSULTA / MÉTRICAS ===
-                Route::get('/{ordenCompra}/history', [OrdenCompraSolicitudPagoController::class, 'getConversionHistory'])->middleware(['audit']); // Historial de conversiones
-                Route::get('/metricas', [OrdenCompraSolicitudPagoController::class, 'getMetricasConversion'])->middleware(['audit']); // Métricas de conversión
-                Route::get('/recientes', [OrdenCompraSolicitudPagoController::class, 'getConversionesRecientes'])->middleware(['audit']); // Conversiones recientes
+                Route::get('/{ordenCompra}/history', [OrdenCompraSolicitudPagoController::class, 'getConversionHistory']); // Historial de conversiones
+                Route::get('/metricas', [OrdenCompraSolicitudPagoController::class, 'getMetricasConversion']); // Métricas de conversión
+                Route::get('/recientes', [OrdenCompraSolicitudPagoController::class, 'getConversionesRecientes']); // Conversiones recientes
             });
 
 
@@ -373,28 +373,28 @@ Route::prefix('proveedores')
             ->group(function () {
 
                 // 🔍 Buscar empresas (por nombre, razón social o RFC)
-                Route::get('/search', [EmpresaConstruccController::class, 'search'])->middleware(['audit']);
+                Route::get('/search', [EmpresaConstruccController::class, 'search']);
 
                 // ✅ NUEVA RUTA: Obtener todas las empresas (sin paginación)
-                Route::get('/all', [EmpresaConstruccController::class, 'all'])->middleware(['audit']);
+                Route::get('/all', [EmpresaConstruccController::class, 'all']);
 
                 // 📋 Listado paginado de empresas
-                Route::get('/', [EmpresaConstruccController::class, 'index'])->middleware(['audit']);
+                Route::get('/', [EmpresaConstruccController::class, 'index']);
 
                 // 🆕 Crear empresa y asociar a proveedor
-                Route::post('/', [EmpresaConstruccController::class, 'store'])->middleware(['audit']);
+                Route::post('/', [EmpresaConstruccController::class, 'store']);
 
                 // 📝 Obtener detalle de una empresa
-                Route::get('/{empresaConstrucc}', [EmpresaConstruccController::class, 'show'])->middleware(['audit']);
+                Route::get('/{empresaConstrucc}', [EmpresaConstruccController::class, 'show']);
 
                 // 👥 Obtener usuarios de una empresa
-                Route::get('/{empresaConstrucc}/usuarios', [EmpresaConstruccController::class, 'usuarios'])->middleware(['audit']);
+                Route::get('/{empresaConstrucc}/usuarios', [EmpresaConstruccController::class, 'usuarios']);
 
                 // ✏️ Actualizar empresa existente
-                Route::put('/{empresaConstrucc}', [EmpresaConstruccController::class, 'update'])->middleware(['audit']);
+                Route::put('/{empresaConstrucc}', [EmpresaConstruccController::class, 'update']);
 
                 // ❌ Desasociar o desactivar empresa
-                Route::delete('/{empresaConstrucc}', [EmpresaConstruccController::class, 'destroy'])->middleware(['audit']);
+                Route::delete('/{empresaConstrucc}', [EmpresaConstruccController::class, 'destroy']);
             });
     });
 

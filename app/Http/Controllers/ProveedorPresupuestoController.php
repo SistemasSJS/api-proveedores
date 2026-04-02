@@ -813,6 +813,34 @@ class ProveedorPresupuestoController extends Controller
         }
     }
 
+    private function notificarUsuarioPrincipalProveedorReceptor(Presupuesto $presupuesto, bool $esReenvio = false): void
+    {
+        $id = $this->resolverIdProveedorReceptorCatalogo($presupuesto);
+        if (! $id) {
+            return;
+        }
+
+        $proveedorReceptor = Proveedor::query()->find((int) $id);
+        if (! $proveedorReceptor) {
+            return;
+        }
+
+        $usuarioPrincipal = $proveedorReceptor->usuarioPrincipal();
+        if (! $usuarioPrincipal || ! $usuarioPrincipal->status) {
+            return;
+        }
+
+        if ($this->usuarioDebeExcluirseDeNotificacionReceptor($presupuesto, $usuarioPrincipal)) {
+            return;
+        }
+
+        if ($this->yaSeNotificoReceptorPresupuesto($usuarioPrincipal, (int) $presupuesto->id, $esReenvio)) {
+            return;
+        }
+
+        $usuarioPrincipal->notify(new PresupuestoRecibidoClienteProveedorNotification($presupuesto, $esReenvio));
+    }
+
     private function yaSeNotificoReceptorPresupuesto(User $user, int $presupuestoId, bool $esReenvio): bool
     {
         $q = $user->notifications()
@@ -1237,6 +1265,10 @@ class ProveedorPresupuestoController extends Controller
                     $presupuesto->fecha_vencimiento = $this->calcularFechaVencimiento($presupuesto);
                 }
                 $presupuesto->save();
+
+                if ($this->debeNotificarComoProveedorCatalogo($presupuesto)) {
+                    $this->notificarUsuarioPrincipalProveedorReceptor($presupuesto);
+                }
             });
 
             $presupuesto->refresh()->load(Presupuesto::eagerLodable());
@@ -1276,7 +1308,7 @@ class ProveedorPresupuestoController extends Controller
             $presupuesto->load(Presupuesto::eagerLodable());
             $presupuesto->asegurarTokenPublico();
 
-            $this->despacharCorreoPresupuesto($presupuesto);
+            // $this->despacharCorreoPresupuesto($presupuesto);
             $this->despacharNotificacionesReceptor($presupuesto, true);
 
             $this->log('Presupuesto reenviado por correo', ['presupuesto_id' => $presupuesto->id]);
