@@ -153,8 +153,8 @@ class ConstruccSolicitudPagoController extends Controller
             $q->where('estado_solicitud', EstadoSP::RECHAZADA->value)
                 ->where('fecha_rechazo', '>=', now()->subMonth()),
 
-            'todas' => fn($q) =>
-            $q->where('fecha_registro_pendiente', '>=', now()->subMonth(2)),
+            // 'todas' => fn($q) =>
+            // $q->where('fecha_registro_pendiente', '>=', now()->subMonth(2)),
         ];
 
         // 🔥 Ejecutar segmentos
