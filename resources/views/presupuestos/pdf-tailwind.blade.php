@@ -602,8 +602,8 @@
 
         .footer-qr {
             display: inline-block;
-            width: 12mm;
-            height: 12mm;
+            width: 15mm;
+            height: 15mm;
             vertical-align: middle;
         }
 

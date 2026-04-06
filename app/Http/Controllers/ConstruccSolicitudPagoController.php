@@ -91,7 +91,7 @@ class ConstruccSolicitudPagoController extends Controller
                 ['pagos']
             ))
             ->where('verificada', true)
-            ->whereHas('pagos') // 👈 CLAVE: elimina pagos vacíos
+            // ->whereHas('pagos') // 👈 CLAVE: elimina pagos vacíos
             ->filter($filters);
 
         if ((int) $usuarioNivel === 6) {
@@ -109,7 +109,30 @@ class ConstruccSolicitudPagoController extends Controller
         );
     }
 
-    
+    /**
+     * Listado paginado segmentado por estado de solicitud ( autorizada, pendientes (pendientes sin pagos), rechazadas (del ultimo mes), abonadas (pendiientes con cpagos),todas)
+     */
+    public function indexSegmentos(Request $request): JsonResponse
+    {
+        $autorizadas = SolicitudPago::autorizadas()->get();
+        $pendientes = SolicitudPago::pendientesSinPago()->get();
+        $rechazadas = SolicitudPago::rechazadasUltimoMes()->get();
+        $abonadas = SolicitudPago::abonadas()->get();
+        $todas = SolicitudPago::todasUltimoMes()->get();
+
+
+        return $this->success(
+            [
+
+                'autorizadas' => ConstruccSolicitudPagoResource::collection($autorizadas),
+                'pendientes' => ConstruccSolicitudPagoResource::collection($pendientes),
+                'rechazadas' => ConstruccSolicitudPagoResource::collection($rechazadas),
+                'abonadas' => ConstruccSolicitudPagoResource::collection($abonadas),
+                'todas' => ConstruccSolicitudPagoResource::collection($todas),
+            ]
+        );
+    }
+
     /**
      *  completar el metododo similar al index. Se carga solo dato sespecificos de las SPP y contadores 
      * 

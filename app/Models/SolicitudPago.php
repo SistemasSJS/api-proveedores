@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
+use App\Models\PagoSolicitudPago;
 
 class SolicitudPago extends BaseModel
 {
@@ -1018,5 +1020,79 @@ class SolicitudPago extends BaseModel
         }
 
         return $errores;
+    }
+
+
+
+    /**
+     * 
+     */
+
+
+
+
+    /**
+     * Último mes (basado en fecha_registro_pendiente)
+     */
+    public function scopeUltimoMes($query)
+    {
+        return $query->where('fecha_registro_pendiente', '>=', Carbon::now()->subMonth());
+    }
+
+    /**
+     * Autorizadas
+     */
+    public function scopeAutorizadas($query)
+    {
+        return $query->where('estado_solicitud', EstadoSP::AUTORIZADA->value);
+    }
+
+    /**
+     * Pendientes SIN pagos
+     */
+    public function scopePendientesSinPago($query)
+    {
+        return $query->where('estado_solicitud', EstadoSP::PENDIENTE->value)
+            ->whereDoesntHave('pagos');
+    }
+
+    /**
+     * Abonadas (pendientes CON pagos válidos)
+     */
+    public function scopeAbonadas($query)
+    {
+        return $query->where('estado_solicitud', EstadoSP::PENDIENTE->value)
+            ->whereHas('pagos', function ($q) {
+                $q->whereIn('estado_pago', [
+                    PagoSolicitudPago::ESTADO_APLICADO,
+                    PagoSolicitudPago::ESTADO_PARCIAL,
+                    PagoSolicitudPago::ESTADO_COMPLETADO,
+                ]);
+            });
+    }
+
+    /**
+     * Rechazadas
+     */
+    public function scopeRechazadas($query)
+    {
+        return $query->where('estado_solicitud', EstadoSP::RECHAZADA->value);
+    }
+
+    /**
+     * Rechazadas del último mes (por fecha_rechazo)
+     */
+    public function scopeRechazadasUltimoMes($query)
+    {
+        return $query->where('estado_solicitud', EstadoSP::RECHAZADA->value)
+            ->where('fecha_rechazo', '>=', Carbon::now()->subMonth());
+    }
+
+    /**
+     * Todas del último mes
+     */
+    public function scopeTodasUltimoMes($query)
+    {
+        return $query->where('fecha_registro_pendiente', '>=', Carbon::now()->subMonth());
     }
 }
