@@ -1093,6 +1093,6 @@ class SolicitudPago extends BaseModel
      */
     public function scopeTodasUltimoMes($query)
     {
-        return $query->where('fecha_registro_pendiente', '>=', Carbon::now()->subMonth());
+        return $query->where('fecha_registro_pendiente', '>=', Carbon::now()->subMonth(2));
     }
 }

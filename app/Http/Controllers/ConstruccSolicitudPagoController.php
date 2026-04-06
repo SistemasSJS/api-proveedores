@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use App\Http\Requests\Construcc\SolicitudPagoUpdateConprobantePagoRequest;
+use App\Models\PagoSolicitudPago;
 use App\Notifications\SolicitudPago\SolicitudPagoComprobanteActualizadoNotification;
 use Carbon\Carbon;
 
@@ -114,23 +115,60 @@ class ConstruccSolicitudPagoController extends Controller
      */
     public function indexSegmentos(Request $request): JsonResponse
     {
-        $autorizadas = SolicitudPago::autorizadas()->get();
-        $pendientes = SolicitudPago::pendientesSinPago()->get();
-        $rechazadas = SolicitudPago::rechazadasUltimoMes()->get();
-        $abonadas = SolicitudPago::abonadas()->get();
-        $todas = SolicitudPago::todasUltimoMes()->get();
+        $filters = $request->only(SolicitudPago::getFilters());
+        $usuarioNivel = $request->input('usuario_nivel');
+        $usuarioIdFiltro = $request->input('usuario_id');
 
+        // 🔹 Base query única
+        $baseQuery = SolicitudPago::query()
+            ->with(SolicitudPago::eagerLodable())
+            ->where('verificada', true)
+            ->filter($filters)
+            ->when(
+                (int)$usuarioNivel === 6,
+                fn($q) =>
+                $q->where('usuario_id', (int)$usuarioIdFiltro)
+            );
 
-        return $this->success(
-            [
+        // 🔥 Definición de segmentos
+        $segmentDefs = [
+            'autorizadas' => fn($q) =>
+            $q->where('estado_solicitud', EstadoSP::AUTORIZADA->value),
 
-                'autorizadas' => ConstruccSolicitudPagoResource::collection($autorizadas),
-                'pendientes' => ConstruccSolicitudPagoResource::collection($pendientes),
-                'rechazadas' => ConstruccSolicitudPagoResource::collection($rechazadas),
-                'abonadas' => ConstruccSolicitudPagoResource::collection($abonadas),
-                'todas' => ConstruccSolicitudPagoResource::collection($todas),
-            ]
-        );
+            'pendientes' => fn($q) =>
+            $q->where('estado_solicitud', EstadoSP::PENDIENTE->value)
+                ->whereDoesntHave('pagos'),
+
+            'abonadas' => fn($q) =>
+            $q->where('estado_solicitud', EstadoSP::PENDIENTE->value)
+                ->whereHas('pagos', function ($q) {
+                    $q->whereIn('estado_pago', [
+                        PagoSolicitudPago::ESTADO_APLICADO,
+                        PagoSolicitudPago::ESTADO_PARCIAL,
+                        PagoSolicitudPago::ESTADO_COMPLETADO,
+                    ]);
+                }),
+
+            'rechazadas' => fn($q) =>
+            $q->where('estado_solicitud', EstadoSP::RECHAZADA->value)
+                ->where('fecha_rechazo', '>=', now()->subMonth()),
+
+            'todas' => fn($q) =>
+            $q->where('fecha_registro_pendiente', '>=', now()->subMonth(2)),
+        ];
+
+        // 🔥 Ejecutar segmentos
+        $data = [];
+
+        foreach ($segmentDefs as $key => $callback) {
+            $data[$key] = ConstruccSolicitudPagoResource::collection(
+                $callback(clone $baseQuery)->get()
+            );
+        }
+
+        return $this->success([
+            'data' => $data
+        ]);
     }
 
     /**
