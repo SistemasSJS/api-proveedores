@@ -43,10 +43,19 @@ class ConstruccPagoSPPResource extends JsonResource
             ],
 
             // Campos de autorización parcial (si existen)
-            'usuario_autorizo_parcial_id'     => $this->usuario_autorizo_parcial_id ?? null,
-            'usuario_autorizo_parcial_nombre' => $this->usuario_autorizo_parcial_nombre ?? null,
-            'motivo_autorizacion_parcial'     => $this->motivo_autorizacion_parcial ?? null,
-            'fecha_autorizacion_parcial'      => optional($this->fecha_autorizacion_parcial)?->format('Y-m-d H:i:s'),
+            // 'usuario_autorizo_parcial_id'     => $this->usuario_autorizo_parcial_id ?? null,
+            // 'usuario_autorizo_parcial_nombre' => $this->usuario_autorizo_parcial_nombre ?? null,
+            // 'motivo_autorizacion_parcial'     => $this->motivo_autorizacion_parcial ?? null,
+            // 'fecha_autorizacion_parcial'      => optional($this->fecha_autorizacion_parcial)?->format('Y-m-d H:i:s'),
+            'autorizacion_parcial' => [
+                'usuario_id' => $this->usuario_autorizo_parcial_id ?? null,
+                'usuario_nombre' => $this->usuario_autorizo_parcial_nombre ?? null,
+                'motivo' => $this->motivo_autorizacion_parcial ?? null,
+                'fecha' => optional($this->fecha_autorizacion_parcial)?->toDateTimeString(),
+                'monto_autorizado' => isset($this->monto_autorizado)
+                    ? (float) $this->monto_autorizado
+                    : null,
+            ],
 
             // Extra útiles para UI
             'proveedor' => $this->whenLoaded('proveedor', function () {

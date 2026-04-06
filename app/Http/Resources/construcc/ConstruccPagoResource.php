@@ -89,12 +89,22 @@ class ConstruccPagoResource extends JsonResource
               'datos_facturacion_id' => $sp->datos_facturacion_id,
             ],
 
-            // Campos de autorización parcial (si existen)
-            'usuario_autorizo_parcial_id'     => $this->usuario_autorizo_parcial_id ?? null,
-            'usuario_autorizo_parcial_nombre' => $this->usuario_autorizo_parcial_nombre ?? null,
-            'motivo_autorizacion_parcial'     => $this->motivo_autorizacion_parcial ?? null,
-            'fecha_autorizacion_parcial'      => optional($this->fecha_autorizacion_parcial)?->format('Y-m-d H:i:s'),
+            // // Campos de autorización parcial (si existen)
+            // 'usuario_autorizo_parcial_id'     => $this->usuario_autorizo_parcial_id ?? null,
+            // 'usuario_autorizo_parcial_nombre' => $this->usuario_autorizo_parcial_nombre ?? null,
+            // 'motivo_autorizacion_parcial'     => $this->motivo_autorizacion_parcial ?? null,
+            // 'fecha_autorizacion_parcial'      => optional($this->fecha_autorizacion_parcial)?->format('Y-m-d H:i:s'),
 
+
+            'autorizacion_pago' => [
+              'usuario_id' => $sp->pivot->usuario_autorizo_id ?? null,
+              'usuario_nombre' => $sp->pivot->usuario_autorizo_nombre ?? null,
+              'monto_autorizado' => isset($sp->pivot->monto_autorizado)
+                ? (float) $sp->pivot->monto_autorizado
+                : null,
+              'motivo' => $sp->pivot->motivo_autorizacion ?? null,
+              'fecha' => optional($sp->pivot->fecha_autorizacion)?->toDateTimeString(),
+            ],
 
             // Pivot blindado
             'monto_aplicado' => (float) ($sp->pivot->monto_aplicado ?? 0),

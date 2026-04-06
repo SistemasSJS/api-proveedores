@@ -276,7 +276,8 @@ class SolicitudPago extends BaseModel
             'cotizacion',
             'cuentasBancarias',
             'ordenCompra',
-            'usuarioCreador'
+            'usuarioCreador',
+            'pagos',
         ];
     }
 
@@ -321,6 +322,22 @@ class SolicitudPago extends BaseModel
 
     // [2026-01-28 19:35:14] local.ERROR: Error al listar SPP del proveedor {"proveedor_id":8,"error":"Call to undefined relationship [pagos] on model [App\\Models\\SolicitudPago].","trace":"#0 C:\\repositorio\\app\\api-proveedores\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(939): Illuminate\\Database\\Eloquent\\RelationNotFoundException::make(Object(App\\Models\\SolicitudPago), 'pagos')
 
+    // public function pagos(): BelongsToMany
+    // {
+    //     return $this->belongsToMany(
+    //         PagoSPP::class,
+    //         'pago_solicitud_pago',
+    //         'solicitud_pago_id',
+    //         'pago_spp_id'
+    //     )
+    //         ->withPivot([
+    //             'monto_aplicado',
+    //             'estado_pago',
+    //             'notas',
+    //             'fecha_aplicacion'
+    //         ])
+    //         ->withTimestamps();
+    // }
     public function pagos(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -333,7 +350,12 @@ class SolicitudPago extends BaseModel
                 'monto_aplicado',
                 'estado_pago',
                 'notas',
-                'fecha_aplicacion'
+                'fecha_aplicacion',
+                'usuario_autorizo_id',
+                'usuario_autorizo_nombre',
+                'monto_autorizado',
+                'motivo_autorizacion',
+                'fecha_autorizacion',
             ])
             ->withTimestamps();
     }
@@ -653,10 +675,25 @@ class SolicitudPago extends BaseModel
         $nuevoSaldoPendiente = $this->monto_total - $nuevoMontoAbonado;
         $pagoCompleto = $nuevoSaldoPendiente <= 0;
 
+        // si viene con monot_autprizado este se va a 0
+
+        // la spp pasa a pewndiente
+
+        //agregar bandrera de abonada 
+
         $this->update([
             'monto_abonado' => $nuevoMontoAbonado,
             'saldo_pendiente' => max(0, $nuevoSaldoPendiente),
-            'estado_solicitud' => $pagoCompleto ? EstadoSP::PAGADO->value : EstadoSP::AUTORIZADA->value,
+            // 'estado_solicitud' => $pagoCompleto ? EstadoSP::PAGADO->value : EstadoSP::AUTORIZADA->value,
+            // si es un abono la spp passa a estado pendiente y se activa la bandera de abono
+            'estado_solicitud' => $pagoCompleto ? EstadoSP::PAGADO->value : EstadoSP::PENDIENTE->value,
+            // ESTO PASA AL REGISTRO DEL PAGO
+            'notas_abono' => "Abono de $montoAbono aplicado. Total abonado: $nuevoMontoAbonado. Saldo pendiente: $nuevoSaldoPendiente.",
+            'monto_autorizado' => null, // Si se está aplicando un abono, se limpia el monto autorizado para evitar confusiones
+            'usuario_autorizo_parcial_id' => null,
+            'usuario_autorizo_parcial_nombre' => null,
+            'motivo_autorizacion_parcial' => null,
+            'fecha_autorizacion_parcial' => null,
         ]);
 
         return $pagoCompleto;

@@ -9,6 +9,9 @@ class ConstruccSolicitudPagoResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $saldoPendiente = $this->calcularSaldoRestante();
+        $montoAbonado   = $this->calcularMontoAbonado();
+
         return [
             'id' => $this->id,
             'numero_folio_solicitud' => $this->numero_folio_solicitud,
@@ -89,18 +92,28 @@ class ConstruccSolicitudPagoResource extends JsonResource
             'ro_fecha' => $this->ro_fecha?->format('Y-m-d H:i:s'),
 
             'estado_solicitud' => $this->estado_solicitud,
-            'motivo_rechazo' => $this->motivo_rechazo,
-            'fecha_rechazo' => $this->fecha_rechazo?->format('Y-m-d H:i:s'),
-            'fecha_pago' => $this->fecha_pago?->format('Y-m-d H:i:s'),
+
+
+            // comentado el: 06/04/2026
+            // 'motivo_rechazo' => $this->motivo_rechazo,
+            // 'fecha_rechazo' => $this->fecha_rechazo?->format('Y-m-d H:i:s'),
+            // 'fecha_pago' => $this->fecha_pago?->format('Y-m-d H:i:s'),
+
             // 'fecha_comprobante_pago' => $this->fecha_comprobante_pago?->format('Y-m-d H:i:s'),
 
             // Campos de abono y pagos parciales
+            // estos campos deben reflejar lo de pagos 
             'monto_total' => (float) $this->monto_total,
-            'monto_abonado' => (float) $this->monto_abonado,
-            'saldo_pendiente' => (float) $this->saldo_pendiente,
-            'pago_completo' => (bool) $this->pago_completo,
-            'notas_abono' => $this->notas_abono,
-            'porcentaje_pagado' => $this->monto_total > 0 ? round(($this->monto_abonado / $this->monto_total) * 100, 2) : 0,
+            'monto_abonado' => $montoAbonado,
+            'saldo_pendiente' => $saldoPendiente,
+
+            // comentado el: 06/04/2026
+            // 'monto_total' => (float) $this->monto_total,
+            // 'monto_abonado' => (float) $this->monto_abonado,
+            // 'saldo_pendiente' => (float) $this->saldo_pendiente,
+            // 'pago_completo' => (bool) $this->pago_completo,
+            // 'notas_abono' => $this->notas_abono,
+            // 'porcentaje_pagado' => $this->monto_total > 0 ? round(($this->monto_abonado / $this->monto_total) * 100, 2) : 0,
 
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
@@ -111,6 +124,7 @@ class ConstruccSolicitudPagoResource extends JsonResource
             'usuario_autorizo_parcial_nombre' => $this->usuario_autorizo_parcial_nombre,
             'motivo_autorizacion_parcial' => $this->motivo_autorizacion_parcial,
             'fecha_autorizacion_parcial' => $this->fecha_autorizacion_parcial,
+            
             // ?->format('Y-m-d H:i:s'),
             'validacion_con_monto' => [
                 'monto' => (float) $this->validacion_monto,
@@ -118,7 +132,37 @@ class ConstruccSolicitudPagoResource extends JsonResource
                 'usuario_nombre' => $this->validacion_usuario_nombre,
                 'fecha' => $this->validacion_fecha,
                 'motivo' => $this->validacion_motivo,
-            ]
+            ],
+
+            'pagos' => $this->whenLoaded('pagos', function () {
+                return $this->pagos
+                    ->sortByDesc(fn($pago) => $pago->pivot->fecha_aplicacion)
+                    ->values()
+                    ->map(function ($pago) {
+
+                        $pivot = $pago->pivot;
+
+                        return [
+                            'id' => $pago->id,
+                            'folio' => $pago->folio_pago_spp_consecutivo,
+                            'monto_total_pago' => (float) $pago->monto_total,
+
+                            'monto_aplicado' => (float) ($pivot->monto_aplicado ?? 0),
+                            'estado_pago' => $pivot->estado_pago ?? null,
+                            'fecha_aplicacion' => optional($pivot->fecha_aplicacion)?->toDateTimeString(),
+
+                            'autorizacion_pago' => [
+                                'usuario_id' => $pivot->usuario_autorizo_id ?? null,
+                                'usuario_nombre' => $pivot->usuario_autorizo_nombre ?? null,
+                                'monto_autorizado' => isset($pivot->monto_autorizado)
+                                    ? (float) $pivot->monto_autorizado
+                                    : null,
+                                'motivo' => $pivot->motivo_autorizacion ?? null,
+                                'fecha' => optional($pivot->fecha_autorizacion)?->toDateTimeString(),
+                            ],
+                        ];
+                    });
+            }),
         ];
     }
 }

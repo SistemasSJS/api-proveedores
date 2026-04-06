@@ -54,47 +54,47 @@ class ConstruccPagosSPPController extends Controller
      * - usuario_nivel: si es 6 (Residente de Obra), restringe el listado.
      * - usuario_id: id de usuario construcc; con usuario_nivel=6 solo se listan pagos
      *   que aplican a al menos una SPP creada por ese usuario (solicitudes_pago.usuario_id).
-      */
-      public function index(Request $request): JsonResponse
-      {
-          try {
-              $filters = $request->only(PagoSPP::getFilters());
-              $sortBy  = $request->input('sort_by', 'fecha_pago');
-              $order   = $request->input('order', 'desc');
-              $perPage = $request->input('per_page', 10000);
-  
-              $query = PagoSPP::query()
-                  ->with([
-                      'proveedor',
-                      'empresaConstrucc',
-                      // Opcional: si quieres ver las solicitudes relacionadas en el index
-                      'solicitudesPago',
-                  ])
-                  ->withCount('solicitudesPago') // 👈 agrega el conteo
-                  ->filter($filters)
-                  ->orderBy($sortBy, $order);
-  
-              $paginator = $query->paginate($perPage);
-  
-              return $this->paginated(
-                  $paginator->setCollection(
-                      ConstruccPagoIndexResource::collection($paginator)->collection
-                  ),
-                  'Pagos SPP obtenidos exitosamente.'
-              );
-          } catch (\Throwable $e) {
-              Log::error('Error al listar pagos SPP', [
-                  'error' => $e->getMessage(),
-                  'trace' => $e->getTraceAsString(),
-              ]);
-  
-              return $this->error(
-                  'No se pudieron obtener los pagos SPP. Por favor, intente nuevamente.',
-                  null,
-                  500
-              );
-          }
-      }
+     */
+    public function index(Request $request): JsonResponse
+    {
+        try {
+            $filters = $request->only(PagoSPP::getFilters());
+            $sortBy  = $request->input('sort_by', 'fecha_pago');
+            $order   = $request->input('order', 'desc');
+            $perPage = $request->input('per_page', 10000);
+
+            $query = PagoSPP::query()
+                ->with([
+                    'proveedor',
+                    'empresaConstrucc',
+                    // Opcional: si quieres ver las solicitudes relacionadas en el index
+                    'solicitudesPago',
+                ])
+                ->withCount('solicitudesPago') // 👈 agrega el conteo
+                ->filter($filters)
+                ->orderBy($sortBy, $order);
+
+            $paginator = $query->paginate($perPage);
+
+            return $this->paginated(
+                $paginator->setCollection(
+                    ConstruccPagoIndexResource::collection($paginator)->collection
+                ),
+                'Pagos SPP obtenidos exitosamente.'
+            );
+        } catch (\Throwable $e) {
+            Log::error('Error al listar pagos SPP', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return $this->error(
+                'No se pudieron obtener los pagos SPP. Por favor, intente nuevamente.',
+                null,
+                500
+            );
+        }
+    }
 
     /**
      * Mostrar un pago
@@ -673,6 +673,14 @@ class ConstruccPagosSPPController extends Controller
                     'saldo_inicial' => $saldo_inicial_spp,
                     'monto_aplicado' => $solicitudData['monto_pago'],
                     'fecha_aplicacion' => now(),
+
+
+                    // DATOS DE QUIEN AUTOPRIZO EL PAGO (en caso de que el usuario que registra el pago sea diferente al que autorizó la SPP)
+                    'usuario_autorizo_id' => $validated['usuario_autorizo_id'] ?? null,
+                    'usuario_autorizo_nombre' => $validated['usuario_autorizo_nombre'] ?? null,
+                    'monto_autorizado' => $validated['monto_autorizado'] ?? null,
+                    'motivo_autorizacion' => $validated['motivo_autorizacion'] ?? null,
+                    'fecha_autorizacion' => $validated['fecha_autorizacion'] ?? null,
                 ]);
 
                 $spPagoCompleto = $solicitudPago->actualizarSaldos($solicitudData['monto_pago']);
