@@ -346,6 +346,7 @@ class SolicitudPago extends BaseModel
             'solicitud_pago_id',
             'pago_spp_id'
         )
+            ->using(PagoSolicitudPago::class) // 🔥 IMPORTANTE
             ->withPivot([
                 'monto_aplicado',
                 'estado_pago',

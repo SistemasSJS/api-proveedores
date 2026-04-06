@@ -82,29 +82,23 @@ class ConstruccSolicitudPagoController extends Controller
         $order = $request->input('order', 'desc');
         $perPage = $request->input('per_page', 10000);
 
-
         $usuarioNivel = $request->input('usuario_nivel');
         $usuarioIdFiltro = $request->input('usuario_id');
 
+        $query = SolicitudPago::query()
+            ->with(array_merge(
+                SolicitudPago::eagerLodable(),
+                ['pagos']
+            ))
+            ->where('verificada', true)
+            ->whereHas('pagos') // 👈 CLAVE: elimina pagos vacíos
+            ->filter($filters);
+
         if ((int) $usuarioNivel === 6) {
-            $query = SolicitudPago::query()
-                ->with(SolicitudPago::eagerLodable())
-                ->where('verificada', true)
-                ->filter($filters)
-                ->where('usuario_id', (int) $usuarioIdFiltro)
-                ->orderBy($sortBy, $order);
-        } else {
-            $query = SolicitudPago::query()
-                ->with(SolicitudPago::eagerLodable())
-                ->where('verificada', true)
-                ->filter($filters)
-                ->orderBy($sortBy, $order);
+            $query->where('usuario_id', (int) $usuarioIdFiltro);
         }
 
-        // Aquí debería limitar por la empresa del usuario ConstruccApp
-        // if ($request->user()->empresa_construcc_id) {
-        //     $query->where('empresa_construcc_id', $request->user()->empresa_construcc_id);
-        // }
+        $query->orderBy($sortBy, $order);
 
         $paginator = $query->paginate($perPage);
 
@@ -115,6 +109,7 @@ class ConstruccSolicitudPagoController extends Controller
         );
     }
 
+    
     /**
      *  completar el metododo similar al index. Se carga solo dato sespecificos de las SPP y contadores 
      * 
