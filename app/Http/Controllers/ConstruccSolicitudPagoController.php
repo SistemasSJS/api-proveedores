@@ -140,7 +140,8 @@ class ConstruccSolicitudPagoController extends Controller
                 ->whereDoesntHave('pagos'),
 
             'pagadas' => fn($q) =>
-            $q->where('estado_solicitud', EstadoSP::PAGADO->value),
+            $q->where('estado_solicitud', EstadoSP::PAGADO->value)
+                ->where('fecha_rechazo', '>=', now()->subMonth()),
 
             'abonadas' => fn($q) =>
             $q->where('estado_solicitud', EstadoSP::PENDIENTE->value)
