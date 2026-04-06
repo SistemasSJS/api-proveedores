@@ -139,6 +139,9 @@ class ConstruccSolicitudPagoController extends Controller
             $q->where('estado_solicitud', EstadoSP::PENDIENTE->value)
                 ->whereDoesntHave('pagos'),
 
+            'pagadas' => fn($q) =>
+            $q->where('estado_solicitud', EstadoSP::PAGADO->value),
+
             'abonadas' => fn($q) =>
             $q->where('estado_solicitud', EstadoSP::PENDIENTE->value)
                 ->whereHas('pagos', function ($q) {
@@ -166,9 +169,9 @@ class ConstruccSolicitudPagoController extends Controller
             );
         }
 
-        return $this->success([
-            'data' => $data
-        ]);
+        return $this->success(
+            $data
+        );
     }
 
     /**
