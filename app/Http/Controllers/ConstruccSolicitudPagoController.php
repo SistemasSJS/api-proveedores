@@ -112,28 +112,31 @@ class ConstruccSolicitudPagoController extends Controller
 
     /**
      * Listado paginado segmentado por estado de solicitud ( autorizada, pendientes (pendientes sin pagos), rechazadas (del ultimo mes), abonadas (pendiientes con cpagos),todas)
+     * 
+     * parametros: usuario_nivel, usuario_id, empresa_construcc_id
+     * 
+     * si el nivel es RO: 6, solo se listan las SPP del usuario
+     * para las pagadas son las ultimas 20
      */
-    public function indexSegmentos(Request $request): JsonResponse
+    public function pendientes(Request $request): JsonResponse
     {
         $filters = $request->only(SolicitudPago::getFilters());
+
         $usuarioNivel = $request->input('usuario_nivel');
         $usuarioIdFiltro = $request->input('usuario_id');
+        $empresaConstruccId = $request->input('empresa_construcc_id');
 
         // 🔹 Base query única
         $baseQuery = SolicitudPago::query()
             ->with(SolicitudPago::eagerLodable())
             ->where('verificada', true)
             ->filter($filters)
-            ->when(
-                (int)$usuarioNivel === 6,
-                fn($q) =>
-                $q->where('usuario_id', (int)$usuarioIdFiltro)
-            );
+            ->when((int)$usuarioNivel === 6, fn($q) => $q->where('usuario_id', (int)$usuarioIdFiltro))
+            ->when($empresaConstruccId, fn($q) => $q->where('empresa_construcc_id', $empresaConstruccId));
 
         // 🔥 Definición de segmentos
         $segmentDefs = [
-            'autorizadas' => fn($q) =>
-            $q->where('estado_solicitud', EstadoSP::AUTORIZADA->value),
+            'autorizadas' => fn($q) => $q->where('estado_solicitud', EstadoSP::AUTORIZADA->value),
 
             'pendientes' => fn($q) =>
             $q->where('estado_solicitud', EstadoSP::PENDIENTE->value)
@@ -141,7 +144,9 @@ class ConstruccSolicitudPagoController extends Controller
 
             'pagadas' => fn($q) =>
             $q->where('estado_solicitud', EstadoSP::PAGADO->value)
-                ->where('fecha_rechazo', '>=', now()->subMonth()),
+                ->where('fecha_rechazo', '>=', now()->subMonth())
+                ->latest('updated_at')
+                ->limit(20),
 
             'abonadas' => fn($q) =>
             $q->where('estado_solicitud', EstadoSP::PENDIENTE->value)
@@ -152,27 +157,17 @@ class ConstruccSolicitudPagoController extends Controller
                         PagoSolicitudPago::ESTADO_COMPLETADO,
                     ]);
                 }),
-
-            'rechazadas' => fn($q) =>
-            $q->where('estado_solicitud', EstadoSP::RECHAZADA->value)
-                ->where('fecha_rechazo', '>=', now()->subMonth()),
-
-            // 'todas' => fn($q) =>
-            // $q->where('fecha_registro_pendiente', '>=', now()->subMonth(2)),
         ];
 
         // 🔥 Ejecutar segmentos
         $data = [];
-
         foreach ($segmentDefs as $key => $callback) {
             $data[$key] = ConstruccSolicitudPagoResource::collection(
                 $callback(clone $baseQuery)->get()
             );
         }
 
-        return $this->success(
-            $data
-        );
+        return $this->success($data);
     }
 
     /**

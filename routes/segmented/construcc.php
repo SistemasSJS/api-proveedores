@@ -50,7 +50,7 @@ Route::prefix('construcc')
             // Listado y detalle (solo lectura en ConstruccApp)
             Route::get('/', [ConstruccSolicitudPagoController::class, 'index'])->name('index');
 
-            Route::get('index-segmentos', [ConstruccSolicitudPagoController::class, 'indexSegmentos'])->name('index-segmentos');
+            Route::get('pendientes', [ConstruccSolicitudPagoController::class, 'pendientes'])->name('pendientes');
 
             Route::get('index-contadores', [ConstruccSolicitudPagoController::class, 'indexPorEstadoContadores'])->name('index-contadores');
             // Listado de SP no verificadas
