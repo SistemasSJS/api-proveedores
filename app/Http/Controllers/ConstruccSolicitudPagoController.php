@@ -122,21 +122,33 @@ class ConstruccSolicitudPagoController extends Controller
     {
         $filters = $request->only(SolicitudPago::getFilters());
 
-        $usuarioNivel = $request->input('usuario_nivel');
-        $usuarioIdFiltro = $request->input('usuario_id');
+        $usuarioNivel = (int) $request->input('usuario_nivel');
+        $usuarioIdFiltro = (int) $request->input('usuario_id');
         $empresaConstruccId = $request->input('empresa_construcc_id');
+
+        // 🔹 Constantes de nivel (evita números mágicos)
+        $NIVEL_RO = 6;
 
         // 🔹 Base query única
         $baseQuery = SolicitudPago::query()
             ->with(SolicitudPago::eagerLodable())
             ->where('verificada', true)
-            ->filter($filters)
-            ->when((int)$usuarioNivel === 6, fn($q) => $q->where('usuario_id', (int)$usuarioIdFiltro))
-            ->when($empresaConstruccId, fn($q) => $q->where('empresa_construcc_id', $empresaConstruccId));
+            ->filter($filters);
+
+        // 🔥 Filtro por nivel de usuario
+        if ($usuarioNivel === $NIVEL_RO) {
+            $baseQuery->where('usuario_id', $usuarioIdFiltro);
+        }
+
+        // 🔥 Filtro por empresa
+        if (!empty($empresaConstruccId)) {
+            $baseQuery->where('empresa_construcc_id', $empresaConstruccId);
+        }
 
         // 🔥 Definición de segmentos
         $segmentDefs = [
-            'autorizadas' => fn($q) => $q->where('estado_solicitud', EstadoSP::AUTORIZADA->value),
+            'autorizadas' => fn($q) =>
+            $q->where('estado_solicitud', EstadoSP::AUTORIZADA->value),
 
             'pendientes' => fn($q) =>
             $q->where('estado_solicitud', EstadoSP::PENDIENTE->value)
@@ -144,7 +156,7 @@ class ConstruccSolicitudPagoController extends Controller
 
             'pagadas' => fn($q) =>
             $q->where('estado_solicitud', EstadoSP::PAGADO->value)
-                ->where('fecha_rechazo', '>=', now()->subMonth())
+                ->where('updated_at', '>=', now()->subMonth())
                 ->latest('updated_at')
                 ->limit(20),
 
@@ -169,7 +181,6 @@ class ConstruccSolicitudPagoController extends Controller
 
         return $this->success($data);
     }
-
     /**
      *  completar el metododo similar al index. Se carga solo dato sespecificos de las SPP y contadores 
      * 
