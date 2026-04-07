@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Construcc;
 
+use App\Enums\EstadoSP;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -12,6 +13,14 @@ class ConstruccSolicitudPagoResource extends JsonResource
         $saldoPendiente = $this->calcularSaldoRestante();
         $montoAbonado   = $this->calcularMontoAbonado();
 
+        // Última fecha de pago
+        $fechaUltimoPago = null;
+        if ($this->estado_solicitud === EstadoSP::PAGADO->value && $this->relationLoaded('pagos')) {
+            $ultimoPago = $this->pagos
+                ->sortByDesc(fn($pago) => $pago->pivot->fecha_aplicacion)
+                ->first();
+            $fechaUltimoPago = $ultimoPago?->pivot->fecha_aplicacion?->toDateTimeString();
+        }
         return [
             'id' => $this->id,
             'numero_folio_solicitud' => $this->numero_folio_solicitud,
@@ -115,6 +124,9 @@ class ConstruccSolicitudPagoResource extends JsonResource
             // 'notas_abono' => $this->notas_abono,
             // 'porcentaje_pagado' => $this->monto_total > 0 ? round(($this->monto_abonado / $this->monto_total) * 100, 2) : 0,
 
+            // ✅ Solo para pagadas
+            'fecha_pago' => $fechaUltimoPago,
+
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
 
@@ -124,7 +136,7 @@ class ConstruccSolicitudPagoResource extends JsonResource
             'usuario_autorizo_parcial_nombre' => $this->usuario_autorizo_parcial_nombre,
             'motivo_autorizacion_parcial' => $this->motivo_autorizacion_parcial,
             'fecha_autorizacion_parcial' => $this->fecha_autorizacion_parcial,
-            
+
             // ?->format('Y-m-d H:i:s'),
             'validacion_con_monto' => [
                 'monto' => (float) $this->validacion_monto,
