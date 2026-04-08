@@ -181,6 +181,7 @@ class ConstruccSolicitudPagoController extends Controller
 
         return $this->success($data);
     }
+
     /**
      *  completar el metododo similar al index. Se carga solo dato sespecificos de las SPP y contadores 
      * 
@@ -2594,5 +2595,92 @@ class ConstruccSolicitudPagoController extends Controller
             'Factura cargada correctamente.',
             201
         );
+    }
+
+
+
+
+    /**
+     * contadores 
+     */
+    public function spConteos(Request $request): JsonResponse
+    {
+        // 🔄 DB
+        DB::purge('mysql');
+        DB::reconnect('mysql');
+        DB::purge('mysql5');
+        DB::reconnect('mysql5');
+
+        // ✅ Validación
+        $request->validate([
+            'empresa_construcc_id' => ['required', 'integer'],
+            'usuario_id' => ['required', 'integer'],
+            'usuario_rol' => ['required', 'integer'],
+            'tiene_factura' => ['nullable', 'integer'],
+        ]);
+
+        $empresaId = $request->empresa_construcc_id;
+        $usuarioId = $request->usuario_id;
+        $rol = $request->usuario_rol;
+
+        /**
+         * 🔹 BASE QUERY
+         */
+        $baseQuery = SolicitudPago::on('mysql5')
+            ->where('empresa_construcc_id', $empresaId);
+
+        // 🔹 filtro global factura
+        if ($request->has('tiene_factura') && (int)$request->tiene_factura === 0) {
+            $baseQuery->where('tiene_factura', false);
+        }
+
+        // 🔹 control por rol
+        if ($rol == 6) {
+            $baseQuery->where('usuario_id', $usuarioId);
+        }
+
+        /**
+         * 🔥 CONTEOS (ORM)
+         */
+
+        $pendienteAutorizar = (clone $baseQuery)
+            ->where('verificada', true)
+            ->where('estado_solicitud', EstadoSP::PENDIENTE->value)
+            ->count();
+
+        $autorizadas = (clone $baseQuery)
+            ->where('verificada', true)
+            ->where('estado_solicitud', EstadoSP::AUTORIZADA->value)
+            ->count();
+
+        $porValidar = (clone $baseQuery)
+            ->where('verificada', false)
+            ->where('usuario_id', $usuarioId)
+            ->count();
+
+        $porValidarOtros = (clone $baseQuery)
+            ->when($rol != 6, function ($q) use ($usuarioId) {
+                $q->where('usuario_id', '!=', $usuarioId);
+            })
+            ->where('verificada', false)
+            ->where('estado_solicitud', EstadoSP::PENDIENTE->value)
+            ->count();
+
+        $sinFactura = (clone $baseQuery)
+            ->where('verificada', true)
+            ->whereIn('estado_solicitud', [
+                EstadoSP::AUTORIZADA->value,
+                EstadoSP::PAGADO->value
+            ])
+            ->where('tiene_factura', false)
+            ->count();
+
+        return $this->success([
+            'pendiente_autorizar' => $pendienteAutorizar,
+            'autorizadas' => $autorizadas,
+            'por_validar' => $porValidar,
+            'por_validar_otros' => $porValidarOtros,
+            'sin_factura' => $sinFactura,
+        ], 'Conteos obtenidos correctamente');
     }
 }

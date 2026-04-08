@@ -59,12 +59,22 @@ Route::prefix('construcc')
             Route::get('por-rol', [ConstruccSolicitudPagoController::class, 'listarPorRol'])->name('por-rol');
             Route::get('por-estado', [ConstruccSolicitudPagoController::class, 'listarPorEstado'])->name('por-estado');
             Route::get('estadisticas-rol', [ConstruccSolicitudPagoController::class, 'estadisticasPorRol'])->name('estadisticas-rol');
+
+            // metodos que se unificaran en el endpoint por-rol pero se dejan separados para evitar romper funcionalidades existentes en ConstruccApp
+
             // validada - 1  Y recibe cpom parametro: estauts- pendiente|autorizada  
             Route::get('sp-por-autorizar', [ConstruccSolicitudPagoController::class, 'spPendienteAutorizar'])->name('sp-por-autorizar');
             // validada - 0 y recibe parametro  usuario_id: entero no null, empresa_construcc_id: entero no null
             Route::get('sp-por-validar', [ConstruccSolicitudPagoController::class, 'spPorValidar'])->name('sp-por-validar');
             Route::get('sp-por-validar-otros', [ConstruccSolicitudPagoController::class, 'spPorValidarOtros'])->name('sp-por-validar-otros');
             Route::get('sp-sin-factura', [ConstruccSolicitudPagoController::class, 'spSinFactura'])->name('sp-sin-factura');
+
+            // Endpoint para métricas generales del módulo de solicitudes de pago
+            Route::get('metricas', [ConstruccSolicitudPagoController::class, 'metricas'])->name('metricas');
+
+
+
+
 
             // Segmento de dashboard para métricas de SP verificadas / no verificadas
             Route::prefix('dashboard-sp-metricas')->name('dashboard-sp-metricas.')->group(function () {
