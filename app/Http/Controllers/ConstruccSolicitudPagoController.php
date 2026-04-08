@@ -421,10 +421,12 @@ class ConstruccSolicitudPagoController extends Controller
         $segmentDefs = [
 
             'por_validar' => fn($q) =>
-            $q->where('verificada', false),
+            $q->where('verificada', false)
+                ->where('estado_solicitud', EstadoSP::PENDIENTE->value),
 
             'validadas' => fn($q) =>
-            $q->where('verificada', true),
+            $q->where('verificada', true)
+                ->where('estado_solicitud', EstadoSP::PENDIENTE->value),
 
             'rechazadas' => fn($q) =>
             $q->where('estado_solicitud', EstadoSP::RECHAZADA->value)
@@ -469,11 +471,13 @@ class ConstruccSolicitudPagoController extends Controller
             // 🔹 SP del usuario
             'mis_sp' => fn($q) =>
             $q->where('usuario_id', $usuarioId)
-                ->where('verificada', false),
+                ->where('verificada', false)
+                ->where('estado_solicitud', EstadoSP::PENDIENTE->value),
 
             // 🔹 SP de la empresa sin validar
             'por_validar' => fn($q) =>
-            $q->where('verificada', false),
+            $q->where('verificada', false)
+                ->where('estado_solicitud', EstadoSP::PENDIENTE->value),
 
             // 🔹 Rechazadas de la empresa
             'rechazadas' => fn($q) =>
