@@ -2605,18 +2605,11 @@ class ConstruccSolicitudPagoController extends Controller
      */
     public function metricas(Request $request): JsonResponse
     {
-        // 🔄 DB
-        DB::purge('mysql');
-        DB::reconnect('mysql');
-        DB::purge('mysql5');
-        DB::reconnect('mysql5');
-
         // ✅ Validación
         $request->validate([
             'empresa_construcc_id' => ['required', 'integer'],
             'usuario_id' => ['required', 'integer'],
             'usuario_rol' => ['required', 'integer'],
-            'tiene_factura' => ['nullable', 'integer'],
         ]);
 
         $empresaId = $request->empresa_construcc_id;
@@ -2628,11 +2621,6 @@ class ConstruccSolicitudPagoController extends Controller
          */
         $baseQuery = SolicitudPago::on('mysql5')
             ->where('empresa_construcc_id', $empresaId);
-
-        // 🔹 filtro global factura
-        if ($request->has('tiene_factura') && (int)$request->tiene_factura === 0) {
-            $baseQuery->where('tiene_factura', false);
-        }
 
         // 🔹 control por rol
         if ($rol == 6) {
