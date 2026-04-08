@@ -2634,6 +2634,7 @@ class ConstruccSolicitudPagoController extends Controller
         $pendienteAutorizar = (clone $baseQuery)
             ->where('verificada', true)
             ->where('estado_solicitud', EstadoSP::PENDIENTE->value)
+            ->whereDoesntHave('pagos')
             ->count();
 
         $autorizadas = (clone $baseQuery)
