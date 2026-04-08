@@ -244,7 +244,7 @@ class ConstruccSolicitudPagoController extends Controller
             : EstadoSP::PENDIENTE->value;
 
         $conteo = [
-            'por_validar' => (clone $baseConteo)->where('verificada', false)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->count(),
+            'por_validar' => (clone $baseConteo)->where('verificada', false)->count(),
             'pendiente' => (int) ($segmentCounts[$pendienteEstado] ?? 0),
             'autorizadas' => (int) ($segmentCounts[EstadoSP::AUTORIZADA->value] ?? 0),
             'rechazadas' => (int) ($segmentCounts[EstadoSP::RECHAZADA->value] ?? 0),
@@ -422,11 +422,13 @@ class ConstruccSolicitudPagoController extends Controller
 
             'por_validar' => fn($q) =>
             $q->where('verificada', false)
-                ->where('estado_solicitud', EstadoSP::PENDIENTE->value),
+                ->where('estado_solicitud', EstadoSP::PENDIENTE->value)
+                ->whereDoesntHave('pagos'),
 
             'validadas' => fn($q) =>
             $q->where('verificada', true)
-                ->where('estado_solicitud', EstadoSP::PENDIENTE->value),
+                ->where('estado_solicitud', EstadoSP::PENDIENTE->value)
+                ->whereDoesntHave('pagos'),
 
             'rechazadas' => fn($q) =>
             $q->where('estado_solicitud', EstadoSP::RECHAZADA->value)
@@ -472,12 +474,14 @@ class ConstruccSolicitudPagoController extends Controller
             'mis_sp' => fn($q) =>
             $q->where('usuario_id', $usuarioId)
                 ->where('verificada', false)
-                ->where('estado_solicitud', EstadoSP::PENDIENTE->value),
+                ->where('estado_solicitud', EstadoSP::PENDIENTE->value)
+                ->whereDoesntHave('pagos'),
 
             // 🔹 SP de la empresa sin validar
             'por_validar' => fn($q) =>
             $q->where('verificada', false)
-                ->where('estado_solicitud', EstadoSP::PENDIENTE->value),
+                ->where('estado_solicitud', EstadoSP::PENDIENTE->value)
+                ->whereDoesntHave('pagos'),
 
             // 🔹 Rechazadas de la empresa
             'rechazadas' => fn($q) =>
