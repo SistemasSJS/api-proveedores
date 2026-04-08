@@ -244,7 +244,7 @@ class ConstruccSolicitudPagoController extends Controller
             : EstadoSP::PENDIENTE->value;
 
         $conteo = [
-            'por_validar' => (clone $baseConteo)->where('verificada', false)->count(),
+            'por_validar' => (clone $baseConteo)->where('verificada', false)->where('estado_solicitud', EstadoSP::PENDIENTE->value)->count(),
             'pendiente' => (int) ($segmentCounts[$pendienteEstado] ?? 0),
             'autorizadas' => (int) ($segmentCounts[EstadoSP::AUTORIZADA->value] ?? 0),
             'rechazadas' => (int) ($segmentCounts[EstadoSP::RECHAZADA->value] ?? 0),
