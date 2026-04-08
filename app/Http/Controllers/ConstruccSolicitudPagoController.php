@@ -2603,7 +2603,7 @@ class ConstruccSolicitudPagoController extends Controller
     /**
      * contadores 
      */
-    public function spConteos(Request $request): JsonResponse
+    public function metricas(Request $request): JsonResponse
     {
         // 🔄 DB
         DB::purge('mysql');
