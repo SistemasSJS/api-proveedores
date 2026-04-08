@@ -120,7 +120,7 @@ class ConstruccSolicitudPagoController extends Controller
      */
     public function pendientes(Request $request): JsonResponse
     {
-        $filters = $request->only(SolicitudPago::getFilters());
+        // $filters = $request->only(SolicitudPago::getFilters());
 
         $usuarioNivel = (int) $request->input('usuario_nivel');
         $usuarioIdFiltro = (int) $request->input('usuario_id');
@@ -132,8 +132,8 @@ class ConstruccSolicitudPagoController extends Controller
         // 🔹 Base query única
         $baseQuery = SolicitudPago::query()
             ->with(SolicitudPago::eagerLodable())
-            ->where('verificada', true)
-            ->filter($filters);
+            ->where('verificada', true);
+        // ->filter($filters);
 
         // 🔥 Filtro por nivel de usuario
         if ($usuarioNivel === $NIVEL_RO) {
