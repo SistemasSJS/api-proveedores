@@ -55,6 +55,10 @@ Route::prefix('construcc')
             Route::get('index-contadores', [ConstruccSolicitudPagoController::class, 'indexPorEstadoContadores'])->name('index-contadores');
             // Listado de SP no verificadas
             Route::get('no-verificadas', [ConstruccSolicitudPagoController::class, 'indexNoVerificadas'])->name('no-verificadas');
+
+            Route::get('no-verificadas-para-ro', [ConstruccSolicitudPagoController::class, 'indexNoVerificadasParaRO'])->name('no-verificadas-para-ro');
+            Route::get('no-verificadas-para-directores', [ConstruccSolicitudPagoController::class, 'indexNoVerificadasParaDirectores'])->name('no-verificadas-para-directores');
+
             // Listados especializados por rol y estado
             Route::get('por-rol', [ConstruccSolicitudPagoController::class, 'listarPorRol'])->name('por-rol');
             Route::get('por-estado', [ConstruccSolicitudPagoController::class, 'listarPorEstado'])->name('por-estado');

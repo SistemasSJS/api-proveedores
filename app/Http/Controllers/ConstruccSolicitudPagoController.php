@@ -339,32 +339,164 @@ class ConstruccSolicitudPagoController extends Controller
         );
     }
 
-
     /**
-     * Listado de solicitudes de pago no verificadas
-     * Solo muestra las SP que aún no han sido verificadas por el usuario construcción
+     * Listado segmentado de solicitudes NO verificadas
      */
     public function indexNoVerificadas(Request $request): JsonResponse
     {
-        $filters = $request->only(SolicitudPago::getFilters());
-        $sortBy = $request->input('sort_by', 'created_at');
-        $order = $request->input('order', 'desc');
-        $perPage = $request->input('per_page', 10000);
+        $usuarioId = (int) $request->input('usuario_id');
+        $usuarioNivel = (int) $request->input('usuario_nivel');
+        $empresaId = $request->input('empresa_construcc_id');
 
-        $query = SolicitudPago::query()
+        $NIVEL_RO = 6;
+
+        /**
+         * 🔹 BASE QUERY
+         */
+        $baseQuery = SolicitudPago::query()
             ->with(SolicitudPago::eagerLodable())
-            ->where('verificada', false)
-            ->filter($filters)
-            ->orderBy($sortBy, $order);
+            ->where('verificada', false);
 
-        $paginator = $query->paginate($perPage);
+        // 🔥 Filtro por empresa
+        if (!empty($empresaId)) {
+            $baseQuery->where('empresa_construcc_id', $empresaId);
+        }
 
-        return $this->paginated(
-            $paginator->setCollection(
-                ConstruccSolicitudPagoResource::collection($paginator)->collection
-            )
-        );
+        /**
+         * 🔥 SEGMENTOS
+         */
+        $segmentDefs = [
+
+            // 🔹 Mis SP (solo del usuario)
+            'mis_sp' => fn($q) =>
+            $q->where('usuario_id', $usuarioId),
+
+            // 🔹 SP por validar (de otros usuarios)
+            'por_validar' => fn($q) =>
+            $q->when($usuarioNivel !== $NIVEL_RO, function ($q) use ($usuarioId) {
+                $q->where('usuario_id', '!=', $usuarioId);
+            }),
+
+            // 🔹 Rechazadas (últimas 10)
+            'rechazadas' => fn($q) =>
+            $q->where('estado_solicitud', EstadoSP::RECHAZADA->value)
+                ->latest('fecha_rechazo')
+                ->limit(10),
+        ];
+
+        /**
+         * 🔥 EJECUCIÓN
+         */
+        $data = [];
+
+        foreach ($segmentDefs as $key => $callback) {
+            $data[$key] = ConstruccSolicitudPagoResource::collection(
+                $callback(clone $baseQuery)->get()
+            );
+        }
+
+        return $this->success($data);
     }
+
+
+    /**
+     * Listado segmentado de solicitudes NO verificadas
+     */
+    public function indexNoVerificadasParaRO(Request $request): JsonResponse
+    {
+        $usuarioId = (int) $request->input('usuario_id');
+        $empresaId = $request->input('empresa_construcc_id');
+
+        /**
+         * 🔹 BASE QUERY
+         */
+        $baseQuery = SolicitudPago::query()
+            ->with(SolicitudPago::eagerLodable())
+            ->where('empresa_construcc_id', $empresaId)
+            ->where('usuario_id', $usuarioId);
+
+        /**
+         * 🔥 SEGMENTOS
+         */
+        $segmentDefs = [
+
+            'por_validar' => fn($q) =>
+            $q->where('verificada', false),
+
+            'validadas' => fn($q) =>
+            $q->where('verificada', true),
+
+            'rechazadas' => fn($q) =>
+            $q->where('estado_solicitud', EstadoSP::RECHAZADA->value)
+                ->latest('fecha_rechazo')
+                ->limit(10),
+        ];
+
+        /**
+         * 🔥 EJECUCIÓN
+         */
+        $data = [];
+
+        foreach ($segmentDefs as $key => $callback) {
+            $data[$key] = ConstruccSolicitudPagoResource::collection(
+                $callback(clone $baseQuery)->get()
+            );
+        }
+
+        return $this->success($data);
+    }
+
+    /**
+     * Listado segmentado de solicitudes NO verificadas
+     */
+    public function indexNoVerificadasParaDirectores(Request $request): JsonResponse
+    {
+        $usuarioId = (int) $request->input('usuario_id');
+        $empresaId = $request->input('empresa_construcc_id');
+
+        /**
+         * 🔹 BASE QUERY
+         */
+        $baseQuery = SolicitudPago::query()
+            ->with(SolicitudPago::eagerLodable())
+            ->where('empresa_construcc_id', $empresaId);
+
+        /**
+         * 🔥 SEGMENTOS
+         */
+        $segmentDefs = [
+
+            // 🔹 SP del usuario
+            'mis_sp' => fn($q) =>
+            $q->where('usuario_id', $usuarioId)
+                ->where('verificada', false),
+
+            // 🔹 SP de la empresa sin validar
+            'por_validar' => fn($q) =>
+            $q->where('verificada', false),
+
+            // 🔹 Rechazadas de la empresa
+            'rechazadas' => fn($q) =>
+            $q->where('estado_solicitud', EstadoSP::RECHAZADA->value)
+                ->latest('fecha_rechazo')
+                ->limit(10),
+        ];
+
+        /**
+         * 🔥 EJECUCIÓN
+         */
+        $data = [];
+
+        foreach ($segmentDefs as $key => $callback) {
+            $data[$key] = ConstruccSolicitudPagoResource::collection(
+                $callback(clone $baseQuery)->get()
+            );
+        }
+
+        return $this->success($data);
+    }
+
+
 
     /**
      * Marcar una solicitud de pago como verificada
