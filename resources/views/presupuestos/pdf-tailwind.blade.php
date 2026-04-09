@@ -101,17 +101,17 @@
         .tw-logo-cell {
             width: 22%;
             vertical-align: top;
-            /* 🔥 arriba */
             text-align: left;
-            /* 🔥 izquierda */
+            padding-right: 0.7mm; /* 👈 aquí está la magia */
         }
 
         .tw-logo-img {
-            max-width: 90%;
-            max-height: 18mm;
+            max-width: 40mm;   /* 4 cm */
+            max-height: 30mm;  /* 3 cm */
+            width: auto;
+            height: auto;
             object-fit: contain;
             display: block;
-            /* 🔥 evita centrados raros */
         }
 
         .tw-logo-fallback {
