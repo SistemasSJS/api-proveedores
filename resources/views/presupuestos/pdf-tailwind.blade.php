@@ -236,19 +236,20 @@
         }
 
         .tw-desc-title {
-            font-size: 6.5pt;
+            font-size: 9pt;       /* antes 6.5pt */
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--accent);
-            margin: 0 0 1mm 0;
+            margin: 0 0 1.5mm 0;  /* un poco más de espacio */
         }
 
         .tw-desc-text {
-            font-size: 7pt;
+            font-size: 9pt;       /* antes 7pt */
+            font-weight: 600;     /* 🔥 esto es clave */
             color: var(--tw-slate-900);
             text-align: justify;
-            line-height: var(--section-line-height);
+            line-height: 1.3;     /* más aire */
         }
 
         /* Título bloque tabla (referencia: centrado, negro, sin subrayado azul) */
