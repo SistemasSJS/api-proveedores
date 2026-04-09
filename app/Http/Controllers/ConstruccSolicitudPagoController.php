@@ -470,18 +470,22 @@ class ConstruccSolicitudPagoController extends Controller
 
             // 🔹 SP del usuario
             'mis_sp' => fn($q) =>
-            $q->where('usuario_id', $usuarioId)
+            $q
+                ->where('usuario_id', $usuarioId)
                 ->where('verificada', false)
                 ->where('estado_solicitud', EstadoSP::PENDIENTE->value),
 
             // 🔹 SP de la empresa sin validar
             'por_validar' => fn($q) =>
-            $q->where('verificada', false)
+            $q
+                ->where('usuario_id', '!=', $usuarioId)
+                ->where('verificada', false)
                 ->where('estado_solicitud', EstadoSP::PENDIENTE->value),
 
             // 🔹 Rechazadas de la empresa
             'rechazadas' => fn($q) =>
-            $q->where('estado_solicitud', EstadoSP::RECHAZADA->value)
+            $q
+                ->where('estado_solicitud', EstadoSP::RECHAZADA->value)
                 ->latest('fecha_rechazo')
                 ->limit(10),
         ];
