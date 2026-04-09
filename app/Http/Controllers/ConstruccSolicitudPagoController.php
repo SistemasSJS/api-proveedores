@@ -2780,6 +2780,8 @@ class ConstruccSolicitudPagoController extends Controller
 
         $porValidar = (clone $baseQuery)
             ->where('verificada', false)
+            ->where('usuario_id', $usuarioId)
+            ->where('estado_solicitud', EstadoSP::PENDIENTE->value)
             ->count();
 
         $porValidarOtros = (clone $baseQuery)
