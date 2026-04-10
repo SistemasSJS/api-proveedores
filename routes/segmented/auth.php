@@ -12,11 +12,11 @@ use App\Http\Controllers\AuthController;
 
 Route::prefix('auth')->group(function () {
 
-
     /**
      * AUTENTICACION Y REGISTROG
      */
     Route::post('login', [AuthController::class, 'login']);
+    Route::post('social-login', [AuthController::class, 'socialLogin']);
     Route::post('register', [AuthController::class, 'register']);
     Route::post('completar-registro', [AuthController::class, 'register_completar']);
     Route::post('register_proveedor', [AuthController::class, 'register_proveedor']);

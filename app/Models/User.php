@@ -18,7 +18,17 @@ class User extends Authenticatable
     use AutoSwaggerSchema, Filterable;
     use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
-    protected $fillable = ['name', 'email', 'telefono', 'foto_perfil_url', 'password', 'role_id', 'status'];
+    protected $fillable = [
+        'name',
+        'email',
+        'telefono',
+        'foto_perfil_url',
+        'password',
+        'role_id',
+        'status',
+        'is_social_user',
+        'social_provider',
+    ];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -35,6 +45,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'status' => 'boolean',
+            'is_social_user' => 'boolean',
         ];
     }
 
@@ -216,11 +227,6 @@ class User extends Authenticatable
         return $this->hasMany(UserDeviceToken::class);
     }
 
-    /**
-     * Obtiene tokens de dispositivos activos
-     *
-     * @return HasMany<UserDeviceToken> Tokens activos del usuario
-     */
     public function activeDeviceTokens(): HasMany
     {
         return $this->deviceTokens()->active();
@@ -250,7 +256,14 @@ class User extends Authenticatable
             ->toArray();
     }
 
-
+    /**
+     *  SOCIAL LOGIN
+     */
+    public function socialAccounts(): HasMany
+    {
+        return $this->hasMany(SocialAccount::class);
+    }
+    
     /**
      * HELPERS
      */

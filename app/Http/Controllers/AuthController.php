@@ -40,6 +40,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
+use App\Models\SocialAccount;
 
 
 
@@ -1216,5 +1217,97 @@ class AuthController extends Controller
         $frontendHomeUrl = rtrim((string) config('services.frontend.url', 'http://localhost:8100'), '/') . '/';
 
         return redirect()->away($frontendHomeUrl);
+    }
+
+    public function socialLogin(Request $request)
+    {
+        try {
+            $request->validate([
+                'provider' => ['required', 'in:google,apple'],
+                'provider_id' => ['required', 'string'],
+                'email' => ['required', 'email'],
+                'name' => ['required', 'string', 'max:255'],
+                'avatar' => ['nullable', 'string'],
+            ]);
+
+            $socialAccount = SocialAccount::where('provider', $request->provider)
+                ->where('provider_id', $request->provider_id)
+                ->first();
+
+            if ($socialAccount) {
+                $user = $socialAccount->user;
+            } else {
+                $user = User::where('email', $request->email)->first();
+
+                if ($user) {
+                    $alreadyLinked = $user->socialAccounts()
+                        ->where('provider', $request->provider)
+                        ->exists();
+
+                    if (! $alreadyLinked) {
+                        $user->socialAccounts()->create([
+                            'provider' => $request->provider,
+                            'provider_id' => $request->provider_id,
+                            'avatar' => $request->avatar,
+                        ]);
+                    }
+                } else {
+                    $defaultRole = Role::where('nombre', UserRoleEnumerate::CLIENTE->value)->first();
+
+                    if (! $defaultRole) {
+                        return $this->error(
+                            'No se encontró el rol por defecto para usuarios sociales.',
+                            [],
+                            500
+                        );
+                    }
+
+                    $user = User::create([
+                        'name' => $request->name,
+                        'email' => $request->email,
+                        'password' => null,
+                        'status' => 1,
+                        'role_id' => $defaultRole->id,
+                        'is_social_user' => true,
+                        'social_provider' => $request->provider,
+                    ]);
+
+                    $user->socialAccounts()->create([
+                        'provider' => $request->provider,
+                        'provider_id' => $request->provider_id,
+                        'avatar' => $request->avatar,
+                    ]);
+                }
+            }
+
+            if (
+                (int) $user->status === EstadoUsuario::BLOQUEADO->value ||
+                (int) $user->status === EstadoUsuario::SUSPENDIDO->value
+            ) {
+                return $this->error('Tu cuenta no tiene acceso para iniciar sesión.', [], 403);
+            }
+
+            $user->tokens()->delete();
+            $token = $user->createToken('API Token')->plainTextToken;
+
+            $user->load(User::eagerLodable());
+            $proveedor = $user->proveedorPrincipal();
+
+            return $this->success([
+                'user' => new UserAuthenticateResource($user),
+                'token' => $token,
+                'proveedor' => $proveedor ? new ProveedorResource($proveedor) : null,
+            ], 'Login social exitoso.', 200);
+        } catch (ValidationException $e) {
+            return $this->error('Los datos proporcionados no son válidos.', $e->errors(), 422);
+        } catch (\Exception $e) {
+            Log::error('Error en social login: ' . $e->getMessage());
+
+            return $this->error(
+                'Ocurrió un error al intentar iniciar sesión con proveedor social.',
+                [],
+                500
+            );
+        }
     }
 }
