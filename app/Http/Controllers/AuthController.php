@@ -92,8 +92,16 @@ class AuthController extends Controller
     {
         $proveedor = Proveedor::create($request->validated());
         $token = Str::random(60);
-
-        Cache::put("registro_proveedor_{$token}", $proveedor->id, 60 * 60 * 24 * 7 * 360); // 1 año
+        $cacheKey = "registro_proveedor_{$token}";
+        Cache::store('file')->put($cacheKey, $proveedor->id, now()->addHours(2));
+        Cache::put($cacheKey, $proveedor->id, now()->addHours(2));
+        Log::info('register_proveedor token cache write', [
+            'cache_key' => $cacheKey,
+            'proveedor_id' => $proveedor->id,
+            'cache_default' => config('cache.default'),
+            'file_store_value' => Cache::store('file')->get($cacheKey),
+            'default_store_value' => Cache::get($cacheKey),
+        ]);
 
         $url = config('services.frontend.url') . "/gen-pass?token={$token}";
         Mail::to($proveedor->email)->send(new CompletaRegistroProveedorMail($url));
@@ -106,7 +114,19 @@ class AuthController extends Controller
 
     public function register_proveedor_completar(ProveedorRegisterCompleteRequest $request)
     {
-        $proveedorId = Cache::get("registro_proveedor_{$request->token}");
+        $normalizedToken = preg_replace('/\s+/', '', urldecode(trim((string) $request->input('token'))));
+        $cacheKey = "registro_proveedor_{$normalizedToken}";
+        $fileStoreValue = Cache::store('file')->get($cacheKey);
+        $defaultStoreValue = Cache::get($cacheKey);
+        Log::info('register_proveedor_completar token cache read', [
+            'raw_token' => (string) $request->input('token'),
+            'normalized_token' => $normalizedToken,
+            'cache_key' => $cacheKey,
+            'cache_default' => config('cache.default'),
+            'file_store_value' => $fileStoreValue,
+            'default_store_value' => $defaultStoreValue,
+        ]);
+        $proveedorId = $fileStoreValue ?? $defaultStoreValue;
         if (! $proveedorId) {
             return $this->error('Token inválido o expirado', [], 498);
         }
@@ -151,7 +171,8 @@ class AuthController extends Controller
             ]);
         }
 
-        Cache::forget("registro_proveedor_{$request->token}");
+        Cache::store('file')->forget($cacheKey);
+        Cache::forget($cacheKey);
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return $this->success([
