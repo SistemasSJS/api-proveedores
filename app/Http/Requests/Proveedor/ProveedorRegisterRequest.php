@@ -45,18 +45,19 @@ class ProveedorRegisterRequest extends FormRequest
         return [
             'nombre_comercial' => ['required', 'string', 'max:255'],
             'razon_social' => ['required', 'string', 'max:255'],
-            'tipos_empresa_id' => ['required', 'integer', 'exists:tipos_empresa,id,estatus,activo'],
-            'tipos_empresa_otro' => ['max:60'],
+            // 'tipos_empresa_id' => ['nullable', 'integer', 'exists:tipos_empresa,id,estatus,activo'],
+            'tipos_empresa_id' => ['nullable', 'integer'],
+            'tipos_empresa_otro' => ['nullable', 'max:60'],
             'email' => [
                 'required',
                 'email',
                 Rule::unique('users', 'email'),
                 Rule::unique('proveedores', 'email'),
             ],
-            'telefono' => ['required', 'string', 'max:15'],
-            'contacto_nombre' => ['required', 'string', 'max:150'],
-            'contacto_telefono' => ['required', 'string', 'max:15'],
-            'contacto_correo' => ['required', 'email', 'max:60'],
+            'telefono' => ['nullable', 'string', 'max:15'],
+            'contacto_nombre' => ['nullable', 'string', 'max:150'],
+            'contacto_telefono' => ['nullable', 'string', 'max:15'],
+            'contacto_correo' => ['nullable', 'email', 'max:60'],
             'recaptcha_token' => ['required', new ReCaptcha],
 
         ];
