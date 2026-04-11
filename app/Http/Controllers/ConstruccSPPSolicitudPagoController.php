@@ -432,7 +432,7 @@ class ConstruccSPPSolicitudPagoController extends Controller
                 // Datos del pago
                 'comprobante_pago' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
                 'fecha_pago' => 'required|date',
-                'referencia_pago' => 'required|string|max:100',
+                'referencia_pago' => 'nullable|string|max:100',
                 
                 // Datos bancarios del pago (origen)
                 'banco_pago' => 'nullable|string|max:100',
