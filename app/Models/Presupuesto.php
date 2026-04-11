@@ -142,7 +142,9 @@ class Presupuesto extends BaseModel
     /**
      * Constantes para enunciados de observaciones.
      */
-    public const ENUNCIADO_GARANTIA = 'Garantía de %d días a partir de la finalización o entrega.';
+    // public const ENUNCIADO_GARANTIA = 'Garantía de %d días a partir de la finalización o entrega.';
+    public const ENUNCIADO_GARANTIA = 'Garantía de %s a partir de la finalización o entrega.';
+
     public const ENUNCIADO_TRASLADOS_INCLUIDOS = 'El presupuesto incluye gastos de traslado al sitio de trabajo.';
     // public const ENUNCIADO_TRASLADOS_NO_INCLUIDOS = 'El presupuesto no incluye gastos de traslado.';
     public const ENUNCIADO_VIATICOS_INCLUIDOS = 'Viáticos incluidos según la ubicación y necesidades del servicio.';
@@ -234,60 +236,6 @@ class Presupuesto extends BaseModel
         }
 
         return $lista;
-
-        if (self::terminoActivoPersistido($config, 'vigencia_activo', $this->term_cond_dias_vigencia > 0) && $this->term_cond_dias_vigencia > 0) {
-            $lista[] = sprintf(self::ENUNCIADO_VIGENCIA, (int) $this->term_cond_dias_vigencia);
-        }
-
-        // moneda puede ser MXN USD EUR
-        // enerar mmensaje para cada una 
-        //  public const ENUNCIADO_MONEDA = 'Los precios están expresados en moneda nacional (%s).';
-        $moneda = $this->term_cond_moneda ?: 'MXN';
-
-        $lista[] = self::ENUNCIADOS_MONEDA[$moneda]
-            ?? sprintf('Los precios están expresados en la moneda %s.', $moneda);
-
-        if ($this->term_cond_impuestos_en_pdf !== false) {
-            $ivaPct = (float) ($this->term_cond_iva ?? 16);
-            $lista[] = $this->con_iva
-                ? sprintf(self::ENUNCIADO_IVA_INCLUIDO, (int) $ivaPct)
-                : self::ENUNCIADO_IVA_NO_INCLUIDO;
-        }
-
-        if ($this->term_cond_anticipo_porcentaje !== null && $this->term_cond_anticipo_porcentaje > 0) {
-            $lista[] = sprintf(self::ENUNCIADO_ANTICIPO, (int) $this->term_cond_anticipo_porcentaje);
-        }
-
-        if ($this->term_cond_tiempo_entrega_dias !== null && $this->term_cond_tiempo_entrega_dias > 0) {
-            $lista[] = sprintf(self::ENUNCIADO_TIEMPO_ENTREGA, (int) $this->term_cond_tiempo_entrega_dias);
-        }
-
-        if ($this->term_cond_inicio_trabajo !== null) {
-
-            if ($this->term_cond_inicio_trabajo == 1) {
-                $lista[] = sprintf(self::ENUNCIADO_INICIO_TRABAJOS_AUTORIZACION, (int) $this->term_cond_tiempo_entrega_dias);
-            } else {
-                $lista[] = sprintf(self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO, (int) $this->term_cond_inicio_trabajo_porcentaje);
-            }
-        }
-
-        self::appendInicioTrabajosEnunciados($lista, $config);
-
-        foreach (
-            [
-                'condicionantes_adicionales_1',
-                'condicionantes_adicionales_2',
-                'condicionantes_adicionales_3',
-                'condicionantes_adicionales_4',
-            ] as $key
-        ) {
-            $txt = trim((string) ($config[$key] ?? ''));
-            if ($txt !== '') {
-                $lista[] = $txt;
-            }
-        }
-
-        return $lista;
     }
 
     /**
@@ -299,9 +247,10 @@ class Presupuesto extends BaseModel
     {
         $lista = [];
         $config = is_array($this->configuracion_condiciones) ? $this->configuracion_condiciones : [];
-
+        
         if ($this->obs_garantia_dias > 0) {
-            $lista[] = sprintf(self::ENUNCIADO_GARANTIA, (int) $this->obs_garantia_dias);
+            $duracion = self::formatearDuracion((int) $this->obs_garantia_dias);
+            $lista[] = sprintf(self::ENUNCIADO_GARANTIA, $duracion);
         }
 
         if ($this->obs_traslados !== null && $this->obs_traslados) {
@@ -400,50 +349,6 @@ class Presupuesto extends BaseModel
                 $lista[] = self::ENUNCIADO_INICIO_TRABAJOS_AUTORIZACION;
             }
         }
-
-        foreach (
-            [
-                'condicionantes_adicionales_1',
-                'condicionantes_adicionales_2',
-                'condicionantes_adicionales_3',
-                'condicionantes_adicionales_4',
-            ] as $key
-        ) {
-            $txt = trim((string) ($config[$key] ?? ''));
-            if ($txt !== '') {
-                $lista[] = $txt;
-            }
-        }
-
-        return $lista;
-
-        if (! empty($data['term_cond_dias_vigencia']) && (int) $data['term_cond_dias_vigencia'] > 0) {
-            $lista[] = sprintf(self::ENUNCIADO_VIGENCIA, (int) $data['term_cond_dias_vigencia']);
-        }
-
-        $moneda = $data['term_cond_moneda'] ?? 'MXN';
-        $lista[] = self::ENUNCIADOS_MONEDA[$moneda]
-            ?? sprintf('Los precios están expresados en la moneda %s.', $moneda);
-
-
-        $mostrarImpuestos = $data['term_cond_impuestos_en_pdf'] ?? true;
-        if ($mostrarImpuestos !== false) {
-            $lista[] = $conIva
-                ? sprintf(self::ENUNCIADO_IVA_INCLUIDO, (int) $ivaPct)
-                : self::ENUNCIADO_IVA_NO_INCLUIDO;
-        }
-
-        $anticipo = $data['term_cond_anticipo_porcentaje'] ?? null;
-        if ($anticipo !== null && (float) $anticipo > 0) {
-            $lista[] = sprintf(self::ENUNCIADO_ANTICIPO, (int) $anticipo);
-        }
-
-        $tiempoEntrega = $data['term_cond_tiempo_entrega_dias'] ?? null;
-        if ($tiempoEntrega !== null && (int) $tiempoEntrega > 0) {
-            $lista[] = sprintf(self::ENUNCIADO_TIEMPO_ENTREGA, (int) $tiempoEntrega);
-        }
-
-        self::appendInicioTrabajosEnunciados($lista, $config);
 
         foreach (
             [
@@ -1142,5 +1047,43 @@ class Presupuesto extends BaseModel
     public function filterByUltimasPresupuestos($query, $value)
     {
         return $query->ultimasPresupuestos((int) $value);
+    }
+
+
+    /**
+     * HELPERS DE FORMATEO
+     */
+    private static function formatearDuracion(int $dias): string
+    {
+        $anios = intdiv($dias, 365);
+        $resto = $dias % 365;
+
+        $meses = intdiv($resto, 30);
+        $diasRestantes = $resto % 30;
+
+        $partes = [];
+
+        if ($anios > 0) {
+            $partes[] = $anios === 1 ? '1 año' : "{$anios} años";
+        }
+
+        if ($meses > 0) {
+            $partes[] = $meses === 1 ? '1 mes' : "{$meses} meses";
+        }
+
+        if ($diasRestantes > 0) {
+            $partes[] = $diasRestantes === 1 ? '1 día' : "{$diasRestantes} días";
+        }
+
+        if (empty($partes)) {
+            return '0 días';
+        }
+
+        if (count($partes) === 1) {
+            return $partes[0];
+        }
+
+        $ultimo = array_pop($partes);
+        return implode(', ', $partes) . ' y ' . $ultimo;
     }
 }
