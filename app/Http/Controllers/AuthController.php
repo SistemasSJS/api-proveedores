@@ -103,7 +103,7 @@ class AuthController extends Controller
             'default_store_value' => Cache::get($cacheKey),
         ]);
 
-        $url = config('services.frontend.url') . "/gen-pass?token={$token}";
+        $url = config('services.frontend.url') . "gen-pass?token={$token}";
         Mail::to($proveedor->email)->send(new CompletaRegistroProveedorMail($url));
 
         return $this->success([
@@ -358,6 +358,11 @@ class AuthController extends Controller
                 // Si se proporcionó RFC en el request (aunque no está en el FormRequest actual, podría agregarse)
                 if (isset($validatedData['rfc'])) {
                     $query->orWhere('rfc', strtoupper($validatedData['rfc']));
+                }
+
+                // razon_social
+                if (isset($validatedData['razon_social'])) {
+                    $query->orWhere('razon_social', strtoupper($validatedData['razon_social']));
                 }
 
                 // Si se proporcionó email diferente al teléfono
@@ -1066,11 +1071,13 @@ class AuthController extends Controller
 
         // Verificar si el correo existe en la tabla users
         $existe = User::where('email', $request->email)->exists();
+        // También verificar en proveedores.email para evitar conflictos aunque el email no se use como username
+        $existeEnProveedores = Proveedor::where('email', $request->email)->exists();
 
         return $this->success([
-            'existe' => $existe,
+            'existe' => $existe || $existeEnProveedores,
             'email' => $request->email,
-        ], $existe ? 'El correo ya está registrado.' : 'El correo está disponible.', 200);
+        ], ($existe || $existeEnProveedores) ? 'El correo ya está registrado.' : 'El correo está disponible.', 200);
     }
 
     /**
@@ -1086,8 +1093,12 @@ class AuthController extends Controller
         ]);
 
         // Verificar si la razón social existe en la tabla proveedores
-        $existe = Proveedor::where('razon_social', $request->razon_social)
-            ->where('tipo_alta', '!=', 2)
+        // normalizar para mismo formato de comparación (trim y mayúsculas)\
+        $existe = Proveedor::whereRaw('UPPER(TRIM(razon_social)) = ?', [trim(strtoupper($request->razon_social))])
+            ->where(function ($q) {
+                $q->where('tipo_alta', 1)
+                    ->orWhereNull('tipo_alta');
+            })
             ->exists();
 
         return $this->success([

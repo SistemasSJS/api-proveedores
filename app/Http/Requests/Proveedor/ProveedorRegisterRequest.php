@@ -58,7 +58,7 @@ class ProveedorRegisterRequest extends FormRequest
             'contacto_nombre' => ['nullable', 'string', 'max:150'],
             'contacto_telefono' => ['nullable', 'string', 'max:15'],
             'contacto_correo' => ['nullable', 'email', 'max:60'],
-            'recaptcha_token' => ['required', new ReCaptcha],
+            // 'recaptcha_token' => ['required', new ReCaptcha],
 
         ];
     }
