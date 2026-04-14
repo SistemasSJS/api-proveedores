@@ -49,6 +49,7 @@ class Proveedor extends BaseModel
         'principal',
         'calificacion',
         'categoria',
+        // default values
         'is_proveedor_sp',
         'is_proveedor_catalogo',
         'cambiar_pass_default',
@@ -75,6 +76,16 @@ class Proveedor extends BaseModel
         'user_construcc_alta',
         'empresa_construcc_alta',
         'consecutivo_presupuesto_siguiente',
+    ];
+
+    protected $attributes = [
+        'is_proveedor_sp' => true,
+        'is_proveedor_catalogo' => false,
+        'cambiar_pass_default' => true,
+        'perfil_empresa_completo' => false,
+        'tipo_alta' => 1, // Por defecto se asume que el alta es por Proveedor, no por UserConstrucc
+        'consecutivo_presupuesto_siguiente' => 1, // Iniciar el consecutivo de presupuestos en 1
+        'calificacion' => 0, // Calificación inicial en 0
     ];
 
     protected $casts = [
@@ -106,6 +117,7 @@ class Proveedor extends BaseModel
         'empresas_construcc' => 'EmpresasConstrucc',
         'search' => 'Search',
     ];
+
 
     public static function eagerLodable(): array
     {
