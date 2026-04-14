@@ -39,10 +39,10 @@ class ContactoController extends Controller
             // Usar BCC para que los destinatarios no vean los correos de los demás
             $mail = new ContactoMail(
                 $validated['nombre'],
-                $validated['email'] ?? null,
-                $validated['telefono'] ?? null,
-                $validated['empresa'] ?? null,
-                $validated['mensaje'],
+                $validated['email'] ?? '',
+                $validated['telefono'] ?? '',
+                $validated['empresa'] ?? '',
+                $validated['mensaje'] ?? '',
                 $files // 👈 aquí
             );
             Mail::to(config('mail.from.address'))->bcc($destinatarios)->send($mail);

@@ -18,11 +18,11 @@ class ContactoMail extends Mailable
     public $files;
 
     public function __construct(
-        string $nombre,
-        string $email,
-        string $telefono,
-        string $empresa,
-        string $mensaje,
+        string $nombre = '',
+        string $email = '',
+        string $telefono    = '',
+        string $empresa = '',
+        string $mensaje = '',
         array $files = []
     ) {
         $this->files = $files;

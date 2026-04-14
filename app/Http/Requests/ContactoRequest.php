@@ -24,7 +24,7 @@ class ContactoRequest extends FormRequest
             'email' => 'nullable|email|max:255',
             'telefono' => 'nullable|string|max:20',
             'empresa' => 'nullable|string|max:255',
-            'mensaje' => 'required|string|max:2000',
+            'mensaje' => 'nullable|string|max:2000',
             'files' => 'sometimes|array',
             'files.*' => 'file|max:5120', // 5MB por archivo (opcional)
         ];
