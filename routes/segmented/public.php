@@ -16,6 +16,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Request;
 use App\Http\Controllers\ProveedorPublicController;
 use App\Http\Controllers\ContactoController;
+use App\Http\Controllers\MetricasLookerstudioController;
 
 /*
 |--------------------------------------------------------------------------
@@ -70,7 +71,7 @@ Route::get('status', function (Request $request) {
  */
 Route::get('roles-index', [RoleController::class, 'index']);
 Route::get('tipos-empresa-index', [TipoEmpresaController::class, 'index']);
- 
+
 // // Catálogos generales
 Route::get('proveedores', [ProveedorController::class, 'index']);
 Route::get('sucursales', [SucursalController::class, 'index']);
@@ -136,3 +137,11 @@ Route::get(
 Route::post('contacto/enviar', [ContactoController::class, 'enviarContacto'])
     ->name('contacto.enviar')
     ->middleware(['throttle:5,1']); // Máximo 5 envíos por minuto por IP
+
+
+/**
+ * Metricas públicas para dashboard (sin autenticación)
+ */
+Route::get('metricas/lookerstudio', [MetricasLookerstudioController::class, 'metricasLookerstudio'])
+    ->name('metricas.lookerstudio');tudio'])
+    ->name('metricas.lookerstudio');
