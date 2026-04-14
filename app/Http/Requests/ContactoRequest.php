@@ -25,11 +25,13 @@ class ContactoRequest extends FormRequest
             'telefono' => 'nullable|string|max:20',
             'empresa' => 'nullable|string|max:255',
             'mensaje' => 'required|string|max:2000',
+            'files' => 'nullable|array',
+            'files.*' => 'file|max:5120', // 5MB por archivo (opcional)
         ];
     }
 
     /**
-     * Get custom messages for validator errors.
+     * Get custom messages for validator errors.|
      */
     public function messages(): array
     {

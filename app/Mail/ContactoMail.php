@@ -15,20 +15,34 @@ class ContactoMail extends Mailable
     public $telefono;
     public $empresa;
     public $mensaje;
+    public $files;
 
-    public function __construct($nombre, $email, $telefono, $empresa, $mensaje)
-    {
-        $this->nombre = $nombre;
-        $this->email = $email;
-        $this->telefono = $telefono;
-        $this->empresa = $empresa;
-        $this->mensaje = $mensaje;
+    public function __construct(
+        string $nombre,
+        string $email,
+        string $telefono,
+        string $empresa,
+        string $mensaje,
+        array $files = []
+    ) {
+        $this->files = $files;
     }
 
     public function build()
     {
-        return $this->subject('Nuevo mensaje de contacto - ' . $this->nombre)
-            ->replyTo($this->email, $this->nombre)
+        $email = $this->subject('Nuevo mensaje de contacto')
             ->view('emails.contacto');
+
+        foreach ($this->files as $file) {
+            $email->attach(
+                $file->getRealPath(),
+                [
+                    'as' => $file->getClientOriginalName(),
+                    'mime' => $file->getMimeType(),
+                ]
+            );
+        }
+
+        return $email;
     }
 }
