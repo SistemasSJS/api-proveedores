@@ -90,6 +90,87 @@ class AuthController extends Controller
 
     public function register_proveedor(ProveedorRegisterRequest $request)
     {
+        $validatedData = $request->validated();
+
+        // ANTES DE CREAR EL PROVEEDOR, VALIDAMOS QUE NO EXISTA UN USUARIO O PROVEEDOR CON EL MISMO CORREO O TELÉFONO
+        // VALIDACIÓN: Verificar si el proveedor ya existe (RFC, email o teléfono)
+        $proveedorExistente = Proveedor::where(function ($query) use ($validatedData) {
+            if (isset($validatedData['telefono'])) {
+                $query->where('telefono', $validatedData['telefono']);
+            }
+
+            // razon_social
+            if (isset($validatedData['razon_social'])) {
+                $query->orWhere('razon_social', strtoupper($validatedData['razon_social']));
+            }
+
+            // Si se proporcionó email diferente al teléfono
+            if (isset($validatedData['email']) && $validatedData['email'] !== $validatedData['telefono']) {
+                $query->orWhere('email', $validatedData['email']);
+            }
+        })->first();
+
+
+        if ($proveedorExistente) {
+            // Caso 1: Proveedor ya tiene usuario asignado (tipo_alta = 1)
+            if ($proveedorExistente->tipo_alta == 1) {
+                return $this->error(
+                    'Este teléfono ya está registrado con un usuario activo. Si olvidaste tu contraseña, usa la opción de recuperación.',
+                    [
+                        'campo_duplicado' => 'telefono',
+                        'valor' => $validatedData['telefono'],
+                    ],
+                    409
+                );
+            }
+
+            // Caso 2: Proveedor registrado desde construcción (tipo_alta = 2)
+            if ($proveedorExistente->tipo_alta == 2) {
+                // Cargar relaciones necesarias
+                $proveedorExistente->load(['cuentasBancarias', 'empresasConstrucc']);
+
+                // Generar token temporal cifrado con los datos del proveedor
+                $tokenData = [
+                    'proveedor_id' => $proveedorExistente->id,
+                    'timestamp' => time(),
+                    'telefono' => $proveedorExistente->telefono,
+                ];
+                $tokenTemporal = base64_encode(json_encode($tokenData));
+
+                return $this->success([
+                    'requiere_completar_registro' => true,
+                    'proveedor' => [
+                        'id' => $proveedorExistente->id,
+                        'razon_social' => $proveedorExistente->razon_social,
+                        'nombre_comercial' => $proveedorExistente->nombre_comercial,
+                        'email' => $proveedorExistente->email,
+                        'telefono' => $proveedorExistente->telefono,
+                        'cuentas_bancarias' => $proveedorExistente->cuentasBancarias->map(function ($cuenta) {
+                            $tipo = $cuenta->clabe ? 'clabe' : ($cuenta->cuenta ? 'cuenta' : 'tarjeta');
+                            return [
+                                'id' => $cuenta->id,
+                                'alias' => $cuenta->alias,
+                                'banco_nombre' => $cuenta->banco_nombre,
+                                'tipo_cuenta' => $tipo,
+                                'cuenta' => $cuenta->cuenta,
+                                'clabe' => $cuenta->clabe,
+                                'tarjeta' => $cuenta->tarjeta,
+                                'preferida' => $cuenta->preferida,
+                            ];
+                        }),
+                        'empresas_construcc' => $proveedorExistente->empresasConstrucc->map(function ($empresa) {
+                            return [
+                                'id' => $empresa->id,
+                                'nombre' => $empresa->nombre,
+                            ];
+                        }),
+                    ],
+                    'token_temporal' => $tokenTemporal,
+                ], 'Tu empresa ya está registrada. Verifica tus datos y completa el registro.', 200);
+            }
+        }
+
+
         $proveedor = Proveedor::create($request->validated());
         $token = Str::random(60);
         $cacheKey = "registro_proveedor_{$token}";
@@ -351,25 +432,39 @@ class AuthController extends Controller
         try {
             $validatedData = $request->validated();
 
-            // VALIDACIÓN: Verificar si el proveedor ya existe (RFC, email o teléfono)
             $proveedorExistente = Proveedor::where(function ($query) use ($validatedData) {
-                $query->where('telefono', $validatedData['telefono']);
 
-                // Si se proporcionó RFC en el request (aunque no está en el FormRequest actual, podría agregarse)
-                if (isset($validatedData['rfc'])) {
-                    $query->orWhere('rfc', strtoupper($validatedData['rfc']));
+                // TELÉFONO
+                if (!empty($validatedData['telefono'])) {
+                    $query->orWhere('telefono', $validatedData['telefono']);
                 }
 
-                // razon_social
-                if (isset($validatedData['razon_social'])) {
-                    $query->orWhere('razon_social', strtoupper($validatedData['razon_social']));
+                // RFC
+                if (!empty($validatedData['rfc'])) {
+                    $query->orWhereRaw('UPPER(rfc) = ?', [
+                        strtoupper(trim($validatedData['rfc']))
+                    ]);
                 }
 
-                // Si se proporcionó email diferente al teléfono
-                if (isset($validatedData['email']) && $validatedData['email'] !== $validatedData['telefono']) {
-                    $query->orWhere('email', $validatedData['email']);
+                // RAZÓN SOCIAL
+                if (!empty($validatedData['razon_social'])) {
+                    $query->orWhereRaw('LOWER(razon_social) = ?', [
+                        strtolower(trim($validatedData['razon_social']))
+                    ]);
                 }
-            })->first();
+
+                // EMAIL
+                if (!empty($validatedData['email'])) {
+                    $query->orWhereRaw('LOWER(email) = ?', [
+                        strtolower(trim($validatedData['email']))
+                    ]);
+                }
+            })
+                ->where(function ($q) {
+                    $q->where('tipo_alta', 1)
+                        ->orWhereNull('tipo_alta');
+                })
+                ->first();
 
             $this->success($proveedorExistente, 'Proveedor encontrado', 200);
 
@@ -445,24 +540,28 @@ class AuthController extends Controller
                 'perfil_empresa_completo' => false,
             ]);
 
-            // Obtener rol de gerente
-            $idRoleProveedor = Role::where('nombre', UserRoleEnumerate::GERENTE->value)->first()->id;
+            // EL USUARIO ES CUANDO NOS E VALIDA
+            if (!$request->solo_validar) {
 
-            // Crear usuario usando el teléfono como identificador
-            $user = User::create([
-                'name' => $validatedData['nombre_comercial'],
-                'email' => $validatedData['telefono'], // Usar teléfono como email/usuario
-                'password' => Hash::make($validatedData['password']),
-                'role_id' => $idRoleProveedor,
-            ]);
+                // Obtener rol de gerente
+                $idRoleProveedor = Role::where('nombre', UserRoleEnumerate::GERENTE->value)->first()->id;
 
-            // Relacionar usuario con proveedor
-            $user->proveedores()->attach($proveedor->id, [
-                'tipo_relacion' => 'PRINCIPAL',
-                'activo' => true,
-                'fecha_asignacion' => now(),
-                'observaciones' => 'Usuario principal del proveedor - Registro por enlace',
-            ]);
+                // Crear usuario usando el teléfono como identificador
+                $user = User::create([
+                    'name' => $validatedData['nombre_comercial'],
+                    'email' => $validatedData['telefono'], // Usar teléfono como email/usuario
+                    'password' => Hash::make($validatedData['password']),
+                    'role_id' => $idRoleProveedor,
+                ]);
+
+                // Relacionar usuario con proveedor
+                $user->proveedores()->attach($proveedor->id, [
+                    'tipo_relacion' => 'PRINCIPAL',
+                    'activo' => true,
+                    'fecha_asignacion' => now(),
+                    'observaciones' => 'Usuario principal del proveedor - Registro por enlace',
+                ]);
+            }
 
             // Crear sucursal matriz por defecto
             $proveedor->sucursales()->create([
@@ -476,6 +575,12 @@ class AuthController extends Controller
                 'coordenadas_lng' => null,
                 'estatus' => 'activo',
             ]);
+
+            if ($request->solo_validar) {
+                return $this->success([
+                    'proveedor' => new ProveedorResource($proveedor->load(Proveedor::eagerLodable())),
+                ], 'Validación exitosa. El proveedor no fue registrado, solo se verificaron los datos.', 200);
+            }
 
             // Registrar relación con empresa Construcc si se proporcionaron los datos
             if (isset($validatedData['empresa_construcc_id'])) {
@@ -507,6 +612,10 @@ class AuthController extends Controller
             // Error en la validación de los datos de entrada
             return $this->error('Los datos proporcionados no son válidos.', $e->errors(), 422);
         } catch (\Exception $e) {
+            Log::info('Error en register_proveedor_basico_sp', [
+                'error_message' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
             // Cualquier otro error inesperado
             return $this->error('Ocurrió un error al intentar completar el registro. Por favor, intenta nuevamente.', [], 500);
         }
