@@ -143,5 +143,4 @@ Route::post('contacto/enviar', [ContactoController::class, 'enviarContacto'])
  * Metricas públicas para dashboard (sin autenticación)
  */
 Route::get('metricas/lookerstudio', [MetricasLookerstudioController::class, 'metricasLookerstudio'])
-    ->name('metricas.lookerstudio');tudio'])
     ->name('metricas.lookerstudio');
