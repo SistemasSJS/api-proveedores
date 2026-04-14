@@ -20,7 +20,9 @@ class ContactoController extends Controller
     {
         try {
             $validated = $request->validated();
-            $files = $request->file('files', []);
+            $files = $request->hasFile('files')
+                ? (array) $request->file('files')
+                : [];
 
             // Obtener destinatarios de contacto desde configuración (env: MAIL_CONTACT_RECIPIENTS)
             $destinatarios = config('mail.contact_recipients', []);
