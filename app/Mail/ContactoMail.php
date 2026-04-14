@@ -26,6 +26,11 @@ class ContactoMail extends Mailable
         array $files = []
     ) {
         $this->files = $files;
+        $this->nombre = $nombre;
+        $this->email = $email;
+        $this->telefono = $telefono;
+        $this->empresa = $empresa;
+        $this->mensaje = $mensaje;
     }
 
     public function build()
