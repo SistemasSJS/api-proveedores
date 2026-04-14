@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Request;
 use App\Http\Controllers\ProveedorPublicController;
 use App\Http\Controllers\ContactoController;
 use App\Http\Controllers\MetricasLookerstudioController;
+use Illuminate\Support\Facades\Mail;
 
 /*
 |--------------------------------------------------------------------------
@@ -144,3 +145,15 @@ Route::post('contacto/enviar', [ContactoController::class, 'enviarContacto'])
  */
 Route::get('metricas/lookerstudio', [MetricasLookerstudioController::class, 'metricasLookerstudio'])
     ->name('metricas.lookerstudio');
+
+
+// Route::get('test', function () {
+
+//     $numero = '5216688564515';
+//     $correoSms = $numero . '@itelcel.com';
+
+//     Mail::raw('Tu código es 1234', function ($message) use ($correoSms) {
+//         $message->to($correoSms)
+//             ->subject('SMS');
+//     });
+// });
