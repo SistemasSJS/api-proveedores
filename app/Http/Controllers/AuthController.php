@@ -184,7 +184,7 @@ class AuthController extends Controller
             'default_store_value' => Cache::get($cacheKey),
         ]);
 
-        $url = config('services.frontend.url') . "gen-pass?token={$token}";
+        $url = config('services.frontend.url') . "/gen-pass?token={$token}";
         Mail::to($proveedor->email)->send(new CompletaRegistroProveedorMail($url));
 
         return $this->success([

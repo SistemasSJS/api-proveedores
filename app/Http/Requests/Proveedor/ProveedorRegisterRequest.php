@@ -58,6 +58,7 @@ class ProveedorRegisterRequest extends FormRequest
             'contacto_nombre' => ['nullable', 'string', 'max:150'],
             'contacto_telefono' => ['nullable', 'string', 'max:15'],
             'contacto_correo' => ['nullable', 'email', 'max:60'],
+            'acepta_terminos' => ['required', 'accepted'],
             // 'recaptcha_token' => ['required', new ReCaptcha],
 
         ];
@@ -102,6 +103,9 @@ class ProveedorRegisterRequest extends FormRequest
             'contacto_correo.required' => 'El correo electrónico del contacto es obligatorio.',
             'contacto_correo.email' => 'El correo electrónico del contacto debe tener un formato válido.',
             'contacto_correo.max' => 'El correo electrónico del contacto no debe exceder los 60 caracteres.',
+
+            'acepta_terminos.required' => 'Debe aceptar los términos y condiciones para registrarse.',
+            'acepta_terminos.accepted' => 'Debe aceptar los términos y condiciones para registrarse.',
         ];
     }
 }
