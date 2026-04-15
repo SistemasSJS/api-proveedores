@@ -1033,43 +1033,68 @@ class AuthController extends Controller
 
     {
         $email = $request->email;
-        // Buscar usuario por email o teléfono
+
         $user = User::where(function ($q) use ($request) {
             $q->where('email', $request->email)
                 ->orWhere('telefono', $request->email);
-        })
-            ->where('status', '!=', EstadoUsuario::BLOQUEADO->value)
-            ->where('status', '!=', EstadoUsuario::SUSPENDIDO->value)
-            ->first();
+        })->first();
 
-        if (!$user) {
-            // Retornar éxito aunque no exista para evitar enumeration attacks
-            return $this->success(
-                ['email' => $email],
-                'Si existe una cuenta con este correo, recibirás las instrucciones para recuperar tu contraseña.',
-                200
+        if (! $user) {
+            return $this->error(
+                'No encontramos ninguna cuenta con ese correo electrónico o número de teléfono. Comprueba que escribiste bien los datos o regístrate si aún no tienes cuenta.',
+                [],
+                404
             );
         }
 
-        // Generar token único
+        if (in_array($user->status, [
+            EstadoUsuario::BLOQUEADO->value,
+            EstadoUsuario::SUSPENDIDO->value,
+        ], true)) {
+            return $this->error(
+                'No podemos enviar el enlace de recuperación porque la cuenta asociada está bloqueada o suspendida. Para resolverlo, contacta a soporte.',
+                [],
+                403
+            );
+        }
+
+        $userEmail = $user->email;
+        if ($userEmail === null || filter_var($userEmail, FILTER_VALIDATE_EMAIL) === false) {
+            return $this->error(
+                'Tu cuenta no tiene un correo electrónico válido donde enviar el enlace de recuperación. Completa o actualiza tu correo en tu perfil o pide ayuda a soporte.',
+                [],
+                422
+            );
+        }
+
         $token = Str::random(60);
 
-        // Guardar en cache con expiración de 1 hora
         Cache::put("password_reset_{$token}", [
             'user_id' => $user->id,
             'email' => $user->email,
-            'created_at' => now()
-        ], 60 * 60); // 1 hora
+            'created_at' => now(),
+        ], 60 * 60);
 
-        // Generar URL para reset
         $url = config('services.frontend.url') . "/auth/reset-password?token={$token}";
 
-        // Enviar email
-        Mail::to($user->email)->send(new PasswordResetMail($url, $user->name));
+        try {
+            Mail::to($userEmail)->send(new PasswordResetMail($url, $user->name));
+        } catch (\Throwable $e) {
+            Log::error('Fallo al enviar correo de recuperación de contraseña', [
+                'user_id' => $user->id,
+                'exception' => $e->getMessage(),
+            ]);
+
+            return $this->error(
+                'Encontramos tu cuenta, pero no pudimos enviar el correo de recuperación en este momento (fallo temporal del servicio de correo). Vuelve a intentarlo en unos minutos o contacta a soporte si el problema continúa.',
+                [],
+                503
+            );
+        }
 
         return $this->success(
             ['email' => $email],
-            'Si existe una cuenta con este correo, recibirás las instrucciones para recuperar tu contraseña.',
+            'Te enviamos un correo con instrucciones para restablecer tu contraseña. Revisa tu bandeja de entrada, la carpeta de spam y el apartado de promociones.',
             200
         );
     }
