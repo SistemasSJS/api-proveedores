@@ -34,7 +34,7 @@ class MetricasLookerstudioController extends Controller
       ->map(function ($item) {
         return [
           'user_id' => optional($item->usuarioPrincipal())->id,
-          'fecha' => $item->updated_at?->format('Y-m-d'),
+          'fecha' => $item->updated_at?->toISOString(),
         ];
       });
 
@@ -49,7 +49,7 @@ class MetricasLookerstudioController extends Controller
       ->map(function ($item) {
         return [
           'user_id' => $item->id,
-          'fecha' => $item->updated_at?->format('Y-m-d'),
+          'fecha' => $item->updated_at?->toISOString(),
         ];
       });
 
@@ -68,7 +68,7 @@ class MetricasLookerstudioController extends Controller
 
         return [
           'user_id' => optional($item->usuarioPrincipal())->id,
-          'fecha' => $cuenta?->updated_at?->format('Y-m-d'),
+          'fecha' => $cuenta?->updated_at?->toISOString(),
         ];
       });
 
@@ -84,7 +84,7 @@ class MetricasLookerstudioController extends Controller
       ->map(function ($item) {
         return [
           'user_id' => $item->usuario_creador_id,
-          'fecha' => $item->created_at?->format('Y-m-d'),
+          'fecha' => $item->created_at?->toISOString(),
         ];
       });
 
@@ -100,7 +100,7 @@ class MetricasLookerstudioController extends Controller
       ->map(function ($item) {
         return [
           'user_id' => $item->user_id,
-          'fecha' => $item->created_at?->format('Y-m-d'),
+          'fecha' => $item->created_at?->toISOString(),
         ];
       });
 
