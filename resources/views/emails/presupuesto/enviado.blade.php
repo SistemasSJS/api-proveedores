@@ -50,6 +50,16 @@
                 {{ $emisor }} te ha enviado un presupuesto para tu revision.
               </p>
 
+              @if(!empty($incluirInvitacion))
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:14px;border:1px solid #d6e4ff;background-color:#eef5ff;">
+                  <tr>
+                    <td style="padding:12px;font-size:14px;line-height:20px;color:#1e3a8a;">
+                      <strong>Invitación a la app:</strong> Te invitamos a autorizar este presupuesto desde la app de Proveedores. También podrás gestionar de forma profesional tus siguientes presupuestos y solicitudes de pago.
+                    </td>
+                  </tr>
+                </table>
+              @endif
+
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #dbe3ee;background-color:#f8fafc;">
                 <tr>
                   <td style="padding:16px;">
@@ -98,6 +108,9 @@
 
               <p style="margin:22px 0 0 0;font-size:13px;line-height:18px;color:#64748b;">
                 Este enlace es unico y seguro. Si tienes dudas, contacta directamente al proveedor.
+              </p>
+              <p style="margin:10px 0 0 0;font-size:13px;line-height:18px;color:#64748b;">
+                Adjuntamos el PDF del presupuesto para tu archivo.
               </p>
             </td>
           </tr>

@@ -3,8 +3,10 @@
 namespace App\Mail;
 
 use App\Models\Presupuesto;
+use App\Support\PresupuestoPdf;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -16,7 +18,8 @@ class PresupuestoEnviadoMail extends Mailable
     public function __construct(
         public Presupuesto $presupuesto,
         public string $enlacePublico,
-        public string $nombreReceptor
+        public string $nombreReceptor,
+        public bool $incluirInvitacion = false
     ) {}
 
     public function envelope(): Envelope
@@ -35,7 +38,13 @@ class PresupuestoEnviadoMail extends Mailable
 
     public function attachments(): array
     {
-        // En envío por correo de presupuesto solo se comparte enlace público.
-        return [];
+        $filename = 'Presupuesto_' . ($this->presupuesto->numero_presupuesto ?: $this->presupuesto->id) . '.pdf';
+
+        return [
+            Attachment::fromData(
+                fn () => PresupuestoPdf::renderPdfBinary($this->presupuesto),
+                $filename
+            )->withMime('application/pdf'),
+        ];
     }
 }

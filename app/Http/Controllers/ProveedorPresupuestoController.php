@@ -1543,7 +1543,7 @@ class ProveedorPresupuestoController extends Controller
         }
     }
 
-    private function despacharCorreoPresupuesto(Presupuesto $presupuesto): void
+    private function despacharCorreoPresupuesto(Presupuesto $presupuesto, bool $incluirInvitacion = false): void
     {
         $appUrl = config('app.frontend_url', config('app.url'));
         $enlacePublico = $appUrl . '/public/presupuesto/' . $presupuesto->token_publico;
@@ -1552,7 +1552,7 @@ class ProveedorPresupuestoController extends Controller
             ?? 'Cliente';
 
         Mail::to($presupuesto->empresa_receptora_correo)->send(
-            new PresupuestoEnviadoMail($presupuesto, $enlacePublico, $nombreReceptor)
+            new PresupuestoEnviadoMail($presupuesto, $enlacePublico, $nombreReceptor, $incluirInvitacion)
         );
     }
 
@@ -1583,7 +1583,8 @@ class ProveedorPresupuestoController extends Controller
             $presupuesto->load(Presupuesto::eagerLodable());
             $presupuesto->asegurarTokenPublico();
 
-            $this->despacharCorreoPresupuesto($presupuesto);
+            $incluirInvitacion = $request->boolean('incluir_invitacion');
+            $this->despacharCorreoPresupuesto($presupuesto, $incluirInvitacion);
 
             $this->log('Presupuesto: correo al cliente enviado', ['presupuesto_id' => $presupuesto->id]);
 

@@ -29,6 +29,12 @@
       <div class="success-box">
         El presupuesto #{{ $presupuesto->numero_presupuesto }} fue enviado correctamente a {{ $presupuesto->empresa_receptora_empresa ?? $presupuesto->empresa_receptora_nombre ?? 'el cliente' }}.
       </div>
+      <div style="background:#eef6ff;border:1px solid #cfe5ff;border-radius:10px;padding:14px;margin:16px 0;color:#1e3a8a;">
+        <strong>Invitación a la app</strong>
+        <p style="margin-top:8px;">
+          Te invitamos a autorizar este presupuesto desde la app de Proveedores. Ahí también podrás gestionar de forma profesional tus próximos presupuestos y solicitudes de pago.
+        </p>
+      </div>
       <div style="background:#f8f9fa;border:1px solid #e9ecef;border-radius:8px;padding:16px;margin:20px 0;">
         @include('emails.presupuesto.partials.detalles-presupuesto', ['presupuesto' => $presupuesto])
       </div>
