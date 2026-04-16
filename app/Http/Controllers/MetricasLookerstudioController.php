@@ -21,7 +21,7 @@ class MetricasLookerstudioController extends Controller
    */
   public function metricasLookerstudio(Request $request)
   {
-    $fechaLimite = now()->subDays(350);
+    $fechaLimite = now()->subDays(6); // Cambia a 6 días para obtener datos de la última semana (7 días incluyendo hoy)
 
     // -------------------------
     // UPDATE PROVEEDOR
