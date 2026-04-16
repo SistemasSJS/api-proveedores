@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Channels\FcmChannel;
+use App\Enums\UserRoleEnumerate;
 use App\Exceptions\Handler;
 use App\Models\Producto;
 use App\Models\SolicitudPago;
@@ -16,6 +17,7 @@ use App\Services\ReporteService;
 use App\Services\SucursalService;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use App\Support\EmailLogoHelper;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -82,6 +84,14 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('emails.*', function ($view) {
             $view->with('logoAppDataUri', EmailLogoHelper::logoGestionProDataUri());
+        });
+
+        Gate::define('viewPulse', function ($user = null) {
+            if (app()->isLocal()) {
+                return true;
+            }
+
+            return $user && $user->hasRole(UserRoleEnumerate::ADMINISTRADOR->value);
         });
     }
 }

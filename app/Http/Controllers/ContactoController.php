@@ -45,6 +45,7 @@ class ContactoController extends Controller
                 $validated['mensaje'] ?? '',
                 $files // 👈 aquí
             );
+            
             Mail::to(config('mail.from.address'))->bcc($destinatarios)->send($mail);
 
             // Log del envío exitoso
