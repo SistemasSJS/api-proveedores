@@ -22,8 +22,11 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 use Laravel\Sanctum\PersonalAccessToken;
 use Laravel\Sanctum\Sanctum;
+use App\Livewire\Pulse\ErroresGenerales;
+use App\Livewire\Pulse\UsuariosProveedores;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -93,5 +96,8 @@ class AppServiceProvider extends ServiceProvider
 
             return $user && $user->hasRole(UserRoleEnumerate::ADMINISTRADOR->value);
         });
+
+        Livewire::component('pulse.usuarios-proveedores', UsuariosProveedores::class);
+        Livewire::component('pulse.errores-generales', ErroresGenerales::class);
     }
 }
