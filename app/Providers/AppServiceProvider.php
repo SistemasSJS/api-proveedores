@@ -26,6 +26,9 @@ use Livewire\Livewire;
 use Laravel\Sanctum\PersonalAccessToken;
 use Laravel\Sanctum\Sanctum;
 use App\Livewire\Pulse\ErroresGenerales;
+use App\Livewire\Pulse\RegistrosDiariosUsuariosProveedores;
+use App\Livewire\Pulse\TotalProveedores;
+use App\Livewire\Pulse\TotalUsuarios;
 use App\Livewire\Pulse\UsuariosProveedores;
 
 class AppServiceProvider extends ServiceProvider
@@ -99,5 +102,8 @@ class AppServiceProvider extends ServiceProvider
 
         Livewire::component('pulse.usuarios-proveedores', UsuariosProveedores::class);
         Livewire::component('pulse.errores-generales', ErroresGenerales::class);
+        Livewire::component('pulse.total-usuarios', TotalUsuarios::class);
+        Livewire::component('pulse.total-proveedores', TotalProveedores::class);
+        Livewire::component('pulse.registros-diarios-usuarios-proveedores', RegistrosDiariosUsuariosProveedores::class);
     }
 }
