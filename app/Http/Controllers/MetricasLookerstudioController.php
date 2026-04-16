@@ -7,88 +7,131 @@ use App\Models\Proveedor;
 use App\Models\SolicitudPago;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Traits\ApiResponse;
 
 
 class MetricasLookerstudioController extends Controller
 {
 
+  use ApiResponse;
   /**
    * metricas de gestion pro:
    *  - usuario activos con actividad de los últimos 15 días, divididos por dia 
    * 
-   * SQLSTATE[42S22]: Column not found: 1054 Unknown column 'user_id' in 'field list'
-select `user_id`, `updated_at` from `proveedores`
    */
   public function metricasLookerstudio(Request $request)
   {
     $fechaLimite = now()->subDays(350);
 
-    // registro de actualizacion de datos de perfil: cuentas bacncarias, datos de contacto, etc
-    $update_data = Proveedor::where('updated_at', '>=', $fechaLimite)
-      ->orwhere('created_at', '>=', $fechaLimite)
-      ->get(['id', 'updated_at']) // 👈 corregido
+    // -------------------------
+    // UPDATE PROVEEDOR
+    // -------------------------
+    $update_data = Proveedor::where(function ($q) use ($fechaLimite) {
+      $q->where('updated_at', '>=', $fechaLimite)
+        ->orWhere('created_at', '>=', $fechaLimite);
+    })
+      ->get(['id', 'updated_at'])
       ->map(function ($item) {
         return [
-          'user_id' => optional($item->usuarioPrincipal())->id, // 👈 corregido para obtener el user_id del proveedo  r
-          'fecha' => $item->updated_at->format('Y-m-d'),
+          'user_id' => optional($item->usuarioPrincipal())->id,
+          'fecha' => $item->updated_at?->format('Y-m-d'),
         ];
       });
 
-    $update_data_users = User::where('updated_at', '>=', $fechaLimite)
-      ->orwhere('created_at', '>=', $fechaLimite)
+    // -------------------------
+    // UPDATE USERS
+    // -------------------------
+    $update_data_users = User::where(function ($q) use ($fechaLimite) {
+      $q->where('updated_at', '>=', $fechaLimite)
+        ->orWhere('created_at', '>=', $fechaLimite);
+    })
       ->get(['id', 'updated_at'])
       ->map(function ($item) {
         return [
           'user_id' => $item->id,
-          'fecha' => $item->updated_at->format('Y-m-d'),
+          'fecha' => $item->updated_at?->format('Y-m-d'),
         ];
       });
 
-
+    // -------------------------
+    // CUENTAS BANCARIAS
+    // -------------------------
     $cuentas_bancarias = Proveedor::whereHas('cuentasBancarias', function ($query) use ($fechaLimite) {
-      $query
-        ->where('created_at', '>=', $fechaLimite)
-        ->where('updated_at', '>=', $fechaLimite);
-    })->get()->map(function ($item) {
-      return [
-        'user_id' => optional($item->usuarioPrincipal())->id,
-        'fecha' => $item->cuentasBancarias()->latest()->first()->updated_at->format('Y-m-d'),
-      ];
-    });
+      $query->where(function ($q) use ($fechaLimite) {
+        $q->where('created_at', '>=', $fechaLimite)
+          ->orWhere('updated_at', '>=', $fechaLimite);
+      });
+    })
+      ->get()
+      ->map(function ($item) {
+        $cuenta = $item->cuentasBancarias()->latest()->first();
 
-    // Obtener datos SPP
-    $spp = SolicitudPago::where('created_at', '>=', $fechaLimite)
-      ->orWhere('updated_at', '>=', $fechaLimite)
+        return [
+          'user_id' => optional($item->usuarioPrincipal())->id,
+          'fecha' => $cuenta?->updated_at?->format('Y-m-d'),
+        ];
+      });
+
+    // -------------------------
+    // SPP
+    // -------------------------
+    $spp = SolicitudPago::where(function ($q) use ($fechaLimite) {
+      $q->where('created_at', '>=', $fechaLimite)
+        ->orWhere('updated_at', '>=', $fechaLimite);
+    })
       ->whereNotNull('usuario_creador_id')
       ->get(['usuario_creador_id', 'created_at'])
       ->map(function ($item) {
         return [
           'user_id' => $item->usuario_creador_id,
-          'fecha' => $item->created_at->format('Y-m-d'),
+          'fecha' => $item->created_at?->format('Y-m-d'),
         ];
       });
 
-    // Obtener datos Presupuesto
-    $presupuestos = Presupuesto::where('created_at', '>=', $fechaLimite)
-      ->orWhere('updated_at', '>=', $fechaLimite)
+    // -------------------------
+    // PRESUPUESTOS
+    // -------------------------
+    $presupuestos = Presupuesto::where(function ($q) use ($fechaLimite) {
+      $q->where('created_at', '>=', $fechaLimite)
+        ->orWhere('updated_at', '>=', $fechaLimite);
+    })
       ->whereNotNull('user_id')
       ->get(['user_id', 'created_at'])
       ->map(function ($item) {
         return [
           'user_id' => $item->user_id,
-          'fecha' => $item->created_at->format('Y-m-d'),
+          'fecha' => $item->created_at?->format('Y-m-d'),
         ];
       });
 
-    // Unificar ambas colecciones
-    $acciones = $spp->concat($presupuestos, $update_data, $update_data_users, $cuentas_bancarias);
+    // -------------------------
+    // UNIFICAR TODO
+    // -------------------------
+    $acciones = collect()
+      ->concat($spp)
+      ->concat($presupuestos)
+      ->concat($update_data)
+      ->concat($update_data_users)
+      ->concat($cuentas_bancarias)
+      ->filter(fn($item) => $item['user_id'] && $item['fecha']);
 
-    // Agrupar por fecha y obtener usuarios únicos por día
+    // -------------------------
+    // AGRUPAR Y CONTAR
+    // -------------------------
     $result = $acciones
       ->groupBy('fecha')
-      ->map(fn($items) => collect($items)->pluck('user_id')->unique()->count())
-      ->sortKeys();
+      ->map(function ($items, $fecha) {
+        return [
+          'fecha' => $fecha,
+          'usuarios' => collect($items)->pluck('user_id')->unique()->count(),
+        ];
+      })
+      ->sortBy('fecha')
+      ->values();
 
-    return $this->success($result, 'Métricas de usuarios activos por día en los últimos 15   días');
+    // -------------------------
+    // RESPUESTA LIMPIA (LOOKER)
+    // -------------------------
+    return $this->success($result, 'Metricas obtenidas correctamente');
   }
 }
