@@ -134,6 +134,27 @@ class MetricasLookerstudioController extends Controller
       ->sortBy('fecha')
       ->values();
 
+    $rangos = collect();
+
+    // Generar los últimos 7 días (incluyendo hoy)
+    for ($i = 6; $i >= 0; $i--) {
+      $fecha = now()->subDays($i)->toDateString();
+      $rangos[$fecha] = 0;
+    }
+
+    // Sobrescribir con los datos reales
+    foreach ($result as $item) {
+      $rangos[$item['fecha']] = $item['usuarios'];
+    }
+
+    // Reestructurar salida final
+    $result = collect($rangos)
+      ->map(fn($usuarios, $fecha) => [
+        'fecha' => $fecha,
+        'usuarios' => $usuarios,
+      ])
+      ->values();
+
     // -------------------------
     // RESPUESTA LIMPIA (LOOKER)
     // -------------------------
