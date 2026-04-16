@@ -26,10 +26,7 @@ class MetricasLookerstudioController extends Controller
     // -------------------------
     // UPDATE PROVEEDOR
     // -------------------------
-    $update_data = Proveedor::where(function ($q) use ($fechaLimite) {
-      $q->where('updated_at', '>=', $fechaLimite)
-        ->orWhere('created_at', '>=', $fechaLimite);
-    })
+    $update_data = Proveedor::where('updated_at', '>=', $fechaLimite)
       ->get(['id', 'updated_at'])
       ->map(function ($item) {
         return [
@@ -41,10 +38,7 @@ class MetricasLookerstudioController extends Controller
     // -------------------------
     // UPDATE USERS
     // -------------------------
-    $update_data_users = User::where(function ($q) use ($fechaLimite) {
-      $q->where('updated_at', '>=', $fechaLimite)
-        ->orWhere('created_at', '>=', $fechaLimite);
-    })
+    $update_data_users = User::where('updated_at', '>=', $fechaLimite)
       ->get(['id', 'updated_at'])
       ->map(function ($item) {
         return [
@@ -57,10 +51,7 @@ class MetricasLookerstudioController extends Controller
     // CUENTAS BANCARIAS
     // -------------------------
     $cuentas_bancarias = Proveedor::whereHas('cuentasBancarias', function ($query) use ($fechaLimite) {
-      $query->where(function ($q) use ($fechaLimite) {
-        $q->where('created_at', '>=', $fechaLimite)
-          ->orWhere('updated_at', '>=', $fechaLimite);
-      });
+      $query->where('updated_at', '>=', $fechaLimite);
     })
       ->get()
       ->map(function ($item) {
@@ -75,32 +66,26 @@ class MetricasLookerstudioController extends Controller
     // -------------------------
     // SPP
     // -------------------------
-    $spp = SolicitudPago::where(function ($q) use ($fechaLimite) {
-      $q->where('created_at', '>=', $fechaLimite)
-        ->orWhere('updated_at', '>=', $fechaLimite);
-    })
+    $spp = SolicitudPago::where('updated_at', '>=', $fechaLimite)
       ->whereNotNull('usuario_creador_id')
-      ->get(['usuario_creador_id', 'created_at'])
+      ->get(['usuario_creador_id', 'updated_at'])
       ->map(function ($item) {
         return [
           'user_id' => $item->usuario_creador_id,
-          'fecha' => $item->created_at?->format('Y-m-d'),
+          'fecha' => $item->updated_at?->format('Y-m-d'),
         ];
       });
 
     // -------------------------
     // PRESUPUESTOS
     // -------------------------
-    $presupuestos = Presupuesto::where(function ($q) use ($fechaLimite) {
-      $q->where('created_at', '>=', $fechaLimite)
-        ->orWhere('updated_at', '>=', $fechaLimite);
-    })
+    $presupuestos = Presupuesto::where('updated_at', '>=', $fechaLimite)
       ->whereNotNull('user_id')
-      ->get(['user_id', 'created_at'])
+      ->get(['user_id', 'updated_at'])
       ->map(function ($item) {
         return [
           'user_id' => $item->user_id,
-          'fecha' => $item->created_at?->format('Y-m-d'),
+          'fecha' => $item->updated_at?->format('Y-m-d'),
         ];
       });
 
@@ -120,6 +105,7 @@ class MetricasLookerstudioController extends Controller
           'fecha' => \Carbon\Carbon::parse($item['fecha'])->toDateString(),
         ];
       });
+
     // -------------------------
     // AGRUPAR Y CONTAR
     // -------------------------
@@ -134,20 +120,26 @@ class MetricasLookerstudioController extends Controller
       ->sortBy('fecha')
       ->values();
 
+    // -------------------------
+    // GENERAR RANGO FIJO (7 días)
+    // -------------------------
     $rangos = collect();
 
-    // Generar los últimos 7 días (incluyendo hoy)
     for ($i = 6; $i >= 0; $i--) {
       $fecha = now()->subDays($i)->toDateString();
       $rangos[$fecha] = 0;
     }
 
-    // Sobrescribir con los datos reales
+    // -------------------------
+    // SOBRESCRIBIR DATOS
+    // -------------------------
     foreach ($result as $item) {
       $rangos[$item['fecha']] = $item['usuarios'];
     }
 
-    // Reestructurar salida final
+    // -------------------------
+    // FORMATO FINAL
+    // -------------------------
     $result = collect($rangos)
       ->map(fn($usuarios, $fecha) => [
         'fecha' => $fecha,
@@ -155,9 +147,6 @@ class MetricasLookerstudioController extends Controller
       ])
       ->values();
 
-    // -------------------------
-    // RESPUESTA LIMPIA (LOOKER)
-    // -------------------------
     return $this->success($result, 'Metricas obtenidas correctamente');
   }
 }
