@@ -21,7 +21,7 @@ class MetricasLookerstudioController extends Controller
    */
   public function metricasLookerstudio(Request $request)
   {
-    $fechaLimite = now()->subDays(6); // Cambia a 6 días para obtener datos de la última semana (7 días incluyendo hoy)
+    $fechaLimite = now()->subDays(6);
 
     // -------------------------
     // UPDATE PROVEEDOR
@@ -34,7 +34,7 @@ class MetricasLookerstudioController extends Controller
       ->map(function ($item) {
         return [
           'user_id' => optional($item->usuarioPrincipal())->id,
-          'fecha' => $item->updated_at?->toISOString(),
+          'fecha' => $item->updated_at?->format('Y-m-d'),
         ];
       });
 
@@ -49,7 +49,7 @@ class MetricasLookerstudioController extends Controller
       ->map(function ($item) {
         return [
           'user_id' => $item->id,
-          'fecha' => $item->updated_at?->toISOString(),
+          'fecha' => $item->updated_at?->format('Y-m-d'),
         ];
       });
 
@@ -68,7 +68,7 @@ class MetricasLookerstudioController extends Controller
 
         return [
           'user_id' => optional($item->usuarioPrincipal())->id,
-          'fecha' => $cuenta?->updated_at?->toISOString(),
+          'fecha' => $cuenta?->updated_at?->format('Y-m-d'),
         ];
       });
 
@@ -84,7 +84,7 @@ class MetricasLookerstudioController extends Controller
       ->map(function ($item) {
         return [
           'user_id' => $item->usuario_creador_id,
-          'fecha' => $item->created_at?->toISOString(),
+          'fecha' => $item->created_at?->format('Y-m-d'),
         ];
       });
 
@@ -100,7 +100,7 @@ class MetricasLookerstudioController extends Controller
       ->map(function ($item) {
         return [
           'user_id' => $item->user_id,
-          'fecha' => $item->created_at?->toISOString(),
+          'fecha' => $item->created_at?->format('Y-m-d'),
         ];
       });
 
@@ -113,8 +113,13 @@ class MetricasLookerstudioController extends Controller
       ->concat($update_data)
       ->concat($update_data_users)
       ->concat($cuentas_bancarias)
-      ->filter(fn($item) => $item['user_id'] && $item['fecha']);
-
+      ->filter(fn($item) => !empty($item['user_id']) && !empty($item['fecha']))
+      ->map(function ($item) {
+        return [
+          'user_id' => $item['user_id'],
+          'fecha' => \Carbon\Carbon::parse($item['fecha'])->toDateString(),
+        ];
+      });
     // -------------------------
     // AGRUPAR Y CONTAR
     // -------------------------
