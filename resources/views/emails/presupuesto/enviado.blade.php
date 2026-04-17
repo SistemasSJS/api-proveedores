@@ -22,9 +22,7 @@
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
                   <td align="center" valign="middle">
-                    @if(!empty($logoAppDataUri))
-                      <img src="{{ $logoAppDataUri }}" alt="GestionPro" width="90" style="display:block;width:90px;max-width:90px;height:auto;border:0;">
-                    @endif
+                    @include('emails.partials.logo-app')
                   </td>
                 </tr>
               </table>
@@ -36,7 +34,7 @@
                 </tr>
                 <tr>
                   <td style="padding-top:4px;font-family:Arial,Helvetica,sans-serif;color:#d8ebff;font-size:13px;line-height:18px;">
-                    Sistema de Gestion de Proveedores
+                    {{ config('app.name') }}
                   </td>
                 </tr>
               </table>
@@ -117,7 +115,7 @@
 
           <tr>
             <td style="padding:14px 20px;background-color:#f1f5f9;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;color:#475569;text-align:center;">
-              Sistema de Gestion de Proveedores - Mensaje automatico, no responder.
+              {{ config('app.name') }} - Mensaje automatico, no responder.
             </td>
           </tr>
         </table>

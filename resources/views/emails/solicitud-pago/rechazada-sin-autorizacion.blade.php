@@ -239,7 +239,7 @@
     <div class="header">
       @include('emails.partials.logo-app')
       <h1>Solicitud rechazada en verificaciNn</h1>
-      <p>Sistema de Gestion de Proveedores</p>
+      <p>{{ config('app.name') }}</p>
     </div>
     
     <!-- Content -->
@@ -321,7 +321,7 @@
     <!-- Footer -->
     <div class="footer">
       <p>
-        © {{ date('Y') }} {{ config('app.name', 'Sistema de Proveedores') }} - 
+        © {{ date('Y') }} {{ config('app.name') }} - 
         Este es un mensaje automático, por favor no responder directamente.
       </p>
     </div>

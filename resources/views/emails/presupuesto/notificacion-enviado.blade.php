@@ -22,7 +22,7 @@
     <div class="header">
       @include('emails.partials.logo-app')
       <h1>Presupuesto enviado</h1>
-      <p>Sistema de Gestión de Proveedores</p>
+      <p>{{ config('app.name') }}</p>
     </div>
     <div class="content">
       <div class="greeting">Hola {{ $notifiable->name }},</div>
@@ -41,7 +41,7 @@
       <p style="font-size:14px;color:#6c757d;">Adjuntamos el PDF del presupuesto para tu archivo.</p>
       <p><a href="{{ $urlDetalle }}" class="action-button">Ver detalle del presupuesto</a></p>
     </div>
-    <div class="footer">Mensaje automático - Sistema de Gestión de Proveedores</div>
+    <div class="footer">Mensaje automático - {{ config('app.name') }}</div>
   </div>
 </body>
 </html>

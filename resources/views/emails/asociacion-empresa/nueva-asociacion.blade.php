@@ -319,7 +319,7 @@
         
         <!-- Footer -->
         <div class="footer">
-            <p>&copy; {{ date('Y') }} Sistema de Proveedores. Todos los derechos reservados.</p>
+            <p>&copy; {{ date('Y') }} {{ config('app.name') }}. Todos los derechos reservados.</p>
             <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
         </div>
     </div>

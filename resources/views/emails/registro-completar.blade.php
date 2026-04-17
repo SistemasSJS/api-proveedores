@@ -127,7 +127,7 @@
             <p class="welcome-text">¡Hola!</p>
             
             <p class="message">
-                Estás a un paso de completar tu registro en la plataforma de proveedores SJS Construcciones.
+                Estás a un paso de completar tu registro en {{ config('app.name') }}.
             </p>
 
             <p class="message">
@@ -153,10 +153,10 @@
         <!-- Footer -->
         <div class="footer">
             <p class="footer-text">
-                © {{ date('Y') }} SJS Construcciones. Todos los derechos reservados.
+                © {{ date('Y') }} {{ config('app.name') }}. Todos los derechos reservados.
             </p>
             <p class="footer-text">
-                ¿Necesitas ayuda? <a href="mailto:soporte@sjsconstrucciones.com" class="footer-link">Contáctanos</a>
+                ¿Necesitas ayuda? <a href="mailto:{{ config('mail.from.address') }}" class="footer-link">Contáctanos</a>
             </p>
         </div>
     </div>

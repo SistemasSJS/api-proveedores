@@ -224,7 +224,7 @@
         <div class="header">
             @include('emails.partials.logo-app')
             <h1>🏭 Nueva Cotización Solicitada</h1>
-            <p>Sistema de Gestión de Proveedores</p>
+            <p>{{ config('app.name') }}</p>
         </div>
         
         <!-- Content -->
@@ -297,7 +297,7 @@
                 antes de esa fecha.</p>
                 
                 <p style="margin-top: 15px;">
-                    ¡Gracias por ser parte de nuestro sistema de proveedores! 
+                    ¡Gracias por ser parte de {{ config('app.name') }}! 
                     Tu participación es fundamental para el éxito de nuestros proyectos.
                 </p>
             </div>
@@ -306,7 +306,7 @@
         <!-- Footer -->
         <div class="footer">
             <p>
-                © {{ date('Y') }} {{ config('app.name', 'Sistema de Proveedores') }} - 
+                © {{ date('Y') }} {{ config('app.name') }} - 
                 Este es un mensaje automático, por favor no responder directamente.
             </p>
         </div>

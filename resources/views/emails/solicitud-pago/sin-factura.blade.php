@@ -76,7 +76,7 @@
   <div class="header">
    @include('emails.partials.logo-app')
       <h1>Solicitud de pago sin factura</h1>
-      <p>Sistema de Gestion de Proveedores</p>
+      <p>{{ config('app.name') }}</p>
   </div>
 
   <div class="content">

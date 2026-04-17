@@ -115,7 +115,7 @@
         </div>
 
         <div class="footer">
-            <p class="footer-text">© {{ date('Y') }} SJS Construcciones. Todos los derechos reservados.</p>
+            <p class="footer-text">© {{ date('Y') }} {{ config('app.name') }}. Todos los derechos reservados.</p>
         </div>
     </div>
 </body>

@@ -140,7 +140,7 @@
         <!-- Header con logo -->
         <div class="header">
             @include('emails.partials.logo-app')
-            <h1 class="header-title">¡Bienvenido a SJS Construcciones!</h1>
+            <h1 class="header-title">¡Bienvenido a {{ config('app.name') }}!</h1>
         </div>
 
         <!-- Contenido principal -->
@@ -153,9 +153,9 @@
             
             <p class="message">
                 @if($nombreEmpresa)
-                Gracias por registrar <strong>{{ $nombreEmpresa }}</strong> en nuestra plataforma de proveedores.
+                Gracias por registrar <strong>{{ $nombreEmpresa }}</strong> en {{ config('app.name') }}.
                 @else
-                Gracias por registrarte en nuestra plataforma de proveedores.
+                Gracias por registrarte en {{ config('app.name') }}.
                 @endif
                 Estamos encantados de tenerte como parte de nuestra red de colaboradores.
             </p>
@@ -200,10 +200,10 @@
         <!-- Footer -->
         <div class="footer">
             <p class="footer-text">
-                © {{ date('Y') }} SJS Construcciones. Todos los derechos reservados.
+                © {{ date('Y') }} {{ config('app.name') }}. Todos los derechos reservados.
             </p>
             <p class="footer-text">
-                ¿Necesitas ayuda? <a href="mailto:soporte@sjsconstrucciones.com" class="footer-link">Contáctanos</a>
+                ¿Necesitas ayuda? <a href="mailto:{{ config('mail.from.address') }}" class="footer-link">Contáctanos</a>
             </p>
         </div>
     </div>

@@ -106,7 +106,7 @@
         <div class="mensaje-box">{{ $mensaje }}</div>
 
         <div class="footer">
-            <p>Este correo fue enviado desde el formulario de contacto de SJS Construcciones</p>
+            <p>Este correo fue enviado desde el formulario de contacto de {{ config('app.name') }}</p>
             <p>Fecha: {{ date('d/m/Y H:i:s') }}</p>
         </div>
     </div>
