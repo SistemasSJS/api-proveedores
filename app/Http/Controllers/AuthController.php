@@ -174,8 +174,8 @@ class AuthController extends Controller
         $proveedor = Proveedor::create($request->validated());
         $token = Str::random(60);
         $cacheKey = "registro_proveedor_{$token}";
-        Cache::store('file')->put($cacheKey, $proveedor->id, now()->addHours(2));
-        Cache::put($cacheKey, $proveedor->id, now()->addHours(2));
+        Cache::store('file')->forever($cacheKey, $proveedor->id);
+        Cache::forever($cacheKey, $proveedor->id);
         Log::info('register_proveedor token cache write', [
             'cache_key' => $cacheKey,
             'proveedor_id' => $proveedor->id,

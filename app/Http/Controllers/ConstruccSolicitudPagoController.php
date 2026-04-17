@@ -1426,10 +1426,7 @@ class ConstruccSolicitudPagoController extends Controller
         $proveedores = \App\Models\Proveedor::query()
 
             // 🔥 Mantienes tu exclusión
-            ->where(function ($q) {
-                $q->where('tipo_alta', '!=', 2)
-                    ->orWhereNull('tipo_alta');
-            })
+            // -gf)
 
             // 🔥 AQUÍ está la magia: mismo patrón que index
             ->where(function ($q) use ($empresaId, $usuarioConstruccId) {
