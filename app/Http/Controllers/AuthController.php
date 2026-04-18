@@ -170,7 +170,6 @@ class AuthController extends Controller
             }
         }
 
-
         $proveedor = Proveedor::create($request->validated());
         $token = Str::random(60);
         $cacheKey = "registro_proveedor_{$token}";
@@ -188,7 +187,7 @@ class AuthController extends Controller
         Mail::to($proveedor->email)->send(new CompletaRegistroProveedorMail($url));
 
         return $this->success([
-            'url' => $url,
+            // 'url' => $url,
             'data' => $proveedor->load(Proveedor::eagerLodable()),
         ], 'Proveedor registrado. Revisa tu correo para continuar.', 200);
     }
