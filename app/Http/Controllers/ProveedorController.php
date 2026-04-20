@@ -646,4 +646,26 @@ class ProveedorController extends Controller
             'perfil_empresa_completado' => $perfilEmpresaCompletado,
         ]);
     }
+
+
+    /**
+     * Verificar rfc existe en la tabla proveedores
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function verificarRfcExistente(Request $request)
+    {
+        $request->validate([
+            'rfc' => ['required', 'string'],
+        ]);
+
+        // Verificar si el correo existe en la tabla users
+        $existe = Proveedor::where('rfc', $request->rfc)->exists();
+
+        return $this->success([
+            'existe' => $existe,
+            'rfc' => $request->rfc,
+        ], $existe ? 'El RFC ya está registrado.' : 'El RFC está disponible.', 200);
+    }
 }

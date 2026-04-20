@@ -35,6 +35,7 @@ Route::prefix('proveedores')
             Route::get('/next-folio', [ProveedorPresupuestoController::class, 'nextFolio']);
         });
 
+
         /**
          * CRUD BASICO
          */
@@ -43,6 +44,7 @@ Route::prefix('proveedores')
         Route::patch('{proveedor}', [ProveedorController::class, 'update'])->middleware(['api.access', 'audit']);
         Route::delete('{proveedor}', [ProveedorController::class, 'destroy'])->middleware(['api.access', 'audit']);
         Route::post('{proveedor}/logo', [ProveedorController::class, 'updateLogo'])->middleware(['api.access', 'audit']);
+        Route::post('verificar-rfc', [ProveedorController::class, 'verificarRfcExistente']);
 
         // Consultas especiales
         Route::get('user/{id}', [ProveedorController::class, 'getProveedorByUserId']);
