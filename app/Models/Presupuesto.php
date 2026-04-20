@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class Presupuesto extends BaseModel
@@ -664,6 +665,28 @@ class Presupuesto extends BaseModel
         return $this->hasMany(PresupuestoConcepto::class);
     }
 
+    public function registrarCambioEstado(?string $estadoAnterior = null, ?int $userId = null, $fecha = null): void
+    {
+        $estadoNuevo = (string) $this->estado;
+        $estadoAnterior = $estadoAnterior ?? $this->getOriginal('estado');
+
+        if ($estadoAnterior === $estadoNuevo) {
+            return;
+        }
+
+        $momento = $fecha ?? now();
+
+        DB::table('presupuesto_estado_logs')->insert([
+            'presupuesto_id' => $this->id,
+            'user_id' => $userId,
+            'fecha' => $momento,
+            'estado_anterior' => $estadoAnterior,
+            'estado' => $estadoNuevo,
+            'created_at' => $momento,
+            'updated_at' => $momento,
+        ]);
+    }
+
 
     /**
      * HELPERS
@@ -750,11 +773,20 @@ class Presupuesto extends BaseModel
      */
     public static function actualizarVencidos(): int
     {
-        return self::query()
+        $presupuestos = self::query()
             ->where('estado', self::ESTADO_ENVIADO)
             ->whereNotNull('fecha_vencimiento')
             ->whereDate('fecha_vencimiento', '<', now()->toDateString())
-            ->update(['estado' => self::ESTADO_VENCIDO]);
+            ->get();
+
+        foreach ($presupuestos as $presupuesto) {
+            $estadoAnterior = $presupuesto->estado;
+            $presupuesto->estado = self::ESTADO_VENCIDO;
+            $presupuesto->save();
+            $presupuesto->registrarCambioEstado($estadoAnterior);
+        }
+
+        return $presupuestos->count();
     }
 
 

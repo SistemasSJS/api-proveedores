@@ -1302,7 +1302,9 @@ class ProveedorPresupuestoController extends Controller
 
             $presupuesto->load(Presupuesto::eagerLodable());
 
-            DB::transaction(function () use ($presupuesto) {
+            DB::transaction(function () use ($request, $presupuesto) {
+                $estadoAnterior = $presupuesto->estado;
+
                 // Al enviar desde borrador, la fecha de emision se fija al dia actual.
                 $presupuesto->fecha_emision = now()->toDateString();
                 $presupuesto->estado = Presupuesto::ESTADO_ENVIADO;
@@ -1312,6 +1314,7 @@ class ProveedorPresupuestoController extends Controller
                     $presupuesto->fecha_vencimiento = $this->calcularFechaVencimiento($presupuesto);
                 }
                 $presupuesto->save();
+                $presupuesto->registrarCambioEstado($estadoAnterior, $request->user()?->id);
 
                 if ($this->debeNotificarComoProveedorCatalogo($presupuesto)) {
                     $this->notificarUsuarioPrincipalProveedorReceptor($presupuesto);

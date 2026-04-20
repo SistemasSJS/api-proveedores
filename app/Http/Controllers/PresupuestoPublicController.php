@@ -82,8 +82,10 @@ class PresupuestoPublicController extends Controller
             );
         }
 
+        $estadoAnterior = $presupuesto->estado;
         $presupuesto->estado = Presupuesto::ESTADO_ACEPTADO;
         $presupuesto->save();
+        $presupuesto->registrarCambioEstado($estadoAnterior, auth()->id());
 
         $this->notificarCreadorUnaSolaVez($presupuesto, new PresupuestoAceptadoNotification($presupuesto), PresupuestoAceptadoNotification::class);
 
@@ -124,11 +126,13 @@ class PresupuestoPublicController extends Controller
         }
 
         $motivo = $request->input('motivo');
+        $estadoAnterior = $presupuesto->estado;
         $presupuesto->estado = Presupuesto::ESTADO_RECHAZADO;
         if ($motivo) {
             $presupuesto->motivo_rechazo = trim($motivo);
         }
         $presupuesto->save();
+        $presupuesto->registrarCambioEstado($estadoAnterior, $request->user()?->id);
 
         $this->notificarCreadorUnaSolaVez($presupuesto, new PresupuestoRechazadoNotification($presupuesto, $motivo), PresupuestoRechazadoNotification::class);
 
