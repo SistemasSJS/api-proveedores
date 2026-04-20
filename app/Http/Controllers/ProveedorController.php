@@ -8,13 +8,14 @@ use App\Http\Requests\Proveedor\ProveedorStoreRequest;
 use App\Http\Requests\Proveedor\ProveedorUpdateConstanciaFiscalRequest;
 use App\Http\Requests\Proveedor\ProveedorUpdateLogoRequest;
 use App\Http\Requests\Proveedor\ProveedorUpdateRequest;
-use App\Services\ConstanciaFiscalService;
 use App\Http\Resources\Admin\AdminProveedorAcordeonResource;
 use App\Http\Resources\ProveedorResource;
 use App\Http\Resources\ProveedorValidacionPerfilCompletoResource;
 use App\Http\Resources\UserResource;
 use App\Models\Proveedor;
 use App\Models\User;
+// use App\Services\ConstanciaFiscalService;
+use App\Services\Proveedor\ConstanciaFiscalHybridService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -271,7 +272,7 @@ class ProveedorController extends Controller
     public function updateConstanciaFiscal(
         ProveedorUpdateConstanciaFiscalRequest $request,
         Proveedor $proveedor,
-        ConstanciaFiscalService $constanciaService
+        ConstanciaFiscalHybridService $constanciaFiscalService
     ) {
         $validated = $request->validated();
         $user = $request->user();
@@ -310,30 +311,35 @@ class ProveedorController extends Controller
             $fullPath = Storage::disk('public')->path($path);
             Log::info('Intentando extraer datos fiscales de: ' . $fullPath);
 
-            $datosFiscales = $constanciaService->extraerDatosFiscales($fullPath);
+            $datosFiscales = $constanciaFiscalService->extraerDatos($fullPath);
+            Log::info('Datos fiscales extraídos:', ['datos' => $datosFiscales]);
 
-            $tieneIdentificacion = $datosFiscales && (
-                ! empty($datosFiscales['rfc'])
-                || ! empty($datosFiscales['razon_social'])
-                || ! empty($datosFiscales['nombre_completo'])
-                || ! empty($datosFiscales['denominacion_razon_social'])
-            );
+            if ($datosFiscales) {
 
-            if ($tieneIdentificacion) {
-                Log::info('Datos fiscales extraídos exitosamente:', ['datos' => $datosFiscales]);
+                // La constancia puede traer varios regímenes.
+                // Para compatibilidad con campos legacy (singulares), usar el mejor candidato:
+                // 1) Primer régimen con clave
+                // 2) Si ninguno tiene clave, primer régimen con nombre
+                if (!empty($datosFiscales['regimenes']) && is_array($datosFiscales['regimenes'])) {
+                    $regimenes = array_values(array_filter(
+                        $datosFiscales['regimenes'],
+                        fn($r) => is_array($r) && (!empty($r['nombre']) || !empty($r['clave']))
+                    ));
 
-                // Procesar regímenes para agregar claves
-                if (!empty($datosFiscales['regimenes'])) {
-                    foreach ($datosFiscales['regimenes'] as &$regimen) {
-                        $regimen['clave'] = $constanciaService->obtenerClaveRegimen($regimen['nombre']);
+                    $regimenSeleccionado = null;
+                    foreach ($regimenes as $regimen) {
+                        if (!empty($regimen['clave'])) {
+                            $regimenSeleccionado = $regimen;
+                            break;
+                        }
                     }
-                    unset($regimen);
-                }
 
-                // Para compatibilidad con el sistema actual, extraer el primer régimen
-                if (!empty($datosFiscales['regimenes']) && count($datosFiscales['regimenes']) > 0) {
-                    $datosFiscales['regimen_fiscal_nombre'] = $datosFiscales['regimenes'][0]['nombre'];
-                    $datosFiscales['regimen_fiscal_clave'] = $datosFiscales['regimenes'][0]['clave'];
+                    if (!$regimenSeleccionado && !empty($regimenes)) {
+                        $regimenSeleccionado = $regimenes[0];
+                    }
+
+                    $datosFiscales['regimen_fiscal_nombre'] = $regimenSeleccionado['nombre'] ?? null;
+                    $datosFiscales['regimen_fiscal_clave'] = $regimenSeleccionado['clave'] ?? null;
                 }
 
                 // Mapear campos para la tabla de proveedores
@@ -362,8 +368,8 @@ class ProveedorController extends Controller
                 'exito' => $datosExtraccion['exito'],
                 'mensaje' => $datosExtraccion['mensaje'] ?: (
                     $datosExtraccion['exito']
-                        ? 'Datos fiscales extraídos correctamente.'
-                        : 'No se pudieron extraer datos del documento. Puedes completarlos manualmente.'
+                    ? 'Datos fiscales extraídos correctamente.'
+                    : 'No se pudieron extraer datos del documento. Puedes completarlos manualmente.'
                 ),
             ],
         ], 'Constancia fiscal actualizada con éxito.', 200);

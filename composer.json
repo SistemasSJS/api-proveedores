@@ -26,6 +26,7 @@
         "pusher/pusher-php-server": "^7.2",
         "smalot/pdfparser": "^2.12",
         "spatie/laravel-query-builder": "^6.3",
+        "spatie/pdf-to-text": "^1.54",
         "twilio/sdk": "^8.8",
         "tymon/jwt-auth": "^2.2"
     },
