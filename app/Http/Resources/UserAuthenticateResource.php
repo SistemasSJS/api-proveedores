@@ -18,6 +18,7 @@ class UserAuthenticateResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
+            'telefono_codigo_pais' => $this->telefono_codigo_pais,
             'telefono' => $this->telefono,
             'foto_perfil_url' => $this->foto_perfil_url
                 ? (

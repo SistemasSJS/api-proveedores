@@ -23,6 +23,7 @@ class Proveedor extends BaseModel
         'nombre_comercial',
         'pagina_web',
         'email',
+        'telefono_codigo_pais',
         'telefono',
         'celular',
         'estatus',

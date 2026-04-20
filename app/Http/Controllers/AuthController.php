@@ -91,12 +91,16 @@ class AuthController extends Controller
     public function register_proveedor(ProveedorRegisterRequest $request)
     {
         $validatedData = $request->validated();
+        $telefonoCodigoPais = $validatedData['telefono']['codigo'];
+        $telefonoNumero = $validatedData['telefono']['telefono'];
+        $telefonoCompleto = $telefonoCodigoPais . $telefonoNumero;
 
         // ANTES DE CREAR EL PROVEEDOR, VALIDAMOS QUE NO EXISTA UN USUARIO O PROVEEDOR CON EL MISMO CORREO O TELÉFONO
         // VALIDACIÓN: Verificar si el proveedor ya existe (RFC, email o teléfono)
         $proveedorExistente = Proveedor::where(function ($query) use ($validatedData) {
-            if (isset($validatedData['telefono'])) {
-                $query->where('telefono', $validatedData['telefono']);
+            if (isset($validatedData['telefono']['codigo']) && isset($validatedData['telefono']['telefono'])) {
+                $query->where('telefono_codigo_pais', $validatedData['telefono']['codigo'])
+                    ->where('telefono', $validatedData['telefono']['codigo'] . $validatedData['telefono']['telefono']);
             }
 
             // razon_social
@@ -105,7 +109,8 @@ class AuthController extends Controller
             }
 
             // Si se proporcionó email diferente al teléfono
-            if (isset($validatedData['email']) && $validatedData['email'] !== $validatedData['telefono']) {
+            $telefonoCompleto = ($validatedData['telefono']['codigo'] ?? '') . ($validatedData['telefono']['telefono'] ?? '');
+            if (isset($validatedData['email']) && $validatedData['email'] !== $telefonoCompleto) {
                 $query->orWhere('email', $validatedData['email']);
             }
         })->first();
@@ -118,7 +123,7 @@ class AuthController extends Controller
                     'Este teléfono ya está registrado con un usuario activo. Si olvidaste tu contraseña, usa la opción de recuperación.',
                     [
                         'campo_duplicado' => 'telefono',
-                        'valor' => $validatedData['telefono'],
+                        'valor' => $telefonoCompleto,
                     ],
                     409
                 );
@@ -170,7 +175,10 @@ class AuthController extends Controller
             }
         }
 
-        $proveedor = Proveedor::create($request->validated());
+        $proveedorPayload = $validatedData;
+        $proveedorPayload['telefono_codigo_pais'] = $telefonoCodigoPais;
+        $proveedorPayload['telefono'] = $telefonoCompleto;
+        $proveedor = Proveedor::create($proveedorPayload);
         $token = Str::random(60);
         $cacheKey = "registro_proveedor_{$token}";
         Cache::store('file')->forever($cacheKey, $proveedor->id);
@@ -187,7 +195,7 @@ class AuthController extends Controller
         Mail::to($proveedor->email)->send(new CompletaRegistroProveedorMail($url));
 
         return $this->success([
-            // 'url' => $url,
+            'url' => $url,
             'data' => $proveedor->load(Proveedor::eagerLodable()),
         ], 'Proveedor registrado. Revisa tu correo para continuar.', 200);
     }
@@ -218,6 +226,8 @@ class AuthController extends Controller
             $user = User::create([
                 'name' => $proveedor->nombre_comercial,
                 'email' => $proveedor->email,
+                'telefono_codigo_pais' => $proveedor->telefono_codigo_pais,
+                'telefono' => $proveedor->telefono,
                 'password' => Hash::make($request->password),
                 'role_id' => $idRoleProveedor,
             ]);

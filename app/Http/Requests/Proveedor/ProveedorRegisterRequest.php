@@ -26,7 +26,12 @@ use Illuminate\Validation\Rule;
  *     @OA\Property(property="tipos_empresa_id", type="integer", example=1),
  *     @OA\Property(property="tipos_empresa_otro", type="string", maxLength=60, nullable=true),
  *     @OA\Property(property="email", type="string", format="email", maxLength=255),
- *     @OA\Property(property="telefono", type="string", maxLength=15),
+ *     @OA\Property(
+ *         property="telefono",
+ *         type="object",
+ *         @OA\Property(property="codigo", type="string", example="+52"),
+ *         @OA\Property(property="telefono", type="string", example="6688112233")
+ *     ),
  *     @OA\Property(property="contacto_nombre", type="string", maxLength=150),
  *     @OA\Property(property="contacto_telefono", type="string", maxLength=15),
  *     @OA\Property(property="contacto_correo", type="string", format="email", maxLength=60),
@@ -54,7 +59,10 @@ class ProveedorRegisterRequest extends FormRequest
                 Rule::unique('users', 'email'),
                 Rule::unique('proveedores', 'email'),
             ],
-            'telefono' => ['nullable', 'string', 'max:15'],
+
+            'telefono' => ['required', 'array'],
+            'telefono.codigo' => ['required', 'string', 'regex:/^\+[0-9]{1,4}$/'],
+            'telefono.telefono' => ['required', 'string', 'regex:/^[0-9]{6,15}$/'],
             'contacto_nombre' => ['nullable', 'string', 'max:150'],
             'contacto_telefono' => ['nullable', 'string', 'max:15'],
             'contacto_correo' => ['nullable', 'email', 'max:60'],
@@ -89,8 +97,13 @@ class ProveedorRegisterRequest extends FormRequest
             'email.unique' => 'El correo electrónico ya está registrado.',
 
             'telefono.required' => 'El teléfono es obligatorio.',
-            'telefono.string' => 'El teléfono debe ser una cadena de texto.',
-            'telefono.max' => 'El teléfono no debe exceder los 15 caracteres.',
+            'telefono.array' => 'El teléfono debe tener formato válido.',
+            'telefono.codigo.required' => 'El código de país es obligatorio.',
+            'telefono.codigo.string' => 'El código de país debe ser una cadena de texto.',
+            'telefono.codigo.regex' => 'El código de país debe tener formato internacional, por ejemplo +52.',
+            'telefono.telefono.required' => 'El número de teléfono es obligatorio.',
+            'telefono.telefono.string' => 'El número de teléfono debe ser una cadena de texto.',
+            'telefono.telefono.regex' => 'El número de teléfono solo debe contener dígitos y tener entre 6 y 15 caracteres.',
 
             'contacto_nombre.required' => 'El nombre del contacto es obligatorio.',
             'contacto_nombre.string' => 'El nombre del contacto debe ser una cadena de texto.',

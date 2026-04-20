@@ -36,6 +36,7 @@ class ProveedorResource extends JsonResource
             /* =========================
              * Contacto general
              * ========================= */
+            'telefono_codigo_pais' => $this->telefono_codigo_pais,
             'telefono' => $this->telefono,
             'email' => $this->email,
             'pagina_web' => $this->pagina_web,
