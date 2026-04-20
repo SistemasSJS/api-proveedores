@@ -248,7 +248,7 @@ class Presupuesto extends BaseModel
     {
         $lista = [];
         $config = is_array($this->configuracion_condiciones) ? $this->configuracion_condiciones : [];
-        
+
         if ($this->obs_garantia_dias > 0) {
             $duracion = self::formatearDuracion((int) $this->obs_garantia_dias);
             $lista[] = sprintf(self::ENUNCIADO_GARANTIA, $duracion);
@@ -665,12 +665,12 @@ class Presupuesto extends BaseModel
         return $this->hasMany(PresupuestoConcepto::class);
     }
 
-    public function estadoLogs(): HasMany
-    {
-        return $this->hasMany(PresupuestoEstadoLog::class)
-            ->orderByDesc('fecha')
-            ->orderByDesc('id');
-    }
+    // public function estadoLogs(): HasMany
+    // {
+    //     return $this->hasMany(PresupuestoEstadoLog::class)
+    //         ->orderByDesc('fecha')
+    //         ->orderByDesc('id');
+    // }
 
     public function registrarCambioEstado(?string $estadoAnterior = null, ?int $userId = null, $fecha = null): void
     {

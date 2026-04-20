@@ -3,7 +3,7 @@
 namespace App\Http\Resources\Presupuesto;
 
 use App\Models\Presupuesto;
-use App\Http\Resources\Presupuesto\PresupuestoEstadoLogResource;
+// use App\Http\Resources\Presupuesto\PresupuestoEstadoLogResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Str;
@@ -104,7 +104,7 @@ class PresupuestoResource extends JsonResource
             'empresa_receptora_telefono' => $doc['telefono'],
             'empresa_receptora_correo' => $doc['correo'],
             'conceptos' => PresupuestoConceptoResource::collection($this->whenLoaded('conceptos')),
-            'estado_logs' => PresupuestoEstadoLogResource::collection($this->whenLoaded('estadoLogs')),
+            // 'estado_logs' => PresupuestoEstadoLogResource::collection($this->whenLoaded('estadoLogs')),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
