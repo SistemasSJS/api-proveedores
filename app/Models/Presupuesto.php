@@ -665,6 +665,13 @@ class Presupuesto extends BaseModel
         return $this->hasMany(PresupuestoConcepto::class);
     }
 
+    public function estadoLogs(): HasMany
+    {
+        return $this->hasMany(PresupuestoEstadoLog::class)
+            ->orderByDesc('fecha')
+            ->orderByDesc('id');
+    }
+
     public function registrarCambioEstado(?string $estadoAnterior = null, ?int $userId = null, $fecha = null): void
     {
         $estadoNuevo = (string) $this->estado;

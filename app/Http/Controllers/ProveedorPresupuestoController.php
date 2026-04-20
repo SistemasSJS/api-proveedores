@@ -318,7 +318,7 @@ class ProveedorPresupuestoController extends Controller
             $this->marcarNotificacionesPresupuestoRecibidoLeidas($user, (int) $presupuesto->id);
         }
 
-        $presupuesto->load(Presupuesto::eagerLodable());
+        $presupuesto->load(array_merge(Presupuesto::eagerLodable(), ['estadoLogs.user']));
         $presupuesto->asegurarTokenPublico();
 
         return $this->success(new PresupuestoResource($presupuesto));
