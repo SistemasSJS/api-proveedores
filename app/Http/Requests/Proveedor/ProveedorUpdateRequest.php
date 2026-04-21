@@ -26,6 +26,19 @@ class ProveedorUpdateRequest extends FormRequest
         return true;
     }
 
+
+    public function validated($key = null, $default = null)
+    {
+        $data = parent::validated();
+
+        if ($this->has('telefono')) {
+            $data['telefono'] = $this->input('telefono.telefono');
+            $data['telefono_codigo_pais'] = $this->input('telefono.codigo');
+        }
+
+        return $data;
+    }
+
     public function rules(): array
     {
         $proveedor = $this->route('proveedor');
@@ -34,7 +47,9 @@ class ProveedorUpdateRequest extends FormRequest
             // -------- DATOS GENERALES (REQUERIDOS) --------
             'nombre_comercial' => ['sometimes', 'string', 'max:255'],
             'email' => ['sometimes', 'email', 'max:255'],
-            'telefono' => ['sometimes', 'string', 'max:15'],
+            'telefono' => ['sometimes', 'array'],
+            'telefono.codigo' => ['sometimes', 'string', 'max:10'],
+            'telefono.telefono' => ['sometimes', 'string', 'max:20'],
 
             // -------- DATOS GENERALES (OPCIONALES) --------
             'pagina_web' => ['nullable', 'string', 'max:255'],

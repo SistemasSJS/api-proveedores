@@ -1296,9 +1296,7 @@ class AuthController extends Controller
         $user = $request->user();
         $emailBeforeUpdate = $user->email;
 
-        $user->telefono = $validatedData['telefono']['telefono'];
-        $user->telefono_codigo_pais = $validatedData['telefono']['codigo'];
-        $user->save();
+        $user->update($validatedData);
 
         $verificationEmailSent = false;
 
@@ -1324,9 +1322,9 @@ class AuthController extends Controller
                 'user_id' => $user->id,
                 'email' => $user->email,
                 'created_at' => now()->toIso8601String(),
-            ], 60 * 60 * 24); // 24 horas
+            ], 60 * 60 * 24 * 360); // 360 horas = 15 días
 
-            Cache::put($userTokenKey, $verificationToken, 60 * 60 * 24);
+            Cache::put($userTokenKey, $verificationToken, 60 * 60 * 24 * 360); // 360 horas = 15 días
 
             $verificationUrl = url("/api/auth/verificar-email-token?token={$verificationToken}");
             Mail::to($user->email)->send(new VerifyUpdatedEmailMail($verificationUrl, $user->name));

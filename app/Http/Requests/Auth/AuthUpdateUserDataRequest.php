@@ -12,6 +12,19 @@ class AuthUpdateUserDataRequest extends FormRequest
     return auth()->check(); // más seguro que devolver true siempre
   }
 
+
+  public function validated($key = null, $default = null)
+  {
+    $data = parent::validated();
+
+    return [
+      'name' => $data['name'] ?? null,
+      'email' => $data['email'] ?? null,
+      'telefono' => $data['telefono']['telefono'] ?? null,
+      'telefono_codigo_pais' => $data['telefono']['codigo'  ] ?? null,
+    ];
+  }
+
   public function rules(): array
   {
     $userId = auth()->id();
