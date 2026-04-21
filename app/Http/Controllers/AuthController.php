@@ -91,9 +91,13 @@ class AuthController extends Controller
     public function register_proveedor(ProveedorRegisterRequest $request)
     {
         $validatedData = $request->validated();
-        $telefonoCodigoPais = $validatedData['telefono']['codigo'];
-        $telefonoNumero = $validatedData['telefono']['telefono'];
-        $telefonoCompleto = $telefonoCodigoPais . $telefonoNumero;
+        $telefonoCompleto = null;
+        $telefonoCodigoPais = null;
+        if (isset($validatedData['telefono'])) {
+            $telefonoCodigoPais = $validatedData['telefono']['codigo'];
+            $telefonoNumero = $validatedData['telefono']['telefono'];
+            $telefonoCompleto = $telefonoCodigoPais . $telefonoNumero;
+        }
 
         // ANTES DE CREAR EL PROVEEDOR, VALIDAMOS QUE NO EXISTA UN USUARIO O PROVEEDOR CON EL MISMO CORREO O TELÉFONO
         // VALIDACIÓN: Verificar si el proveedor ya existe (RFC, email o teléfono)
@@ -176,8 +180,8 @@ class AuthController extends Controller
         }
 
         $proveedorPayload = $validatedData;
-        $proveedorPayload['telefono_codigo_pais'] = $telefonoCodigoPais;
-        $proveedorPayload['telefono'] = $telefonoCompleto;
+        $proveedorPayload['telefono_codigo_pais'] = $validatedData['telefono']['codigo'];
+        $proveedorPayload['telefono'] = $validatedData['telefono']['telefono'];
         $proveedor = Proveedor::create($proveedorPayload);
         $token = Str::random(60);
         $cacheKey = "registro_proveedor_{$token}";
@@ -1292,7 +1296,10 @@ class AuthController extends Controller
         $user = $request->user();
         $emailBeforeUpdate = $user->email;
 
-        $user->update($validatedData);
+        $user->telefono = $validatedData['telefono']['telefono'];
+        $user->telefono_codigo_pais = $validatedData['telefono']['codigo'];
+        $user->save();
+
         $verificationEmailSent = false;
 
         $emailChanged = array_key_exists('email', $validatedData) && $validatedData['email'] !== $emailBeforeUpdate;

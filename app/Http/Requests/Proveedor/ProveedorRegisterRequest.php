@@ -60,9 +60,9 @@ class ProveedorRegisterRequest extends FormRequest
                 Rule::unique('proveedores', 'email'),
             ],
 
-            'telefono' => ['required', 'array'],
-            'telefono.codigo' => ['required', 'string', 'regex:/^\+[0-9]{1,4}$/'],
-            'telefono.telefono' => ['required', 'string', 'regex:/^[0-9]{6,15}$/'],
+            'telefono' => ['nullable', 'array'],
+            'telefono.codigo' => ['nullable', 'string', 'regex:/^\+[0-9]{1,4}$/'],
+            'telefono.telefono' => ['nullable', 'string', 'regex:/^[0-9]{6,15}$/'],
             'contacto_nombre' => ['nullable', 'string', 'max:150'],
             'contacto_telefono' => ['nullable', 'string', 'max:15'],
             'contacto_correo' => ['nullable', 'email', 'max:60'],

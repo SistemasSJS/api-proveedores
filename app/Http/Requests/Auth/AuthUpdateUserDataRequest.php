@@ -24,13 +24,9 @@ class AuthUpdateUserDataRequest extends FormRequest
         'email',
         Rule::unique('users', 'email')->ignore($userId),
       ],
-
-      'telefono' => [
-        'sometimes',
-        'string',
-        'max:20',
-        Rule::unique('users', 'telefono')->ignore($userId),
-      ],
+      'telefono' => ['sometimes', 'array'],
+      'telefono.codigo' => ['sometimes', 'string', 'max:10'],
+      'telefono.telefono' => ['sometimes', 'string', 'max:20'],
     ];
   }
 
