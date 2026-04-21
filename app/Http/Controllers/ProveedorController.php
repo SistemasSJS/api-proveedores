@@ -654,14 +654,41 @@ class ProveedorController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function verificarRfcExistente(Request $request)
+    public function verificarRfcExistente(Request $request, Proveedor $proveedor)
     {
         $request->validate([
             'rfc' => ['required', 'string'],
         ]);
 
+        Log::info('rfc: ' . $request->rfc);
+        Log::info('proveedor: ' . $proveedor->id);
         // Verificar si el correo existe en la tabla users
-        $existe = Proveedor::where('rfc', $request->rfc)->exists();
+        $existe = Proveedor::where('rfc', $request->rfc)->where('id', '!=', $proveedor->id)->exists();
+        Log::info('existe: ' . $existe);
+
+        return $this->success([
+            'existe' => $existe,
+            'rfc' => $request->rfc,
+        ], $existe ? 'El RFC ya está registrado.' : 'El RFC está disponible.', 200);
+    }
+
+    /**
+     * Verificar rfc existe en la tabla proveedores
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function verificarRfcExistenteExcluyendoProveedor(Request $request, Proveedor $proveedor)
+    {
+        $request->validate([
+            'rfc' => ['required', 'string'],
+        ]);
+
+        Log::info('rfc: ' . $request->rfc);
+        Log::info('proveedor: ' . $proveedor->id);
+        // Verificar si el correo existe en la tabla users
+        $existe = Proveedor::where('rfc', $request->rfc)->where('id', '!=', $proveedor->id)->exists();
+        Log::info('existe: ' . $existe);
 
         return $this->success([
             'existe' => $existe,

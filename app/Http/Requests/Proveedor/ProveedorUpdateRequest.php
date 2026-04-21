@@ -28,6 +28,8 @@ class ProveedorUpdateRequest extends FormRequest
 
     public function rules(): array
     {
+        $proveedor = $this->route('proveedor');
+
         return [
             // -------- DATOS GENERALES (REQUERIDOS) --------
             'nombre_comercial' => ['sometimes', 'string', 'max:255'],
@@ -47,14 +49,14 @@ class ProveedorUpdateRequest extends FormRequest
                 'string',
                 'min:3',
                 'max:255',
-                Rule::unique('proveedores', 'razon_social')->ignore($this->route('proveedor')),
+                Rule::unique('proveedores', 'razon_social')->ignore($proveedor?->id),
             ],
 
             'rfc' => [
                 'sometimes',
                 'string',
                 'regex:/^[A-ZÑ&]{3,4}\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])[A-Z0-9]{3}$/',
-                Rule::unique('proveedores', 'rfc')->ignore($this->route('proveedor')),
+                Rule::unique('proveedores', 'rfc')->ignore($proveedor?->id),
             ],
 
             'regimen_fiscal_clave' => ['sometimes', 'string', 'max:10'],
