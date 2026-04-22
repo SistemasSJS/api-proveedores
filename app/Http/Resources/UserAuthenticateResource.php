@@ -30,6 +30,7 @@ class UserAuthenticateResource extends JsonResource
             'role' => new RoleResource($this->whenLoaded('role')),
             'estado' => $this->status,
             'solicitar_correo' => $this->solicitarCorreo(),
+            'cambiar_pass_default' => $this->cambiar_pass_default,
             'email_verificado' => !is_null($this->email_verified_at),
             'email_verified_at' => $this->email_verified_at,
             'created_at' => $this->created_at,

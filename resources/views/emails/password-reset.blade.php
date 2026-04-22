@@ -150,10 +150,8 @@
 
 <body>
     <div class="email-container">
-        <!-- Header con logo -->
         <div class="header">
-            @include('emails.partials.logo-app')
-            <h1 class="header-title">Recuperación de Contraseña</h1>
+            @include('emails.partials.app-header', ['title' => 'Recuperación de contraseña'])
         </div>
 
         <!-- Contenido principal -->
@@ -198,17 +196,8 @@
             </div> -->
         </div>
 
-        <!-- Footer -->
         <div class="footer">
-            <p class="footer-text">
-                © {{ date('Y') }} {{ config('app.name') }}. Todos los derechos reservados.
-            </p>
-            <!-- <p class="footer-text">
-                Si requiere asistencia, puede comunicarse con nosotros a través del correo
-                <a href="mailto:{{ config('mail.from.address') }}" class="footer-link">
-                    {{ config('mail.from.address') }}
-                </a>
-            </p> -->
+            @include('emails.partials.app-footer')
         </div>
     </div>
 </body>

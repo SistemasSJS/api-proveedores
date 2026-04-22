@@ -47,6 +47,8 @@ Route::prefix('auth')->group(function () {
         Route::post('update-user-data', [AuthController::class, 'updateUserData']);
         Route::post('change-password', [AuthController::class, 'updatePassword']);
         Route::get('logout', [AuthController::class, 'logout']);
+        Route::post('verificar-telefono-excluyendo-usuario', [AuthController::class, 'verificarTelefonoExistenteExcluyendoUsuario']);
+        Route::post('verificar-email-excluyendo-usuario', [AuthController::class, 'verificarEmailExistenteExcluyendoUsuario']);
 
         /**
          * NOTIFICACIONES DE SP

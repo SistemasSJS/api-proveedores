@@ -22,9 +22,7 @@
 <body>
   <div class="email-container">
     <div class="header">
-      @include('emails.partials.logo-app')
-      <h1>Presupuesto rechazado</h1>
-      <p>{{ config('app.name') }}</p>
+      @include('emails.partials.app-header', ['title' => 'Presupuesto rechazado'])
     </div>
     <div class="content">
       <div class="greeting">Hola {{ $notifiable->name }},</div>
@@ -37,13 +35,12 @@
         {{ $motivoRechazo }}
       </div>
       @endif
-      <div class="card">
-        @include('emails.presupuesto.partials.detalles-presupuesto', ['presupuesto' => $presupuesto])
-      </div>
+      @include('emails.partials.presupuesto-summary', ['presupuesto' => $presupuesto])
+      @include('emails.partials.provider-card', ['proveedor' => $presupuesto->proveedor])
       <p style="font-size:14px;color:#6c757d;">Adjuntamos el PDF del presupuesto rechazado.</p>
       <p><a href="{{ $urlDetalle }}" class="action-button">Ver detalle del presupuesto</a></p>
     </div>
-    <div class="footer">Mensaje automático - {{ config('app.name') }}</div>
+    <div class="footer">@include('emails.partials.app-footer')</div>
   </div>
 </body>
 </html>

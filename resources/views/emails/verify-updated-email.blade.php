@@ -88,8 +88,7 @@
 <body>
     <div class="email-container">
         <div class="header">
-            @include('emails.partials.logo-app')
-            <h1 class="header-title">Valida tu correo</h1>
+            @include('emails.partials.app-header', ['title' => 'Valida tu correo'])
         </div>
 
         <div class="content">
@@ -115,7 +114,7 @@
         </div>
 
         <div class="footer">
-            <p class="footer-text">© {{ date('Y') }} {{ config('app.name') }}. Todos los derechos reservados.</p>
+            @include('emails.partials.app-footer')
         </div>
     </div>
 </body>

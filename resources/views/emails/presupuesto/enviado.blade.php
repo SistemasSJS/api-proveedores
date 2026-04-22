@@ -22,19 +22,7 @@
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
                   <td align="center" valign="middle">
-                    @include('emails.partials.logo-app')
-                  </td>
-                </tr>
-              </table>
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                <tr>
-                  <td style="padding-top:14px;font-family:Arial,Helvetica,sans-serif;color:#ffffff;font-size:24px;line-height:30px;font-weight:700;">
-                    Presupuesto recibido
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding-top:4px;font-family:Arial,Helvetica,sans-serif;color:#d8ebff;font-size:13px;line-height:18px;">
-                    {{ config('app.name') }}
+                    @include('emails.partials.app-header', ['title' => 'Presupuesto recibido'])
                   </td>
                 </tr>
               </table>
@@ -58,33 +46,8 @@
                 </table>
               @endif
 
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #dbe3ee;background-color:#f8fafc;">
-                <tr>
-                  <td style="padding:16px;">
-                    <p style="margin:0 0 8px 0;font-size:18px;line-height:24px;color:#1e88e5;font-weight:700;">
-                      Presupuesto #{{ $presupuesto->numero_presupuesto }}
-                    </p>
-                    <p style="margin:0 0 10px 0;font-size:16px;line-height:22px;color:#166534;font-weight:700;">
-                      Total: ${{ number_format($presupuesto->total, 2) }}
-                    </p>
-                    <p style="margin:0 0 6px 0;font-size:14px;line-height:20px;color:#334155;">
-                      <strong>Concepto:</strong> {{ $conceptoCorto !== '' ? $conceptoCorto : 'No especificado' }}
-                    </p>
-                    <p style="margin:0 0 6px 0;font-size:14px;line-height:20px;color:#334155;">
-                      <strong>Fecha emision:</strong> {{ $presupuesto->fecha_emision?->format('d/m/Y') }}
-                    </p>
-                    @if($presupuesto->fecha_vencimiento)
-                      <p style="margin:0;font-size:14px;line-height:20px;color:#334155;">
-                        <strong>Vigencia hasta:</strong> {{ $presupuesto->fecha_vencimiento->format('d/m/Y') }}
-                      </p>
-                    @endif
-                  </td>
-                </tr>
-              </table>
-
-              <div style="margin-top:18px;">
-                @include('emails.presupuesto.partials.detalles-presupuesto', ['presupuesto' => $presupuesto])
-              </div>
+              @include('emails.partials.presupuesto-summary', ['presupuesto' => $presupuesto])
+              @include('emails.partials.provider-card', ['proveedor' => $presupuesto->proveedor])
 
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:18px;border:1px solid #d6e4ff;background-color:#eef5ff;">
                 <tr>
@@ -113,11 +76,7 @@
             </td>
           </tr>
 
-          <tr>
-            <td style="padding:14px 20px;background-color:#f1f5f9;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;color:#475569;text-align:center;">
-              {{ config('app.name') }} - Mensaje automatico, no responder.
-            </td>
-          </tr>
+          <tr><td>@include('emails.partials.app-footer')</td></tr>
         </table>
       </td>
     </tr>

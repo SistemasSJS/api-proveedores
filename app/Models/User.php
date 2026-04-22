@@ -18,7 +18,17 @@ class User extends Authenticatable
     use AutoSwaggerSchema, Filterable;
     use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
-    protected $fillable = ['name', 'email', 'telefono_codigo_pais', 'telefono', 'foto_perfil_url', 'password', 'role_id', 'status'];
+    protected $fillable = [
+        'name',
+        'email',
+        'telefono_codigo_pais',
+        'telefono',
+        'foto_perfil_url',
+        'password',
+        'cambiar_pass_default',
+        'role_id',
+        'status',
+    ];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -35,6 +45,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'status' => 'boolean',
+            'cambiar_pass_default' => 'boolean'
         ];
     }
 

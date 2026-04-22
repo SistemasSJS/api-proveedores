@@ -72,8 +72,7 @@
 <body>
     <div class="container">
         <div class="header">
-            @include('emails.partials.logo-app')
-            <h1>Nuevo Mensaje de Contacto</h1>
+            @include('emails.partials.app-header', ['title' => 'Nuevo mensaje de contacto'])
         </div>
 
         <div class="info-row">
@@ -106,8 +105,7 @@
         <div class="mensaje-box">{{ $mensaje }}</div>
 
         <div class="footer">
-            <p>Este correo fue enviado desde el formulario de contacto de {{ config('app.name') }}</p>
-            <p>Fecha: {{ date('d/m/Y H:i:s') }}</p>
+            @include('emails.partials.app-footer')
         </div>
     </div>
 </body>

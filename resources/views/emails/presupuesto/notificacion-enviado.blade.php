@@ -20,9 +20,7 @@
 <body>
   <div class="email-container">
     <div class="header">
-      @include('emails.partials.logo-app')
-      <h1>Presupuesto enviado</h1>
-      <p>{{ config('app.name') }}</p>
+      @include('emails.partials.app-header', ['title' => 'Presupuesto enviado'])
     </div>
     <div class="content">
       <div class="greeting">Hola {{ $notifiable->name }},</div>
@@ -35,13 +33,12 @@
           Te invitamos a autorizar este presupuesto desde la app de Proveedores. Ahí también podrás gestionar de forma profesional tus próximos presupuestos y solicitudes de pago.
         </p>
       </div>
-      <div style="background:#f8f9fa;border:1px solid #e9ecef;border-radius:8px;padding:16px;margin:20px 0;">
-        @include('emails.presupuesto.partials.detalles-presupuesto', ['presupuesto' => $presupuesto])
-      </div>
+      @include('emails.partials.presupuesto-summary', ['presupuesto' => $presupuesto])
+      @include('emails.partials.provider-card', ['proveedor' => $presupuesto->proveedor])
       <p style="font-size:14px;color:#6c757d;">Adjuntamos el PDF del presupuesto para tu archivo.</p>
       <p><a href="{{ $urlDetalle }}" class="action-button">Ver detalle del presupuesto</a></p>
     </div>
-    <div class="footer">Mensaje automático - {{ config('app.name') }}</div>
+    <div class="footer">@include('emails.partials.app-footer')</div>
   </div>
 </body>
 </html>

@@ -695,4 +695,30 @@ class ProveedorController extends Controller
             'rfc' => $request->rfc,
         ], $existe ? 'El RFC ya está registrado.' : 'El RFC está disponible.', 200);
     }
+
+
+    /**
+     * Verificar telefono existe en la tabla users
+     * Excluyendo el proveedor especificado
+     * @param Request $request
+     * @param Proveedor $proveedor
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function verificarTelefonoExistenteExcluyendoProveedor(Request $request, Proveedor $proveedor)
+    {
+        $request->validate([
+            'telefono' => ['required', 'string'],
+        ]);
+
+        Log::info('telefono: ' . $request->telefono);
+        Log::info('proveedor: ' . $proveedor->id);
+        // Verificar si el telefono existe en la tabla users
+        $existe = User::where('telefono', $request->telefono)->where('id', '!=', $proveedor->id)->exists();
+        Log::info('existe: ' . $existe);
+
+        return $this->success([
+            'existe' => $existe,
+            'telefono' => $request->telefono,
+        ], $existe ? 'El teléfono ya está registrado.' : 'El teléfono está disponible.', 200);
+    }
 }

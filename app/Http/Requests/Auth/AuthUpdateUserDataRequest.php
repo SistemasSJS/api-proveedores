@@ -21,7 +21,7 @@ class AuthUpdateUserDataRequest extends FormRequest
       'name' => $data['name'] ?? null,
       'email' => $data['email'] ?? null,
       'telefono' => $data['telefono']['telefono'] ?? null,
-      'telefono_codigo_pais' => $data['telefono']['codigo'  ] ?? null,
+      'telefono_codigo_pais' => $data['telefono']['codigo'] ?? null,
     ];
   }
 
@@ -31,7 +31,6 @@ class AuthUpdateUserDataRequest extends FormRequest
 
     return [
       'name' => ['sometimes', 'string', 'max:255'],
-
       'email' => [
         'sometimes',
         'email',
@@ -39,7 +38,7 @@ class AuthUpdateUserDataRequest extends FormRequest
       ],
       'telefono' => ['sometimes', 'array'],
       'telefono.codigo' => ['sometimes', 'string', 'max:10'],
-      'telefono.telefono' => ['sometimes', 'string', 'max:20'],
+      'telefono.telefono' => ['sometimes', 'string', 'max:20', Rule::unique('users', 'telefono')->ignore($userId)],
     ];
   }
 
@@ -55,6 +54,14 @@ class AuthUpdateUserDataRequest extends FormRequest
       'telefono.string' => 'El teléfono debe ser una cadena de texto.',
       'telefono.max' => 'El teléfono debe tener máximo 20 caracteres.',
       'telefono.unique' => 'Este teléfono ya está registrado.',
+      'telefono.telefono.unique' => 'Este teléfono ya está registrado.',
+      'telefono.telefono.max' => 'El teléfono debe tener máximo 20 caracteres.',
+      'telefono.telefono.string' => 'El teléfono debe ser una cadena de texto.',
+      'telefono.telefono.sometimes' => 'El teléfono es obligatorio.',
+      'telefono.telefono.array' => 'El teléfono debe ser un array.',
+      'telefono.telefono.codigo' => 'El código de país es obligatorio.',
+      'telefono.telefono.codigo.string' => 'El código de país debe ser una cadena de texto.',
+      'telefono.telefono.codigo.max' => 'El código de país debe tener máximo 10 caracteres.',
     ];
   }
 }

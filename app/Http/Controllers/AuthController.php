@@ -45,6 +45,8 @@ use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
+
+
     public function register(AuthRegisterRequest $request)
     {
         $validatedData = $request->validated();
@@ -202,7 +204,7 @@ class AuthController extends Controller
         return $this->success([
             'url' => $url,
             'data' => $proveedor->load(Proveedor::eagerLodable()),
-        ], 'Proveedor registrado. Revisa tu correo para continuar.', 200);
+        ], 'Empresa registrada y pendiente de completar registro. Revisa tu correo para continuar.', 200);
     }
 
     public function register_proveedor_completar(ProveedorRegisterCompleteRequest $request)
@@ -241,7 +243,7 @@ class AuthController extends Controller
                 'tipo_relacion' => 'PRINCIPAL',
                 'activo' => true,
                 'fecha_asignacion' => now(),
-                'observaciones' => 'Usuario principal del proveedor',
+                'observaciones' => 'Usuario principal de la empresa',
             ]);
         } else {
             $user = $proveedor->user;
@@ -274,7 +276,7 @@ class AuthController extends Controller
             'user' => new UserAuthenticateResource($user->load(User::eagerLodable())),
             'proveedor' => new ProveedorResource($proveedor->load(Proveedor::eagerLodable())),
             'token' => $token,
-        ], 'Registro completado', 201);
+        ], 'Registro completado exitosamente', 201);
     }
 
     public function update_foto_perfil(AuthUpdateFotoPerfilRequest $request)
@@ -550,6 +552,7 @@ class AuthController extends Controller
                 'telefono' => $validatedData['telefono'],
                 'is_proveedor_sp' => true,
                 'is_proveedor_catalogo' => false,
+                // FIXME: @deprecated
                 'cambiar_pass_default' => false,
                 'perfil_empresa_completo' => false,
             ]);
@@ -708,6 +711,7 @@ class AuthController extends Controller
                     'email' => $proveedor->telefono,
                     'password' => Hash::make($validatedData['password']),
                     'role_id' => $idRoleProveedor,
+                    'cambiar_pass_default' => false,
                 ]);
             } else {
                 // Si el usuario ya existe, actualizar la contraseña
@@ -1339,7 +1343,7 @@ class AuthController extends Controller
             [
                 'user' => new UserAuthenticateResource($user),
                 'token' => $token,
-                'proveedor' => new ProveedorResource($user->proveedorPrincipal()),
+                'proveedor' => $user->proveedorPrincipal() ? new ProveedorResource($user->proveedorPrincipal()) : null,
                 'email_verification_required' => $requiresEmailVerification,
                 'email_verification_sent' => $verificationEmailSent,
                 'email_verification_message' => $verificationEmailSent
@@ -1397,5 +1401,47 @@ class AuthController extends Controller
         $frontendHomeUrl = rtrim((string) config('services.frontend.url', 'http://localhost:8100'), '/') . '/';
 
         return redirect()->away($frontendHomeUrl);
+    }
+
+    /**
+     * Verificar si un teléfono ya está registrado
+     * Excluyendo el usuario actual
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function verificarTelefonoExistenteExcluyendoUsuario(Request $request)
+    {
+        $request->validate([
+            'telefono' => ['required', 'string'],
+        ]);
+
+
+        $telefono = $request->input('telefono');
+        $existe = User::where('telefono', $telefono)->where('id', '!=', $request->user()->id)->exists();
+        return $this->success([
+            'existe' => $existe,
+            'telefono' => $telefono,
+        ], $existe ? 'El teléfono ya está registrado.' : 'El teléfono está disponible.', 200);
+    }
+
+    /**
+     * Verificar si un email ya está registrado
+     * Excluyendo el usuario actual
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function verificarEmailExistenteExcluyendoUsuario(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'string'],
+        ]);
+
+
+        $email = $request->input('email');
+        $existe = User::where('email', $email)->where('id', '!=', $request->user()->id)->exists();
+        return $this->success([
+            'existe' => $existe,
+            'email' => $email,
+        ], $existe ? 'El email ya está registrado.' : 'El email está disponible.', 200);
     }
 }

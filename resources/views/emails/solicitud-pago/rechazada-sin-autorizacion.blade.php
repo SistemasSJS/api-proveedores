@@ -237,9 +237,7 @@
   <div class="email-container">
     <!-- Header -->
     <div class="header">
-      @include('emails.partials.logo-app')
-      <h1>Solicitud rechazada en verificaciNn</h1>
-      <p>{{ config('app.name') }}</p>
+      @include('emails.partials.app-header', ['title' => 'Solicitud rechazada en verificación'])
     </div>
     
     <!-- Content -->
@@ -257,36 +255,13 @@
         Esto significa que no llegó a la etapa de autorización. Por favor revisa los detalles y realiza las correcciones necesarias.
       </div>
       
-      <!-- Solicitud Card -->
+      @include('emails.partials.spp-summary', [
+        'sppFolio' => $solicitudPagoFolio,
+        'sppEstado' => 'Rechazada en verificación',
+        'sppFecha' => now(),
+      ])
+
       <div class="solicitud-card">
-        <div class="solicitud-header">
-          <div class="solicitud-folio">
-            Folio #{{ $solicitudPagoFolio }}
-          </div>
-          <div class="solicitud-status">
-            Rechazada
-          </div>
-        </div>
-        
-        <div class="details-grid">
-          <div class="detail-item">
-            <span class="detail-label">📅 Fecha:</span>
-            <span class="detail-value">{{ now()->format('d/m/Y') }}</span>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">🏢 Proveedor ID:</span>
-            <span class="detail-value">{{ $proveedorId }}</span>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">📊 Estado:</span>
-            <span class="detail-value">Rechazada</span>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">⏱️ Etapa:</span>
-            <span class="detail-value">Verificación</span>
-          </div>
-        </div>
-        
         @if($motivo)
         <div class="motivo-box">
           <span class="motivo-label">💬 Motivo del rechazo:</span>
@@ -318,13 +293,7 @@
       </div>
     </div>
     
-    <!-- Footer -->
-    <div class="footer">
-      <p>
-        © {{ date('Y') }} {{ config('app.name') }} - 
-        Este es un mensaje automático, por favor no responder directamente.
-      </p>
-    </div>
+    <div class="footer">@include('emails.partials.app-footer')</div>
   </div>
 </body>
 </html>

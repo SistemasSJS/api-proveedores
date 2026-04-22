@@ -246,9 +246,7 @@
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-            @include('emails.partials.logo-app')
-            <h1>Nueva Asociación con Empresa</h1>
-            <p>¡Tu red de proveedores está creciendo!</p>
+            @include('emails.partials.app-header', ['title' => 'Nueva asociación con empresa', 'subtitle' => 'Tu red de proveedores está creciendo'])
         </div>
         
         <!-- Content -->
@@ -318,10 +316,7 @@
         </div>
         
         <!-- Footer -->
-        <div class="footer">
-            <p>&copy; {{ date('Y') }} {{ config('app.name') }}. Todos los derechos reservados.</p>
-            <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
-        </div>
+        <div class="footer">@include('emails.partials.app-footer')</div>
     </div>
 </body>
 </html>

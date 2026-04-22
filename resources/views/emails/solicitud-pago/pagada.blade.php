@@ -217,9 +217,7 @@
   <div class="email-container">
     <!-- Header -->
     <div class="header">
-      @include('emails.partials.logo-app')
-      <h1>Solicitud de pago pagada</h1>
-      <p>{{ config('app.name') }}</p>
+      @include('emails.partials.app-header', ['title' => 'Solicitud de pago pagada'])
     </div>
     
     <!-- Content -->
@@ -236,44 +234,12 @@
         Se confirmo el pago de tu solicitud.
       </div>
       
-      <!-- Solicitud Card -->
-      <div class="solicitud-card">
-        <div class="solicitud-header">
-          <table class="solicitud-header-table" role="presentation" cellspacing="0" cellpadding="0">
-            <tr>
-              <td class="solicitud-folio">
-                Folio #{{ $solicitudPagoFolio }}
-              </td>
-              @if($monto)
-              <td class="solicitud-monto" align="right">
-                ${{ number_format($monto, 2) }}
-              </td>
-              @endif
-            </tr>
-          </table>
-        </div>
-        
-        <div class="details-grid">
-          <div class="detail-item">
-            <span class="detail-label">📅 Fecha:</span>
-            <span class="detail-value">{{ now()->format('d/m/Y') }}</span>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">🏢 Proveedor ID:</span>
-            <span class="detail-value">{{ $proveedorId }}</span>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">📊 Estado:</span>
-            <span class="detail-value">Pagada</span>
-          </div>
-          @if($monto)
-          <div class="detail-item">
-            <span class="detail-label">💵 Monto:</span>
-            <span class="detail-value">${{ number_format($monto, 2) }}</span>
-          </div>
-          @endif
-        </div>
-      </div>
+      @include('emails.partials.spp-summary', [
+        'sppFolio' => $solicitudPagoFolio,
+        'sppEstado' => 'Pagada',
+        'sppMonto' => $monto ?? null,
+        'sppFecha' => now(),
+      ])
       
       <div class="info-box">
         <div class="info-box-label">💡 Información:</div>
@@ -298,10 +264,7 @@
     </div>
     
     <!-- Footer -->
-    <div class="footer">
-      <p>{{ config('app.name') }}</p>
-      <p>Este es un mensaje automático, por favor no responder directamente.</p>
-    </div>
+    <div class="footer">@include('emails.partials.app-footer')</div>
   </div>
 </body>
 </html>

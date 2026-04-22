@@ -21,9 +21,7 @@
 <body>
   <div class="email-container">
     <div class="header">
-      @include('emails.partials.logo-app')
-      <h1>Presupuesto por vencer</h1>
-      <p>{{ config('app.name') }}</p>
+      @include('emails.partials.app-header', ['title' => 'Presupuesto por vencer'])
     </div>
     <div class="content">
       <div class="greeting">Hola {{ $notifiable->name }},</div>
@@ -32,13 +30,12 @@
         <strong>{{ $presupuesto->empresa_receptora_empresa ?? $presupuesto->empresa_receptora_nombre ?? 'el cliente' }}</strong>
         vence el <strong>{{ $fechaVencimiento }}</strong> y sigue sin respuesta.
       </div>
-      <div class="card">
-        @include('emails.presupuesto.partials.detalles-presupuesto', ['presupuesto' => $presupuesto])
-      </div>
+      @include('emails.partials.presupuesto-summary', ['presupuesto' => $presupuesto])
+      @include('emails.partials.provider-card', ['proveedor' => $presupuesto->proveedor])
       <p style="font-size:14px;color:#6c757d;">Se adjunta el PDF del presupuesto. Puedes dar seguimiento desde la app.</p>
       <p><a href="{{ $urlDetalle }}" class="action-button">Abrir en la aplicación</a></p>
     </div>
-    <div class="footer">Mensaje automático - {{ config('app.name') }}</div>
+    <div class="footer">@include('emails.partials.app-footer')</div>
   </div>
 </body>
 </html>

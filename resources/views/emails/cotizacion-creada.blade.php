@@ -222,9 +222,7 @@
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-            @include('emails.partials.logo-app')
-            <h1>🏭 Nueva Cotización Solicitada</h1>
-            <p>{{ config('app.name') }}</p>
+            @include('emails.partials.app-header', ['title' => 'Nueva cotización solicitada'])
         </div>
         
         <!-- Content -->
@@ -253,11 +251,11 @@
                 <div class="details-grid">
                     <div class="detail-item">
                         <span class="detail-label">📅 Fecha:</span>
-                        <span class="detail-value">{{ $cotizacion->fecha_cotizacion->format('d/m/Y') }}</span>
+                        <span class="detail-value">{{ $cotizacion->fecha_cotizacion->format('d/m/Y H:i') }}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">⏰ Vence:</span>
-                        <span class="detail-value">{{ $cotizacion->fecha_vencimiento->format('d/m/Y') }}</span>
+                        <span class="detail-value">{{ $cotizacion->fecha_vencimiento->format('d/m/Y H:i') }}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">📦 Productos:</span>
@@ -293,7 +291,7 @@
             
             <div class="footer-text">
                 <p><strong>¡Importante!</strong> Esta cotización tiene fecha de vencimiento 
-                {{ $cotizacion->fecha_vencimiento->format('d/m/Y') }}. Te recomendamos responder 
+                {{ $cotizacion->fecha_vencimiento->format('d/m/Y H:i') }}. Te recomendamos responder 
                 antes de esa fecha.</p>
                 
                 <p style="margin-top: 15px;">
@@ -304,12 +302,7 @@
         </div>
         
         <!-- Footer -->
-        <div class="footer">
-            <p>
-                © {{ date('Y') }} {{ config('app.name') }} - 
-                Este es un mensaje automático, por favor no responder directamente.
-            </p>
-        </div>
+        <div class="footer">@include('emails.partials.app-footer')</div>
     </div>
 </body>
 </html>

@@ -94,26 +94,21 @@
 
  <div class="email-container">
   <div class="header">
-   @include('emails.partials.logo-app')
-      <h1>Factura subida</h1>
-      <p>{{ config('app.name') }}</p>
+   @include('emails.partials.app-header', ['title' => 'Factura subida'])
   </div>
 
   <div class="content">
    <p>Hola <strong>{{ $notifiable->name }}</strong>,</p>
 
    <div class="success-box">
-    La solicitud de pago <strong>#{{ $solicitudPagoFolio }}</strong> ya cuenta con factura.
+    La solicitud de pago ya cuenta con factura.
    </div>
 
-   <div class="details">
-    <div class="detail-item">
-     <span class="detail-label">Folio:</span> #{{ $solicitudPagoFolio }}
-    </div>
-    <div class="detail-item">
-     <span class="detail-label">Fecha:</span> {{ now()->format('d/m/Y') }}
-    </div>
-   </div>
+   @include('emails.partials.spp-summary', [
+    'sppFolio' => $solicitudPagoFolio,
+    'sppEstado' => 'Factura subida',
+    'sppFecha' => now(),
+   ])
 
    <p style="text-align: center; margin: 30px 0;">
     <a href="{{ $urlSolicitud }}" class="action-button">
@@ -122,9 +117,7 @@
    </p>
   </div>
 
-  <div class="footer">
-   © {{ date('Y') }} {{ config('app.name') }} · Mensaje automático
-  </div>
+  <div class="footer">@include('emails.partials.app-footer')</div>
  </div>
 
 </body>

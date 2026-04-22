@@ -116,10 +116,8 @@
 </head>
 <body>
     <div class="email-container">
-        <!-- Header con logo -->
         <div class="header">
-            @include('emails.partials.logo-app')
-            <h1 class="header-title">¡Completa tu registro!</h1>
+            @include('emails.partials.app-header', ['title' => '¡Completa tu registro!'])
         </div>
 
         <!-- Contenido principal -->
@@ -141,23 +139,10 @@
                 </a>
             </div>
 
-            <!-- Nota de seguridad -->
-            <div class="security-note">
-                <p>
-                    <strong>⚠️ Nota importante:</strong> Si no solicitaste este registro, 
-                    puedes ignorar este correo de forma segura.
-                </p>
-            </div>
         </div>
 
-        <!-- Footer -->
         <div class="footer">
-            <p class="footer-text">
-                © {{ date('Y') }} {{ config('app.name') }}. Todos los derechos reservados.
-            </p>
-            <p class="footer-text">
-                ¿Necesitas ayuda? <a href="mailto:{{ config('mail.from.address') }}" class="footer-link">Contáctanos</a>
-            </p>
+            @include('emails.partials.app-footer')
         </div>
     </div>
 </body>

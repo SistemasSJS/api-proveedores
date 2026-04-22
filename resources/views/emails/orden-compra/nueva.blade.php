@@ -209,9 +209,7 @@
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-            @include('emails.partials.logo-app')
-            <h1>📦 Nueva Orden de Compra</h1>
-            <p>{{ config('app.name') }}</p>
+            @include('emails.partials.app-header', ['title' => 'Nueva orden de compra'])
         </div>
         
         <!-- Content -->
@@ -239,7 +237,7 @@
                 <div class="details-grid">
                     <div class="detail-item">
                         <span class="detail-label">📅 Fecha:</span>
-                        <span class="detail-value">{{ now()->format('d/m/Y') }}</span>
+                        <span class="detail-value">{{ now()->format('d/m/Y H:i') }}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">🏢 Proveedor ID:</span>
@@ -279,12 +277,7 @@
         </div>
         
         <!-- Footer -->
-        <div class="footer">
-            <p>
-                © {{ date('Y') }} {{ config('app.name') }} - 
-                Este es un mensaje automático, por favor no responder directamente.
-            </p>
-        </div>
+        <div class="footer">@include('emails.partials.app-footer')</div>
     </div>
 </body>
 </html>
