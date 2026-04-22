@@ -180,8 +180,9 @@ class AuthController extends Controller
         }
 
         $proveedorPayload = $validatedData;
-        $proveedorPayload['telefono_codigo_pais'] = $validatedData['telefono']['codigo'];
-        $proveedorPayload['telefono'] = $validatedData['telefono']['telefono'];
+
+        $proveedorPayload['telefono_codigo_pais'] = $validatedData['telefono']['codigo'] ?? null;
+        $proveedorPayload['telefono'] = $validatedData['telefono']['telefono'] ?? null;
         $proveedor = Proveedor::create($proveedorPayload);
         $token = Str::random(60);
         $cacheKey = "registro_proveedor_{$token}";
