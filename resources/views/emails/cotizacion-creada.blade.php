@@ -28,9 +28,9 @@
         }
         
         .header {
-            background: linear-gradient(135deg, #FFC107 0%, #FFD54F 100%);
-            color: #000000;
-            padding: 30px 20px;
+            background: transparent;
+            padding: 0;
+            margin: 0;
             text-align: center;
         }
         

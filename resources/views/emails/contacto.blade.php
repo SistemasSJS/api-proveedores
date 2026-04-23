@@ -21,9 +21,10 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .header {
-            border-bottom: 3px solid #0066cc;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
+            border-bottom: none;
+            padding: 0;
+            margin: 0 0 24px 0;
+            text-align: center;
         }
         .header .logo {
             max-width: 80px;

@@ -22,10 +22,10 @@
   }
 
   .header {
-   background: linear-gradient(135deg, #4caf50, #66bb6a);
-   color: #ffffff;
+   background: transparent;
+   padding: 0;
+   margin: 0;
    text-align: center;
-   padding: 30px 20px;
   }
 
   .logo {

@@ -83,7 +83,7 @@ class AuthController extends Controller
         // TODO: Add request to CONSTRUCC APP
         // ...
 
-        return $this->success($data, 'Proveedor pendiente de completar registro');
+        return $this->success($data, 'Usuario pendiente de completar registro en GestionPro');
         // [
         //     'user' => new UserResource($user->load(User::eagerLodable())),
         //     'data' => $data
@@ -177,7 +177,7 @@ class AuthController extends Controller
                         }),
                     ],
                     'token_temporal' => $tokenTemporal,
-                ], 'Tu empresa ya está registrada. Verifica tus datos y completa el registro.', 200);
+                ], 'Empresa ya registrada. Verifica tus datos y completa el registro.', 200);
             }
         }
 
@@ -204,7 +204,7 @@ class AuthController extends Controller
         return $this->success([
             'url' => $url,
             'data' => $proveedor->load(Proveedor::eagerLodable()),
-        ], 'Empresa registrada y pendiente de completar registro. Revisa tu correo para continuar.', 200);
+        ], 'Empresa registrada y pendiente de completar registro en GestionPro. Revisa tu correo para continuar.', 200);
     }
 
     public function register_proveedor_completar(ProveedorRegisterCompleteRequest $request)
@@ -276,7 +276,7 @@ class AuthController extends Controller
             'user' => new UserAuthenticateResource($user->load(User::eagerLodable())),
             'proveedor' => new ProveedorResource($proveedor->load(Proveedor::eagerLodable())),
             'token' => $token,
-        ], 'Registro completado exitosamente', 201);
+        ], 'Registro completado exitosamente en GestionPro', 201);
     }
 
     public function update_foto_perfil(AuthUpdateFotoPerfilRequest $request)
@@ -318,7 +318,7 @@ class AuthController extends Controller
                 ->first();
 
             if (! $user || ! Hash::check($request->password, $user->password)) {
-                throw new UnauthorizedException('Credenciales incorrectas.');
+                throw new UnauthorizedException('Credenciales incorrectas en GestionPro.');
             }
 
             $token = $user->createToken('API Token')->plainTextToken;
@@ -328,18 +328,18 @@ class AuthController extends Controller
             return $this->success([
                 'user' => new UserAuthenticateResource($user),
                 'token' => $token,
-            ], 'Login exitoso.', 201);
+            ], 'Login exitoso en GestionPro.', 201);
         } catch (ValidationException $e) {
             // Error en la validación de los datos de entrada
-            return $this->error('Los datos proporcionados no son válidos.', $e->errors(), 422);
+            return $this->error('Los datos proporcionados no son válidos en GestionPro.', $e->errors(), 422);
         } catch (UnauthorizedException $e) {
             // Credenciales incorrectas o acceso no autorizado
-            Log::error('Error al iniciar sesión: ' . $e->getMessage());
+            Log::error('Error al iniciar sesión en GestionPro: ' . $e->getMessage());
             return $this->error($e->getMessage(), [], 401);
         } catch (\Exception $e) {
             // Cualquier otro error inesperado
-            Log::error('Error al iniciar sesión: ' . $e->getMessage());
-            return $this->error('Ocurrió un error al intentar iniciar sesión.', [], 500);
+            Log::error('Error al iniciar sesión en GestionPro: ' . $e->getMessage());
+            return $this->error('Ocurrió un error al intentar iniciar sesión en GestionPro.', [], 500);
         }
     }
 
@@ -368,7 +368,7 @@ class AuthController extends Controller
     public function refresh(Request $request)
     {
         if (! $request->user()) {
-            throw new UnauthorizedException('No autorizado o sesión no válida');
+            throw new UnauthorizedException('No autorizado o sesión no válida en GestionPro');
         }
 
         $user = $request->user();
@@ -393,7 +393,7 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         if (! $request->user()) {
-            throw new UnauthorizedException('No autorizado o sesión no válida');
+            throw new UnauthorizedException('No autorizado o sesión no válida en GestionPro');
         }
 
         // Solo eliminar el token del dispositivo actual, no todos los tokens
@@ -403,7 +403,7 @@ class AuthController extends Controller
             [
                 'success' => true,
             ],
-            'Sesión cerrada correctamente',
+            'Sesión cerrada correctamente en GestionPro',
             200
         );
     }
@@ -434,7 +434,7 @@ class AuthController extends Controller
             'user' => new UserAuthenticateResource($user),
             'token' => $newToken,
             'proveedor' => new ProveedorResource($proveedor),
-        ], 'Token renovado exitosamente', 200);
+        ], 'Token renovado exitosamente en GestionPro', 200);
     }
 
     /**
@@ -482,13 +482,13 @@ class AuthController extends Controller
                 })
                 ->first();
 
-            $this->success($proveedorExistente, 'Proveedor encontrado', 200);
+            $this->success($proveedorExistente, 'Proveedor encontrado en GestionPro', 200);
 
             if ($proveedorExistente) {
                 // Caso 1: Proveedor ya tiene usuario asignado (tipo_alta = 1)
                 if ($proveedorExistente->tipo_alta == 1) {
                     return $this->error(
-                        'Este teléfono ya está registrado con un usuario activo. Si olvidaste tu contraseña, usa la opción de recuperación.',
+                        'Este teléfono ya está registrado con un usuario activo en GestionPro. Si olvidaste tu contraseña, usa la opción de recuperación en GestionPro.',
                         [
                             'campo_duplicado' => 'telefono',
                             'valor' => $validatedData['telefono'],
@@ -540,7 +540,7 @@ class AuthController extends Controller
                             }),
                         ],
                         'token_temporal' => $tokenTemporal,
-                    ], 'Tu empresa ya está registrada. Verifica tus datos y completa el registro.', 200);
+                    ], 'Empresa ya registrada. Verifica tus datos y completa el registro en GestionPro.', 200);
                 }
             }
 
@@ -596,7 +596,7 @@ class AuthController extends Controller
             if ($request->solo_validar) {
                 return $this->success([
                     'proveedor' => new ProveedorResource($proveedor->load(Proveedor::eagerLodable())),
-                ], 'Validación exitosa. El proveedor no fue registrado, solo se verificaron los datos.', 200);
+                ], 'Validación exitosa. El proveedor no fue registrado, solo se verificaron los datos en GestionPro.', 200);
             }
 
             // Registrar relación con empresa Construcc si se proporcionaron los datos
@@ -624,17 +624,17 @@ class AuthController extends Controller
                     'usuario' => $validatedData['telefono'],
                     'mensaje' => 'Guarda tu usuario para iniciar sesión',
                 ],
-            ], 'Registro completado exitosamente', 201);
+            ], 'Registro completado exitosamente en GestionPro', 201);
         } catch (ValidationException $e) {
             // Error en la validación de los datos de entrada
-            return $this->error('Los datos proporcionados no son válidos.', $e->errors(), 422);
+            return $this->error('Los datos proporcionados no son válidos en GestionPro.', $e->errors(), 422);
         } catch (\Exception $e) {
-            Log::info('Error en register_proveedor_basico_sp', [
+            Log::info('Error en register_proveedor_basico_sp en GestionPro', [
                 'error_message' => $e->getMessage(),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
             // Cualquier otro error inesperado
-            return $this->error('Ocurrió un error al intentar completar el registro. Por favor, intenta nuevamente.', [], 500);
+            return $this->error('Ocurrió un error al intentar completar el registro en GestionPro. Por favor, intenta nuevamente.', [], 500);
         }
     }
 
@@ -658,7 +658,7 @@ class AuthController extends Controller
             // 2. Validar que sea tipo_alta = 2
             if ($proveedor->tipo_alta !== 2) {
                 return $this->error(
-                    'Este proveedor no requiere completar registro. Ya tiene un usuario asignado.',
+                    'Este proveedor no requiere completar registro en GestionPro. Ya tiene un usuario asignado.',
                     null,
                     403
                 );
@@ -675,10 +675,10 @@ class AuthController extends Controller
                     (time() - $tokenData['timestamp']) > 3600
                 ) { // Token válido por 1 hora
 
-                    return $this->error('Token inválido o expirado. Por favor, intenta registrarte nuevamente.', null, 403);
+                    return $this->error('Token inválido o expirado en GestionPro. Por favor, intenta registrarte nuevamente.', null, 403);
                 }
             } catch (\Exception $e) {
-                return $this->error('Token inválido. Por favor, intenta registrarte nuevamente.', null, 403);
+                return $this->error('Token inválido en GestionPro. Por favor, intenta registrarte nuevamente.', null, 403);
             }
 
             // 4. Actualizar datos del proveedor si se enviaron
@@ -727,7 +727,7 @@ class AuthController extends Controller
                     'tipo_relacion' => 'PRINCIPAL',
                     'activo' => true,
                     'fecha_asignacion' => now(),
-                    'observaciones' => 'Usuario completó registro desde tipo_alta=2',
+                    'observaciones' => 'Usuario completó registro desde tipo_alta=2 en GestionPro',
                 ]);
             }
 
@@ -747,7 +747,7 @@ class AuthController extends Controller
             }
 
             // 10. Registrar en logs
-            Log::info('Proveedor completó registro desde tipo_alta=2 a tipo_alta=1', [
+            Log::info('Proveedor completó registro desde tipo_alta=2 a tipo_alta=1 en GestionPro', [
                 'proveedor_id' => $proveedor->id,
                 'user_id' => $user->id,
                 'telefono' => $proveedor->telefono,
@@ -764,18 +764,17 @@ class AuthController extends Controller
                 'user' => new UserAuthenticateResource($user),
                 'proveedor' => new ProveedorResource($proveedor->load(Proveedor::eagerLodable())),
                 'token' => $token,
-                'mensaje' => 'Registro completado exitosamente. Ya puedes iniciar sesión.',
-            ], 'Registro completado exitosamente', 201);
+            ], 'Registro completado exitosamente en GestionPro. Ya puedes iniciar sesión.', 201);
         } catch (\Exception $e) {
             DB::rollBack();
 
-            Log::error('Error al completar registro de proveedor', [
+            Log::error('Error al completar registro de proveedor en GestionPro', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
             return $this->error(
-                'Ocurrió un error al completar el registro. Por favor, intenta nuevamente.',
+                'Ocurrió un error al completar el registro en GestionPro. Por favor, intenta nuevamente.',
                 null,
                 500
             );
@@ -799,32 +798,32 @@ class AuthController extends Controller
          * 4. MANDAR NOTIFICACION AL PROVEEDOR (DATABASE, PUSH, BROADCAST, MAIL ..)
          */
         try {
-            Log::info('Iniciando proceso de asociar proveedor existente.', [
-                'payload_request' => $request->all()
-            ]);
+            // Log::info('Iniciando proceso de asociar proveedor existente.', [
+            //     'payload_request' => $request->all()
+            // ]);
 
             $validatedData = $request->validated();
-            Log::info('Datos validados correctamente.', [
-                'validated' => $validatedData
-            ]);
+            // Log::info('Datos validados correctamente.', [
+            //     'validated' => $validatedData
+            // ]);
 
             // 1. Obtener o crear la empresa
-            Log::info('Buscando / creando empresa constructora...', [
-                'empresa_construcc_id' => $validatedData['empresa_construcc_id'] ?? null
-            ]);
+            // Log::info('Buscando / creando empresa constructora...', [
+            //     'empresa_construcc_id' => $validatedData['empresa_construcc_id'] ?? null
+            // ]);
 
             $empresa = $this->getOrCreateEmpresaConstruccFromRequestData($validatedData);
 
-            Log::info('Resultado búsqueda/creación empresa:', [
-                'empresa_id' => $empresa->id ?? null,
-                'empresa_nombre' => $empresa->nombre ?? null,
-                'empresa_rfc' => $empresa->rfc ?? null
-            ]);
+            // Log::info('Resultado búsqueda/creación empresa:', [
+            //     'empresa_id' => $empresa->id ?? null,
+            //     'empresa_nombre' => $empresa->nombre ?? null,
+            //     'empresa_rfc' => $empresa->rfc ?? null
+            // ]);
 
             // 2. Buscar proveedor por teléfono
-            Log::info('Buscando proveedor por teléfono...', [
-                'telefono' => $validatedData['telefono']
-            ]);
+            // Log::info('Buscando proveedor por teléfono...', [
+            //     'telefono' => $validatedData['telefono']
+            // ]);
 
             $proveedor = Proveedor::where('telefono', $validatedData['telefono'])->first();
 
@@ -832,20 +831,20 @@ class AuthController extends Controller
                 Log::warning('Proveedor no encontrado por teléfono.', [
                     'telefono' => $validatedData['telefono']
                 ]);
-                return $this->error('No se encontró un proveedor con este teléfono.', [], 404);
+                return $this->error('No se encontró un proveedor con este teléfono en GestionPro.', [], 404);
             }
 
-            Log::info('Proveedor encontrado.', [
-                'proveedor_id' => $proveedor->id,
-                'proveedor_nombre' => $proveedor->nombre_comercial ?? $proveedor->razon_social
-            ]);
+            // Log::info('Proveedor encontrado.', [
+            //     'proveedor_id' => $proveedor->id,
+            //     'proveedor_nombre' => $proveedor->nombre_comercial ?? $proveedor->razon_social
+            // ]);
 
             // 3. Validar si ya existe la asociación
-            Log::info('Verificando si ya existe una asociación...', [
-                'empresa_id' => $empresa->id,
-                'proveedor_id' => $proveedor->id,
-                'usuario_construcc_id' => $validatedData['usuario_construcc_id']
-            ]);
+            // Log::info('Verificando si ya existe una asociación...', [
+            //     'empresa_id' => $empresa->id,
+            //     'proveedor_id' => $proveedor->id,
+            //     'usuario_construcc_id' => $validatedData['usuario_construcc_id']
+            // ]);
 
             $existeAsociacion = DB::table('empresa_construcc_proveedor')
                 ->where('empresa_construcc_id', $empresa->id)
@@ -859,18 +858,18 @@ class AuthController extends Controller
                     'proveedor_id' => $proveedor->id
                 ]);
 
-                return $this->error('Este usuario ya tiene registrada una invitación para este proveedor.', null, 400);
+                return $this->error('Este usuario ya tiene registrada una invitación para este proveedor en GestionPro.', null, 400);
             }
 
             // 4. Crear asociación
-            Log::info('Creando asociación proveedor-empresa...');
+            // Log::info('Creando asociación proveedor-empresa en GestionPro...');
 
             $proveedor->empresasConstrucc()->attach($empresa->id, [
                 'usuario_construcc_id' => $validatedData['usuario_construcc_id'],
                 'usuario_construcc_nombre' => $validatedData['usuario_construcc_nombre'],
             ]);
 
-            Log::info('Asociación creada exitosamente.', [
+            Log::info('Asociación creada exitosamente en GestionPro.', [
                 'empresa_id'    => $empresa->id,
                 'proveedor_id'  => $proveedor->id,
                 'usuario_construcc_id' => $validatedData['usuario_construcc_id']
@@ -878,7 +877,7 @@ class AuthController extends Controller
 
             // 5. Enviar notificación
             try {
-                Log::info('Intentando enviar notificación al proveedor...');
+                Log::info('Intentando enviar notificación al proveedor en GestionPro...');
 
                 $usuario = $proveedor->usuarioPrincipal();
 
@@ -893,9 +892,9 @@ class AuthController extends Controller
                         $validatedData['usuario_construcc_nombre']
                     ));
 
-                    Log::info('Notificación enviada al proveedor.', [
-                        'usuario_principal' => $usuario->id,
-                    ]);
+                    // Log::info('Notificación enviada al proveedor.', [
+                    //     'usuario_principal' => $usuario->id,
+                    // ]);
                 } else {
                     Log::warning('Proveedor no tiene usuario principal. No se envió notificación.');
                 }
@@ -907,21 +906,21 @@ class AuthController extends Controller
                 ]);
             }
 
-            Log::info('Proceso de asociación completado exitosamente.');
+            // Log::info('Proceso de asociación completado exitosamente.');
 
             return $this->success([
                 'proveedor' => new ProveedorResource($proveedor->load(Proveedor::eagerLodable())),
                 'asociado' => true,
                 'empresa_id' => $empresa->id,
                 'empresa_nombre' => $empresa->nombre,
-            ], 'Proveedor asociado exitosamente a la empresa.', 200);
+            ], 'Empresa de GestionPro asociada exitosamente a la empresa en GestionPro.', 200);
         } catch (\Exception $e) {
-            Log::error('Error general al asociar proveedor existente', [
+            Log::error('Error general al asociar proveedor existente en GestionPro', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return $this->error('Error al asociar el proveedor. Intenta nuevamente.', [], 500);
+            return $this->error('No fue posible asociar la Empresa de GestionPro con la empresa en GestionPro. Por favor, intenta nuevamente.', [], 500);
         }
     }
 
@@ -936,7 +935,7 @@ class AuthController extends Controller
         $data = Cache::get("registro_proveedor_basico_{$request->token}");
 
         if (! $data) {
-            return $this->error('Token inválido o expirado', [], 498);
+            return $this->error('Token inválido o expirado en GestionPro', [], 498);
         }
 
         // Crear proveedor con datos del cache
@@ -999,7 +998,7 @@ class AuthController extends Controller
             'user' => new UserAuthenticateResource($user),
             'proveedor' => new ProveedorResource($proveedor->load(Proveedor::eagerLodable())),
             'token' => $token,
-        ], 'Registro completado exitosamente', 201);
+        ], 'Registro completado exitosamente en GestionPro.', 201);
     }
 
     /**
@@ -1014,7 +1013,7 @@ class AuthController extends Controller
         // Verificar que la contraseña actual sea correcta
         if (! Hash::check($request->current_password, $user->password)) {
             throw ValidationException::withMessages([
-                'current_password' => ['La contraseña actual no es correcta.'],
+                'current_password' => ['La contraseña actual no es correcta en GestionPro.'],
             ]);
         }
 
@@ -1038,7 +1037,7 @@ class AuthController extends Controller
             'user' => new UserAuthenticateResource($user),
             'token' => $newToken,
             'proveedor' => new ProveedorResource($proveedor),
-        ], 'Contraseña actualizada correctamente.', 200);
+        ], 'Contraseña actualizada correctamente en GestionPro.', 200);
     }
 
     /**
@@ -1059,7 +1058,7 @@ class AuthController extends Controller
 
         if (! $user) {
             return $this->error(
-                'No encontramos ninguna cuenta con ese correo electrónico o número de teléfono. Comprueba que escribiste bien los datos o regístrate si aún no tienes cuenta.',
+                'No encontramos ninguna cuenta con ese correo electrónico o número de teléfono en GestionPro. Comprueba que escribiste bien los datos o regístrate si aún no tienes cuenta.',
                 [],
                 404
             );
@@ -1070,7 +1069,7 @@ class AuthController extends Controller
             EstadoUsuario::SUSPENDIDO->value,
         ], true)) {
             return $this->error(
-                'No podemos enviar el enlace de recuperación porque la cuenta asociada está bloqueada o suspendida. Para resolverlo, contacta a soporte.',
+                'No podemos enviar el enlace de recuperación porque la cuenta asociada está bloqueada o suspendida en GestionPro. Para resolverlo, contacta a soporte.',
                 [],
                 403
             );
@@ -1079,7 +1078,7 @@ class AuthController extends Controller
         $userEmail = $user->email;
         if ($userEmail === null || filter_var($userEmail, FILTER_VALIDATE_EMAIL) === false) {
             return $this->error(
-                'Tu cuenta no tiene un correo electrónico válido donde enviar el enlace de recuperación. Completa o actualiza tu correo en tu perfil o pide ayuda a soporte.',
+                'Tu cuenta no tiene un correo electrónico válido donde enviar el enlace de recuperación en GestionPro. Completa o actualiza tu correo en tu perfil o pide ayuda a soporte.',
                 [],
                 422
             );
@@ -1112,7 +1111,7 @@ class AuthController extends Controller
 
         return $this->success(
             ['email' => $email],
-            'Te enviamos un correo con instrucciones para restablecer tu contraseña. Revisa tu bandeja de entrada, la carpeta de spam y el apartado de promociones.',
+            'Te enviamos un correo con instrucciones para restablecer tu contraseña en GestionPro. Revisa tu bandeja de entrada, la carpeta de spam y el apartado de promociones.',
             200
         );
     }
@@ -1129,7 +1128,7 @@ class AuthController extends Controller
 
         if (!$data) {
             return $this->error(
-                'El enlace de recuperación ha expirado o es inválido. Por favor, solicita uno nuevo.',
+                'El enlace de recuperación ha expirado o es inválido en GestionPro. Por favor, solicita uno nuevo.',
                 [],
                 400
             );
@@ -1140,7 +1139,7 @@ class AuthController extends Controller
         if ($createdAt->diffInMinutes(now()) > 60) {
             Cache::forget("password_reset_{$request->token}");
             return $this->error(
-                'El enlace de recuperación ha expirado. Por favor, solicita uno nuevo.',
+                'El enlace de recuperación ha expirado en GestionPro. Por favor, solicita uno nuevo.',
                 [],
                 400
             );

@@ -21,10 +21,10 @@
   }
 
   .header {
-   background: linear-gradient(135deg, #ff9800, #ffc107);
-   color: #ffffff;
+   background: transparent;
+   padding: 0;
+   margin: 0;
    text-align: center;
-   padding: 30px 20px;
   }
 
   .header h1 {
