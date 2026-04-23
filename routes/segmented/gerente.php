@@ -40,10 +40,10 @@ Route::prefix('proveedores')
          * CRUD BASICO
          */
         Route::post('/', [ProveedorController::class, 'store']);
-        Route::get('{proveedor}', [ProveedorController::class, 'show'])->middleware(['api.access', 'audit']);
-        Route::patch('{proveedor}', [ProveedorController::class, 'update'])->middleware(['api.access', 'audit']);
-        Route::delete('{proveedor}', [ProveedorController::class, 'destroy'])->middleware(['api.access', 'audit']);
-        Route::post('{proveedor}/logo', [ProveedorController::class, 'updateLogo'])->middleware(['api.access', 'audit']);
+        Route::get('{proveedor}', [ProveedorController::class, 'show'])->middleware(['api.access']);
+        Route::patch('{proveedor}', [ProveedorController::class, 'update'])->middleware(['api.access']);
+        Route::delete('{proveedor}', [ProveedorController::class, 'destroy'])->middleware(['api.access']);
+        Route::post('{proveedor}/logo', [ProveedorController::class, 'updateLogo'])->middleware(['api.access']);
         Route::post('/verificar-rfc', [ProveedorController::class, 'verificarRfcExistente']);
         Route::post('{proveedor}/verificar-rfc-excluyendo-proveedor', [ProveedorController::class, 'verificarRfcExistenteExcluyendoProveedor']);
 
@@ -54,11 +54,11 @@ Route::prefix('proveedores')
          * CUENTAS BANCARIAS
          */
         Route::prefix('{proveedor}/cuentas-bancarias')->middleware(['proveedor.access'])->group(function () {
-            Route::get('/', [ProveedorCuentaBancariaController::class, 'index'])->middleware(['api.access', 'audit']);
-            Route::get('/preferida', [ProveedorCuentaBancariaController::class, 'getPreferida'])->middleware(['api.access', 'audit']);
-            Route::post('/preferida', [ProveedorCuentaBancariaController::class, 'setPreferida'])->middleware(['api.access', 'audit']);
-            Route::post('/', [ProveedorCuentaBancariaController::class, 'store'])->middleware(['api.access', 'audit']);
-            Route::middleware(['api.access', 'proveedor.cuenta', 'audit'])->group(function () {
+            Route::get('/', [ProveedorCuentaBancariaController::class, 'index'])->middleware(['api.access']);
+            Route::get('/preferida', [ProveedorCuentaBancariaController::class, 'getPreferida'])->middleware(['api.access']);
+            Route::post('/preferida', [ProveedorCuentaBancariaController::class, 'setPreferida'])->middleware(['api.access']);
+            Route::post('/', [ProveedorCuentaBancariaController::class, 'store'])->middleware(['api.access']);
+            Route::middleware(['api.access', 'proveedor.cuenta'])->group(function () {
                 Route::get('{cuenta}', [ProveedorCuentaBancariaController::class, 'show']);
                 Route::patch('{cuenta}', [ProveedorCuentaBancariaController::class, 'update']);
                 Route::delete('{cuenta}', [ProveedorCuentaBancariaController::class, 'destroy']);
@@ -77,7 +77,7 @@ Route::prefix('proveedores')
         Route::prefix('{proveedor}/users')->middleware(['proveedor.access'])->group(function () {
             Route::get('/', [ProveedorUsuarioController::class, 'index']);
             Route::post('/', [ProveedorUsuarioController::class, 'store']);
-            Route::middleware(['api.access', 'proveedor.user', 'audit'])->group(function () {
+            Route::middleware(['api.access', 'proveedor.user'])->group(function () {
                 Route::get('{user}', [ProveedorUsuarioController::class, 'show']);
                 Route::patch('{user}', [ProveedorUsuarioController::class, 'update']);
                 Route::delete('{user}', [ProveedorUsuarioController::class, 'destroy']);
@@ -94,7 +94,7 @@ Route::prefix('proveedores')
         Route::prefix('{proveedor}/productos')->middleware(['proveedor.access'])->group(function () {
             Route::get('/', [ProveedorProductoController::class, 'index']);
             Route::post('/', [ProveedorProductoController::class, 'store']);
-            Route::middleware(['proveedor.producto', 'audit'])->group(function () {
+            Route::middleware(['proveedor.producto'])->group(function () {
                 Route::get('{producto}', [ProveedorProductoController::class, 'show']);
                 Route::patch('{producto}', [ProveedorProductoController::class, 'update']);
                 Route::delete('{producto}', [ProveedorProductoController::class, 'destroy']);
@@ -111,7 +111,7 @@ Route::prefix('proveedores')
             Route::get('/all', [ProveedorCategoriaController::class, 'all']);
             Route::get('/all/count-products', [ProveedorCategoriaController::class, 'categoriasConSubcatCountProductos']);
 
-            Route::middleware(['proveedor.categoria', 'audit'])->group(function () {
+            Route::middleware(['proveedor.categoria'])->group(function () {
                 Route::get('{categoria}', [ProveedorCategoriaController::class, 'show']);
                 Route::patch('{categoria}', [ProveedorCategoriaController::class, 'update']);
                 Route::delete('{categoria}', [ProveedorCategoriaController::class, 'destroy']);
@@ -127,7 +127,7 @@ Route::prefix('proveedores')
             Route::get('/', [ProveedorMarcaController::class, 'index']);
             Route::post('/', [ProveedorMarcaController::class, 'store']);
             Route::get('/all', [ProveedorMarcaController::class, 'all']);
-            Route::middleware(['proveedor.marca', 'audit'])->group(function () {
+            Route::middleware(['proveedor.marca'])->group(function () {
                 Route::get('{marca}', [ProveedorMarcaController::class, 'show']);
                 Route::patch('{marca}', [ProveedorMarcaController::class, 'update']);
                 Route::delete('{marca}', [ProveedorMarcaController::class, 'destroy']);
@@ -143,7 +143,7 @@ Route::prefix('proveedores')
             Route::get('/', [ProveedorUnidadMedidaController::class, 'index']);
             Route::post('/', [ProveedorUnidadMedidaController::class, 'store']);
             Route::get('/all', [ProveedorUnidadMedidaController::class, 'all']);
-            Route::middleware(['proveedor.unidad', 'audit'])->group(function () {
+            Route::middleware(['proveedor.unidad'])->group(function () {
                 Route::get('{unidad}', [ProveedorUnidadMedidaController::class, 'show']);
                 Route::patch('{unidad}', [ProveedorUnidadMedidaController::class, 'update']);
                 Route::delete('{unidad}', [ProveedorUnidadMedidaController::class, 'destroy']);
@@ -157,7 +157,7 @@ Route::prefix('proveedores')
         Route::prefix('{proveedor}/sucursales')->middleware(['proveedor.access'])->group(function () {
             Route::get('/', [ProveedorSucursalController::class, 'index']);
             Route::post('/', [ProveedorSucursalController::class, 'store']);
-            Route::middleware(['proveedor.sucursal', 'audit'])->group(function () {
+            Route::middleware(['proveedor.sucursal'])->group(function () {
                 Route::get('{sucursal}', [ProveedorSucursalController::class, 'show']);
                 Route::delete('{sucursal}', [ProveedorSucursalController::class, 'destroy']);
                 Route::patch('{sucursal}', [ProveedorSucursalController::class, 'update']);
@@ -196,7 +196,7 @@ Route::prefix('proveedores')
          * Presupuestos: consolidar en este grupo cuando se migre el front desde métricas sueltas.
          */
         Route::prefix('{proveedor}/dashboard')
-            ->middleware(['proveedor.access', 'audit'])
+            ->middleware(['proveedor.access'])
             ->group(function () {
                 Route::get('/stats', [ProveedorDashboardController::class, 'getStats']);
                 Route::get('/cotizaciones', [ProveedorDashboardController::class, 'cotizacionesDashboard']);
@@ -206,7 +206,7 @@ Route::prefix('proveedores')
          * COTIZACIONES DEL PROVEEDOR
          */
         Route::prefix('{proveedor}/cotizaciones')
-            ->middleware(['proveedor.access', 'audit'])
+            ->middleware(['proveedor.access'])
             ->group(function () {
                 Route::get('/', [ProveedorCotizacionController::class, 'index']);
                 Route::get('/all', [ProveedorCotizacionController::class, 'uindex']);
@@ -223,7 +223,7 @@ Route::prefix('proveedores')
          * Orden: literales (proveedores-registrados, next-folio, generar-pdf) antes de /{presupuesto}.
          */
         Route::prefix('{proveedor}/presupuestos')
-            ->middleware(['proveedor.access', 'audit'])
+            ->middleware(['proveedor.access'])
             ->group(function () {
 
                 Route::get('/proveedores-registrados', [ProveedorPresupuestoController::class, 'proveedoresRegistrados']);
@@ -263,7 +263,7 @@ Route::prefix('proveedores')
          * Rutas literales (all, historico, dashboard/metricas, sin-factura) antes de /{solicitudPago}.
          */
         Route::prefix('{proveedor}/solicitudes-pago')
-            ->middleware(['proveedor.access', 'audit'])
+            ->middleware(['proveedor.access'])
             ->group(function () {
 
                 Route::get('/', [ProveedorSolicitudPagoController::class, 'index']);
@@ -294,7 +294,7 @@ Route::prefix('proveedores')
 
         // Pagos SPP (parciales) del proveedor
         Route::get('{proveedor}/pagos-spp/{pago}/descargar-comprobante', [ProveedorSolicitudPagoController::class, 'descargarComprobantePagoParcial'])
-            ->middleware(['proveedor.access', 'audit'])
+            ->middleware(['proveedor.access'])
             ->name('proveedores.pagos-spp.descargar-comprobante');
 
         /**

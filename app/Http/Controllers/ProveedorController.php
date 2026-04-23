@@ -111,7 +111,7 @@ class ProveedorController extends Controller
         }
         $proveedor = $user->proveedorPrincipal();
         if (! $proveedor) {
-            throw new ResourceNotFoundException('Proveedor no encontrado.');
+            throw new ResourceNotFoundException('Empresa no registrada en GestionPro.');
         }
 
         return $this->success(new ProveedorResource($proveedor->load(Proveedor::eagerLodable())));
@@ -208,7 +208,7 @@ class ProveedorController extends Controller
         $proveedor->update($validated);
         $proveedor = $proveedor->fresh(Proveedor::eagerLodable());
 
-        return $this->success(new ProveedorResource($proveedor), 'Proveedor actualizado con éxito.', 200);
+        return $this->success(new ProveedorResource($proveedor), 'Empresa actualizada con éxito.', 200);
     }
 
     /**
@@ -232,7 +232,7 @@ class ProveedorController extends Controller
     {
         $proveedor = Proveedor::find($id);
         if (! $proveedor) {
-            throw new ResourceNotFoundException('Proveedor no encontrado.');
+            throw new ResourceNotFoundException('Empresa no registrada en GestionPro.');
         }
         $proveedor->update([['estatus' => 'baja']]);
 
@@ -262,7 +262,7 @@ class ProveedorController extends Controller
 
         return $this->success(
             AdminProveedorAcordeonResource::collection($proveedores),
-            'Listado de proveedores con sus categorías, subcategorías y contador de productos.'
+            'Listado de empresas con sus categorías, subcategorías y contador de productos.'
         );
     }
 
@@ -280,7 +280,7 @@ class ProveedorController extends Controller
         // Verificar acceso
         if ($user->proveedorPrincipal()?->id !== $proveedor->id) {
             return response()->json([
-                'message' => 'No tienes permisos para subir este documento.',
+                'message' => 'No tienes permisos para subir esta constancia fiscal.',
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -368,8 +368,8 @@ class ProveedorController extends Controller
                 'exito' => $datosExtraccion['exito'],
                 'mensaje' => $datosExtraccion['mensaje'] ?: (
                     $datosExtraccion['exito']
-                    ? 'Datos fiscales extraídos correctamente.'
-                    : 'No se pudieron extraer datos del documento. Puedes completarlos manualmente.'
+                    ? 'Datos fiscales extraídos correctamente desde la constancia fiscal.'
+                    : 'No se pudieron extraer datos de la constancia fiscal. Puedes completarlos manualmente.'
                 ),
             ],
         ], 'Constancia fiscal actualizada con éxito.', 200);
@@ -385,13 +385,13 @@ class ProveedorController extends Controller
         // Validar acceso
         if ($user->proveedorPrincipal()?->id !== $proveedor->id) {
             return response()->json([
-                'message' => 'No tienes permisos para acceder a este documento.',
+                'message' => 'No tienes permisos para acceder a esta constancia fiscal.',
             ], Response::HTTP_FORBIDDEN);
         }
 
         if (! $proveedor->constancia_fiscal || ! Storage::disk('public')->exists($proveedor->constancia_fiscal)) {
             return response()->json([
-                'message' => 'La constancia fiscal no está disponible.',
+                'message' => 'La constancia fiscal no está disponible en GestionPro.',
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -421,7 +421,7 @@ class ProveedorController extends Controller
                     'tiene_constancia_fiscal' => false,
                     'tiene_logo' => false,
                     'tiene_informacion_general_y_datos_fiscales' => false,
-                    'datos_faltantes' => ['El proveedor no está habilitado para generar Solicitudes de Pago'],
+                    'datos_faltantes' => ['La empresa no está habilitada para generar Solicitudes de Pago'],
                 ],
             ];
 
@@ -499,13 +499,13 @@ class ProveedorController extends Controller
         //     $datosFaltantes[] = 'Datos de contacto';
         // }
         if (! $tieneLogo) {
-            $datosFaltantes[] = 'Logo de la empresa';
+            $datosFaltantes[] = 'Logo de la empresa en GestionPro';
         }
         if (! $tieneCuentaBancaria) {
             $datosFaltantes[] = 'Al menos una cuenta bancaria activa';
         }
         if (! $tieneConstanciaFiscal) {
-            $datosFaltantes[] = 'Constancia de situación fiscal';
+            $datosFaltantes[] = 'Constancia de situación fiscal en GestionPro';
         }
 
         // Actualizar el campo perfil_empresa_completo en el modelo si ha cambiado
@@ -660,16 +660,13 @@ class ProveedorController extends Controller
             'rfc' => ['required', 'string'],
         ]);
 
-        Log::info('rfc: ' . $request->rfc);
-        Log::info('proveedor: ' . $proveedor->id);
         // Verificar si el correo existe en la tabla users
         $existe = Proveedor::where('rfc', $request->rfc)->where('id', '!=', $proveedor->id)->exists();
-        Log::info('existe: ' . $existe);
 
         return $this->success([
             'existe' => $existe,
             'rfc' => $request->rfc,
-        ], $existe ? 'El RFC ya está registrado.' : 'El RFC está disponible.', 200);
+        ], $existe ? 'El RFC ya está registrado en GestionPro.' : 'El RFC está disponible en GestionPro.', 200);
     }
 
     /**
@@ -684,16 +681,13 @@ class ProveedorController extends Controller
             'rfc' => ['required', 'string'],
         ]);
 
-        Log::info('rfc: ' . $request->rfc);
-        Log::info('proveedor: ' . $proveedor->id);
         // Verificar si el correo existe en la tabla users
         $existe = Proveedor::where('rfc', $request->rfc)->where('id', '!=', $proveedor->id)->exists();
-        Log::info('existe: ' . $existe);
 
         return $this->success([
             'existe' => $existe,
             'rfc' => $request->rfc,
-        ], $existe ? 'El RFC ya está registrado.' : 'El RFC está disponible.', 200);
+        ], $existe ? 'El RFC ya está registrado en GestionPro.' : 'El RFC está disponible en GestionPro.', 200);
     }
 
 
@@ -710,15 +704,12 @@ class ProveedorController extends Controller
             'telefono' => ['required', 'string'],
         ]);
 
-        Log::info('telefono: ' . $request->telefono);
-        Log::info('proveedor: ' . $proveedor->id);
         // Verificar si el telefono existe en la tabla users
         $existe = User::where('telefono', $request->telefono)->where('id', '!=', $proveedor->id)->exists();
-        Log::info('existe: ' . $existe);
 
         return $this->success([
             'existe' => $existe,
             'telefono' => $request->telefono,
-        ], $existe ? 'El teléfono ya está registrado.' : 'El teléfono está disponible.', 200);
+        ], $existe ? 'El teléfono ya está registrado en GestionPro.' : 'El teléfono está disponible en GestionPro.', 200);
     }
 }

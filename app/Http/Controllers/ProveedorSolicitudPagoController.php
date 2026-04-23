@@ -499,7 +499,7 @@ class ProveedorSolicitudPagoController extends Controller
     public function actualizarCuentasBancarias(Request $request, Proveedor $proveedor, SolicitudPago $solicitudPago): JsonResponse
     {
         if ($solicitudPago->proveedor_id !== $proveedor->id) {
-            return $this->error('Solicitud no pertenece a este proveedor', 403);
+            return $this->error('Solicitud no pertenece a la empresa en GestionPro', 403);
         }
 
         $request->validate([
@@ -535,7 +535,7 @@ class ProveedorSolicitudPagoController extends Controller
     public function subirComprobantePago(Request $request, Proveedor $proveedor, SolicitudPago $solicitudPago): JsonResponse
     {
         if ($solicitudPago->proveedor_id !== $proveedor->id) {
-            return $this->error('Solicitud no pertenece a este proveedor', 403);
+            return $this->error('Solicitud no pertenece a la empresa en GestionPro', 403);
         }
 
         $request->validate([
@@ -573,7 +573,7 @@ class ProveedorSolicitudPagoController extends Controller
     public function descargarFacturaPdf(Proveedor $proveedor, SolicitudPago $solicitudPago)
     {
         if ($solicitudPago->proveedor_id !== $proveedor->id) {
-            return $this->error('Solicitud no pertenece a este proveedor', 403);
+            return $this->error('Solicitud no pertenece a la empresa en GestionPro', 403);
         }
 
         if (! $solicitudPago->ruta_archivo_factura_pdf || ! Storage::disk('private')->exists($solicitudPago->ruta_archivo_factura_pdf)) {
@@ -591,7 +591,7 @@ class ProveedorSolicitudPagoController extends Controller
     public function descargarFacturaXml(Proveedor $proveedor, SolicitudPago $solicitudPago)
     {
         if ($solicitudPago->proveedor_id !== $proveedor->id) {
-            return $this->error('Solicitud no pertenece a este proveedor', 403);
+            return $this->error('Solicitud no pertenece a la empresa en GestionPro', 403);
         }
 
         if (! $solicitudPago->ruta_archivo_factura_xml || ! Storage::disk('private')->exists($solicitudPago->ruta_archivo_factura_xml)) {
@@ -609,7 +609,7 @@ class ProveedorSolicitudPagoController extends Controller
     public function descargarComprobantePago(Proveedor $proveedor, SolicitudPago $solicitudPago)
     {
         if ($solicitudPago->proveedor_id !== $proveedor->id) {
-            return $this->error('Solicitud no pertenece a este proveedor', 403);
+            return $this->error('Solicitud no pertenece a la empresa en GestionPro', 403);
         }
 
         if (! $solicitudPago->ruta_archivo_comprobante_pago || ! Storage::disk('private')->exists($solicitudPago->ruta_archivo_comprobante_pago)) {
@@ -627,7 +627,7 @@ class ProveedorSolicitudPagoController extends Controller
     public function descargarComprobantePagoParcial(Proveedor $proveedor, PagoSPP $pago)
     {
         if ($pago->proveedor_id !== $proveedor->id) {
-            return $this->error('El pago no pertenece a este proveedor', 403);
+            return $this->error('El pago no pertenece a la empresa en GestionPro', 403);
         }
 
         if (! $pago->comprobante_pago || ! Storage::disk('private')->exists($pago->comprobante_pago)) {
@@ -645,7 +645,7 @@ class ProveedorSolicitudPagoController extends Controller
     public function descargarCotizacion(Proveedor $proveedor, SolicitudPago $solicitudPago)
     {
         if ($solicitudPago->proveedor_id !== $proveedor->id) {
-            return $this->error('Solicitud no pertenece a este proveedor', 403);
+            return $this->error('Solicitud no pertenece a la empresa en GestionPro', 403);
         }
 
         if (! $solicitudPago->ruta_archivo_cotizacion || ! Storage::disk('private')->exists($solicitudPago->ruta_archivo_cotizacion)) {
@@ -663,7 +663,7 @@ class ProveedorSolicitudPagoController extends Controller
     public function autorizar(Request $request, Proveedor $proveedor, SolicitudPago $solicitudPago): JsonResponse
     {
         if ($solicitudPago->proveedor_id !== $proveedor->id) {
-            return $this->error('Solicitud no pertenece a este proveedor', 403);
+            return $this->error('Solicitud no pertenece a la empresa en GestionPro', 403);
         }
 
         $solicitudPago->update([
@@ -683,7 +683,7 @@ class ProveedorSolicitudPagoController extends Controller
     public function rechazar(Request $request, Proveedor $proveedor, SolicitudPago $solicitudPago): JsonResponse
     {
         if ($solicitudPago->proveedor_id !== $proveedor->id) {
-            return $this->error('Solicitud no pertenece a este proveedor', 403);
+            return $this->error('Solicitud no pertenece a la empresa en GestionPro', 403);
         }
 
         $request->validate([
@@ -733,7 +733,7 @@ class ProveedorSolicitudPagoController extends Controller
     public function procesando(Request $request, Proveedor $proveedor, SolicitudPago $solicitudPago): JsonResponse
     {
         if ($solicitudPago->proveedor_id !== $proveedor->id) {
-            return $this->error('Solicitud no pertenece a este proveedor', 403);
+            return $this->error('Solicitud no pertenece a la empresa en GestionPro', 403);
         }
 
         if ($solicitudPago->estado_solicitud !== 'pendiente') {
