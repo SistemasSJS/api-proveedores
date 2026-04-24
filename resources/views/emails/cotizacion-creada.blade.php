@@ -251,11 +251,11 @@
                 <div class="details-grid">
                     <div class="detail-item">
                         <span class="detail-label">📅 Fecha:</span>
-                        <span class="detail-value">{{ $cotizacion->fecha_cotizacion->format('d/m/Y H:i') }}</span>
+                        <span class="detail-value">{{ $cotizacion->fecha_cotizacion->copy()->locale('es')->timezone('America/Mexico_City')->translatedFormat('j \\d\\e F \\d\\e Y') }} {{ $cotizacion->fecha_cotizacion->copy()->timezone('America/Mexico_City')->format('h:i') }} {{ $cotizacion->fecha_cotizacion->copy()->timezone('America/Mexico_City')->format('A') === 'AM' ? 'a.m.' : 'p.m.' }}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">⏰ Vence:</span>
-                        <span class="detail-value">{{ $cotizacion->fecha_vencimiento->format('d/m/Y H:i') }}</span>
+                        <span class="detail-value">{{ $cotizacion->fecha_vencimiento->copy()->locale('es')->timezone('America/Mexico_City')->translatedFormat('j \\d\\e F \\d\\e Y') }} {{ $cotizacion->fecha_vencimiento->copy()->timezone('America/Mexico_City')->format('h:i') }} {{ $cotizacion->fecha_vencimiento->copy()->timezone('America/Mexico_City')->format('A') === 'AM' ? 'a.m.' : 'p.m.' }}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">📦 Productos:</span>
@@ -291,7 +291,7 @@
             
             <div class="footer-text">
                 <p><strong>¡Importante!</strong> Esta cotización tiene fecha de vencimiento 
-                {{ $cotizacion->fecha_vencimiento->format('d/m/Y H:i') }}. Te recomendamos responder 
+                {{ $cotizacion->fecha_vencimiento->copy()->locale('es')->timezone('America/Mexico_City')->translatedFormat('j \\d\\e F \\d\\e Y') }} {{ $cotizacion->fecha_vencimiento->copy()->timezone('America/Mexico_City')->format('h:i') }} {{ $cotizacion->fecha_vencimiento->copy()->timezone('America/Mexico_City')->format('A') === 'AM' ? 'a.m.' : 'p.m.' }}. Te recomendamos responder 
                 antes de esa fecha.</p>
                 
                 <p style="margin-top: 15px;">

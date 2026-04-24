@@ -33,8 +33,8 @@
           Te invitamos a autorizar este presupuesto desde la app de Proveedores. Ahí también podrás gestionar de forma profesional tus próximos presupuestos y solicitudes de pago.
         </p>
       </div>
-      @include('emails.partials.presupuesto-summary', ['presupuesto' => $presupuesto])
       @include('emails.partials.provider-card', ['proveedor' => $presupuesto->proveedor])
+      @include('emails.partials.presupuesto-summary', ['presupuesto' => $presupuesto])
       <p style="font-size:14px;color:#6c757d;">Adjuntamos el PDF del presupuesto para tu archivo.</p>
       <p><a href="{{ $urlDetalle }}" class="action-button">Ver detalle del presupuesto</a></p>
     </div>

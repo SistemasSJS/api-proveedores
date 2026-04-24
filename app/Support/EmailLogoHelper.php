@@ -15,7 +15,20 @@ final class EmailLogoHelper
 
     public static function logoGestionProDataUri(): ?string
     {
-        return self::fileToDataUri(public_path('assets/logos/logo-gestionpro.png'));
+        $logoPaths = [
+            public_path('assets/logos/logo-gestionpro.png'),
+            public_path('assets/logos/logo-construcc.png'),
+            public_path('assets/logos/logo-facturapro.png'),
+        ];
+
+        foreach ($logoPaths as $path) {
+            $dataUri = self::fileToDataUri($path);
+            if ($dataUri) {
+                return $dataUri;
+            }
+        }
+
+        return null;
     }
 
     /**

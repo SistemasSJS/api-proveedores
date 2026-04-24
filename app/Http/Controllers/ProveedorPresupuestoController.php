@@ -1576,20 +1576,35 @@ class ProveedorPresupuestoController extends Controller
      */
     public function enviarCorreo(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
     {
+        $validated = $request->validate([
+            'incluir_invitacion' => 'boolean',
+            'correo_destino' => 'email',
+        ]);
+
         try {
             if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
                 return $this->error('La empresa no tiene acceso a este presupuesto en GestionPro.', null, 403);
             }
 
-            if (! $presupuesto->empresa_receptora_correo || ! filter_var($presupuesto->empresa_receptora_correo, FILTER_VALIDATE_EMAIL)) {
+            if (! $validated['correo_destino'] || ! filter_var($validated['correo_destino'], FILTER_VALIDATE_EMAIL)) {
                 return $this->error('No hay correo del cliente válido para enviar.', null, 422);
             }
 
             $presupuesto->load(Presupuesto::eagerLodable());
             $presupuesto->asegurarTokenPublico();
 
-            $incluirInvitacion = $request->boolean('incluir_invitacion');
-            $this->despacharCorreoPresupuesto($presupuesto, $incluirInvitacion);
+            $incluirInvitacion = $validated['incluir_invitacion'] ?? false;
+            // $this->despacharCorreoPresupuesto($presupuesto, $incluirInvitacion);
+
+            $appUrl = config('app.frontend_url', config('app.url'));
+            $enlacePublico = $appUrl . '/public/presupuesto/' . $presupuesto->token_publico;
+            $nombreReceptor = $presupuesto->empresa_receptora_nombre
+                ?? $presupuesto->empresa_receptora_empresa
+                ?? 'Cliente';
+
+            Mail::to($validated['correo_destino'])->send(
+                new PresupuestoEnviadoMail($presupuesto, $enlacePublico, $nombreReceptor, $incluirInvitacion)
+            );
 
             $this->log('Presupuesto: correo al cliente enviado', ['presupuesto_id' => $presupuesto->id]);
 

@@ -12,7 +12,34 @@
     $proveedorLogo = $proveedorLogo
         ?? ($proveedor->logo ?? null);
 
-    $telefonoFormateado = $proveedorTelefono ? '+52 '.$proveedorTelefono : 'No disponible';
+    $normalizarTexto = static fn ($valor) => trim((string) ($valor ?? ''));
+
+    $proveedorAlias = $normalizarTexto($proveedorAlias);
+    $proveedorRazonSocial = $normalizarTexto($proveedorRazonSocial);
+    $proveedorTelefono = $normalizarTexto($proveedorTelefono);
+    $proveedorEmail = $normalizarTexto($proveedorEmail);
+    $proveedorWeb = $normalizarTexto($proveedorWeb);
+
+    $telefonosoloDigitos = preg_replace('/\D+/', '', $proveedorTelefono);
+    $telefonoValido = is_string($telefonosoloDigitos) && strlen($telefonosoloDigitos) >= 7;
+    $telefonoFormateado = $telefonoValido ? $proveedorTelefono : '';
+
+    $emailValido = $proveedorEmail !== '' && filter_var($proveedorEmail, FILTER_VALIDATE_EMAIL);
+    $webValida = $proveedorWeb !== '' && !in_array(mb_strtolower($proveedorWeb), ['n/a', 'na', 'null', '-'], true);
+
+    $lineas = [];
+    if ($proveedorRazonSocial !== '' && mb_strtolower($proveedorRazonSocial) !== mb_strtolower($proveedorAlias)) {
+        $lineas[] = $proveedorRazonSocial;
+    }
+    if ($telefonoFormateado !== '') {
+        $lineas[] = 'Tel. '.$telefonoFormateado;
+    }
+    if ($emailValido) {
+        $lineas[] = $proveedorEmail;
+    }
+    if ($webValida) {
+        $lineas[] = $proveedorWeb;
+    }
 @endphp
 
 <div style="border:1px solid #dbe3ee;border-radius:14px;background:#ffffff;margin:16px 0;overflow:hidden;box-shadow:0 4px 14px rgba(15,76,129,0.08);">
@@ -29,20 +56,19 @@
         @endif
         <td style="vertical-align:top;">
           <div style="font-size:18px;color:#0f172a;font-weight:700;line-height:1.25;">{{ $proveedorAlias ?: 'Proveedor' }}</div>
-          <div style="font-size:13px;color:#475569;margin-top:4px;">{{ $proveedorRazonSocial ?: 'Razón social no disponible' }}</div>
-
-          <div style="margin-top:10px;font-size:13px;color:#334155;line-height:1.55;">
-            <div><strong>Teléfono:</strong> {{ $telefonoFormateado }}</div>
-            <div><strong>Email:</strong> {{ $proveedorEmail ?: 'No disponible' }}</div>
-            <div>
-              <strong>Página web:</strong>
-              @if($proveedorWeb)
-                <a href="{{ str_starts_with($proveedorWeb, 'http') ? $proveedorWeb : 'https://'.$proveedorWeb }}" style="color:#1f6fb2;text-decoration:none;">{{ $proveedorWeb }}</a>
-              @else
-                No disponible
-              @endif
+          @if(!empty($lineas))
+            <div style="margin-top:10px;font-size:13px;color:#334155;line-height:1.55;">
+              @foreach($lineas as $linea)
+                <div>
+                  @if($webValida && $linea === $proveedorWeb)
+                    <a href="{{ str_starts_with($proveedorWeb, 'http') ? $proveedorWeb : 'https://'.$proveedorWeb }}" style="color:#1f6fb2;text-decoration:none;">{{ $linea }}</a>
+                  @else
+                    {{ $linea }}
+                  @endif
+                </div>
+              @endforeach
             </div>
-          </div>
+          @endif
         </td>
       </tr>
     </table>

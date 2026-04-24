@@ -674,6 +674,8 @@ class Presupuesto extends BaseModel
 
     public function registrarCambioEstado(?string $estadoAnterior = null, ?int $userId = null, $fecha = null): void
     {
+        // FIXME: Implementar la tabla de logs de estados
+        return;
         $estadoNuevo = (string) $this->estado;
         $estadoAnterior = $estadoAnterior ?? $this->getOriginal('estado');
 

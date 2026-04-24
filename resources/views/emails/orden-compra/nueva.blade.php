@@ -237,7 +237,7 @@
                 <div class="details-grid">
                     <div class="detail-item">
                         <span class="detail-label">📅 Fecha:</span>
-                        <span class="detail-value">{{ now()->format('d/m/Y H:i') }}</span>
+                        <span class="detail-value">{{ now()->locale('es')->timezone('America/Mexico_City')->translatedFormat('j \\d\\e F \\d\\e Y') }} {{ now()->timezone('America/Mexico_City')->format('h:i') }} {{ now()->timezone('America/Mexico_City')->format('A') === 'AM' ? 'a.m.' : 'p.m.' }}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">🏢 Proveedor ID:</span>

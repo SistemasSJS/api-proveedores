@@ -5,6 +5,22 @@
   $total = number_format((float) $presupuesto->total, 2);
   $ivaPct = $presupuesto->iva_porcentaje;
   $conIva = $presupuesto->con_iva;
+  $formatFechaCorreo = static function ($fecha): string {
+      if (empty($fecha)) {
+          return '—';
+      }
+
+      $dt = $fecha instanceof \Carbon\CarbonInterface
+          ? $fecha->copy()
+          : \Carbon\Carbon::parse($fecha);
+
+      $dt->locale('es');
+      $dt->timezone('America/Mexico_City');
+
+      $periodo = $dt->format('A') === 'AM' ? 'a.m.' : 'p.m.';
+
+      return $dt->translatedFormat('j \\d\\e F \\d\\e Y').' '.$dt->format('h:i').' '.$periodo;
+  };
 @endphp
 <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:14px;color:#334155;border:1px solid #dbe3ee;border-radius:8px;overflow:hidden;">
   <tr>
@@ -25,12 +41,12 @@
   </tr>
   <tr>
     <td style="padding:10px 12px;border-bottom:1px solid #e9ecef;background:#f8fafc;"><strong>Fecha emisión</strong></td>
-    <td style="padding:10px 12px;border-bottom:1px solid #e9ecef;text-align:right;">{{ $presupuesto->fecha_emision?->format('d/m/Y H:i') ?? '—' }}</td>
+    <td style="padding:10px 12px;border-bottom:1px solid #e9ecef;text-align:right;">{{ $formatFechaCorreo($presupuesto->fecha_emision) }}</td>
   </tr>
   @if($presupuesto->fecha_vencimiento)
   <tr>
     <td style="padding:10px 12px;border-bottom:1px solid #e9ecef;background:#f8fafc;"><strong>Vigencia hasta</strong></td>
-    <td style="padding:10px 12px;border-bottom:1px solid #e9ecef;text-align:right;">{{ $presupuesto->fecha_vencimiento->format('d/m/Y H:i') }}</td>
+    <td style="padding:10px 12px;border-bottom:1px solid #e9ecef;text-align:right;">{{ $formatFechaCorreo($presupuesto->fecha_vencimiento) }}</td>
   </tr>
   @endif
   <tr>

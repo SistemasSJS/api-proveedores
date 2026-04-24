@@ -40,8 +40,8 @@
                 </table>
               @endif
 
-              @include('emails.partials.presupuesto-summary', ['presupuesto' => $presupuesto])
               @include('emails.partials.provider-card', ['proveedor' => $presupuesto->proveedor])
+              @include('emails.partials.presupuesto-summary', ['presupuesto' => $presupuesto])
 
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:18px;border:1px solid #d6e4ff;background-color:#eef5ff;">
                 <tr>
