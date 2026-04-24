@@ -552,31 +552,25 @@ class Presupuesto extends BaseModel
         }
 
         if ($prov) {
-            $nombre = self::primerTextoNoVacio(
-                $this->empresa_receptora_nombre,
-                $prov->contacto_nombre,
-                $prov->nombre_propietario,
-                $prov->nombre_comercial,
-                $prov->razon_social
-            );
-            $empresa = self::primerTextoNoVacio(
-                $this->empresa_receptora_empresa,
-                $prov->nombre_comercial,
-                $prov->razon_social
-            );
+            // nombre del receptor
+            $nombre = self::primerTextoNoVacio($this->empresa_receptora_nombre, $prov->nombre_propietario);
+
+            // empresa del receptor
+            $empresa = self::primerTextoNoVacio($this->empresa_receptora_empresa, $prov->razon_social);
+
+            // puesto del receptor
             $puesto = self::primerTextoNoVacio($this->empresa_receptora_puesto, $prov->contacto_cargo);
-            $alias = self::primerTextoNoVacio($this->empresa_receptora_alias);
-            $telefono = self::primerTextoNoVacio(
-                $this->empresa_receptora_telefono,
-                $prov->contacto_telefono,
-                $prov->telefono,
-                $prov->celular
-            );
-            $correo = self::primerTextoNoVacio(
-                $this->empresa_receptora_correo,
-                $prov->contacto_correo,
-                $prov->email
-            );
+
+            // alias de la empresa del receptor
+            $alias = self::primerTextoNoVacio($this->empresa_receptora_alias, $prov->nombre_comercial);
+
+            // telefono del receptor
+            $telefono = self::primerTextoNoVacio($this->empresa_receptora_telefono, $prov->contacto_telefono, $prov->telefono, $prov->celular);
+
+            // correo del receptor
+            $correo = self::primerTextoNoVacio($this->empresa_receptora_correo, $prov->contacto_correo, $prov->email);
+
+            // dirección del receptor
             $direccion = self::primerTextoNoVacio(
                 $this->empresa_receptora_direccion,
                 $prov->direccion_empresa

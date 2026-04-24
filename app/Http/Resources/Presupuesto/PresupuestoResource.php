@@ -47,6 +47,7 @@ class PresupuestoResource extends JsonResource
         $doc = $this->resource->empresaReceptoraParaDocumento();
 
         return [
+            // Data general
             'id' => $this->id,
             'uuid' => $this->uuid,
             'numero_presupuesto' => $this->numero_presupuesto,
@@ -58,6 +59,8 @@ class PresupuestoResource extends JsonResource
             'iva_porcentaje' => (float) $this->iva_porcentaje,
             'iva_total' => (float) $this->iva_total,
             'total' => (float) $this->total,
+
+            // terminos y condiciones 
             'term_cond_dias_vigencia' => $this->term_cond_dias_vigencia,
             'term_cond_moneda' => $this->term_cond_moneda ?? 'MXN',
             'term_cond_impuestos_en_pdf' => (bool) ($this->term_cond_impuestos_en_pdf ?? true),
@@ -66,17 +69,28 @@ class PresupuestoResource extends JsonResource
             'term_cond_tiempo_entrega_dias' => $this->term_cond_tiempo_entrega_dias,
             'term_cond_inicio_trabajo' => $this->term_cond_inicio_trabajo,
             'term_cond_inicio_trabajo_porcentaje' => $this->term_cond_inicio_trabajo_porcentaje,
+            // observaciones
             'obs_garantia_dias' => (int) ($this->obs_garantia_dias ?? 0),
             'obs_traslados' => $this->obs_traslados === null ? null : (bool) $this->obs_traslados,
             'obs_viaticos' => $this->obs_viaticos === null ? null : (bool) $this->obs_viaticos,
             'configuracion_condiciones' => $this->configuracion_condiciones,
+
+            // estado
             'estado' => $this->estado ?? Presupuesto::ESTADO_BORRADOR,
             'motivo_rechazo' => $this->motivo_rechazo,
             'item_visto' => (bool) ($this->item_visto ?? false),
             'token_publico' => $this->token_publico,
+
+
             'proveedor' => [
                 'id' => $this->proveedor?->id ?? $this->proveedor_id,
+                'empresa' => $this->proveedor->razon_social ?? null,
                 'nombre' => self::upper($proveedorNombre),
+                'puesto' => $this->proveedor?->puesto ?? null,
+                'alias_empresa' => $this->proveedor->nombre_comercial ?? null,
+                'telefono' => $this->proveedor?->telefono ?? null,
+                'correo' => $this->proveedor?->correo ?? null,
+                'origen' => $this->proveedor?->origen ?? null,
             ],
             'proveedor_receptor_id' => $this->proveedor_receptor_id !== null
                 ? (int) $this->proveedor_receptor_id

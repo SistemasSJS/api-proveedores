@@ -34,6 +34,7 @@ class PresupuestoPublicController extends Controller
             return $this->error('Presupuesto no encontrado o enlace inválido.', null, 404);
         }
 
+        $presupuesto->load(Presupuesto::eagerLodable());
         $presupuesto->asegurarTokenPublico();
 
         return $this->success(new PresupuestoPublicResource($presupuesto));
