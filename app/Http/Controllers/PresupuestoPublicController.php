@@ -37,7 +37,9 @@ class PresupuestoPublicController extends Controller
         $presupuesto->load(Presupuesto::eagerLodable());
         $presupuesto->asegurarTokenPublico();
 
-        return $this->success(new PresupuestoPublicResource($presupuesto));
+        return $this->success(
+            new PresupuestoPublicResource($presupuesto->fresh(Presupuesto::eagerLodable()))
+        );
     }
 
     /**

@@ -70,11 +70,9 @@ class Presupuesto extends BaseModel
         'empresa_receptora_alias',
         'empresa_receptora_telefono',
         'empresa_receptora_correo',
-        'term_cond_dias_vigencia',
+        // Términos y condiciones
+        'term_cond_dias_vigencia', 
         'term_cond_moneda',
-        'term_cond_impuestos_en_pdf',
-        'term_cond_iva',
-        'term_cond_anticipo_porcentaje',
         'term_cond_tiempo_entrega_dias',
         /**
          * null: no se llista para exporttar
@@ -82,11 +80,22 @@ class Presupuesto extends BaseModel
          * 2.Los trabajos iniciarán una vez Recibido el anticipo del porcentaje de ___ %
          */
         'term_cond_inicio_trabajo',
-        'term_cond_inicio_trabajo_porcentaje', // solo aplica para el numero 2. 
+        'term_cond_inicio_trabajo_porcentaje', // solo aplica para inicio por anticipo (%)
+        'term_cond_inicio_trabajo_cantidad', // solo aplica para inicio por anticipo (monto)
+        'term_cond_impuestos_en_pdf',
+        'term_cond_iva',
+        'term_cond_anticipo_porcentaje', // @deprecated: reemplazado por inicio_trabajo_porcentaje/cantidad
+        // Garantía
         'obs_garantia_dias',
-        'obs_traslados',
-        'obs_viaticos',
+        'obs_traslados', // @deprecated
+        'obs_viaticos', // @deprecated
+        // Estructura escalable de términos/alcances
+        'term_cond_textos_libres',
+        'term_cond_visibilidad',
+        'validacion_alcances',
+        // Configuración de condiciones
         'configuracion_condiciones',
+        // Motivo de rechazo
         'motivo_rechazo',
         'estado',
         'item_visto',
@@ -113,9 +122,13 @@ class Presupuesto extends BaseModel
         'iva_total' => 'decimal:2',
         'total' => 'decimal:2',
         'term_cond_iva' => 'decimal:2',
+        'term_cond_inicio_trabajo_cantidad' => 'decimal:2',
         'term_cond_anticipo_porcentaje' => 'decimal:2',
         'obs_traslados' => 'boolean',
         'obs_viaticos' => 'boolean',
+        'term_cond_textos_libres' => 'array',
+        'term_cond_visibilidad' => 'array',
+        'validacion_alcances' => 'array',
         'configuracion_condiciones' => 'array',
     ];
 
@@ -130,15 +143,11 @@ class Presupuesto extends BaseModel
     ];
     public const ENUNCIADO_IVA_INCLUIDO = 'Los precios incluyen el Impuesto al Valor Agregado (IVA) al %d%%.';
     public const ENUNCIADO_IVA_NO_INCLUIDO = 'Los precios no incluyen el Impuesto al Valor Agregado (IVA).';
-    public const ENUNCIADO_ANTICIPO = 'Para iniciar los trabajos se requiere un anticipo del %d%% del monto total.';
-    public const ENUNCIADO_TIEMPO_ENTREGA = 'Una vez recibido el anticipo, el tiempo estimado de entrega o ejecución total de los trabajos será de %d días naturales.';
+    public const ENUNCIADO_TIEMPO_ENTREGA = 'El tiempo estimado de entrega o ejecución total de los trabajos será de %d días naturales.';
     public const ENUNCIADO_INICIO_TRABAJOS_AUTORIZACION = 'Los trabajos se iniciarán una vez confirmada la autorización del presupuesto.';
-
-    /** Modo anticipo: porcentaje acordado (config inicio_trabajos_anticipo_pct). */
-    public const ENUNCIADO_INICIO_TRABAJOS_ANTICIPO = 'Los trabajos se iniciarán una vez recibido el anticipo del porcentaje de %d%% del monto total.';
-
-    /** Mismo enunciado que ENUNCIADO_INICIO_TRABAJOS_ANTICIPO cuando aún no hay % definido. */
-    public const ENUNCIADO_INICIO_TRABAJOS_ANTICIPO_PLACEHOLDER = 'Los trabajos se iniciarán una vez recibido el anticipo del porcentaje de ___ %.';
+    public const ENUNCIADO_INICIO_TRABAJOS_ANTICIPO_PORCENTAJE = 'Los trabajos se iniciarán una vez recibido un anticipo del %d%%.';
+    public const ENUNCIADO_INICIO_TRABAJOS_ANTICIPO_CANTIDAD = 'Los trabajos se iniciarán una vez recibida la cantidad de $ %s.';
+    public const ENUNCIADO_INICIO_TRABAJOS_ANTICIPO_PLACEHOLDER = 'Los trabajos se iniciarán una vez recibido un anticipo (porcentaje o monto).';
 
     /**
      * Constantes para enunciados de observaciones.
@@ -146,10 +155,15 @@ class Presupuesto extends BaseModel
     // public const ENUNCIADO_GARANTIA = 'Garantía de %d días a partir de la finalización o entrega.';
     public const ENUNCIADO_GARANTIA = 'Garantía de %s a partir de la finalización o entrega.';
 
-    public const ENUNCIADO_TRASLADOS_INCLUIDOS = 'El presupuesto incluye gastos de traslado al sitio de trabajo.';
-    // public const ENUNCIADO_TRASLADOS_NO_INCLUIDOS = 'El presupuesto no incluye gastos de traslado.';
-    public const ENUNCIADO_VIATICOS_INCLUIDOS = 'Viáticos incluidos según la ubicación y necesidades del servicio.';
-    // public const ENUNCIADO_VIATICOS_NO_INCLUIDOS = 'Viáticos no incluidos.';
+    public const ENUNCIADO_PAGO_TOTAL_CONFORMIDAD = 'El pago total de los trabajos será hasta que sean recibidos de total conformidad por el cliente.';
+    public const ENUNCIADO_GARANTIA_CALIDAD = 'El proveedor garantiza la calidad de los trabajos/materiales suministrados.';
+    public const ENUNCIADO_CORRECCION_DEFECTOS = 'El proveedor se compromete a corregir defectos atribuibles a su ejecución.';
+    public const ENUNCIADO_INCLUYE_MATERIALES_INSUMOS = 'Este presupuesto incluye materiales, insumos, refacciones y demás necesarios para la correcta realización de los trabajos.';
+    public const ENUNCIADO_INCLUYE_TRASLADOS = 'Este presupuesto incluye gastos de traslado de materiales, insumos, refacciones y del personal necesario.';
+    public const ENUNCIADO_INCLUYE_VIATICOS = 'Este presupuesto incluye viáticos del personal necesarios para la ejecución de los trabajos aquí presupuestados.';
+    public const ENUNCIADO_ALCANCE_INCLUYE_TODOS_COSTOS = 'El presupuesto incluye todos los costos necesarios para la correcta ejecución del servicio.';
+    public const ENUNCIADO_ALCANCE_SIN_COSTOS_ADICIONALES = 'No se reconocerán costos adicionales no autorizados previamente.';
+    public const ENUNCIADO_ALCANCE_ADICIONALES_AUTORIZACION = 'Cualquier trabajo adicional deberá ser autorizado por escrito.';
 
     /** @deprecated Obs que ya no se utilizan */
     /* public const ENUNCIADO_REVISION_TECNICA = 'Requiere revisión técnica previa.'; */
@@ -167,6 +181,7 @@ class Presupuesto extends BaseModel
     {
         $lista = [];
         $config = is_array($this->configuracion_condiciones) ? $this->configuracion_condiciones : [];
+        $visibilidad = is_array($this->term_cond_visibilidad) ? $this->term_cond_visibilidad : [];
 
         // 1. vigencia
         if (self::terminoActivoPersistido($config, 'vigencia_activo', $this->term_cond_dias_vigencia > 0) && $this->term_cond_dias_vigencia > 0) {
@@ -197,43 +212,63 @@ class Presupuesto extends BaseModel
             $lista[] = sprintf(self::ENUNCIADO_TIEMPO_ENTREGA, (int) $this->term_cond_tiempo_entrega_dias);
         }
 
-        // 5. anticipo
-        if (
-            self::terminoActivoPersistido($config, 'anticipo_activo', $this->term_cond_anticipo_porcentaje !== null && $this->term_cond_anticipo_porcentaje > 0)
-            && $this->term_cond_anticipo_porcentaje !== null
-            && $this->term_cond_anticipo_porcentaje > 0
-        ) {
-            $lista[] = sprintf(self::ENUNCIADO_ANTICIPO, (int) $this->term_cond_anticipo_porcentaje);
-        }
-
-        // 6. inicio trabajos: autorización o anticipo (configuración tiene prioridad sobre columnas individuales para mantener consistencia en presupuestos ya persistidos)
+        // 5. inicio trabajos: autorización o anticipo (% o monto)
         if (self::terminoActivoPersistido($config, 'inicio_trabajos_activo', $this->term_cond_inicio_trabajo !== null)) {
-            if (($config['inicio_trabajos_modo'] ?? null) === 'anticipo') {
-                $pct = (int) ($config['inicio_trabajos_anticipo_pct'] ?? 0);
-                $lista[] = $pct > 0
-                    ? sprintf(self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO, $pct)
-                    : self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO_PLACEHOLDER;
-            } elseif (($config['inicio_trabajos_modo'] ?? null) === 'autorizacion') {
-                $lista[] = self::ENUNCIADO_INICIO_TRABAJOS_AUTORIZACION;
-            } elseif ($this->term_cond_inicio_trabajo !== null) {
-                $lista[] = (int) $this->term_cond_inicio_trabajo === 1
-                    ? self::ENUNCIADO_INICIO_TRABAJOS_AUTORIZACION
-                    : sprintf(self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO, (int) $this->term_cond_inicio_trabajo_porcentaje);
-            }
+            self::appendInicioTrabajosEnunciados(
+                $lista,
+                $config,
+                (int) ($this->term_cond_inicio_trabajo ?? 1),
+                $this->term_cond_inicio_trabajo_porcentaje !== null ? (float) $this->term_cond_inicio_trabajo_porcentaje : null,
+                $this->term_cond_inicio_trabajo_cantidad !== null ? (float) $this->term_cond_inicio_trabajo_cantidad : null,
+            );
         }
 
-        foreach (
-            [
-                'condicionantes_adicionales_1',
-                'condicionantes_adicionales_2',
-                'condicionantes_adicionales_3',
-                'condicionantes_adicionales_4',
-            ] as $key
-        ) {
-            $txt = trim((string) ($config[$key] ?? ''));
+        // 6-9. cláusulas fijas con visibilidad configurable
+        if (self::flagVisible($visibilidad, 'pago_contra_conformidad', true)) {
+            $lista[] = self::ENUNCIADO_PAGO_TOTAL_CONFORMIDAD;
+        }
+        if ($this->obs_garantia_dias > 0) {
+            $duracion = self::formatearDuracion((int) $this->obs_garantia_dias);
+            $lista[] = sprintf(self::ENUNCIADO_GARANTIA, $duracion);
+        }
+        if (self::flagVisible($visibilidad, 'garantia_calidad', true)) {
+            $lista[] = self::ENUNCIADO_GARANTIA_CALIDAD;
+        }
+        if (self::flagVisible($visibilidad, 'correccion_defectos', true)) {
+            $lista[] = self::ENUNCIADO_CORRECCION_DEFECTOS;
+        }
+        if (self::flagVisible($visibilidad, 'incluye_materiales_insumos', true)) {
+            $lista[] = self::ENUNCIADO_INCLUYE_MATERIALES_INSUMOS;
+        }
+        if (self::flagVisible($visibilidad, 'incluye_traslados', (bool) $this->obs_traslados)) {
+            $lista[] = self::ENUNCIADO_INCLUYE_TRASLADOS;
+        }
+        if (self::flagVisible($visibilidad, 'incluye_viaticos', (bool) $this->obs_viaticos)) {
+            $lista[] = self::ENUNCIADO_INCLUYE_VIATICOS;
+        }
+
+        // 10. textos libres (máximo 4)
+        $textosLibres = is_array($this->term_cond_textos_libres) ? $this->term_cond_textos_libres : [];
+        if ($textosLibres === []) {
+            $textosLibres = self::legacyTextosLibresFromConfig($config, 'condicionantes_adicionales_');
+        }
+        foreach (array_slice($textosLibres, 0, 4) as $txtRaw) {
+            $txt = trim((string) $txtRaw);
             if ($txt !== '') {
                 $lista[] = $txt;
             }
+        }
+
+        // Bloque adicional: validación y alcances (siempre visible por default).
+        $alcances = is_array($this->validacion_alcances) ? $this->validacion_alcances : [];
+        if (self::flagVisible($alcances, 'incluye_todos_los_costos', true)) {
+            $lista[] = self::ENUNCIADO_ALCANCE_INCLUYE_TODOS_COSTOS;
+        }
+        if (self::flagVisible($alcances, 'sin_costos_adicionales_no_autorizados', true)) {
+            $lista[] = self::ENUNCIADO_ALCANCE_SIN_COSTOS_ADICIONALES;
+        }
+        if (self::flagVisible($alcances, 'adicionales_requieren_autorizacion_escrita', true)) {
+            $lista[] = self::ENUNCIADO_ALCANCE_ADICIONALES_AUTORIZACION;
         }
 
         return $lista;
@@ -246,47 +281,9 @@ class Presupuesto extends BaseModel
      */
     public function getObservacionesEnunciados(): array
     {
-        $lista = [];
-        $config = is_array($this->configuracion_condiciones) ? $this->configuracion_condiciones : [];
-
-        if ($this->obs_garantia_dias > 0) {
-            $duracion = self::formatearDuracion((int) $this->obs_garantia_dias);
-            $lista[] = sprintf(self::ENUNCIADO_GARANTIA, $duracion);
-        }
-
-        if ($this->obs_traslados !== null && $this->obs_traslados) {
-            $lista[] = self::ENUNCIADO_TRASLADOS_INCLUIDOS;
-        }
-
-        if ($this->obs_viaticos !== null && $this->obs_viaticos) {
-            $lista[] = self::ENUNCIADO_VIATICOS_INCLUIDOS;
-        }
-
-        /** @deprecated  */
-        // if (! empty($config['revision_tecnica_activo'])) {
-        //     $lista[] = self::ENUNCIADO_REVISION_TECNICA;
-        // }
-
-        /** @deprecated  */
-        // if (! empty($config['condiciones_sitio_activo'])) {
-        //     $lista[] = self::ENUNCIADO_CONDICIONES_SITIO;
-        // }
-
-        foreach (
-            [
-                'observaciones_adicionales_1',
-                'observaciones_adicionales_2',
-                'observaciones_adicionales_3',
-                'observaciones_adicionales_4',
-            ] as $key
-        ) {
-            $txt = trim((string) ($config[$key] ?? ''));
-            if ($txt !== '') {
-                $lista[] = $txt;
-            }
-        }
-
-        return $lista;
+        // Se mantiene por compatibilidad con consumidores antiguos del recurso/PDF.
+        // La nueva estructura integra las cláusulas y textos libres dentro de términos.
+        return [];
     }
 
     /**
@@ -301,6 +298,7 @@ class Presupuesto extends BaseModel
         $conIva = $data['con_iva'] ?? true;
         $ivaPct = (float) ($data['term_cond_iva'] ?? $data['iva_porcentaje'] ?? 16);
         $config = is_array($data['configuracion_condiciones'] ?? null) ? $data['configuracion_condiciones'] : [];
+        $visibilidad = is_array($data['term_cond_visibilidad'] ?? null) ? $data['term_cond_visibilidad'] : [];
 
         // 1. vigencia
         if (
@@ -315,7 +313,7 @@ class Presupuesto extends BaseModel
         if (self::terminoActivoFormulario($config, 'moneda_activo')) {
             $moneda = $data['term_cond_moneda'] ?? 'MXN';
             $lista[] = self::ENUNCIADOS_MONEDA[$moneda]
-                ?? sprintf('Los precios estÃ¡n expresados en la moneda %s.', $moneda);
+                ?? sprintf('Los precios están expresados en la moneda %s.', $moneda);
         }
 
         // 3. impuestos
@@ -332,37 +330,62 @@ class Presupuesto extends BaseModel
             $lista[] = sprintf(self::ENUNCIADO_TIEMPO_ENTREGA, (int) $tiempoEntrega);
         }
 
-        // 5. anticipo
-        $anticipo = $data['term_cond_anticipo_porcentaje'] ?? null;
-        if (self::terminoActivoFormulario($config, 'anticipo_activo') && $anticipo !== null && (float) $anticipo > 0) {
-            $lista[] = sprintf(self::ENUNCIADO_ANTICIPO, (int) $anticipo);
-        }
-
-        // 6. inicio trabajos
+        // 5. inicio trabajos
         if (self::terminoActivoFormulario($config, 'inicio_trabajos_activo')) {
-            $modo = $config['inicio_trabajos_modo'] ?? 'autorizacion';
-            if ($modo === 'anticipo') {
-                $pct = (int) ($config['inicio_trabajos_anticipo_pct'] ?? 0);
-                $lista[] = $pct > 0
-                    ? sprintf(self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO, $pct)
-                    : self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO_PLACEHOLDER;
-            } else {
-                $lista[] = self::ENUNCIADO_INICIO_TRABAJOS_AUTORIZACION;
-            }
+            self::appendInicioTrabajosEnunciados(
+                $lista,
+                $config,
+                (int) ($data['term_cond_inicio_trabajo'] ?? 1),
+                isset($data['term_cond_inicio_trabajo_porcentaje']) ? (float) $data['term_cond_inicio_trabajo_porcentaje'] : null,
+                isset($data['term_cond_inicio_trabajo_cantidad']) ? (float) $data['term_cond_inicio_trabajo_cantidad'] : null,
+            );
         }
 
-        foreach (
-            [
-                'condicionantes_adicionales_1',
-                'condicionantes_adicionales_2',
-                'condicionantes_adicionales_3',
-                'condicionantes_adicionales_4',
-            ] as $key
-        ) {
-            $txt = trim((string) ($config[$key] ?? ''));
+        // 6-9. cláusulas visibles
+        if (self::flagVisible($visibilidad, 'pago_contra_conformidad', true)) {
+            $lista[] = self::ENUNCIADO_PAGO_TOTAL_CONFORMIDAD;
+        }
+        $garantiaDias = (int) ($data['obs_garantia_dias'] ?? 0);
+        if ($garantiaDias > 0) {
+            $duracion = self::formatearDuracion($garantiaDias);
+            $lista[] = sprintf(self::ENUNCIADO_GARANTIA, $duracion);
+        }
+        if (self::flagVisible($visibilidad, 'garantia_calidad', true)) {
+            $lista[] = self::ENUNCIADO_GARANTIA_CALIDAD;
+        }
+        if (self::flagVisible($visibilidad, 'correccion_defectos', true)) {
+            $lista[] = self::ENUNCIADO_CORRECCION_DEFECTOS;
+        }
+        if (self::flagVisible($visibilidad, 'incluye_materiales_insumos', true)) {
+            $lista[] = self::ENUNCIADO_INCLUYE_MATERIALES_INSUMOS;
+        }
+        if (self::flagVisible($visibilidad, 'incluye_traslados', array_key_exists('obs_traslados', $data) ? (bool) $data['obs_traslados'] : true)) {
+            $lista[] = self::ENUNCIADO_INCLUYE_TRASLADOS;
+        }
+        if (self::flagVisible($visibilidad, 'incluye_viaticos', array_key_exists('obs_viaticos', $data) ? (bool) $data['obs_viaticos'] : true)) {
+            $lista[] = self::ENUNCIADO_INCLUYE_VIATICOS;
+        }
+
+        $textosLibres = is_array($data['term_cond_textos_libres'] ?? null) ? $data['term_cond_textos_libres'] : [];
+        if ($textosLibres === []) {
+            $textosLibres = self::legacyTextosLibresFromConfig($config, 'condicionantes_adicionales_');
+        }
+        foreach (array_slice($textosLibres, 0, 4) as $txtRaw) {
+            $txt = trim((string) $txtRaw);
             if ($txt !== '') {
                 $lista[] = $txt;
             }
+        }
+
+        $alcances = is_array($data['validacion_alcances'] ?? null) ? $data['validacion_alcances'] : [];
+        if (self::flagVisible($alcances, 'incluye_todos_los_costos', true)) {
+            $lista[] = self::ENUNCIADO_ALCANCE_INCLUYE_TODOS_COSTOS;
+        }
+        if (self::flagVisible($alcances, 'sin_costos_adicionales_no_autorizados', true)) {
+            $lista[] = self::ENUNCIADO_ALCANCE_SIN_COSTOS_ADICIONALES;
+        }
+        if (self::flagVisible($alcances, 'adicionales_requieren_autorizacion_escrita', true)) {
+            $lista[] = self::ENUNCIADO_ALCANCE_ADICIONALES_AUTORIZACION;
         }
 
         return $lista;
@@ -374,23 +397,47 @@ class Presupuesto extends BaseModel
      * @param  array<int, string>  $lista
      * @param  array<string, mixed>  $config
      */
-    private static function appendInicioTrabajosEnunciados(array &$lista, array $config): void
+    private static function appendInicioTrabajosEnunciados(
+        array &$lista,
+        array $config,
+        int $inicioTrabajo,
+        ?float $inicioTrabajoPorcentaje,
+        ?float $inicioTrabajoCantidad,
+    ): void
     {
         if (array_key_exists('inicio_trabajos_activo', $config) && $config['inicio_trabajos_activo'] === false) {
             return;
         }
 
-        $modo = $config['inicio_trabajos_modo'] ?? 'autorizacion';
-        if ($modo === 'anticipo') {
-            $pct = (int) ($config['inicio_trabajos_anticipo_pct'] ?? 0);
-            $lista[] = $pct > 0
-                ? sprintf(self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO, $pct)
-                : self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO_PLACEHOLDER;
+        $modo = $config['inicio_trabajos_modo'] ?? null;
+        if ($modo === 'autorizacion' || ($modo === null && $inicioTrabajo === 1)) {
+            $lista[] = self::ENUNCIADO_INICIO_TRABAJOS_AUTORIZACION;
 
             return;
         }
 
-        $lista[] = self::ENUNCIADO_INICIO_TRABAJOS_AUTORIZACION;
+        if ($modo === 'anticipo_porcentaje' || ($modo === 'anticipo' && ($inicioTrabajoPorcentaje ?? 0) > 0) || ($modo === null && ($inicioTrabajoPorcentaje ?? 0) > 0)) {
+            $lista[] = sprintf(self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO_PORCENTAJE, (int) ($inicioTrabajoPorcentaje ?? 0));
+
+            return;
+        }
+
+        if ($modo === 'anticipo_cantidad' || ($modo === null && ($inicioTrabajoCantidad ?? 0) > 0)) {
+            $monto = number_format((float) ($inicioTrabajoCantidad ?? 0), 2, '.', ',');
+            $lista[] = sprintf(self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO_CANTIDAD, $monto);
+
+            return;
+        }
+
+        if ($modo === 'anticipo') {
+            $pctLegacy = (int) ($config['inicio_trabajos_anticipo_pct'] ?? 0);
+            if ($pctLegacy > 0) {
+                $lista[] = sprintf(self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO_PORCENTAJE, $pctLegacy);
+                return;
+            }
+        }
+
+        $lista[] = self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO_PLACEHOLDER;
     }
 
     /**
@@ -414,6 +461,32 @@ class Presupuesto extends BaseModel
     }
 
     /**
+     * @param  array<string, mixed>  $flags
+     */
+    private static function flagVisible(array $flags, string $key, bool $default): bool
+    {
+        return array_key_exists($key, $flags) ? (bool) $flags[$key] : $default;
+    }
+
+    /**
+     * @return array<int, string>
+     * @param  array<string, mixed>  $config
+     */
+    private static function legacyTextosLibresFromConfig(array $config, string $prefix): array
+    {
+        $items = [];
+
+        for ($i = 1; $i <= 4; $i++) {
+            $txt = trim((string) ($config["{$prefix}{$i}"] ?? ''));
+            if ($txt !== '') {
+                $items[] = $txt;
+            }
+        }
+
+        return $items;
+    }
+
+    /**
      * Construye enunciados de observaciones desde un array.
      *
      * @param  array<string, mixed>  $data
@@ -421,47 +494,9 @@ class Presupuesto extends BaseModel
      */
     public static function buildObservacionesEnunciadosFromArray(array $data): array
     {
-        $lista = [];
-        $config = is_array($data['configuracion_condiciones'] ?? null) ? $data['configuracion_condiciones'] : [];
-
-        $garantiaDias = (int) ($data['obs_garantia_dias'] ?? 0);
-        if ($garantiaDias > 0) {
-            $lista[] = sprintf(self::ENUNCIADO_GARANTIA, $garantiaDias);
-        }
-
-        if (! array_key_exists('obs_traslados', $data)) {
-            $lista[] = self::ENUNCIADO_TRASLADOS_INCLUIDOS;
-        }
-
-        if (array_key_exists('obs_viaticos', $data)) {
-            $lista[] = self::ENUNCIADO_VIATICOS_INCLUIDOS;
-        }
-
-        /** @deprecated */
-        // if (! empty($config['revision_tecnica_activo'])) {
-        //     $lista[] = self::ENUNCIADO_REVISION_TECNICA;
-        // }
-
-        /** @deprecated */
-        // if (! empty($config['condiciones_sitio_activo'])) {
-        //     $lista[] = self::ENUNCIADO_CONDICIONES_SITIO;
-        // }
-
-        foreach (
-            [
-                'observaciones_adicionales_1',
-                'observaciones_adicionales_2',
-                'observaciones_adicionales_3',
-                'observaciones_adicionales_4',
-            ] as $key
-        ) {
-            $txt = trim((string) ($config[$key] ?? ''));
-            if ($txt !== '') {
-                $lista[] = $txt;
-            }
-        }
-
-        return $lista;
+        // Conservado por compatibilidad con código legado.
+        // En el esquema actual, el contenido vive en términos.
+        return [];
     }
 
     /**

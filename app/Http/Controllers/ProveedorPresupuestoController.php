@@ -253,6 +253,7 @@ class ProveedorPresupuestoController extends Controller
             }
 
             $validated = $this->resolverReceptorEmpresaParaValidacion($validated, $proveedor);
+            $validated = $this->normalizarTerminosPayload($validated);
 
             if (! empty($validated['empresa_receptora_id'])) {
                 $idReceptor = (int) $validated['empresa_receptora_id'];
@@ -347,6 +348,7 @@ class ProveedorPresupuestoController extends Controller
             }
 
             $validated = $this->resolverReceptorEmpresaParaValidacion($validated, $proveedor);
+            $validated = $this->normalizarTerminosPayload($validated);
 
             if (! empty($validated['empresa_receptora_id'])) {
                 $idReceptor = (int) $validated['empresa_receptora_id'];
@@ -519,8 +521,13 @@ class ProveedorPresupuestoController extends Controller
                     'term_cond_moneda',
                     'term_cond_impuestos_en_pdf',
                     'term_cond_iva',
-                    'term_cond_anticipo_porcentaje',
                     'term_cond_tiempo_entrega_dias',
+                    'term_cond_inicio_trabajo',
+                    'term_cond_inicio_trabajo_porcentaje',
+                    'term_cond_inicio_trabajo_cantidad',
+                    'term_cond_textos_libres',
+                    'term_cond_visibilidad',
+                    'validacion_alcances',
                     'obs_garantia_dias',
                     'obs_traslados',
                     'obs_viaticos',
@@ -783,6 +790,84 @@ class ProveedorPresupuestoController extends Controller
         unset($config['proveedor_receptor_id'], $config['receptor_es_proveedor_catalogo']);
 
         return $config;
+    }
+
+    /**
+     * Normaliza términos para persistencia y preview (fase de transición legacy -> estructura escalable).
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function normalizarTerminosPayload(array $payload): array
+    {
+        $inicioTrabajo = isset($payload['term_cond_inicio_trabajo']) ? (int) $payload['term_cond_inicio_trabajo'] : null;
+        $anticipoPct = isset($payload['term_cond_inicio_trabajo_porcentaje']) ? (float) $payload['term_cond_inicio_trabajo_porcentaje'] : null;
+        $anticipoMonto = isset($payload['term_cond_inicio_trabajo_cantidad']) ? (float) $payload['term_cond_inicio_trabajo_cantidad'] : null;
+
+        if ($inicioTrabajo !== 2) {
+            $payload['term_cond_inicio_trabajo_porcentaje'] = null;
+            $payload['term_cond_inicio_trabajo_cantidad'] = null;
+        } else {
+            $tienePct = $anticipoPct !== null && $anticipoPct > 0;
+            $tieneMonto = $anticipoMonto !== null && $anticipoMonto > 0;
+
+            if ($tienePct && $tieneMonto) {
+                // Política de conflicto: priorizar porcentaje y limpiar monto.
+                $payload['term_cond_inicio_trabajo_cantidad'] = null;
+            } elseif (! $tienePct && ! $tieneMonto) {
+                $payload['term_cond_inicio_trabajo_porcentaje'] = null;
+                $payload['term_cond_inicio_trabajo_cantidad'] = null;
+            } else {
+                $payload['term_cond_inicio_trabajo_porcentaje'] = $tienePct ? $anticipoPct : null;
+                $payload['term_cond_inicio_trabajo_cantidad'] = $tieneMonto ? $anticipoMonto : null;
+            }
+        }
+
+        $textos = is_array($payload['term_cond_textos_libres'] ?? null) ? $payload['term_cond_textos_libres'] : [];
+        $textos = array_values(array_filter(array_map(
+            static fn ($item) => trim((string) $item),
+            $textos
+        ), static fn ($item) => $item !== ''));
+        $payload['term_cond_textos_libres'] = array_slice($textos, 0, 4);
+
+        $legacyTraslados = array_key_exists('obs_traslados', $payload) ? (bool) $payload['obs_traslados'] : true;
+        $legacyViaticos = array_key_exists('obs_viaticos', $payload) ? (bool) $payload['obs_viaticos'] : true;
+        $visibilidad = is_array($payload['term_cond_visibilidad'] ?? null) ? $payload['term_cond_visibilidad'] : [];
+        $payload['term_cond_visibilidad'] = [
+            'pago_contra_conformidad' => array_key_exists('pago_contra_conformidad', $visibilidad)
+                ? (bool) $visibilidad['pago_contra_conformidad']
+                : true,
+            'garantia_calidad' => array_key_exists('garantia_calidad', $visibilidad)
+                ? (bool) $visibilidad['garantia_calidad']
+                : true,
+            'correccion_defectos' => array_key_exists('correccion_defectos', $visibilidad)
+                ? (bool) $visibilidad['correccion_defectos']
+                : true,
+            'incluye_materiales_insumos' => array_key_exists('incluye_materiales_insumos', $visibilidad)
+                ? (bool) $visibilidad['incluye_materiales_insumos']
+                : true,
+            'incluye_traslados' => array_key_exists('incluye_traslados', $visibilidad)
+                ? (bool) $visibilidad['incluye_traslados']
+                : $legacyTraslados,
+            'incluye_viaticos' => array_key_exists('incluye_viaticos', $visibilidad)
+                ? (bool) $visibilidad['incluye_viaticos']
+                : $legacyViaticos,
+        ];
+
+        $alcances = is_array($payload['validacion_alcances'] ?? null) ? $payload['validacion_alcances'] : [];
+        $payload['validacion_alcances'] = [
+            'incluye_todos_los_costos' => array_key_exists('incluye_todos_los_costos', $alcances)
+                ? (bool) $alcances['incluye_todos_los_costos']
+                : true,
+            'sin_costos_adicionales_no_autorizados' => array_key_exists('sin_costos_adicionales_no_autorizados', $alcances)
+                ? (bool) $alcances['sin_costos_adicionales_no_autorizados']
+                : true,
+            'adicionales_requieren_autorizacion_escrita' => array_key_exists('adicionales_requieren_autorizacion_escrita', $alcances)
+                ? (bool) $alcances['adicionales_requieren_autorizacion_escrita']
+                : true,
+        ];
+
+        return $payload;
     }
 
     /**
@@ -1426,6 +1511,7 @@ class ProveedorPresupuestoController extends Controller
             }
 
             $validated = $this->resolverReceptorEmpresaParaValidacion($validated, $proveedor);
+            $validated = $this->normalizarTerminosPayload($validated);
             $normalized = $this->normalizarEmpresaReceptora($validated, (int) $proveedor->id);
             $presupuestoGuardado = $this->guardarBorradorParaPreview($request, $proveedor, $validated);
 

@@ -50,13 +50,24 @@ class UpdatePresupuestoRequest extends FormRequest
             'term_cond_moneda' => 'nullable|string|max:10',
             'term_cond_impuestos_en_pdf' => 'nullable|boolean',
             'term_cond_iva' => 'nullable|numeric|min:0|max:100',
-            'term_cond_anticipo_porcentaje' => 'nullable|numeric|min:0|max:100',
             'term_cond_tiempo_entrega_dias' => 'nullable|integer|min:0',
-            'term_cond_inicio_trabajo' => 'nullable|integer',
-            'term_cond_inicio_trabajo_porcentaje' => 'nullable|integer|min:0|max:100',
+            'term_cond_inicio_trabajo' => 'nullable|integer|in:1,2',
+            'term_cond_inicio_trabajo_porcentaje' => 'nullable|numeric|min:0|max:100',
+            'term_cond_inicio_trabajo_cantidad' => 'nullable|numeric|min:0.01',
             'obs_garantia_dias' => 'nullable|integer|min:0',
-            'obs_traslados' => 'nullable|boolean',
-            'obs_viaticos' => 'nullable|boolean',
+            'term_cond_textos_libres' => 'nullable|array|max:4',
+            'term_cond_textos_libres.*' => 'nullable|string|max:500',
+            'term_cond_visibilidad' => 'nullable|array',
+            'term_cond_visibilidad.pago_contra_conformidad' => 'nullable|boolean',
+            'term_cond_visibilidad.garantia_calidad' => 'nullable|boolean',
+            'term_cond_visibilidad.correccion_defectos' => 'nullable|boolean',
+            'term_cond_visibilidad.incluye_materiales_insumos' => 'nullable|boolean',
+            'term_cond_visibilidad.incluye_traslados' => 'nullable|boolean',
+            'term_cond_visibilidad.incluye_viaticos' => 'nullable|boolean',
+            'validacion_alcances' => 'nullable|array',
+            'validacion_alcances.incluye_todos_los_costos' => 'nullable|boolean',
+            'validacion_alcances.sin_costos_adicionales_no_autorizados' => 'nullable|boolean',
+            'validacion_alcances.adicionales_requieren_autorizacion_escrita' => 'nullable|boolean',
             'configuracion_condiciones' => 'nullable|array',
             'estado' => 'nullable|string|in:borrador,enviado,aceptado,rechazado,rechazado_con_observacion,vencido',
             'conceptos' => 'required|array|min:1',
@@ -73,6 +84,9 @@ class UpdatePresupuestoRequest extends FormRequest
             $data = $v->getData();
             $id = $data['empresa_receptora_id'] ?? null;
             $esProveedorReceptor = filter_var($data['es_proveedor_receptor'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            $inicioTrabajo = isset($data['term_cond_inicio_trabajo']) ? (int) $data['term_cond_inicio_trabajo'] : null;
+            $inicioPct = $data['term_cond_inicio_trabajo_porcentaje'] ?? null;
+            $inicioMonto = $data['term_cond_inicio_trabajo_cantidad'] ?? null;
 
             if ($esProveedorReceptor && ($id === null || $id === '')) {
                 $v->errors()->add(
@@ -99,6 +113,29 @@ class UpdatePresupuestoRequest extends FormRequest
                 $v->errors()->add(
                     'empresa_receptora_empresa',
                     'La razón social o empresa es obligatoria en captura manual (sin cliente de cartera ni proveedor del catálogo).'
+                );
+            }
+
+            if ($inicioTrabajo === 2) {
+                $tienePct = $inicioPct !== null && $inicioPct !== '' && (float) $inicioPct > 0;
+                $tieneMonto = $inicioMonto !== null && $inicioMonto !== '' && (float) $inicioMonto > 0;
+
+                if (! $tienePct && ! $tieneMonto) {
+                    $v->errors()->add(
+                        'term_cond_inicio_trabajo',
+                        'Cuando el inicio de trabajo es por anticipo, debe indicar porcentaje o cantidad.'
+                    );
+                }
+            }
+
+            if (
+                $inicioPct !== null && $inicioPct !== ''
+                && $inicioMonto !== null && $inicioMonto !== ''
+                && (float) $inicioPct > 0 && (float) $inicioMonto > 0
+            ) {
+                $v->errors()->add(
+                    'term_cond_inicio_trabajo_cantidad',
+                    'Debe enviar solo una opción de anticipo: porcentaje o cantidad.'
                 );
             }
         });
@@ -138,11 +175,18 @@ class UpdatePresupuestoRequest extends FormRequest
             'term_cond_dias_vigencia.integer' => 'Los días de vigencia deben ser un número entero.',
             'term_cond_moneda.string' => 'La moneda debe ser texto.',
             'term_cond_iva.numeric' => 'El IVA debe ser numérico.',
-            'term_cond_anticipo_porcentaje.numeric' => 'El porcentaje de anticipo debe ser numérico.',
             'term_cond_tiempo_entrega_dias.integer' => 'Los días de tiempo de entrega deben ser un número entero.',
+            'term_cond_inicio_trabajo.in' => 'La opción de inicio de trabajo debe ser 1 (autorización) o 2 (anticipo).',
+            'term_cond_inicio_trabajo_porcentaje.numeric' => 'El anticipo por porcentaje debe ser numérico.',
+            'term_cond_inicio_trabajo_porcentaje.min' => 'El anticipo por porcentaje no puede ser menor a 0.',
+            'term_cond_inicio_trabajo_porcentaje.max' => 'El anticipo por porcentaje no puede ser mayor a 100.',
+            'term_cond_inicio_trabajo_cantidad.numeric' => 'El anticipo por cantidad debe ser numérico.',
+            'term_cond_inicio_trabajo_cantidad.min' => 'El anticipo por cantidad debe ser mayor a 0.',
             'obs_garantia_dias.integer' => 'Los días de garantía deben ser un número entero.',
-            'obs_traslados.boolean' => 'Traslados debe ser verdadero o falso.',
-            'obs_viaticos.boolean' => 'Viáticos debe ser verdadero o falso.',
+            'term_cond_textos_libres.array' => 'Los términos de texto libre deben enviarse como arreglo.',
+            'term_cond_textos_libres.max' => 'Solo puede registrar hasta 4 textos libres.',
+            'term_cond_textos_libres.*.string' => 'Cada texto libre debe ser texto.',
+            'term_cond_textos_libres.*.max' => 'Cada texto libre no debe exceder 500 caracteres.',
             'conceptos.required' => 'Debe registrar al menos un concepto.',
             'conceptos.array' => 'Los conceptos deben enviarse como arreglo.',
             'conceptos.min' => 'Debe registrar al menos un concepto.',
