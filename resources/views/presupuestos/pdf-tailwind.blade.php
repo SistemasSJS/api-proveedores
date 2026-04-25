@@ -98,38 +98,51 @@
             border-collapse: collapse;
         }
 
+        /*
+         * Logo emisor: caja fija 4 cm × 3 cm; la imagen rellena la caja y se recorta (object-fit: cover).
+         * Separación 0,7 mm entre la caja del logo y el bloque de texto del emisor (padding derecho de celda).
+         */
         .tw-logo-cell {
-            width: 22%;
+            width: 40.7mm;
+            box-sizing: border-box;
+            padding: 0 0.7mm 0 0;
             vertical-align: top;
             text-align: left;
-            padding-right: 0.7mm; /* 👈 aquí está la magia */
+        }
+
+        .tw-logo-box {
+            width: 40mm;
+            height: 30mm;
+            overflow: hidden;
+            display: block;
+            box-sizing: border-box;
         }
 
         .tw-logo-img {
-            max-width: 40mm;   /* 4 cm */
-            max-height: 30mm;  /* 3 cm */
-            width: auto;
-            height: auto;
-            object-fit: contain;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
             display: block;
         }
 
         .tw-logo-fallback {
-            width: 20mm;
-            height: 20mm;
+            width: 100%;
+            height: 100%;
+            min-height: 30mm;
             background: var(--accent);
             border-radius: 1mm;
             text-align: center;
-            line-height: 20mm;
+            line-height: 30mm;
             color: var(--tw-white);
-            font-size: 11pt;
+            font-size: 14pt;
             font-weight: bold;
         }
 
         .tw-emisor-cell {
             vertical-align: top;
             padding-left: 0;
-            width: 48%;
+            width: auto;
         }
 
         .tw-emisor-name {
@@ -762,9 +775,13 @@
                                         $inicial = strtoupper(substr($nombreEmpresa, 0, 1));
                                     @endphp
                                     @if ($logoProveedorBase64)
-                                        <img src="{{ $logoProveedorBase64 }}" alt="Logo" class="tw-logo-img" />
+                                        <div class="tw-logo-box">
+                                            <img src="{{ $logoProveedorBase64 }}" alt="Logo" class="tw-logo-img" />
+                                        </div>
                                     @else
-                                        <div class="tw-logo-fallback">{{ $inicial }}</div>
+                                        <div class="tw-logo-box">
+                                            <div class="tw-logo-fallback">{{ $inicial }}</div>
+                                        </div>
                                     @endif
                                 </td>
                                 <td class="tw-emisor-cell">
