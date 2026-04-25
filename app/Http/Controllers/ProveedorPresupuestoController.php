@@ -692,7 +692,6 @@ class ProveedorPresupuestoController extends Controller
             );
             $payload['empresa_receptora_puesto'] = $receptor->contacto_cargo;
             $payload['empresa_receptora_empresa'] = $this->valorReceptorNoVacio(
-                $receptor->nombre_comercial,
                 $receptor->razon_social,
                 'Empresa'
             );
@@ -1200,6 +1199,51 @@ class ProveedorPresupuestoController extends Controller
     }
 
     /**
+     * Datos pasados a la plantilla Blade del PDF (`PresupuestoPdfTemplate::viewName()`).
+     *
+     * Solo claves que consume la vista. El bloque «Dirigido a:» usa `receptor_lineas`: orden fijo
+     * alias → nombre → puesto → empresa → teléfono → correo, tomado de columnas `empresa_receptora_*`
+     * del presupuesto (ver {@see PresupuestoPdf::lineasReceptorPdfDesdeColumnasPresupuesto}).
+     *
+     * @return array<string, mixed>
+     */
+    private function datosVistaPdfPresupuestoGuardado(
+        Presupuesto $presupuesto,
+        Proveedor $proveedorEmisor,
+        string $logoProveedorBase64,
+        ?string $lugar,
+        ?string $qrCodeDataUri
+    ): array {
+        return [
+            'proveedor' => $proveedorEmisor,
+            'logo_proveedor_base64' => $logoProveedorBase64,
+            'numero_presupuesto' => $presupuesto->numero_presupuesto,
+            'uuid' => $presupuesto->uuid,
+            'fecha_emision' => $presupuesto->fecha_emision,
+            'lugar' => $lugar,
+            'concepto_general' => $presupuesto->concepto_general,
+            'con_iva' => $presupuesto->con_iva,
+            'iva_porcentaje' => $presupuesto->iva_porcentaje,
+            'subtotal' => $presupuesto->subtotal,
+            'iva_total' => $presupuesto->iva_total,
+            'total' => $presupuesto->total,
+            'receptor_lineas' => PresupuestoPdf::lineasReceptorPdfDesdeColumnasPresupuesto($presupuesto),
+            'conceptos' => $presupuesto->conceptos->map(static function ($concepto) {
+                return [
+                    'descripcion' => $concepto->descripcion,
+                    'cantidad' => $concepto->cantidad,
+                    'unidad' => $concepto->unidad,
+                    'precio_unitario' => $concepto->precio_unitario,
+                    'precio_total' => $concepto->precio_total,
+                ];
+            })->values()->all(),
+            'terminos_enunciados' => $presupuesto->getTerminosEnunciados(),
+            'observaciones_enunciados' => $presupuesto->getObservacionesEnunciados(),
+            'qr_code' => $qrCodeDataUri,
+        ];
+    }
+
+    /**
      * Genera y descarga el PDF de un presupuesto guardado.
      */
     public function generarPdf(Proveedor $proveedor, Presupuesto $presupuesto): Response
@@ -1219,54 +1263,22 @@ class ProveedorPresupuestoController extends Controller
                 'numero_presupuesto' => $presupuesto->numero_presupuesto,
             ]);
 
-            // Convertir logo del proveedor a base64
             $logoProveedorBase64 = $this->convertirLogoProveedorABase64($presupuesto->proveedor);
+            $proveedorEmisor = $presupuesto->proveedor;
+            $df = $proveedorEmisor?->direccion_fiscal;
+            $estado = \Illuminate\Support\Arr::get((array) ($df ?? []), 'estado', $proveedorEmisor->estado ?? 'México');
+            $lugar = $proveedorEmisor?->ciudad ? ($proveedorEmisor->ciudad . ', ' . $estado) : null;
+            $qrCode = $this->generarQrCodeParaPresupuesto($presupuesto);
 
-            $proveedor = $presupuesto->proveedor;
-            $df = $proveedor?->direccion_fiscal;
-            $estado = \Illuminate\Support\Arr::get((array) ($df ?? []), 'estado', $proveedor->estado ?? 'México');
-            $lugar = $proveedor?->ciudad ? ($proveedor->ciudad . ', ' . $estado) : null;
+            $datosVista = $this->datosVistaPdfPresupuestoGuardado(
+                $presupuesto,
+                $proveedorEmisor,
+                $logoProveedorBase64,
+                $lugar,
+                $qrCode
+            );
 
-            $empDoc = $presupuesto->empresaReceptoraParaDocumento();
-
-            // Preparar datos para la vista
-            $datosPresupuesto = [
-                'proveedor' => $proveedor,
-                'logo_proveedor_base64' => $logoProveedorBase64,
-                'numero_presupuesto' => $presupuesto->numero_presupuesto,
-                'uuid' => $presupuesto->uuid ?? null,
-                'clave_unica' => $presupuesto->id ?? null,
-                'fecha_emision' => $presupuesto->fecha_emision,
-                'lugar' => $lugar,
-                'concepto_general' => $presupuesto->concepto_general,
-                'con_iva' => $presupuesto->con_iva,
-                'iva_porcentaje' => $presupuesto->iva_porcentaje,
-                'subtotal' => $presupuesto->subtotal,
-                'iva_total' => $presupuesto->iva_total,
-                'total' => $presupuesto->total,
-                'empresa_receptora' => $empDoc,
-                'receptor_lineas' => PresupuestoPdf::lineasDirigidoUnicas([
-                    'empresa' => $empDoc['empresa'],
-                    'nombre' => $empDoc['nombre'],
-                    'puesto' => $empDoc['puesto'],
-                    'alias_empresa' => $empDoc['alias_empresa'],
-                ]),
-                'conceptos' => $presupuesto->conceptos->map(function ($concepto) {
-                    return [
-                        'descripcion' => $concepto->descripcion,
-                        'cantidad' => $concepto->cantidad,
-                        'unidad' => $concepto->unidad,
-                        'precio_unitario' => $concepto->precio_unitario,
-                        'precio_total' => $concepto->precio_total,
-                    ];
-                })->toArray(),
-                'terminos_enunciados' => $presupuesto->getTerminosEnunciados(),
-                'observaciones_enunciados' => $presupuesto->getObservacionesEnunciados(),
-                'qr_code' => $qrCode = $this->generarQrCodeParaPresupuesto($presupuesto),
-                'qr_url' => $qrCode ? (rtrim(config('app.frontend_url', config('app.url')), '/') . '/public/presupuesto/' . $presupuesto->token_publico) : null,
-            ];
-
-            return $this->generarPdfResponse($datosPresupuesto, $presupuesto->numero_presupuesto);
+            return $this->generarPdfResponse($datosVista, $presupuesto->numero_presupuesto);
         } catch (Throwable $e) {
             $this->log('Error al generar PDF', [
                 'presupuesto_id' => $presupuesto->id,
@@ -1429,43 +1441,18 @@ class ProveedorPresupuestoController extends Controller
                 'iva_porcentaje' => $normalized['iva_porcentaje'] ?? 16,
             ]);
 
-            $stubPdf = new Presupuesto;
-            $stubPdf->empresa_receptora_nombre = $normalized['empresa_receptora_nombre'] ?? null;
-            $stubPdf->empresa_receptora_puesto = $normalized['empresa_receptora_puesto'] ?? null;
-            $stubPdf->empresa_receptora_empresa = $normalized['empresa_receptora_empresa'] ?? null;
-            $stubPdf->empresa_receptora_alias = $normalized['empresa_receptora_alias'] ?? null;
-            $stubPdf->empresa_receptora_telefono = $normalized['empresa_receptora_telefono'] ?? null;
-            $stubPdf->empresa_receptora_correo = $normalized['empresa_receptora_correo'] ?? null;
-            $stubPdf->setAttribute('empresa_receptora_direccion', $normalized['empresa_receptora_direccion'] ?? null);
-            $stubPdf->proveedor_receptor_id = $normalized['proveedor_receptor_id'] ?? null;
-            $stubPdf->empresa_receptora_id = $normalized['empresa_receptora_id'] ?? null;
-            if ($stubPdf->proveedor_receptor_id) {
-                $stubPdf->setRelation(
-                    'proveedorReceptor',
-                    Proveedor::query()->find((int) $stubPdf->proveedor_receptor_id)
-                );
-            }
-            $empDocForm = $stubPdf->empresaReceptoraParaDocumento();
-
-            // Preparar datos para el PDF
+            // «Dirigido a:» = mismas columnas y orden que PDF guardado (ver datosVistaPdfPresupuestoGuardado).
             $datosPresupuesto = [
                 'proveedor' => $proveedor,
                 'logo_proveedor_base64' => $logoProveedorBase64,
                 'numero_presupuesto' => $presupuestoGuardado->numero_presupuesto,
                 'uuid' => $presupuestoGuardado->uuid,
-                'clave_unica' => $presupuestoGuardado->id,
                 'fecha_emision' => $presupuestoGuardado->fecha_emision,
                 'lugar' => $lugar,
                 'concepto_general' => $normalized['concepto_general'],
                 'con_iva' => $normalized['con_iva'] ?? true,
                 'iva_porcentaje' => $normalized['iva_porcentaje'] ?? 16.00,
-                'empresa_receptora' => $empDocForm,
-                'receptor_lineas' => PresupuestoPdf::lineasDirigidoUnicas([
-                    'empresa' => $empDocForm['empresa'],
-                    'nombre' => $empDocForm['nombre'],
-                    'puesto' => $empDocForm['puesto'],
-                    'alias_empresa' => $empDocForm['alias_empresa'],
-                ]),
+                'receptor_lineas' => PresupuestoPdf::lineasReceptorPdfDesdePayloadReceptor($normalized),
                 'conceptos' => $normalized['conceptos'] ?? [],
                 'terminos_enunciados' => Presupuesto::buildTerminosEnunciadosFromArray($formData),
                 'observaciones_enunciados' => Presupuesto::buildObservacionesEnunciadosFromArray($formData),

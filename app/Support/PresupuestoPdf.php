@@ -73,10 +73,12 @@ final class PresupuestoPdf
             'total' => $presupuesto->total,
             'empresa_receptora' => $empDoc,
             'receptor_lineas' => self::lineasDirigidoUnicas([
-                'empresa' => $empDoc['empresa'],
+                'alias_empresa' => $empDoc['alias_empresa'],
                 'nombre' => $empDoc['nombre'],
                 'puesto' => $empDoc['puesto'],
-                'alias_empresa' => $empDoc['alias_empresa'],
+                'empresa' => $empDoc['empresa'],
+                'telefono' => $empDoc['telefono'],
+                'correo' => $empDoc['correo'],
             ]),
             'conceptos' => $presupuesto->conceptos->map(fn ($c) => [
                 'descripcion' => $c->descripcion,
@@ -198,19 +200,30 @@ final class PresupuestoPdf
     }
 
     /**
-     * Líneas para «Dirigido a:» en el PDF. Orden fijo: empresa, contacto, puesto, alias.
-     * No se eliminan duplicados entre campos (antes el nombre igual a la empresa ocultaba puesto u otros datos).
+     * Líneas para «Dirigido a:» en el PDF.
      *
-     * @param  array{nombre?: string|null, puesto?: string|null, empresa?: string|null, alias_empresa?: string|null}  $r
+     * Orden fijo (misma secuencia que columnas `presupuesto.empresa_receptora_*` en app / API):
+     * alias → nombre → puesto → empresa → teléfono → correo. Omite vacíos.
+     *
+     * @param  array{
+     *   alias_empresa?: string|null,
+     *   nombre?: string|null,
+     *   puesto?: string|null,
+     *   empresa?: string|null,
+     *   telefono?: string|null,
+     *   correo?: string|null
+     * }  $r  Claves semánticas; valores suelen venir de `empresa_receptora_*`.
      * @return list<string>
      */
     public static function lineasDirigidoUnicas(array $r): array
     {
         $ordenados = [
-            trim((string) ($r['empresa'] ?? '')),
+            trim((string) ($r['alias_empresa'] ?? '')),
             trim((string) ($r['nombre'] ?? '')),
             trim((string) ($r['puesto'] ?? '')),
-            trim((string) ($r['alias_empresa'] ?? '')),
+            trim((string) ($r['empresa'] ?? '')),
+            trim((string) ($r['telefono'] ?? '')),
+            trim((string) ($r['correo'] ?? '')),
         ];
 
         $lines = [];
@@ -221,5 +234,39 @@ final class PresupuestoPdf
         }
 
         return $lines;
+    }
+
+    /**
+     * Misma lógica que {@see lineasDirigidoUnicas} leyendo solo las columnas `empresa_receptora_*` del presupuesto guardado.
+     */
+    public static function lineasReceptorPdfDesdeColumnasPresupuesto(Presupuesto $p): array
+    {
+        return self::lineasDirigidoUnicas([
+            'alias_empresa' => $p->empresa_receptora_alias,
+            'nombre' => $p->empresa_receptora_nombre,
+            'puesto' => $p->empresa_receptora_puesto,
+            'empresa' => $p->empresa_receptora_empresa,
+            'telefono' => $p->empresa_receptora_telefono,
+            'correo' => $p->empresa_receptora_correo,
+        ]);
+    }
+
+    /**
+     * Misma secuencia que {@see lineasReceptorPdfDesdeColumnasPresupuesto} desde un arreglo validado/normalizado
+     * (claves `empresa_receptora_*`, p. ej. preview PDF desde formulario).
+     *
+     * @param  array<string, mixed>  $payload
+     * @return list<string>
+     */
+    public static function lineasReceptorPdfDesdePayloadReceptor(array $payload): array
+    {
+        return self::lineasDirigidoUnicas([
+            'alias_empresa' => $payload['empresa_receptora_alias'] ?? null,
+            'nombre' => $payload['empresa_receptora_nombre'] ?? null,
+            'puesto' => $payload['empresa_receptora_puesto'] ?? null,
+            'empresa' => $payload['empresa_receptora_empresa'] ?? null,
+            'telefono' => $payload['empresa_receptora_telefono'] ?? null,
+            'correo' => $payload['empresa_receptora_correo'] ?? null,
+        ]);
     }
 }

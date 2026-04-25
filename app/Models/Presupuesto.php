@@ -552,38 +552,19 @@ class Presupuesto extends BaseModel
         }
 
         if ($prov) {
-            // nombre del receptor
-            $nombre = self::primerTextoNoVacio($this->empresa_receptora_nombre, $prov->nombre_propietario);
-
-            // empresa del receptor
-            $empresa = self::primerTextoNoVacio($this->empresa_receptora_empresa, $prov->razon_social);
-
-            // puesto del receptor
-            $puesto = self::primerTextoNoVacio($this->empresa_receptora_puesto, $prov->contacto_cargo);
-
-            // alias de la empresa del receptor
-            $alias = self::primerTextoNoVacio($this->empresa_receptora_alias, $prov->nombre_comercial);
-
-            // telefono del receptor
-            $telefono = self::primerTextoNoVacio($this->empresa_receptora_telefono, $prov->contacto_telefono, $prov->telefono, $prov->celular);
-
-            // correo del receptor
-            $correo = self::primerTextoNoVacio($this->empresa_receptora_correo, $prov->contacto_correo, $prov->email);
-
-            // dirección del receptor
-            $direccion = self::primerTextoNoVacio(
-                $this->empresa_receptora_direccion,
-                $prov->direccion_empresa
-            );
-
             return [
-                'nombre' => $nombre,
-                'puesto' => $puesto,
-                'empresa' => $empresa,
-                'alias_empresa' => $alias,
-                'telefono' => $telefono,
-                'correo' => $correo,
-                'direccion' => $direccion,
+                'nombre' => self::primerTextoNoVacio($this->empresa_receptora_nombre, $prov->nombre_propietario),
+                'puesto' => self::primerTextoNoVacio($this->empresa_receptora_puesto, $prov->contacto_cargo),
+                'empresa' => self::primerTextoNoVacio($this->empresa_receptora_empresa, $prov->razon_social),
+                'alias_empresa' => self::primerTextoNoVacio($this->empresa_receptora_alias, $prov->nombre_comercial),
+                'telefono' => self::primerTextoNoVacio(
+                    $this->empresa_receptora_telefono,
+                    $prov->contacto_telefono,
+                    $prov->telefono,
+                    $prov->celular
+                ),
+                'correo' => self::primerTextoNoVacio($this->empresa_receptora_correo, $prov->contacto_correo, $prov->email),
+                'direccion' => self::primerTextoNoVacio($this->empresa_receptora_direccion, $prov->direccion_empresa),
             ];
         }
 
