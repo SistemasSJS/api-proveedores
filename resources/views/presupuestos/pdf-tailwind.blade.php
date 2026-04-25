@@ -249,7 +249,7 @@
         }
 
         .tw-desc-title {
-            font-size: 9pt;       /* antes 6.5pt */
+            font-size: 8pt;       /* antes 6.5pt */
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -258,9 +258,8 @@
         }
 
         .tw-desc-text {
-            font-size: 9pt;       /* antes 7pt */
-            font-weight: 600;     /* 🔥 esto es clave */
-            color: var(--tw-slate-900);
+            font-size: 7.5pt;
+            color: var(--tw-slate-800);
             text-align: justify;
             line-height: 1.3;     /* más aire */
         }
@@ -807,12 +806,12 @@
                                     @if ($emisorRfc)
                                         <div class="tw-emisor-line">{{ $emisorRfc }}</div>
                                     @endif
-                                    @if ($emisorDireccion)
+                                    <!-- @if ($emisorDireccion)
                                         <div class="tw-emisor-line">{{ $emisorDireccion }}</div>
                                     @endif
                                     @if ($emisorCiudad)
                                         <div class="tw-emisor-line">{{ $emisorCiudad }}</div>
-                                    @endif
+                                    @endif -->
                                     @if ($emisorTel)
                                         <div class="tw-emisor-line">Tel. {{ $emisorTel }}</div>
                                     @endif

@@ -766,12 +766,12 @@
                                         @if ($emisorRfc)
                                             <div class="company-header-info">{{ $emisorRfc }}</div>
                                         @endif
-                                        @if ($emisorDireccion)
+                                        <!-- @if ($emisorDireccion)
                                             <div class="company-header-info">{{ $emisorDireccion }}</div>
                                         @endif
                                         @if ($emisorCiudad)
                                             <div class="company-header-info">{{ $emisorCiudad }}</div>
-                                        @endif
+                                        @endif -->
                                         @if ($emisorTel)
                                             <div class="company-header-info">Tel. {{ $emisorTel }}</div>
                                         @endif

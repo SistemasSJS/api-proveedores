@@ -5,6 +5,7 @@ namespace App\Http\Resources\Presupuesto;
 use App\Models\Presupuesto;
 // use App\Http\Resources\Presupuesto\PresupuestoEstadoLogResource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Str;
 
@@ -84,12 +85,15 @@ class PresupuestoResource extends JsonResource
 
             'proveedor' => [
                 'id' => $this->proveedor?->id ?? $this->proveedor_id,
-                'empresa' => $this->proveedor->razon_social ?? null,
-                'nombre' => self::upper($proveedorNombre),
-                'puesto' => $this->proveedor?->puesto ?? null,
-                'alias_empresa' => $this->proveedor->nombre_comercial ?? null,
+                'logo' => $this->proveedor?->logo
+                    ? Storage::disk('public')->url($this->proveedor?->logo)
+                    : null,
+                'empresa' => $this->proveedor?->razon_social ?? null,
+                'alias_empresa' => $this->proveedor?->nombre_comercial ?? null,
+                'rfc' => $this->proveedor?->rfc ?? null,
+                'direccion' => $this->proveedor?->direccion_fiscal ?? null,
                 'telefono' => $this->proveedor?->telefono ?? null,
-                'correo' => $this->proveedor?->correo ?? null,
+                'correo' => $this->proveedor?->email ?? null,
                 'origen' => $this->proveedor?->origen ?? null,
             ],
             'proveedor_receptor_id' => $this->proveedor_receptor_id !== null
