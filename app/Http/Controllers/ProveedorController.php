@@ -81,7 +81,17 @@ class ProveedorController extends Controller
             // Actualizar proveedor con el path relativo
             $proveedor->update(['logo' => $path]);
         } catch (\Throwable $e) {
-            throw new \Exception('Error al subir el logo: ' . $e->getMessage());
+            Log::error('Error al actualizar logo del proveedor', [
+                'proveedor_id' => $proveedor->id,
+                'user_id' => $user?->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->error(
+                'No se pudo actualizar el logo en este momento. Intenta nuevamente.',
+                null,
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
         }
 
         // Recargar modelos con relaciones

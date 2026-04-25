@@ -99,11 +99,12 @@
         }
 
         /*
-         * Logo emisor: caja fija 4 cm × 3 cm; la imagen rellena la caja y se recorta (object-fit: cover).
-         * Separación 0,7 mm entre la caja del logo y el bloque de texto del emisor (padding derecho de celda).
+         * Logo emisor:
+         * - Contenedor máximo: 4 cm × 3 cm
+         * - Contenedor mínimo: 2 cm × 2 cm
+         * - Separación con el texto a la derecha: 0.5 mm
          */
         .tw-logo-cell {
-            width: 40.7mm;
             box-sizing: border-box;
             padding: 0 0.7mm 0 0;
             vertical-align: top;
@@ -111,32 +112,40 @@
         }
 
         .tw-logo-box {
-            width: 40mm;
-            height: 30mm;
             overflow: hidden;
             display: block;
             box-sizing: border-box;
+            min-width: 20mm;
+            min-height: 20mm;
+            max-width: 40mm;
+            max-height: 30mm;
         }
 
         .tw-logo-img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
-            object-position: center;
+            object-fit: contain;
+            object-position: left center;
             display: block;
         }
 
         .tw-logo-fallback {
             width: 100%;
             height: 100%;
-            min-height: 30mm;
+            min-height: 20mm;
             background: var(--accent);
             border-radius: 1mm;
             text-align: center;
-            line-height: 30mm;
+            line-height: normal;
             color: var(--tw-white);
             font-size: 14pt;
             font-weight: bold;
+            display: table;
+        }
+
+        .tw-logo-fallback span {
+            display: table-cell;
+            vertical-align: middle;
         }
 
         .tw-emisor-cell {
@@ -627,8 +636,8 @@
         }
 
         /* ===== DEBUG VISUAL (TW VERSION) ===== */
-
-        /* .tw-header-wrap {
+        /*
+        .tw-header-wrap {
             outline: 2px solid red;
         }
 
@@ -713,7 +722,8 @@
 
         .footer-right {
             outline: 2px solid orange;
-        } */
+        } 
+        */
     </style>
 </head>
 
@@ -764,22 +774,81 @@
                 <tr>
                     <td class="tw-header-main">
                         <table class="tw-header-top">
+                            @php
+                                $logoProveedorBase64 = $presupuesto['logo_proveedor_base64'] ?? null;
+                                $nombreEmpresa =
+                                    $presupuesto['proveedor']->razon_social ??
+                                    ($presupuesto['proveedor']->nombre_comercial ?? 'P');
+                                $inicial = strtoupper(substr($nombreEmpresa, 0, 1));
+                                $maxLogoWidthMm = 40.0; // 4 cm
+                                $maxLogoHeightMm = 30.0; // 3 cm
+                                $minLogoContainerWidthMm = 20.0; // 2 cm
+                                $minLogoContainerHeightMm = 20.0; // 2 cm
+                                $logoGapRightMm = 0.5; // 0.5 mm
+                                $logoBoxWidthMm = $minLogoContainerWidthMm;
+                                $logoBoxHeightMm = $minLogoContainerHeightMm;
+
+                                if ($logoProveedorBase64) {
+                                    $logoRaw = $logoProveedorBase64;
+                                    if (str_starts_with($logoRaw, 'data:image')) {
+                                        $logoParts = explode(',', $logoRaw, 2);
+                                        $logoRaw = $logoParts[1] ?? '';
+                                    }
+
+                                    $logoBinary = base64_decode($logoRaw, true);
+                                    if ($logoBinary !== false) {
+                                        $logoInfo = @getimagesizefromstring($logoBinary);
+                                        if (is_array($logoInfo) && !empty($logoInfo[0]) && !empty($logoInfo[1])) {
+                                            $logoWidthPx = (float) $logoInfo[0];
+                                            $logoHeightPx = (float) $logoInfo[1];
+
+                                            // 1) Determinar la dimensión más grande y escalar para respetar 4x3 cm.
+                                            if ($logoWidthPx >= $logoHeightPx) {
+                                                $logoBoxWidthMm = $maxLogoWidthMm;
+                                                $logoBoxHeightMm =
+                                                    $logoBoxWidthMm * ($logoHeightPx / $logoWidthPx);
+                                            } else {
+                                                $logoBoxHeightMm = $maxLogoHeightMm;
+                                                $logoBoxWidthMm =
+                                                    $logoBoxHeightMm * ($logoWidthPx / $logoHeightPx);
+                                            }
+
+                                            // 2-4) Si alguna dimensión excede el contenedor máximo, reducir proporcionalmente.
+                                            $scaleDownFactor = min(
+                                                1,
+                                                $maxLogoWidthMm / max($logoBoxWidthMm, 0.0001),
+                                                $maxLogoHeightMm / max($logoBoxHeightMm, 0.0001),
+                                            );
+                                            $logoBoxWidthMm *= $scaleDownFactor;
+                                            $logoBoxHeightMm *= $scaleDownFactor;
+
+                                            // 5) El contenedor no puede ser menor de 2x2 cm.
+                                            $logoBoxWidthMm = max(
+                                                $minLogoContainerWidthMm,
+                                                min($maxLogoWidthMm, $logoBoxWidthMm),
+                                            );
+                                            $logoBoxHeightMm = max(
+                                                $minLogoContainerHeightMm,
+                                                min($maxLogoHeightMm, $logoBoxHeightMm),
+                                            );
+                                        }
+                                    }
+                                }
+
+                                $logoCellWidthMm = $logoBoxWidthMm + $logoGapRightMm;
+                            @endphp
                             <tr>
-                                <td class="tw-logo-cell">
-                                    @php
-                                        $logoProveedorBase64 = $presupuesto['logo_proveedor_base64'] ?? null;
-                                        $nombreEmpresa =
-                                            $presupuesto['proveedor']->razon_social ??
-                                            ($presupuesto['proveedor']->nombre_comercial ?? 'P');
-                                        $inicial = strtoupper(substr($nombreEmpresa, 0, 1));
-                                    @endphp
+                                <td class="tw-logo-cell"
+                                    style="width: {{ number_format($logoCellWidthMm, 2, '.', '') }}mm; padding-right: {{ number_format($logoGapRightMm, 2, '.', '') }}mm;">
                                     @if ($logoProveedorBase64)
-                                        <div class="tw-logo-box">
+                                        <div class="tw-logo-box"
+                                            style="width: {{ number_format($logoBoxWidthMm, 2, '.', '') }}mm; height: {{ number_format($logoBoxHeightMm, 2, '.', '') }}mm;">
                                             <img src="{{ $logoProveedorBase64 }}" alt="Logo" class="tw-logo-img" />
                                         </div>
                                     @else
-                                        <div class="tw-logo-box">
-                                            <div class="tw-logo-fallback">{{ $inicial }}</div>
+                                        <div class="tw-logo-box"
+                                            style="width: {{ number_format($logoBoxWidthMm, 2, '.', '') }}mm; height: {{ number_format($logoBoxHeightMm, 2, '.', '') }}mm;">
+                                            <div class="tw-logo-fallback"><span>{{ $inicial }}</span></div>
                                         </div>
                                     @endif
                                 </td>

@@ -37,9 +37,9 @@ class ProveedorUpdateLogoRequest extends FormRequest
     public function messages()
     {
         return [
-            'logo.required' => 'El logo es requerido.',
-            'logo.image' => 'El archivo debe ser una imagen válida.',
-            'logo.mimes' => 'La imagen debe estar en formato JPG o PNG.',
+            'logo.required' => 'Debes seleccionar un logo para continuar.',
+            'logo.image' => 'El archivo seleccionado no es una imagen válida.',
+            'logo.mimes' => 'El logo debe estar en formato JPG o PNG.',
             // 'logo.max' => 'La imagen no debe pesar más de 2MB.',
             // 'logo.dimensions' => 'La imagen debe tener entre 200x200px y 1000x1000px, y ser cuadrada (relación 1:1).',
         ];

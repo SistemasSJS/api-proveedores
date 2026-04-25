@@ -222,7 +222,8 @@ class ValidateApiAccess
             ];
 
             // Log a archivo específico para análisis posterior
-            Log::channel('api_access')->info('API Access', $logData);
+            // Log::channel('api_access')->info('API Access', $logData);
+            Log::info('API Access', $logData);
         }
     }
 
