@@ -665,6 +665,7 @@ class ConstruccPagosSPPController extends Controller
             foreach ($validated['solicitudes'] as $solicitudData) {
 
                 // obtener la SPP ya cargada antes de la transacción para reducir consultas dentro del loop
+                /** @var SolicitudPago */
                 $solicitudPago = $solicitudes[$solicitudData['solicitud_id']];
                 $totalAplicadoPrevio = $totalesAplicadosPorSpp->get($solicitudPago->id, 0.0);
                 $saldo_inicial_spp = max(0, (float) $solicitudPago->monto_total - $totalAplicadoPrevio);
@@ -684,6 +685,7 @@ class ConstruccPagosSPPController extends Controller
                 ]);
 
                 $spPagoCompleto = $solicitudPago->actualizarSaldos($solicitudData['monto_pago']);
+                $solicitudPago->enviarCorreoComprobantePagoAProveedor($comprobantePath);
 
                 $saldoRestante = (float) $solicitudPago->saldo_pendiente;
                 $montoAcumulado = (float) $solicitudPago->monto_abonado;

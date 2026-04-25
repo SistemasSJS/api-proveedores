@@ -13,9 +13,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use App\Models\PagoSolicitudPago;
+use Illuminate\Support\Facades\Log;
 
 class SolicitudPago extends BaseModel
 {
@@ -1020,6 +1023,113 @@ class SolicitudPago extends BaseModel
         }
 
         return $errores;
+    }
+
+    /**
+     * Envía por correo el comprobante de pago al usuario principal del proveedor.
+     */
+    public function enviarCorreoComprobantePagoAProveedor(
+        ?string $rutaComprobante = null,
+        string $diskComprobante = 'private'
+    ): void {
+        $this->loadMissing('proveedor');
+
+        $usuarioPrincipal = $this->proveedor?->usuarioPrincipal();
+        if (! $usuarioPrincipal || ! filter_var($usuarioPrincipal->email, FILTER_VALIDATE_EMAIL)) {
+            return;
+        }
+
+        $rutaComprobante = $rutaComprobante ?: $this->ruta_archivo_comprobante_pago;
+        if (! $rutaComprobante || ! Storage::disk($diskComprobante)->exists($rutaComprobante)) {
+            return;
+        }
+
+        $frontendUrl = config('app.frontend_url', config('app.url'));
+        $urlSolicitud = rtrim($frontendUrl, '/') . '/pages/proveedor/sp/detalle/' . $this->id;
+        $extension = strtolower(pathinfo($rutaComprobante, PATHINFO_EXTENSION));
+        $mimeTypes = [
+            'pdf' => 'application/pdf',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+        ];
+
+        Mail::send('emails.solicitud-pago.comprobante-actualizado', [
+            'notifiable' => $usuarioPrincipal,
+            'solicitudPagoFolio' => $this->numero_folio_solicitud,
+            'solicitudPagoId' => $this->id,
+            'proveedorId' => $this->proveedor_id,
+            'urlSolicitud' => $urlSolicitud,
+        ], function ($message) use ($usuarioPrincipal, $rutaComprobante, $diskComprobante, $extension, $mimeTypes) {
+            $message->to($usuarioPrincipal->email, $usuarioPrincipal->name ?? null)
+                ->subject('Comprobante de pago actualizado #' . $this->numero_folio_solicitud)
+                ->attach(Storage::disk($diskComprobante)->path($rutaComprobante), [
+                    'as' => 'comprobante_' . $this->numero_folio_solicitud . '.' . $extension,
+                    'mime' => $mimeTypes[$extension] ?? 'application/octet-stream',
+                ]);
+        });
+    }
+
+    /**
+     * Envía por correo la factura (PDF/XML) al correo de la empresa de Construcc.
+     */
+    public function enviarCorreoFacturaAEmpresaConstrucc(
+        ?string $rutaFacturaPdf = null,
+        ?string $rutaFacturaXml = null,
+        string $diskArchivos = 'private'
+    ): void {
+        Log::info('🟢 ENVIAR CORREO FACTURA A EMPRESA CONSTRUCC: ', [
+            'rutaFacturaPdf' => $rutaFacturaPdf,
+            'rutaFacturaXml' => $rutaFacturaXml,
+            'diskArchivos' => $diskArchivos,
+            'empresaConstrucc' => $this->empresaConstrucc->razon_social,
+            'empresaConstrucc' => $this->empresaConstrucc->email,
+        ]);
+
+        $this->loadMissing('empresaConstrucc');
+
+        $emailEmpresa = $this->empresaConstrucc?->email;
+        if (! $emailEmpresa || ! filter_var($emailEmpresa, FILTER_VALIDATE_EMAIL)) {
+            return;
+        }
+
+        $rutaFacturaPdf = $rutaFacturaPdf ?: $this->ruta_archivo_factura_pdf;
+        $rutaFacturaXml = $rutaFacturaXml ?: $this->ruta_archivo_factura_xml;
+
+        if (
+            (! $rutaFacturaPdf || ! Storage::disk($diskArchivos)->exists($rutaFacturaPdf)) &&
+            (! $rutaFacturaXml || ! Storage::disk($diskArchivos)->exists($rutaFacturaXml))
+        ) {
+            return;
+        }
+
+        $frontendUrl = config('app.frontend_url', config('app.url'));
+        $urlSolicitud = rtrim($frontendUrl, '/') . '/pages/proveedor/sp/detalle/' . $this->id;
+        $empresaNotifiable = (object) [
+            'name' => $this->empresaConstrucc->razon_social ?: $this->empresaConstrucc->nombre ?: 'Empresa',
+        ];
+
+        Mail::send('emails.solicitud-pago.factura-subida', [
+            'notifiable' => $empresaNotifiable,
+            'solicitudPagoFolio' => $this->numero_folio_solicitud,
+            'urlSolicitud' => $urlSolicitud,
+        ], function ($message) use ($emailEmpresa, $rutaFacturaPdf, $rutaFacturaXml, $diskArchivos) {
+            $message->to($emailEmpresa)->subject('Factura subida - Solicitud de pago #' . $this->numero_folio_solicitud);
+
+            if ($rutaFacturaPdf && Storage::disk($diskArchivos)->exists($rutaFacturaPdf)) {
+                $message->attach(Storage::disk($diskArchivos)->path($rutaFacturaPdf), [
+                    'as' => 'factura_' . $this->numero_folio_solicitud . '.pdf',
+                    'mime' => 'application/pdf',
+                ]);
+            }
+
+            if ($rutaFacturaXml && Storage::disk($diskArchivos)->exists($rutaFacturaXml)) {
+                $message->attach(Storage::disk($diskArchivos)->path($rutaFacturaXml), [
+                    'as' => 'factura_' . $this->numero_folio_solicitud . '.xml',
+                    'mime' => 'application/xml',
+                ]);
+            }
+        });
     }
 
 

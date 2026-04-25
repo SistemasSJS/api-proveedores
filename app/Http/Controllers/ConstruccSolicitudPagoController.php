@@ -18,7 +18,6 @@ use App\Enums\EstadoCuentaBancaria;
 use App\Notifications\SolicitudPago\SolicitudPagoPagadaNotification;
 use App\Notifications\SolicitudPago\SolicitudPagoRechazadaNotification;
 use App\Notifications\SolicitudPago\SolicitudPagoRechazadaSinAutorizacionNotification;
-use App\Notifications\SolicitudPago\SolicitudPagoFacturaSubidaNotification;
 use App\Notifications\ProveedorEmpresa\ProveedorAsociadoAEmpresaNotification;
 use App\Services\InterApiService;
 use App\Traits\ApiResponse;
@@ -2700,19 +2699,7 @@ class ConstruccSolicitudPagoController extends Controller
             'usuario_construcc_subio_factura_rol' => $request->usuario_construcc_subio_factura_rol,
         ]);
 
-        $solicitudPago->load('empresaConstrucc');
-        if ($solicitudPago->empresaConstrucc) {
-            $solicitudPago->empresaConstrucc->notify(
-                new SolicitudPagoFacturaSubidaNotification(
-                    $solicitudPago->numero_folio_solicitud,
-                    $solicitudPago->id,
-                    $solicitudPago->proveedor_id,
-                    $request->usuario_construcc_subio_factura_id,
-                    $rutaPdf,
-                    $rutaXml
-                )
-            );
-        }
+        $solicitudPago->enviarCorreoFacturaAEmpresaConstrucc($rutaPdf, $rutaXml);
 
         Log::info('Factura: Antes Notificación a InterAPI');
 

@@ -13,8 +13,6 @@ use App\Models\Presupuesto;
 use App\Models\Proveedor;
 use App\Models\SolicitudPago;
 use App\Notifications\Presupuesto\PresupuestoRecibidoClienteProveedorNotification;
-use App\Notifications\SolicitudPago\SolicitudPagoComprobanteActualizadoNotification;
-use App\Notifications\SolicitudPago\SolicitudPagoFacturaSubidaNotification;
 use App\Services\InterApiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -550,16 +548,7 @@ class ProveedorSolicitudPagoController extends Controller
             'fecha_con_comprobante' => now(),
         ]);
 
-        $proveedor->notify(
-            new SolicitudPagoComprobanteActualizadoNotification(
-                $solicitudPago->numero_folio_solicitud,
-                $solicitudPago->id,
-                $proveedor->id,
-                null,
-                $path,
-                'private'
-            )
-        );
+        $solicitudPago->enviarCorreoComprobantePagoAProveedor($path);
 
         return $this->success(
             new SolicitudPagoResource($solicitudPago->load(['proveedor', 'empresaConstrucc', 'cuentasBancarias'])),
@@ -1180,19 +1169,7 @@ class ProveedorSolicitudPagoController extends Controller
             'tiene_factura' => true,
         ]);
 
-        $solicitudPago->load('empresaConstrucc');
-        if ($solicitudPago->empresaConstrucc) {
-            $solicitudPago->empresaConstrucc->notify(
-                new SolicitudPagoFacturaSubidaNotification(
-                    $solicitudPago->numero_folio_solicitud,
-                    $solicitudPago->id,
-                    $solicitudPago->proveedor_id,
-                    null,
-                    $rutaPdf,
-                    $rutaXml
-                )
-            );
-        }
+        $solicitudPago->enviarCorreoFacturaAEmpresaConstrucc($rutaPdf, $rutaXml);
 
         return $this->success(
             new SolicitudPagoResource(
@@ -1399,6 +1376,8 @@ class ProveedorSolicitudPagoController extends Controller
         if (! $tienePdf || ! $tieneXml) {
             return false;
         }
+
+        $solicitudPago->enviarCorreoFacturaAEmpresaConstrucc($solicitudPago->ruta_archivo_factura_pdf, $solicitudPago->ruta_archivo_factura_xml);
 
         $solicitudPago->update(['tiene_factura' => true,]);
 
