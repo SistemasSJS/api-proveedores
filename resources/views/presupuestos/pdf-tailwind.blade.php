@@ -856,9 +856,9 @@
                                 <td class="tw-emisor-cell">
                                     @php
                                         $p = $presupuesto['proveedor'];
-                                        $emisorNombre =
-                                            $p->razon_social ??
-                                            ($p->nombre_comercial ?? 'Empresa Proveedora S.A. de C.V.');
+                                        $p = $presupuesto['proveedor'];
+                                        $emisorNombre = $p->razon_social ?? $p->nombre_comercial;
+                                        $emisorNombre = \Illuminate\Support\Str::limit($emisorNombre, 40, '');
                                         $emisorRfc = $p->rfc ?? null;
                                         $emisorDireccion = $p->direccion_empresa ?? null;
                                         $df = $p->direccion_fiscal ?? null;

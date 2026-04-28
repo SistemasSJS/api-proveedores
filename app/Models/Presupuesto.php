@@ -71,7 +71,7 @@ class Presupuesto extends BaseModel
         'empresa_receptora_telefono',
         'empresa_receptora_correo',
         // Términos y condiciones
-        'term_cond_dias_vigencia', 
+        'term_cond_dias_vigencia',
         'term_cond_moneda',
         'term_cond_tiempo_entrega_dias',
         /**
@@ -192,7 +192,7 @@ class Presupuesto extends BaseModel
 
         // 2. moneda
         if (self::terminoActivoPersistido($config, 'moneda_activo', ! empty($this->term_cond_moneda))) {
-            $moneda = $this->term_cond_moneda ?: 'MXN';
+            $moneda = $this->term_cond_moneda ?? 'MXN';
             $terminos[] = self::ENUNCIADOS_MONEDA[$moneda]
                 ?? sprintf('Los precios estan expresados en la moneda %s.', $moneda);
         }
@@ -359,12 +359,8 @@ class Presupuesto extends BaseModel
             $terminos[] = sprintf(self::ENUNCIADO_VIGENCIA, (int) $data['term_cond_dias_vigencia']);
         }
 
-        // 2. moneda
-        if (self::terminoActivoFormulario($config, 'moneda_activo')) {
-            $moneda = $data['term_cond_moneda'] ?? 'MXN';
-            $terminos[] = self::ENUNCIADOS_MONEDA[$moneda]
-                ?? sprintf('Los precios están expresados en la moneda %s.', $moneda);
-        }
+        // 2. moneda (siempre visible en el formato de presupuesto)
+        $terminos[] = self::buildEnunciadoMoneda($data['term_cond_moneda'] ?? null);
 
         // 3. impuestos
         $mostrarImpuestos = $data['term_cond_impuestos_en_pdf'] ?? false;
@@ -459,8 +455,7 @@ class Presupuesto extends BaseModel
         int $inicioTrabajo,
         ?float $inicioTrabajoPorcentaje,
         ?float $inicioTrabajoCantidad,
-    ): void
-    {
+    ): void {
         if (array_key_exists('inicio_trabajos_activo', $config) && $config['inicio_trabajos_activo'] === false) {
             return;
         }
@@ -494,6 +489,17 @@ class Presupuesto extends BaseModel
         }
 
         $lista[] = self::ENUNCIADO_INICIO_TRABAJOS_ANTICIPO_PLACEHOLDER;
+    }
+
+    private static function buildEnunciadoMoneda(null|string $moneda): string
+    {
+        $codigo = strtoupper(trim((string) $moneda));
+        if ($codigo === '') {
+            $codigo = 'MXN';
+        }
+
+        return self::ENUNCIADOS_MONEDA[$codigo]
+            ?? sprintf('Los precios están expresados en la moneda %s.', $codigo);
     }
 
     /**
