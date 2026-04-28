@@ -839,22 +839,37 @@ class ProveedorPresupuestoController extends Controller
         ), static fn ($item) => $item !== ''));
         $payload['term_cond_textos_libres'] = array_slice($textos, 0, 4);
 
-        $legacyTraslados = array_key_exists('obs_traslados', $payload) ? (bool) $payload['obs_traslados'] : true;
-        $legacyViaticos = array_key_exists('obs_viaticos', $payload) ? (bool) $payload['obs_viaticos'] : true;
+        $configuracion = is_array($payload['configuracion_condiciones'] ?? null) ? $payload['configuracion_condiciones'] : [];
+        $terminosActivos = ! array_key_exists('terminos_activo', $configuracion)
+            || (bool) $configuracion['terminos_activo'];
+
+        $legacyTraslados = array_key_exists('obs_traslados', $payload) ? (bool) $payload['obs_traslados'] : false;
+        $legacyViaticos = array_key_exists('obs_viaticos', $payload) ? (bool) $payload['obs_viaticos'] : false;
         $visibilidad = is_array($payload['term_cond_visibilidad'] ?? null) ? $payload['term_cond_visibilidad'] : [];
+
+        if (! $terminosActivos) {
+            $payload['term_cond_dias_vigencia'] = null;
+            $payload['term_cond_tiempo_entrega_dias'] = null;
+            $payload['term_cond_inicio_trabajo'] = null;
+            $payload['term_cond_inicio_trabajo_porcentaje'] = null;
+            $payload['term_cond_inicio_trabajo_cantidad'] = null;
+            $payload['term_cond_textos_libres'] = [];
+            $payload['obs_garantia_dias'] = 0;
+        }
+
         $payload['term_cond_visibilidad'] = [
             'pago_contra_conformidad' => array_key_exists('pago_contra_conformidad', $visibilidad)
                 ? (bool) $visibilidad['pago_contra_conformidad']
-                : true,
+                : false,
             'garantia_calidad' => array_key_exists('garantia_calidad', $visibilidad)
                 ? (bool) $visibilidad['garantia_calidad']
-                : true,
+                : false,
             'correccion_defectos' => array_key_exists('correccion_defectos', $visibilidad)
                 ? (bool) $visibilidad['correccion_defectos']
-                : true,
+                : false,
             'incluye_materiales_insumos' => array_key_exists('incluye_materiales_insumos', $visibilidad)
                 ? (bool) $visibilidad['incluye_materiales_insumos']
-                : true,
+                : false,
             'incluye_traslados' => array_key_exists('incluye_traslados', $visibilidad)
                 ? (bool) $visibilidad['incluye_traslados']
                 : $legacyTraslados,
@@ -863,18 +878,37 @@ class ProveedorPresupuestoController extends Controller
                 : $legacyViaticos,
         ];
 
+        if (! $terminosActivos) {
+            $payload['term_cond_visibilidad'] = [
+                'pago_contra_conformidad' => false,
+                'garantia_calidad' => false,
+                'correccion_defectos' => false,
+                'incluye_materiales_insumos' => false,
+                'incluye_traslados' => false,
+                'incluye_viaticos' => false,
+            ];
+        }
+
         $alcances = is_array($payload['validacion_alcances'] ?? null) ? $payload['validacion_alcances'] : [];
         $payload['validacion_alcances'] = [
             'incluye_todos_los_costos' => array_key_exists('incluye_todos_los_costos', $alcances)
                 ? (bool) $alcances['incluye_todos_los_costos']
-                : true,
+                : false,
             'sin_costos_adicionales_no_autorizados' => array_key_exists('sin_costos_adicionales_no_autorizados', $alcances)
                 ? (bool) $alcances['sin_costos_adicionales_no_autorizados']
-                : true,
+                : false,
             'adicionales_requieren_autorizacion_escrita' => array_key_exists('adicionales_requieren_autorizacion_escrita', $alcances)
                 ? (bool) $alcances['adicionales_requieren_autorizacion_escrita']
-                : true,
+                : false,
         ];
+
+        if (! $terminosActivos) {
+            $payload['validacion_alcances'] = [
+                'incluye_todos_los_costos' => false,
+                'sin_costos_adicionales_no_autorizados' => false,
+                'adicionales_requieren_autorizacion_escrita' => false,
+            ];
+        }
 
         return $payload;
     }

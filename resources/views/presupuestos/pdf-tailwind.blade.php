@@ -783,9 +783,9 @@
                                 $inicial = strtoupper(substr($nombreEmpresa, 0, 1));
                                 $maxLogoWidthMm = 40.0; // 4 cm
                                 $maxLogoHeightMm = 30.0; // 3 cm
-                                $minLogoContainerWidthMm = 20.0; // 2 cm
-                                $minLogoContainerHeightMm = 20.0; // 2 cm
-                                $logoGapRightMm = 0.5; // 0.5 mm
+                                $minLogoContainerWidthMm = 0.01; // 2 cm
+                                $minLogoContainerHeightMm = 0.01; // 2 cm
+                                $logoGapRightMm = 5; // 0.5 mm
                                 $logoBoxWidthMm = $minLogoContainerWidthMm;
                                 $logoBoxHeightMm = $minLogoContainerHeightMm;
 
@@ -823,7 +823,7 @@
                                             $logoBoxWidthMm *= $scaleDownFactor;
                                             $logoBoxHeightMm *= $scaleDownFactor;
 
-                                            // 5) El contenedor no puede ser menor de 2x2 cm.
+                                            // 5) El contenedor no puede ser menor de 0.01x0.01 cm.
                                             $logoBoxWidthMm = max(
                                                 $minLogoContainerWidthMm,
                                                 min($maxLogoWidthMm, $logoBoxWidthMm),
@@ -925,7 +925,7 @@
 
             @if ($presupuesto['concepto_general'] ?? null)
                 <div class="tw-desc-box">
-                    <div class="tw-desc-title">Descripción general</div>
+                    <div class="tw-card-title">Descripción general</div>
                     <div class="tw-desc-text">{{ $presupuesto['concepto_general'] }}</div>
                 </div>
             @endif
@@ -1012,7 +1012,7 @@
                         </ul>
                     </div>
                 @endif
-                @if (count($validacionesLista) > 0)
+                {{-- @if (count($validacionesLista) > 0)
                     <div class="tw-terms">
                         <h3>Validación y Alcances</h3>
                         <ul class="tw-obs-list">
@@ -1021,11 +1021,14 @@
                             @endforeach
                         </ul>
                     </div>
-                @endif
-                @if (count($observacionesLista) > 0)
+                    @endif --}}
+                    @if (count($observacionesLista) > 0 || count($validacionesLista) > 0)
                     <div class="tw-terms">
-                        <h3>Observaciones Generales</h3>
+                        <h3>Observaciones</h3>
                         <ul class="tw-obs-list">
+                            {{-- @foreach ($validacionesLista as $item)
+                                <li>{{ $item }}</li>
+                            @endforeach --}}
                             @foreach ($observacionesLista as $obs)
                                 <li>{{ $obs }}</li>
                             @endforeach
