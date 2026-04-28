@@ -244,6 +244,10 @@ class ProveedorPresupuestoController extends Controller
             $validated = $request->validated();
             $user = $request->user();
 
+            Log::info('Validación de presupuesto', [
+                'payload' => $validated,
+            ]);
+
             if (! $user || ! method_exists($user, 'tieneAccesoAProveedor') || ! $user->tieneAccesoAProveedor((int) $proveedor->id)) {
                 return $this->error('El usuario autenticado no tiene acceso a la empresa en GestionPro.', null, 403);
             }
@@ -254,6 +258,10 @@ class ProveedorPresupuestoController extends Controller
 
             $validated = $this->resolverReceptorEmpresaParaValidacion($validated, $proveedor);
             $validated = $this->normalizarTerminosPayload($validated);
+
+            Log::info('Modificacion Validación de presupuesto', [
+                'payload' => $validated,
+            ]);
 
             if (! empty($validated['empresa_receptora_id'])) {
                 $idReceptor = (int) $validated['empresa_receptora_id'];
@@ -291,6 +299,7 @@ class ProveedorPresupuestoController extends Controller
             });
 
             $this->log('Presupuesto creado', ['presupuesto_id' => $presupuesto->id]);
+            $this->log('Presupuesto creado', ['presupuesto_id' => $presupuesto]);
 
             return $this->success(
                 new PresupuestoResource($presupuesto),
@@ -1299,6 +1308,8 @@ class ProveedorPresupuestoController extends Controller
         ?string $lugar,
         ?string $qrCodeDataUri
     ): array {
+        $enunciadosClasificados = $presupuesto->getEnunciadosClasificados();
+
         return [
             'proveedor' => $proveedorEmisor,
             'logo_proveedor_base64' => $logoProveedorBase64,
@@ -1322,8 +1333,9 @@ class ProveedorPresupuestoController extends Controller
                     'precio_total' => $concepto->precio_total,
                 ];
             })->values()->all(),
-            'terminos_enunciados' => $presupuesto->getTerminosEnunciados(),
-            'observaciones_enunciados' => $presupuesto->getObservacionesEnunciados(),
+            'terminos_enunciados' => $enunciadosClasificados['terminos'],
+            'validaciones_enunciados' => $enunciadosClasificados['validaciones'],
+            'observaciones_enunciados' => $enunciadosClasificados['observaciones'],
             'qr_code' => $qrCodeDataUri,
         ];
     }

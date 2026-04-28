@@ -36,7 +36,13 @@ class StorePresupuestoRequest extends FormRequest
             'numero_presupuesto' => 'nullable|string|max:255',
             'proveedor_id' => 'required|exists:proveedores,id',
             'es_proveedor_receptor' => 'nullable|boolean', // es para indicar si el receptor es un proveedor
-            // Validación de cartera vs proveedor: en el controlador (exists en ambas tablas no es compatible con una sola regla).
+            'fecha_emision' => 'required|date',
+            'concepto_general' => 'required|string',
+
+            /**
+             * Validación de cartera vs proveedor: 
+             *  - en el controlador (exists en ambas tablas no es compatible con una sola regla).
+             */
             'empresa_receptora_id' => 'nullable|integer',
             'empresa_receptora_nombre' => 'nullable|string|max:255', //|required_without:empresa_receptora_id',
             'empresa_receptora_puesto' => 'nullable|string|max:255',
@@ -44,10 +50,13 @@ class StorePresupuestoRequest extends FormRequest
             'empresa_receptora_alias' => 'nullable|string|max:255',
             'empresa_receptora_telefono' => 'nullable|string|max:30',
             'empresa_receptora_correo' => 'nullable|email|max:255',
-            'fecha_emision' => 'required|date',
-            'concepto_general' => 'required|string',
+            
+            /**
+             * Conf: Terminos Condiciones Obs
+             */
             'con_iva' => 'nullable|boolean',
             'iva_porcentaje' => 'nullable|numeric|min:0|max:100',
+
             'term_cond_dias_vigencia' => 'nullable|integer|min:0',
             'term_cond_moneda' => 'nullable|string|max:10',
             'term_cond_impuestos_en_pdf' => 'nullable|boolean',
@@ -66,17 +75,26 @@ class StorePresupuestoRequest extends FormRequest
             'term_cond_visibilidad.incluye_materiales_insumos' => 'nullable|boolean',
             'term_cond_visibilidad.incluye_traslados' => 'nullable|boolean',
             'term_cond_visibilidad.incluye_viaticos' => 'nullable|boolean',
+
             'validacion_alcances' => 'nullable|array',
             'validacion_alcances.incluye_todos_los_costos' => 'nullable|boolean',
             'validacion_alcances.sin_costos_adicionales_no_autorizados' => 'nullable|boolean',
             'validacion_alcances.adicionales_requieren_autorizacion_escrita' => 'nullable|boolean',
+            
             'configuracion_condiciones' => 'nullable|array',
-            'estado' => 'nullable|string|in:borrador,enviado,aceptado,rechazado,rechazado_con_observacion,vencido',
+
+
+            /**
+             * conceptos includos en el presupuesto
+             */
             'conceptos' => 'required|array|min:1',
             'conceptos.*.descripcion' => 'required|string',
             'conceptos.*.cantidad' => 'required|numeric|min:0.0001',
             'conceptos.*.unidad' => 'required|string|max:50',
             'conceptos.*.precio_unitario' => 'required|numeric|min:0',
+
+
+            'estado' => 'nullable|string|in:borrador,enviado,aceptado,rechazado,rechazado_con_observacion,vencido',
         ];
     }
 

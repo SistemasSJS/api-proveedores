@@ -55,6 +55,8 @@ final class PresupuestoPdf
 
         $empDoc = $presupuesto->empresaReceptoraParaDocumento();
 
+        $enunciadosClasificados = $presupuesto->getEnunciadosClasificados();
+
         $datosPresupuesto = [
             'proveedor' => $proveedor,
             'logo_proveedor_base64' => $logoProveedorBase64,
@@ -87,8 +89,9 @@ final class PresupuestoPdf
                 'precio_unitario' => $c->precio_unitario,
                 'precio_total' => $c->precio_total,
             ])->toArray(),
-            'terminos_enunciados' => $presupuesto->getTerminosEnunciados(),
-            'observaciones_enunciados' => $presupuesto->getObservacionesEnunciados(),
+            'terminos_enunciados' => $enunciadosClasificados['terminos'],
+            'validaciones_enunciados' => $enunciadosClasificados['validaciones'],
+            'observaciones_enunciados' => $enunciadosClasificados['observaciones'],
             'qr_code' => $qrCode,
             'qr_url' => $qrUrl,
         ];

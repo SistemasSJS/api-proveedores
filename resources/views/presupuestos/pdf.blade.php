@@ -2,6 +2,7 @@
             $margenMm = 25.4;
             $footerHeightMm = 25.4; // Espacio reservado para pie de página en cada hoja (carta)
             $terminosLista = $presupuesto['terminos_enunciados'] ?? [];
+            $validacionesLista = $presupuesto['validaciones_enunciados'] ?? [];
             $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
         @endphp
         <!DOCTYPE html>
@@ -902,6 +903,17 @@
                                 <ul class="terminos-list">
                                     @foreach ($terminosLista as $texto)
                                         <li>{{ $texto }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
+                        @if (count($validacionesLista) > 0)
+                            <div class="terminos-section">
+                                <div class="terminos-title">Validación y Alcances</div>
+                                <ul class="observaciones-list">
+                                    @foreach ($validacionesLista as $item)
+                                        <li>{{ $item }}</li>
                                     @endforeach
                                 </ul>
                             </div>

@@ -2,6 +2,7 @@
     $margenMm = 20;
     $footerHeightMm = 25.4;
     $terminosLista = $presupuesto['terminos_enunciados'] ?? [];
+    $validacionesLista = $presupuesto['validaciones_enunciados'] ?? [];
     $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
 @endphp
 <!DOCTYPE html>
@@ -1007,6 +1008,16 @@
                         <ul class="tw-terms-num">
                             @foreach ($terminosLista as $texto)
                                 <li>{{ $texto }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+                @if (count($validacionesLista) > 0)
+                    <div class="tw-terms">
+                        <h3>Validación y Alcances</h3>
+                        <ul class="tw-obs-list">
+                            @foreach ($validacionesLista as $item)
+                                <li>{{ $item }}</li>
                             @endforeach
                         </ul>
                     </div>

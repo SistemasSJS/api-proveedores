@@ -173,35 +173,37 @@ class Presupuesto extends BaseModel
 
 
     /**
-     * Construye la lista de enunciados de términos y condiciones para el PDF.
+     * Construye enunciados clasificados por sección para PDF/API.
      *
-     * @return array<int, string>
+     * @return array{terminos: array<int, string>, validaciones: array<int, string>, observaciones: array<int, string>}
      */
-    public function getTerminosEnunciados(): array
+    public function getEnunciadosClasificados(): array
     {
-        $lista = [];
+        $terminos = [];
+        $validaciones = [];
+        $observaciones = [];
         $config = is_array($this->configuracion_condiciones) ? $this->configuracion_condiciones : [];
         $visibilidad = is_array($this->term_cond_visibilidad) ? $this->term_cond_visibilidad : [];
 
         // 1. vigencia
         if (self::terminoActivoPersistido($config, 'vigencia_activo', $this->term_cond_dias_vigencia > 0) && $this->term_cond_dias_vigencia > 0) {
-            $lista[] = sprintf(self::ENUNCIADO_VIGENCIA, (int) $this->term_cond_dias_vigencia);
+            $terminos[] = sprintf(self::ENUNCIADO_VIGENCIA, (int) $this->term_cond_dias_vigencia);
         }
 
         // 2. moneda
         if (self::terminoActivoPersistido($config, 'moneda_activo', ! empty($this->term_cond_moneda))) {
             $moneda = $this->term_cond_moneda ?: 'MXN';
-            $lista[] = self::ENUNCIADOS_MONEDA[$moneda]
+            $terminos[] = self::ENUNCIADOS_MONEDA[$moneda]
                 ?? sprintf('Los precios estan expresados en la moneda %s.', $moneda);
         }
+
         // 3. impuestos
         if (self::terminoActivoPersistido($config, 'impuestos_activo', $this->term_cond_impuestos_en_pdf !== false) && $this->term_cond_impuestos_en_pdf !== false) {
             $ivaPct = (float) ($this->term_cond_iva ?? 16);
-            $lista[] = $this->con_iva
+            $terminos[] = $this->con_iva
                 ? sprintf(self::ENUNCIADO_IVA_INCLUIDO, (int) $ivaPct)
                 : self::ENUNCIADO_IVA_NO_INCLUIDO;
         }
-
 
         // 4. tiempo entrega
         if (
@@ -209,13 +211,13 @@ class Presupuesto extends BaseModel
             && $this->term_cond_tiempo_entrega_dias !== null
             && $this->term_cond_tiempo_entrega_dias > 0
         ) {
-            $lista[] = sprintf(self::ENUNCIADO_TIEMPO_ENTREGA, (int) $this->term_cond_tiempo_entrega_dias);
+            $terminos[] = sprintf(self::ENUNCIADO_TIEMPO_ENTREGA, (int) $this->term_cond_tiempo_entrega_dias);
         }
 
         // 5. inicio trabajos: autorización o anticipo (% o monto)
         if (self::terminoActivoPersistido($config, 'inicio_trabajos_activo', $this->term_cond_inicio_trabajo !== null)) {
             self::appendInicioTrabajosEnunciados(
-                $lista,
+                $terminos,
                 $config,
                 (int) ($this->term_cond_inicio_trabajo ?? 1),
                 $this->term_cond_inicio_trabajo_porcentaje !== null ? (float) $this->term_cond_inicio_trabajo_porcentaje : null,
@@ -225,26 +227,26 @@ class Presupuesto extends BaseModel
 
         // 6-9. cláusulas fijas con visibilidad configurable
         if (self::flagVisible($visibilidad, 'pago_contra_conformidad', true)) {
-            $lista[] = self::ENUNCIADO_PAGO_TOTAL_CONFORMIDAD;
+            $terminos[] = self::ENUNCIADO_PAGO_TOTAL_CONFORMIDAD;
         }
         if ($this->obs_garantia_dias > 0) {
             $duracion = self::formatearDuracion((int) $this->obs_garantia_dias);
-            $lista[] = sprintf(self::ENUNCIADO_GARANTIA, $duracion);
+            $terminos[] = sprintf(self::ENUNCIADO_GARANTIA, $duracion);
         }
         if (self::flagVisible($visibilidad, 'garantia_calidad', true)) {
-            $lista[] = self::ENUNCIADO_GARANTIA_CALIDAD;
+            $terminos[] = self::ENUNCIADO_GARANTIA_CALIDAD;
         }
         if (self::flagVisible($visibilidad, 'correccion_defectos', true)) {
-            $lista[] = self::ENUNCIADO_CORRECCION_DEFECTOS;
+            $terminos[] = self::ENUNCIADO_CORRECCION_DEFECTOS;
         }
         if (self::flagVisible($visibilidad, 'incluye_materiales_insumos', true)) {
-            $lista[] = self::ENUNCIADO_INCLUYE_MATERIALES_INSUMOS;
+            $terminos[] = self::ENUNCIADO_INCLUYE_MATERIALES_INSUMOS;
         }
         if (self::flagVisible($visibilidad, 'incluye_traslados', (bool) $this->obs_traslados)) {
-            $lista[] = self::ENUNCIADO_INCLUYE_TRASLADOS;
+            $terminos[] = self::ENUNCIADO_INCLUYE_TRASLADOS;
         }
         if (self::flagVisible($visibilidad, 'incluye_viaticos', (bool) $this->obs_viaticos)) {
-            $lista[] = self::ENUNCIADO_INCLUYE_VIATICOS;
+            $terminos[] = self::ENUNCIADO_INCLUYE_VIATICOS;
         }
 
         // 10. textos libres (máximo 4)
@@ -255,23 +257,49 @@ class Presupuesto extends BaseModel
         foreach (array_slice($textosLibres, 0, 4) as $txtRaw) {
             $txt = trim((string) $txtRaw);
             if ($txt !== '') {
-                $lista[] = $txt;
+                $terminos[] = $txt;
             }
         }
 
-        // Bloque adicional: validación y alcances (siempre visible por default).
+        // Validación y alcances
         $alcances = is_array($this->validacion_alcances) ? $this->validacion_alcances : [];
         if (self::flagVisible($alcances, 'incluye_todos_los_costos', true)) {
-            $lista[] = self::ENUNCIADO_ALCANCE_INCLUYE_TODOS_COSTOS;
+            $validaciones[] = self::ENUNCIADO_ALCANCE_INCLUYE_TODOS_COSTOS;
         }
         if (self::flagVisible($alcances, 'sin_costos_adicionales_no_autorizados', true)) {
-            $lista[] = self::ENUNCIADO_ALCANCE_SIN_COSTOS_ADICIONALES;
+            $validaciones[] = self::ENUNCIADO_ALCANCE_SIN_COSTOS_ADICIONALES;
         }
         if (self::flagVisible($alcances, 'adicionales_requieren_autorizacion_escrita', true)) {
-            $lista[] = self::ENUNCIADO_ALCANCE_ADICIONALES_AUTORIZACION;
+            $validaciones[] = self::ENUNCIADO_ALCANCE_ADICIONALES_AUTORIZACION;
         }
 
-        return $lista;
+        self::appendObservacionesAdicionalesDesdeConfig($observaciones, $config);
+
+        return [
+            'terminos' => $terminos,
+            'validaciones' => $validaciones,
+            'observaciones' => $observaciones,
+        ];
+    }
+
+    /**
+     * Construye la lista de enunciados de términos y condiciones para el PDF.
+     *
+     * @return array<int, string>
+     */
+    public function getTerminosEnunciados(): array
+    {
+        return $this->getEnunciadosClasificados()['terminos'];
+    }
+
+    /**
+     * Construye la lista de enunciados de validación y alcances para el PDF.
+     *
+     * @return array<int, string>
+     */
+    public function getValidacionesEnunciados(): array
+    {
+        return $this->getEnunciadosClasificados()['validaciones'];
     }
 
     /**
@@ -281,9 +309,7 @@ class Presupuesto extends BaseModel
      */
     public function getObservacionesEnunciados(): array
     {
-        // Se mantiene por compatibilidad con consumidores antiguos del recurso/PDF.
-        // La nueva estructura integra las cláusulas y textos libres dentro de términos.
-        return [];
+        return $this->getEnunciadosClasificados()['observaciones'];
     }
 
     /**
@@ -294,7 +320,31 @@ class Presupuesto extends BaseModel
      */
     public static function buildTerminosEnunciadosFromArray(array $data): array
     {
-        $lista = [];
+        return self::buildEnunciadosClasificadosFromArray($data)['terminos'];
+    }
+
+    /**
+     * Construye enunciados de validaciones/alcances desde un array (ej: datos de formulario).
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<int, string>
+     */
+    public static function buildValidacionesEnunciadosFromArray(array $data): array
+    {
+        return self::buildEnunciadosClasificadosFromArray($data)['validaciones'];
+    }
+
+    /**
+     * Construye enunciados clasificados por sección desde un array (ej: datos de formulario).
+     *
+     * @param  array<string, mixed>  $data
+     * @return array{terminos: array<int, string>, validaciones: array<int, string>, observaciones: array<int, string>}
+     */
+    public static function buildEnunciadosClasificadosFromArray(array $data): array
+    {
+        $terminos = [];
+        $validaciones = [];
+        $observaciones = [];
         $conIva = $data['con_iva'] ?? true;
         $ivaPct = (float) ($data['term_cond_iva'] ?? $data['iva_porcentaje'] ?? 16);
         $config = is_array($data['configuracion_condiciones'] ?? null) ? $data['configuracion_condiciones'] : [];
@@ -306,20 +356,20 @@ class Presupuesto extends BaseModel
             && ! empty($data['term_cond_dias_vigencia'])
             && (int) $data['term_cond_dias_vigencia'] > 0
         ) {
-            $lista[] = sprintf(self::ENUNCIADO_VIGENCIA, (int) $data['term_cond_dias_vigencia']);
+            $terminos[] = sprintf(self::ENUNCIADO_VIGENCIA, (int) $data['term_cond_dias_vigencia']);
         }
 
         // 2. moneda
         if (self::terminoActivoFormulario($config, 'moneda_activo')) {
             $moneda = $data['term_cond_moneda'] ?? 'MXN';
-            $lista[] = self::ENUNCIADOS_MONEDA[$moneda]
+            $terminos[] = self::ENUNCIADOS_MONEDA[$moneda]
                 ?? sprintf('Los precios están expresados en la moneda %s.', $moneda);
         }
 
         // 3. impuestos
         $mostrarImpuestos = $data['term_cond_impuestos_en_pdf'] ?? false;
         if (self::terminoActivoFormulario($config, 'impuestos_activo') && $mostrarImpuestos !== false) {
-            $lista[] = $conIva
+            $terminos[] = $conIva
                 ? sprintf(self::ENUNCIADO_IVA_INCLUIDO, (int) $ivaPct)
                 : self::ENUNCIADO_IVA_NO_INCLUIDO;
         }
@@ -327,13 +377,13 @@ class Presupuesto extends BaseModel
         // 4. tiempo entrega
         $tiempoEntrega = $data['term_cond_tiempo_entrega_dias'] ?? null;
         if (self::terminoActivoFormulario($config, 'tiempo_entrega_activo') && $tiempoEntrega !== null && (int) $tiempoEntrega > 0) {
-            $lista[] = sprintf(self::ENUNCIADO_TIEMPO_ENTREGA, (int) $tiempoEntrega);
+            $terminos[] = sprintf(self::ENUNCIADO_TIEMPO_ENTREGA, (int) $tiempoEntrega);
         }
 
         // 5. inicio trabajos
         if (self::terminoActivoFormulario($config, 'inicio_trabajos_activo')) {
             self::appendInicioTrabajosEnunciados(
-                $lista,
+                $terminos,
                 $config,
                 (int) ($data['term_cond_inicio_trabajo'] ?? 1),
                 isset($data['term_cond_inicio_trabajo_porcentaje']) ? (float) $data['term_cond_inicio_trabajo_porcentaje'] : null,
@@ -343,27 +393,27 @@ class Presupuesto extends BaseModel
 
         // 6-9. cláusulas visibles
         if (self::flagVisible($visibilidad, 'pago_contra_conformidad', true)) {
-            $lista[] = self::ENUNCIADO_PAGO_TOTAL_CONFORMIDAD;
+            $terminos[] = self::ENUNCIADO_PAGO_TOTAL_CONFORMIDAD;
         }
         $garantiaDias = (int) ($data['obs_garantia_dias'] ?? 0);
         if ($garantiaDias > 0) {
             $duracion = self::formatearDuracion($garantiaDias);
-            $lista[] = sprintf(self::ENUNCIADO_GARANTIA, $duracion);
+            $terminos[] = sprintf(self::ENUNCIADO_GARANTIA, $duracion);
         }
         if (self::flagVisible($visibilidad, 'garantia_calidad', true)) {
-            $lista[] = self::ENUNCIADO_GARANTIA_CALIDAD;
+            $terminos[] = self::ENUNCIADO_GARANTIA_CALIDAD;
         }
         if (self::flagVisible($visibilidad, 'correccion_defectos', true)) {
-            $lista[] = self::ENUNCIADO_CORRECCION_DEFECTOS;
+            $terminos[] = self::ENUNCIADO_CORRECCION_DEFECTOS;
         }
         if (self::flagVisible($visibilidad, 'incluye_materiales_insumos', true)) {
-            $lista[] = self::ENUNCIADO_INCLUYE_MATERIALES_INSUMOS;
+            $terminos[] = self::ENUNCIADO_INCLUYE_MATERIALES_INSUMOS;
         }
         if (self::flagVisible($visibilidad, 'incluye_traslados', array_key_exists('obs_traslados', $data) ? (bool) $data['obs_traslados'] : true)) {
-            $lista[] = self::ENUNCIADO_INCLUYE_TRASLADOS;
+            $terminos[] = self::ENUNCIADO_INCLUYE_TRASLADOS;
         }
         if (self::flagVisible($visibilidad, 'incluye_viaticos', array_key_exists('obs_viaticos', $data) ? (bool) $data['obs_viaticos'] : true)) {
-            $lista[] = self::ENUNCIADO_INCLUYE_VIATICOS;
+            $terminos[] = self::ENUNCIADO_INCLUYE_VIATICOS;
         }
 
         $textosLibres = is_array($data['term_cond_textos_libres'] ?? null) ? $data['term_cond_textos_libres'] : [];
@@ -373,22 +423,28 @@ class Presupuesto extends BaseModel
         foreach (array_slice($textosLibres, 0, 4) as $txtRaw) {
             $txt = trim((string) $txtRaw);
             if ($txt !== '') {
-                $lista[] = $txt;
+                $terminos[] = $txt;
             }
         }
 
         $alcances = is_array($data['validacion_alcances'] ?? null) ? $data['validacion_alcances'] : [];
         if (self::flagVisible($alcances, 'incluye_todos_los_costos', true)) {
-            $lista[] = self::ENUNCIADO_ALCANCE_INCLUYE_TODOS_COSTOS;
+            $validaciones[] = self::ENUNCIADO_ALCANCE_INCLUYE_TODOS_COSTOS;
         }
         if (self::flagVisible($alcances, 'sin_costos_adicionales_no_autorizados', true)) {
-            $lista[] = self::ENUNCIADO_ALCANCE_SIN_COSTOS_ADICIONALES;
+            $validaciones[] = self::ENUNCIADO_ALCANCE_SIN_COSTOS_ADICIONALES;
         }
         if (self::flagVisible($alcances, 'adicionales_requieren_autorizacion_escrita', true)) {
-            $lista[] = self::ENUNCIADO_ALCANCE_ADICIONALES_AUTORIZACION;
+            $validaciones[] = self::ENUNCIADO_ALCANCE_ADICIONALES_AUTORIZACION;
         }
 
-        return $lista;
+        self::appendObservacionesAdicionalesDesdeConfig($observaciones, $config);
+
+        return [
+            'terminos' => $terminos,
+            'validaciones' => $validaciones,
+            'observaciones' => $observaciones,
+        ];
     }
 
     /**
@@ -487,6 +543,22 @@ class Presupuesto extends BaseModel
     }
 
     /**
+     * Textos libres de observaciones adicionales guardados en configuracion_condiciones.
+     *
+     * @param  array<int, string>  $observaciones
+     * @param  array<string, mixed>  $config
+     */
+    private static function appendObservacionesAdicionalesDesdeConfig(array &$observaciones, array $config): void
+    {
+        for ($i = 1; $i <= 4; $i++) {
+            $txt = trim((string) ($config["observaciones_adicionales_{$i}"] ?? ''));
+            if ($txt !== '') {
+                $observaciones[] = $txt;
+            }
+        }
+    }
+
+    /**
      * Construye enunciados de observaciones desde un array.
      *
      * @param  array<string, mixed>  $data
@@ -494,9 +566,7 @@ class Presupuesto extends BaseModel
      */
     public static function buildObservacionesEnunciadosFromArray(array $data): array
     {
-        // Conservado por compatibilidad con código legado.
-        // En el esquema actual, el contenido vive en términos.
-        return [];
+        return self::buildEnunciadosClasificadosFromArray($data)['observaciones'];
     }
 
     /**

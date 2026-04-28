@@ -46,6 +46,7 @@ class PresupuestoResource extends JsonResource
             : ($this->empresa_receptora_id ? 'cartera' : 'captura');
 
         $doc = $this->resource->empresaReceptoraParaDocumento();
+        $enunciadosClasificados = $this->resource->getEnunciadosClasificados();
         $terminosTextosLibres = is_array($this->term_cond_textos_libres) ? array_slice($this->term_cond_textos_libres, 0, 4) : [];
         $terminosVisibilidad = is_array($this->term_cond_visibilidad) ? $this->term_cond_visibilidad : [];
         $validacionAlcances = is_array($this->validacion_alcances) ? $this->validacion_alcances : [];
@@ -110,7 +111,9 @@ class PresupuestoResource extends JsonResource
                     ? (bool) $validacionAlcances['adicionales_requieren_autorizacion_escrita']
                     : true,
             ],
-            'term_cond_enunciados' => $this->resource->getTerminosEnunciados(),
+            'term_cond_enunciados' => $enunciadosClasificados['terminos'],
+            'validaciones_enunciados' => $enunciadosClasificados['validaciones'],
+            'observaciones_enunciados' => $enunciadosClasificados['observaciones'],
             // observaciones
             'obs_garantia_dias' => (int) ($this->obs_garantia_dias ?? 0),
             'obs_traslados' => $this->obs_traslados === null ? null : (bool) $this->obs_traslados,
