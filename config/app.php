@@ -1,7 +1,8 @@
 <?php
 
 return [
-    'name' => env('APP_NAME', 'Sistema Proveedores'),
+    // 'name' => env('APP_NAME', 'GestionPro'),
+    'name' => env('APP_NAME', 'GestionPro'),
     'env' => env('APP_ENV', 'production'),
     'debug' => env('APP_DEBUG', false),
     'url' => env('APP_URL', 'http://localhost'),

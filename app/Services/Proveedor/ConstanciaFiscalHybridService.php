@@ -112,9 +112,9 @@ class ConstanciaFiscalHybridService
       'rfc' => $this->match('/RFC:\s*([A-Z0-9]+)/', $texto),
       'curp' => $this->match('/CURP:\s*([A-Z0-9]+)/', $texto),
 
-      'nombre' => $this->match('/Nombre\(s\):\s*(.+?)(?=\s*Primer Apellido:|\s*CURP:|\s*RFC:|\s*Fecha\s*inicio\s*de\s*operaciones:|\s*Fechainiciodeoperaciones:|$)/u', $texto),
-      'primer_apellido' => $this->match('/Primer Apellido:\s*(.+?)(?=\s*Segundo Apellido:|\s*CURP:|\s*RFC:|\s*Fecha\s*inicio\s*de\s*operaciones:|\s*Fechainiciodeoperaciones:|$)/u', $texto),
-      'segundo_apellido' => $this->match('/Segundo Apellido:\s*(.+?)(?=\s*CURP:|\s*RFC:|\s*Datos del domicilio registrado|\s*Domicilio registrado|\s*Fecha\s*inicio\s*de\s*operaciones:|\s*Fechainiciodeoperaciones:|\s*Estatus\s*en\s*el\s*padr[oó]n:|\s*Estatusenelpadr[oó]n:|\s*Nombre\s*Comercial:|\s*NombreComercial:|$)/u', $texto),
+      'nombre' => $this->match('/Nombre(?:\(s\)|s?)\s*:\s*(.+?)(?=\s*Primer\s*Apellido:|\s*PrimerApellido:|\s*CURP:|\s*RFC:|\s*Fecha\s*inicio\s*de\s*operaciones:|\s*Fechainiciodeoperaciones:|$)/u', $texto),
+      'primer_apellido' => $this->match('/Primer\s*Apellido\s*:\s*(.+?)(?=\s*Segundo\s*Apellido:|\s*SegundoApellido:|\s*CURP:|\s*RFC:|\s*Fecha\s*inicio\s*de\s*operaciones:|\s*Fechainiciodeoperaciones:|$)/u', $texto),
+      'segundo_apellido' => $this->match('/Segundo\s*Apellido\s*:\s*(.+?)(?=\s*CURP:|\s*RFC:|\s*Datos\s*del\s*domicilio\s*registrado|\s*Domicilio\s*registrado|\s*Fecha\s*inicio\s*de\s*operaciones:|\s*Fechainiciodeoperaciones:|\s*Estatus\s*en\s*el\s*padr[oó]n:|\s*Estatusenelpadr[oó]n:|\s*Nombre\s*Comercial:|\s*NombreComercial:|$)/u', $texto),
 
       'razon_social' => null,
     ];
@@ -127,24 +127,24 @@ class ConstanciaFiscalHybridService
   {
     return [
       'codigo_postal' => $this->match('/Código Postal:\s*(\d{5})/', $texto),
-      'tipo_vialidad' => $this->match('/Tipo de Vialidad:\s*(.+?)(?=\s*Nombre de Vialidad:|\s*Número Exterior:|$)/u', $texto),
-      'nombre_vialidad' => $this->match('/Nombre de Vialidad:\s*(.+?)(?=\s*Número Exterior:|\s*Número Interior:|\s*Colonia:|$)/u', $texto),
+      'tipo_vialidad' => $this->match('/(?:Tipo\s*de\s*Vialidad|TipodeVialidad)\s*:\s*(.+?)(?=\s*(?:Nombre\s*de\s*Vialidad|Nombrede\s*Vialidad):|\s*(?:N[uú]mero\s*Exterior|N[uú]meroExterior):|$)/u', $texto),
+      'nombre_vialidad' => $this->match('/(?:Nombre\s*de\s*Vialidad|Nombrede\s*Vialidad)\s*:\s*(.+?)(?=\s*(?:N[uú]mero\s*Exterior|N[uú]meroExterior):|\s*(?:N[uú]mero\s*Interior|N[uú]meroInterior):|\s*(?:Colonia|NombredelaColonia):|$)/u', $texto),
 
-      'numero_exterior' => $this->match('/Número Exterior:\s*([A-Z0-9\/]+)/', $texto),
-      'numero_interior' => $this->match('/Número Interior:\s*([A-Z0-9\/]+)/', $texto),
+      'numero_exterior' => $this->match('/(?:N[uú]mero\s*Exterior|N[uú]meroExterior)\s*:\s*([A-Z0-9\/\-]+)/u', $texto),
+      'numero_interior' => $this->match('/(?:N[uú]mero\s*Interior|N[uú]meroInterior)\s*:\s*([A-Z0-9\/\-]+)/u', $texto),
 
-      'colonia' => $this->match('/Colonia:\s*(.+?)(?=\s*Localidad:|\s*Municipio|\\s*Entidad Federativa:|$)/u', $texto),
-      'localidad' => $this->match('/Localidad:\s*(.+?)(?=\s*Municipio|\\s*Entidad Federativa:|$)/u', $texto),
-      'municipio_delegacion' => $this->match('/Municipio.*?:\s*(.+?)(?=\s*Entidad Federativa:|\s*Entre Calle:|\s*Y Calle:|$)/u', $texto),
-      'entidad_federativa' => $this->match('/Entidad Federativa:\s*(.+?)(?=\s*Entre Calle:|\s*Y Calle:|\s*Código Postal:|$)/u', $texto),
+      'colonia' => $this->match('/(?:Colonia|NombredelaColonia)\s*:\s*(.+?)(?=\s*(?:Localidad|Nombre\s*de\s*la\s*Localidad|NombredelaLocalidad):|\s*(?:Municipio|NombredelMunicipiooDemarcaci[oó]nTerritorial):|\s*(?:Entidad\s*Federativa|Nombre\s*de\s*la\s*Entidad\s*Federativa):|$)/u', $texto),
+      'localidad' => $this->match('/(?:Localidad|Nombre\s*de\s*la\s*Localidad|NombredelaLocalidad)\s*:\s*(.+?)(?=\s*(?:Municipio|NombredelMunicipiooDemarcaci[oó]nTerritorial):|\s*(?:Entidad\s*Federativa|Nombre\s*de\s*la\s*Entidad\s*Federativa):|$)/u', $texto),
+      'municipio_delegacion' => $this->match('/(?:Municipio.*?|NombredelMunicipiooDemarcaci[oó]nTerritorial)\s*:\s*(.+?)(?=\s*(?:Entidad\s*Federativa|Nombre\s*de\s*la\s*Entidad\s*Federativa):|\s*Entre\s*Calle:|\s*EntreCalle:|\s*Y\s*Calle:|$)/u', $texto),
+      'entidad_federativa' => $this->match('/(?:Entidad\s*Federativa|Nombre\s*de\s*la\s*Entidad\s*Federativa)\s*:\s*(.+?)(?=\s*Entre\s*Calle:|\s*EntreCalle:|\s*Y\s*Calle:|\s*C[oó]digo\s*Postal:|$)/u', $texto),
 
-      'entre_calle' => $this->match('/Entre Calle:\s*(.+?)(?=\s*Y Calle:|$)/u', $texto),
-      'y_calle' => $this->match('/Y Calle:\s*(.+?)(?=\s*Características fiscales:|\s*Regímenes:|$)/u', $texto),
+      'entre_calle' => $this->match('/(?:Entre\s*Calle|EntreCalle)\s*:\s*(.+?)(?=\s*(?:Y\s*Calle|YCalle):|$)/u', $texto),
+      'y_calle' => $this->match('/(?:Y\s*Calle|YCalle)\s*:\s*(.+?)(?=\s*Caracter[ií]sticas\s*fiscales:|\s*Reg[ií]menes:|$)/u', $texto),
 
       // normalizados
-      'calle' => $this->match('/Nombre de Vialidad:\s*(.+?)(?=\s*Número Exterior:|\s*Número Interior:|\s*Colonia:|$)/u', $texto),
-      'ciudad' => $this->match('/Municipio.*?:\s*(.+?)(?=\s*Entidad Federativa:|\s*Entre Calle:|\s*Y Calle:|$)/u', $texto),
-      'estado' => $this->match('/Entidad Federativa:\s*(.+?)(?=\s*Entre Calle:|\s*Y Calle:|\s*Código Postal:|$)/u', $texto),
+      'calle' => $this->match('/(?:Nombre\s*de\s*Vialidad|Nombrede\s*Vialidad)\s*:\s*(.+?)(?=\s*(?:N[uú]mero\s*Exterior|N[uú]meroExterior):|\s*(?:N[uú]mero\s*Interior|N[uú]meroInterior):|\s*(?:Colonia|NombredelaColonia):|$)/u', $texto),
+      'ciudad' => $this->match('/(?:Municipio.*?|NombredelMunicipiooDemarcaci[oó]nTerritorial)\s*:\s*(.+?)(?=\s*(?:Entidad\s*Federativa|Nombre\s*de\s*la\s*Entidad\s*Federativa):|\s*Entre\s*Calle:|\s*EntreCalle:|\s*Y\s*Calle:|$)/u', $texto),
+      'estado' => $this->match('/(?:Entidad\s*Federativa|Nombre\s*de\s*la\s*Entidad\s*Federativa)\s*:\s*(.+?)(?=\s*Entre\s*Calle:|\s*EntreCalle:|\s*Y\s*Calle:|\s*C[oó]digo\s*Postal:|$)/u', $texto),
     ];
   }
 
@@ -160,12 +160,23 @@ class ConstanciaFiscalHybridService
 
     $fuente = $bloqueRegimenes !== '' ? $bloqueRegimenes : $texto;
 
+    $matches = [];
     preg_match_all(
-      '/Régimen\s+(.*?)\s+(\d{2}\/\d{2}\/\d{4})/iu',
+      '/R[eé]gimen\s*:?\s*(.+?)\s+Fecha\s*Inicio\s*:?\s*(\d{2}\/\d{2}\/\d{4})(?:\s+Fecha\s*Fin\s*:?\s*(\d{2}\/\d{2}\/\d{4})?)?/iu',
       $fuente,
       $matches,
       PREG_SET_ORDER
     );
+
+    // Fallback para tablas donde viene "Régimen de ... 01/01/2016"
+    if (empty($matches)) {
+      preg_match_all(
+        '/R[eé]gimen(?:\s+de)?\s+(.+?)\s+(\d{2}\/\d{2}\/\d{4})(?=\s|$)/iu',
+        $fuente,
+        $matches,
+        PREG_SET_ORDER
+      );
+    }
 
     $regimenes = [];
 
@@ -194,6 +205,8 @@ class ConstanciaFiscalHybridService
 
     // Algunos PDFs mezclan encabezados de columnas en el nombre del régimen.
     $nombre = preg_replace('/\bFecha\s+Inicio\b/iu', ' ', $nombre);
+    $nombre = preg_replace('/\bInicioFecha\s+Fin\b/iu', ' ', $nombre);
+    $nombre = preg_replace('/\bInicioFechaFin\b/iu', ' ', $nombre);
     $nombre = preg_replace('/\bFecha\s+Fin\b/iu', ' ', $nombre);
     $nombre = preg_replace('/\bRégimen\s+de\b/iu', ' ', $nombre);
     $nombre = preg_replace('/\bRégimen\b/iu', ' ', $nombre);

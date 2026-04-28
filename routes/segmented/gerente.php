@@ -46,6 +46,7 @@ Route::prefix('proveedores')
         Route::post('{proveedor}/logo', [ProveedorController::class, 'updateLogo'])->middleware(['api.access']);
         Route::post('/verificar-rfc', [ProveedorController::class, 'verificarRfcExistente']);
         Route::post('{proveedor}/verificar-rfc-excluyendo-proveedor', [ProveedorController::class, 'verificarRfcExistenteExcluyendoProveedor']);
+        Route::post('{proveedor}/verificar-razon-social-excluyendo-proveedor', [ProveedorController::class, 'verificarRazonSocialExistenteExcluyendoProveedor']);
 
         // Consultas especiales
         Route::get('user/{id}', [ProveedorController::class, 'getProveedorByUserId']);

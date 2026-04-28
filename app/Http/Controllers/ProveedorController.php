@@ -700,6 +700,21 @@ class ProveedorController extends Controller
         ], $existe ? 'El RFC ya está registrado en GestionPro.' : 'El RFC está disponible en GestionPro.', 200);
     }
 
+    public function verificarRazonSocialExistenteExcluyendoProveedor(Request $request, Proveedor $proveedor)
+    {
+        $request->validate([
+            'razon_social' => ['required', 'string'],
+        ]);
+
+        // Verificar si el correo existe en la tabla users
+        $existe = Proveedor::where('razon_social', $request->razon_social)->where('id', '!=', $proveedor->id)->exists();
+
+        return $this->success([
+            'existe' => $existe,
+            'razon_social' => $request->razon_social,
+        ], $existe ? 'La razón social ya está registrada en GestionPro.' : 'La razón social está disponible en GestionPro.', 200);
+    }
+
 
     /**
      * Verificar telefono existe en la tabla users

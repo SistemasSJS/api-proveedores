@@ -834,9 +834,9 @@ class ProveedorPresupuestoController extends Controller
 
         $textos = is_array($payload['term_cond_textos_libres'] ?? null) ? $payload['term_cond_textos_libres'] : [];
         $textos = array_values(array_filter(array_map(
-            static fn ($item) => trim((string) $item),
+            static fn($item) => trim((string) $item),
             $textos
-        ), static fn ($item) => $item !== ''));
+        ), static fn($item) => $item !== ''));
         $payload['term_cond_textos_libres'] = array_slice($textos, 0, 4);
 
         $configuracion = is_array($payload['configuracion_condiciones'] ?? null) ? $payload['configuracion_condiciones'] : [];
@@ -1232,7 +1232,8 @@ class ProveedorPresupuestoController extends Controller
         }
 
         $appUrl = config('app.frontend_url', config('app.url'));
-        $urlWeb = rtrim($appUrl, '/') . '/public/presupuesto/' . $token;
+        $urlWeb = rtrim($appUrl, '/') . '/presupuestos/preview/' . $presupuesto->id;
+        // $urlWeb = rtrim($appUrl, '/') . '/public/presupuesto/' . $token;
 
         try {
             $renderer = new GDLibRenderer(200);
