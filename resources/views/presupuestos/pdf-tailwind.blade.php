@@ -1022,7 +1022,7 @@
                         </ul>
                     </div>
                     @endif --}}
-                    @if (count($observacionesLista) > 0 || count($validacionesLista) > 0)
+                    @if (count($observacionesLista) > 0)
                     <div class="tw-terms">
                         <h3>Observaciones</h3>
                         <ul class="tw-obs-list">
