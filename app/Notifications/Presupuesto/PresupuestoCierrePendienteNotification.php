@@ -10,6 +10,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Recordatorio al equipo emisor: el presupuesto vigente vence pronto y sigue sin respuesta del cliente.
@@ -65,6 +66,7 @@ class PresupuestoCierrePendienteNotification extends Notification implements Sho
                 'presupuesto' => $this->presupuesto,
                 'urlDetalle' => $urlDetalle,
                 'fechaVencimiento' => $fechaVenc,
+                'proveedorLogo' => $this->resolverLogoProveedorBase64(),
             ]);
 
         try {
@@ -134,6 +136,50 @@ class PresupuestoCierrePendienteNotification extends Notification implements Sho
             'fecha_vencimiento' => $this->presupuesto->fecha_vencimiento?->toIso8601String(),
             'timestamp' => now()->toIso8601String(),
         ];
+    }
+
+    private function resolverLogoProveedorBase64(): ?string
+    {
+        $logo = $this->presupuesto->proveedor?->logo;
+        if (! is_string($logo) || trim($logo) === '') {
+            return null;
+        }
+
+        if (str_starts_with($logo, 'data:image')) {
+            return $logo;
+        }
+
+        if (filter_var($logo, FILTER_VALIDATE_URL)) {
+            return null;
+        }
+
+        $logoPath = null;
+        if (str_starts_with($logo, '/') || str_starts_with($logo, 'storage/')) {
+            $logoPath = public_path($logo);
+        } elseif (Storage::disk('public')->exists($logo)) {
+            $logoPath = Storage::disk('public')->path($logo);
+        } else {
+            $logoPath = public_path('storage/' . $logo);
+        }
+
+        if (! $logoPath || ! is_readable($logoPath)) {
+            return null;
+        }
+
+        $binary = @file_get_contents($logoPath);
+        if ($binary === false || $binary === '') {
+            return null;
+        }
+
+        $extension = strtolower(pathinfo($logoPath, PATHINFO_EXTENSION));
+        $mime = match ($extension) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+            default => 'image/png',
+        };
+
+        return 'data:' . $mime . ';base64,' . base64_encode($binary);
     }
 
     protected function getNotificationTipo(): string

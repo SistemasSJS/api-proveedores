@@ -11,6 +11,9 @@
         ?? ($proveedor->pagina_web ?? null);
     $proveedorLogo = $proveedorLogo
         ?? ($proveedor->logo ?? null);
+    $proveedorLogoSrc = is_string($proveedorLogo) && str_starts_with($proveedorLogo, 'data:image')
+        ? $proveedorLogo
+        : null;
 
     $normalizarTexto = static fn ($valor) => trim((string) ($valor ?? ''));
 
@@ -47,10 +50,10 @@
   <div style="padding:14px;">
     <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;">
       <tr>
-        @if(!empty($proveedorLogo))
+        @if(!empty($proveedorLogoSrc))
           <td style="width:92px;vertical-align:top;padding-right:12px;">
             <div style="width:84px;height:84px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;">
-              <img src="{{ $proveedorLogo }}" alt="Logo proveedor" style="max-width:70px;max-height:56px;height:auto;width:auto;">
+              <img src="{{ $proveedorLogoSrc }}" alt="Logo proveedor" style="max-width:70px;max-height:56px;height:auto;width:auto;">
             </div>
           </td>
         @endif

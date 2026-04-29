@@ -30,7 +30,7 @@
         <strong>{{ $presupuesto->empresa_receptora_empresa ?? $presupuesto->empresa_receptora_nombre ?? 'el cliente' }}</strong>
         vence el <strong>{{ $fechaVencimiento }}</strong> y sigue sin respuesta.
       </div>
-      @include('emails.partials.provider-card', ['proveedor' => $presupuesto->proveedor])
+      @include('emails.partials.provider-card', ['proveedor' => $presupuesto->proveedor, 'proveedorLogo' => $proveedorLogo ?? null])
       @include('emails.partials.presupuesto-summary', ['presupuesto' => $presupuesto])
       <p style="font-size:14px;color:#6c757d;">Se adjunta el PDF del presupuesto. Puedes dar seguimiento desde la app.</p>
       <p><a href="{{ $urlDetalle }}" class="action-button">Abrir en la aplicación</a></p>

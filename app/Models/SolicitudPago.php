@@ -1060,6 +1060,7 @@ class SolicitudPago extends BaseModel
             'solicitudPagoId' => $this->id,
             'proveedorId' => $this->proveedor_id,
             'urlSolicitud' => $urlSolicitud,
+            'logoAppDataUri' => $this->resolverLogoProveedorBase64(),
         ], function ($message) use ($usuarioPrincipal, $rutaComprobante, $diskComprobante, $extension, $mimeTypes) {
             $message->to($usuarioPrincipal->email, $usuarioPrincipal->name ?? null)
                 ->subject('Comprobante de pago actualizado #' . $this->numero_folio_solicitud)
@@ -1113,6 +1114,7 @@ class SolicitudPago extends BaseModel
             'notifiable' => $empresaNotifiable,
             'solicitudPagoFolio' => $this->numero_folio_solicitud,
             'urlSolicitud' => $urlSolicitud,
+            'logoAppDataUri' => $this->resolverLogoProveedorBase64(),
         ], function ($message) use ($emailEmpresa, $rutaFacturaPdf, $rutaFacturaXml, $diskArchivos) {
             $message->to($emailEmpresa)->subject('Factura subida - Solicitud de pago #' . $this->numero_folio_solicitud);
 
@@ -1130,6 +1132,48 @@ class SolicitudPago extends BaseModel
                 ]);
             }
         });
+    }
+
+    private function resolverLogoProveedorBase64(): ?string
+    {
+        $logo = $this->proveedor?->logo;
+        if (! is_string($logo) || trim($logo) === '') {
+            return null;
+        }
+        if (str_starts_with($logo, 'data:image')) {
+            return $logo;
+        }
+        if (filter_var($logo, FILTER_VALIDATE_URL)) {
+            return null;
+        }
+
+        $logoPath = null;
+        if (str_starts_with($logo, '/') || str_starts_with($logo, 'storage/')) {
+            $logoPath = public_path($logo);
+        } elseif (Storage::disk('public')->exists($logo)) {
+            $logoPath = Storage::disk('public')->path($logo);
+        } else {
+            $logoPath = public_path('storage/' . $logo);
+        }
+
+        if (! $logoPath || ! is_readable($logoPath)) {
+            return null;
+        }
+
+        $binary = @file_get_contents($logoPath);
+        if ($binary === false || $binary === '') {
+            return null;
+        }
+
+        $extension = strtolower(pathinfo($logoPath, PATHINFO_EXTENSION));
+        $mime = match ($extension) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+            default => 'image/png',
+        };
+
+        return 'data:' . $mime . ';base64,' . base64_encode($binary);
     }
 
 

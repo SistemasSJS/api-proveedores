@@ -35,7 +35,7 @@
         {{ $motivoRechazo }}
       </div>
       @endif
-      @include('emails.partials.provider-card', ['proveedor' => $presupuesto->proveedor])
+      @include('emails.partials.provider-card', ['proveedor' => $presupuesto->proveedor, 'proveedorLogo' => $proveedorLogo ?? null])
       @include('emails.partials.presupuesto-summary', ['presupuesto' => $presupuesto])
       <p style="font-size:14px;color:#6c757d;">Adjuntamos el PDF del presupuesto rechazado.</p>
       <p><a href="{{ $urlDetalle }}" class="action-button">Ver detalle del presupuesto</a></p>

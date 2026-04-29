@@ -28,7 +28,7 @@
       <div class="success-box">
         {{ $presupuesto->empresa_receptora_empresa ?? $presupuesto->empresa_receptora_nombre ?? 'El cliente' }} aceptó el presupuesto #{{ $presupuesto->numero_presupuesto }}.
       </div>
-      @include('emails.partials.provider-card', ['proveedor' => $presupuesto->proveedor])
+      @include('emails.partials.provider-card', ['proveedor' => $presupuesto->proveedor, 'proveedorLogo' => $proveedorLogo ?? null])
       @include('emails.partials.presupuesto-summary', ['presupuesto' => $presupuesto])
       <p style="font-size:14px;color:#6c757d;">Adjuntamos el PDF del presupuesto aceptado.</p>
       <p><a href="{{ $urlDetalle }}" class="action-button">Ver detalle del presupuesto</a></p>

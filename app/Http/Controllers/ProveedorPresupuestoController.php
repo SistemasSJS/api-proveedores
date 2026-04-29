@@ -448,51 +448,190 @@ class ProveedorPresupuestoController extends Controller
     }
 
     /**
-     * Guarda o actualiza un borrador antes de generar el PDF de preview.
-     *
-     * @param  array<string, mixed>  $validated
+     * Genera PDF desde datos del formulario (para borradores).
      */
-    private function guardarBorradorParaPreview(Request $request, Proveedor $proveedor, array $validated): Presupuesto
+    public function generarPdfDesdeFormulario(StorePresupuestoRequest $request, Proveedor $proveedor): Response
     {
-        return DB::transaction(function () use ($request, $proveedor, $validated) {
-            $payload = collect($validated)->except(['conceptos', 'presupuesto_id'])->toArray();
-            $payload['user_id'] = $request->user()->id;
-            $payload['proveedor_id'] = (int) $validated['proveedor_id'];
-            $payload['con_iva'] = $payload['con_iva'] ?? true;
-            $payload['iva_porcentaje'] = $payload['iva_porcentaje'] ?? 16.00;
-            $payload['estado'] = Presupuesto::ESTADO_BORRADOR;
-            $payload = $this->normalizarEmpresaReceptora($payload, (int) $payload['proveedor_id']);
+        try {
+            $user = $request->user();
 
-            $presupuestoId = (int) ($validated['presupuesto_id'] ?? 0);
-            if ($presupuestoId > 0) {
-                $presupuesto = Presupuesto::query()->findOrFail($presupuestoId);
-
-                if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
-                    abort(403, 'La empresa no tiene acceso a este presupuesto en GestionPro.');
-                }
-
-                if (! $this->puedeEditarPresupuesto($presupuesto)) {
-                    abort(422, 'No se puede modificar este presupuesto en GestionPro.');
-                }
-
-                $payload['numero_presupuesto'] = $payload['numero_presupuesto'] ?? $presupuesto->numero_presupuesto;
-                $presupuesto->update($payload);
-            } else {
-                $payload['numero_presupuesto'] = $payload['numero_presupuesto'] ?? Presupuesto::generarNumeroPresupuesto((int) $payload['proveedor_id']);
-                $presupuesto = Presupuesto::create($payload);
+            if (! $user || ! method_exists($user, 'tieneAccesoAProveedor') || ! $user->tieneAccesoAProveedor((int) $proveedor->id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El usuario autenticado no tiene acceso al proveedor indicado.',
+                ], 403);
             }
 
-            $presupuesto->asegurarTokenPublico();
-            $this->sincronizarConceptos($presupuesto, $validated['conceptos']);
-            $presupuesto->recalcularDesdeConceptos();
-            $presupuesto->fecha_vencimiento = array_key_exists('term_cond_dias_vigencia', $payload)
-                ? $this->calcularFechaVencimiento($presupuesto)
-                : $presupuesto->fecha_vencimiento;
-            $presupuesto->save();
+            $validated = $request->validated();
 
-            return $presupuesto->fresh(Presupuesto::eagerLodable());
-        });
+            if ((int) $validated['proveedor_id'] !== (int) $proveedor->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El proveedor del payload no coincide con el proveedor de la ruta.',
+                ], 422);
+            }
+
+            $validated = $this->resolverReceptorEmpresaParaValidacion($validated, $proveedor);
+            $validated = $this->normalizarTerminosPayload($validated);
+            $normalized = $this->normalizarEmpresaReceptora($validated, (int) $proveedor->id);
+            $presupuestoGuardado = $this->guardarBorradorParaPreview($request, $proveedor, $validated);
+
+            // Convertir logo del proveedor a base64
+            $logoProveedorBase64 = $this->convertirLogoProveedorABase64($proveedor);
+
+            $df = $proveedor->direccion_fiscal ?? null;
+            $estado = \Illuminate\Support\Arr::get((array) ($df ?? []), 'estado', $proveedor->estado ?? 'México');
+            $lugar = $proveedor->ciudad ? ($proveedor->ciudad . ', ' . $estado) : null;
+
+            $formData = array_merge($normalized, [
+                'con_iva' => $normalized['con_iva'] ?? true,
+                'iva_porcentaje' => $normalized['iva_porcentaje'] ?? 16,
+            ]);
+
+            // «Dirigido a:» = mismas columnas y orden que PDF guardado (ver datosVistaPdfPresupuestoGuardado).
+            $datosPresupuesto = [
+                'proveedor' => $proveedor,
+                'logo_proveedor_base64' => $logoProveedorBase64,
+                'numero_presupuesto' => $presupuestoGuardado->numero_presupuesto,
+                'uuid' => $presupuestoGuardado->uuid,
+                'fecha_emision' => $presupuestoGuardado->fecha_emision,
+                'lugar' => $lugar,
+                'concepto_general' => $normalized['concepto_general'],
+                'con_iva' => $normalized['con_iva'] ?? true,
+                'iva_porcentaje' => $normalized['iva_porcentaje'] ?? 16.00,
+                'receptor_lineas' => PresupuestoPdf::lineasReceptorPdfDesdePayloadReceptor($normalized),
+                'conceptos' => $normalized['conceptos'] ?? [],
+                'terminos_enunciados' => Presupuesto::buildTerminosEnunciadosFromArray($formData),
+                'observaciones_enunciados' => Presupuesto::buildObservacionesEnunciadosFromArray($formData),
+                'qr_code' => null,
+            ];
+
+            // Calcular totales
+            $subtotal = collect($datosPresupuesto['conceptos'])->sum(function ($concepto) {
+                return ($concepto['cantidad'] ?? 0) * ($concepto['precio_unitario'] ?? 0);
+            });
+
+            $ivaTotal = $datosPresupuesto['con_iva']
+                ? $subtotal * ($datosPresupuesto['iva_porcentaje'] / 100)
+                : 0;
+
+            $datosPresupuesto['subtotal'] = round($subtotal, 2);
+            $datosPresupuesto['iva_total'] = round($ivaTotal, 2);
+            $datosPresupuesto['total'] = round($subtotal + $ivaTotal, 2);
+
+            $this->log('Generación de PDF desde formulario solicitada', [
+                'proveedor_id' => $proveedor->id,
+                'numero_presupuesto' => $datosPresupuesto['numero_presupuesto'],
+            ]);
+
+            $response = $this->generarPdfResponse($datosPresupuesto, $datosPresupuesto['numero_presupuesto']);
+            $response->headers->set('X-Presupuesto-Id', (string) $presupuestoGuardado->id);
+            $response->headers->set('X-Presupuesto-Numero', (string) $presupuestoGuardado->numero_presupuesto);
+
+            return $response;
+        } catch (Throwable $e) {
+            $this->log('Error al generar PDF desde formulario', [
+                'proveedor_id' => $proveedor->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No fue posible generar el PDF.',
+                'errors' => [$e->getMessage()],
+            ], 500);
+        }
     }
+
+    /**
+     * Envía el correo al cliente con enlace público (operación aparte del cambio de estado).
+     * Permitido para cualquier estado del presupuesto.
+     */
+    public function enviarCorreo(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
+    {
+        $validated = $request->validate([
+            'incluir_invitacion' => 'boolean',
+            'correo_destino' => 'email',
+        ]);
+
+        try {
+            if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
+                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPro.', null, 403);
+            }
+
+            if (! $validated['correo_destino'] || ! filter_var($validated['correo_destino'], FILTER_VALIDATE_EMAIL)) {
+                return $this->error('No hay correo del cliente válido para enviar.', null, 422);
+            }
+
+            $presupuesto->load(Presupuesto::eagerLodable());
+            $presupuesto->asegurarTokenPublico();
+
+            $incluirInvitacion = $validated['incluir_invitacion'] ?? false;
+            // $this->despacharCorreoPresupuesto($presupuesto, $incluirInvitacion);
+
+            $appUrl = config('app.frontend_url', config('app.url'));
+            // $enlacePublico = $appUrl . '/public/presupuesto/' . $presupuesto->token_publico;
+            $enlacePublico = $appUrl . '/pages/proveedor/presupuesto/preview/' . $presupuesto->id;
+
+            $nombreReceptor = $presupuesto->empresa_receptora_nombre ?? $presupuesto->empresa_receptora_empresa;
+
+            Mail::to($validated['correo_destino'])->send(
+                new PresupuestoEnviadoMail($presupuesto, $enlacePublico, $nombreReceptor, $incluirInvitacion)
+            );
+
+            $this->log('Presupuesto: correo al cliente enviado', ['presupuesto_id' => $presupuesto->id]);
+
+            return $this->success(
+                new PresupuestoResource($presupuesto->fresh(Presupuesto::eagerLodable())),
+                'Correo enviado correctamente al cliente en GestionPro.'
+            );
+        } catch (Throwable $e) {
+            $this->log('Error al enviar correo de presupuesto', [
+                'presupuesto_id' => $presupuesto->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->error('No fue posible enviar el correo.', [$e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Notifica en la app (y FCM) al receptor: proveedor catálogo o cliente con cuenta en otro proveedor.
+     * No notifica al usuario que generó el presupuesto (user_id).
+     * Permitido para cualquier estado del presupuesto.
+     */
+    public function notificarReceptorApp(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
+    {
+        try {
+            if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
+                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPro.', null, 403);
+            }
+
+            $presupuesto->load(Presupuesto::eagerLodable());
+
+            $esReenvio = $request->boolean('es_reenvio');
+
+            $this->despacharNotificacionesReceptor($presupuesto, $esReenvio);
+
+            $this->log('Presupuesto: notificación a receptor en app', [
+                'presupuesto_id' => $presupuesto->id,
+                'es_reenvio' => $esReenvio,
+            ]);
+
+            return $this->success(
+                new PresupuestoResource($presupuesto->fresh(Presupuesto::eagerLodable())),
+                'Notificación enviada a los usuarios del receptor en GestionPro.'
+            );
+        } catch (Throwable $e) {
+            $this->log('Error al notificar receptor de presupuesto en GestionPro', [
+                'presupuesto_id' => $presupuesto->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->error('No fue posible enviar la notificación en GestionPro.', [$e->getMessage()], 500);
+        }
+    }
+
 
     /**
      * Duplica un presupuesto con un nuevo folio y estado borrador.
@@ -585,6 +724,208 @@ class ProveedorPresupuestoController extends Controller
 
             return $this->error('No fue posible duplicar el presupuesto en GestionPro.', [$e->getMessage()], 500);
         }
+    }
+
+
+    /**
+     * Genera y descarga el PDF de un presupuesto guardado.
+     */
+    public function generarPdf(Proveedor $proveedor, Presupuesto $presupuesto): Response
+    {
+        try {
+            if (! $this->presupuestoAccesiblePorProveedor($proveedor, $presupuesto)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Presupuesto no pertenece a este proveedor.',
+                ], 403);
+            }
+
+            $presupuesto->load(Presupuesto::eagerLodable());
+
+            $this->log('Generación de PDF solicitada', [
+                'presupuesto_id' => $presupuesto->id,
+                'numero_presupuesto' => $presupuesto->numero_presupuesto,
+            ]);
+
+            $logoProveedorBase64 = $this->convertirLogoProveedorABase64($presupuesto->proveedor);
+            $proveedorEmisor = $presupuesto->proveedor;
+            $df = $proveedorEmisor?->direccion_fiscal;
+            $estado = \Illuminate\Support\Arr::get((array) ($df ?? []), 'estado', $proveedorEmisor->estado ?? 'México');
+            $lugar = $proveedorEmisor?->ciudad ? ($proveedorEmisor->ciudad . ', ' . $estado) : null;
+            $qrCode = $this->generarQrCodeParaPresupuesto($presupuesto);
+
+            $datosVista = $this->datosVistaPdfPresupuestoGuardado(
+                $presupuesto,
+                $proveedorEmisor,
+                $logoProveedorBase64,
+                $lugar,
+                $qrCode
+            );
+
+            return $this->generarPdfResponse($datosVista, $presupuesto->numero_presupuesto);
+        } catch (Throwable $e) {
+            $this->log('Error al generar PDF', [
+                'presupuesto_id' => $presupuesto->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No fue posible generar el PDF.',
+                'errors' => [$e->getMessage()],
+            ], 500);
+        }
+    }
+
+    /**
+     * Marca el presupuesto como enviado (estado, token público, vigencia). Correo y notificación in-app van en endpoints dedicados.
+     *
+     * @see enviarCorreo
+     * @see notificarReceptorApp
+     */
+    public function enviar(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
+    {
+        try {
+            if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
+                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPro.', null, 403);
+            }
+
+            if ($presupuesto->estado !== Presupuesto::ESTADO_BORRADOR) {
+                return $this->error(
+                    'Solo se puede enviar un presupuesto en estado borrador en GestionPro.',
+                    ['estado_actual' => $presupuesto->estado],
+                    422
+                );
+            }
+
+            $presupuesto->load(Presupuesto::eagerLodable());
+
+            DB::transaction(function () use ($request, $presupuesto) {
+                $estadoAnterior = $presupuesto->estado;
+
+                // Al enviar desde borrador, la fecha de emision se fija al dia actual.
+                $presupuesto->fecha_emision = now()->toDateString();
+                $presupuesto->estado = Presupuesto::ESTADO_ENVIADO;
+                $presupuesto->asegurarTokenPublico();
+
+                if (! $presupuesto->fecha_vencimiento) {
+                    $presupuesto->fecha_vencimiento = $this->calcularFechaVencimiento($presupuesto);
+                }
+                $presupuesto->save();
+                $presupuesto->registrarCambioEstado($estadoAnterior, $request->user()?->id);
+
+                if ($this->debeNotificarComoProveedorCatalogo($presupuesto)) {
+                    $this->notificarUsuarioPrincipalProveedorReceptor($presupuesto);
+                }
+            });
+
+            $presupuesto->refresh()->load(Presupuesto::eagerLodable());
+            $this->log('Presupuesto enviado (estado)', ['presupuesto_id' => $presupuesto->id]);
+
+            return $this->success(
+                new PresupuestoResource($presupuesto),
+                'Presupuesto marcado como enviado.'
+            );
+        } catch (Throwable $e) {
+            $this->log('Error al enviar presupuesto', [
+                'presupuesto_id' => $presupuesto->id,
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+                'code' => $e->getCode(),
+            ]);
+
+            return $this->error('No fue posible enviar el presupuesto en GestionPro.', [$e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Reenvía el presupuesto por correo al cliente (solo si ya está enviado y tiene correo).
+     */
+    public function reenviar(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
+    {
+        try {
+            if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
+                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPro.', null, 403);
+            }
+
+            if (! $presupuesto->empresa_receptora_correo || ! filter_var($presupuesto->empresa_receptora_correo, FILTER_VALIDATE_EMAIL)) {
+                return $this->error('No hay correo del cliente para reenviar.', null, 422);
+            }
+
+            $presupuesto->load(Presupuesto::eagerLodable());
+            $presupuesto->asegurarTokenPublico();
+
+            // $this->despacharCorreoPresupuesto($presupuesto);
+            $this->despacharNotificacionesReceptor($presupuesto, true);
+
+            $this->log('Presupuesto reenviado por correo', ['presupuesto_id' => $presupuesto->id]);
+
+            return $this->success(
+                new PresupuestoResource($presupuesto->fresh(Presupuesto::eagerLodable())),
+                'Presupuesto reenviado correctamente al cliente.'
+            );
+        } catch (Throwable $e) {
+            $this->log('Error al reenviar presupuesto', [
+                'presupuesto_id' => $presupuesto->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->error('No fue posible reenviar el presupuesto.', [$e->getMessage()], 500);
+        }
+    }
+
+
+    
+    ///////////////////////
+    // PRIVATES METHODS ///
+    ///////////////////////
+
+    /**
+     * Guarda o actualiza un borrador antes de generar el PDF de preview.
+     *
+     * @param  array<string, mixed>  $validated
+     */
+    private function guardarBorradorParaPreview(Request $request, Proveedor $proveedor, array $validated): Presupuesto
+    {
+        return DB::transaction(function () use ($request, $proveedor, $validated) {
+            $payload = collect($validated)->except(['conceptos', 'presupuesto_id'])->toArray();
+            $payload['user_id'] = $request->user()->id;
+            $payload['proveedor_id'] = (int) $validated['proveedor_id'];
+            $payload['con_iva'] = $payload['con_iva'] ?? true;
+            $payload['iva_porcentaje'] = $payload['iva_porcentaje'] ?? 16.00;
+            $payload['estado'] = Presupuesto::ESTADO_BORRADOR;
+            $payload = $this->normalizarEmpresaReceptora($payload, (int) $payload['proveedor_id']);
+
+            $presupuestoId = (int) ($validated['presupuesto_id'] ?? 0);
+            if ($presupuestoId > 0) {
+                $presupuesto = Presupuesto::query()->findOrFail($presupuestoId);
+
+                if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
+                    abort(403, 'La empresa no tiene acceso a este presupuesto en GestionPro.');
+                }
+
+                if (! $this->puedeEditarPresupuesto($presupuesto)) {
+                    abort(422, 'No se puede modificar este presupuesto en GestionPro.');
+                }
+
+                $payload['numero_presupuesto'] = $payload['numero_presupuesto'] ?? $presupuesto->numero_presupuesto;
+                $presupuesto->update($payload);
+            } else {
+                $payload['numero_presupuesto'] = $payload['numero_presupuesto'] ?? Presupuesto::generarNumeroPresupuesto((int) $payload['proveedor_id']);
+                $presupuesto = Presupuesto::create($payload);
+            }
+
+            $presupuesto->asegurarTokenPublico();
+            $this->sincronizarConceptos($presupuesto, $validated['conceptos']);
+            $presupuesto->recalcularDesdeConceptos();
+            $presupuesto->fecha_vencimiento = array_key_exists('term_cond_dias_vigencia', $payload)
+                ? $this->calcularFechaVencimiento($presupuesto)
+                : $presupuesto->fecha_vencimiento;
+            $presupuesto->save();
+
+            return $presupuesto->fresh(Presupuesto::eagerLodable());
+        });
     }
 
     /**
@@ -1072,6 +1413,13 @@ class ProveedorPresupuestoController extends Controller
         }
     }
 
+    /**
+     * Registra un mensaje en el log.
+     * 
+     * @param string $message
+     * @param array<string, mixed> $data
+     * @return void
+     */
     private function log($message, $data = []): void
     {
         if (! $this->logEnabled) {
@@ -1081,6 +1429,12 @@ class ProveedorPresupuestoController extends Controller
         Log::info($message, $data);
     }
 
+    /**
+     * Genera el folio siguiente para el proveedor.
+     * 
+     * @param \App\Models\Proveedor $proveedor
+     * @return string
+     */
     private function formatearFolioSiguiente(Proveedor $proveedor): string
     {
         $consecutivo = (int) ($proveedor->consecutivo_presupuesto_siguiente ?? 1);
@@ -1336,13 +1690,8 @@ class ProveedorPresupuestoController extends Controller
      *
      * @return array<string, mixed>
      */
-    private function datosVistaPdfPresupuestoGuardado(
-        Presupuesto $presupuesto,
-        Proveedor $proveedorEmisor,
-        string $logoProveedorBase64,
-        ?string $lugar,
-        ?string $qrCodeDataUri
-    ): array {
+    private function datosVistaPdfPresupuestoGuardado(Presupuesto $presupuesto, Proveedor $proveedorEmisor, string $logoProveedorBase64, ?string $lugar, ?string $qrCodeDataUri): array
+    {
         $enunciadosClasificados = $presupuesto->getEnunciadosClasificados();
 
         return [
@@ -1376,154 +1725,6 @@ class ProveedorPresupuestoController extends Controller
     }
 
     /**
-     * Genera y descarga el PDF de un presupuesto guardado.
-     */
-    public function generarPdf(Proveedor $proveedor, Presupuesto $presupuesto): Response
-    {
-        try {
-            if (! $this->presupuestoAccesiblePorProveedor($proveedor, $presupuesto)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Presupuesto no pertenece a este proveedor.',
-                ], 403);
-            }
-
-            $presupuesto->load(Presupuesto::eagerLodable());
-
-            $this->log('Generación de PDF solicitada', [
-                'presupuesto_id' => $presupuesto->id,
-                'numero_presupuesto' => $presupuesto->numero_presupuesto,
-            ]);
-
-            $logoProveedorBase64 = $this->convertirLogoProveedorABase64($presupuesto->proveedor);
-            $proveedorEmisor = $presupuesto->proveedor;
-            $df = $proveedorEmisor?->direccion_fiscal;
-            $estado = \Illuminate\Support\Arr::get((array) ($df ?? []), 'estado', $proveedorEmisor->estado ?? 'México');
-            $lugar = $proveedorEmisor?->ciudad ? ($proveedorEmisor->ciudad . ', ' . $estado) : null;
-            $qrCode = $this->generarQrCodeParaPresupuesto($presupuesto);
-
-            $datosVista = $this->datosVistaPdfPresupuestoGuardado(
-                $presupuesto,
-                $proveedorEmisor,
-                $logoProveedorBase64,
-                $lugar,
-                $qrCode
-            );
-
-            return $this->generarPdfResponse($datosVista, $presupuesto->numero_presupuesto);
-        } catch (Throwable $e) {
-            $this->log('Error al generar PDF', [
-                'presupuesto_id' => $presupuesto->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'No fue posible generar el PDF.',
-                'errors' => [$e->getMessage()],
-            ], 500);
-        }
-    }
-
-    /**
-     * Marca el presupuesto como enviado (estado, token público, vigencia). Correo y notificación in-app van en endpoints dedicados.
-     *
-     * @see enviarCorreo
-     * @see notificarReceptorApp
-     */
-    public function enviar(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
-    {
-        try {
-            if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
-                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPro.', null, 403);
-            }
-
-            if ($presupuesto->estado !== Presupuesto::ESTADO_BORRADOR) {
-                return $this->error(
-                    'Solo se puede enviar un presupuesto en estado borrador en GestionPro.',
-                    ['estado_actual' => $presupuesto->estado],
-                    422
-                );
-            }
-
-            $presupuesto->load(Presupuesto::eagerLodable());
-
-            DB::transaction(function () use ($request, $presupuesto) {
-                $estadoAnterior = $presupuesto->estado;
-
-                // Al enviar desde borrador, la fecha de emision se fija al dia actual.
-                $presupuesto->fecha_emision = now()->toDateString();
-                $presupuesto->estado = Presupuesto::ESTADO_ENVIADO;
-                $presupuesto->asegurarTokenPublico();
-
-                if (! $presupuesto->fecha_vencimiento) {
-                    $presupuesto->fecha_vencimiento = $this->calcularFechaVencimiento($presupuesto);
-                }
-                $presupuesto->save();
-                $presupuesto->registrarCambioEstado($estadoAnterior, $request->user()?->id);
-
-                if ($this->debeNotificarComoProveedorCatalogo($presupuesto)) {
-                    $this->notificarUsuarioPrincipalProveedorReceptor($presupuesto);
-                }
-            });
-
-            $presupuesto->refresh()->load(Presupuesto::eagerLodable());
-            $this->log('Presupuesto enviado (estado)', ['presupuesto_id' => $presupuesto->id]);
-
-            return $this->success(
-                new PresupuestoResource($presupuesto),
-                'Presupuesto marcado como enviado.'
-            );
-        } catch (Throwable $e) {
-            $this->log('Error al enviar presupuesto', [
-                'presupuesto_id' => $presupuesto->id,
-                'error' => $e->getMessage(),
-                'line' => $e->getLine(),
-                'file' => $e->getFile(),
-                'code' => $e->getCode(),
-            ]);
-
-            return $this->error('No fue posible enviar el presupuesto en GestionPro.', [$e->getMessage()], 500);
-        }
-    }
-
-    /**
-     * Reenvía el presupuesto por correo al cliente (solo si ya está enviado y tiene correo).
-     */
-    public function reenviar(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
-    {
-        try {
-            if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
-                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPro.', null, 403);
-            }
-
-            if (! $presupuesto->empresa_receptora_correo || ! filter_var($presupuesto->empresa_receptora_correo, FILTER_VALIDATE_EMAIL)) {
-                return $this->error('No hay correo del cliente para reenviar.', null, 422);
-            }
-
-            $presupuesto->load(Presupuesto::eagerLodable());
-            $presupuesto->asegurarTokenPublico();
-
-            // $this->despacharCorreoPresupuesto($presupuesto);
-            $this->despacharNotificacionesReceptor($presupuesto, true);
-
-            $this->log('Presupuesto reenviado por correo', ['presupuesto_id' => $presupuesto->id]);
-
-            return $this->success(
-                new PresupuestoResource($presupuesto->fresh(Presupuesto::eagerLodable())),
-                'Presupuesto reenviado correctamente al cliente.'
-            );
-        } catch (Throwable $e) {
-            $this->log('Error al reenviar presupuesto', [
-                'presupuesto_id' => $presupuesto->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return $this->error('No fue posible reenviar el presupuesto.', [$e->getMessage()], 500);
-        }
-    }
-
-    /**
      * Calcula fecha de vencimiento desde term_cond_dias_vigencia.
      */
     private function calcularFechaVencimiento(Presupuesto $presupuesto): \Carbon\Carbon
@@ -1533,101 +1734,6 @@ class ProveedorPresupuestoController extends Controller
         return $presupuesto->fecha_emision->copy()->addDays((int) $dias);
     }
 
-    /**
-     * Genera PDF desde datos del formulario (para borradores).
-     */
-    public function generarPdfDesdeFormulario(StorePresupuestoRequest $request, Proveedor $proveedor): Response
-    {
-        try {
-            $user = $request->user();
-
-            if (! $user || ! method_exists($user, 'tieneAccesoAProveedor') || ! $user->tieneAccesoAProveedor((int) $proveedor->id)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'El usuario autenticado no tiene acceso al proveedor indicado.',
-                ], 403);
-            }
-
-            $validated = $request->validated();
-
-            if ((int) $validated['proveedor_id'] !== (int) $proveedor->id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'El proveedor del payload no coincide con el proveedor de la ruta.',
-                ], 422);
-            }
-
-            $validated = $this->resolverReceptorEmpresaParaValidacion($validated, $proveedor);
-            $validated = $this->normalizarTerminosPayload($validated);
-            $normalized = $this->normalizarEmpresaReceptora($validated, (int) $proveedor->id);
-            $presupuestoGuardado = $this->guardarBorradorParaPreview($request, $proveedor, $validated);
-
-            // Convertir logo del proveedor a base64
-            $logoProveedorBase64 = $this->convertirLogoProveedorABase64($proveedor);
-
-            $df = $proveedor->direccion_fiscal ?? null;
-            $estado = \Illuminate\Support\Arr::get((array) ($df ?? []), 'estado', $proveedor->estado ?? 'México');
-            $lugar = $proveedor->ciudad ? ($proveedor->ciudad . ', ' . $estado) : null;
-
-            $formData = array_merge($normalized, [
-                'con_iva' => $normalized['con_iva'] ?? true,
-                'iva_porcentaje' => $normalized['iva_porcentaje'] ?? 16,
-            ]);
-
-            // «Dirigido a:» = mismas columnas y orden que PDF guardado (ver datosVistaPdfPresupuestoGuardado).
-            $datosPresupuesto = [
-                'proveedor' => $proveedor,
-                'logo_proveedor_base64' => $logoProveedorBase64,
-                'numero_presupuesto' => $presupuestoGuardado->numero_presupuesto,
-                'uuid' => $presupuestoGuardado->uuid,
-                'fecha_emision' => $presupuestoGuardado->fecha_emision,
-                'lugar' => $lugar,
-                'concepto_general' => $normalized['concepto_general'],
-                'con_iva' => $normalized['con_iva'] ?? true,
-                'iva_porcentaje' => $normalized['iva_porcentaje'] ?? 16.00,
-                'receptor_lineas' => PresupuestoPdf::lineasReceptorPdfDesdePayloadReceptor($normalized),
-                'conceptos' => $normalized['conceptos'] ?? [],
-                'terminos_enunciados' => Presupuesto::buildTerminosEnunciadosFromArray($formData),
-                'observaciones_enunciados' => Presupuesto::buildObservacionesEnunciadosFromArray($formData),
-                'qr_code' => null,
-            ];
-
-            // Calcular totales
-            $subtotal = collect($datosPresupuesto['conceptos'])->sum(function ($concepto) {
-                return ($concepto['cantidad'] ?? 0) * ($concepto['precio_unitario'] ?? 0);
-            });
-
-            $ivaTotal = $datosPresupuesto['con_iva']
-                ? $subtotal * ($datosPresupuesto['iva_porcentaje'] / 100)
-                : 0;
-
-            $datosPresupuesto['subtotal'] = round($subtotal, 2);
-            $datosPresupuesto['iva_total'] = round($ivaTotal, 2);
-            $datosPresupuesto['total'] = round($subtotal + $ivaTotal, 2);
-
-            $this->log('Generación de PDF desde formulario solicitada', [
-                'proveedor_id' => $proveedor->id,
-                'numero_presupuesto' => $datosPresupuesto['numero_presupuesto'],
-            ]);
-
-            $response = $this->generarPdfResponse($datosPresupuesto, $datosPresupuesto['numero_presupuesto']);
-            $response->headers->set('X-Presupuesto-Id', (string) $presupuestoGuardado->id);
-            $response->headers->set('X-Presupuesto-Numero', (string) $presupuestoGuardado->numero_presupuesto);
-
-            return $response;
-        } catch (Throwable $e) {
-            $this->log('Error al generar PDF desde formulario', [
-                'proveedor_id' => $proveedor->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'No fue posible generar el PDF.',
-                'errors' => [$e->getMessage()],
-            ], 500);
-        }
-    }
 
     /**
      * Usuarios con cuenta en la plataforma, correo = cliente del presupuesto y proveedor activo distinto al emisor.
@@ -1688,95 +1794,6 @@ class ProveedorPresupuestoController extends Controller
             $this->notificarUsuariosProveedorReceptor($presupuesto, $esReenvio);
         } else {
             $this->notificarClienteProveedorRegistrado($presupuesto, $esReenvio);
-        }
-    }
-
-    /**
-     * Envía el correo al cliente con enlace público (operación aparte del cambio de estado).
-     * Permitido para cualquier estado del presupuesto.
-     */
-    public function enviarCorreo(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
-    {
-        $validated = $request->validate([
-            'incluir_invitacion' => 'boolean',
-            'correo_destino' => 'email',
-        ]);
-
-        try {
-            if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
-                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPro.', null, 403);
-            }
-
-            if (! $validated['correo_destino'] || ! filter_var($validated['correo_destino'], FILTER_VALIDATE_EMAIL)) {
-                return $this->error('No hay correo del cliente válido para enviar.', null, 422);
-            }
-
-            $presupuesto->load(Presupuesto::eagerLodable());
-            $presupuesto->asegurarTokenPublico();
-
-            $incluirInvitacion = $validated['incluir_invitacion'] ?? false;
-            // $this->despacharCorreoPresupuesto($presupuesto, $incluirInvitacion);
-
-            $appUrl = config('app.frontend_url', config('app.url'));
-            // $enlacePublico = $appUrl . '/public/presupuesto/' . $presupuesto->token_publico;
-            $enlacePublico = $appUrl . '/pages/proveedor/presupuesto/preview/' . $presupuesto->id;
-
-            $nombreReceptor = $presupuesto->empresa_receptora_nombre ?? $presupuesto->empresa_receptora_empresa;
-
-            Mail::to($validated['correo_destino'])->send(
-                new PresupuestoEnviadoMail($presupuesto, $enlacePublico, $nombreReceptor, $incluirInvitacion)
-            );
-
-            $this->log('Presupuesto: correo al cliente enviado', ['presupuesto_id' => $presupuesto->id]);
-
-            return $this->success(
-                new PresupuestoResource($presupuesto->fresh(Presupuesto::eagerLodable())),
-                'Correo enviado correctamente al cliente en GestionPro.'
-            );
-        } catch (Throwable $e) {
-            $this->log('Error al enviar correo de presupuesto', [
-                'presupuesto_id' => $presupuesto->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return $this->error('No fue posible enviar el correo.', [$e->getMessage()], 500);
-        }
-    }
-
-    /**
-     * Notifica en la app (y FCM) al receptor: proveedor catálogo o cliente con cuenta en otro proveedor.
-     * No notifica al usuario que generó el presupuesto (user_id).
-     * Permitido para cualquier estado del presupuesto.
-     */
-    public function notificarReceptorApp(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
-    {
-        try {
-            if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
-                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPro.', null, 403);
-            }
-
-            $presupuesto->load(Presupuesto::eagerLodable());
-
-            $esReenvio = $request->boolean('es_reenvio');
-
-            $this->despacharNotificacionesReceptor($presupuesto, $esReenvio);
-
-            $this->log('Presupuesto: notificación a receptor en app', [
-                'presupuesto_id' => $presupuesto->id,
-                'es_reenvio' => $esReenvio,
-            ]);
-
-            return $this->success(
-                new PresupuestoResource($presupuesto->fresh(Presupuesto::eagerLodable())),
-                'Notificación enviada a los usuarios del receptor en GestionPro.'
-            );
-        } catch (Throwable $e) {
-            $this->log('Error al notificar receptor de presupuesto en GestionPro', [
-                'presupuesto_id' => $presupuesto->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return $this->error('No fue posible enviar la notificación en GestionPro.', [$e->getMessage()], 500);
         }
     }
 }

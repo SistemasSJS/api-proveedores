@@ -22,7 +22,7 @@
               @include('emails.partials.app-header', ['title' => 'Presupuesto recibido'])
             </td>
           </tr>
-
+  
           <tr>
             <td style="padding:24px;font-family:Arial,Helvetica,sans-serif;color:#1f2937;font-size:16px;line-height:24px;">
               <p style="margin:0 0 12px 0;">Hola {{ $nombreReceptor }},</p>
@@ -40,7 +40,7 @@
                 </table>
               @endif
 
-              @include('emails.partials.provider-card', ['proveedor' => $presupuesto->proveedor])
+              @include('emails.partials.provider-card', ['proveedor' => $presupuesto->proveedor, 'proveedorLogo' => $proveedorLogo ?? null])
               @include('emails.partials.presupuesto-summary', ['presupuesto' => $presupuesto])
 
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:18px;border:1px solid #d6e4ff;background-color:#eef5ff;">
