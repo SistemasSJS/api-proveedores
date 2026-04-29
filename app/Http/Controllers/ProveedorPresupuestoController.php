@@ -1720,10 +1720,8 @@ class ProveedorPresupuestoController extends Controller
             $appUrl = config('app.frontend_url', config('app.url'));
             // $enlacePublico = $appUrl . '/public/presupuesto/' . $presupuesto->token_publico;
             $enlacePublico = $appUrl . '/pages/proveedor/presupuesto/preview/' . $presupuesto->id;
-            
-            $nombreReceptor = $presupuesto->empresa_receptora_nombre
-                ?? $presupuesto->empresa_receptora_empresa
-                ?? 'Cliente';
+
+            $nombreReceptor = $presupuesto->empresa_receptora_nombre ?? $presupuesto->empresa_receptora_empresa;
 
             Mail::to($validated['correo_destino'])->send(
                 new PresupuestoEnviadoMail($presupuesto, $enlacePublico, $nombreReceptor, $incluirInvitacion)
