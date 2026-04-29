@@ -32,20 +32,6 @@
             text-align: center;
         }
 
-        .logo {
-            max-width: 100px;
-            height: auto;
-            margin-bottom: 15px;
-            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-        }
-
-        .header-title {
-            color: #000000;
-            font-size: 28px;
-            font-weight: 600;
-            margin: 0;
-        }
-
         .content {
             padding: 40px 30px;
         }
@@ -60,7 +46,7 @@
         .message {
             font-size: 16px;
             color: #555555;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             line-height: 1.8;
         }
 
@@ -79,26 +65,6 @@
             font-weight: 600;
             font-size: 16px;
             box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4);
-            transition: transform 0.2s;
-        }
-
-        .cta-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 193, 7, 0.5);
-        }
-
-        .security-note {
-            background-color: #fff3cd;
-            border: 1px solid #ffeeba;
-            padding: 15px;
-            border-radius: 6px;
-            margin-top: 25px;
-        }
-
-        .security-note p {
-            color: #856404;
-            font-size: 13px;
-            margin: 0;
         }
 
         .footer {
@@ -114,18 +80,9 @@
             margin: 5px 0;
         }
 
-        .footer-link {
-            color: #FFC107;
-            text-decoration: none;
-        }
-
         @media only screen and (max-width: 600px) {
             .content {
                 padding: 30px 20px;
-            }
-
-            .header-title {
-                font-size: 24px;
             }
 
             .cta-button {
@@ -142,7 +99,6 @@
             @include('emails.partials.app-header', ['title' => '¡Completa tu registro!'])
         </div>
 
-        <!-- Contenido principal -->
         <div class="content">
             <p class="welcome-text">¡Hola!</p>
 
@@ -150,17 +106,77 @@
                 Estás a un paso de completar tu registro en {{ config('app.name') }}.
             </p>
 
+            {{-- Bloque de datos del proveedor --}}
+            <div style="margin: 25px 0;">
+                <div style="
+                    background: #f8f9fa;
+                    border: 1px solid #e9ecef;
+                    border-radius: 8px;
+                    padding: 20px;
+                ">
+                    <p style="
+                        font-size: 13px;
+                        font-weight: 600;
+                        color: #888;
+                        margin-bottom: 15px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    ">
+                        Datos de registro de la empresa
+                    </p>
+
+                    <table width="100%" cellpadding="0" cellspacing="0" style="font-size: 15px;">
+                        <tr>
+                            <td style="color: #999; padding: 8px 0; width: 40%;">
+                                Nombre comercial
+                            </td>
+                            <td style="color: #2c3e50; font-weight: 600; padding: 8px 0;">
+                                {{ $proveedor->nombre_comercial }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="2" style="border-bottom: 1px solid #eee;"></td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: #999; padding: 8px 0;">
+                                Razón social
+                            </td>
+                            <td style="color: #2c3e50; font-weight: 600; padding: 8px 0;">
+                                {{ $proveedor->razon_social }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: #999; padding: 8px 0;">
+                                Correo electrónico
+                            </td>
+                            <td style="color: #2c3e50; font-weight: 600; padding: 8px 0;">
+                                {{ $proveedor->email }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="color: #999; padding: 8px 0;">
+                                Teléfono
+                            </td>
+                            <td style="color: #2c3e50; font-weight: 600; padding: 8px 0;">
+                                {{ $proveedor->telefono_codigo_pais . ' ' . $proveedor->telefono }}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
             <p class="message">
                 Haz clic en el botón de abajo para finalizar tu registro y establecer tu contraseña.
             </p>
 
-            <!-- Botón de acción -->
             <div class="cta-container">
                 <a href="{{ $url }}" class="cta-button">
                     Completar mi registro
                 </a>
             </div>
-
         </div>
 
         <div class="footer">

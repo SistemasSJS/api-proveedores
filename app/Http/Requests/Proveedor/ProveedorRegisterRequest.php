@@ -45,14 +45,31 @@ class ProveedorRegisterRequest extends FormRequest
         return true;
     }
 
+    /**
+     * Pasamos el valor del telefono a campos planos corresponedietes al modelo del proveedor
+     * correccion del nombre comercial que en realidad es el nombre del que registra el proveedor
+     */
+    public function validated($key = null, $default = null)
+    {
+        $data = parent::validated();
+
+        if ($this->has('telefono')) {
+            $data['telefono'] = $this->input('telefono.telefono');
+            $data['telefono_codigo_pais'] = $this->input('telefono.codigo');
+        }
+        
+        $data['nombre_quien_registra'] = $this->input('nombre_comercial');
+        $data['nombre_comercial'] = $this->input('razon_social');
+
+        return $data;
+    }
+
+
     public function rules(): array
     {
         return [
-            'nombre_comercial' => ['required', 'string', 'max:255'],
+            'nombre_comercial' => ['required', 'string', 'max:255'], // 
             'razon_social' => ['required', 'string', 'max:255'],
-            // 'tipos_empresa_id' => ['nullable', 'integer', 'exists:tipos_empresa,id,estatus,activo'],
-            'tipos_empresa_id' => ['nullable', 'integer'],
-            'tipos_empresa_otro' => ['nullable', 'max:60'],
             'email' => [
                 'required',
                 'email',
@@ -63,6 +80,11 @@ class ProveedorRegisterRequest extends FormRequest
             'telefono' => ['nullable', 'array'],
             'telefono.codigo' => ['nullable', 'string', 'regex:/^\+[0-9]{1,4}$/'],
             'telefono.telefono' => ['nullable', 'string', 'regex:/^[0-9]{6,15}$/'],
+
+            // No utilizados
+            // 'tipos_empresa_id' => ['nullable', 'integer', 'exists:tipos_empresa,id,estatus,activo'],
+            'tipos_empresa_id' => ['nullable', 'integer'],
+            'tipos_empresa_otro' => ['nullable', 'max:60'],
             'contacto_nombre' => ['nullable', 'string', 'max:150'],
             'contacto_telefono' => ['nullable', 'string', 'max:15'],
             'contacto_correo' => ['nullable', 'email', 'max:60'],

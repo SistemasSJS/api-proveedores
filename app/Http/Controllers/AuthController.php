@@ -90,23 +90,22 @@ class AuthController extends Controller
         // ],
     }
 
+    /**
+     * Registra un nuevo proveedor en la base de datos
+     * 
+     * @return \Illuminate\Http\JsonResponse 
+     */
     public function register_proveedor(ProveedorRegisterRequest $request)
     {
         $validatedData = $request->validated();
-        $telefonoCompleto = null;
-        $telefonoCodigoPais = null;
-        if (isset($validatedData['telefono'])) {
-            $telefonoCodigoPais = $validatedData['telefono']['codigo'];
-            $telefonoNumero = $validatedData['telefono']['telefono'];
-            $telefonoCompleto = $telefonoCodigoPais . $telefonoNumero;
-        }
 
         // ANTES DE CREAR EL PROVEEDOR, VALIDAMOS QUE NO EXISTA UN USUARIO O PROVEEDOR CON EL MISMO CORREO O TELÉFONO
         // VALIDACIÓN: Verificar si el proveedor ya existe (RFC, email o teléfono)
         $proveedorExistente = Proveedor::where(function ($query) use ($validatedData) {
+            // telefono: codigo y telefono que sean iguales
             if (isset($validatedData['telefono']['codigo']) && isset($validatedData['telefono']['telefono'])) {
                 $query->where('telefono_codigo_pais', $validatedData['telefono']['codigo'])
-                    ->where('telefono', $validatedData['telefono']['codigo'] . $validatedData['telefono']['telefono']);
+                    ->where('telefono', $validatedData['telefono']['telefono']);
             }
 
             // razon_social
@@ -129,7 +128,7 @@ class AuthController extends Controller
                     'Este teléfono ya está registrado con un usuario activo. Si olvidaste tu contraseña, usa la opción de recuperación.',
                     [
                         'campo_duplicado' => 'telefono',
-                        'valor' => $telefonoCompleto,
+                        'valor' => $proveedorExistente->telefono,
                     ],
                     409
                 );
@@ -181,11 +180,14 @@ class AuthController extends Controller
             }
         }
 
-        $proveedorPayload = $validatedData;
+        // $proveedorPayload = $validatedData;
 
-        $proveedorPayload['telefono_codigo_pais'] = $validatedData['telefono']['codigo'] ?? null;
-        $proveedorPayload['telefono'] = $validatedData['telefono']['telefono'] ?? null;
-        $proveedor = Proveedor::create($proveedorPayload);
+        // $proveedorPayload['telefono_codigo_pais'] = $validatedData['telefono']['codigo'] ?? null;
+        // $proveedorPayload['telefono'] = $validatedData['telefono']['telefono'] ?? null;
+        // $proveedorPayload['nombre_quien_registra'] = $validatedData['nombre_comercial'] ?? null;
+        // $proveedorPayload['nombre_comercial'] = $validatedData['razon_social'] ?? null;
+
+        $proveedor = Proveedor::create($validatedData);
         $token = Str::random(60);
         $cacheKey = "registro_proveedor_{$token}";
         Cache::store('file')->forever($cacheKey, $proveedor->id);
@@ -199,7 +201,7 @@ class AuthController extends Controller
         ]);
 
         $url = config('services.frontend.url') . "/gen-pass?token={$token}";
-        Mail::to($proveedor->email)->send(new CompletaRegistroProveedorMail($url));
+        Mail::to($proveedor->email)->send(new CompletaRegistroProveedorMail($url, $proveedor));
 
         return $this->success([
             'url' => $url,
@@ -207,6 +209,12 @@ class AuthController extends Controller
         ], 'Empresa registrada y pendiente de completar registro en GestionPro. Revisa tu correo para continuar.', 200);
     }
 
+    /**
+     * Completa el registro de un proveedor
+     * 
+     * @param ProveedorRegisterCompleteRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function register_proveedor_completar(ProveedorRegisterCompleteRequest $request)
     {
         $normalizedToken = preg_replace('/\s+/', '', urldecode(trim((string) $request->input('token'))));
