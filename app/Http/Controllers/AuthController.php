@@ -30,7 +30,7 @@ use App\Models\EmpresaConstrucc;
 use App\Models\Role;
 use App\Models\User;
 use App\Notifications\Auth\CuentaVerificadaNotification;
-use App\Notifications\ProveedorEmpresa\ProveedorAsociadoAEmpresaNotification;
+use App\Notifications\Auth\NewUserNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -45,7 +45,10 @@ use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
-
+    /**
+     * ID del usuario admin a notificar, ing. Julio
+     */
+    public int $id_user_admin_a_notificar = 2;
 
     public function register(AuthRegisterRequest $request)
     {
@@ -280,6 +283,10 @@ class AuthController extends Controller
         Cache::forget($cacheKey);
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        $admin = User::find($this->id_user_admin_a_notificar);
+        if ($admin) {
+            $admin->notify(new NewUserNotification($user, $proveedor));
+        }
         return $this->success([
             'user' => new UserAuthenticateResource($user->load(User::eagerLodable())),
             'proveedor' => new ProveedorResource($proveedor->load(Proveedor::eagerLodable())),

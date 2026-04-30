@@ -109,7 +109,7 @@ class UserController extends Controller
             throw new ResourceNotFoundException('Usuario no encontrado.');
         }
 
-        return $this->success(new UserResource($user->load(['role'])));
+        return $this->success(new UserResource($user->load(User::eagerLodable())));
     }
 
     /**
