@@ -141,13 +141,23 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
     /**
      * DASHBOARD ADMINISTRATIVO
      */
-    Route::prefix('dashboard')->group(function () {
-        Route::get('catalogos-resumen', [AdminHomeControler::class, 'getCatalogosCountItems']);
-        Route::get('stats-completas', [AdminDashboardController::class, 'getStatsCompletas']);
-        Route::get('metricas-rendimiento', [AdminDashboardController::class, 'getMetricasRendimiento']);
-        Route::get('spp-proveedores', [AdminDashboardController::class, 'getMetricasSppPorProveedor']);
-    });
 
+    Route::prefix('dashboard')->group(function () {
+        // Endpoint unificado principal (15 días, presupuesto avg, SPP avg, totales, serie diaria)
+        Route::get('dashboard-datos', [AdminHomeControler::class, 'dashboardDatos']);
+
+        // Endpoints legados — compatibilidad
+        Route::get('metricas-home', [AdminHomeControler::class, 'metricasHome']);
+        Route::get('catalogos-resumen', [AdminHomeControler::class, 'getCatalogosCountItems']);
+        Route::get('usuarios-activos', [AdminHomeControler::class, 'getUsuariosActivosEndpoint']);
+
+        // SPP por proveedor
+        Route::get('spp-proveedores', [AdminDashboardController::class, 'getMetricasSppPorProveedor']);
+
+        // Métricas avanzadas (tendencias 30 días)
+        Route::get('metricas-avanzadas', [AdminHomeControler::class, 'metricasAvanzadas']);
+    });
+    
     /**
      * HOMOLOGACIÓN DE PROVEEDORES DUPLICADOS
      * Sistema para reasignar usuarios entre proveedores con la misma razón social
