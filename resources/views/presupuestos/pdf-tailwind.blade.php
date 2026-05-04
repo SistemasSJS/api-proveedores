@@ -213,65 +213,59 @@
         }
 
         /* Cajas grises (referencia): fondo claro, borde suave, sin acento lateral */
-        .tw-card {
+        /* Bloques «Dirigido a» y «Descripción general» (presupuesto-proveedor-preview.page.scss .receptor-section) */
+        .tw-card,
+        .tw-desc-box {
+            width: 100%;
             margin-bottom: 3mm;
-            padding: 1mm 2mm;
-            /* background: var(--tw-slate-100); */
-            /* border: 1px solid var(--tw-slate-200); */
-            border-radius: 1mm;
+            padding-bottom: 2mm;
+            padding-left: 0;
+            padding-right: 0;
+            padding-top: 0;
             page-break-inside: avoid;
         }
 
+        /* .receptor-title — mismo título azul 6pt en ambos bloques */
         .tw-card-title {
-            font-size: 6.5pt;
+            font-size: 6pt;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: var(--accent);
+            color: #3498db;
             margin: 0 0 1mm 0;
             padding: 0;
             border: none;
+            line-height: 1.1;
         }
 
+        /* .descripcion-general-title */
+        .tw-card-title.tw-desc-general-title {
+            letter-spacing: 0.5px;
+        }
+
+        /* .receptor-name — primera línea del receptor */
         .tw-receptor-strong {
             font-size: 9pt;
             font-weight: 700;
-            color: var(--heading);
-            margin-bottom: 0.3mm;
-            line-height: var(--section-line-height);
+            color: #2c3e50;
+            margin-bottom: 1mm;
+            line-height: 1.15;
         }
 
+        /* .receptor-info — líneas siguientes */
         .tw-receptor-line {
             font-size: 7pt;
-            color: var(--tw-slate-600);
-            margin-bottom: 0.2mm;
-            line-height: var(--section-line-height);
+            color: #5f6f89;
+            margin-bottom: 0.8mm;
+            line-height: 1.15;
         }
 
-        /* Descripción */
-        .tw-desc-box {
-            margin-bottom: 3mm;
-            padding: 1mm 2mm;
-            /* background: var(--tw-slate-100); */
-            /* border: 1px solid var(--tw-slate-200); */
-            border-radius: 1mm;
-            page-break-inside: avoid;
-        }
-
-        .tw-desc-title {
-            font-size: 8pt;       /* antes 6.5pt */
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--accent);
-            margin: 0 0 1.5mm 0;  /* un poco más de espacio */
-        }
-
+        /* Cuerpo descripción: hereda tamaño de .budget-preview-card en preview (8.5pt, #2c3e50) */
         .tw-desc-text {
-            font-size: 7.5pt;
-            color: var(--tw-slate-800);
-            text-align: justify;
-            line-height: 1.3;     /* más aire */
+            font-size: 8.5pt;
+            color: #2c3e50;
+            line-height: 1.15;
+            text-align: left;
+            white-space: pre-wrap;
         }
 
         /* Título bloque tabla (referencia: centrado, negro, sin subrayado azul) */
@@ -925,7 +919,7 @@
 
             @if ($presupuesto['concepto_general'] ?? null)
                 <div class="tw-desc-box">
-                    <div class="tw-card-title">Descripción general</div>
+                    <div class="tw-card-title tw-desc-general-title">Descripción general</div>
                     <div class="tw-desc-text">{{ $presupuesto['concepto_general'] }}</div>
                 </div>
             @endif

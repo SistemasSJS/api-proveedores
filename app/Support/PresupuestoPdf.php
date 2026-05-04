@@ -203,10 +203,7 @@ final class PresupuestoPdf
     }
 
     /**
-     * Líneas para «Dirigido a:» en el PDF.
-     *
-     * Orden fijo (misma secuencia que columnas `presupuesto.empresa_receptora_*` en app / API):
-     * alias → nombre → puesto → empresa → teléfono → correo. Omite vacíos.
+     * Líneas para «Dirigido a:» en el PDF (misma vista que el preview: nombre → puesto → empresa).
      *
      * @param  array{
      *   alias_empresa?: string|null,
@@ -215,18 +212,15 @@ final class PresupuestoPdf
      *   empresa?: string|null,
      *   telefono?: string|null,
      *   correo?: string|null
-     * }  $r  Claves semánticas; valores suelen venir de `empresa_receptora_*`.
+     * }  $r  Solo se usan nombre, puesto y empresa; el resto se ignora.
      * @return list<string>
      */
     public static function lineasDirigidoUnicas(array $r): array
     {
         $ordenados = [
-            trim((string) ($r['alias_empresa'] ?? '')),
             trim((string) ($r['nombre'] ?? '')),
             trim((string) ($r['puesto'] ?? '')),
             trim((string) ($r['empresa'] ?? '')),
-            trim((string) ($r['telefono'] ?? '')),
-            trim((string) ($r['correo'] ?? '')),
         ];
 
         $lines = [];

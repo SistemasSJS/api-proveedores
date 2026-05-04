@@ -1684,9 +1684,9 @@ class ProveedorPresupuestoController extends Controller
     /**
      * Datos pasados a la plantilla Blade del PDF (`PresupuestoPdfTemplate::viewName()`).
      *
-     * Solo claves que consume la vista. El bloque «Dirigido a:» usa `receptor_lineas`: orden fijo
-     * alias → nombre → puesto → empresa → teléfono → correo, tomado de columnas `empresa_receptora_*`
-     * del presupuesto (ver {@see PresupuestoPdf::lineasReceptorPdfDesdeColumnasPresupuesto}).
+     * Solo claves que consume la vista. El bloque «Dirigido a:» usa `receptor_lineas`: nombre → puesto → empresa
+     * (misma vista que el preview; sin alias, teléfono ni correo), vía
+     * {@see PresupuestoPdf::lineasReceptorPdfDesdeColumnasPresupuesto}.
      *
      * @return array<string, mixed>
      */
