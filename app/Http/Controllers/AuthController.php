@@ -326,6 +326,7 @@ class AuthController extends Controller
             // Buscar usuario por email o teléfono
             $user = User::where(function ($q) use ($request) {
                 $q->where('email', $request->email)
+                    ->orWhere('telefono', $request->email)
                     ->orWhere('telefono', $request->email);
             })
                 ->where('status', '!=', EstadoUsuario::BLOQUEADO->value)
