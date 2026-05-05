@@ -58,8 +58,9 @@ class ProveedorRegisterRequest extends FormRequest
             $data['telefono_codigo_pais'] = $this->input('telefono.codigo');
         }
         
-        $data['nombre_quien_registra'] = $this->input('nombre_comercial');
+        $data['nombre_propietario'] = $this->input('nombre_comercial');
         $data['nombre_comercial'] = $this->input('razon_social');
+        $data['razon_social'] = $this->input('razon_social');
 
         return $data;
     }

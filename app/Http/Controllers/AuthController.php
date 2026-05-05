@@ -242,7 +242,7 @@ class AuthController extends Controller
         if (! $proveedor->user) {
             $idRoleProveedor = Role::where('nombre', UserRoleEnumerate::GERENTE->value)->first()->id;
             $user = User::create([
-                'name' => $proveedor->nombre_comercial,
+                'name' => $proveedor->nombre_propietario,
                 'email' => $proveedor->email,
                 'telefono_codigo_pais' => $proveedor->telefono_codigo_pais,
                 'telefono' => $proveedor->telefono,
