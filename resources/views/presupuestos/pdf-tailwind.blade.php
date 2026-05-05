@@ -261,7 +261,8 @@
 
         /* Cuerpo descripción: hereda tamaño de .budget-preview-card en preview (8.5pt, #2c3e50) */
         .tw-desc-text {
-            font-size: 8.5pt;
+            font-size: 9pt;
+            font-weight: 700;
             color: #2c3e50;
             line-height: 1.15;
             text-align: left;
