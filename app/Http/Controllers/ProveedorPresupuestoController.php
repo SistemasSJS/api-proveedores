@@ -89,17 +89,15 @@ class ProveedorPresupuestoController extends Controller
         }
 
         $filters = $request->only(Proveedor::getFilters());
-        $perPage = min((int) $request->input('per_page', 50), 100);
+//        $perPage = min((int) $request->input('per_page', 50), 100);
 
         $proveedores = Proveedor::with(Proveedor::eagerLodable())
             ->where('id', '!=', $proveedor->id)
             ->filter($filters)
             ->orderBy('nombre_comercial', 'asc')
-            ->paginate($perPage);
+            ->get();
 
-        $data = ProveedorResource::collection($proveedores)->resolve();
-
-        return $this->paginated($proveedores->setCollection(collect($data)));
+        return $this->success(ProveedorResource::collection($proveedores));
     }
 
     public function index(Request $request, Proveedor $proveedor): JsonResponse
@@ -1043,14 +1041,15 @@ class ProveedorPresupuestoController extends Controller
             $payload['empresa_receptora_nombre'] = $this->valorReceptorNoVacio(
                 $receptor->contacto_nombre,
                 $receptor->nombre_propietario,
-                $receptor->nombre_comercial,
-                $receptor->razon_social,
-                'Contacto'
+                // $receptor->nombre_comercial,
+                // $receptor->razon_social,
+                // 'Contacto'
             );
             $payload['empresa_receptora_puesto'] = $receptor->contacto_cargo;
             $payload['empresa_receptora_empresa'] = $this->valorReceptorNoVacio(
+                $receptor->nombre_comercial,
                 $receptor->razon_social,
-                'Empresa'
+                // 'Empresa'
             );
             $payload['empresa_receptora_alias'] = null;
             $payload['empresa_receptora_telefono'] = $this->primerTextoReceptorOpcional(

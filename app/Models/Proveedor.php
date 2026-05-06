@@ -300,6 +300,7 @@ class Proveedor extends BaseModel
     {
         return $query->where(function ($q) use ($value) {
             $q->where('nombre_comercial', 'like', "%$value%")
+                ->orWhere('nombre_propietario', 'like', "%$value%")
                 ->orWhere('razon_social', 'like', "%$value%")
                 ->orWhere('rfc', 'like', "%$value%")
                 ->orWhere('direccion_fiscal', 'like', "%$value%")

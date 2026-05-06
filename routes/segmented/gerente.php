@@ -7,7 +7,7 @@ use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ProveedorSolicitudPagoController;
 use App\Http\Controllers\ProveedorCotizacionController;
 use App\Http\Controllers\ProveedorMarcaController;
-use App\Http\Controllers\ProveedorPedidoController;
+// use App\Http\Controllers\ProveedorPedidoController;
 use App\Http\Controllers\ProveedorUsuarioController;
 use App\Http\Controllers\SucursalProductoController;
 use App\Http\Controllers\ProveedorSucursalController;
@@ -17,13 +17,14 @@ use App\Http\Controllers\ProveedorDashboardController;
 use App\Http\Controllers\ProveedorUnidadMedidaController;
 use App\Http\Controllers\ProveedorCuentaBancariaController;
 use App\Http\Controllers\EmpresaConstruccController;
-use App\Http\Controllers\OrdenCompraController;
-use App\Http\Controllers\OrdenCompraRegistroController;
+// use App\Http\Controllers\OrdenCompraController;
+// use App\Http\Controllers\OrdenCompraRegistroController;
+// use App\Http\Controllers\ProveedorOrdenCompraDashboardController;
 use App\Http\Controllers\OrdenCompraSolicitudPagoController;
-use App\Http\Controllers\ProveedorOrdenCompraDashboardController;
 use App\Http\Controllers\ProveedorOrdenCompraController;
 use App\Http\Controllers\ProveedorPresupuestoController;
 use App\Http\Controllers\ProveedorPresupuestoCarteraClientesController;
+use App\Http\Controllers\ProveedorPresupuestoConfigController;
 
 /**
  * GESTIÓN DE PROVEEDORES
@@ -255,6 +256,18 @@ Route::prefix('proveedores')
                 Route::delete('/{presupuesto}', [ProveedorPresupuestoController::class, 'destroy']);
             });
 
+        /**
+         * CONFIGURACIÓN DE EMISOR/RECEPTOR DE PRESUPUESTOS
+         */
+        Route::prefix('{proveedor}/config-emisor-receptor-presupuestos')
+            ->middleware(['proveedor.access'])
+            ->group(function () {
+                Route::get('/', [ProveedorPresupuestoConfigController::class, 'index']);
+                Route::post('/', [ProveedorPresupuestoConfigController::class, 'store']);
+                Route::put('/{config}', [ProveedorPresupuestoConfigController::class, 'update']);
+                Route::delete('/{config}', [ProveedorPresupuestoConfigController::class, 'destroy']);
+                Route::get('/{config}', [ProveedorPresupuestoConfigController::class, 'show']);
+            });
         // Route::get('imports/products/template', [ProductoImportController::class, 'downloadTemplate']);
 
 
