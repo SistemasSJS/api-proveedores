@@ -55,7 +55,49 @@ class ConstruccProveedorStoreRequest extends FormRequest
             'cuenta.banco_clave' => 'required_with:cuenta|string|max:10',
             'cuenta.banco_nombre' => 'required_with:cuenta|string|max:255',
             'cuenta.tipo_cuenta' => 'required_with:cuenta|string|max:255',
-            'cuenta.campo_dependiente' => 'required_with:cuenta|string|max:255',
+            'cuenta.campo_dependiente' => [
+                'sometimes',
+                function ($attribute, $value, $fail) {
+
+                    $tipoCuenta = $this->input('cuentas_bancarias.tipo_cuenta');
+
+                    // Validación para CUENTA
+                    if ($tipoCuenta === 'cuenta') {
+                        if (! ctype_digit((string) $value)) {
+                            $fail('La cuenta debe contener solo números.');
+                            return;
+                        }
+
+                        $length = strlen((string) $value);
+                        if (! in_array($length, [10, 13])) {
+                            $fail('La cuenta debe tener exactamente 10 o 13 dígitos.');
+                        }
+                    }
+
+                    // Validación para CLABE
+                    if ($tipoCuenta === 'clabe') {
+                        if (! ctype_digit((string) $value)) {
+                            $fail('La CLABE debe contener solo números.');
+                            return;
+                        }
+
+                        if (strlen((string) $value) !== 18) {
+                            $fail('La CLABE debe tener exactamente 18 dígitos.');
+                        }
+                    }
+
+                    // Validación para TARJETA
+                    if ($tipoCuenta === 'tarjeta') {
+                        if (! ctype_digit((string) $value)) {
+                            $fail('La tarjeta debe contener solo números.');
+                            return;
+                        }
+                        if (strlen((string) $value) !== 16) {
+                            $fail('La tarjeta debe tener exactamente 16 dígitos.');
+                        }
+                    }
+                },
+            ],
             'cuenta.titular_cuenta' => 'required_with:cuenta|string|max:255',
 
             'cuenta.referencia' => 'nullable|string|max:255',

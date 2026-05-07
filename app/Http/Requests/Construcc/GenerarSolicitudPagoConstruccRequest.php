@@ -50,7 +50,17 @@ class GenerarSolicitudPagoConstruccRequest extends FormRequest
             'cuenta_bancaria_alias' => 'required|string|max:255',
             'cuenta_bancaria_banco_clave' => 'required|string|max:10',
             'cuenta_bancaria_banco_nombre' => 'required|string|max:255',
-            'cuenta_bancaria_cuenta' => 'required_if:cuenta_bancaria_clabe,*|nullable|string|regex:/^\d{10,12}$/',
+            'cuenta_bancaria_cuenta' => [
+                'required_if:cuenta_bancaria_clabe,*',
+                'numeric',
+                // valida que la cuenta tenga la longitud exacta de 10 o 13 dígitos
+                function ($attribute, $value, $fail) {
+                    $length = strlen((string) $value);
+                    if (! in_array($length, [10, 13])) {
+                        $fail('La cuenta debe tener exactamente 10 o 13 dígitos.');
+                    }
+                },
+            ],
             'cuenta_bancaria_clabe' => 'nullable|string|size:18|regex:/^\d+$/',
             'cuenta_bancaria_tarjeta' => 'nullable|string|size:16|regex:/^\d+$/',
             'cuenta_bancaria_titular_cuenta' => 'required|string|max:255',

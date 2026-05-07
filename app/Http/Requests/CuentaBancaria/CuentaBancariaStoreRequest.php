@@ -32,7 +32,19 @@ class CuentaBancariaStoreRequest extends FormRequest
             'titular_cuenta' => ['required', 'string', 'min:2', 'max:100'],
             'banco_clave' => ['required', 'string', 'min:3', 'max:10'],
             'banco_nombre' => ['required', 'string', 'min:3', 'max:50'],
-            'cuenta' => ['required_if:clabe,*', 'nullable', 'string', 'regex:/^\d{10,12}$/'],
+            // cuenta de 10 o 13 digitos numericos; no 11, no 12, solo 10 o 13
+            'cuenta' => [
+                'required_if:clabe,*',
+                'numeric',
+                function ($attribute, $value, $fail) {
+
+                    $length = strlen((string) $value);
+
+                    if (! in_array($length, [10, 13])) {
+                        $fail('La cuenta debe tener exactamente 10 o 13 dígitos.');
+                    }
+                },
+            ],
             'clabe' => ['nullable', 'string', 'size:18', 'regex:/^\d+$/'],
             'tarjeta' => ['nullable', 'string', 'size:16', 'regex:/^\d+$/'],
             'referencia' => ['nullable', 'string', 'max:50'],
