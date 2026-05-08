@@ -23,8 +23,8 @@ class UpdateCuentaBancariaRequest extends FormRequest
                 'numeric',
                 function ($attribute, $value, $fail) {
                     $length = strlen((string) $value);
-                    if (! in_array($length, [10, 13])) {
-                        $fail('La cuenta debe tener exactamente 10 o 13 dígitos.');
+                    if (! in_array($length, [10, 11, 12, 13])) {
+                        $fail('La cuenta debe tener exactamente 10, 11, 12 o 13 dígitos.');
                     }
                 },
             ],
