@@ -248,6 +248,7 @@ class AuthController extends Controller
                 'telefono' => $proveedor->telefono,
                 'password' => Hash::make($request->password),
                 'role_id' => $idRoleProveedor,
+                'cambiar_pass_default' => false
             ]);
 
             $user->proveedores()->attach($proveedor->id, [
