@@ -4,6 +4,7 @@
             $terminosLista = $presupuesto['terminos_enunciados'] ?? [];
             $validacionesLista = $presupuesto['validaciones_enunciados'] ?? [];
             $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
+            $anexosLista = $presupuesto['anexos'] ?? [];
         @endphp
         <!DOCTYPE html>
         <html lang="es">
@@ -655,6 +656,125 @@
                     height: {{ $footerHeightMm + 5 }}mm;
                 }
 
+                .page-break {
+                    page-break-before: always;
+                }
+
+                .anexos-page {
+                    width: 100%;
+                }
+
+                .anexos-preview-header {
+                    margin-bottom: 5mm;
+                    padding-bottom: 3mm;
+                    border-bottom: 1px solid #d1d5db;
+                }
+
+                .anexos-preview-eyebrow {
+                    font-size: 6pt;
+                    font-weight: 700;
+                    letter-spacing: 0.8px;
+                    text-transform: uppercase;
+                    color: var(--accent);
+                    margin-bottom: 1.5mm;
+                }
+
+                .anexos-preview-title {
+                    font-size: 11pt;
+                    font-weight: 700;
+                    color: var(--text-heading);
+                    line-height: 1.15;
+                    margin-bottom: 1mm;
+                }
+
+                .anexos-preview-subtitle {
+                    font-size: 7pt;
+                    color: #64748b;
+                    line-height: 1.25;
+                }
+
+                .anexo-preview-item {
+                    width: 100%;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 2mm;
+                    margin-bottom: 4mm;
+                    padding: 4mm;
+                    page-break-inside: avoid;
+                }
+
+                .anexo-preview-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    table-layout: fixed;
+                }
+
+                .anexo-preview-media,
+                .anexo-preview-content {
+                    vertical-align: top;
+                }
+
+                .anexo-preview-media {
+                    width: 48mm;
+                    padding-right: 4mm;
+                }
+
+                .anexo-preview-image-wrap {
+                    border-radius: 1.5mm;
+                    overflow: hidden;
+                    border: 1px solid #e5e7eb;
+                    background: #f8fafc;
+                }
+
+                .anexo-preview-image {
+                    display: block;
+                    width: 100%;
+                    max-height: 52mm;
+                    object-fit: cover;
+                }
+
+                .anexo-preview-index {
+                    display: inline-block;
+                    margin-bottom: 2.2mm;
+                    padding: 1mm 2.2mm;
+                    border-radius: 999px;
+                    background: #eff6ff;
+                    color: #1d4ed8;
+                    font-size: 6.2pt;
+                    font-weight: 700;
+                }
+
+                .anexo-preview-field+.anexo-preview-field {
+                    margin-top: 2.5mm;
+                }
+
+                .anexo-preview-label {
+                    font-size: 6pt;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.6px;
+                    color: #64748b;
+                    margin-bottom: 0.9mm;
+                }
+
+                .anexo-preview-value {
+                    font-size: 7.2pt;
+                    color: #334155;
+                    line-height: 1.35;
+                    white-space: pre-wrap;
+                    word-break: break-word;
+                }
+
+                .anexo-preview-value--title {
+                    font-size: 8.2pt;
+                    font-weight: 700;
+                    color: #1f2937;
+                }
+
+                .anexo-preview-value--price {
+                    font-weight: 700;
+                    color: var(--accent);
+                }
+
                 /* ===== DEBUG VISUAL SIN MODIFICAR HTML =====
 
                 .header { border: 1px solid red; }
@@ -931,6 +1051,55 @@
                             </div>
                         @endif
                     </div>
+
+                    @if (count($anexosLista) > 0)
+                        <div class="page-break"></div>
+                        <div class="anexos-page">
+                            <div class="anexos-preview-header">
+                                <div class="anexos-preview-eyebrow">Página de anexos</div>
+                                <div class="anexos-preview-title">Anexos del presupuesto</div>
+                                <div class="anexos-preview-subtitle">Se respeta el orden configurado en el listado del presupuesto.</div>
+                            </div>
+
+                            @foreach ($anexosLista as $index => $anexo)
+                                <div class="anexo-preview-item">
+                                    <table class="anexo-preview-table">
+                                        <tr>
+                                            @if (!empty($anexo['archivo_base64']))
+                                                <td class="anexo-preview-media">
+                                                    <div class="anexo-preview-image-wrap">
+                                                        <img src="{{ $anexo['archivo_base64'] }}" alt="{{ $anexo['titulo'] ?? ('Anexo ' . (($anexo['orden'] ?? 0) ?: ($index + 1))) }}" class="anexo-preview-image" />
+                                                    </div>
+                                                </td>
+                                            @endif
+                                            <td class="anexo-preview-content">
+                                                <div class="anexo-preview-index">Anexo {{ ($anexo['orden'] ?? 0) ?: ($index + 1) }}</div>
+
+                                                <div class="anexo-preview-field">
+                                                    <div class="anexo-preview-label">Título</div>
+                                                    <div class="anexo-preview-value anexo-preview-value--title">{{ $anexo['titulo'] ?? '' }}</div>
+                                                </div>
+
+                                                @if (!empty($anexo['descripcion']))
+                                                    <div class="anexo-preview-field">
+                                                        <div class="anexo-preview-label">Descripción</div>
+                                                        <div class="anexo-preview-value">{{ $anexo['descripcion'] }}</div>
+                                                    </div>
+                                                @endif
+
+                                                @if (array_key_exists('precio', $anexo) && $anexo['precio'] !== null)
+                                                    <div class="anexo-preview-field">
+                                                        <div class="anexo-preview-label">Precio</div>
+                                                        <div class="anexo-preview-value anexo-preview-value--price">${{ number_format((float) $anexo['precio'], 2, '.', ',') }}</div>
+                                                    </div>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
             </div>
             <script type="text/php">

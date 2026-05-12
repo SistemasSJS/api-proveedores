@@ -8,6 +8,7 @@ use BaconQrCode\Renderer\GDLibRenderer;
 use BaconQrCode\Writer;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -41,6 +42,7 @@ final class PresupuestoPdf
 
         $logoProveedorBase64 = self::convertirLogoProveedorABase64($presupuesto->proveedor);
         $logosBase64 = self::convertirLogosABase64();
+        $anexosBase64 = self::convertirAnexosABase64($presupuesto);
         $gdDisponible = extension_loaded('gd');
 
         $qrCode = self::generarQrCodeParaPresupuesto($presupuesto);
@@ -89,6 +91,7 @@ final class PresupuestoPdf
                 'precio_unitario' => $c->precio_unitario,
                 'precio_total' => $c->precio_total,
             ])->toArray(),
+            'anexos' => $anexosBase64,
             'terminos_enunciados' => $enunciadosClasificados['terminos'],
             'validaciones_enunciados' => $enunciadosClasificados['validaciones'],
             'observaciones_enunciados' => $enunciadosClasificados['observaciones'],
@@ -197,6 +200,105 @@ final class PresupuestoPdf
             return 'data:' . $mime . ';base64,' . base64_encode($data);
         } catch (\Throwable $e) {
             Log::warning('Error al convertir logo proveedor', ['error' => $e->getMessage()]);
+        }
+
+        return '';
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private static function convertirAnexosABase64(Presupuesto $presupuesto): array
+    {
+        return $presupuesto->anexos
+            ->sortBy([
+                ['orden', 'asc'],
+                ['id', 'asc'],
+            ])
+            ->values()
+            ->map(function ($anexo) {
+                $base64 = self::convertirArchivoAnexoABase64($anexo->archivo_path);
+
+                return [
+                    'id' => $anexo->id,
+                    'orden' => (int) ($anexo->orden ?? 0),
+                    'titulo' => (string) $anexo->titulo,
+                    'descripcion' => $anexo->descripcion,
+                    'precio' => $anexo->precio !== null ? (float) $anexo->precio : null,
+                    'archivo_base64' => $base64,
+                ];
+            })
+            ->toArray();
+    }
+
+    private static function convertirArchivoAnexoABase64(?string $archivoPath): string
+    {
+        if (! $archivoPath) {
+            return '';
+        }
+
+        try {
+            if (! Storage::disk('public')->exists($archivoPath)) {
+                return '';
+            }
+
+            $absolutePath = Storage::disk('public')->path($archivoPath);
+            if (! file_exists($absolutePath) || ! is_readable($absolutePath)) {
+                return '';
+            }
+
+            $extension = strtolower(pathinfo($absolutePath, PATHINFO_EXTENSION));
+            $binary = @file_get_contents($absolutePath);
+            if ($binary === false || $binary === '') {
+                return '';
+            }
+
+            if (in_array($extension, ['jpg', 'jpeg'], true)) {
+                return 'data:image/jpeg;base64,' . base64_encode($binary);
+            }
+
+            if ($extension === 'png') {
+                if (! extension_loaded('gd')) {
+                    return '';
+                }
+
+                return 'data:image/png;base64,' . base64_encode($binary);
+            }
+
+            if ($extension === 'gif') {
+                if (! extension_loaded('gd')) {
+                    return '';
+                }
+
+                return 'data:image/gif;base64,' . base64_encode($binary);
+            }
+
+            if ($extension === 'webp') {
+                if (! extension_loaded('gd')) {
+                    return '';
+                }
+
+                $image = @imagecreatefromstring($binary);
+                if (! $image) {
+                    return '';
+                }
+
+                ob_start();
+                imagepng($image);
+                $pngBinary = ob_get_clean() ?: '';
+                imagedestroy($image);
+
+                if ($pngBinary === '') {
+                    return '';
+                }
+
+                return 'data:image/png;base64,' . base64_encode($pngBinary);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Error al convertir anexo a base64 para PDF', [
+                'archivo_path' => $archivoPath,
+                'error' => $e->getMessage(),
+            ]);
         }
 
         return '';

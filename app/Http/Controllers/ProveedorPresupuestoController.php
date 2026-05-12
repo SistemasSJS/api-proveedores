@@ -25,6 +25,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -473,6 +474,7 @@ class ProveedorPresupuestoController extends Controller
             $validated = $this->normalizarTerminosPayload($validated);
             $normalized = $this->normalizarEmpresaReceptora($validated, (int) $proveedor->id);
             $presupuestoGuardado = $this->guardarBorradorParaPreview($request, $proveedor, $validated);
+            $presupuestoGuardado->loadMissing('anexos');
 
             // Convertir logo del proveedor a base64
             $logoProveedorBase64 = $this->convertirLogoProveedorABase64($proveedor);
@@ -499,6 +501,7 @@ class ProveedorPresupuestoController extends Controller
                 'iva_porcentaje' => $normalized['iva_porcentaje'] ?? 16.00,
                 'receptor_lineas' => PresupuestoPdf::lineasReceptorPdfDesdePayloadReceptor($normalized),
                 'conceptos' => $normalized['conceptos'] ?? [],
+                'anexos' => $this->convertirAnexosParaPdf($presupuestoGuardado),
                 'terminos_enunciados' => Presupuesto::buildTerminosEnunciadosFromArray($formData),
                 'observaciones_enunciados' => Presupuesto::buildObservacionesEnunciadosFromArray($formData),
                 'qr_code' => null,
@@ -1716,11 +1719,111 @@ class ProveedorPresupuestoController extends Controller
                     'precio_total' => $concepto->precio_total,
                 ];
             })->values()->all(),
+            'anexos' => $this->convertirAnexosParaPdf($presupuesto),
             'terminos_enunciados' => $enunciadosClasificados['terminos'],
             'validaciones_enunciados' => $enunciadosClasificados['validaciones'],
             'observaciones_enunciados' => $enunciadosClasificados['observaciones'],
             'qr_code' => $qrCodeDataUri,
         ];
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function convertirAnexosParaPdf(Presupuesto $presupuesto): array
+    {
+        $presupuesto->loadMissing('anexos');
+
+        return $presupuesto->anexos
+            ->sortBy([
+                ['orden', 'asc'],
+                ['id', 'asc'],
+            ])
+            ->values()
+            ->map(function ($anexo) {
+                return [
+                    'id' => (int) $anexo->id,
+                    'orden' => (int) ($anexo->orden ?? 0),
+                    'titulo' => (string) $anexo->titulo,
+                    'descripcion' => $anexo->descripcion,
+                    'precio' => $anexo->precio !== null ? (float) $anexo->precio : null,
+                    'archivo_base64' => $this->convertirArchivoAnexoABase64($anexo->archivo_path),
+                ];
+            })
+            ->all();
+    }
+
+    private function convertirArchivoAnexoABase64(?string $archivoPath): string
+    {
+        if (! $archivoPath) {
+            return '';
+        }
+
+        try {
+            if (! Storage::disk('public')->exists($archivoPath)) {
+                return '';
+            }
+
+            $absolutePath = Storage::disk('public')->path($archivoPath);
+            if (! file_exists($absolutePath) || ! is_readable($absolutePath)) {
+                return '';
+            }
+
+            $extension = strtolower(pathinfo($absolutePath, PATHINFO_EXTENSION));
+            $imageData = @file_get_contents($absolutePath);
+            if ($imageData === false || empty($imageData)) {
+                return '';
+            }
+
+            if (in_array($extension, ['jpg', 'jpeg'], true)) {
+                return 'data:image/jpeg;base64,' . base64_encode($imageData);
+            }
+
+            if ($extension === 'png') {
+                if (! extension_loaded('gd')) {
+                    return '';
+                }
+
+                return 'data:image/png;base64,' . base64_encode($imageData);
+            }
+
+            if ($extension === 'gif') {
+                if (! extension_loaded('gd')) {
+                    return '';
+                }
+
+                return 'data:image/gif;base64,' . base64_encode($imageData);
+            }
+
+            if ($extension === 'webp') {
+                if (! extension_loaded('gd')) {
+                    return '';
+                }
+
+                $image = @imagecreatefromstring($imageData);
+                if (! $image) {
+                    return '';
+                }
+
+                ob_start();
+                imagepng($image);
+                $pngBinary = ob_get_clean() ?: '';
+                imagedestroy($image);
+
+                if ($pngBinary === '') {
+                    return '';
+                }
+
+                return 'data:image/png;base64,' . base64_encode($pngBinary);
+            }
+        } catch (\Throwable $e) {
+            $this->log('Error al convertir anexo a base64 para PDF', [
+                'archivo_path' => $archivoPath,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return '';
     }
 
     /**

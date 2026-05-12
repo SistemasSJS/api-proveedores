@@ -4,6 +4,7 @@
     $terminosLista = $presupuesto['terminos_enunciados'] ?? [];
     $validacionesLista = $presupuesto['validaciones_enunciados'] ?? [];
     $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
+    $anexosLista = $presupuesto['anexos'] ?? [];
 @endphp
 <!DOCTYPE html>
 <html lang="es">
@@ -429,6 +430,129 @@
 
         .after-table-space {
             height: 8mm;
+        }
+
+        .tw-page-break {
+            page-break-before: always;
+        }
+
+        .tw-anexos-page {
+            width: 100%;
+        }
+
+        .tw-anexos-header {
+            margin-bottom: 5mm;
+            padding-bottom: 3mm;
+            border-bottom: 1px solid var(--tw-slate-200);
+        }
+
+        .tw-anexos-eyebrow {
+            font-size: 6pt;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 1.2mm;
+        }
+
+        .tw-anexos-title {
+            font-size: 11pt;
+            font-weight: 700;
+            color: var(--heading);
+            line-height: 1.15;
+            margin-bottom: 0.8mm;
+        }
+
+        .tw-anexos-subtitle {
+            font-size: 7pt;
+            color: var(--tw-slate-500);
+            line-height: 1.2;
+        }
+
+        .tw-anexos-list {
+            width: 100%;
+        }
+
+        .tw-anexo-item {
+            width: 100%;
+            border: 1px solid var(--tw-slate-200);
+            border-radius: 2mm;
+            margin-bottom: 4mm;
+            padding: 4mm;
+            page-break-inside: avoid;
+        }
+
+        .tw-anexo-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .tw-anexo-media,
+        .tw-anexo-content {
+            vertical-align: top;
+        }
+
+        .tw-anexo-media {
+            width: 48mm;
+            padding-right: 4mm;
+        }
+
+        .tw-anexo-image-box {
+            border: 1px solid var(--tw-slate-200);
+            border-radius: 1.5mm;
+            overflow: hidden;
+            background: var(--tw-slate-50);
+        }
+
+        .tw-anexo-image {
+            width: 100%;
+            max-height: 52mm;
+            object-fit: cover;
+            display: block;
+        }
+
+        .tw-anexo-badge {
+            display: inline-block;
+            margin-bottom: 2mm;
+            padding: 0.8mm 2mm;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            color: #1d4ed8;
+            font-size: 6pt;
+            font-weight: 700;
+        }
+
+        .tw-anexo-field + .tw-anexo-field {
+            margin-top: 2.4mm;
+        }
+
+        .tw-anexo-label {
+            font-size: 6pt;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--tw-slate-500);
+            margin-bottom: 0.8mm;
+        }
+
+        .tw-anexo-value {
+            font-size: 7.2pt;
+            color: var(--tw-slate-700);
+            line-height: 1.3;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        .tw-anexo-value-title {
+            font-size: 8.3pt;
+            font-weight: 700;
+            color: var(--heading);
+        }
+
+        .tw-anexo-value-price {
+            font-weight: 700;
+            color: var(--accent);
         }
 
         /* Términos */
@@ -1031,6 +1155,57 @@
                     </div>
                 @endif
             </div>
+
+            @if (count($anexosLista) > 0)
+                <div class="tw-page-break"></div>
+                <div class="tw-anexos-page">
+                    <div class="tw-anexos-header">
+                        <div class="tw-anexos-eyebrow">Página de anexos</div>
+                        <div class="tw-anexos-title">Anexos del presupuesto</div>
+                        <div class="tw-anexos-subtitle">Se respeta el orden configurado en el listado del presupuesto.</div>
+                    </div>
+
+                    <div class="tw-anexos-list">
+                        @foreach ($anexosLista as $index => $anexo)
+                            <div class="tw-anexo-item">
+                                <table class="tw-anexo-table">
+                                    <tr>
+                                        @if (!empty($anexo['archivo_base64']))
+                                            <td class="tw-anexo-media">
+                                                <div class="tw-anexo-image-box">
+                                                    <img src="{{ $anexo['archivo_base64'] }}" alt="{{ $anexo['titulo'] ?? ('Anexo ' . (($anexo['orden'] ?? 0) ?: ($index + 1))) }}" class="tw-anexo-image" />
+                                                </div>
+                                            </td>
+                                        @endif
+                                        <td class="tw-anexo-content">
+                                            <div class="tw-anexo-badge">Anexo {{ ($anexo['orden'] ?? 0) ?: ($index + 1) }}</div>
+
+                                            <div class="tw-anexo-field">
+                                                <div class="tw-anexo-label">Título</div>
+                                                <div class="tw-anexo-value tw-anexo-value-title">{{ $anexo['titulo'] ?? '' }}</div>
+                                            </div>
+
+                                            @if (!empty($anexo['descripcion']))
+                                                <div class="tw-anexo-field">
+                                                    <div class="tw-anexo-label">Descripción</div>
+                                                    <div class="tw-anexo-value">{{ $anexo['descripcion'] }}</div>
+                                                </div>
+                                            @endif
+
+                                            @if (array_key_exists('precio', $anexo) && $anexo['precio'] !== null)
+                                                <div class="tw-anexo-field">
+                                                    <div class="tw-anexo-label">Precio</div>
+                                                    <div class="tw-anexo-value tw-anexo-value-price">${{ number_format((float) $anexo['precio'], 2, '.', ',') }}</div>
+                                                </div>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 

@@ -24,6 +24,7 @@ use App\Http\Controllers\OrdenCompraSolicitudPagoController;
 use App\Http\Controllers\ProveedorOrdenCompraController;
 use App\Http\Controllers\ProveedorPresupuestoController;
 use App\Http\Controllers\ProveedorPresupuestoCarteraClientesController;
+use App\Http\Controllers\ProveedorPresupuestoAnexoController;
 use App\Http\Controllers\ProveedorPresupuestoConfigController;
 
 /**
@@ -243,6 +244,14 @@ Route::prefix('proveedores')
                 Route::get('/', [ProveedorPresupuestoController::class, 'index']);
                 Route::post('/', [ProveedorPresupuestoController::class, 'store']);
                 Route::post('/generar-pdf', [ProveedorPresupuestoController::class, 'generarPdfDesdeFormulario']);
+                Route::prefix('{presupuesto}/anexos')->group(function () {
+                    Route::get('/', [ProveedorPresupuestoAnexoController::class, 'index']);
+                    Route::post('/', [ProveedorPresupuestoAnexoController::class, 'store']);
+                    Route::get('/{anexo}', [ProveedorPresupuestoAnexoController::class, 'show']);
+                    Route::post('/{anexo}', [ProveedorPresupuestoAnexoController::class, 'update']);
+                    Route::patch('/{anexo}', [ProveedorPresupuestoAnexoController::class, 'update']);
+                    Route::delete('/{anexo}', [ProveedorPresupuestoAnexoController::class, 'destroy']);
+                });
 
                 Route::get('/{presupuesto}/pdf', [ProveedorPresupuestoController::class, 'generarPdf']);
                 Route::post('/{presupuesto}/duplicar', [ProveedorPresupuestoController::class, 'duplicar']);

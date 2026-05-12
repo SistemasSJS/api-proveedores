@@ -620,6 +620,7 @@ class Presupuesto extends BaseModel
             'proveedorReceptor',
             'user',
             'conceptos',
+            'anexos',
         ];
     }
 
@@ -749,6 +750,14 @@ class Presupuesto extends BaseModel
     public function conceptos(): HasMany
     {
         return $this->hasMany(PresupuestoConcepto::class);
+    }
+
+    /**
+     * Anexos del presupuesto.
+     */
+    public function anexos(): HasMany
+    {
+        return $this->hasMany(PresupuestoAnexo::class)->orderBy('orden')->orderBy('id');
     }
 
     // public function estadoLogs(): HasMany

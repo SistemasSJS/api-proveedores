@@ -166,6 +166,7 @@ class PresupuestoResource extends JsonResource
             'empresa_receptora_telefono' => $doc['telefono'],
             'empresa_receptora_correo' => $doc['correo'],
             'conceptos' => PresupuestoConceptoResource::collection($this->whenLoaded('conceptos')),
+            'anexos' => PresupuestoAnexoResource::collection($this->whenLoaded('anexos')),
             // 'estado_logs' => PresupuestoEstadoLogResource::collection($this->whenLoaded('estadoLogs')),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
