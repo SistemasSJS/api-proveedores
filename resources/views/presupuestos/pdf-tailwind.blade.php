@@ -1162,7 +1162,6 @@
                     <div class="tw-anexos-header">
                         <div class="tw-anexos-eyebrow">Página de anexos</div>
                         <div class="tw-anexos-title">Anexos del presupuesto</div>
-                        <div class="tw-anexos-subtitle">Se respeta el orden configurado en el listado del presupuesto.</div>
                     </div>
 
                     <div class="tw-anexos-list">

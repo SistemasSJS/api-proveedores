@@ -10,7 +10,6 @@ use App\Models\PresupuestoAnexo;
 use App\Models\Proveedor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 class ProveedorPresupuestoAnexoController extends Controller
@@ -42,7 +41,6 @@ class ProveedorPresupuestoAnexoController extends Controller
 
         try {
             $validated = $request->validated();
-            $archivoPath = $request->file('archivo')->store('presupuestos/anexos', 'public');
 
             $anexo = PresupuestoAnexo::create([
                 'presupuesto_id' => (int) $presupuesto->id,
@@ -52,7 +50,7 @@ class ProveedorPresupuestoAnexoController extends Controller
                 'orden' => isset($validated['orden'])
                     ? (int) $validated['orden']
                     : ((int) $presupuesto->anexos()->max('orden') + 1),
-                'archivo_path' => $archivoPath,
+                'archivo_path' => $validated['archivo_base64'],
             ])->fresh(PresupuestoAnexo::eagerLodable());
 
             return $this->success(
@@ -99,11 +97,8 @@ class ProveedorPresupuestoAnexoController extends Controller
                 'orden' => isset($validated['orden']) ? (int) $validated['orden'] : (int) $anexo->orden,
             ];
 
-            if ($request->hasFile('archivo')) {
-                if ($anexo->archivo_path) {
-                    Storage::disk('public')->delete($anexo->archivo_path);
-                }
-                $payload['archivo_path'] = $request->file('archivo')->store('presupuestos/anexos', 'public');
+            if (array_key_exists('archivo_base64', $validated) && ! empty($validated['archivo_base64'])) {
+                $payload['archivo_path'] = $validated['archivo_base64'];
             }
 
             $anexo->update($payload);
@@ -129,10 +124,6 @@ class ProveedorPresupuestoAnexoController extends Controller
         }
 
         try {
-            if ($anexo->archivo_path) {
-                Storage::disk('public')->delete($anexo->archivo_path);
-            }
-
             $anexo->delete();
 
             return $this->success(null, 'Anexo eliminado correctamente.');

@@ -8,7 +8,6 @@ use BaconQrCode\Renderer\GDLibRenderer;
 use BaconQrCode\Writer;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -42,7 +41,7 @@ final class PresupuestoPdf
 
         $logoProveedorBase64 = self::convertirLogoProveedorABase64($presupuesto->proveedor);
         $logosBase64 = self::convertirLogosABase64();
-        $anexosBase64 = self::convertirAnexosABase64($presupuesto);
+        $anexosBase64 = self::normalizarAnexosParaPdf($presupuesto);
         $gdDisponible = extension_loaded('gd');
 
         $qrCode = self::generarQrCodeParaPresupuesto($presupuesto);
@@ -208,7 +207,7 @@ final class PresupuestoPdf
     /**
      * @return array<int, array<string, mixed>>
      */
-    private static function convertirAnexosABase64(Presupuesto $presupuesto): array
+    private static function normalizarAnexosParaPdf(Presupuesto $presupuesto): array
     {
         return $presupuesto->anexos
             ->sortBy([
@@ -237,71 +236,11 @@ final class PresupuestoPdf
             return '';
         }
 
-        try {
-            if (! Storage::disk('public')->exists($archivoPath)) {
-                return '';
-            }
+        $value = trim($archivoPath);
 
-            $absolutePath = Storage::disk('public')->path($archivoPath);
-            if (! file_exists($absolutePath) || ! is_readable($absolutePath)) {
-                return '';
-            }
-
-            $extension = strtolower(pathinfo($absolutePath, PATHINFO_EXTENSION));
-            $binary = @file_get_contents($absolutePath);
-            if ($binary === false || $binary === '') {
-                return '';
-            }
-
-            if (in_array($extension, ['jpg', 'jpeg'], true)) {
-                return 'data:image/jpeg;base64,' . base64_encode($binary);
-            }
-
-            if ($extension === 'png') {
-                if (! extension_loaded('gd')) {
-                    return '';
-                }
-
-                return 'data:image/png;base64,' . base64_encode($binary);
-            }
-
-            if ($extension === 'gif') {
-                if (! extension_loaded('gd')) {
-                    return '';
-                }
-
-                return 'data:image/gif;base64,' . base64_encode($binary);
-            }
-
-            if ($extension === 'webp') {
-                if (! extension_loaded('gd')) {
-                    return '';
-                }
-
-                $image = @imagecreatefromstring($binary);
-                if (! $image) {
-                    return '';
-                }
-
-                ob_start();
-                imagepng($image);
-                $pngBinary = ob_get_clean() ?: '';
-                imagedestroy($image);
-
-                if ($pngBinary === '') {
-                    return '';
-                }
-
-                return 'data:image/png;base64,' . base64_encode($pngBinary);
-            }
-        } catch (\Throwable $e) {
-            Log::warning('Error al convertir anexo a base64 para PDF', [
-                'archivo_path' => $archivoPath,
-                'error' => $e->getMessage(),
-            ]);
-        }
-
-        return '';
+        return str_starts_with($value, 'data:image/')
+            ? $value
+            : '';
     }
 
     /**

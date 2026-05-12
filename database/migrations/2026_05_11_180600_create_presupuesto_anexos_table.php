@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('descripcion', 100)->nullable();
             $table->decimal('precio', 15, 2)->nullable();
             $table->unsignedInteger('orden')->default(1);
-            $table->string('archivo_path');
+            $table->longText('archivo_path');
             $table->timestamps();
 
             $table->index(['presupuesto_id', 'orden'], 'presupuesto_anexos_presupuesto_orden_idx');

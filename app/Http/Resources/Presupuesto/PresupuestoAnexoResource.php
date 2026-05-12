@@ -4,7 +4,6 @@ namespace App\Http\Resources\Presupuesto;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 class PresupuestoAnexoResource extends JsonResource
 {
@@ -21,9 +20,7 @@ class PresupuestoAnexoResource extends JsonResource
             'precio' => $this->precio !== null ? (float) $this->precio : null,
             'orden' => (int) $this->orden,
             'archivo_path' => $this->archivo_path,
-            'archivo_url' => $this->archivo_path
-                ? Storage::disk('public')->url($this->archivo_path)
-                : null,
+            'archivo_url' => $this->resource->archivoDataUri(),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
