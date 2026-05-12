@@ -653,10 +653,10 @@ class ConstruccPagosSPPController extends Controller
                     trim($validated['info_comprobante']['fecha']) . ' ' .
                         trim($validated['info_comprobante']['hora'])
                 )->format('Y-m-d H:i:s'),
-                'referencia_pago' => $validated['info_comprobante']['referencia'] ?? null,
-                'banco_destino' => $infoComprobante['bancoDestino'] ?? null,
-                'titular_cuenta_destino' => $infoComprobante['nombreBeneficiario'] ?? null,
-                'clave_rastreo' => $infoComprobante['claveRastreo'] ?? null,
+                'referencia_pago' => $validated['info_comprobante']['referencia'] ?? '',
+                'banco_destino' => $infoComprobante['bancoDestino'] ?? '',
+                'titular_cuenta_destino' => $infoComprobante['nombreBeneficiario'] ?? '',
+                'clave_rastreo' => $infoComprobante['claveRastreo'] ?? '',
                 'fecha_registro' => now(),
             ]);
 
