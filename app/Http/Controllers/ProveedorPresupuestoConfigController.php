@@ -32,8 +32,10 @@ class ProveedorPresupuestoConfigController extends Controller
 
         $filters = $request->only(ConfigEmisorReceptorPresupuesto::getFilters());
         $filters['proveedor_id'] = $proveedor->id;
-        $sortBy = $request->input('sort_by', 'id');
+
+        $sortBy = $request->input('sort_by', 'created_at');
         $order = $request->input('order', 'desc');
+        $perPage = $request->input('per_page', 1000);
 
         $query = ConfigEmisorReceptorPresupuesto::query()
             ->with(ConfigEmisorReceptorPresupuesto::eagerLodable())
@@ -41,10 +43,10 @@ class ProveedorPresupuestoConfigController extends Controller
             ->whereIn('estado', [ConfigEmisorReceptorPresupuesto::ESTADO_ACTIVO, ConfigEmisorReceptorPresupuesto::ESTADO_DEFAULT])
             ->orderBy($sortBy, $order);
 
-        return $this->success(
-            PresupuestoConfigEmisorReceptorResource::collection($query->get()),
-            'Listado de configuraciones de emisor/receptor de presupuestos activas o default.'
-        );
+        $originalPaginator = $query->paginate($perPage);
+        $data = PresupuestoConfigEmisorReceptorResource::collection($originalPaginator)->resolve();
+
+        return $this->paginated($originalPaginator->setCollection(collect($data)));
     }
 
     /**

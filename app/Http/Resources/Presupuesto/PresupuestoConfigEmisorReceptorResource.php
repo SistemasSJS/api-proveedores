@@ -16,10 +16,11 @@ class PresupuestoConfigEmisorReceptorResource extends JsonResource
             'id' => $this->id,
             'proveedor_id' => $this->proveedor_id,
             'tipo' => $this->tipo == 1 ? 'emisor' : 'receptor',
-            'nombre_completo' => $this->nombre . ' ' . $this->apellido,
+            'nombre' => $this->nombre,
+            'apellido' => $this->apellido,
             'puesto' => $this->puesto,
             'file_firma' => $this->file_firma ? url('storage/' . $this->file_firma) : null,
-            'estado' => $this->estado == 1 ? 'Activo' : ($this->estado == 2 ? 'Inactivo' : 'Default'),
+            'estado' => $this->estado == 1 ? 'activo' : ($this->estado == 2 ? 'inactivo' : 'default'),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];

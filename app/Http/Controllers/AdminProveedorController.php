@@ -76,13 +76,9 @@ class AdminProveedorController extends Controller
     /**
      * Marca un proveedor como baja (eliminación lógica).
      */
-    public function destroy($id)
+    public function destroy(Proveedor $proveedor)
     {
-        $proveedor = Proveedor::find($id);
-        if (! $proveedor) {
-            throw new ResourceNotFoundException('Proveedor no encontrado.');
-        }
-        $proveedor->update(['estatus' => 'baja']);
+        $proveedor->delete();
 
         return $this->success(null, 204);
     }

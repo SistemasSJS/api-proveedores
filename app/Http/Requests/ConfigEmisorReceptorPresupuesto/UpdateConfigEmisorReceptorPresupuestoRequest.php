@@ -23,8 +23,8 @@ class UpdateConfigEmisorReceptorPresupuestoRequest extends FormRequest
             'nombre' => 'sometimes|string|max:60',
             'apellido' => 'sometimes|string|max:60',
             'puesto' => 'sometimes|string|max:40',
-            'file_firma' => 'nullable|file',
-            'estado' => 'required|string|in:activo,inactivo,default', // 1: activo, 2: inactivo, 3: default
+            'file_firma' => 'sometimes|file',
+            'estado' => 'sometimes|string|in:activo,inactivo,default', // 1: activo, 2: inactivo, 3: default
         ];
     }
 
@@ -32,8 +32,14 @@ class UpdateConfigEmisorReceptorPresupuestoRequest extends FormRequest
     public function validated($key = null, $default = null): array
     {
         $data = parent::validated();
-        $data['tipo'] = $data['tipo'] === ConfigEmisorReceptorPresupuesto::TIPO_EMISOR ? ConfigEmisorReceptorPresupuesto::TIPO_EMISOR : ConfigEmisorReceptorPresupuesto::TIPO_RECEPTOR;
-        $data['estado'] = $data['estado'] === ConfigEmisorReceptorPresupuesto::ESTADO_ACTIVO ? ConfigEmisorReceptorPresupuesto::ESTADO_ACTIVO : ($data['estado'] === ConfigEmisorReceptorPresupuesto::ESTADO_INACTIVO ? ConfigEmisorReceptorPresupuesto::ESTADO_INACTIVO : ConfigEmisorReceptorPresupuesto::ESTADO_DEFAULT);
+        if(isset($data['tipo'])) {
+            $data['tipo'] = $data['tipo'] === ConfigEmisorReceptorPresupuesto::TIPO_EMISOR ? ConfigEmisorReceptorPresupuesto::TIPO_EMISOR : ConfigEmisorReceptorPresupuesto::TIPO_RECEPTOR;
+        }
+        
+        if(isset($data['estado'])) {
+            $data['estado'] = $data['estado'] === ConfigEmisorReceptorPresupuesto::ESTADO_ACTIVO ? ConfigEmisorReceptorPresupuesto::ESTADO_ACTIVO : ($data['estado'] === ConfigEmisorReceptorPresupuesto::ESTADO_INACTIVO ? ConfigEmisorReceptorPresupuesto::ESTADO_INACTIVO : ConfigEmisorReceptorPresupuesto::ESTADO_DEFAULT);
+        }
+        
         return $data;
     }
 
