@@ -41,6 +41,7 @@ class ProveedorPresupuestoAnexoController extends Controller
 
         try {
             $validated = $request->validated();
+            $archivoMeta = $this->extractArchivoMetadata($validated['archivo_base64']);
 
             $anexo = PresupuestoAnexo::create([
                 'presupuesto_id' => (int) $presupuesto->id,
@@ -51,6 +52,9 @@ class ProveedorPresupuestoAnexoController extends Controller
                     ? (int) $validated['orden']
                     : ((int) $presupuesto->anexos()->max('orden') + 1),
                 'archivo_path' => $validated['archivo_base64'],
+                'archivo_width' => $archivoMeta['width'],
+                'archivo_height' => $archivoMeta['height'],
+                'archivo_aspect_ratio' => $archivoMeta['aspect_ratio'],
             ])->fresh(PresupuestoAnexo::eagerLodable());
 
             return $this->success(
@@ -98,7 +102,11 @@ class ProveedorPresupuestoAnexoController extends Controller
             ];
 
             if (array_key_exists('archivo_base64', $validated) && ! empty($validated['archivo_base64'])) {
+                $archivoMeta = $this->extractArchivoMetadata($validated['archivo_base64']);
                 $payload['archivo_path'] = $validated['archivo_base64'];
+                $payload['archivo_width'] = $archivoMeta['width'];
+                $payload['archivo_height'] = $archivoMeta['height'];
+                $payload['archivo_aspect_ratio'] = $archivoMeta['aspect_ratio'];
             }
 
             $anexo->update($payload);
@@ -153,5 +161,47 @@ class ProveedorPresupuestoAnexoController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * @return array{width:int|null,height:int|null,aspect_ratio:float|null}
+     */
+    private function extractArchivoMetadata(string $dataUri): array
+    {
+        $matches = [];
+        if (! preg_match('/^data:image\/(?:jpeg|jpg|png|webp);base64,(.+)$/', $dataUri, $matches)) {
+            return [
+                'width' => null,
+                'height' => null,
+                'aspect_ratio' => null,
+            ];
+        }
+
+        $binary = base64_decode($matches[1], true);
+        if ($binary === false) {
+            return [
+                'width' => null,
+                'height' => null,
+                'aspect_ratio' => null,
+            ];
+        }
+
+        $imageInfo = @getimagesizefromstring($binary);
+        if (! is_array($imageInfo) || empty($imageInfo[0]) || empty($imageInfo[1])) {
+            return [
+                'width' => null,
+                'height' => null,
+                'aspect_ratio' => null,
+            ];
+        }
+
+        $width = (int) $imageInfo[0];
+        $height = (int) $imageInfo[1];
+
+        return [
+            'width' => $width,
+            'height' => $height,
+            'aspect_ratio' => $height > 0 ? round($width / $height, 6) : null,
+        ];
     }
 }

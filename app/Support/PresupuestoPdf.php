@@ -225,6 +225,9 @@ final class PresupuestoPdf
                     'descripcion' => $anexo->descripcion,
                     'precio' => $anexo->precio !== null ? (float) $anexo->precio : null,
                     'archivo_base64' => $base64,
+                    'archivo_width' => $anexo->archivo_width !== null ? (int) $anexo->archivo_width : null,
+                    'archivo_height' => $anexo->archivo_height !== null ? (int) $anexo->archivo_height : null,
+                    'archivo_aspect_ratio' => $anexo->archivo_aspect_ratio !== null ? (float) $anexo->archivo_aspect_ratio : null,
                 ];
             })
             ->toArray();

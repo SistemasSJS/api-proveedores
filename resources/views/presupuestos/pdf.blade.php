@@ -700,6 +700,7 @@
                     margin-bottom: 4mm;
                     padding: 4mm;
                     page-break-inside: avoid;
+                    height: 58mm;
                 }
 
                 .anexo-preview-table {
@@ -719,17 +720,21 @@
                 }
 
                 .anexo-preview-image-wrap {
+                    height: 34mm;
                     border-radius: 1.5mm;
                     overflow: hidden;
                     border: 1px solid #e5e7eb;
                     background: #f8fafc;
+                    text-align: center;
                 }
 
                 .anexo-preview-image {
                     display: block;
-                    width: 100%;
-                    max-height: 52mm;
-                    object-fit: cover;
+                    width: auto;
+                    height: auto;
+                    max-width: 100%;
+                    max-height: 100%;
+                    margin: 0 auto;
                 }
 
                 .anexo-preview-index {
@@ -1053,52 +1058,57 @@
                     </div>
 
                     @if (count($anexosLista) > 0)
-                        <div class="page-break"></div>
-                        <div class="anexos-page">
-                            <div class="anexos-preview-header">
-                                <div class="anexos-preview-eyebrow">Página de anexos</div>
-                                <div class="anexos-preview-title">Anexos del presupuesto</div>
-                                <div class="anexos-preview-subtitle">Se respeta el orden configurado en el listado del presupuesto.</div>
-                            </div>
-
-                            @foreach ($anexosLista as $index => $anexo)
-                                <div class="anexo-preview-item">
-                                    <table class="anexo-preview-table">
-                                        <tr>
-                                            @if (!empty($anexo['archivo_base64']))
-                                                <td class="anexo-preview-media">
-                                                    <div class="anexo-preview-image-wrap">
-                                                        <img src="{{ $anexo['archivo_base64'] }}" alt="{{ $anexo['titulo'] ?? ('Anexo ' . (($anexo['orden'] ?? 0) ?: ($index + 1))) }}" class="anexo-preview-image" />
-                                                    </div>
-                                                </td>
-                                            @endif
-                                            <td class="anexo-preview-content">
-                                                <div class="anexo-preview-index">Anexo {{ ($anexo['orden'] ?? 0) ?: ($index + 1) }}</div>
-
-                                                <div class="anexo-preview-field">
-                                                    <div class="anexo-preview-label">Título</div>
-                                                    <div class="anexo-preview-value anexo-preview-value--title">{{ $anexo['titulo'] ?? '' }}</div>
-                                                </div>
-
-                                                @if (!empty($anexo['descripcion']))
-                                                    <div class="anexo-preview-field">
-                                                        <div class="anexo-preview-label">Descripción</div>
-                                                        <div class="anexo-preview-value">{{ $anexo['descripcion'] }}</div>
-                                                    </div>
-                                                @endif
-
-                                                @if (array_key_exists('precio', $anexo) && $anexo['precio'] !== null)
-                                                    <div class="anexo-preview-field">
-                                                        <div class="anexo-preview-label">Precio</div>
-                                                        <div class="anexo-preview-value anexo-preview-value--price">${{ number_format((float) $anexo['precio'], 2, '.', ',') }}</div>
-                                                    </div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                    </table>
+                        @foreach (collect($anexosLista)->chunk(3) as $pageIndex => $anexosPagina)
+                            <div class="page-break"></div>
+                            <div class="anexos-page">
+                                <div class="anexos-preview-header">
+                                    <div class="anexos-preview-eyebrow">Página de anexos</div>
+                                    <div class="anexos-preview-title">Anexos del presupuesto</div>
+                                    <div class="anexos-preview-subtitle">Se muestran hasta 3 anexos por página respetando el orden configurado.</div>
                                 </div>
-                            @endforeach
-                        </div>
+
+                                @foreach ($anexosPagina as $index => $anexo)
+                                    @php
+                                        $numeroAnexo = (($pageIndex * 3) + $index + 1);
+                                    @endphp
+                                    <div class="anexo-preview-item">
+                                        <table class="anexo-preview-table">
+                                            <tr>
+                                                @if (!empty($anexo['archivo_base64']))
+                                                    <td class="anexo-preview-media">
+                                                        <div class="anexo-preview-image-wrap">
+                                                            <img src="{{ $anexo['archivo_base64'] }}" alt="{{ $anexo['titulo'] ?? ('Anexo ' . (($anexo['orden'] ?? 0) ?: $numeroAnexo)) }}" class="anexo-preview-image" />
+                                                        </div>
+                                                    </td>
+                                                @endif
+                                                <td class="anexo-preview-content">
+                                                    <div class="anexo-preview-index">Anexo {{ ($anexo['orden'] ?? 0) ?: $numeroAnexo }}</div>
+
+                                                    <div class="anexo-preview-field">
+                                                        <div class="anexo-preview-label">Título</div>
+                                                        <div class="anexo-preview-value anexo-preview-value--title">{{ $anexo['titulo'] ?? '' }}</div>
+                                                    </div>
+
+                                                    @if (!empty($anexo['descripcion']))
+                                                        <div class="anexo-preview-field">
+                                                            <div class="anexo-preview-label">Descripción</div>
+                                                            <div class="anexo-preview-value">{{ $anexo['descripcion'] }}</div>
+                                                        </div>
+                                                    @endif
+
+                                                    @if (array_key_exists('precio', $anexo) && $anexo['precio'] !== null)
+                                                        <div class="anexo-preview-field">
+                                                            <div class="anexo-preview-label">Precio</div>
+                                                            <div class="anexo-preview-value anexo-preview-value--price">${{ number_format((float) $anexo['precio'], 2, '.', ',') }}</div>
+                                                        </div>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endforeach
                     @endif
                 </div>
             </div>

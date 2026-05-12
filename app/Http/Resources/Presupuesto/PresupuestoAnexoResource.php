@@ -21,6 +21,9 @@ class PresupuestoAnexoResource extends JsonResource
             'orden' => (int) $this->orden,
             'archivo_path' => $this->archivo_path,
             'archivo_url' => $this->resource->archivoDataUri(),
+            'archivo_width' => $this->archivo_width !== null ? (int) $this->archivo_width : null,
+            'archivo_height' => $this->archivo_height !== null ? (int) $this->archivo_height : null,
+            'archivo_aspect_ratio' => $this->archivo_aspect_ratio !== null ? (float) $this->archivo_aspect_ratio : null,
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];

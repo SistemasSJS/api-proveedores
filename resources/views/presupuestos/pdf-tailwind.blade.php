@@ -480,6 +480,7 @@
             margin-bottom: 4mm;
             padding: 4mm;
             page-break-inside: avoid;
+            height: 58mm;
         }
 
         .tw-anexo-table {
@@ -499,17 +500,21 @@
         }
 
         .tw-anexo-image-box {
+            height: 34mm;
             border: 1px solid var(--tw-slate-200);
             border-radius: 1.5mm;
             overflow: hidden;
             background: var(--tw-slate-50);
+            text-align: center;
         }
 
         .tw-anexo-image {
-            width: 100%;
-            max-height: 52mm;
-            object-fit: cover;
             display: block;
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 100%;
+            margin: 0 auto;
         }
 
         .tw-anexo-badge {
@@ -1157,53 +1162,59 @@
             </div>
 
             @if (count($anexosLista) > 0)
-                <div class="tw-page-break"></div>
-                <div class="tw-anexos-page">
-                    <div class="tw-anexos-header">
-                        <div class="tw-anexos-eyebrow">Página de anexos</div>
-                        <div class="tw-anexos-title">Anexos del presupuesto</div>
-                    </div>
+                @foreach (collect($anexosLista)->chunk(3) as $pageIndex => $anexosPagina)
+                    <div class="tw-page-break"></div>
+                    <div class="tw-anexos-page">
+                        <div class="tw-anexos-header">
+                            <div class="tw-anexos-eyebrow">Página de anexos</div>
+                            <div class="tw-anexos-title">Anexos del presupuesto</div>
+                            <div class="tw-anexos-subtitle">Se muestran hasta 3 anexos por página respetando el orden configurado.</div>
+                        </div>
 
-                    <div class="tw-anexos-list">
-                        @foreach ($anexosLista as $index => $anexo)
-                            <div class="tw-anexo-item">
-                                <table class="tw-anexo-table">
-                                    <tr>
-                                        @if (!empty($anexo['archivo_base64']))
-                                            <td class="tw-anexo-media">
-                                                <div class="tw-anexo-image-box">
-                                                    <img src="{{ $anexo['archivo_base64'] }}" alt="{{ $anexo['titulo'] ?? ('Anexo ' . (($anexo['orden'] ?? 0) ?: ($index + 1))) }}" class="tw-anexo-image" />
+                        <div class="tw-anexos-list">
+                            @foreach ($anexosPagina as $index => $anexo)
+                                @php
+                                    $numeroAnexo = (($pageIndex * 3) + $index + 1);
+                                @endphp
+                                <div class="tw-anexo-item">
+                                    <table class="tw-anexo-table">
+                                        <tr>
+                                            @if (!empty($anexo['archivo_base64']))
+                                                <td class="tw-anexo-media">
+                                                    <div class="tw-anexo-image-box">
+                                                        <img src="{{ $anexo['archivo_base64'] }}" alt="{{ $anexo['titulo'] ?? ('Anexo ' . (($anexo['orden'] ?? 0) ?: $numeroAnexo)) }}" class="tw-anexo-image" />
+                                                    </div>
+                                                </td>
+                                            @endif
+                                            <td class="tw-anexo-content">
+                                                <div class="tw-anexo-badge">Anexo {{ ($anexo['orden'] ?? 0) ?: $numeroAnexo }}</div>
+
+                                                <div class="tw-anexo-field">
+                                                    <div class="tw-anexo-label">Título</div>
+                                                    <div class="tw-anexo-value tw-anexo-value-title">{{ $anexo['titulo'] ?? '' }}</div>
                                                 </div>
+
+                                                @if (!empty($anexo['descripcion']))
+                                                    <div class="tw-anexo-field">
+                                                        <div class="tw-anexo-label">Descripción</div>
+                                                        <div class="tw-anexo-value">{{ $anexo['descripcion'] }}</div>
+                                                    </div>
+                                                @endif
+
+                                                @if (array_key_exists('precio', $anexo) && $anexo['precio'] !== null)
+                                                    <div class="tw-anexo-field">
+                                                        <div class="tw-anexo-label">Precio</div>
+                                                        <div class="tw-anexo-value tw-anexo-value-price">${{ number_format((float) $anexo['precio'], 2, '.', ',') }}</div>
+                                                    </div>
+                                                @endif
                                             </td>
-                                        @endif
-                                        <td class="tw-anexo-content">
-                                            <div class="tw-anexo-badge">Anexo {{ ($anexo['orden'] ?? 0) ?: ($index + 1) }}</div>
-
-                                            <div class="tw-anexo-field">
-                                                <div class="tw-anexo-label">Título</div>
-                                                <div class="tw-anexo-value tw-anexo-value-title">{{ $anexo['titulo'] ?? '' }}</div>
-                                            </div>
-
-                                            @if (!empty($anexo['descripcion']))
-                                                <div class="tw-anexo-field">
-                                                    <div class="tw-anexo-label">Descripción</div>
-                                                    <div class="tw-anexo-value">{{ $anexo['descripcion'] }}</div>
-                                                </div>
-                                            @endif
-
-                                            @if (array_key_exists('precio', $anexo) && $anexo['precio'] !== null)
-                                                <div class="tw-anexo-field">
-                                                    <div class="tw-anexo-label">Precio</div>
-                                                    <div class="tw-anexo-value tw-anexo-value-price">${{ number_format((float) $anexo['precio'], 2, '.', ',') }}</div>
-                                                </div>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                </table>
-                            </div>
-                        @endforeach
+                                        </tr>
+                                    </table>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
-                </div>
+                @endforeach
             @endif
         </div>
     </div>
