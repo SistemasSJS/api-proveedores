@@ -60,16 +60,4 @@ class PresupuestoAnexo extends BaseModel
     {
         return $query->where('titulo', 'like', "%{$value}%");
     }
-
-    public function archivoDataUri(): ?string
-    {
-        $value = trim((string) ($this->archivo_path ?? ''));
-        if ($value === '') {
-            return null;
-        }
-
-        return str_starts_with($value, 'data:image/')
-            ? $value
-            : null;
-    }
 }

@@ -489,16 +489,38 @@
             font-weight: inherit;
         }
 
-        .tw-totals-legal-text {
-            margin-top: 3mm;
-            padding: 2.5mm 3mm;
-            border: 1px solid var(--tw-slate-200);
-            border-radius: 1.5mm;
-            background: var(--tw-sky-50);
-            font-size: 7.1pt;
-            line-height: 1.35;
-            color: var(--tw-slate-700);
-            text-align: left;
+        .importe-con-letra {
+            margin-top: 2mm;
+            width: 100%;
+            border: 1px solid var(--tw-slate-100);
+            border-radius: 1mm;
+            background: var(--tw-white);
+            page-break-inside: avoid;
+            overflow: hidden;
+        }
+
+        .importe-con-letra-label {
+            background: #fafbfc;
+            text-align: center;
+            font-size: 6pt;
+            font-weight: 400;
+            letter-spacing: 0.02em;
+            text-transform: none;
+            color: var(--tw-slate-400);
+            padding: 1mm 2mm;
+            border-bottom: 1px solid var(--tw-slate-100);
+        }
+
+        .importe-con-letra-valor {
+            text-align: center;
+            font-size: 6.5pt;
+            font-weight: 400;
+            color: var(--tw-slate-500);
+            padding: 1.8mm 2.5mm;
+            line-height: 1.3;
+            background: #fcfdfe;
+            white-space: normal;
+            word-break: break-word;
         }
 
         .after-table-space {
@@ -1025,8 +1047,11 @@
                             <td class="tw-totals-money-amount-col">{{ number_format($total, 2, '.', ',') }}</td>
                         </tr>
                     </table>
-                    <div class="tw-totals-legal-text">
-                        {{ \App\Support\PresupuestoPdf::formatMontoLegal($total, $monedaCodigo) }}
+                    <div class="importe-con-letra">
+                        <div class="importe-con-letra-label">Importe con letra:</div>
+                        <div class="importe-con-letra-valor">
+                            {{ \App\Support\PresupuestoPdf::formatMontoLegal($total, $monedaCodigo) }}
+                        </div>
                     </div>
                 </div>
                 <div class="after-table-space"></div>

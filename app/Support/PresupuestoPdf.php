@@ -8,6 +8,7 @@ use BaconQrCode\Renderer\GDLibRenderer;
 use BaconQrCode\Writer;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -240,23 +241,40 @@ final class PresupuestoPdf
             return '';
         }
 
-        $value = trim($archivoPath);
+        $path = trim($archivoPath);
+        if (str_starts_with($path, 'data:image/')) {
+            return $path;
+        }
 
-        return str_starts_with($value, 'data:image/')
-            ? $value
-            : '';
+        if (! Storage::disk('public')->exists($path)) {
+            return '';
+        }
+
+        $binary = Storage::disk('public')->get($path);
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        $mime = match ($extension) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'webp' => 'image/webp',
+            'gif' => 'image/gif',
+            default => 'image/png',
+        };
+
+        return 'data:' . $mime . ';base64,' . base64_encode($binary);
+    }
+
+    /**
+     * Anexos listos para la plantilla Blade del PDF.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public static function anexosParaPlantillaPdf(Presupuesto $presupuesto): array
+    {
+        return self::normalizarAnexosParaPdf($presupuesto);
     }
 
     public static function formatMontoLegal(float|int|string|null $value, ?string $currency = 'MXN'): string
     {
-        $amount = round((float) ($value ?? 0), 2);
-        $codigo = self::normalizarCodigoMoneda($currency);
-
-        return sprintf(
-            'La cantidad de %s (%s)',
-            self::formatMontoNumeroLegal($amount, $codigo),
-            self::formatMontoLetraLegal($amount, $codigo)
-        );
+        return self::formatMontoLetraLegal($value, $currency);
     }
 
     public static function formatMontoNumeroLegal(float|int|string|null $value, ?string $currency = 'MXN'): string
@@ -288,7 +306,9 @@ final class PresupuestoPdf
         [$singular, $plural, $sufijo] = self::currencyNames($codigo);
         $monedaTexto = $entero === 1 ? $singular : $plural;
 
-        return self::uppercaseFirst($texto . ' ' . $monedaTexto . ' ' . $decimales . '/100 ' . $sufijo);
+        $linea = trim($texto . ' ' . $monedaTexto . ' ' . $decimales . '/100 ' . $sufijo);
+
+        return '(' . self::mayusculasEspanol($linea) . ')';
     }
 
     private static function normalizarCodigoMoneda(?string $currency): string
@@ -306,10 +326,23 @@ final class PresupuestoPdf
     private static function currencyNames(string $codigo): array
     {
         return match ($codigo) {
-            'USD' => ['dólar estadounidense', 'dólares estadounidenses', 'USD'],
-            'EUR' => ['euro', 'euros', 'EUR'],
-            default => ['peso mexicano', 'pesos mexicanos', 'M.N.'],
+            'USD' => ['DÓLAR ESTADOUNIDENSE', 'DÓLARES ESTADOUNIDENSES', 'USD'],
+            'EUR' => ['EURO', 'EUROS', 'EUR'],
+            default => ['PESO', 'PESOS', 'M.N.'],
         };
+    }
+
+    private static function mayusculasEspanol(string $value): string
+    {
+        if ($value === '') {
+            return '';
+        }
+
+        if (function_exists('mb_strtoupper')) {
+            return mb_strtoupper($value, 'UTF-8');
+        }
+
+        return strtoupper($value);
     }
 
     private static function numeroALetras(int $numero, bool $apocope = true): string
@@ -438,19 +471,6 @@ final class PresupuestoPdf
         $resto = $numero % 100;
 
         return trim($centenas[$c] . ' ' . ($resto > 0 ? self::centenasALetras($resto, $apocope) : ''));
-    }
-
-    private static function uppercaseFirst(string $value): string
-    {
-        if ($value === '') {
-            return '';
-        }
-
-        if (function_exists('mb_substr') && function_exists('mb_strtoupper')) {
-            return mb_strtoupper(mb_substr($value, 0, 1), 'UTF-8') . mb_substr($value, 1, null, 'UTF-8');
-        }
-
-        return ucfirst($value);
     }
 
     /**

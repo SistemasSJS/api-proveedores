@@ -10,6 +10,8 @@ use App\Models\PresupuestoAnexo;
 use App\Models\Proveedor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Throwable;
 
 class ProveedorPresupuestoAnexoController extends Controller
@@ -41,7 +43,6 @@ class ProveedorPresupuestoAnexoController extends Controller
 
         try {
             $validated = $request->validated();
-            $archivoMeta = $this->extractArchivoMetadata($validated['archivo_base64']);
 
             $anexo = PresupuestoAnexo::create([
                 'presupuesto_id' => (int) $presupuesto->id,
@@ -51,10 +52,11 @@ class ProveedorPresupuestoAnexoController extends Controller
                 'orden' => isset($validated['orden'])
                     ? (int) $validated['orden']
                     : ((int) $presupuesto->anexos()->max('orden') + 1),
-                'archivo_path' => $validated['archivo_base64'],
-                'archivo_width' => $archivoMeta['width'],
-                'archivo_height' => $archivoMeta['height'],
-                'archivo_aspect_ratio' => $archivoMeta['aspect_ratio'],
+                'archivo_path' => $this->guardarImagenBase64(
+                    $proveedor,
+                    $presupuesto,
+                    $validated['archivo_base64']
+                ),
             ])->fresh(PresupuestoAnexo::eagerLodable());
 
             return $this->success(
@@ -102,11 +104,14 @@ class ProveedorPresupuestoAnexoController extends Controller
             ];
 
             if (array_key_exists('archivo_base64', $validated) && ! empty($validated['archivo_base64'])) {
-                $archivoMeta = $this->extractArchivoMetadata($validated['archivo_base64']);
-                $payload['archivo_path'] = $validated['archivo_base64'];
-                $payload['archivo_width'] = $archivoMeta['width'];
-                $payload['archivo_height'] = $archivoMeta['height'];
-                $payload['archivo_aspect_ratio'] = $archivoMeta['aspect_ratio'];
+                if ($anexo->archivo_path && Storage::disk('public')->exists($anexo->archivo_path)) {
+                    Storage::disk('public')->delete($anexo->archivo_path);
+                }
+                $payload['archivo_path'] = $this->guardarImagenBase64(
+                    $proveedor,
+                    $presupuesto,
+                    $validated['archivo_base64']
+                );
             }
 
             $anexo->update($payload);
@@ -132,6 +137,9 @@ class ProveedorPresupuestoAnexoController extends Controller
         }
 
         try {
+            if ($anexo->archivo_path && Storage::disk('public')->exists($anexo->archivo_path)) {
+                Storage::disk('public')->delete($anexo->archivo_path);
+            }
             $anexo->delete();
 
             return $this->success(null, 'Anexo eliminado correctamente.');
@@ -163,45 +171,28 @@ class ProveedorPresupuestoAnexoController extends Controller
         return null;
     }
 
-    /**
-     * @return array{width:int|null,height:int|null,aspect_ratio:float|null}
-     */
-    private function extractArchivoMetadata(string $dataUri): array
+    private function guardarImagenBase64(Proveedor $proveedor, Presupuesto $presupuesto, string $dataUri): string
     {
-        $matches = [];
-        if (! preg_match('/^data:image\/(?:jpeg|jpg|png|webp);base64,(.+)$/', $dataUri, $matches)) {
-            return [
-                'width' => null,
-                'height' => null,
-                'aspect_ratio' => null,
-            ];
+        if (! preg_match('/^data:image\/(jpeg|jpg|png|webp);base64,(.+)$/i', $dataUri, $matches)) {
+            throw new \InvalidArgumentException('La imagen del anexo no es válida.');
         }
 
-        $binary = base64_decode($matches[1], true);
+        $binary = base64_decode($matches[2], true);
         if ($binary === false) {
-            return [
-                'width' => null,
-                'height' => null,
-                'aspect_ratio' => null,
-            ];
+            throw new \InvalidArgumentException('La imagen del anexo no es válida.');
         }
 
-        $imageInfo = @getimagesizefromstring($binary);
-        if (! is_array($imageInfo) || empty($imageInfo[0]) || empty($imageInfo[1])) {
-            return [
-                'width' => null,
-                'height' => null,
-                'aspect_ratio' => null,
-            ];
-        }
+        $extension = strtolower($matches[1]) === 'jpeg' ? 'jpg' : strtolower($matches[1]);
+        $path = sprintf(
+            'proveedores/%d/presupuestos/%d/anexos/%s.%s',
+            (int) $proveedor->id,
+            (int) $presupuesto->id,
+            Str::uuid()->toString(),
+            $extension
+        );
 
-        $width = (int) $imageInfo[0];
-        $height = (int) $imageInfo[1];
+        Storage::disk('public')->put($path, $binary);
 
-        return [
-            'width' => $width,
-            'height' => $height,
-            'aspect_ratio' => $height > 0 ? round($width / $height, 6) : null,
-        ];
+        return $path;
     }
 }

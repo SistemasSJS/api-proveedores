@@ -450,16 +450,38 @@
                     page-break-inside: avoid;
                 }
 
-                .totales-legal-text {
-                    margin-top: 3mm;
-                    padding: 2.5mm 3mm;
-                    border: 1px solid #dbe4f1;
-                    border-radius: 1.5mm;
-                    background: #f8fbff;
-                    font-size: 7.1pt;
-                    line-height: 1.35;
-                    color: #334155;
-                    text-align: left;
+                .importe-con-letra {
+                    margin-top: 2mm;
+                    width: 100%;
+                    border: 1px solid #e8eef4;
+                    border-radius: 1mm;
+                    background: #ffffff;
+                    page-break-inside: avoid;
+                    overflow: hidden;
+                }
+
+                .importe-con-letra-label {
+                    background: #fafbfc;
+                    text-align: center;
+                    font-size: 6pt;
+                    font-weight: 400;
+                    letter-spacing: 0.02em;
+                    text-transform: none;
+                    color: #94a3b8;
+                    padding: 1mm 2mm;
+                    border-bottom: 1px solid #eef2f6;
+                }
+
+                .importe-con-letra-valor {
+                    text-align: center;
+                    font-size: 6.5pt;
+                    font-weight: 400;
+                    color: #64748b;
+                    padding: 1.8mm 2.5mm;
+                    line-height: 1.3;
+                    background: #fcfdfe;
+                    white-space: normal;
+                    word-break: break-word;
                 }
 
                 .totales-table {
@@ -1012,8 +1034,11 @@
                                     <td class="totales-money-amount-col">{{ number_format($total, 2, '.', ',') }}</td>
                                 </tr>
                             </table>
-                            <div class="totales-legal-text">
-                                {{ \App\Support\PresupuestoPdf::formatMontoLegal($total, $monedaCodigo) }}
+                            <div class="importe-con-letra">
+                                <div class="importe-con-letra-label">Importe con letra:</div>
+                                <div class="importe-con-letra-valor">
+                                    {{ \App\Support\PresupuestoPdf::formatMontoLegal($total, $monedaCodigo) }}
+                                </div>
                             </div>
                             <div class="after-table-space"></div>
                         </div>

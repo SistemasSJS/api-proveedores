@@ -501,7 +501,7 @@ class ProveedorPresupuestoController extends Controller
                 'term_cond_moneda' => $normalized['term_cond_moneda'] ?? 'MXN',
                 'receptor_lineas' => PresupuestoPdf::lineasReceptorPdfDesdePayloadReceptor($normalized),
                 'conceptos' => $normalized['conceptos'] ?? [],
-                'anexos' => $this->convertirAnexosParaPdf($presupuestoGuardado),
+                'anexos' => PresupuestoPdf::anexosParaPlantillaPdf($presupuestoGuardado),
                 'terminos_enunciados' => Presupuesto::buildTerminosEnunciadosFromArray($formData),
                 'observaciones_enunciados' => Presupuesto::buildObservacionesEnunciadosFromArray($formData),
                 'qr_code' => null,
@@ -1720,54 +1720,12 @@ class ProveedorPresupuestoController extends Controller
                     'precio_total' => $concepto->precio_total,
                 ];
             })->values()->all(),
-            'anexos' => $this->convertirAnexosParaPdf($presupuesto),
+            'anexos' => PresupuestoPdf::anexosParaPlantillaPdf($presupuesto),
             'terminos_enunciados' => $enunciadosClasificados['terminos'],
             'validaciones_enunciados' => $enunciadosClasificados['validaciones'],
             'observaciones_enunciados' => $enunciadosClasificados['observaciones'],
             'qr_code' => $qrCodeDataUri,
         ];
-    }
-
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    private function convertirAnexosParaPdf(Presupuesto $presupuesto): array
-    {
-        $presupuesto->loadMissing('anexos');
-
-        return $presupuesto->anexos
-            ->sortBy([
-                ['orden', 'asc'],
-                ['id', 'asc'],
-            ])
-            ->values()
-            ->map(function ($anexo) {
-                return [
-                    'id' => (int) $anexo->id,
-                    'orden' => (int) ($anexo->orden ?? 0),
-                    'titulo' => (string) $anexo->titulo,
-                    'descripcion' => $anexo->descripcion,
-                    'precio' => $anexo->precio !== null ? (float) $anexo->precio : null,
-                    'archivo_base64' => $this->convertirArchivoAnexoABase64($anexo->archivo_path),
-                    'archivo_width' => $anexo->archivo_width !== null ? (int) $anexo->archivo_width : null,
-                    'archivo_height' => $anexo->archivo_height !== null ? (int) $anexo->archivo_height : null,
-                    'archivo_aspect_ratio' => $anexo->archivo_aspect_ratio !== null ? (float) $anexo->archivo_aspect_ratio : null,
-                ];
-            })
-            ->all();
-    }
-
-    private function convertirArchivoAnexoABase64(?string $archivoPath): string
-    {
-        if (! $archivoPath) {
-            return '';
-        }
-
-        $value = trim($archivoPath);
-
-        return str_starts_with($value, 'data:image/')
-            ? $value
-            : '';
     }
 
     /**
