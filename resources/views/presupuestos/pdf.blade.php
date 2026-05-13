@@ -191,6 +191,68 @@
                     line-height: 1.15;
                 }
 
+                .header.header--compact {
+                    margin-bottom: 2mm;
+                    padding-bottom: 1.5mm;
+                    border-bottom: 3px solid var(--accent);
+                }
+
+                .header.header--compact .logo-section {
+                    width: auto;
+                    max-width: 28%;
+                    vertical-align: middle;
+                }
+
+                .header.header--compact .logo-img {
+                    max-width: 26mm;
+                    max-height: 14mm;
+                    width: auto;
+                    height: auto;
+                    object-fit: contain;
+                    object-position: left center;
+                    display: block;
+                }
+
+                .header.header--compact .logo-fallback {
+                    width: 11mm;
+                    height: 11mm;
+                    font-size: 8pt;
+                    line-height: 11mm;
+                }
+
+                .header.header--compact .header-info {
+                    padding-left: 2mm;
+                }
+
+                .header.header--compact .company-header-name {
+                    font-size: 7.2pt;
+                    margin-bottom: 0.3mm;
+                    line-height: 1.1;
+                }
+
+                .header.header--compact .company-header-info {
+                    font-size: 6.5pt;
+                    margin-bottom: 0.2mm;
+                }
+
+                .header.header--compact .folio-section {
+                    padding-left: 1mm;
+                }
+
+                .header.header--compact .folio-label {
+                    font-size: 5.5pt;
+                    margin-bottom: 0.3mm;
+                }
+
+                .header.header--compact .folio-number {
+                    font-size: 7.5pt;
+                    margin-bottom: 0.3mm;
+                }
+
+                .header.header--compact .folio-date {
+                    font-size: 6pt;
+                }
+
                 /* ========== 2) DATOS DEL RECEPTOR ========== */
                 .receptor-section {
                     width: 100%;
@@ -388,6 +450,18 @@
                     page-break-inside: avoid;
                 }
 
+                .totales-legal-text {
+                    margin-top: 3mm;
+                    padding: 2.5mm 3mm;
+                    border: 1px solid #dbe4f1;
+                    border-radius: 1.5mm;
+                    background: #f8fbff;
+                    font-size: 7.1pt;
+                    line-height: 1.35;
+                    color: #334155;
+                    text-align: left;
+                }
+
                 .totales-table {
                     width: 100%;
                     border-collapse: collapse;
@@ -398,21 +472,39 @@
                     padding: 1mm 1mm 1.5mm 1mm;
                     font-size: 7pt;
                     vertical-align: middle;
+                    white-space: nowrap;
+                    overflow: hidden;
                 }
 
                 .totales-table td:first-child {
-                    width: 82%;
+                    width: 58%;
                     text-align: right;
                     color: #5f6f89;
                     padding-right: 2mm;
                 }
 
-                .totales-table td:last-child {
-                    width: 18%;
+                .totales-table .totales-meta-value {
                     text-align: right;
                     color: #2c3e50;
                     font-weight: 600;
                     padding-right: 0;
+                }
+
+                .totales-table .totales-money-sign-col {
+                    width: 12%;
+                    text-align: right;
+                    color: #64748b;
+                    font-weight: 600;
+                    padding-right: 1mm;
+                }
+
+                .totales-table .totales-money-amount-col {
+                    width: 30%;
+                    text-align: right;
+                    color: #2c3e50;
+                    font-weight: 600;
+                    padding-right: 0;
+                    font-variant-numeric: tabular-nums;
                 }
 
                 .totales-table .total-line-final td {
@@ -430,6 +522,12 @@
                     font-size: 10pt;
                     font-weight: 700;
                     color: var(--accent);
+                }
+
+                .totales-table .total-line-final .totales-money-sign-col,
+                .totales-table .total-line-final .totales-money-amount-col {
+                    color: var(--accent);
+                    font-weight: 700;
                 }
 
                 /* ========== 6) TÉRMINOS Y CONDICIONES (al final de la última página) ========== */
@@ -665,18 +763,9 @@
                 }
 
                 .anexos-preview-header {
-                    margin-bottom: 5mm;
-                    padding-bottom: 3mm;
+                    margin-bottom: 2.5mm;
+                    padding-bottom: 1.5mm;
                     border-bottom: 1px solid #d1d5db;
-                }
-
-                .anexos-preview-eyebrow {
-                    font-size: 6pt;
-                    font-weight: 700;
-                    letter-spacing: 0.8px;
-                    text-transform: uppercase;
-                    color: var(--accent);
-                    margin-bottom: 1.5mm;
                 }
 
                 .anexos-preview-title {
@@ -684,51 +773,44 @@
                     font-weight: 700;
                     color: var(--text-heading);
                     line-height: 1.15;
-                    margin-bottom: 1mm;
+                    margin: 0;
                 }
 
-                .anexos-preview-subtitle {
-                    font-size: 7pt;
-                    color: #64748b;
-                    line-height: 1.25;
-                }
-
-                .anexo-preview-item {
+                .anexo-simple {
                     width: 100%;
-                    border: 1px solid #e5e7eb;
-                    border-radius: 2mm;
-                    margin-bottom: 4mm;
-                    padding: 4mm;
+                    padding: 2.8mm 0;
+                    border-bottom: 1px solid #e5e7eb;
                     page-break-inside: avoid;
-                    height: 58mm;
                 }
 
-                .anexo-preview-table {
+                .anexo-simple:last-child {
+                    border-bottom: none;
+                }
+
+                .anexo-simple-table {
                     width: 100%;
                     border-collapse: collapse;
                     table-layout: fixed;
                 }
 
-                .anexo-preview-media,
-                .anexo-preview-content {
+                .anexo-simple-media,
+                .anexo-simple-text {
                     vertical-align: top;
                 }
 
-                .anexo-preview-media {
-                    width: 48mm;
-                    padding-right: 4mm;
+                .anexo-simple-media {
+                    width: 52mm;
+                    padding-right: 3.5mm;
                 }
 
-                .anexo-preview-image-wrap {
-                    height: 34mm;
-                    border-radius: 1.5mm;
+                .anexo-simple-image-wrap {
+                    height: 29mm;
                     overflow: hidden;
-                    border: 1px solid #e5e7eb;
                     background: #f8fafc;
                     text-align: center;
                 }
 
-                .anexo-preview-image {
+                .anexo-simple-image {
                     display: block;
                     width: auto;
                     height: auto;
@@ -737,45 +819,25 @@
                     margin: 0 auto;
                 }
 
-                .anexo-preview-index {
-                    display: inline-block;
-                    margin-bottom: 2.2mm;
-                    padding: 1mm 2.2mm;
-                    border-radius: 999px;
-                    background: #eff6ff;
-                    color: #1d4ed8;
-                    font-size: 6.2pt;
+                .anexo-simple-heading {
+                    font-size: 8.4pt;
                     font-weight: 700;
+                    color: var(--text-heading);
+                    line-height: 1.2;
+                    margin-bottom: 1.1mm;
                 }
 
-                .anexo-preview-field+.anexo-preview-field {
-                    margin-top: 2.5mm;
-                }
-
-                .anexo-preview-label {
-                    font-size: 6pt;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                    letter-spacing: 0.6px;
-                    color: #64748b;
-                    margin-bottom: 0.9mm;
-                }
-
-                .anexo-preview-value {
-                    font-size: 7.2pt;
-                    color: #334155;
-                    line-height: 1.35;
+                .anexo-simple-desc {
+                    font-size: 7.1pt;
+                    color: #475569;
+                    line-height: 1.3;
                     white-space: pre-wrap;
                     word-break: break-word;
+                    margin-bottom: 1.1mm;
                 }
 
-                .anexo-preview-value--title {
-                    font-size: 8.2pt;
-                    font-weight: 700;
-                    color: #1f2937;
-                }
-
-                .anexo-preview-value--price {
+                .anexo-simple-price {
+                    font-size: 7.8pt;
                     font-weight: 700;
                     color: var(--accent);
                 }
@@ -852,83 +914,7 @@
                 <div class="document-container">
                     <div class="document-main">
                         <!-- 1) ENCABEZADO -->
-                        <div class="header">
-                            <table class="header-content">
-                                <tr>
-                                    <td class="logo-section">
-                                        @php
-                                            $logoProveedorBase64 = $presupuesto['logo_proveedor_base64'] ?? null;
-                                            $nombreEmpresa =
-                                                $presupuesto['proveedor']->razon_social ??
-                                                ($presupuesto['proveedor']->nombre_comercial ?? 'P');
-                                            $inicial = strtoupper(substr($nombreEmpresa, 0, 1));
-                                        @endphp
-                                        @if ($logoProveedorBase64)
-                                            <img src="{{ $logoProveedorBase64 }}" alt="Logo" class="logo-img" />
-                                        @else
-                                            <div class="logo-fallback">{{ $inicial }}</div>
-                                        @endif
-                                    </td>
-                                    <td class="header-info">
-                                        @php
-                                            $p = $presupuesto['proveedor'];
-                                            $emisorNombre =
-                                                $p->razon_social ??
-                                                ($p->nombre_comercial ?? 'Empresa Proveedora S.A. de C.V.');
-                                            $emisorRfc = $p->rfc ?? null;
-                                            $emisorDireccion = $p->direccion_empresa ?? null;
-                                            $df = $p->direccion_fiscal ?? null;
-                                            $ciudad =
-                                                $p->ciudad ??
-                                                (is_array($df)
-                                                    ? $df['ciudad'] ?? 'Ciudad de México'
-                                                    : $df->ciudad ?? 'Ciudad de México');
-                                            $estado = is_array($df) ? $df['estado'] ?? 'CDMX' : $df->estado ?? 'CDMX';
-                                            $emisorCiudad = $ciudad . ', ' . $estado . ', México';
-                                            $emisorTel = $p->telefono ?? null;
-                                            $emisorEmail = $p->email ?? null;
-                                        @endphp
-                                        <div class="company-header-name">{{ $emisorNombre }}</div>
-                                        @if ($emisorRfc)
-                                            <div class="company-header-info">{{ $emisorRfc }}</div>
-                                        @endif
-                                        <!-- @if ($emisorDireccion)
-                                            <div class="company-header-info">{{ $emisorDireccion }}</div>
-                                        @endif
-                                        @if ($emisorCiudad)
-                                            <div class="company-header-info">{{ $emisorCiudad }}</div>
-                                        @endif -->
-                                        @if ($emisorTel)
-                                            <div class="company-header-info">Tel. {{ $emisorTel }}</div>
-                                        @endif
-                                        @if ($emisorEmail)
-                                            <div class="company-header-info">{{ $emisorEmail }}</div>
-                                        @endif
-                                    </td>
-                                    <td class="folio-section">
-                                        <div class="folio-label">Presupuesto</div>
-                                        <div class="folio-number">
-                                            {{ $presupuesto['numero_presupuesto'] ?? 'PRES-000001' }}
-                                        </div>
-                                        @if (!empty($presupuesto['uuid']))
-                                            <div class="folio-uuid">{{ $presupuesto['uuid'] }}</div>
-                                        @endif
-                                        <div class="folio-date">
-                                            @php
-                                                $fecha = $presupuesto['fecha_emision'] ?? now();
-                                                if (is_string($fecha)) {
-                                                    $fecha = \Carbon\Carbon::parse($fecha);
-                                                }
-                                                $fechaFormateada = $fecha
-                                                    ->locale('es')
-                                                    ->translatedFormat('d \d\e F \d\e\l Y');
-                                            @endphp
-                                            {{ $fechaFormateada }}
-                                        </div>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
+                        @include('presupuestos.partials.presupuesto-pdf-header-default')
 
                         <!-- 2) DATOS DEL RECEPTOR -->
                         <div class="receptor-section">
@@ -999,23 +985,36 @@
                                 $ivaPorcentaje = $presupuesto['iva_porcentaje'] ?? 16;
                                 $ivaTotal = $conIva ? $subtotalCalculado * ($ivaPorcentaje / 100) : 0;
                                 $total = $subtotalCalculado + $ivaTotal;
+                                $monedaCodigo = strtoupper((string) ($presupuesto['term_cond_moneda'] ?? 'MXN'));
+                                if (!in_array($monedaCodigo, ['MXN', 'USD', 'EUR'], true)) {
+                                    $monedaCodigo = 'MXN';
+                                }
+                                $monedaPrefijo = $monedaCodigo === 'USD'
+                                    ? 'US$'
+                                    : ($monedaCodigo === 'EUR' ? '€' : 'MX$');
                             @endphp
                             <table class="totales-table">
                                 <tr>
                                     <td>Subtotal:</td>
-                                    <td>${{ number_format($subtotalCalculado, 2, '.', ',') }}</td>
+                                    <td class="totales-money-sign-col">{{ $monedaPrefijo }}</td>
+                                    <td class="totales-money-amount-col">{{ number_format($subtotalCalculado, 2, '.', ',') }}</td>
                                 </tr>
                                 @if ($conIva)
                                     <tr>
                                         <td>IVA ({{ number_format($ivaPorcentaje, 0) }}%):</td>
-                                        <td>${{ number_format($ivaTotal, 2, '.', ',') }}</td>
+                                        <td class="totales-money-sign-col">{{ $monedaPrefijo }}</td>
+                                        <td class="totales-money-amount-col">{{ number_format($ivaTotal, 2, '.', ',') }}</td>
                                     </tr>
                                 @endif
                                 <tr class="total-line-final">
                                     <td>TOTAL:</td>
-                                    <td>${{ number_format($total, 2, '.', ',') }}</td>
+                                    <td class="totales-money-sign-col">{{ $monedaPrefijo }}</td>
+                                    <td class="totales-money-amount-col">{{ number_format($total, 2, '.', ',') }}</td>
                                 </tr>
                             </table>
+                            <div class="totales-legal-text">
+                                {{ \App\Support\PresupuestoPdf::formatMontoLegal($total, $monedaCodigo) }}
+                            </div>
                             <div class="after-table-space"></div>
                         </div>
 
@@ -1058,49 +1057,35 @@
                     </div>
 
                     @if (count($anexosLista) > 0)
-                        @foreach (collect($anexosLista)->chunk(3) as $pageIndex => $anexosPagina)
+                        @foreach (collect($anexosLista)->chunk(4) as $pageIndex => $anexosPagina)
                             <div class="page-break"></div>
                             <div class="anexos-page">
+                                @include('presupuestos.partials.presupuesto-pdf-header-default', ['headerCompact' => true])
                                 <div class="anexos-preview-header">
-                                    <div class="anexos-preview-eyebrow">Página de anexos</div>
-                                    <div class="anexos-preview-title">Anexos del presupuesto</div>
-                                    <div class="anexos-preview-subtitle">Se muestran hasta 3 anexos por página respetando el orden configurado.</div>
+                                    <div class="anexos-preview-title">Anexos</div>
                                 </div>
 
                                 @foreach ($anexosPagina as $index => $anexo)
                                     @php
-                                        $numeroAnexo = (($pageIndex * 3) + $index + 1);
+                                        $numeroAnexo = (($pageIndex * 4) + $index + 1);
                                     @endphp
-                                    <div class="anexo-preview-item">
-                                        <table class="anexo-preview-table">
+                                    <div class="anexo-simple">
+                                        <table class="anexo-simple-table">
                                             <tr>
                                                 @if (!empty($anexo['archivo_base64']))
-                                                    <td class="anexo-preview-media">
-                                                        <div class="anexo-preview-image-wrap">
-                                                            <img src="{{ $anexo['archivo_base64'] }}" alt="{{ $anexo['titulo'] ?? ('Anexo ' . (($anexo['orden'] ?? 0) ?: $numeroAnexo)) }}" class="anexo-preview-image" />
+                                                    <td class="anexo-simple-media">
+                                                        <div class="anexo-simple-image-wrap">
+                                                            <img src="{{ $anexo['archivo_base64'] }}" alt="{{ $anexo['titulo'] ?? ('Anexo ' . (($anexo['orden'] ?? 0) ?: $numeroAnexo)) }}" class="anexo-simple-image" />
                                                         </div>
                                                     </td>
                                                 @endif
-                                                <td class="anexo-preview-content">
-                                                    <div class="anexo-preview-index">Anexo {{ ($anexo['orden'] ?? 0) ?: $numeroAnexo }}</div>
-
-                                                    <div class="anexo-preview-field">
-                                                        <div class="anexo-preview-label">Título</div>
-                                                        <div class="anexo-preview-value anexo-preview-value--title">{{ $anexo['titulo'] ?? '' }}</div>
-                                                    </div>
-
+                                                <td class="anexo-simple-text">
+                                                    <div class="anexo-simple-heading">{{ $anexo['titulo'] ?? '' }}</div>
                                                     @if (!empty($anexo['descripcion']))
-                                                        <div class="anexo-preview-field">
-                                                            <div class="anexo-preview-label">Descripción</div>
-                                                            <div class="anexo-preview-value">{{ $anexo['descripcion'] }}</div>
-                                                        </div>
+                                                        <div class="anexo-simple-desc">{{ $anexo['descripcion'] }}</div>
                                                     @endif
-
                                                     @if (array_key_exists('precio', $anexo) && $anexo['precio'] !== null)
-                                                        <div class="anexo-preview-field">
-                                                            <div class="anexo-preview-label">Precio</div>
-                                                            <div class="anexo-preview-value anexo-preview-value--price">${{ number_format((float) $anexo['precio'], 2, '.', ',') }}</div>
-                                                        </div>
+                                                        <div class="anexo-simple-price">${{ number_format((float) $anexo['precio'], 2, '.', ',') }}</div>
                                                     @endif
                                                 </td>
                                             </tr>

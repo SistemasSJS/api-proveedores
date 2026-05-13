@@ -213,6 +213,41 @@
             margin-top: 0.6mm;
         }
 
+        .tw-header-wrap--compact + .tw-header-rule {
+            margin: 2mm 0 3mm 0;
+            border-top: 3px solid var(--accent);
+        }
+
+        .tw-header-wrap--compact .tw-logo-box {
+            min-width: 0 !important;
+            min-height: 0 !important;
+        }
+
+        .tw-header-wrap--compact .tw-emisor-name {
+            font-size: 7.5pt;
+            margin-bottom: 0.15mm;
+        }
+
+        .tw-header-wrap--compact .tw-emisor-line {
+            font-size: 6pt;
+            margin-bottom: 0.1mm;
+        }
+
+        .tw-header-wrap--compact .tw-badge-label {
+            font-size: 5.5pt;
+            margin-bottom: 0.25mm;
+        }
+
+        .tw-header-wrap--compact .tw-badge-folio {
+            font-size: 10pt;
+            margin: 0 0 0.4mm 0;
+        }
+
+        .tw-header-wrap--compact .tw-date {
+            font-size: 6pt;
+            margin-top: 0.25mm;
+        }
+
         /* Cajas grises (referencia): fondo claro, borde suave, sin acento lateral */
         /* Bloques «Dirigido a» y «Descripción general» (presupuesto-proveedor-preview.page.scss .receptor-section) */
         .tw-card,
@@ -393,23 +428,43 @@
         .tw-totals-table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
         }
 
         .tw-totals-table td {
             padding: 1mm 2mm;
             font-size: 7pt;
+            white-space: nowrap;
+            overflow: hidden;
         }
 
         .tw-totals-table td:first-child {
+            width: 58%;
             text-align: right;
             color: var(--tw-slate-600);
             background: var(--tw-slate-50);
         }
 
-        .tw-totals-table td:last-child {
+        .tw-totals-table .tw-totals-meta-value {
             text-align: right;
             font-weight: 600;
             color: var(--tw-slate-800);
+        }
+
+        .tw-totals-table .tw-totals-money-sign-col {
+            width: 12%;
+            text-align: right;
+            font-weight: 600;
+            color: var(--tw-slate-500);
+            padding-right: 1mm;
+        }
+
+        .tw-totals-table .tw-totals-money-amount-col {
+            width: 30%;
+            text-align: right;
+            font-weight: 600;
+            color: var(--tw-slate-800);
+            font-variant-numeric: tabular-nums;
         }
 
         .tw-totals-table .tw-total-row td {
@@ -428,6 +483,24 @@
             color: var(--accent);
         }
 
+        .tw-totals-table .tw-total-row .tw-totals-money-sign-col,
+        .tw-totals-table .tw-total-row .tw-totals-money-amount-col {
+            color: inherit;
+            font-weight: inherit;
+        }
+
+        .tw-totals-legal-text {
+            margin-top: 3mm;
+            padding: 2.5mm 3mm;
+            border: 1px solid var(--tw-slate-200);
+            border-radius: 1.5mm;
+            background: var(--tw-sky-50);
+            font-size: 7.1pt;
+            line-height: 1.35;
+            color: var(--tw-slate-700);
+            text-align: left;
+        }
+
         .after-table-space {
             height: 8mm;
         }
@@ -441,18 +514,9 @@
         }
 
         .tw-anexos-header {
-            margin-bottom: 5mm;
-            padding-bottom: 3mm;
+            margin-bottom: 2.5mm;
+            padding-bottom: 1.5mm;
             border-bottom: 1px solid var(--tw-slate-200);
-        }
-
-        .tw-anexos-eyebrow {
-            font-size: 6pt;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--accent);
-            margin-bottom: 1.2mm;
         }
 
         .tw-anexos-title {
@@ -460,55 +524,48 @@
             font-weight: 700;
             color: var(--heading);
             line-height: 1.15;
-            margin-bottom: 0.8mm;
-        }
-
-        .tw-anexos-subtitle {
-            font-size: 7pt;
-            color: var(--tw-slate-500);
-            line-height: 1.2;
+            margin: 0;
         }
 
         .tw-anexos-list {
             width: 100%;
         }
 
-        .tw-anexo-item {
+        .tw-anexo-simple {
             width: 100%;
-            border: 1px solid var(--tw-slate-200);
-            border-radius: 2mm;
-            margin-bottom: 4mm;
-            padding: 4mm;
+            padding: 2.8mm 0;
+            border-bottom: 1px solid var(--tw-slate-200);
             page-break-inside: avoid;
-            height: 58mm;
         }
 
-        .tw-anexo-table {
+        .tw-anexo-simple:last-child {
+            border-bottom: none;
+        }
+
+        .tw-anexo-simple-table {
             width: 100%;
             border-collapse: collapse;
             table-layout: fixed;
         }
 
-        .tw-anexo-media,
-        .tw-anexo-content {
+        .tw-anexo-simple-media,
+        .tw-anexo-simple-text {
             vertical-align: top;
         }
 
-        .tw-anexo-media {
-            width: 48mm;
-            padding-right: 4mm;
+        .tw-anexo-simple-media {
+            width: 52mm;
+            padding-right: 3.5mm;
         }
 
-        .tw-anexo-image-box {
-            height: 34mm;
-            border: 1px solid var(--tw-slate-200);
-            border-radius: 1.5mm;
+        .tw-anexo-simple-image-wrap {
+            height: 40mm;
             overflow: hidden;
             background: var(--tw-slate-50);
             text-align: center;
         }
 
-        .tw-anexo-image {
+        .tw-anexo-simple-image {
             display: block;
             width: auto;
             height: auto;
@@ -517,45 +574,25 @@
             margin: 0 auto;
         }
 
-        .tw-anexo-badge {
-            display: inline-block;
-            margin-bottom: 2mm;
-            padding: 0.8mm 2mm;
-            border-radius: 999px;
-            background: var(--accent-soft);
-            color: #1d4ed8;
-            font-size: 6pt;
+        .tw-anexo-simple-heading {
+            font-size: 8.4pt;
             font-weight: 700;
+            color: var(--heading);
+            line-height: 1.2;
+            margin-bottom: 1.1mm;
         }
 
-        .tw-anexo-field + .tw-anexo-field {
-            margin-top: 2.4mm;
-        }
-
-        .tw-anexo-label {
-            font-size: 6pt;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: var(--tw-slate-500);
-            margin-bottom: 0.8mm;
-        }
-
-        .tw-anexo-value {
-            font-size: 7.2pt;
-            color: var(--tw-slate-700);
+        .tw-anexo-simple-desc {
+            font-size: 7.1pt;
+            color: var(--tw-slate-600);
             line-height: 1.3;
             word-break: break-word;
             white-space: pre-wrap;
+            margin-bottom: 1.1mm;
         }
 
-        .tw-anexo-value-title {
-            font-size: 8.3pt;
-            font-weight: 700;
-            color: var(--heading);
-        }
-
-        .tw-anexo-value-price {
+        .tw-anexo-simple-price {
+            font-size: 7.8pt;
             font-weight: 700;
             color: var(--accent);
         }
@@ -895,150 +932,7 @@
 
     <div class="margin-sides">
         <div class="document-container">
-            <table class="tw-header-wrap" cellpadding="0" cellspacing="0">
-                <tr>
-                    <td class="tw-header-main">
-                        <table class="tw-header-top">
-                            @php
-                                $logoProveedorBase64 = $presupuesto['logo_proveedor_base64'] ?? null;
-                                $nombreEmpresa =
-                                    $presupuesto['proveedor']->razon_social ??
-                                    ($presupuesto['proveedor']->nombre_comercial ?? 'P');
-                                $inicial = strtoupper(substr($nombreEmpresa, 0, 1));
-                                $maxLogoWidthMm = 40.0; // 4 cm
-                                $maxLogoHeightMm = 30.0; // 3 cm
-                                $minLogoContainerWidthMm = 0.01; // 2 cm
-                                $minLogoContainerHeightMm = 0.01; // 2 cm
-                                $logoGapRightMm = 5; // 0.5 mm
-                                $logoBoxWidthMm = $minLogoContainerWidthMm;
-                                $logoBoxHeightMm = $minLogoContainerHeightMm;
-
-                                if ($logoProveedorBase64) {
-                                    $logoRaw = $logoProveedorBase64;
-                                    if (str_starts_with($logoRaw, 'data:image')) {
-                                        $logoParts = explode(',', $logoRaw, 2);
-                                        $logoRaw = $logoParts[1] ?? '';
-                                    }
-
-                                    $logoBinary = base64_decode($logoRaw, true);
-                                    if ($logoBinary !== false) {
-                                        $logoInfo = @getimagesizefromstring($logoBinary);
-                                        if (is_array($logoInfo) && !empty($logoInfo[0]) && !empty($logoInfo[1])) {
-                                            $logoWidthPx = (float) $logoInfo[0];
-                                            $logoHeightPx = (float) $logoInfo[1];
-
-                                            // 1) Determinar la dimensión más grande y escalar para respetar 4x3 cm.
-                                            if ($logoWidthPx >= $logoHeightPx) {
-                                                $logoBoxWidthMm = $maxLogoWidthMm;
-                                                $logoBoxHeightMm =
-                                                    $logoBoxWidthMm * ($logoHeightPx / $logoWidthPx);
-                                            } else {
-                                                $logoBoxHeightMm = $maxLogoHeightMm;
-                                                $logoBoxWidthMm =
-                                                    $logoBoxHeightMm * ($logoWidthPx / $logoHeightPx);
-                                            }
-
-                                            // 2-4) Si alguna dimensión excede el contenedor máximo, reducir proporcionalmente.
-                                            $scaleDownFactor = min(
-                                                1,
-                                                $maxLogoWidthMm / max($logoBoxWidthMm, 0.0001),
-                                                $maxLogoHeightMm / max($logoBoxHeightMm, 0.0001),
-                                            );
-                                            $logoBoxWidthMm *= $scaleDownFactor;
-                                            $logoBoxHeightMm *= $scaleDownFactor;
-
-                                            // 5) El contenedor no puede ser menor de 0.01x0.01 cm.
-                                            $logoBoxWidthMm = max(
-                                                $minLogoContainerWidthMm,
-                                                min($maxLogoWidthMm, $logoBoxWidthMm),
-                                            );
-                                            $logoBoxHeightMm = max(
-                                                $minLogoContainerHeightMm,
-                                                min($maxLogoHeightMm, $logoBoxHeightMm),
-                                            );
-                                        }
-                                    }
-                                }
-
-                                $logoCellWidthMm = $logoBoxWidthMm + $logoGapRightMm;
-                            @endphp
-                            <tr>
-                                <td class="tw-logo-cell"
-                                    style="width: {{ number_format($logoCellWidthMm, 2, '.', '') }}mm; padding-right: {{ number_format($logoGapRightMm, 2, '.', '') }}mm;">
-                                    @if ($logoProveedorBase64)
-                                        <div class="tw-logo-box"
-                                            style="width: {{ number_format($logoBoxWidthMm, 2, '.', '') }}mm; height: {{ number_format($logoBoxHeightMm, 2, '.', '') }}mm;">
-                                            <img src="{{ $logoProveedorBase64 }}" alt="Logo" class="tw-logo-img" />
-                                        </div>
-                                    @else
-                                        <div class="tw-logo-box"
-                                            style="width: {{ number_format($logoBoxWidthMm, 2, '.', '') }}mm; height: {{ number_format($logoBoxHeightMm, 2, '.', '') }}mm;">
-                                            <div class="tw-logo-fallback"><span>{{ $inicial }}</span></div>
-                                        </div>
-                                    @endif
-                                </td>
-                                <td class="tw-emisor-cell">
-                                    @php
-                                        $p = $presupuesto['proveedor'];
-                                        $p = $presupuesto['proveedor'];
-                                        $emisorNombre = $p->razon_social ?? $p->nombre_comercial;
-                                        $emisorNombre = \Illuminate\Support\Str::limit($emisorNombre, 40, '');
-                                        $emisorRfc = $p->rfc ?? null;
-                                        $emisorDireccion = $p->direccion_empresa ?? null;
-                                        $df = $p->direccion_fiscal ?? null;
-                                        $ciudad =
-                                            $p->ciudad ??
-                                            (is_array($df)
-                                                ? $df['ciudad'] ?? 'Ciudad de México'
-                                                : $df->ciudad ?? 'Ciudad de México');
-                                        $estado = is_array($df) ? $df['estado'] ?? 'CDMX' : $df->estado ?? 'CDMX';
-                                        $emisorCiudad = $ciudad . ', ' . $estado . ', México';
-                                        $emisorTel = $p->telefono ?? null;
-                                        $emisorEmail = $p->email ?? null;
-                                    @endphp
-                                    <div class="tw-emisor-name">{{ $emisorNombre }}</div>
-                                    @if ($emisorRfc)
-                                        <div class="tw-emisor-line">{{ $emisorRfc }}</div>
-                                    @endif
-                                    <!-- @if ($emisorDireccion)
-                                        <div class="tw-emisor-line">{{ $emisorDireccion }}</div>
-                                    @endif
-                                    @if ($emisorCiudad)
-                                        <div class="tw-emisor-line">{{ $emisorCiudad }}</div>
-                                    @endif -->
-                                    @if ($emisorTel)
-                                        <div class="tw-emisor-line">Tel. {{ $emisorTel }}</div>
-                                    @endif
-                                    @if ($emisorEmail)
-                                        <div class="tw-emisor-line">{{ $emisorEmail }}</div>
-                                    @endif
-                                </td>
-                                <td class="tw-folio-cell">
-                                    <div class="tw-badge-label">Presupuesto</div>
-                                    <div class="tw-badge-folio">
-                                        {{ $presupuesto['numero_presupuesto'] ?? 'PRES-000001' }}</div>
-                                    @if (!empty($presupuesto['uuid']))
-                                        <div class="tw-uuid">{{ $presupuesto['uuid'] }}</div>
-                                    @endif
-                                    <div class="tw-date">
-                                        @php
-                                            $fecha = $presupuesto['fecha_emision'] ?? now();
-                                            if (is_string($fecha)) {
-                                                $fecha = \Carbon\Carbon::parse($fecha);
-                                            }
-                                            $fechaFormateada = $fecha
-                                                ->locale('es')
-                                                ->translatedFormat('d \d\e F \d\e\l Y');
-                                        @endphp
-                                        {{ $fechaFormateada }}
-                                    </div>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-            <div class="tw-header-rule" role="presentation"></div>
+            @include('presupuestos.partials.presupuesto-pdf-header-tailwind')
 
             <div class="tw-card">
                 <div class="tw-card-title">Dirigido a:</div>
@@ -1103,24 +997,37 @@
                     $ivaPorcentaje = $presupuesto['iva_porcentaje'] ?? 16;
                     $ivaTotal = $conIva ? $subtotalCalculado * ($ivaPorcentaje / 100) : 0;
                     $total = $subtotalCalculado + $ivaTotal;
+                    $monedaCodigo = strtoupper((string) ($presupuesto['term_cond_moneda'] ?? 'MXN'));
+                    if (!in_array($monedaCodigo, ['MXN', 'USD', 'EUR'], true)) {
+                        $monedaCodigo = 'MXN';
+                    }
+                    $monedaPrefijo = $monedaCodigo === 'USD'
+                        ? 'US$'
+                        : ($monedaCodigo === 'EUR' ? '€' : 'MX$');
                 @endphp
                 <div class="tw-totals-inner">
                     <table class="tw-totals-table">
                         <tr>
                             <td>Subtotal</td>
-                            <td>${{ number_format($subtotalCalculado, 2, '.', ',') }}</td>
+                            <td class="tw-totals-money-sign-col">{{ $monedaPrefijo }}</td>
+                            <td class="tw-totals-money-amount-col">{{ number_format($subtotalCalculado, 2, '.', ',') }}</td>
                         </tr>
                         @if ($conIva)
                             <tr>
                                 <td>IVA ({{ number_format($ivaPorcentaje, 0) }}%)</td>
-                                <td>${{ number_format($ivaTotal, 2, '.', ',') }}</td>
+                                <td class="tw-totals-money-sign-col">{{ $monedaPrefijo }}</td>
+                                <td class="tw-totals-money-amount-col">{{ number_format($ivaTotal, 2, '.', ',') }}</td>
                             </tr>
                         @endif
                         <tr class="tw-total-row">
                             <td>Total</td>
-                            <td>${{ number_format($total, 2, '.', ',') }}</td>
+                            <td class="tw-totals-money-sign-col">{{ $monedaPrefijo }}</td>
+                            <td class="tw-totals-money-amount-col">{{ number_format($total, 2, '.', ',') }}</td>
                         </tr>
                     </table>
+                    <div class="tw-totals-legal-text">
+                        {{ \App\Support\PresupuestoPdf::formatMontoLegal($total, $monedaCodigo) }}
+                    </div>
                 </div>
                 <div class="after-table-space"></div>
             </div>
@@ -1162,50 +1069,36 @@
             </div>
 
             @if (count($anexosLista) > 0)
-                @foreach (collect($anexosLista)->chunk(3) as $pageIndex => $anexosPagina)
+                @foreach (collect($anexosLista)->chunk(4) as $pageIndex => $anexosPagina)
                     <div class="tw-page-break"></div>
                     <div class="tw-anexos-page">
+                        @include('presupuestos.partials.presupuesto-pdf-header-tailwind', ['headerCompact' => true])
                         <div class="tw-anexos-header">
-                            <div class="tw-anexos-eyebrow">Página de anexos</div>
-                            <div class="tw-anexos-title">Anexos del presupuesto</div>
-                            <div class="tw-anexos-subtitle">Se muestran hasta 3 anexos por página respetando el orden configurado.</div>
+                            <div class="tw-anexos-title">Anexos</div>
                         </div>
 
                         <div class="tw-anexos-list">
                             @foreach ($anexosPagina as $index => $anexo)
                                 @php
-                                    $numeroAnexo = (($pageIndex * 3) + $index + 1);
+                                    $numeroAnexo = (($pageIndex * 4) + $index + 1);
                                 @endphp
-                                <div class="tw-anexo-item">
-                                    <table class="tw-anexo-table">
+                                <div class="tw-anexo-simple">
+                                    <table class="tw-anexo-simple-table">
                                         <tr>
                                             @if (!empty($anexo['archivo_base64']))
-                                                <td class="tw-anexo-media">
-                                                    <div class="tw-anexo-image-box">
-                                                        <img src="{{ $anexo['archivo_base64'] }}" alt="{{ $anexo['titulo'] ?? ('Anexo ' . (($anexo['orden'] ?? 0) ?: $numeroAnexo)) }}" class="tw-anexo-image" />
+                                                <td class="tw-anexo-simple-media">
+                                                    <div class="tw-anexo-simple-image-wrap">
+                                                        <img src="{{ $anexo['archivo_base64'] }}" alt="{{ $anexo['titulo'] ?? ('Anexo ' . (($anexo['orden'] ?? 0) ?: $numeroAnexo)) }}" class="tw-anexo-simple-image" />
                                                     </div>
                                                 </td>
                                             @endif
-                                            <td class="tw-anexo-content">
-                                                <div class="tw-anexo-badge">Anexo {{ ($anexo['orden'] ?? 0) ?: $numeroAnexo }}</div>
-
-                                                <div class="tw-anexo-field">
-                                                    <div class="tw-anexo-label">Título</div>
-                                                    <div class="tw-anexo-value tw-anexo-value-title">{{ $anexo['titulo'] ?? '' }}</div>
-                                                </div>
-
+                                            <td class="tw-anexo-simple-text">
+                                                <div class="tw-anexo-simple-heading">{{ $anexo['titulo'] ?? '' }}</div>
                                                 @if (!empty($anexo['descripcion']))
-                                                    <div class="tw-anexo-field">
-                                                        <div class="tw-anexo-label">Descripción</div>
-                                                        <div class="tw-anexo-value">{{ $anexo['descripcion'] }}</div>
-                                                    </div>
+                                                    <div class="tw-anexo-simple-desc">{{ $anexo['descripcion'] }}</div>
                                                 @endif
-
                                                 @if (array_key_exists('precio', $anexo) && $anexo['precio'] !== null)
-                                                    <div class="tw-anexo-field">
-                                                        <div class="tw-anexo-label">Precio</div>
-                                                        <div class="tw-anexo-value tw-anexo-value-price">${{ number_format((float) $anexo['precio'], 2, '.', ',') }}</div>
-                                                    </div>
+                                                    <div class="tw-anexo-simple-price">${{ number_format((float) $anexo['precio'], 2, '.', ',') }}</div>
                                                 @endif
                                             </td>
                                         </tr>

@@ -71,6 +71,7 @@ final class PresupuestoPdf
             'concepto_general' => $presupuesto->concepto_general,
             'con_iva' => $presupuesto->con_iva,
             'iva_porcentaje' => $presupuesto->iva_porcentaje,
+            'term_cond_moneda' => $presupuesto->term_cond_moneda ?? 'MXN',
             'subtotal' => $presupuesto->subtotal,
             'iva_total' => $presupuesto->iva_total,
             'total' => $presupuesto->total,
@@ -244,6 +245,212 @@ final class PresupuestoPdf
         return str_starts_with($value, 'data:image/')
             ? $value
             : '';
+    }
+
+    public static function formatMontoLegal(float|int|string|null $value, ?string $currency = 'MXN'): string
+    {
+        $amount = round((float) ($value ?? 0), 2);
+        $codigo = self::normalizarCodigoMoneda($currency);
+
+        return sprintf(
+            'La cantidad de %s (%s)',
+            self::formatMontoNumeroLegal($amount, $codigo),
+            self::formatMontoLetraLegal($amount, $codigo)
+        );
+    }
+
+    public static function formatMontoNumeroLegal(float|int|string|null $value, ?string $currency = 'MXN'): string
+    {
+        $amount = round((float) ($value ?? 0), 2);
+        $codigo = self::normalizarCodigoMoneda($currency);
+        $formatted = number_format($amount, 2, '.', ',');
+
+        return match ($codigo) {
+            'USD' => "USD {$formatted}",
+            'EUR' => "EUR {$formatted}",
+            default => '$' . $formatted . ' MXN',
+        };
+    }
+
+    public static function formatMontoLetraLegal(float|int|string|null $value, ?string $currency = 'MXN'): string
+    {
+        $amount = round((float) ($value ?? 0), 2);
+        $codigo = self::normalizarCodigoMoneda($currency);
+        [$enteroStr, $decimales] = explode('.', number_format($amount, 2, '.', ''));
+
+        $entero = abs((int) $enteroStr);
+        $texto = self::numeroALetras($entero, true);
+
+        if ((int) $enteroStr < 0) {
+            $texto = 'menos ' . $texto;
+        }
+
+        [$singular, $plural, $sufijo] = self::currencyNames($codigo);
+        $monedaTexto = $entero === 1 ? $singular : $plural;
+
+        return self::uppercaseFirst($texto . ' ' . $monedaTexto . ' ' . $decimales . '/100 ' . $sufijo);
+    }
+
+    private static function normalizarCodigoMoneda(?string $currency): string
+    {
+        $codigo = strtoupper(trim((string) ($currency ?? 'MXN')));
+
+        return in_array($codigo, ['MXN', 'USD', 'EUR'], true)
+            ? $codigo
+            : 'MXN';
+    }
+
+    /**
+     * @return array{0:string,1:string,2:string}
+     */
+    private static function currencyNames(string $codigo): array
+    {
+        return match ($codigo) {
+            'USD' => ['dólar estadounidense', 'dólares estadounidenses', 'USD'],
+            'EUR' => ['euro', 'euros', 'EUR'],
+            default => ['peso mexicano', 'pesos mexicanos', 'M.N.'],
+        };
+    }
+
+    private static function numeroALetras(int $numero, bool $apocope = true): string
+    {
+        if ($numero === 0) {
+            return 'cero';
+        }
+
+        if ($numero < 0) {
+            return 'menos ' . self::numeroALetras(abs($numero), $apocope);
+        }
+
+        if ($numero < 1000) {
+            return self::centenasALetras($numero, $apocope);
+        }
+
+        if ($numero < 1000000) {
+            $miles = intdiv($numero, 1000);
+            $resto = $numero % 1000;
+            $texto = $miles === 1
+                ? 'mil'
+                : self::numeroALetras($miles, true) . ' mil';
+
+            return trim($texto . ' ' . ($resto > 0 ? self::numeroALetras($resto, $apocope) : ''));
+        }
+
+        if ($numero < 1000000000) {
+            $millones = intdiv($numero, 1000000);
+            $resto = $numero % 1000000;
+            $texto = $millones === 1
+                ? 'un millón'
+                : self::numeroALetras($millones, true) . ' millones';
+
+            return trim($texto . ' ' . ($resto > 0 ? self::numeroALetras($resto, $apocope) : ''));
+        }
+
+        $milesMillones = intdiv($numero, 1000000000);
+        $resto = $numero % 1000000000;
+        $texto = $milesMillones === 1
+            ? 'mil millones'
+            : self::numeroALetras($milesMillones, true) . ' mil millones';
+
+        return trim($texto . ' ' . ($resto > 0 ? self::numeroALetras($resto, $apocope) : ''));
+    }
+
+    private static function centenasALetras(int $numero, bool $apocope): string
+    {
+        $basicos = [
+            0 => '',
+            1 => $apocope ? 'un' : 'uno',
+            2 => 'dos',
+            3 => 'tres',
+            4 => 'cuatro',
+            5 => 'cinco',
+            6 => 'seis',
+            7 => 'siete',
+            8 => 'ocho',
+            9 => 'nueve',
+            10 => 'diez',
+            11 => 'once',
+            12 => 'doce',
+            13 => 'trece',
+            14 => 'catorce',
+            15 => 'quince',
+            16 => 'dieciséis',
+            17 => 'diecisiete',
+            18 => 'dieciocho',
+            19 => 'diecinueve',
+            20 => 'veinte',
+            21 => $apocope ? 'veintiún' : 'veintiuno',
+            22 => 'veintidós',
+            23 => 'veintitrés',
+            24 => 'veinticuatro',
+            25 => 'veinticinco',
+            26 => 'veintiséis',
+            27 => 'veintisiete',
+            28 => 'veintiocho',
+            29 => 'veintinueve',
+        ];
+
+        if ($numero < 30) {
+            return $basicos[$numero];
+        }
+
+        if ($numero < 100) {
+            $decenas = [
+                3 => 'treinta',
+                4 => 'cuarenta',
+                5 => 'cincuenta',
+                6 => 'sesenta',
+                7 => 'setenta',
+                8 => 'ochenta',
+                9 => 'noventa',
+            ];
+            $d = intdiv($numero, 10);
+            $u = $numero % 10;
+
+            if ($u === 0) {
+                return $decenas[$d];
+            }
+
+            $unidad = $u === 1
+                ? ($apocope ? 'un' : 'uno')
+                : $basicos[$u];
+
+            return $decenas[$d] . ' y ' . $unidad;
+        }
+
+        if ($numero === 100) {
+            return 'cien';
+        }
+
+        $centenas = [
+            1 => 'ciento',
+            2 => 'doscientos',
+            3 => 'trescientos',
+            4 => 'cuatrocientos',
+            5 => 'quinientos',
+            6 => 'seiscientos',
+            7 => 'setecientos',
+            8 => 'ochocientos',
+            9 => 'novecientos',
+        ];
+
+        $c = intdiv($numero, 100);
+        $resto = $numero % 100;
+
+        return trim($centenas[$c] . ' ' . ($resto > 0 ? self::centenasALetras($resto, $apocope) : ''));
+    }
+
+    private static function uppercaseFirst(string $value): string
+    {
+        if ($value === '') {
+            return '';
+        }
+
+        if (function_exists('mb_substr') && function_exists('mb_strtoupper')) {
+            return mb_strtoupper(mb_substr($value, 0, 1), 'UTF-8') . mb_substr($value, 1, null, 'UTF-8');
+        }
+
+        return ucfirst($value);
     }
 
     /**
