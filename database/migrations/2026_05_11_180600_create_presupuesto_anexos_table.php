@@ -21,9 +21,6 @@ return new class extends Migration
             $table->decimal('precio', 15, 2)->nullable();
             $table->unsignedInteger('orden')->default(1);
             $table->longText('archivo_path');
-            $table->unsignedInteger('archivo_width')->nullable();
-            $table->unsignedInteger('archivo_height')->nullable();
-            $table->decimal('archivo_aspect_ratio', 12, 6)->nullable();
             $table->timestamps();
 
             $table->index(['presupuesto_id', 'orden'], 'presupuesto_anexos_presupuesto_orden_idx');
