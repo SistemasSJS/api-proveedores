@@ -509,6 +509,10 @@ class ProveedorPresupuestoController extends Controller
 
             // Calcular totales
             $subtotal = collect($datosPresupuesto['conceptos'])->sum(function ($concepto) {
+                if (($concepto['tipo'] ?? 'concepto') === 'parrafo') {
+                    return 0;
+                }
+
                 return ($concepto['cantidad'] ?? 0) * ($concepto['precio_unitario'] ?? 0);
             });
 
@@ -692,6 +696,7 @@ class ProveedorPresupuestoController extends Controller
 
                 $conceptos = $presupuesto->conceptos->map(function (PresupuestoConcepto $c, int $index) {
                     return [
+                        'tipo' => $c->tipo ?? PresupuestoConcepto::TIPO_CONCEPTO,
                         'descripcion' => $c->descripcion,
                         'cantidad' => (float) $c->cantidad,
                         'unidad' => $c->unidad,
@@ -1405,6 +1410,7 @@ class ProveedorPresupuestoController extends Controller
         foreach ($conceptos as $index => $conceptoData) {
             $concepto = new PresupuestoConcepto([
                 'numero' => $index + 1,
+                'tipo' => $conceptoData['tipo'] ?? PresupuestoConcepto::TIPO_CONCEPTO,
                 'descripcion' => $conceptoData['descripcion'],
                 'cantidad' => $conceptoData['cantidad'],
                 'unidad' => $conceptoData['unidad'],
@@ -1713,6 +1719,7 @@ class ProveedorPresupuestoController extends Controller
             'receptor_lineas' => PresupuestoPdf::lineasReceptorPdfDesdeColumnasPresupuesto($presupuesto),
             'conceptos' => $presupuesto->conceptos->map(static function ($concepto) {
                 return [
+                    'tipo' => $concepto->tipo ?? PresupuestoConcepto::TIPO_CONCEPTO,
                     'descripcion' => $concepto->descripcion,
                     'cantidad' => $concepto->cantidad,
                     'unidad' => $concepto->unidad,

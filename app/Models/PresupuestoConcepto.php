@@ -9,11 +9,16 @@ class PresupuestoConcepto extends BaseModel
 {
     use HasFactory;
 
+    public const TIPO_CONCEPTO = 'concepto';
+
+    public const TIPO_PARRAFO = 'parrafo';
+
     protected $table = 'presupuesto_conceptos';
 
     protected $fillable = [
         'presupuesto_id',
         'numero',
+        'tipo',
         'descripcion',
         'cantidad',
         'unidad',
@@ -40,9 +45,20 @@ class PresupuestoConcepto extends BaseModel
      */
     public function calcularImporte(): void
     {
+        if ($this->esParrafo()) {
+            $this->precio_total = 0;
+
+            return;
+        }
+
         $cantidad = (float) $this->cantidad;
         $precioUnitario = (float) $this->precio_unitario;
         $this->precio_total = round($cantidad * $precioUnitario, 2);
+    }
+
+    public function esParrafo(): bool
+    {
+        return ($this->tipo ?? self::TIPO_CONCEPTO) === self::TIPO_PARRAFO;
     }
 }
 

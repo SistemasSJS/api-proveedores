@@ -976,11 +976,19 @@
                                 @if (count($conceptos) > 0)
                                     @foreach ($conceptos as $index => $concepto)
                                         @php
+                                            $tipoLinea = $concepto['tipo'] ?? 'concepto';
+                                            $esParrafo = $tipoLinea === 'parrafo';
                                             $cantidad = $concepto['cantidad'] ?? 1;
                                             $precioUnitario = $concepto['precio_unitario'] ?? 0;
-                                            $importe = $cantidad * $precioUnitario;
+                                            $importe = $esParrafo ? 0 : $cantidad * $precioUnitario;
                                             $subtotal += $importe;
                                         @endphp
+                                        @if ($esParrafo)
+                                            <tr class="linea-parrafo">
+                                                <td>{{ $index + 1 }}</td>
+                                                <td colspan="5">{{ $concepto['descripcion'] ?? '' }}</td>
+                                            </tr>
+                                        @else
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
                                             <td>{{ $concepto['descripcion'] ?? 'Sin descripción' }}</td>
@@ -989,6 +997,7 @@
                                             <td>${{ number_format($precioUnitario, 2, '.', ',') }}</td>
                                             <td>${{ number_format($importe, 2, '.', ',') }}</td>
                                         </tr>
+                                        @endif
                                     @endforeach
                                 @else
                                     <tr>

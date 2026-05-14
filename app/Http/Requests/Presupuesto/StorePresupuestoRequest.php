@@ -88,6 +88,7 @@ class StorePresupuestoRequest extends FormRequest
              * conceptos includos en el presupuesto
              */
             'conceptos' => 'required|array|min:1',
+            'conceptos.*.tipo' => 'nullable|string|in:concepto,parrafo',
             'conceptos.*.descripcion' => 'required|string',
             'conceptos.*.cantidad' => 'required|numeric|min:0.0001',
             'conceptos.*.unidad' => 'required|string|max:50',

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Presupuesto;
 
+use App\Models\PresupuestoConcepto;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -20,6 +21,7 @@ class PresupuestoConceptoResource extends JsonResource
         return [
             'id' => $this->id,
             'numero' => (int) $this->numero,
+            'tipo' => $this->tipo ?? PresupuestoConcepto::TIPO_CONCEPTO,
             'descripcion' => $this->descripcion,
             'cantidad' => (float) $this->cantidad,
             'unidad' => $this->unidad,

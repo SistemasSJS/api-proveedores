@@ -71,6 +71,7 @@ class UpdatePresupuestoRequest extends FormRequest
             'configuracion_condiciones' => 'nullable|array',
             'estado' => 'nullable|string|in:borrador,enviado,aceptado,rechazado,rechazado_con_observacion,vencido',
             'conceptos' => 'required|array|min:1',
+            'conceptos.*.tipo' => 'nullable|string|in:concepto,parrafo',
             'conceptos.*.descripcion' => 'required|string',
             'conceptos.*.cantidad' => 'required|numeric|min:0.0001',
             'conceptos.*.unidad' => 'required|string|max:50',
