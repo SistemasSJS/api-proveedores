@@ -410,6 +410,16 @@
             padding: 5mm !important;
         }
 
+        .tw-table tbody tr.tw-linea-parrafo td {
+            text-align: left;
+            font-weight: 400;
+            color: var(--tw-slate-700);
+            padding: 3mm 2.5mm;
+            line-height: 1.45;
+            white-space: pre-wrap;
+            background: #f8fafc;
+        }
+
         /* Totales */
         .tw-totals-wrap {
             width: 100%;

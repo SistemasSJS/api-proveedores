@@ -439,6 +439,16 @@
                     font-size: 7pt;
                 }
 
+                .presupuesto-table tbody tr.linea-parrafo td {
+                    text-align: left;
+                    font-weight: 400;
+                    color: #334155;
+                    padding: 3mm 2.5mm;
+                    line-height: 1.45;
+                    white-space: pre-wrap;
+                    background: #f8fafc;
+                }
+
                 /* ========== 5) TOTALES (alineado con tabla) ========== */
                 .terms-block {
                     margin-bottom: 4mm;

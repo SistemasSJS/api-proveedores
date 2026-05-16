@@ -89,7 +89,7 @@ class StorePresupuestoRequest extends FormRequest
              */
             'conceptos' => 'required|array|min:1',
             'conceptos.*.tipo' => 'nullable|string|in:concepto,parrafo',
-            'conceptos.*.descripcion' => 'required|string',
+            'conceptos.*.descripcion' => 'required|string|max:5000',
             'conceptos.*.cantidad' => 'required|numeric|min:0.0001',
             'conceptos.*.unidad' => 'required|string|max:50',
             'conceptos.*.precio_unitario' => 'required|numeric|min:0',
