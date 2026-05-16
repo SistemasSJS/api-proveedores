@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Presupuesto;
 
+use App\Models\PresupuestoConcepto;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -138,6 +139,27 @@ class UpdatePresupuestoRequest extends FormRequest
                     'term_cond_inicio_trabajo_cantidad',
                     'Debe enviar solo una opción de anticipo: porcentaje o cantidad.'
                 );
+            }
+
+            $conceptos = $data['conceptos'] ?? [];
+            if (is_array($conceptos)) {
+                $maxParrafo = PresupuestoConcepto::DESCRIPCION_PARRAFO_MAX;
+                foreach ($conceptos as $index => $concepto) {
+                    if (! is_array($concepto)) {
+                        continue;
+                    }
+                    $tipo = $concepto['tipo'] ?? PresupuestoConcepto::TIPO_CONCEPTO;
+                    if ($tipo !== PresupuestoConcepto::TIPO_PARRAFO) {
+                        continue;
+                    }
+                    $desc = (string) ($concepto['descripcion'] ?? '');
+                    if (mb_strlen($desc) > $maxParrafo) {
+                        $v->errors()->add(
+                            "conceptos.{$index}.descripcion",
+                            "El párrafo no puede exceder {$maxParrafo} caracteres (aprox. tres renglones en el PDF)."
+                        );
+                    }
+                }
             }
         });
     }

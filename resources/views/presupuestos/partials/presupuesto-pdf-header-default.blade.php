@@ -73,3 +73,4 @@
         </tr>
     </table>
 </div>
+<div class="header-rule" role="presentation"></div>

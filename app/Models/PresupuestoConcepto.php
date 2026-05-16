@@ -13,6 +13,9 @@ class PresupuestoConcepto extends BaseModel
 
     public const TIPO_PARRAFO = 'parrafo';
 
+    /** Longitud máxima del texto de un párrafo (~3 renglones en PDF). */
+    public const DESCRIPCION_PARRAFO_MAX = 500;
+
     protected $table = 'presupuesto_conceptos';
 
     protected $fillable = [

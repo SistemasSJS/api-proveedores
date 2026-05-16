@@ -84,10 +84,23 @@
 
                 /* ========== 1) ENCABEZADO ========== */
                 .header {
-                    margin-bottom: 4mm;
-                    padding-bottom: 3.5mm;
-                    border-bottom: 2px solid var(--accent);
+                    margin-bottom: 0;
+                    padding-bottom: 2mm;
+                    border-bottom: none;
                     page-break-inside: avoid;
+                }
+
+                /* Misma línea que en encabezado compacto (hojas 2+) */
+                .header-rule {
+                    width: 100%;
+                    height: 0;
+                    margin: 3mm 0 3mm 0;
+                    padding: 0;
+                    border: 0;
+                    border-top: 3px solid var(--accent);
+                    font-size: 0;
+                    line-height: 0;
+                    overflow: hidden;
                 }
 
                 .header-content {
@@ -192,9 +205,9 @@
                 }
 
                 .header.header--compact {
-                    margin-bottom: 2mm;
-                    padding-bottom: 1.5mm;
-                    border-bottom: 3px solid var(--accent);
+                    margin-bottom: 0;
+                    padding-bottom: 1mm;
+                    border-bottom: none;
                 }
 
                 .header.header--compact .logo-section {
@@ -447,6 +460,8 @@
                     line-height: 1.45;
                     white-space: pre-wrap;
                     background: #f8fafc;
+                    max-height: 14mm;
+                    overflow: hidden;
                 }
 
                 /* ========== 5) TOTALES (alineado con tabla) ========== */
@@ -1030,9 +1045,7 @@
                                 if (!in_array($monedaCodigo, ['MXN', 'USD', 'EUR'], true)) {
                                     $monedaCodigo = 'MXN';
                                 }
-                                $monedaPrefijo = $monedaCodigo === 'USD'
-                                    ? 'US$'
-                                    : ($monedaCodigo === 'EUR' ? '€' : 'MX$');
+                                $monedaPrefijo = $monedaCodigo === 'EUR' ? '€' : '$';
                             @endphp
                             <table class="totales-table">
                                 <tr>

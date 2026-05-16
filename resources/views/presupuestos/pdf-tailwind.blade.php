@@ -82,14 +82,14 @@
             background: transparent;
         }
 
-        /* Línea gris completa bajo el encabezado (como referencia) */
+        /* Línea bajo encabezado (igual en 1ª hoja y siguientes) */
         .tw-header-rule {
             width: 100%;
             height: 0;
-            margin: 3mm 0 4mm 0;
+            margin: 3mm 0 3mm 0;
             padding: 0;
             border: 0;
-            border-top: 1px solid var(--tw-slate-200);
+            border-top: 3px solid var(--accent);
             font-size: 0;
             line-height: 0;
             overflow: hidden;
@@ -215,7 +215,6 @@
 
         .tw-header-wrap--compact + .tw-header-rule {
             margin: 2mm 0 3mm 0;
-            border-top: 3px solid var(--accent);
         }
 
         .tw-header-wrap--compact .tw-logo-box {
@@ -418,6 +417,8 @@
             line-height: 1.45;
             white-space: pre-wrap;
             background: #f8fafc;
+            max-height: 14mm;
+            overflow: hidden;
         }
 
         /* Totales */
@@ -1042,9 +1043,7 @@
                     if (!in_array($monedaCodigo, ['MXN', 'USD', 'EUR'], true)) {
                         $monedaCodigo = 'MXN';
                     }
-                    $monedaPrefijo = $monedaCodigo === 'USD'
-                        ? 'US$'
-                        : ($monedaCodigo === 'EUR' ? '€' : 'MX$');
+                    $monedaPrefijo = $monedaCodigo === 'EUR' ? '€' : '$';
                 @endphp
                 <div class="tw-totals-inner">
                     <table class="tw-totals-table">
