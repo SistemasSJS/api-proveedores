@@ -279,7 +279,8 @@ class Presupuesto extends BaseModel
             $validaciones[] = self::ENUNCIADO_ALCANCE_ADICIONALES_AUTORIZACION;
         }
 
-        self::appendObservacionesAdicionalesDesdeConfig($observaciones, $config);
+        
+        // self::appendObservacionesAdicionalesDesdeConfig($observaciones, $config);
 
         return [
             'terminos' => $terminos,
