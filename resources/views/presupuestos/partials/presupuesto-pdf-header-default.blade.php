@@ -9,8 +9,8 @@
                 @php
                     $logoProveedorBase64 = $presupuesto['logo_proveedor_base64'] ?? null;
                     $nombreEmpresa =
-                        $presupuesto['proveedor']->razon_social ??
-                        ($presupuesto['proveedor']->nombre_comercial ?? 'P');
+                        $presupuesto['proveedor']->nombre_comercial ??
+                        ($presupuesto['proveedor']->razon_social ?? 'P');
                     $inicial = strtoupper(substr($nombreEmpresa, 0, 1));
                 @endphp
                 @if ($logoProveedorBase64)
@@ -22,9 +22,19 @@
             <td class="header-info">
                 @php
                     $p = $presupuesto['proveedor'];
+                    $emisorComercial = trim((string) ($p->nombre_comercial ?? ''));
+                    $emisorRazonSocial = trim((string) ($p->razon_social ?? ''));
                     $emisorNombre =
-                        $p->razon_social ??
-                        ($p->nombre_comercial ?? 'Empresa Proveedora S.A. de C.V.');
+                        $emisorComercial !== ''
+                            ? $emisorComercial
+                            : ($emisorRazonSocial !== ''
+                                ? $emisorRazonSocial
+                                : 'Empresa Proveedora S.A. de C.V.');
+                    $emisorRazonSocialLinea =
+                        $emisorRazonSocial !== '' &&
+                        strcasecmp($emisorRazonSocial, $emisorNombre) !== 0
+                            ? $emisorRazonSocial
+                            : null;
                     $emisorRfc = $p->rfc ?? null;
                     $emisorDireccion = $p->direccion_empresa ?? null;
                     $df = $p->direccion_fiscal ?? null;
@@ -39,6 +49,9 @@
                     $emisorEmail = $p->email ?? null;
                 @endphp
                 <div class="company-header-name">{{ $emisorNombre }}</div>
+                @if ($emisorRazonSocialLinea)
+                    <div class="company-header-info">{{ $emisorRazonSocialLinea }}</div>
+                @endif
                 @if ($emisorRfc)
                     <div class="company-header-info">{{ $emisorRfc }}</div>
                 @endif

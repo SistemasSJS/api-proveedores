@@ -184,6 +184,7 @@ class Presupuesto extends BaseModel
         $observaciones = [];
         $config = is_array($this->configuracion_condiciones) ? $this->configuracion_condiciones : [];
         $visibilidad = is_array($this->term_cond_visibilidad) ? $this->term_cond_visibilidad : [];
+        $visibilidadEstricta = $visibilidad !== [];
 
         // 1. vigencia
         if (self::terminoActivoPersistido($config, 'vigencia_activo', $this->term_cond_dias_vigencia > 0) && $this->term_cond_dias_vigencia > 0) {
@@ -226,26 +227,30 @@ class Presupuesto extends BaseModel
         }
 
         // 6-9. cláusulas fijas con visibilidad configurable
-        if (self::flagVisible($visibilidad, 'pago_contra_conformidad', true)) {
+        $defaultVisibilidad = $visibilidadEstricta ? false : true;
+        if (self::flagVisible($visibilidad, 'pago_contra_conformidad', $defaultVisibilidad)) {
             $terminos[] = self::ENUNCIADO_PAGO_TOTAL_CONFORMIDAD;
         }
-        if ($this->obs_garantia_dias > 0) {
+        if (
+            self::terminoActivoPersistido($config, 'garantia_activo', $this->obs_garantia_dias > 0)
+            && $this->obs_garantia_dias > 0
+        ) {
             $duracion = self::formatearDuracion((int) $this->obs_garantia_dias);
             $terminos[] = sprintf(self::ENUNCIADO_GARANTIA, $duracion);
         }
-        if (self::flagVisible($visibilidad, 'garantia_calidad', true)) {
+        if (self::flagVisible($visibilidad, 'garantia_calidad', $defaultVisibilidad)) {
             $terminos[] = self::ENUNCIADO_GARANTIA_CALIDAD;
         }
-        if (self::flagVisible($visibilidad, 'correccion_defectos', true)) {
+        if (self::flagVisible($visibilidad, 'correccion_defectos', $defaultVisibilidad)) {
             $terminos[] = self::ENUNCIADO_CORRECCION_DEFECTOS;
         }
-        if (self::flagVisible($visibilidad, 'incluye_materiales_insumos', true)) {
+        if (self::flagVisible($visibilidad, 'incluye_materiales_insumos', $defaultVisibilidad)) {
             $terminos[] = self::ENUNCIADO_INCLUYE_MATERIALES_INSUMOS;
         }
-        if (self::flagVisible($visibilidad, 'incluye_traslados', (bool) $this->obs_traslados)) {
+        if (self::flagVisible($visibilidad, 'incluye_traslados', $visibilidadEstricta ? false : (bool) $this->obs_traslados)) {
             $terminos[] = self::ENUNCIADO_INCLUYE_TRASLADOS;
         }
-        if (self::flagVisible($visibilidad, 'incluye_viaticos', (bool) $this->obs_viaticos)) {
+        if (self::flagVisible($visibilidad, 'incluye_viaticos', $visibilidadEstricta ? false : (bool) $this->obs_viaticos)) {
             $terminos[] = self::ENUNCIADO_INCLUYE_VIATICOS;
         }
 
@@ -263,13 +268,14 @@ class Presupuesto extends BaseModel
 
         // Validación y alcances
         $alcances = is_array($this->validacion_alcances) ? $this->validacion_alcances : [];
-        if (self::flagVisible($alcances, 'incluye_todos_los_costos', true)) {
+        $defaultAlcance = $alcances !== [] ? false : true;
+        if (self::flagVisible($alcances, 'incluye_todos_los_costos', $defaultAlcance)) {
             $validaciones[] = self::ENUNCIADO_ALCANCE_INCLUYE_TODOS_COSTOS;
         }
-        if (self::flagVisible($alcances, 'sin_costos_adicionales_no_autorizados', true)) {
+        if (self::flagVisible($alcances, 'sin_costos_adicionales_no_autorizados', $defaultAlcance)) {
             $validaciones[] = self::ENUNCIADO_ALCANCE_SIN_COSTOS_ADICIONALES;
         }
-        if (self::flagVisible($alcances, 'adicionales_requieren_autorizacion_escrita', true)) {
+        if (self::flagVisible($alcances, 'adicionales_requieren_autorizacion_escrita', $defaultAlcance)) {
             $validaciones[] = self::ENUNCIADO_ALCANCE_ADICIONALES_AUTORIZACION;
         }
 
@@ -349,6 +355,7 @@ class Presupuesto extends BaseModel
         $ivaPct = (float) ($data['term_cond_iva'] ?? $data['iva_porcentaje'] ?? 16);
         $config = is_array($data['configuracion_condiciones'] ?? null) ? $data['configuracion_condiciones'] : [];
         $visibilidad = is_array($data['term_cond_visibilidad'] ?? null) ? $data['term_cond_visibilidad'] : [];
+        $visibilidadEstricta = $visibilidad !== [];
 
         // 1. vigencia
         if (
@@ -359,8 +366,10 @@ class Presupuesto extends BaseModel
             $terminos[] = sprintf(self::ENUNCIADO_VIGENCIA, (int) $data['term_cond_dias_vigencia']);
         }
 
-        // 2. moneda (siempre visible en el formato de presupuesto)
-        $terminos[] = self::buildEnunciadoMoneda($data['term_cond_moneda'] ?? null);
+        // 2. moneda
+        if (self::terminoActivoFormulario($config, 'moneda_activo')) {
+            $terminos[] = self::buildEnunciadoMoneda($data['term_cond_moneda'] ?? null);
+        }
 
         // 3. impuestos
         $mostrarImpuestos = $data['term_cond_impuestos_en_pdf'] ?? false;
@@ -388,27 +397,28 @@ class Presupuesto extends BaseModel
         }
 
         // 6-9. cláusulas visibles
-        if (self::flagVisible($visibilidad, 'pago_contra_conformidad', true)) {
+        $defaultVisibilidad = $visibilidadEstricta ? false : true;
+        if (self::flagVisible($visibilidad, 'pago_contra_conformidad', $defaultVisibilidad)) {
             $terminos[] = self::ENUNCIADO_PAGO_TOTAL_CONFORMIDAD;
         }
         $garantiaDias = (int) ($data['obs_garantia_dias'] ?? 0);
-        if ($garantiaDias > 0) {
+        if (self::terminoActivoFormulario($config, 'garantia_activo') && $garantiaDias > 0) {
             $duracion = self::formatearDuracion($garantiaDias);
             $terminos[] = sprintf(self::ENUNCIADO_GARANTIA, $duracion);
         }
-        if (self::flagVisible($visibilidad, 'garantia_calidad', true)) {
+        if (self::flagVisible($visibilidad, 'garantia_calidad', $defaultVisibilidad)) {
             $terminos[] = self::ENUNCIADO_GARANTIA_CALIDAD;
         }
-        if (self::flagVisible($visibilidad, 'correccion_defectos', true)) {
+        if (self::flagVisible($visibilidad, 'correccion_defectos', $defaultVisibilidad)) {
             $terminos[] = self::ENUNCIADO_CORRECCION_DEFECTOS;
         }
-        if (self::flagVisible($visibilidad, 'incluye_materiales_insumos', true)) {
+        if (self::flagVisible($visibilidad, 'incluye_materiales_insumos', $defaultVisibilidad)) {
             $terminos[] = self::ENUNCIADO_INCLUYE_MATERIALES_INSUMOS;
         }
-        if (self::flagVisible($visibilidad, 'incluye_traslados', array_key_exists('obs_traslados', $data) ? (bool) $data['obs_traslados'] : true)) {
+        if (self::flagVisible($visibilidad, 'incluye_traslados', $visibilidadEstricta ? false : (array_key_exists('obs_traslados', $data) ? (bool) $data['obs_traslados'] : true))) {
             $terminos[] = self::ENUNCIADO_INCLUYE_TRASLADOS;
         }
-        if (self::flagVisible($visibilidad, 'incluye_viaticos', array_key_exists('obs_viaticos', $data) ? (bool) $data['obs_viaticos'] : true)) {
+        if (self::flagVisible($visibilidad, 'incluye_viaticos', $visibilidadEstricta ? false : (array_key_exists('obs_viaticos', $data) ? (bool) $data['obs_viaticos'] : true))) {
             $terminos[] = self::ENUNCIADO_INCLUYE_VIATICOS;
         }
 
@@ -424,13 +434,14 @@ class Presupuesto extends BaseModel
         }
 
         $alcances = is_array($data['validacion_alcances'] ?? null) ? $data['validacion_alcances'] : [];
-        if (self::flagVisible($alcances, 'incluye_todos_los_costos', true)) {
+        $defaultAlcance = $alcances !== [] ? false : true;
+        if (self::flagVisible($alcances, 'incluye_todos_los_costos', $defaultAlcance)) {
             $validaciones[] = self::ENUNCIADO_ALCANCE_INCLUYE_TODOS_COSTOS;
         }
-        if (self::flagVisible($alcances, 'sin_costos_adicionales_no_autorizados', true)) {
+        if (self::flagVisible($alcances, 'sin_costos_adicionales_no_autorizados', $defaultAlcance)) {
             $validaciones[] = self::ENUNCIADO_ALCANCE_SIN_COSTOS_ADICIONALES;
         }
-        if (self::flagVisible($alcances, 'adicionales_requieren_autorizacion_escrita', true)) {
+        if (self::flagVisible($alcances, 'adicionales_requieren_autorizacion_escrita', $defaultAlcance)) {
             $validaciones[] = self::ENUNCIADO_ALCANCE_ADICIONALES_AUTORIZACION;
         }
 

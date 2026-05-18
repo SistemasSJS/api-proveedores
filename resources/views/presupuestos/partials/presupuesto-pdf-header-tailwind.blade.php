@@ -9,8 +9,8 @@
                 @php
                     $logoProveedorBase64 = $presupuesto['logo_proveedor_base64'] ?? null;
                     $nombreEmpresa =
-                        $presupuesto['proveedor']->razon_social ??
-                        ($presupuesto['proveedor']->nombre_comercial ?? 'P');
+                        $presupuesto['proveedor']->nombre_comercial ??
+                        ($presupuesto['proveedor']->razon_social ?? 'P');
                     $inicial = strtoupper(substr($nombreEmpresa, 0, 1));
                     $maxLogoWidthMm = $headerCompact ? 26.0 : 40.0;
                     $maxLogoHeightMm = $headerCompact ? 15.0 : 30.0;
@@ -84,8 +84,18 @@
                     <td class="tw-emisor-cell">
                         @php
                             $p = $presupuesto['proveedor'];
-                            $emisorNombre = $p->razon_social ?? $p->nombre_comercial;
+                            $emisorComercial = trim((string) ($p->nombre_comercial ?? ''));
+                            $emisorRazonSocial = trim((string) ($p->razon_social ?? ''));
+                            $emisorNombre =
+                                $emisorComercial !== ''
+                                    ? $emisorComercial
+                                    : $emisorRazonSocial;
                             $emisorNombre = \Illuminate\Support\Str::limit($emisorNombre, 40, '');
+                            $emisorRazonSocialLinea =
+                                $emisorRazonSocial !== '' &&
+                                strcasecmp($emisorRazonSocial, $emisorNombre) !== 0
+                                    ? \Illuminate\Support\Str::limit($emisorRazonSocial, 50, '')
+                                    : null;
                             $emisorRfc = $p->rfc ?? null;
                             $emisorDireccion = $p->direccion_empresa ?? null;
                             $df = $p->direccion_fiscal ?? null;
@@ -100,6 +110,9 @@
                             $emisorEmail = $p->email ?? null;
                         @endphp
                         <div class="tw-emisor-name">{{ $emisorNombre }}</div>
+                        @if ($emisorRazonSocialLinea)
+                            <div class="tw-emisor-line">{{ $emisorRazonSocialLinea }}</div>
+                        @endif
                         @if ($emisorRfc)
                             <div class="tw-emisor-line">{{ $emisorRfc }}</div>
                         @endif
