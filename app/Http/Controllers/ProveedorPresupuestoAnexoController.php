@@ -8,6 +8,7 @@ use App\Http\Resources\Presupuesto\PresupuestoAnexoResource;
 use App\Models\Presupuesto;
 use App\Models\PresupuestoAnexo;
 use App\Models\Proveedor;
+use App\Support\PresupuestoAnexoImagenOptimizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -44,19 +45,20 @@ class ProveedorPresupuestoAnexoController extends Controller
         try {
             $validated = $request->validated();
 
+            $archivo = $this->guardarImagenBase64($proveedor, $presupuesto, $validated['archivo_base64']);
+
             $anexo = PresupuestoAnexo::create([
                 'presupuesto_id' => (int) $presupuesto->id,
-                'titulo' => $validated['titulo'],
+                'titulo' => $this->normalizarTituloAnexo($validated['titulo'] ?? null),
                 'descripcion' => $validated['descripcion'] ?? null,
                 'precio' => $validated['precio'] ?? null,
                 'orden' => isset($validated['orden'])
                     ? (int) $validated['orden']
                     : ((int) $presupuesto->anexos()->max('orden') + 1),
-                'archivo_path' => $this->guardarImagenBase64(
-                    $proveedor,
-                    $presupuesto,
-                    $validated['archivo_base64']
-                ),
+                'archivo_path' => $archivo['path'],
+                'archivo_width' => $archivo['width'] ?: null,
+                'archivo_height' => $archivo['height'] ?: null,
+                'archivo_aspect_ratio' => $archivo['aspect_ratio'] ?: null,
             ])->fresh(PresupuestoAnexo::eagerLodable());
 
             return $this->success(
@@ -97,7 +99,7 @@ class ProveedorPresupuestoAnexoController extends Controller
         try {
             $validated = $request->validated();
             $payload = [
-                'titulo' => $validated['titulo'],
+                'titulo' => $this->normalizarTituloAnexo($validated['titulo'] ?? null),
                 'descripcion' => $validated['descripcion'] ?? null,
                 'precio' => $validated['precio'] ?? null,
                 'orden' => isset($validated['orden']) ? (int) $validated['orden'] : (int) $anexo->orden,
@@ -107,11 +109,15 @@ class ProveedorPresupuestoAnexoController extends Controller
                 if ($anexo->archivo_path && Storage::disk('public')->exists($anexo->archivo_path)) {
                     Storage::disk('public')->delete($anexo->archivo_path);
                 }
-                $payload['archivo_path'] = $this->guardarImagenBase64(
+                $archivo = $this->guardarImagenBase64(
                     $proveedor,
                     $presupuesto,
                     $validated['archivo_base64']
                 );
+                $payload['archivo_path'] = $archivo['path'];
+                $payload['archivo_width'] = $archivo['width'] ?: null;
+                $payload['archivo_height'] = $archivo['height'] ?: null;
+                $payload['archivo_aspect_ratio'] = $archivo['aspect_ratio'] ?: null;
             }
 
             $anexo->update($payload);
@@ -148,6 +154,15 @@ class ProveedorPresupuestoAnexoController extends Controller
         }
     }
 
+    private function normalizarTituloAnexo(mixed $titulo): string
+    {
+        if ($titulo === null) {
+            return '';
+        }
+
+        return trim((string) $titulo);
+    }
+
     private function validateAccess(
         Request $request,
         Proveedor $proveedor,
@@ -171,7 +186,10 @@ class ProveedorPresupuestoAnexoController extends Controller
         return null;
     }
 
-    private function guardarImagenBase64(Proveedor $proveedor, Presupuesto $presupuesto, string $dataUri): string
+    /**
+     * @return array{path: string, width: int, height: int, aspect_ratio: float}
+     */
+    private function guardarImagenBase64(Proveedor $proveedor, Presupuesto $presupuesto, string $dataUri): array
     {
         if (! preg_match('/^data:image\/(jpeg|jpg|png|webp);base64,(.+)$/i', $dataUri, $matches)) {
             throw new \InvalidArgumentException('La imagen del anexo no es válida.');
@@ -182,7 +200,9 @@ class ProveedorPresupuestoAnexoController extends Controller
             throw new \InvalidArgumentException('La imagen del anexo no es válida.');
         }
 
-        $extension = strtolower($matches[1]) === 'jpeg' ? 'jpg' : strtolower($matches[1]);
+        $optimizado = PresupuestoAnexoImagenOptimizer::optimizarParaAlmacenamiento($binary);
+        $extension = $optimizado['extension'] ?? 'jpg';
+
         $path = sprintf(
             'proveedores/%d/presupuestos/%d/anexos/%s.%s',
             (int) $proveedor->id,
@@ -191,8 +211,13 @@ class ProveedorPresupuestoAnexoController extends Controller
             $extension
         );
 
-        Storage::disk('public')->put($path, $binary);
+        Storage::disk('public')->put($path, $optimizado['binary']);
 
-        return $path;
+        return [
+            'path' => $path,
+            'width' => (int) ($optimizado['width'] ?? 0),
+            'height' => (int) ($optimizado['height'] ?? 0),
+            'aspect_ratio' => (float) ($optimizado['aspect_ratio'] ?? 0),
+        ];
     }
 }

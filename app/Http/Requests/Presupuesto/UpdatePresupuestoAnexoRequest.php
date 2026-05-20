@@ -17,7 +17,7 @@ class UpdatePresupuestoAnexoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'titulo' => ['required', 'string', 'max:40'],
+            'titulo' => ['nullable', 'string', 'max:40'],
             'descripcion' => ['nullable', 'string', 'max:100'],
             'precio' => ['nullable', 'numeric', 'min:0'],
             'orden' => ['nullable', 'integer', 'min:1'],
@@ -41,7 +41,6 @@ class UpdatePresupuestoAnexoRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'titulo.required' => 'El título del anexo es obligatorio.',
             'titulo.string' => 'El título del anexo debe ser texto.',
             'titulo.max' => 'El título del anexo no debe exceder 40 caracteres.',
             'descripcion.string' => 'La descripción del anexo debe ser texto.',

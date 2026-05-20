@@ -1493,7 +1493,9 @@ class ProveedorPresupuestoController extends Controller
                 ->setOption('margin-left', 25)
                 ->setOption('margin-right', 25)
                 ->setOption('enable-local-file-access', false) // No necesitamos acceso a archivos locales si usamos base64
-                ->setOption('chroot', public_path()); // Establecer directorio raíz para archivos locales
+                ->setOption('chroot', public_path()) // Establecer directorio raíz para archivos locales
+                ->setOption('compress', true)
+                ->setOption('dpi', 96);
 
             // Retornar PDF como descarga
             return $pdf->download($filename);

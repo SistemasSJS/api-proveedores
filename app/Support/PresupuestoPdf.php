@@ -111,7 +111,9 @@ final class PresupuestoPdf
             ->setOption('margin-left', 25)
             ->setOption('margin-right', 25)
             ->setOption('enable-local-file-access', false)
-            ->setOption('chroot', public_path());
+            ->setOption('chroot', public_path())
+            ->setOption('compress', true)
+            ->setOption('dpi', 96);
     }
 
     private static function generarQrCodeParaPresupuesto(Presupuesto $presupuesto): ?string
@@ -243,7 +245,14 @@ final class PresupuestoPdf
 
         $path = trim($archivoPath);
         if (str_starts_with($path, 'data:image/')) {
-            return $path;
+            if (! preg_match('/^data:image\/[^;]+;base64,(.+)$/i', $path, $m)) {
+                return '';
+            }
+            $decoded = base64_decode($m[1], true);
+
+            return $decoded !== false
+                ? PresupuestoAnexoImagenOptimizer::dataUriParaPdf($decoded)
+                : '';
         }
 
         if (! Storage::disk('public')->exists($path)) {
@@ -251,15 +260,8 @@ final class PresupuestoPdf
         }
 
         $binary = Storage::disk('public')->get($path);
-        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-        $mime = match ($extension) {
-            'jpg', 'jpeg' => 'image/jpeg',
-            'webp' => 'image/webp',
-            'gif' => 'image/gif',
-            default => 'image/png',
-        };
 
-        return 'data:' . $mime . ';base64,' . base64_encode($binary);
+        return PresupuestoAnexoImagenOptimizer::dataUriParaPdf($binary);
     }
 
     /**
