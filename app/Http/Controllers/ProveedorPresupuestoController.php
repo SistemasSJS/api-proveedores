@@ -1408,16 +1408,10 @@ class ProveedorPresupuestoController extends Controller
         $presupuesto->conceptos()->delete();
 
         foreach ($conceptos as $index => $conceptoData) {
-            $tipo = $conceptoData['tipo'] ?? PresupuestoConcepto::TIPO_CONCEPTO;
-            $descripcion = (string) ($conceptoData['descripcion'] ?? '');
-            if ($tipo === PresupuestoConcepto::TIPO_PARRAFO) {
-                $descripcion = PresupuestoConcepto::sanitizarDescripcionParrafo($descripcion);
-            }
-
             $concepto = new PresupuestoConcepto([
                 'numero' => $index + 1,
-                'tipo' => $tipo,
-                'descripcion' => $descripcion,
+                'tipo' => $conceptoData['tipo'] ?? PresupuestoConcepto::TIPO_CONCEPTO,
+                'descripcion' => $conceptoData['descripcion'],
                 'cantidad' => $conceptoData['cantidad'],
                 'unidad' => $conceptoData['unidad'],
                 'precio_unitario' => $conceptoData['precio_unitario'],
