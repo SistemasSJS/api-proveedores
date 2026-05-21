@@ -63,5 +63,22 @@ class PresupuestoConcepto extends BaseModel
     {
         return ($this->tipo ?? self::TIPO_CONCEPTO) === self::TIPO_PARRAFO;
     }
+
+    /**
+     * Texto de párrafo en una sola línea: sin saltos de línea, tabulaciones ni caracteres de control.
+     */
+    public static function sanitizarDescripcionParrafo(string $descripcion): string
+    {
+        $text = preg_replace('/[\R\v\f\x{85}\x{2028}\x{2029}]+/u', ' ', $descripcion) ?? '';
+        $text = preg_replace('/[\x{00}-\x{1F}\x{7F}-\x{9F}]/u', '', $text) ?? '';
+        $text = preg_replace('/\s+/u', ' ', $text) ?? '';
+
+        $text = trim($text);
+        if (mb_strlen($text) > self::DESCRIPCION_PARRAFO_MAX) {
+            $text = mb_substr($text, 0, self::DESCRIPCION_PARRAFO_MAX);
+        }
+
+        return $text;
+    }
 }
 
