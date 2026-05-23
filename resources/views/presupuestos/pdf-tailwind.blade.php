@@ -16,910 +16,856 @@
       Plantilla PDF alternativa (utilidades estilo Tailwind embebidas).
       Acento corporativo azul #3498db (alineado con pdf.blade.php). DomPDF: sin CDN.
     --}}
-    <style>
-        @page {
-            size: letter;
-            margin: 25.5mm;
-        }
-
-        :root {
-            --tw-slate-50: #f8fafc;
-            --tw-slate-100: #f1f5f9;
-            --tw-slate-200: #e2e8f0;
-            --tw-slate-400: #94a3b8;
-            --tw-slate-500: #64748b;
-            --tw-slate-600: #475569;
-            --tw-slate-700: #334155;
-            --tw-slate-800: #1e293b;
-            --tw-slate-900: #0f172a;
-            --accent: #3498db;
-            --accent-dark: #2980b9;
-            --accent-soft: #eaf4fc;
-            --accent-border: #d6eaf8;
-            --heading: #2c3e50;
-            --tw-white: #ffffff;
-            /* Interlineado unificado en bloques de texto del cuerpo */
-            --section-line-height: 1.05;
-        }
-
-        html,
-        body {
-            font-family: 'DejaVu Sans', Arial, sans-serif;
-            font-size: 8.5pt;
-            color: var(--tw-slate-800);
-            background: var(--tw-white);
-            line-height: 1.2;
-            margin: 0;
-            padding: 0;
-            padding-bottom: {{ $footerHeightMm }}mm;
-        }
-
-        body {
-            padding-top: {{ $margenMm }}mm;
-        }
-
-        .margin-sides {
-            padding-left: {{ $margenMm }}mm;
-            padding-right: {{ $margenMm }}mm;
-        }
-
-        .document-container {
-            width: 100%;
-            background: var(--tw-white);
-        }
-
-        /* —— Encabezado (rejilla 3 columnas, sin barra lateral) —— */
-        .tw-header-wrap {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 0;
-            page-break-inside: avoid;
-        }
-
-        .tw-header-main {
-            vertical-align: top;
-            padding: 0;
-            background: transparent;
-        }
-
-        /* Línea bajo encabezado (igual en 1ª hoja y siguientes) */
-        .tw-header-rule {
-            width: 100%;
-            height: 0;
-            margin: 3mm 0 3mm 0;
-            padding: 0;
-            border: 0;
-            border-top: 3px solid var(--accent);
-            font-size: 0;
-            line-height: 0;
-            overflow: hidden;
-        }
-
-        .tw-header-top {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        /*
-         * Logo emisor:
-         * - Contenedor máximo: 4 cm × 3 cm
-         * - Contenedor mínimo: 2 cm × 2 cm
-         * - Separación con el texto a la derecha: 0.5 mm
-         */
-        .tw-logo-cell {
-            box-sizing: border-box;
-            padding: 0 0.7mm 0 0;
-            vertical-align: top;
-            text-align: left;
-        }
-
-        .tw-logo-box {
-            overflow: hidden;
-            display: block;
-            box-sizing: border-box;
-            min-width: 20mm;
-            min-height: 20mm;
-            max-width: 40mm;
-            max-height: 30mm;
-        }
-
-        .tw-logo-img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            object-position: left center;
-            display: block;
-        }
-
-        .tw-logo-fallback {
-            width: 100%;
-            height: 100%;
-            min-height: 20mm;
-            background: var(--accent);
-            border-radius: 1mm;
-            text-align: center;
-            line-height: normal;
-            color: var(--tw-white);
-            font-size: 14pt;
-            font-weight: bold;
-            display: table;
-        }
-
-        .tw-logo-fallback span {
-            display: table-cell;
-            vertical-align: middle;
-        }
-
-        .tw-emisor-cell {
-            vertical-align: top;
-            padding-left: 0;
-            width: auto;
-        }
-
-        .tw-emisor-name {
-            font-size: 9.5pt;
-            font-weight: 700;
-            color: var(--heading);
-            text-transform: uppercase;
-            margin-bottom: 0.4mm;
-            letter-spacing: 0.03em;
-            line-height: var(--section-line-height);
-        }
-
-        .tw-emisor-line {
-            font-size: 7pt;
-            color: var(--tw-slate-600);
-            margin-bottom: 0.2mm;
-            line-height: var(--section-line-height);
-        }
-
-        .tw-folio-cell {
-            vertical-align: top;
-            text-align: right;
-            width: 30%;
-        }
-
-        .tw-badge-label {
-            font-size: 6pt;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--tw-slate-500);
-            margin-bottom: 0.6mm;
-        }
-
-        .tw-badge-folio {
-            display: block;
-            background: transparent;
-            border: none;
-            color: var(--accent);
-            font-size: 13pt;
-            font-weight: 700;
-            padding: 0;
-            margin: 0 0 1mm 0;
-            line-height: 1.1;
-        }
-
-        .tw-uuid {
-            font-size: 6pt;
-            color: var(--tw-slate-500);
-            word-break: break-all;
-            max-width: 100%;
-        }
-
-        .tw-date {
-            font-size: 7pt;
-            color: var(--tw-slate-800);
-            margin-top: 0.6mm;
-        }
-
-        .tw-header-wrap--compact + .tw-header-rule {
-            margin: 2mm 0 3mm 0;
-        }
-
-        .tw-header-wrap--compact .tw-logo-box {
-            min-width: 0 !important;
-            min-height: 0 !important;
-        }
-
-        .tw-header-wrap--compact .tw-emisor-name {
-            font-size: 7.5pt;
-            margin-bottom: 0.15mm;
-        }
-
-        .tw-header-wrap--compact .tw-emisor-line {
-            font-size: 6pt;
-            margin-bottom: 0.1mm;
-        }
-
-        .tw-header-wrap--compact .tw-badge-label {
-            font-size: 5.5pt;
-            margin-bottom: 0.25mm;
-        }
-
-        .tw-header-wrap--compact .tw-badge-folio {
-            font-size: 10pt;
-            margin: 0 0 0.4mm 0;
-        }
-
-        .tw-header-wrap--compact .tw-date {
-            font-size: 6pt;
-            margin-top: 0.25mm;
-        }
-
-        /* Cajas grises (referencia): fondo claro, borde suave, sin acento lateral */
-        /* Bloques «Dirigido a» y «Descripción general» (presupuesto-proveedor-preview.page.scss .receptor-section) */
-        .tw-card,
-        .tw-desc-box {
-            width: 100%;
-            margin-bottom: 3mm;
-            padding-bottom: 2mm;
-            padding-left: 0;
-            padding-right: 0;
-            padding-top: 0;
-            page-break-inside: avoid;
-        }
-
-        /* .receptor-title — mismo título azul 6pt en ambos bloques */
-        .tw-card-title {
-            font-size: 6pt;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #3498db;
-            margin: 0 0 1mm 0;
-            padding: 0;
-            border: none;
-            line-height: 1.1;
-        }
-
-        /* .descripcion-general-title */
-        .tw-card-title.tw-desc-general-title {
-            letter-spacing: 0.5px;
-        }
-
-        /* .receptor-name — primera línea del receptor */
-        .tw-receptor-strong {
-            font-size: 9pt;
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 1mm;
-            line-height: 1.15;
-        }
-
-        /* .receptor-info — líneas siguientes */
-        .tw-receptor-line {
-            font-size: 7pt;
-            color: #5f6f89;
-            margin-bottom: 0.8mm;
-            line-height: 1.15;
-        }
-
-        /* Cuerpo descripción: hereda tamaño de .budget-preview-card en preview (8.5pt, #2c3e50) */
-        .tw-desc-text {
-            font-size: 9pt;
-            font-weight: 700;
-            color: #2c3e50;
-            line-height: 1.15;
-            text-align: left;
-            white-space: pre-wrap;
-        }
-
-        /* Título bloque tabla (referencia: centrado, negro, sin subrayado azul) */
-        .tw-section-title {
-            font-size: 9.5pt;
-            font-weight: 700;
-            color: var(--heading);
-            text-transform: none;
-            letter-spacing: 0.02em;
-            text-align: center;
-            margin: 4mm 0 2mm 0;
-            padding: 0;
-            border: none;
-            width: 100%;
-        }
-
-        .tw-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 6mm;
-            table-layout: fixed;
-        }
-
-        .tw-table thead {
-            display: table-header-group;
-        }
-
-        .tw-table thead tr {
-            background: var(--accent) !important;
-            color: var(--tw-white) !important;
-        }
-
-        .tw-table thead th {
-            padding: 1mm 0.5mm;
-            font-size: 5.8pt;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            text-align: center;
-            color: var(--tw-white) !important;
-            background: var(--accent) !important;
-            border: 1px solid var(--accent-dark);
-            line-height: 1.12;
-        }
-
-        .tw-table thead th:nth-child(2) {
-            text-align: left;
-            padding-left: 1.5mm;
-        }
-
-        .tw-table thead th:nth-child(5),
-        .tw-table thead th:nth-child(6) {
-            text-align: right;
-            padding-right: 1mm;
-        }
-
-        .tw-table tbody td {
-            padding: 1.2mm 1mm;
-            font-size: 6.5pt;
-            border: 1px solid var(--tw-slate-200);
-            vertical-align: top;
-        }
-
-        .tw-table tbody tr:nth-child(odd) {
-            background: var(--tw-white);
-        }
-
-        .tw-table tbody tr:nth-child(even) {
-            background: #eef6fc;
-        }
-
-        .tw-table tbody td:first-child {
-            text-align: center;
-            color: var(--tw-slate-500);
-            font-weight: 600;
-        }
-
-        .tw-table tbody td:nth-child(2) {
-            text-align: left;
-            color: var(--heading);
-            padding-left: 1.2mm;
-        }
-
-        .tw-table tbody td:nth-child(3),
-        .tw-table tbody td:nth-child(4) {
-            text-align: center;
-            color: var(--tw-slate-600);
-            text-transform: uppercase;
-        }
-
-        .tw-table tbody td:nth-child(5),
-        .tw-table tbody td:nth-child(6) {
-            text-align: right;
-            color: var(--tw-slate-800);
-        }
-
-        .tw-table tbody td:nth-child(6) {
-            font-weight: 600;
-        }
-
-        .tw-no-rows {
-            text-align: center;
-            font-style: italic;
-            color: var(--tw-slate-400);
-            padding: 5mm !important;
-        }
-
-        .tw-table tbody tr.tw-linea-parrafo td {
-            text-align: left;
-            font-weight: 400;
-            color: var(--tw-slate-700);
-            padding: 3mm 2.5mm;
-            line-height: 1.45;
-            white-space: pre-wrap;
-            background: #f8fafc;
-            max-height: 14mm;
-            overflow: hidden;
-        }
-
-        /* Totales */
-        .tw-totals-wrap {
-            width: 100%;
-            page-break-inside: avoid;
-        }
-
-        .tw-totals-inner {
-            width: 52%;
-            margin-left: 48%;
-            border: 1px solid var(--tw-slate-200);
-            border-radius: 1mm;
-            overflow: hidden;
-            background: var(--tw-white);
-        }
-
-        .tw-totals-table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-        }
-
-        .tw-totals-table td {
-            padding: 1mm 2mm;
-            font-size: 7pt;
-            white-space: nowrap;
-            overflow: hidden;
-        }
-
-        .tw-totals-table td:first-child {
-            width: 58%;
-            text-align: right;
-            color: var(--tw-slate-600);
-            background: var(--tw-slate-50);
-        }
-
-        .tw-totals-table .tw-totals-meta-value {
-            text-align: right;
-            font-weight: 600;
-            color: var(--tw-slate-800);
-        }
-
-        .tw-totals-table .tw-totals-money-sign-col {
-            width: 12%;
-            text-align: right;
-            font-weight: 600;
-            color: var(--tw-slate-500);
-            padding-right: 1mm;
-        }
-
-        .tw-totals-table .tw-totals-money-amount-col {
-            width: 30%;
-            text-align: right;
-            font-weight: 600;
-            color: var(--tw-slate-800);
-            font-variant-numeric: tabular-nums;
-        }
-
-        .tw-totals-table .tw-total-row td {
-            background: var(--tw-white);
-            border-top: 2px solid var(--accent);
-            font-size: 10pt;
-            font-weight: 700;
-        }
-
-        .tw-totals-table .tw-total-row td:first-child {
-            color: var(--heading);
-            text-transform: uppercase;
-        }
-
-        .tw-totals-table .tw-total-row td:last-child {
-            color: var(--accent);
-        }
-
-        .tw-totals-table .tw-total-row .tw-totals-money-sign-col,
-        .tw-totals-table .tw-total-row .tw-totals-money-amount-col {
-            color: inherit;
-            font-weight: inherit;
-        }
-
-        .importe-con-letra {
-            margin-top: 2mm;
-            width: 100%;
-            border: 1px solid var(--tw-slate-100);
-            border-radius: 1mm;
-            background: var(--tw-white);
-            page-break-inside: avoid;
-            overflow: hidden;
-        }
-
-        .importe-con-letra-label {
-            background: #fafbfc;
-            text-align: center;
-            font-size: 6pt;
-            font-weight: 400;
-            letter-spacing: 0.02em;
-            text-transform: none;
-            color: var(--tw-slate-400);
-            padding: 1mm 2mm;
-            border-bottom: 1px solid var(--tw-slate-100);
-        }
-
-        .importe-con-letra-valor {
-            text-align: center;
-            font-size: 6.5pt;
-            font-weight: 400;
-            color: var(--tw-slate-500);
-            padding: 1.8mm 2.5mm;
-            line-height: 1.3;
-            background: #fcfdfe;
-            white-space: normal;
-            word-break: break-word;
-        }
-
-        .after-table-space {
-            height: 8mm;
-        }
-
-        .tw-page-break {
-            page-break-before: always;
-        }
-
-        .tw-anexos-page {
-            width: 100%;
-        }
-
-        .tw-anexos-header {
-            margin-bottom: 2.5mm;
-            padding-bottom: 1.5mm;
-            border-bottom: 1px solid var(--tw-slate-200);
-        }
-
-        .tw-anexos-title {
-            font-size: 11pt;
-            font-weight: 700;
-            color: var(--heading);
-            line-height: 1.15;
-            margin: 0;
-        }
-
-        .tw-anexos-list {
-            width: 100%;
-        }
-
-        .tw-anexo-simple {
-            width: 100%;
-            padding: 2.8mm 0;
-            border-bottom: 1px solid var(--tw-slate-200);
-            page-break-inside: avoid;
-        }
-
-        .tw-anexo-simple:last-child {
-            border-bottom: none;
-        }
-
-        .tw-anexo-simple-table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-        }
-
-        .tw-anexo-simple-media,
-        .tw-anexo-simple-text {
-            vertical-align: top;
-        }
-
-        .tw-anexo-simple-media {
-            width: 52mm;
-            padding-right: 3.5mm;
-        }
-
-        .tw-anexo-simple-image-wrap {
-            height: 40mm;
-            overflow: hidden;
-            background: var(--tw-slate-50);
-            text-align: center;
-        }
-
-        .tw-anexo-simple-image {
-            display: block;
-            width: auto;
-            height: auto;
-            max-width: 100%;
-            max-height: 100%;
-            margin: 0 auto;
-        }
-
-        .tw-anexo-simple-heading {
-            font-size: 8.4pt;
-            font-weight: 700;
-            color: var(--heading);
-            line-height: 1.2;
-            margin-bottom: 1.1mm;
-        }
-
-        .tw-anexo-simple-desc {
-            font-size: 7.1pt;
-            color: var(--tw-slate-600);
-            line-height: 1.3;
-            word-break: break-word;
-            white-space: pre-wrap;
-            margin-bottom: 1.1mm;
-        }
-
-        .tw-anexo-simple-price {
-            font-size: 7.8pt;
-            font-weight: 700;
-            color: var(--accent);
-        }
-
-        /* Términos */
-        .terms-block {
-            margin-bottom: 3mm;
-            page-break-inside: auto;
-        }
-
-        .tw-terms+.tw-terms {
-            margin-top: 2mm;
-        }
-
-        .tw-terms {
-            margin-top: 3mm;
-            padding-top: 0;
-            border-top: none;
-        }
-
-        .tw-terms h3 {
-            font-size: 6.5pt;
-            font-weight: 700;
-            color: var(--heading);
-            text-transform: none;
-            letter-spacing: 0.02em;
-            margin: 0 0 1mm 0;
-            line-height: var(--section-line-height);
-        }
-
-        .tw-terms ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .tw-terms ul.tw-terms-num {
-            counter-reset: twi;
-        }
-
-        .tw-terms ul.tw-terms-num li {
-            font-size: 6.2pt;
-            color: var(--tw-slate-600);
-            line-height: var(--section-line-height);
-            margin-bottom: 0.6mm;
-            padding-left: 5mm;
-            position: relative;
-            text-align: justify;
-        }
-
-        .tw-terms ul.tw-terms-num li::before {
-            counter-increment: twi;
-            content: counter(twi) ".";
-            position: absolute;
-            left: 0;
-            font-weight: 600;
-            color: var(--tw-slate-800);
-        }
-
-        /* Observaciones: lista numerada (contador independiente de términos) */
-        .tw-terms ul.tw-obs-list {
-            counter-reset: twobs;
-        }
-
-        .tw-terms ul.tw-obs-list li {
-            font-size: 6.2pt;
-            color: var(--tw-slate-600);
-            line-height: var(--section-line-height);
-            margin-bottom: 0.6mm;
-            padding-left: 5mm;
-            position: relative;
-            text-align: justify;
-        }
-
-        .tw-terms ul.tw-obs-list li::before {
-            counter-increment: twobs;
-            content: counter(twobs) ".";
-            position: absolute;
-            left: 0;
-            font-weight: 600;
-            color: var(--tw-slate-800);
-        }
-
-        /* Footer fijo (igual que plantilla clásica) */
-        .footer {
-            position: fixed;
-            bottom: 6mm;
-            left: {{ $margenMm }}mm;
-            right: {{ $margenMm }}mm;
-            height: {{ $footerHeightMm - 2 }}mm;
-            min-height: {{ $footerHeightMm - 2 }}mm;
-            padding: 1mm 0 2mm;
-            font-size: 6.5pt;
-            color: var(--tw-slate-500);
-            line-height: 1.3;
-            overflow: visible;
-        }
-
-        .footer-table {
-            display: table;
-            width: 100%;
-        }
-
-        .footer-left {
-            display: table-cell;
-            width: 33%;
-            vertical-align: bottom;
-        }
-
-        .footer-center {
-            display: table-cell;
-            width: 34%;
-            text-align: center;
-            vertical-align: middle;
-        }
-
-        .footer-right {
-            display: table-cell;
-            width: 33%;
-            text-align: right;
-            vertical-align: middle;
-            padding-left: 2mm;
-        }
-
-        .footer-logos-row {
-            display: table;
-        }
-
-        .footer-logo-cell {
-            display: table-cell;
-            padding-right: 2.5mm;
-            vertical-align: middle;
-        }
-
-        .footer-logo-cell:last-child {
-            padding-right: 0;
-        }
-
-        .footer-logo-img {
-            width: 12mm;
-            height: 12mm;
-            object-fit: contain;
-            display: block;
-        }
-
-        .footer-logo-placeholder {
-            width: 12mm;
-            height: 12mm;
-            min-width: 12mm;
-            background: var(--tw-slate-200);
-            border-radius: 1.5mm;
-            font-size: 5pt;
-            font-weight: 700;
-            color: var(--tw-slate-500);
-            text-align: center;
-            line-height: 8mm;
-        }
-
-        .footer-center-content {
-            text-align: center;
-            width: 100%;
-        }
-
-        .footer-pages {
-            font-weight: 600;
-            color: var(--tw-slate-700);
-            font-size: 7pt;
-            margin-bottom: 0.6mm;
-            min-height: 3mm;
-        }
-
-        .footer-slogan {
-            font-style: italic;
-            color: var(--accent);
-            font-size: 6pt;
-        }
-
-        .footer-webs {
-            font-size: 6pt;
-        }
-
-        .footer-webs-link {
-            color: var(--accent);
-            text-decoration: none;
-        }
-
-        .footer-webs-sep {
-            color: var(--tw-slate-400);
-            margin: 0 1mm;
-        }
-
-        .footer-qr {
-            display: inline-block;
-            width: 15mm;
-            height: 15mm;
-            vertical-align: middle;
-        }
-
-        .footer-qr img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        /* ===== DEBUG VISUAL (TW VERSION) ===== */
-        /*
-        .tw-header-wrap {
-            outline: 2px solid red;
-        }
-
-        .tw-header-main {
-            outline: 1px solid purple;
-        }
-
-        .tw-header-top {
-            outline: 1px dashed gray;
-        }
-
-        .tw-logo-cell {
-            outline: 2px solid blue;
-        }
-
-        .tw-emisor-cell {
-            outline: 2px solid green;
-        }
-
-        .tw-folio-cell {
-            outline: 2px solid orange;
-        }
-
-        .tw-header-rule {
-            outline: 1px solid black;
-        }
-
-        .tw-card {
-            outline: 2px solid purple;
-        }
-
-        .tw-desc-box {
-            outline: 2px solid teal;
-        }
-
-        .tw-section-title {
-            outline: 1px solid brown;
-        }
-
-        .tw-table {
-            outline: 2px solid black;
-        }
-
-        .tw-table thead {
-            outline: 2px solid red;
-        }
-
-        .tw-table tbody {
-            outline: 2px solid blue;
-        }
-
-        .tw-totals-wrap {
-            outline: 2px solid darkgreen;
-        }
-
-        .tw-totals-inner {
-            outline: 2px dashed green;
-        }
-
-        .after-table-space {
-            outline: 1px solid red;
-        }
-        .terms-block {
-            outline: 2px solid magenta;
-        }
-
-        .tw-terms {
-            outline: 1px solid pink;
-        }
-
-        .footer {
-            outline: 2px dashed red;
-        }
-
-        .footer-left {
-            outline: 2px solid blue;
-        }
-
-        .footer-center {
-            outline: 2px solid green;
-        }
-
-        .footer-right {
-            outline: 2px solid orange;
-        } 
-        */
-    </style>
+<style>
+    @page {
+        size: letter;
+        margin: 25.5mm;
+    }
+
+    :root {
+
+        /* =========================
+           PALETA BASE
+        ========================== */
+
+        --color-white: #ffffff;
+
+        --color-slate-50: #f8fafc;
+        --color-slate-100: #f1f5f9;
+        --color-slate-200: #e2e8f0;
+        --color-slate-400: #94a3b8;
+        --color-slate-500: #64748b;
+        --color-slate-600: #475569;
+        --color-slate-700: #334155;
+        --color-slate-800: #1e293b;
+        --color-slate-900: #0f172a;
+
+        --color-primary: #3498db;
+        --color-primary-dark: #2980b9;
+        --color-primary-soft: #eaf4fc;
+        --color-primary-border: #d6eaf8;
+
+        --color-heading: #2c3e50;
+
+        --color-receptor-line: #5f6f89;
+
+        --color-row-even: #eef6fc;
+
+        --color-paragraph-bg: #f8fafc;
+
+        --color-importe-label-bg: #fafbfc;
+        --color-importe-value-bg: #fcfdfe;
+
+        /* =========================
+           VARIABLES SEMÁNTICAS
+        ========================== */
+
+        --bg-body: var(--color-white);
+
+        --text-primary: var(--color-slate-800);
+        --text-secondary: var(--color-slate-600);
+        --text-muted: var(--color-slate-500);
+        --text-soft: var(--color-slate-400);
+
+        --text-heading: var(--color-heading);
+
+        --primary: var(--color-primary);
+        --primary-dark: var(--color-primary-dark);
+        --primary-soft: var(--color-primary-soft);
+        --primary-border: var(--color-primary-border);
+
+        --table-header-bg: var(--primary);
+        --table-header-border: var(--primary-dark);
+        --table-header-text: var(--color-white);
+
+        --table-row-even-bg: var(--color-row-even);
+        --table-row-odd-bg: var(--color-white);
+
+        --paragraph-row-bg: var(--color-paragraph-bg);
+
+        --border-soft: var(--color-slate-100);
+        --border-default: var(--color-slate-200);
+
+        --footer-accent: var(--primary);
+
+        --importe-label-bg: var(--color-importe-label-bg);
+        --importe-value-bg: var(--color-importe-value-bg);
+
+        /* =========================
+           TIPOGRAFÍA
+        ========================== */
+
+        --section-line-height: 1.05;
+    }
+
+    html,
+    body {
+        font-family: 'DejaVu Sans', Arial, sans-serif;
+        font-size: 8.5pt;
+        color: var(--text-primary);
+        background: var(--bg-body);
+        line-height: 1.2;
+        margin: 0;
+        padding: 0;
+        padding-bottom: {{ $footerHeightMm }}mm;
+    }
+
+    body {
+        padding-top: {{ $margenMm }}mm;
+    }
+
+    .margin-sides {
+        padding-left: {{ $margenMm }}mm;
+        padding-right: {{ $margenMm }}mm;
+    }
+
+    .document-container {
+        width: 100%;
+        background: var(--bg-body);
+    }
+
+    .tw-header-wrap {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 0;
+        page-break-inside: avoid;
+    }
+
+    .tw-header-main {
+        vertical-align: top;
+        padding: 0;
+        background: transparent;
+    }
+
+    .tw-header-rule {
+        width: 100%;
+        height: 0;
+        margin: 3mm 0 3mm 0;
+        padding: 0;
+        border: 0;
+        border-top: 3px solid var(--primary);
+        font-size: 0;
+        line-height: 0;
+        overflow: hidden;
+    }
+
+    .tw-header-top {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .tw-logo-cell {
+        box-sizing: border-box;
+        padding: 0 0.7mm 0 0;
+        vertical-align: top;
+        text-align: left;
+    }
+
+    .tw-logo-box {
+        overflow: hidden;
+        display: block;
+        box-sizing: border-box;
+        min-width: 20mm;
+        min-height: 20mm;
+        max-width: 40mm;
+        max-height: 30mm;
+    }
+
+    .tw-logo-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: left center;
+        display: block;
+    }
+
+    .tw-logo-fallback {
+        width: 100%;
+        height: 100%;
+        min-height: 20mm;
+        background: var(--primary);
+        border-radius: 1mm;
+        text-align: center;
+        line-height: normal;
+        color: var(--color-white);
+        font-size: 14pt;
+        font-weight: bold;
+        display: table;
+    }
+
+    .tw-logo-fallback span {
+        display: table-cell;
+        vertical-align: middle;
+    }
+
+    .tw-emisor-cell {
+        vertical-align: top;
+        padding-left: 0;
+        width: auto;
+    }
+
+    .tw-emisor-name {
+        font-size: 9.5pt;
+        font-weight: 700;
+        color: var(--text-heading);
+        text-transform: uppercase;
+        margin-bottom: 0.4mm;
+        letter-spacing: 0.03em;
+        line-height: var(--section-line-height);
+    }
+
+    .tw-emisor-line {
+        font-size: 7pt;
+        color: var(--text-secondary);
+        margin-bottom: 0.2mm;
+        line-height: var(--section-line-height);
+    }
+
+    .tw-folio-cell {
+        vertical-align: top;
+        text-align: right;
+        width: 30%;
+    }
+
+    .tw-badge-label {
+        font-size: 6pt;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+        margin-bottom: 0.6mm;
+    }
+
+    .tw-badge-folio {
+        display: block;
+        background: transparent;
+        border: none;
+        color: var(--primary);
+        font-size: 13pt;
+        font-weight: 700;
+        padding: 0;
+        margin: 0 0 1mm 0;
+        line-height: 1.1;
+    }
+
+    .tw-uuid {
+        font-size: 6pt;
+        color: var(--text-muted);
+        word-break: break-all;
+        max-width: 100%;
+    }
+
+    .tw-date {
+        font-size: 7pt;
+        color: var(--text-primary);
+        margin-top: 0.6mm;
+    }
+
+    .tw-header-wrap--compact + .tw-header-rule {
+        margin: 2mm 0 3mm 0;
+    }
+
+    .tw-header-wrap--compact .tw-logo-box {
+        min-width: 0 !important;
+        min-height: 0 !important;
+    }
+
+    .tw-header-wrap--compact .tw-emisor-name {
+        font-size: 7.5pt;
+        margin-bottom: 0.15mm;
+    }
+
+    .tw-header-wrap--compact .tw-emisor-line {
+        font-size: 6pt;
+        margin-bottom: 0.1mm;
+    }
+
+    .tw-header-wrap--compact .tw-badge-label {
+        font-size: 5.5pt;
+        margin-bottom: 0.25mm;
+    }
+
+    .tw-header-wrap--compact .tw-badge-folio {
+        font-size: 10pt;
+        margin: 0 0 0.4mm 0;
+    }
+
+    .tw-header-wrap--compact .tw-date {
+        font-size: 6pt;
+        margin-top: 0.25mm;
+    }
+
+    .tw-card,
+    .tw-desc-box {
+        width: 100%;
+        margin-bottom: 3mm;
+        padding-bottom: 2mm;
+        padding-left: 0;
+        padding-right: 0;
+        padding-top: 0;
+        page-break-inside: avoid;
+    }
+
+    .tw-card-title {
+        font-size: 6pt;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--primary);
+        margin: 0 0 1mm 0;
+        padding: 0;
+        border: none;
+        line-height: 1.1;
+    }
+
+    .tw-card-title.tw-desc-general-title {
+        letter-spacing: 0.5px;
+    }
+
+    .tw-receptor-strong {
+        font-size: 9pt;
+        font-weight: 700;
+        color: var(--text-heading);
+        margin-bottom: 1mm;
+        line-height: 1.15;
+    }
+
+    .tw-receptor-line {
+        font-size: 7pt;
+        color: var(--color-receptor-line);
+        margin-bottom: 0.8mm;
+        line-height: 1.15;
+    }
+
+    .tw-desc-text {
+        font-size: 9pt;
+        font-weight: 700;
+        color: var(--text-heading);
+        line-height: 1.15;
+        text-align: left;
+        white-space: pre-wrap;
+    }
+
+    .tw-section-title {
+        font-size: 9.5pt;
+        font-weight: 700;
+        color: var(--text-heading);
+        text-transform: none;
+        letter-spacing: 0.02em;
+        text-align: center;
+        margin: 4mm 0 2mm 0;
+        padding: 0;
+        border: none;
+        width: 100%;
+    }
+
+    .tw-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 6mm;
+        table-layout: fixed;
+    }
+
+    .tw-table thead {
+        display: table-header-group;
+    }
+
+    .tw-table thead tr {
+        background: var(--table-header-bg) !important;
+        color: var(--table-header-text) !important;
+    }
+
+    .tw-table thead th {
+        padding: 1mm 0.5mm;
+        font-size: 5.8pt;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        text-align: center;
+        color: var(--table-header-text) !important;
+        background: var(--table-header-bg) !important;
+        border: 1px solid var(--table-header-border);
+        line-height: 1.12;
+    }
+
+    .tw-table thead th:nth-child(2) {
+        text-align: left;
+        padding-left: 1.5mm;
+    }
+
+    .tw-table thead th:nth-child(5),
+    .tw-table thead th:nth-child(6) {
+        text-align: right;
+        padding-right: 1mm;
+    }
+
+    .tw-table tbody td {
+        padding: 1.2mm 1mm;
+        font-size: 6.5pt;
+        border: 1px solid var(--border-default);
+        vertical-align: top;
+    }
+
+    .tw-table tbody tr:nth-child(odd) {
+        background: var(--table-row-odd-bg);
+    }
+
+    .tw-table tbody tr:nth-child(even) {
+        background: var(--table-row-even-bg);
+    }
+
+    .tw-table tbody td:first-child {
+        text-align: center;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
+    .tw-table tbody td:nth-child(2) {
+        text-align: left;
+        color: var(--text-heading);
+        padding-left: 1.2mm;
+    }
+
+    .tw-table tbody td:nth-child(3),
+    .tw-table tbody td:nth-child(4) {
+        text-align: center;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+    }
+
+    .tw-table tbody td:nth-child(5),
+    .tw-table tbody td:nth-child(6) {
+        text-align: right;
+        color: var(--text-primary);
+    }
+
+    .tw-table tbody td:nth-child(6) {
+        font-weight: 600;
+    }
+
+    .tw-no-rows {
+        text-align: center;
+        font-style: italic;
+        color: var(--text-soft);
+        padding: 5mm !important;
+    }
+
+    .tw-table tbody tr.tw-linea-parrafo td {
+        text-align: left;
+        font-weight: 400;
+        color: var(--text-secondary);
+        padding: 3mm 2.5mm;
+        line-height: 1.45;
+        white-space: pre-wrap;
+        background: var(--paragraph-row-bg);
+        max-height: 14mm;
+        overflow: hidden;
+    }
+
+    .tw-totals-wrap {
+        width: 100%;
+        page-break-inside: avoid;
+    }
+
+    .tw-totals-inner {
+        width: 52%;
+        margin-left: 48%;
+        border: 1px solid var(--border-default);
+        border-radius: 1mm;
+        overflow: hidden;
+        background: var(--bg-body);
+    }
+
+    .tw-totals-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    .tw-totals-table td {
+        padding: 1mm 2mm;
+        font-size: 7pt;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    .tw-totals-table td:first-child {
+        width: 58%;
+        text-align: right;
+        color: var(--text-secondary);
+        background: var(--color-slate-50);
+    }
+
+    .tw-totals-table .tw-totals-meta-value {
+        text-align: right;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .tw-totals-table .tw-totals-money-sign-col {
+        width: 12%;
+        text-align: right;
+        font-weight: 600;
+        color: var(--text-muted);
+        padding-right: 1mm;
+    }
+
+    .tw-totals-table .tw-totals-money-amount-col {
+        width: 30%;
+        text-align: right;
+        font-weight: 600;
+        color: var(--text-primary);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .tw-totals-table .tw-total-row td {
+        background: var(--bg-body);
+        border-top: 2px solid var(--primary);
+        font-size: 10pt;
+        font-weight: 700;
+    }
+
+    .tw-totals-table .tw-total-row td:first-child {
+        color: var(--text-heading);
+        text-transform: uppercase;
+    }
+
+    .tw-totals-table .tw-total-row td:last-child {
+        color: var(--primary);
+    }
+
+    .tw-totals-table .tw-total-row .tw-totals-money-sign-col,
+    .tw-totals-table .tw-total-row .tw-totals-money-amount-col {
+        color: inherit;
+        font-weight: inherit;
+    }
+
+    .importe-con-letra {
+        margin-top: 2mm;
+        width: 100%;
+        border: 1px solid var(--border-soft);
+        border-radius: 1mm;
+        background: var(--bg-body);
+        page-break-inside: avoid;
+        overflow: hidden;
+    }
+
+    .importe-con-letra-label {
+        background: var(--importe-label-bg);
+        text-align: center;
+        font-size: 6pt;
+        font-weight: 400;
+        letter-spacing: 0.02em;
+        text-transform: none;
+        color: var(--text-soft);
+        padding: 1mm 2mm;
+        border-bottom: 1px solid var(--border-soft);
+    }
+
+    .importe-con-letra-valor {
+        text-align: center;
+        font-size: 6.5pt;
+        font-weight: 400;
+        color: var(--text-muted);
+        padding: 1.8mm 2.5mm;
+        line-height: 1.3;
+        background: var(--importe-value-bg);
+        white-space: normal;
+        word-break: break-word;
+    }
+
+    .after-table-space {
+        height: 8mm;
+    }
+
+    .tw-page-break {
+        page-break-before: always;
+    }
+
+    .tw-anexos-page {
+        width: 100%;
+    }
+
+    .tw-anexos-header {
+        margin-bottom: 2.5mm;
+        padding-bottom: 1.5mm;
+        border-bottom: 1px solid var(--border-default);
+    }
+
+    .tw-anexos-title {
+        font-size: 11pt;
+        font-weight: 700;
+        color: var(--text-heading);
+        line-height: 1.15;
+        margin: 0;
+    }
+
+    .tw-anexos-list {
+        width: 100%;
+    }
+
+    .tw-anexo-simple {
+        width: 100%;
+        padding: 2.8mm 0;
+        border-bottom: 1px solid var(--border-default);
+        page-break-inside: avoid;
+    }
+
+    .tw-anexo-simple:last-child {
+        border-bottom: none;
+    }
+
+    .tw-anexo-simple-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    .tw-anexo-simple-media,
+    .tw-anexo-simple-text {
+        vertical-align: top;
+    }
+
+    .tw-anexo-simple-media {
+        width: 52mm;
+        padding-right: 3.5mm;
+    }
+
+    .tw-anexo-simple-image-wrap {
+        height: 40mm;
+        overflow: hidden;
+        background: var(--color-slate-50);
+        text-align: center;
+    }
+
+    .tw-anexo-simple-image {
+        display: block;
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        max-height: 100%;
+        margin: 0 auto;
+    }
+
+    .tw-anexo-simple-heading {
+        font-size: 8.4pt;
+        font-weight: 700;
+        color: var(--text-heading);
+        line-height: 1.2;
+        margin-bottom: 1.1mm;
+    }
+
+    .tw-anexo-simple-desc {
+        font-size: 7.1pt;
+        color: var(--text-secondary);
+        line-height: 1.3;
+        word-break: break-word;
+        white-space: pre-wrap;
+        margin-bottom: 1.1mm;
+    }
+
+    .tw-anexo-simple-price {
+        font-size: 7.8pt;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .terms-block {
+        margin-bottom: 3mm;
+        page-break-inside: auto;
+    }
+
+    .tw-terms + .tw-terms {
+        margin-top: 2mm;
+    }
+
+    .tw-terms {
+        margin-top: 3mm;
+        padding-top: 0;
+        border-top: none;
+    }
+
+    .tw-terms h3 {
+        font-size: 6.5pt;
+        font-weight: 700;
+        color: var(--text-heading);
+        text-transform: none;
+        letter-spacing: 0.02em;
+        margin: 0 0 1mm 0;
+        line-height: var(--section-line-height);
+    }
+
+    .tw-terms ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .tw-terms ul.tw-terms-num {
+        counter-reset: twi;
+    }
+
+    .tw-terms ul.tw-terms-num li {
+        font-size: 6.2pt;
+        color: var(--text-secondary);
+        line-height: var(--section-line-height);
+        margin-bottom: 0.6mm;
+        padding-left: 5mm;
+        position: relative;
+        text-align: justify;
+    }
+
+    .tw-terms ul.tw-terms-num li::before {
+        counter-increment: twi;
+        content: counter(twi) ".";
+        position: absolute;
+        left: 0;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .tw-terms ul.tw-obs-list {
+        counter-reset: twobs;
+    }
+
+    .tw-terms ul.tw-obs-list li {
+        font-size: 6.2pt;
+        color: var(--text-secondary);
+        line-height: var(--section-line-height);
+        margin-bottom: 0.6mm;
+        padding-left: 5mm;
+        position: relative;
+        text-align: justify;
+    }
+
+    .tw-terms ul.tw-obs-list li::before {
+        counter-increment: twobs;
+        content: counter(twobs) ".";
+        position: absolute;
+        left: 0;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .footer {
+        position: fixed;
+        bottom: 6mm;
+        left: {{ $margenMm }}mm;
+        right: {{ $margenMm }}mm;
+        height: {{ $footerHeightMm - 2 }}mm;
+        min-height: {{ $footerHeightMm - 2 }}mm;
+        padding: 1mm 0 2mm;
+        font-size: 6.5pt;
+        color: var(--text-muted);
+        line-height: 1.3;
+        overflow: visible;
+    }
+
+    .footer-table {
+        display: table;
+        width: 100%;
+    }
+
+    .footer-left {
+        display: table-cell;
+        width: 33%;
+        vertical-align: bottom;
+    }
+
+    .footer-center {
+        display: table-cell;
+        width: 34%;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .footer-right {
+        display: table-cell;
+        width: 33%;
+        text-align: right;
+        vertical-align: middle;
+        padding-left: 2mm;
+    }
+
+    .footer-logos-row {
+        display: table;
+    }
+
+    .footer-logo-cell {
+        display: table-cell;
+        padding-right: 2.5mm;
+        vertical-align: middle;
+    }
+
+    .footer-logo-cell:last-child {
+        padding-right: 0;
+    }
+
+    .footer-logo-img {
+        width: 12mm;
+        height: 12mm;
+        object-fit: contain;
+        display: block;
+    }
+
+    .footer-logo-placeholder {
+        width: 12mm;
+        height: 12mm;
+        min-width: 12mm;
+        background: var(--border-default);
+        border-radius: 1.5mm;
+        font-size: 5pt;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-align: center;
+        line-height: 8mm;
+    }
+
+    .footer-center-content {
+        text-align: center;
+        width: 100%;
+    }
+
+    .footer-pages {
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 7pt;
+        margin-bottom: 0.6mm;
+        min-height: 3mm;
+    }
+
+    .footer-slogan {
+        font-style: italic;
+        color: var(--footer-accent);
+        font-size: 6pt;
+    }
+
+    .footer-webs {
+        font-size: 6pt;
+    }
+
+    .footer-webs-link {
+        color: var(--footer-accent);
+        text-decoration: none;
+    }
+
+    .footer-webs-sep {
+        color: var(--text-soft);
+        margin: 0 1mm;
+    }
+
+    .footer-qr {
+        display: inline-block;
+        width: 15mm;
+        height: 15mm;
+        vertical-align: middle;
+    }
+
+    .footer-qr img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+</style>
 </head>
 
 <body>
