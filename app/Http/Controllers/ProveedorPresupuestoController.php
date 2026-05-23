@@ -1029,6 +1029,17 @@ class ProveedorPresupuestoController extends Controller
      */
     private function normalizarEmpresaReceptora(array $payload, int $proveedorId): array
     {
+        foreach ([
+            'empresa_receptora_nombre',
+            'empresa_receptora_puesto',
+            'empresa_receptora_empresa',
+            'empresa_receptora_alias',
+            'empresa_receptora_telefono',
+            'empresa_receptora_correo',
+        ] as $field) {
+            $payload[$field] = $this->normalizarTextoReceptor($payload[$field] ?? null);
+        }
+
         $esProveedorReceptor = filter_var($payload['es_proveedor_receptor'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
         if (empty($payload['empresa_receptora_id'])) {
@@ -1046,18 +1057,14 @@ class ProveedorPresupuestoController extends Controller
             $proveedorReceptorId = (int) $payload['empresa_receptora_id'];
             $receptor = Proveedor::query()->findOrFail($proveedorReceptorId);
 
-            $payload['empresa_receptora_nombre'] = $this->valorReceptorNoVacio(
+            $payload['empresa_receptora_nombre'] = $this->primerTextoReceptorOpcional(
                 $receptor->contacto_nombre,
-                $receptor->nombre_propietario,
-                // $receptor->nombre_comercial,
-                // $receptor->razon_social,
-                // 'Contacto'
+                $receptor->nombre_propietario
             );
-            $payload['empresa_receptora_puesto'] = $receptor->contacto_cargo;
-            $payload['empresa_receptora_empresa'] = $this->valorReceptorNoVacio(
+            $payload['empresa_receptora_puesto'] = $this->normalizarTextoReceptor($receptor->contacto_cargo);
+            $payload['empresa_receptora_empresa'] = $this->primerTextoReceptorOpcional(
                 $receptor->nombre_comercial,
-                $receptor->razon_social,
-                // 'Empresa'
+                $receptor->razon_social
             );
             $payload['empresa_receptora_alias'] = null;
             $payload['empresa_receptora_telefono'] = $this->primerTextoReceptorOpcional(
@@ -1079,12 +1086,12 @@ class ProveedorPresupuestoController extends Controller
                 ->where('proveedor_id', $proveedorId)
                 ->findOrFail((int) $payload['empresa_receptora_id']);
 
-            $payload['empresa_receptora_nombre'] = $this->valorReceptorNoVacio($cliente->nombre, 'Contacto');
-            $payload['empresa_receptora_puesto'] = $cliente->puesto;
-            $payload['empresa_receptora_empresa'] = $this->valorReceptorNoVacio($cliente->empresa, 'Empresa');
-            $payload['empresa_receptora_alias'] = $cliente->alias_empresa;
-            $payload['empresa_receptora_telefono'] = $cliente->telefono;
-            $payload['empresa_receptora_correo'] = $cliente->correo;
+            $payload['empresa_receptora_nombre'] = $this->normalizarTextoReceptor($cliente->nombre);
+            $payload['empresa_receptora_puesto'] = $this->normalizarTextoReceptor($cliente->puesto);
+            $payload['empresa_receptora_empresa'] = $this->normalizarTextoReceptor($cliente->empresa);
+            $payload['empresa_receptora_alias'] = $this->normalizarTextoReceptor($cliente->alias_empresa);
+            $payload['empresa_receptora_telefono'] = $this->normalizarTextoReceptor($cliente->telefono);
+            $payload['empresa_receptora_correo'] = $this->normalizarTextoReceptor($cliente->correo);
             $payload['proveedor_receptor_id'] = null;
             $payload['configuracion_condiciones'] = $this->limpiarMetaReceptorEnConfiguracionJson(
                 $payload['configuracion_condiciones'] ?? null
@@ -1097,42 +1104,28 @@ class ProveedorPresupuestoController extends Controller
     }
 
     /**
-     * Primer texto no vacío; si no hay, usa el último argumento (reserva) o «—».
-     *
-     * @param  string|null  ...$candidatos  último puede ser reserva fija
-     */
-    private function valorReceptorNoVacio(?string $primero, ?string ...$candidatos): string
-    {
-        $todos = array_merge([$primero], $candidatos);
-        foreach ($todos as $c) {
-            if ($c === null) {
-                continue;
-            }
-            $t = trim((string) $c);
-            if ($t !== '') {
-                return $t;
-            }
-        }
-
-        return '—';
-    }
-
-    /**
      * @param  string|null  ...$vals
      */
     private function primerTextoReceptorOpcional(?string ...$vals): ?string
     {
         foreach ($vals as $v) {
-            if ($v === null) {
-                continue;
-            }
-            $t = trim((string) $v);
-            if ($t !== '') {
+            $t = $this->normalizarTextoReceptor($v);
+            if ($t !== null) {
                 return $t;
             }
         }
 
         return null;
+    }
+
+    private function normalizarTextoReceptor(mixed $value): ?string
+    {
+        $text = trim((string) ($value ?? ''));
+        if ($text === '') {
+            return null;
+        }
+
+        return preg_match('/^[_\-\x{2013}\x{2014}]+$/u', $text) === 1 ? null : $text;
     }
 
     /**

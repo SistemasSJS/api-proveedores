@@ -22,9 +22,33 @@ class StorePresupuestoRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $id = $this->input('empresa_receptora_id');
+        $merge = [];
         if ($id === '' || $id === false) {
-            $this->merge(['empresa_receptora_id' => null]);
+            $merge['empresa_receptora_id'] = null;
         }
+
+        foreach ([
+            'empresa_receptora_nombre',
+            'empresa_receptora_puesto',
+            'empresa_receptora_empresa',
+            'empresa_receptora_alias',
+            'empresa_receptora_telefono',
+            'empresa_receptora_correo',
+        ] as $field) {
+            $merge[$field] = $this->normalizeReceptorText($this->input($field));
+        }
+
+        $this->merge($merge);
+    }
+
+    private function normalizeReceptorText(mixed $value): ?string
+    {
+        $text = trim((string) ($value ?? ''));
+        if ($text === '') {
+            return null;
+        }
+
+        return preg_match('/^[_\-\x{2013}\x{2014}]+$/u', $text) === 1 ? null : $text;
     }
 
     /**
