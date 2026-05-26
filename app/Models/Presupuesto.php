@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Presupuesto extends BaseModel
@@ -658,6 +659,30 @@ class Presupuesto extends BaseModel
     public function proveedorReceptor(): BelongsTo
     {
         return $this->belongsTo(Proveedor::class, 'proveedor_receptor_id');
+    }
+
+    /**
+     * URL pública del logo del proveedor receptor (catálogo). Solo para respuesta API; no se persiste en presupuesto.
+     */
+    public function empresaReceptoraLogoUrlParaApi(): ?string
+    {
+        if ((int) ($this->proveedor_receptor_id ?? 0) <= 0) {
+            return null;
+        }
+
+        $prov = $this->relationLoaded('proveedorReceptor')
+            ? $this->proveedorReceptor
+            : $this->proveedorReceptor()->first(['logo']);
+
+        if (! $prov || empty($prov->logo)) {
+            return null;
+        }
+
+        if (filter_var($prov->logo, FILTER_VALIDATE_URL)) {
+            return $prov->logo;
+        }
+
+        return Storage::disk('public')->url($prov->logo);
     }
 
     /**

@@ -1029,6 +1029,8 @@ class ProveedorPresupuestoController extends Controller
      */
     private function normalizarEmpresaReceptora(array $payload, int $proveedorId): array
     {
+        unset($payload['empresa_receptora_logo']);
+
         foreach ([
             'empresa_receptora_nombre',
             'empresa_receptora_puesto',

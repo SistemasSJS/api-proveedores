@@ -143,6 +143,9 @@ class PresupuestoResource extends JsonResource
             'proveedor_receptor_id' => $this->proveedor_receptor_id !== null
                 ? (int) $this->proveedor_receptor_id
                 : null,
+            'empresa_receptora_logo' => (int) ($this->proveedor_receptor_id ?? 0) > 0
+                ? $this->resource->empresaReceptoraLogoUrlParaApi()
+                : null,
             'empresa_receptora' => [
                 'id' => $empresaReceptoraIdRespuesta,
                 'nombre' => $doc['nombre'],
