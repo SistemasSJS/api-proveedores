@@ -61,7 +61,7 @@ class PresupuestoAceptadoNotification extends Notification implements ShouldBroa
     public function toMail(object $notifiable): MailMessage
     {
         $frontendUrl = config('app.frontend_url', config('app.url'));
-        $urlDetalle = $frontendUrl . '/pages/proveedor/presupuestos/detalle/' . $this->presupuesto->id;
+        $urlDetalle = $frontendUrl . '/pages/proveedor/presupuestos/preview/' . $this->presupuesto->id;
 
         $mail = (new MailMessage)
             ->subject('Presupuesto aceptado #' . $this->presupuesto->numero_presupuesto)
@@ -139,7 +139,7 @@ class PresupuestoAceptadoNotification extends Notification implements ShouldBroa
             'subtipo' => 'aceptado',
             'titulo' => 'Presupuesto aceptado #' . $this->presupuesto->numero_presupuesto,
             'mensaje' => $cliente . ' aceptó tu presupuesto.',
-            'action_url' => '/pages/proveedor/presupuestos/detalle/' . $this->presupuesto->id,
+            'action_url' => '/pages/proveedor/presupuestos/preview/' . $this->presupuesto->id,
             'presupuesto_id' => $this->presupuesto->id,
             'presupuesto_numero' => $this->presupuesto->numero_presupuesto,
             'proveedor_id' => $this->presupuesto->proveedor_id,

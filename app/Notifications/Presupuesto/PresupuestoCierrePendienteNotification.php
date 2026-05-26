@@ -56,7 +56,7 @@ class PresupuestoCierrePendienteNotification extends Notification implements Sho
     public function toMail(object $notifiable): MailMessage
     {
         $frontendUrl = config('app.frontend_url', config('app.url'));
-        $urlDetalle = $frontendUrl . '/pages/proveedor/presupuestos/detalle/' . $this->presupuesto->id;
+        $urlDetalle = $frontendUrl . '/pages/proveedor/presupuestos/preview/' . $this->presupuesto->id;
         $fechaVenc = $this->presupuesto->fecha_vencimiento?->format('d/m/Y') ?? '—';
 
         $mail = (new MailMessage)
@@ -129,7 +129,7 @@ class PresupuestoCierrePendienteNotification extends Notification implements Sho
             'subtipo' => 'cierre_pendiente',
             'titulo' => 'Presupuesto por vencer #' . $this->presupuesto->numero_presupuesto,
             'mensaje' => 'El presupuesto enviado a ' . $cliente . ' vence el ' . $fechaVenc . '. Aún no hay respuesta.',
-            'action_url' => '/pages/proveedor/presupuestos/detalle/' . $this->presupuesto->id,
+            'action_url' => '/pages/proveedor/presupuestos/preview/' . $this->presupuesto->id,
             'presupuesto_id' => $this->presupuesto->id,
             'presupuesto_numero' => $this->presupuesto->numero_presupuesto,
             'proveedor_id' => $this->presupuesto->proveedor_id,

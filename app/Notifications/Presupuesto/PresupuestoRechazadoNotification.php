@@ -55,7 +55,7 @@ class PresupuestoRechazadoNotification extends Notification implements ShouldBro
     public function toMail(object $notifiable): MailMessage
     {
         $frontendUrl = config('app.frontend_url', config('app.url'));
-        $urlDetalle = $frontendUrl . '/pages/proveedor/presupuestos/detalle/' . $this->presupuesto->id;
+        $urlDetalle = $frontendUrl . '/pages/proveedor/presupuestos/preview/' . $this->presupuesto->id;
 
         $mail = (new MailMessage)
             ->subject('Presupuesto rechazado #' . $this->presupuesto->numero_presupuesto)
@@ -130,7 +130,7 @@ class PresupuestoRechazadoNotification extends Notification implements ShouldBro
             'titulo' => 'Presupuesto rechazado #' . $this->presupuesto->numero_presupuesto,
             'mensaje' => $mensaje,
             'motivo_rechazo' => $this->motivoRechazo,
-            'action_url' => '/pages/proveedor/presupuestos/detalle/' . $this->presupuesto->id,
+            'action_url' => '/pages/proveedor/presupuestos/preview/' . $this->presupuesto->id,
             'presupuesto_id' => $this->presupuesto->id,
             'presupuesto_numero' => $this->presupuesto->numero_presupuesto,
             'proveedor_id' => $this->presupuesto->proveedor_id,

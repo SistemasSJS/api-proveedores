@@ -102,7 +102,10 @@ class PresupuestoRecibidoClienteProveedorNotification extends Notification imple
         }
 
         $frontendUrl = rtrim(config('app.frontend_url', config('app.url')), '/');
-        $actionUrl = $frontendUrl . '/public/presupuesto/' . $this->presupuesto->id;
+        $urlPublica = $this->presupuesto->token_publico
+            ? $frontendUrl . '/public/presupuesto/' . $this->presupuesto->token_publico
+            : $frontendUrl . '/public/presupuesto/' . $this->presupuesto->id;
+        $actionUrl = '/pages/proveedor/presupuestos/preview/' . $this->presupuesto->id;
 
         return [
             'tipo' => 'presupuesto',
@@ -110,7 +113,7 @@ class PresupuestoRecibidoClienteProveedorNotification extends Notification imple
             'titulo' => $titulo,
             'mensaje' => $mensaje,
             'action_url' => $actionUrl,
-            'url_publica' => $actionUrl,
+            'url_publica' => $urlPublica,
             'presupuesto_id' => $this->presupuesto->id,
             'presupuesto_numero' => $this->presupuesto->numero_presupuesto,
             'proveedor_emisor_id' => $this->presupuesto->proveedor_id,
