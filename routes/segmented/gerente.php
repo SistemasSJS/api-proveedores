@@ -274,6 +274,7 @@ Route::prefix('proveedores')
                 Route::get('/', [ProveedorPresupuestoConfigController::class, 'index']);
                 Route::post('/', [ProveedorPresupuestoConfigController::class, 'store']);
                 Route::put('/{config}', [ProveedorPresupuestoConfigController::class, 'update']);
+                Route::post('/{config}', [ProveedorPresupuestoConfigController::class, 'update']);
                 Route::delete('/{config}', [ProveedorPresupuestoConfigController::class, 'destroy']);
                 Route::get('/{config}', [ProveedorPresupuestoConfigController::class, 'show']);
             });

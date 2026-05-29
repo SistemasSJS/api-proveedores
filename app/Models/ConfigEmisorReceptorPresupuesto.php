@@ -15,15 +15,20 @@ class ConfigEmisorReceptorPresupuesto extends BaseModel
 
     protected $fillable = [
         'proveedor_id',
-        'tipo', // manejar tipo 1: emisor, 2: receptor
+        'tipo',
+        'subfijo',
         'nombre',
-        'apellido',
+        'ape1',
+        'ape2',
         'puesto',
+        'telefono',
+        'correo',
+        'color_fondo',
+        'foto_perfil',
         'file_firma',
-        'estado', // 1: activo, 2: inactivo, 3: default
+        'estado',
     ];
 
-    // para los tipos de emisor/receptor crear enumerado y en cast convertir string
     protected $casts = [
         'proveedor_id' => 'integer',
         'tipo' => 'integer',
@@ -33,7 +38,7 @@ class ConfigEmisorReceptorPresupuesto extends BaseModel
     const ESTADO_ACTIVO = 1;
     const ESTADO_INACTIVO = 2;
     const ESTADO_DEFAULT = 3;
-    
+
     const TIPO_EMISOR = 1;
     const TIPO_RECEPTOR = 2;
 
@@ -47,14 +52,12 @@ class ConfigEmisorReceptorPresupuesto extends BaseModel
     ];
 
     /**
-     * Relaciones para carga eager estándar.
-     *
      * @return array<int, string>
      */
     public static function eagerLodable(): array
     {
         return [
-            'proveedor'
+            'proveedor',
         ];
     }
 
@@ -70,20 +73,32 @@ class ConfigEmisorReceptorPresupuesto extends BaseModel
 
     public function filterByTipo($query, string $value)
     {
-        return $query->where('tipo', $value);
+        $tipo = $value === 'emisor' ? self::TIPO_EMISOR : self::TIPO_RECEPTOR;
+
+        return $query->where('tipo', $tipo);
     }
 
     public function filterByEstado($query, string $value)
     {
-        return $query->where('estado', $value);
+        $estado = match ($value) {
+            'inactivo' => self::ESTADO_INACTIVO,
+            'default' => self::ESTADO_DEFAULT,
+            default => self::ESTADO_ACTIVO,
+        };
+
+        return $query->where('estado', $estado);
     }
 
     public function filterBySearch($query, string $value)
     {
         return $query->where(function ($q) use ($value) {
             $q->where('nombre', 'like', "%{$value}%")
-                ->orWhere('apellido', 'like', "%{$value}%")
-                ->orWhere('puesto', 'like', "%{$value}%");
+                ->orWhere('ape1', 'like', "%{$value}%")
+                ->orWhere('ape2', 'like', "%{$value}%")
+                ->orWhere('subfijo', 'like', "%{$value}%")
+                ->orWhere('puesto', 'like', "%{$value}%")
+                ->orWhere('telefono', 'like', "%{$value}%")
+                ->orWhere('correo', 'like', "%{$value}%");
         });
     }
 }

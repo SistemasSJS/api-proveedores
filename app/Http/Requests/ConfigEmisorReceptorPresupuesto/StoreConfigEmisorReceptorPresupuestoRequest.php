@@ -2,11 +2,13 @@
 
 namespace App\Http\Requests\ConfigEmisorReceptorPresupuesto;
 
-use App\Models\ConfigEmisorReceptorPresupuesto;
+use App\Http\Requests\ConfigEmisorReceptorPresupuesto\Concerns\MapsConfigEmisorReceptorPresupuestoInput;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreConfigEmisorReceptorPresupuestoRequest extends FormRequest
 {
+    use MapsConfigEmisorReceptorPresupuestoInput;
+
     public function authorize(): bool
     {
         return true;
@@ -18,21 +20,27 @@ class StoreConfigEmisorReceptorPresupuestoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // 'proveedor_id' => 'required|integer|exists:proveedores,id',
-            'tipo' => 'required|string|in:receptor,emisor',
-            'nombre' => 'required|string|max:60',
-            'apellido' => 'nullable|string|max:60',
-            'puesto' => 'nullable|string|max:40',
-            'file_firma' => 'nullable|file',
-            'estado' => 'required|string|in:activo,inactivo,default', // 1: activo, 2: inactivo, 3: default
+            'tipo' => ['required', 'string', 'in:receptor,emisor'],
+            'subfijo' => ['nullable', 'string', 'max:30'],
+            'nombre' => ['required', 'string', 'max:60'],
+            'ape1' => ['nullable', 'string', 'max:60'],
+            'ape2' => ['nullable', 'string', 'max:60'],
+            'puesto' => ['nullable', 'string', 'max:40'],
+            'telefono' => ['nullable', 'string', 'max:30'],
+            'correo' => ['nullable', 'email', 'max:120'],
+            'color_fondo' => ['nullable', 'string', 'max:7'],
+            'foto_perfil' => ['nullable', 'file', 'image', 'max:5120'],
+            'file_firma' => ['nullable', 'file', 'image', 'max:5120'],
+            'estado' => ['required', 'string', 'in:activo,inactivo,default'],
         ];
     }
 
     public function validated($key = null, $default = null): array
     {
         $data = parent::validated();
-        $data['tipo'] = $data['tipo'] === ConfigEmisorReceptorPresupuesto::TIPO_EMISOR ? ConfigEmisorReceptorPresupuesto::TIPO_EMISOR : ConfigEmisorReceptorPresupuesto::TIPO_RECEPTOR;
-        $data['estado'] = $data['estado'] === ConfigEmisorReceptorPresupuesto::ESTADO_ACTIVO ? ConfigEmisorReceptorPresupuesto::ESTADO_ACTIVO : ($data['estado'] === ConfigEmisorReceptorPresupuesto::ESTADO_INACTIVO ? ConfigEmisorReceptorPresupuesto::ESTADO_INACTIVO : ConfigEmisorReceptorPresupuesto::ESTADO_DEFAULT);
+        $data['tipo'] = $this->mapTipoToInt($data['tipo'] ?? null);
+        $data['estado'] = $this->mapEstadoToInt($data['estado'] ?? null);
+
         return $data;
     }
 
@@ -42,14 +50,10 @@ class StoreConfigEmisorReceptorPresupuestoRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'proveedor_id.exists' => 'El proveedor indicado no existe.',
             'tipo.required' => 'El tipo es obligatorio.',
             'tipo.in' => 'El tipo debe ser emisor o receptor.',
             'nombre.required' => 'El nombre es obligatorio.',
-            'nombre.max' => 'El nombre no debe exceder 120 caracteres.',
-            'apellido.max' => 'El apellido no debe exceder 120 caracteres.',
-            'puesto.max' => 'El puesto no debe exceder 150 caracteres.',
-            'file_firma.max' => 'La firma no debe exceder 500 caracteres.',
+            'correo.email' => 'El correo no tiene un formato válido.',
             'estado.required' => 'El estado es obligatorio.',
             'estado.in' => 'El estado debe ser activo, inactivo o default.',
         ];
