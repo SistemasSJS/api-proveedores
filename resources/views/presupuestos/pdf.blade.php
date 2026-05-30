@@ -920,7 +920,7 @@
                     <div class="footer-left">
                         @php
                             $logos = $presupuesto['logos_base64'] ?? [];
-                            $appKeys = ['gestionpro'];
+                            $appKeys = ['gestionplus'];
                         @endphp
                         <div class="footer-logos-row">
                             @foreach ($appKeys as $key)
@@ -940,8 +940,8 @@
                             <div class="footer-slogan">"Calidad y compromiso en cada proyecto"</div>
                             <div class="footer-webs">
                                 <a href="https://heventec.com" class="footer-webs-link">heventec.com</a><span
-                                    class="footer-webs-sep">|</span><a href="https://gestionpro.com"
-                                    class="footer-webs-link">gestionpro.com</a>
+                                    class="footer-webs-sep">|</span><a href="https://gestion.heventec.com/"
+                                    class="footer-webs-link">gestion.heventec.com</a>
                                 <div class="footer-pages">&nbsp;</div>
                             </div>
                         </div>

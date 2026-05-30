@@ -20,6 +20,7 @@ Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('completar-registro', [AuthController::class, 'register_completar']);
     Route::post('register_proveedor', [AuthController::class, 'register_proveedor']);
+    Route::post('register_proveedor/reenviar-correo', [AuthController::class, 'reenviarCorreoRegistroProveedor']);
     Route::post('register_proveedor_completar', [AuthController::class, 'register_proveedor_completar']);
     Route::post('register_basico', [AuthController::class, 'register_proveedor_basico_sp']);
     Route::post('register_basico_completar', [AuthController::class, 'register_proveedor_basico_completar']);

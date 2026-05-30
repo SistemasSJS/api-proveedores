@@ -13,13 +13,27 @@ final class EmailLogoHelper
     private const MAX_DIMENSION = 320;
     private const MAX_BYTES_RAW = 350000;
 
-    public static function logoGestionProDataUri(): ?string
+    public static function gestionPlusLogoAbsolutePath(): ?string
     {
-        $logoPaths = [
+        foreach ([
+            public_path('assets/logos/logo-gestionplus.png'),
             public_path('assets/logos/logo-gestionpro.png'),
+        ] as $path) {
+            if (is_readable($path)) {
+                return $path;
+            }
+        }
+
+        return null;
+    }
+
+    public static function logoGestionPlusDataUri(): ?string
+    {
+        $logoPaths = array_values(array_filter([
+            self::gestionPlusLogoAbsolutePath(),
             public_path('assets/logos/logo-construcc.png'),
             public_path('assets/logos/logo-facturapro.png'),
-        ];
+        ], fn (?string $path) => $path !== null && is_readable($path)));
 
         foreach ($logoPaths as $path) {
             $dataUri = self::fileToDataUri($path);
@@ -29,6 +43,12 @@ final class EmailLogoHelper
         }
 
         return null;
+    }
+
+    /** @deprecated Use logoGestionPlusDataUri() */
+    public static function logoGestionProDataUri(): ?string
+    {
+        return self::logoGestionPlusDataUri();
     }
 
     /**

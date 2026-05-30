@@ -89,7 +89,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         View::composer('emails.*', function ($view) {
-            $view->with('logoAppDataUri', EmailLogoHelper::logoGestionProDataUri());
+            $view->with('logoAppDataUri', EmailLogoHelper::logoGestionPlusDataUri());
         });
 
         Gate::define('viewPulse', function ($user = null) {

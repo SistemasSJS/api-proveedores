@@ -44,7 +44,7 @@ class NewUserNotification extends Notification implements ShouldBroadcastNow
             'tipo' => 'usuario',
             'subtipo' => 'nuevo_usuario',
             'titulo' => 'Nuevo usuario registrado',
-            'mensaje' => "El usuario \"{$this->user->name}\" ha sido registrado con exito en GestionPro para la empresa \"{$this->proveedor->nombre_comercial}\".",
+            'mensaje' => "El usuario \"{$this->user->name}\" ha sido registrado con exito en GestionPlus para la empresa \"{$this->proveedor->nombre_comercial}\".",
             'action_url' => '/pages/panel-admin/usuarios/detail/' . $this->user->id,
             'data' => [
                 'user_id' => $this->user->id,
@@ -61,7 +61,7 @@ class NewUserNotification extends Notification implements ShouldBroadcastNow
             'tipo' => 'usuario',
             'subtipo' => 'nuevo_usuario',
             'titulo' => 'Nuevo usuario registrado',
-            'mensaje' => "El usuario \"{$this->user->name}\" ha sido registrado con exito en GestionPro para la empresa \"{$this->proveedor->nombre_comercial}\".",
+            'mensaje' => "El usuario \"{$this->user->name}\" ha sido registrado con exito en GestionPlus para la empresa \"{$this->proveedor->nombre_comercial}\".",
             'action_url' => '/pages/panel-admin/usuarios/detail/' . $this->user->id,
             'user_id' => $this->user->id,
             'timestamp' => now()->toIso8601String(),
@@ -83,7 +83,7 @@ class NewUserNotification extends Notification implements ShouldBroadcastNow
 
         $notification = [
             'title' => 'Nuevo usuario registrado',
-            'body' => "El usuario \"{$this->user->name}\" ha sido registrado con exito en GestionPro para la empresa \"{$this->proveedor->nombre_comercial}\".",
+            'body' => "El usuario \"{$this->user->name}\" ha sido registrado con exito en GestionPlus para la empresa \"{$this->proveedor->nombre_comercial}\".",
         ];
 
         $data = [

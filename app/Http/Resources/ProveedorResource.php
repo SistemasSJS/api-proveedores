@@ -103,7 +103,6 @@ class ProveedorResource extends JsonResource
 
             'is_proveedor_sp' => $this->is_proveedor_sp ?? null,
             'is_proveedor_catalogo' => $this->is_proveedor_catalogo ?? null,
-            'cambiar_pass_default' => $this->cambiar_pass_default ?? null,
             'perfil_empresa_completo' => $this->perfil_empresa_completo ?? null,
 
             /* =========================

@@ -874,7 +874,7 @@
             <div class="footer-left">
                 @php
                     $logos = $presupuesto['logos_base64'] ?? [];
-                    $appKeys = ['gestionpro'];
+                    $appKeys = ['gestionplus'];
                 @endphp
                 <div class="footer-logos-row">
                     @foreach ($appKeys as $key)

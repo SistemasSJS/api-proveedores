@@ -53,7 +53,6 @@ class Proveedor extends BaseModel
         // default values
         'is_proveedor_sp',
         'is_proveedor_catalogo',
-        'cambiar_pass_default',
         'perfil_empresa_completo',
 
         // Información fiscal (al final)
@@ -77,12 +76,14 @@ class Proveedor extends BaseModel
         'user_construcc_alta',
         'empresa_construcc_alta',
         'consecutivo_presupuesto_siguiente',
+        'token_completar_registro',
+        'token_completar_registro_generado_at',
+        'registro_completado_at',
     ];
 
     protected $attributes = [
         'is_proveedor_sp' => true,
         'is_proveedor_catalogo' => false,
-        'cambiar_pass_default' => true,
         'perfil_empresa_completo' => false,
         'tipo_alta' => 1, // Por defecto se asume que el alta es por Proveedor, no por UserConstrucc
         'consecutivo_presupuesto_siguiente' => 1, // Iniciar el consecutivo de presupuestos en 1
@@ -93,11 +94,12 @@ class Proveedor extends BaseModel
         'fecha_registro' => 'datetime',
         'is_proveedor_sp' => 'boolean',
         'is_proveedor_catalogo' => 'boolean',
-        'cambiar_pass_default' => 'boolean',
         'perfil_empresa_completo' => 'boolean',
         'user_construcc_alta' => 'integer',
         'empresa_construcc_alta' => 'integer',
         'consecutivo_presupuesto_siguiente' => 'integer',
+        'token_completar_registro_generado_at' => 'datetime',
+        'registro_completado_at' => 'datetime',
     ];
 
     protected static $filters = [

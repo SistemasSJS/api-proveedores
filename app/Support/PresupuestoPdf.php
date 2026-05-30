@@ -147,7 +147,7 @@ final class PresupuestoPdf
 
     private static function convertirLogosABase64(): array
     {
-        $logos = ['facturapro' => '', 'constucc' => '', 'gestionpro' => ''];
+        $logos = ['facturapro' => '', 'constucc' => '', 'gestionplus' => ''];
 
         if (! extension_loaded('gd')) {
             return $logos;
@@ -156,15 +156,16 @@ final class PresupuestoPdf
         $paths = [
             'facturapro' => public_path('assets/logos/logo-facturapro.png'),
             'constucc' => public_path('assets/logos/logo-construcc.png'),
-            'gestionpro' => public_path('assets/logos/logo-gestionpro.png'),
+            'gestionplus' => EmailLogoHelper::gestionPlusLogoAbsolutePath(),
         ];
 
         foreach ($paths as $key => $path) {
-            if (file_exists($path) && is_readable($path)) {
-                $data = @file_get_contents($path);
-                if ($data !== false && $data !== '') {
-                    $logos[$key] = 'data:image/png;base64,' . base64_encode($data);
-                }
+            if (! $path || ! file_exists($path) || ! is_readable($path)) {
+                continue;
+            }
+            $data = @file_get_contents($path);
+            if ($data !== false && $data !== '') {
+                $logos[$key] = 'data:image/png;base64,' . base64_encode($data);
             }
         }
 

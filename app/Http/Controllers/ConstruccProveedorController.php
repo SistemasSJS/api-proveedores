@@ -251,7 +251,6 @@ class ConstruccProveedorController extends Controller
                 'is_proveedor_sp' => true,
                 'is_proveedor_catalogo' => false,
                 'perfil_empresa_completo' => false,
-                'cambiar_pass_default' => false,
                 'user_construcc_alta' => $data['usuario_id'],
                 'empresa_construcc_alta' => $data['empresa_construcc_id'],
                 'estatus' => EstadoUsuario::REGISTRADO->value,

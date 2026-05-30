@@ -121,7 +121,7 @@ class ProveedorController extends Controller
         }
         $proveedor = $user->proveedorPrincipal();
         if (! $proveedor) {
-            throw new ResourceNotFoundException('Empresa no registrada en GestionPro.');
+            throw new ResourceNotFoundException('Empresa no registrada en GestionPlus.');
         }
 
         return $this->success(new ProveedorResource($proveedor->load(Proveedor::eagerLodable())));
@@ -242,7 +242,7 @@ class ProveedorController extends Controller
     {
         $proveedor = Proveedor::find($id);
         if (! $proveedor) {
-            throw new ResourceNotFoundException('Empresa no registrada en GestionPro.');
+            throw new ResourceNotFoundException('Empresa no registrada en GestionPlus.');
         }
         $proveedor->update([['estatus' => 'baja']]);
 
@@ -401,7 +401,7 @@ class ProveedorController extends Controller
 
         if (! $proveedor->constancia_fiscal || ! Storage::disk('public')->exists($proveedor->constancia_fiscal)) {
             return response()->json([
-                'message' => 'La constancia fiscal no está disponible en GestionPro.',
+                'message' => 'La constancia fiscal no está disponible en GestionPlus.',
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -446,11 +446,13 @@ class ProveedorController extends Controller
             $tieneCuentaBancaria = $proveedor->cuentasBancarias->where('estatus', EstadoCuentaBancaria::ACTIVA)->count() > 0;
 
             // Validaciones mínimas para confirmar que sigue siendo válido
-            $tieneLogo = ! empty($proveedor->logo);
+            /** NOTE: Para generar la spp no debe ser necesario logo. */
+            // $tieneLogo = ! empty($proveedor->logo);
             $tieneConstanciaFiscal = ! empty($proveedor->constancia_fiscal);
 
             // Si las validaciones básicas pasan, no necesitamos hacer validaciones detalladas
-            if ($tieneCuentaBancaria && $tieneLogo && $tieneConstanciaFiscal) {
+            // if ($tieneCuentaBancaria && $tieneLogo && $tieneConstanciaFiscal) {
+            if ($tieneCuentaBancaria && $tieneConstanciaFiscal) {
                 $responseData = [
                     'puede_generar_sp' => true,
                     'detalle' => [
@@ -480,7 +482,8 @@ class ProveedorController extends Controller
         // $tieneDatosContacto = $this->validarDatosContacto($proveedor);
 
         // Validar logo
-        $tieneLogo = ! empty($proveedor->logo);
+        /** NOTE: Para generar la spp no debe ser necesario logo. */
+        // $tieneLogo = ! empty($proveedor->logo);
 
         // Validar cuenta bancaria
         $tieneCuentaBancaria = $proveedor->cuentasBancarias->where('estatus', EstadoCuentaBancaria::ACTIVA)->count() > 0;
@@ -491,7 +494,7 @@ class ProveedorController extends Controller
         // Calcular si el perfil está completo
         $perfilEmpresaCompleto = $tieneInformacionGeneralYDatosFiscales &&
             // $tieneDatosContacto &&
-            $tieneLogo &&
+            // $tieneLogo &&
             $tieneCuentaBancaria &&
             $tieneConstanciaFiscal;
 
@@ -508,14 +511,17 @@ class ProveedorController extends Controller
         // if (!$tieneDatosContacto) {
         //     $datosFaltantes[] = 'Datos de contacto';
         // }
-        if (! $tieneLogo) {
-            $datosFaltantes[] = 'Logo de la empresa en GestionPro';
-        }
+
+        /** NOTE: Para generar la spp no debe ser necesario logo. */
+        // if (! $tieneLogo) {
+        //     $datosFaltantes[] = 'Logo de la empresa en GestionPlus';
+        // }
+
         if (! $tieneCuentaBancaria) {
             $datosFaltantes[] = 'Al menos una cuenta bancaria activa';
         }
         if (! $tieneConstanciaFiscal) {
-            $datosFaltantes[] = 'Constancia de situación fiscal en GestionPro';
+            $datosFaltantes[] = 'Constancia de situación fiscal en GestionPlus';
         }
 
         // Actualizar el campo perfil_empresa_completo en el modelo si ha cambiado
@@ -532,7 +538,8 @@ class ProveedorController extends Controller
                 'perfil_empresa_completo' => $perfilEmpresaCompleto,
                 'tiene_cuenta_bancaria' => $tieneCuentaBancaria,
                 'tiene_constancia_fiscal' => $tieneConstanciaFiscal,
-                'tiene_logo' => $tieneLogo,
+                /* NOTE: Para generar la spp no debe ser necesario logo. */
+                'tiene_logo' => true,
                 'tiene_informacion_general_y_datos_fiscales' => $tieneInformacionGeneralYDatosFiscales,
                 'datos_faltantes' => $datosFaltantes,
             ],
@@ -676,7 +683,7 @@ class ProveedorController extends Controller
         return $this->success([
             'existe' => $existe,
             'rfc' => $request->rfc,
-        ], $existe ? 'El RFC ya está registrado en GestionPro.' : 'El RFC está disponible en GestionPro.', 200);
+        ], $existe ? 'El RFC ya está registrado en GestionPlus.' : 'El RFC está disponible en GestionPlus.', 200);
     }
 
     /**
@@ -697,7 +704,7 @@ class ProveedorController extends Controller
         return $this->success([
             'existe' => $existe,
             'rfc' => $request->rfc,
-        ], $existe ? 'El RFC ya está registrado en GestionPro.' : 'El RFC está disponible en GestionPro.', 200);
+        ], $existe ? 'El RFC ya está registrado en GestionPlus.' : 'El RFC está disponible en GestionPlus.', 200);
     }
 
     public function verificarRazonSocialExistenteExcluyendoProveedor(Request $request, Proveedor $proveedor)
@@ -712,7 +719,7 @@ class ProveedorController extends Controller
         return $this->success([
             'existe' => $existe,
             'razon_social' => $request->razon_social,
-        ], $existe ? 'La razón social ya está registrada en GestionPro.' : 'La razón social está disponible en GestionPro.', 200);
+        ], $existe ? 'La razón social ya está registrada en GestionPlus.' : 'La razón social está disponible en GestionPlus.', 200);
     }
 
 
@@ -735,6 +742,6 @@ class ProveedorController extends Controller
         return $this->success([
             'existe' => $existe,
             'telefono' => $request->telefono,
-        ], $existe ? 'El teléfono ya está registrado en GestionPro.' : 'El teléfono está disponible en GestionPro.', 200);
+        ], $existe ? 'El teléfono ya está registrado en GestionPlus.' : 'El teléfono está disponible en GestionPlus.', 200);
     }
 }

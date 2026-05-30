@@ -45,12 +45,12 @@ class ProveedorPresupuestoController extends Controller
         $proveedor = $user?->proveedorPrincipal();
 
         if (! $user || ! $proveedor) {
-            return $this->error('No fue posible resolver la empresa en GestionPro.', null, 422);
-            // return $this->error('No fue posible resolver la empresa del usuario autenticado en GestionPro.', null, 422);
+            return $this->error('No fue posible resolver la empresa en GestionPlus.', null, 422);
+            // return $this->error('No fue posible resolver la empresa del usuario autenticado en GestionPlus.', null, 422);
         }
 
         if (! $user->tieneAccesoAProveedor((int) $proveedor->id)) {
-            return $this->error('El usuario autenticado no tiene acceso a la empresa en GestionPro.', null, 403);
+            return $this->error('El usuario autenticado no tiene acceso a la empresa en GestionPlus.', null, 403);
         }
 
         return $this->success([
@@ -68,7 +68,7 @@ class ProveedorPresupuestoController extends Controller
         $user = $request->user();
 
         if (! $user || ! $user->tieneAccesoAProveedor((int) $proveedor->id)) {
-            return $this->error('El usuario autenticado no tiene acceso a la empresa en GestionPro.', null, 403);
+            return $this->error('El usuario autenticado no tiene acceso a la empresa en GestionPlus.', null, 403);
         }
 
         return $this->success([
@@ -85,7 +85,7 @@ class ProveedorPresupuestoController extends Controller
         $user = $request->user();
 
         if (! $user || ! $user->tieneAccesoAProveedor((int) $proveedor->id)) {
-            return $this->error('El usuario autenticado no tiene acceso a la empresa en GestionPro.', null, 403);
+            return $this->error('El usuario autenticado no tiene acceso a la empresa en GestionPlus.', null, 403);
         }
 
         $filters = $request->only(Proveedor::getFilters());
@@ -247,7 +247,7 @@ class ProveedorPresupuestoController extends Controller
             ]);
 
             if (! $user || ! method_exists($user, 'tieneAccesoAProveedor') || ! $user->tieneAccesoAProveedor((int) $proveedor->id)) {
-                return $this->error('El usuario autenticado no tiene acceso a la empresa en GestionPro.', null, 403);
+                return $this->error('El usuario autenticado no tiene acceso a la empresa en GestionPlus.', null, 403);
             }
 
             if ((int) $validated['proveedor_id'] !== (int) $proveedor->id) {
@@ -314,7 +314,7 @@ class ProveedorPresupuestoController extends Controller
     public function show(Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
     {
         if (! $this->presupuestoAccesiblePorProveedor($proveedor, $presupuesto)) {
-            return $this->error('La empresa no tiene acceso a este presupuesto en GestionPro.', null, 403);
+            return $this->error('La empresa no tiene acceso a este presupuesto en GestionPlus.', null, 403);
         }
 
         $user = auth()->user();
@@ -338,12 +338,12 @@ class ProveedorPresupuestoController extends Controller
     {
         try {
             if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
-                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPro.', null, 403);
+                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPlus.', null, 403);
             }
 
             if (! $this->puedeEditarPresupuesto($presupuesto)) {
                 return $this->error(
-                    'No se puede modificar este presupuesto en GestionPro. Solo se editan borradores o presupuestos con observaciones del cliente.',
+                    'No se puede modificar este presupuesto en GestionPlus. Solo se editan borradores o presupuestos con observaciones del cliente.',
                     ['estado_actual' => $presupuesto->estado],
                     422
                 );
@@ -351,7 +351,7 @@ class ProveedorPresupuestoController extends Controller
 
             $validated = $request->validated();
             if ((int) $validated['proveedor_id'] !== (int) $proveedor->id) {
-                return $this->error('La empresa del payload no coincide con la empresa de la ruta en GestionPro.', null, 422);
+                return $this->error('La empresa del payload no coincide con la empresa de la ruta en GestionPlus.', null, 422);
             }
 
             $validated = $this->resolverReceptorEmpresaParaValidacion($validated, $proveedor);
@@ -416,12 +416,12 @@ class ProveedorPresupuestoController extends Controller
     {
         try {
             if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
-                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPro.', null, 403);
+                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPlus.', null, 403);
             }
 
             if ($presupuesto->estado !== Presupuesto::ESTADO_BORRADOR) {
                 return $this->error(
-                    'Solo se pueden eliminar presupuestos en borrador en GestionPro.',
+                    'Solo se pueden eliminar presupuestos en borrador en GestionPlus.',
                     ['estado_actual' => $presupuesto->estado],
                     422
                 );
@@ -441,7 +441,7 @@ class ProveedorPresupuestoController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->error('No fue posible eliminar el presupuesto en GestionPro.', [$e->getMessage()], 500);
+            return $this->error('No fue posible eliminar el presupuesto en GestionPlus.', [$e->getMessage()], 500);
         }
     }
 
@@ -561,7 +561,7 @@ class ProveedorPresupuestoController extends Controller
 
         try {
             if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
-                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPro.', null, 403);
+                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPlus.', null, 403);
             }
 
             if (! $validated['correo_destino'] || ! filter_var($validated['correo_destino'], FILTER_VALIDATE_EMAIL)) {
@@ -588,7 +588,7 @@ class ProveedorPresupuestoController extends Controller
 
             return $this->success(
                 new PresupuestoResource($presupuesto->fresh(Presupuesto::eagerLodable())),
-                'Correo enviado correctamente al cliente en GestionPro.'
+                'Correo enviado correctamente al cliente en GestionPlus.'
             );
         } catch (Throwable $e) {
             $this->log('Error al enviar correo de presupuesto', [
@@ -609,7 +609,7 @@ class ProveedorPresupuestoController extends Controller
     {
         try {
             if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
-                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPro.', null, 403);
+                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPlus.', null, 403);
             }
 
             $presupuesto->load(Presupuesto::eagerLodable());
@@ -625,15 +625,15 @@ class ProveedorPresupuestoController extends Controller
 
             return $this->success(
                 new PresupuestoResource($presupuesto->fresh(Presupuesto::eagerLodable())),
-                'Notificación enviada a los usuarios del receptor en GestionPro.'
+                'Notificación enviada a los usuarios del receptor en GestionPlus.'
             );
         } catch (Throwable $e) {
-            $this->log('Error al notificar receptor de presupuesto en GestionPro', [
+            $this->log('Error al notificar receptor de presupuesto en GestionPlus', [
                 'presupuesto_id' => $presupuesto->id,
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->error('No fue posible enviar la notificación en GestionPro.', [$e->getMessage()], 500);
+            return $this->error('No fue posible enviar la notificación en GestionPlus.', [$e->getMessage()], 500);
         }
     }
 
@@ -645,12 +645,12 @@ class ProveedorPresupuestoController extends Controller
     {
         try {
             if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
-                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPro.', null, 403);
+                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPlus.', null, 403);
             }
 
             $user = $request->user();
             if (! $user || ! $user->tieneAccesoAProveedor((int) $proveedor->id)) {
-                return $this->error('El usuario autenticado no tiene acceso a la empresa en GestionPro.', null, 403);
+                return $this->error('El usuario autenticado no tiene acceso a la empresa en GestionPlus.', null, 403);
             }
 
             $presupuesto->load('conceptos');
@@ -728,7 +728,7 @@ class ProveedorPresupuestoController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->error('No fue posible duplicar el presupuesto en GestionPro.', [$e->getMessage()], 500);
+            return $this->error('No fue posible duplicar el presupuesto en GestionPlus.', [$e->getMessage()], 500);
         }
     }
 
@@ -793,12 +793,12 @@ class ProveedorPresupuestoController extends Controller
     {
         try {
             if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
-                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPro.', null, 403);
+                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPlus.', null, 403);
             }
 
             if ($presupuesto->estado !== Presupuesto::ESTADO_BORRADOR) {
                 return $this->error(
-                    'Solo se puede enviar un presupuesto en estado borrador en GestionPro.',
+                    'Solo se puede enviar un presupuesto en estado borrador en GestionPlus.',
                     ['estado_actual' => $presupuesto->estado],
                     422
                 );
@@ -841,7 +841,7 @@ class ProveedorPresupuestoController extends Controller
                 'code' => $e->getCode(),
             ]);
 
-            return $this->error('No fue posible enviar el presupuesto en GestionPro.', [$e->getMessage()], 500);
+            return $this->error('No fue posible enviar el presupuesto en GestionPlus.', [$e->getMessage()], 500);
         }
     }
 
@@ -852,7 +852,7 @@ class ProveedorPresupuestoController extends Controller
     {
         try {
             if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
-                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPro.', null, 403);
+                return $this->error('La empresa no tiene acceso a este presupuesto en GestionPlus.', null, 403);
             }
 
             if (! $presupuesto->empresa_receptora_correo || ! filter_var($presupuesto->empresa_receptora_correo, FILTER_VALIDATE_EMAIL)) {
@@ -908,11 +908,11 @@ class ProveedorPresupuestoController extends Controller
                 $presupuesto = Presupuesto::query()->findOrFail($presupuestoId);
 
                 if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
-                    abort(403, 'La empresa no tiene acceso a este presupuesto en GestionPro.');
+                    abort(403, 'La empresa no tiene acceso a este presupuesto en GestionPlus.');
                 }
 
                 if (! $this->puedeEditarPresupuesto($presupuesto)) {
-                    abort(422, 'No se puede modificar este presupuesto en GestionPro.');
+                    abort(422, 'No se puede modificar este presupuesto en GestionPlus.');
                 }
 
                 $payload['numero_presupuesto'] = $payload['numero_presupuesto'] ?? $presupuesto->numero_presupuesto;
@@ -1458,7 +1458,7 @@ class ProveedorPresupuestoController extends Controller
             $gdDisponible = extension_loaded('gd');
 
             if (!$gdDisponible) {
-                $this->log('Advertencia: GD no está disponible en GestionPro. Las imágenes PNG/GIF no se mostrarán.', [
+                $this->log('Advertencia: GD no está disponible en GestionPlus. Las imágenes PNG/GIF no se mostrarán.', [
                     'numero_presupuesto' => $numeroPresupuesto,
                 ]);
             }
@@ -1502,7 +1502,7 @@ class ProveedorPresupuestoController extends Controller
                 $errorMessage = 'La extensión GD de PHP es requerida para generar PDFs con imágenes. Por favor, instala la extensión GD en tu servidor PHP.';
             }
 
-            $this->log('Error al generar PDF en GestionPro', [
+            $this->log('Error al generar PDF en GestionPlus', [
                 'numero_presupuesto' => $numeroPresupuesto,
                 'error' => $e->getMessage(),
                 'gd_disponible' => extension_loaded('gd'),
@@ -1530,7 +1530,7 @@ class ProveedorPresupuestoController extends Controller
         $logos = [
             'facturapro' => '',
             'constucc' => '',
-            'gestionpro' => '',
+            'gestionplus' => '',
         ];
 
         // Verificar si GD está disponible
@@ -1542,7 +1542,7 @@ class ProveedorPresupuestoController extends Controller
 
         $facturaproPath = public_path('assets/logos/logo-facturapro.png');
         $constuccPath = public_path('assets/logos/logo-construcc.png');
-        $gestionproPath = public_path('assets/logos/logo-gestionpro.png');
+        $gestionPlusPath = \App\Support\EmailLogoHelper::gestionPlusLogoAbsolutePath();
 
         try {
             if (file_exists($facturaproPath) && is_readable($facturaproPath)) {
@@ -1559,10 +1559,10 @@ class ProveedorPresupuestoController extends Controller
                 }
             }
 
-            if (file_exists($gestionproPath) && is_readable($gestionproPath)) {
-                $imageData = @file_get_contents($gestionproPath);
+            if ($gestionPlusPath && file_exists($gestionPlusPath) && is_readable($gestionPlusPath)) {
+                $imageData = @file_get_contents($gestionPlusPath);
                 if ($imageData !== false && !empty($imageData)) {
-                    $logos['gestionpro'] = 'data:image/png;base64,' . base64_encode($imageData);
+                    $logos['gestionplus'] = 'data:image/png;base64,' . base64_encode($imageData);
                 }
             }
         } catch (\Exception $e) {
