@@ -60,6 +60,7 @@ class PresupuestoResource extends JsonResource
             'fecha_vencimiento' => $this->fecha_vencimiento?->format('Y-m-d'),
             'concepto_general' => $this->concepto_general,
             'subtotal' => (float) $this->subtotal,
+            'porcentaje_descuento' => $this->porcentaje_descuento !== null ? (int) $this->porcentaje_descuento : null,
             'con_iva' => (bool) $this->con_iva,
             'iva_porcentaje' => (float) $this->iva_porcentaje,
             'iva_total' => (float) $this->iva_total,

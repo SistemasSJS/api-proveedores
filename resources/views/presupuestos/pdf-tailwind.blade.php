@@ -980,11 +980,20 @@
 
             <div class="tw-totals-wrap">
                 @php
-                    $subtotalCalculado = $presupuesto['subtotal'] ?? $subtotal;
-                    $conIva = $presupuesto['con_iva'] ?? false;
-                    $ivaPorcentaje = $presupuesto['iva_porcentaje'] ?? 16;
-                    $ivaTotal = $conIva ? $subtotalCalculado * ($ivaPorcentaje / 100) : 0;
-                    $total = $subtotalCalculado + $ivaTotal;
+                    $subtotalCalculado = (float) ($presupuesto['subtotal'] ?? $subtotal);
+                    $conIva = (bool) ($presupuesto['con_iva'] ?? false);
+                    $ivaPorcentaje = (float) ($presupuesto['iva_porcentaje'] ?? 16);
+                    $pctDescuento = array_key_exists('porcentaje_descuento', $presupuesto)
+                        ? ($presupuesto['porcentaje_descuento'] !== null ? (int) $presupuesto['porcentaje_descuento'] : null)
+                        : null;
+                    $totalesDoc = \App\Models\Presupuesto::calcularTotalesDocumento(
+                        $subtotalCalculado,
+                        $pctDescuento,
+                        $conIva,
+                        $ivaPorcentaje
+                    );
+                    $ivaTotal = $totalesDoc['iva_total'];
+                    $total = $totalesDoc['total'];
                     $monedaCodigo = strtoupper((string) ($presupuesto['term_cond_moneda'] ?? 'MXN'));
                     if (!in_array($monedaCodigo, ['MXN', 'USD', 'EUR'], true)) {
                         $monedaCodigo = 'MXN';
@@ -996,8 +1005,15 @@
                         <tr>
                             <td>Subtotal</td>
                             <td class="tw-totals-money-sign-col">{{ $monedaPrefijo }}</td>
-                            <td class="tw-totals-money-amount-col">{{ number_format($subtotalCalculado, 2, '.', ',') }}</td>
+                            <td class="tw-totals-money-amount-col">{{ number_format($totalesDoc['subtotal'], 2, '.', ',') }}</td>
                         </tr>
+                        @if ($totalesDoc['mostrar_descuento'])
+                            <tr>
+                                <td>Descuento ({{ $totalesDoc['porcentaje_descuento'] }}%)</td>
+                                <td class="tw-totals-money-sign-col">- {{ $monedaPrefijo }}</td>
+                                <td class="tw-totals-money-amount-col">{{ number_format($totalesDoc['monto_descuento'], 2, '.', ',') }}</td>
+                            </tr>
+                        @endif
                         @if ($conIva)
                             <tr>
                                 <td>IVA ({{ number_format($ivaPorcentaje, 0) }}%)</td>

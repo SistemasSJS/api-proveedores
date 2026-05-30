@@ -61,6 +61,7 @@ class Presupuesto extends BaseModel
         'fecha_vencimiento',
         'concepto_general',
         'subtotal',
+        'porcentaje_descuento',
         'con_iva',
         'iva_porcentaje',
         'iva_total',
@@ -119,6 +120,7 @@ class Presupuesto extends BaseModel
         'term_cond_impuestos_en_pdf' => 'boolean',
         'item_visto' => 'boolean',
         'subtotal' => 'decimal:2',
+        'porcentaje_descuento' => 'integer',
         'iva_porcentaje' => 'decimal:2',
         'iva_total' => 'decimal:2',
         'total' => 'decimal:2',
@@ -856,23 +858,56 @@ class Presupuesto extends BaseModel
     }
 
     /**
-     * Aplica IVA según configuración actual (`con_iva` e `iva_porcentaje`).
+     * Totales del documento: descuento sobre subtotal (antes de IVA), luego IVA y total.
+     *
+     * @return array{
+     *     subtotal: float,
+     *     porcentaje_descuento: int|null,
+     *     monto_descuento: float,
+     *     base_antes_iva: float,
+     *     iva_total: float,
+     *     total: float,
+     *     mostrar_descuento: bool
+     * }
+     */
+    public static function calcularTotalesDocumento(
+        float $subtotal,
+        ?int $porcentajeDescuento,
+        bool $conIva,
+        float $ivaPorcentaje
+    ): array {
+        $pct = $porcentajeDescuento !== null ? max(0, min(100, (int) $porcentajeDescuento)) : 0;
+        $mostrarDescuento = $pct >= 1;
+        $montoDescuento = $mostrarDescuento ? round($subtotal * ($pct / 100), 2) : 0.0;
+        $baseAntesIva = round($subtotal - $montoDescuento, 2);
+        $ivaTotal = $conIva ? round($baseAntesIva * ($ivaPorcentaje / 100), 2) : 0.0;
+        $total = round($baseAntesIva + $ivaTotal, 2);
+
+        return [
+            'subtotal' => round($subtotal, 2),
+            'porcentaje_descuento' => $mostrarDescuento ? $pct : null,
+            'monto_descuento' => $montoDescuento,
+            'base_antes_iva' => $baseAntesIva,
+            'iva_total' => $ivaTotal,
+            'total' => $total,
+            'mostrar_descuento' => $mostrarDescuento,
+        ];
+    }
+
+    /**
+     * Aplica IVA según configuración actual (`con_iva`, `iva_porcentaje` y `porcentaje_descuento`).
      */
     public function aplicarIva(): void
     {
-        $subtotal = (float) $this->subtotal;
-        $porcentajeIva = (float) $this->iva_porcentaje;
+        $totales = self::calcularTotalesDocumento(
+            (float) $this->subtotal,
+            $this->porcentaje_descuento !== null ? (int) $this->porcentaje_descuento : null,
+            (bool) $this->con_iva,
+            (float) $this->iva_porcentaje
+        );
 
-        if ($this->con_iva) {
-            $ivaTotal = round(($subtotal * $porcentajeIva) / 100, 2);
-            $this->iva_total = $ivaTotal;
-            $this->total = round($subtotal + $ivaTotal, 2);
-
-            return;
-        }
-
-        $this->iva_total = 0;
-        $this->total = round($subtotal, 2);
+        $this->iva_total = $totales['iva_total'];
+        $this->total = $totales['total'];
     }
 
     /**

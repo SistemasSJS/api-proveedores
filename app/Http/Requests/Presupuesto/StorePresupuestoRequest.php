@@ -81,6 +81,7 @@ class StorePresupuestoRequest extends FormRequest
              */
             'con_iva' => 'nullable|boolean',
             'iva_porcentaje' => 'nullable|numeric|min:0|max:100',
+            'porcentaje_descuento' => 'nullable|integer|min:0|max:100',
 
             'term_cond_dias_vigencia' => 'nullable|integer|min:0',
             'term_cond_moneda' => 'nullable|string|max:10',
@@ -239,6 +240,9 @@ class StorePresupuestoRequest extends FormRequest
             'iva_porcentaje.numeric' => 'El porcentaje de IVA debe ser numérico.',
             'iva_porcentaje.min' => 'El porcentaje de IVA no puede ser menor a 0.',
             'iva_porcentaje.max' => 'El porcentaje de IVA no puede ser mayor a 100.',
+            'porcentaje_descuento.integer' => 'El porcentaje de descuento debe ser un número entero.',
+            'porcentaje_descuento.min' => 'El porcentaje de descuento no puede ser menor a 0.',
+            'porcentaje_descuento.max' => 'El porcentaje de descuento no puede ser mayor a 100.',
             'term_cond_dias_vigencia.integer' => 'Los días de vigencia deben ser un número entero.',
             'term_cond_moneda.string' => 'La moneda debe ser texto.',
             'term_cond_iva.numeric' => 'El IVA debe ser numérico.',
