@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('purificadora_pedidos', function (Blueprint $table) {
@@ -23,16 +20,28 @@ return new class extends Migration
             $table->char('codigo_postal', 5)->nullable();
             $table->string('municipio', 120)->default('Ahome');
 
+            $table->unsignedTinyInteger('estado')->default(0);
+            $table->dateTime('pendiente_fecha')->nullable();
+            $table->dateTime('en_proceso_fecha')->nullable();
+            $table->dateTime('completado_fecha')->nullable();
+            $table->dateTime('cancelado_fecha')->nullable();
+
             $table->timestamps();
 
             $table->index('celular');
             $table->index('codigo_postal');
+            $table->index('estado');
+            $table->index('nombre');
+            $table->index('created_at');
+            $table->index('updated_at');
+            $table->index('pendiente_fecha');
+            $table->index('en_proceso_fecha');
+            $table->index('completado_fecha');
+            $table->index('cancelado_fecha');
+            $table->index(['estado', 'created_at']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('purificadora_pedidos');

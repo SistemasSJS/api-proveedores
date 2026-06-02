@@ -1,0 +1,162 @@
+{
+  "info": {
+    "name": "Purificadora Colibrí — Pedidos",
+    "description": "# Purificadora Colibrí — API de pedidos\n\n**Base:** `{{baseUrl}}` → `http://localhost:8000/api`\n\n## Formato de respuesta (ApiResponse)\n```json\n{\n  \"status\": \"SUCCESS\",\n  \"code\": 200,\n  \"message\": \"...\",\n  \"data\": {},\n  \"errors\": null\n}\n```\n\n## Estados del pedido\n| valor | significado |\n|-------|-------------|\n| 0 | pendiente |\n| 1 | en proceso |\n| 2 | completado |\n| 3 | cancelado |\n\n## Flujo sugerido en Postman\n1. **Login** (usuario ventas Colibrí) → guarda `token`\n2. **Crear pedido** (público, sin token) → guarda `pedidoId` y `whatsappUrl`\n3. **Marcar en proceso** (GET con Bearer; misma ruta que `whatsappUrl`)\n4. **Completado** o **Cancelado** (PUT con Bearer)\n\n## Usuario de prueba (migración)\n- Campo login `email`: `6682485970` (teléfono)\n- Password: `123456`\n- Rol: `ventas_purificadora_colibri`\n\n## Fechas en JSON\nISO 8601 con zona, ej. `2026-06-01T10:00:00-07:00` (compatible con `new Date()` en Ionic).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8000/api" },
+    { "key": "token", "value": "" },
+    { "key": "pedidoId", "value": "1" },
+    { "key": "whatsappUrl", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "Login (Purificadora Colibrí)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const j = pm.response.json();",
+                  "  if (j.data && j.data.token) {",
+                  "    pm.collectionVariables.set('token', j.data.token);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"6682485970\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login",
+            "description": "POST /api/auth/login\n\nEl campo `email` acepta correo o **teléfono** (10 dígitos).\n\n201 → `data.token` (se guarda en variable `token`)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Público",
+      "item": [
+        {
+          "name": "Crear pedido (store)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const j = pm.response.json();",
+                  "  if (j.data) {",
+                  "    if (j.data.pedido && j.data.pedido.id) {",
+                  "      pm.collectionVariables.set('pedidoId', String(j.data.pedido.id));",
+                  "    }",
+                  "    if (j.data.whatsapp_url) {",
+                  "      pm.collectionVariables.set('whatsappUrl', j.data.whatsapp_url);",
+                  "    }",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"María López\",\n  \"celular\": \"6671234567\",\n  \"correo\": \"maria@ejemplo.com\",\n  \"calle\": \"Blvd. Centenario\",\n  \"numero\": \"1234\",\n  \"colonia\": \"Centro\",\n  \"codigoPostal\": \"81200\",\n  \"municipio\": \"Ahome\"\n}"
+            },
+            "url": "{{baseUrl}}/purificadora-pedidos",
+            "description": "POST /api/purificadora-pedidos — **sin autenticación**\n\nBody (camelCase): `nombre`, `celular` (10 dígitos), `correo?`, `calle`, `numero`, `colonia`, `codigoPostal?`, `municipio?` (default Ahome).\n\n**201 data:**\n- `pedido`: registro (`estado: 0`, `pendiente_fecha`)\n- `whatsapp_url`: URL GET del endpoint *marcar en proceso* (requiere token al invocarla)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Protegido (Sanctum)",
+      "item": [
+        {
+          "name": "Listar pedidos (index)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/purificadora-pedidos?estado=0&sort_by=created_at&order=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["purificadora-pedidos"],
+              "query": [
+                { "key": "search", "value": "", "description": "nombre o celular", "disabled": true },
+                { "key": "nombre", "value": "", "disabled": true },
+                { "key": "celular", "value": "", "disabled": true },
+                { "key": "estado", "value": "0", "description": "0|1|2|3 o 0,1" },
+                { "key": "creacion_desde", "value": "2026-06-01", "disabled": true },
+                { "key": "creacion_hasta", "value": "2026-06-30", "disabled": true },
+                { "key": "actualizacion_desde", "value": "", "disabled": true },
+                { "key": "actualizacion_hasta", "value": "", "disabled": true },
+                { "key": "estado_fecha_desde", "value": "", "description": "con estado filtra columna de fecha", "disabled": true },
+                { "key": "estado_fecha_hasta", "value": "", "disabled": true },
+                { "key": "sort_by", "value": "created_at" },
+                { "key": "order", "value": "desc", "description": "asc|desc" }
+              ]
+            },
+            "description": "GET /api/purificadora-pedidos\n\n**Bearer** `{{token}}`. Sin paginación."
+          }
+        },
+        {
+          "name": "Marcar en proceso (whatsapp enlace)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{whatsappUrl}}",
+            "description": "GET /api/purificadora-pedidos/{id}/marcar-pedido-proceso-whatsapp-enlace\n\n**Bearer** obligatorio. Usa `{{whatsappUrl}}` (de store) o:\n`{{baseUrl}}/purificadora-pedidos/{{pedidoId}}/marcar-pedido-proceso-whatsapp-enlace`\n\nSolo si `estado === 0`. 422 si ya no está pendiente."
+          }
+        },
+        {
+          "name": "Marcar en proceso (por id)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/purificadora-pedidos/{{pedidoId}}/marcar-pedido-proceso-whatsapp-enlace",
+            "description": "Mismo endpoint que la variable `whatsappUrl`."
+          }
+        },
+        {
+          "name": "Completado",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/purificadora-pedidos/{{pedidoId}}/completado",
+            "description": "PUT — requiere **estado 1** (en proceso)."
+          }
+        },
+        {
+          "name": "Cancelado",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/purificadora-pedidos/{{pedidoId}}/cancelado",
+            "description": "PUT — permitido desde estado **0** o **1**."
+          }
+        }
+      ]
+    }
+  ]
+}
