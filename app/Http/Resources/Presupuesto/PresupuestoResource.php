@@ -61,6 +61,7 @@ class PresupuestoResource extends JsonResource
             'concepto_general' => $this->concepto_general,
             'subtotal' => (float) $this->subtotal,
             'porcentaje_descuento' => $this->porcentaje_descuento !== null ? (int) $this->porcentaje_descuento : null,
+            'cantidad_descuento' => $this->cantidad_descuento !== null ? (float) $this->cantidad_descuento : null,
             'con_iva' => (bool) $this->con_iva,
             'iva_porcentaje' => (float) $this->iva_porcentaje,
             'iva_total' => (float) $this->iva_total,

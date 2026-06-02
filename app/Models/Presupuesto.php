@@ -61,7 +61,11 @@ class Presupuesto extends BaseModel
         'fecha_vencimiento',
         'concepto_general',
         'subtotal',
+        /**
+         * NOTE: 
+         */
         'porcentaje_descuento',
+        'cantidad_descuento',
         'con_iva',
         'iva_porcentaje',
         'iva_total',
@@ -121,6 +125,7 @@ class Presupuesto extends BaseModel
         'item_visto' => 'boolean',
         'subtotal' => 'decimal:2',
         'porcentaje_descuento' => 'integer',
+        'cantidad_descuento' => 'decimal:2',
         'iva_porcentaje' => 'decimal:2',
         'iva_total' => 'decimal:2',
         'total' => 'decimal:2',
@@ -282,7 +287,7 @@ class Presupuesto extends BaseModel
             $validaciones[] = self::ENUNCIADO_ALCANCE_ADICIONALES_AUTORIZACION;
         }
 
-        
+
         // self::appendObservacionesAdicionalesDesdeConfig($observaciones, $config);
 
         return [
@@ -863,6 +868,7 @@ class Presupuesto extends BaseModel
      * @return array{
      *     subtotal: float,
      *     porcentaje_descuento: int|null,
+     *     cantidad_descuento: float|null,
      *     monto_descuento: float,
      *     base_antes_iva: float,
      *     iva_total: float,
@@ -873,19 +879,34 @@ class Presupuesto extends BaseModel
     public static function calcularTotalesDocumento(
         float $subtotal,
         ?int $porcentajeDescuento,
+        ?float $cantidadDescuento,
         bool $conIva,
         float $ivaPorcentaje
     ): array {
+        $subtotalSeguro = max(0.0, round($subtotal, 2));
         $pct = $porcentajeDescuento !== null ? max(0, min(100, (int) $porcentajeDescuento)) : 0;
-        $mostrarDescuento = $pct >= 1;
-        $montoDescuento = $mostrarDescuento ? round($subtotal * ($pct / 100), 2) : 0.0;
+        $cantidad = $cantidadDescuento !== null ? round(max(0.0, (float) $cantidadDescuento), 2) : null;
+        $montoDesdePorcentaje = $pct >= 1 ? round($subtotalSeguro * ($pct / 100), 2) : 0.0;
+
+        $usarPorcentaje = $pct >= 1;
+        $montoDescuento = $usarPorcentaje
+            ? $montoDesdePorcentaje
+            : min($subtotalSeguro, $cantidad ?? 0.0);
+        $mostrarDescuento = $montoDescuento > 0;
+        $cantidadNormalizada = $mostrarDescuento ? round($montoDescuento, 2) : null;
+        $porcentajeNormalizado = $mostrarDescuento
+            ? ($usarPorcentaje
+                ? $pct
+                : max(0, min(100, (int) round(($montoDescuento / max($subtotalSeguro, 0.01)) * 100))))
+            : null;
         $baseAntesIva = round($subtotal - $montoDescuento, 2);
         $ivaTotal = $conIva ? round($baseAntesIva * ($ivaPorcentaje / 100), 2) : 0.0;
         $total = round($baseAntesIva + $ivaTotal, 2);
 
         return [
-            'subtotal' => round($subtotal, 2),
-            'porcentaje_descuento' => $mostrarDescuento ? $pct : null,
+            'subtotal' => $subtotalSeguro,
+            'porcentaje_descuento' => $porcentajeNormalizado,
+            'cantidad_descuento' => $cantidadNormalizada,
             'monto_descuento' => $montoDescuento,
             'base_antes_iva' => $baseAntesIva,
             'iva_total' => $ivaTotal,
@@ -902,10 +923,13 @@ class Presupuesto extends BaseModel
         $totales = self::calcularTotalesDocumento(
             (float) $this->subtotal,
             $this->porcentaje_descuento !== null ? (int) $this->porcentaje_descuento : null,
+            $this->cantidad_descuento !== null ? (float) $this->cantidad_descuento : null,
             (bool) $this->con_iva,
             (float) $this->iva_porcentaje
         );
 
+        $this->porcentaje_descuento = $totales['porcentaje_descuento'];
+        $this->cantidad_descuento = $totales['cantidad_descuento'];
         $this->iva_total = $totales['iva_total'];
         $this->total = $totales['total'];
     }

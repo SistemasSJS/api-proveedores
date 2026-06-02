@@ -12,13 +12,16 @@ return new class extends Migration
             $table->unsignedTinyInteger('porcentaje_descuento')
                 ->nullable()
                 ->after('subtotal');
+            $table->decimal('cantidad_descuento', 12, 2)
+                ->nullable()
+                ->after('porcentaje_descuento');
         });
     }
 
     public function down(): void
     {
         Schema::table('presupuestos', function (Blueprint $table) {
-            $table->dropColumn('porcentaje_descuento');
+            $table->dropColumn(['porcentaje_descuento', 'cantidad_descuento']);
         });
     }
 };

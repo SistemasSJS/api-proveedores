@@ -986,9 +986,13 @@
                     $pctDescuento = array_key_exists('porcentaje_descuento', $presupuesto)
                         ? ($presupuesto['porcentaje_descuento'] !== null ? (int) $presupuesto['porcentaje_descuento'] : null)
                         : null;
+                    $cantidadDescuento = array_key_exists('cantidad_descuento', $presupuesto)
+                        ? ($presupuesto['cantidad_descuento'] !== null ? (float) $presupuesto['cantidad_descuento'] : null)
+                        : null;
                     $totalesDoc = \App\Models\Presupuesto::calcularTotalesDocumento(
                         $subtotalCalculado,
                         $pctDescuento,
+                        $cantidadDescuento,
                         $conIva,
                         $ivaPorcentaje
                     );

@@ -499,6 +499,7 @@ class ProveedorPresupuestoController extends Controller
                 'con_iva' => $normalized['con_iva'] ?? true,
                 'iva_porcentaje' => $normalized['iva_porcentaje'] ?? 16.00,
                 'porcentaje_descuento' => $normalized['porcentaje_descuento'] ?? null,
+                'cantidad_descuento' => $normalized['cantidad_descuento'] ?? null,
                 'term_cond_moneda' => $normalized['term_cond_moneda'] ?? 'MXN',
                 'receptor_lineas' => PresupuestoPdf::lineasReceptorPdfDesdePayloadReceptor($normalized),
                 'conceptos' => $normalized['conceptos'] ?? [],
@@ -520,15 +521,20 @@ class ProveedorPresupuestoController extends Controller
             $pctDesc = isset($datosPresupuesto['porcentaje_descuento'])
                 ? (int) $datosPresupuesto['porcentaje_descuento']
                 : null;
+            $cantidadDesc = isset($datosPresupuesto['cantidad_descuento'])
+                ? (float) $datosPresupuesto['cantidad_descuento']
+                : null;
             $totalesDoc = Presupuesto::calcularTotalesDocumento(
                 (float) $subtotal,
                 $pctDesc,
+                $cantidadDesc,
                 (bool) ($datosPresupuesto['con_iva'] ?? false),
                 (float) ($datosPresupuesto['iva_porcentaje'] ?? 16)
             );
 
             $datosPresupuesto['subtotal'] = $totalesDoc['subtotal'];
             $datosPresupuesto['porcentaje_descuento'] = $totalesDoc['porcentaje_descuento'];
+            $datosPresupuesto['cantidad_descuento'] = $totalesDoc['cantidad_descuento'];
             $datosPresupuesto['monto_descuento'] = $totalesDoc['monto_descuento'];
             $datosPresupuesto['iva_total'] = $totalesDoc['iva_total'];
             $datosPresupuesto['total'] = $totalesDoc['total'];
@@ -680,6 +686,7 @@ class ProveedorPresupuestoController extends Controller
                     'con_iva',
                     'iva_porcentaje',
                     'porcentaje_descuento',
+                    'cantidad_descuento',
                     'term_cond_dias_vigencia',
                     'term_cond_moneda',
                     'term_cond_impuestos_en_pdf',
@@ -1722,6 +1729,7 @@ class ProveedorPresupuestoController extends Controller
             'term_cond_moneda' => $presupuesto->term_cond_moneda ?? 'MXN',
             'subtotal' => $presupuesto->subtotal,
             'porcentaje_descuento' => $presupuesto->porcentaje_descuento,
+            'cantidad_descuento' => $presupuesto->cantidad_descuento,
             'iva_total' => $presupuesto->iva_total,
             'total' => $presupuesto->total,
             'receptor_lineas' => PresupuestoPdf::lineasReceptorPdfDesdeColumnasPresupuesto($presupuesto),

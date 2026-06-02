@@ -75,6 +75,7 @@ final class PresupuestoPdf
             'term_cond_moneda' => $presupuesto->term_cond_moneda ?? 'MXN',
             'subtotal' => $presupuesto->subtotal,
             'porcentaje_descuento' => $presupuesto->porcentaje_descuento,
+            'cantidad_descuento' => $presupuesto->cantidad_descuento,
             'iva_total' => $presupuesto->iva_total,
             'total' => $presupuesto->total,
             'empresa_receptora' => $empDoc,
