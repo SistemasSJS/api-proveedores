@@ -320,7 +320,7 @@ class PurificadoraPedidoController extends Controller
     public function delete(PurificadoraPedido $pedido): JsonResponse
     {
 
-        $pedido = PurificadoraPedido::query()->find($id);
+        // $pedido = PurificadoraPedido::query()->find($id);
 
         if ($pedido === null) {
 
