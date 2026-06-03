@@ -6,10 +6,24 @@ alwaysApply: false
 
 # Database - api-proveedores
 
-## Migraciones
-- Nombre: `YYYY_MM_DD_HHMMSS_descripcion_accion_table.php`
-- `Schema::create()` o `Schema::table()`
-- Siempre implementar `down()` con `Schema::dropIfExists()` o reversión
+## Migraciones (obligatorio)
+
+- **Siempre** crear migraciones con Artisan; **no** crear archivos a mano en `database/migrations/`.
+- Ejecutar desde la raíz de `api-proveedores`:
+
+```bash
+# Tabla nueva
+php artisan make:migration create_nombre_tabla_table
+
+# Alterar tabla existente
+php artisan make:migration descripcion_cambio --table=nombre_tabla
+```
+
+- Tras generar el archivo, implementar `up()` / `down()` en la clase creada por Artisan.
+- Nombre generado por Artisan: `YYYY_MM_DD_HHMMSS_snake_case.php` (respetar el prefijo de fecha que asigne el comando).
+- `Schema::create()` o `Schema::table()` según el caso.
+- Siempre implementar `down()` con `Schema::dropIfExists()`, reversión de columnas o lógica equivalente.
+- Para migraciones de datos masivos o respaldos, registrar pasos en el canal de log `migrations` (`storage/logs/migrations.log`) cuando aplique.
 
 ## Convenciones de columnas
 ```php

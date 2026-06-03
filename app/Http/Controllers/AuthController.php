@@ -101,7 +101,7 @@ class AuthController extends Controller
     {
         $validatedData = $request->validated();
 
-        $proveedorExistente = Proveedor::where(function ($query) use ($validatedData) {
+        $proveedorExistente = Proveedor::withoutGlobalScope('solo_activos')->where(function ($query) use ($validatedData) {
             if (isset($validatedData['telefono_codigo_pais'], $validatedData['telefono'])) {
                 $query->where('telefono_codigo_pais', $validatedData['telefono_codigo_pais'])
                     ->where('telefono', $validatedData['telefono']);
@@ -111,16 +111,24 @@ class AuthController extends Controller
                 $query->orWhere('razon_social', strtoupper($validatedData['razon_social']));
             }
 
-            $telefonoCompleto = ($validatedData['telefono_codigo_pais'] ?? '').($validatedData['telefono'] ?? '');
+            $telefonoCompleto = ($validatedData['telefono_codigo_pais'] ?? '') . ($validatedData['telefono'] ?? '');
             if (isset($validatedData['email']) && $validatedData['email'] !== $telefonoCompleto) {
                 $query->orWhere('email', $validatedData['email']);
             }
         })->first();
 
         if ($proveedorExistente) {
+            if ($this->proveedorTieneRegistroCompletado($proveedorExistente)) {
+                return $this->error(
+                    'El registro ya está completado.',
+                    [],
+                    409
+                );
+            }
+
             if ($proveedorExistente->tipo_alta == 1) {
                 return $this->error(
-                    'Este teléfono ya está registrado con un usuario activo. Si olvidaste tu contraseña, usa la opción de recuperación.',
+                    'Teléfono ya registrado. Recupera tu contraseña si no puedes entrar.',
                     [
                         'campo_duplicado' => 'telefono',
                         'valor' => $proveedorExistente->telefono,
@@ -171,45 +179,106 @@ class AuthController extends Controller
                     'token_temporal' => $tokenTemporal,
                 ], 'Empresa ya registrada. Verifica tus datos y completa el registro.', 200);
             }
+
+            $plainToken = $this->enviarCorreoCompletarRegistroConTokenAlmacenado($proveedorExistente);
+            $url = config('services.frontend.url') . "/gen-pass?token={$plainToken}";
+
+            return $this->success([
+                'url' => $url,
+                'data' => $proveedorExistente->load(Proveedor::eagerLodable()),
+            ], 'Revisa tu correo para activar la cuenta.', 200);
         }
 
         $proveedor = Proveedor::create($validatedData);
-        $plainToken = $this->asignarTokenYEnviarCorreoCompletarRegistro($proveedor);
-        $url = config('services.frontend.url')."/gen-pass?token={$plainToken}";
+        $plainToken = $this->enviarCorreoCompletarRegistroConTokenAlmacenado($proveedor);
+        $url = config('services.frontend.url') . "/gen-pass?token={$plainToken}";
 
         return $this->success([
             'url' => $url,
             'data' => $proveedor->load(Proveedor::eagerLodable()),
-        ], 'Empresa registrada y pendiente de completar registro en GestionPlus. Revisa tu correo para continuar.', 200);
+        ], 'Revisa tu correo para activar la cuenta.', 200);
     }
 
     /**
-     * Reenvía el correo para completar registro (respuesta genérica, sin enumerar cuentas).
+     * Reenvía el correo para completar registro con validaciones explícitas por escenario.
      */
     public function reenviarCorreoRegistroProveedor(ProveedorReenviarCorreoRegistroRequest $request)
     {
-        $proveedor = Proveedor::query()->where('email', $request->validated('email'))->first();
+        $email = strtolower(trim($request->validated('email')));
+
+        $proveedor = Proveedor::withoutGlobalScope('solo_activos')
+            ->whereRaw('LOWER(email) = ?', [$email])
+            ->first();
+
+        if (! $proveedor) {
+            return $this->error(
+                'Este correo no está registrado.',
+                ['codigo' => 'proveedor_no_encontrado'],
+                404
+            );
+        }
+
+        if ($this->proveedorTieneRegistroCompletado($proveedor)) {
+            return $this->error(
+                'El registro ya está completado. Inicia sesión o recupera tu contraseña.',
+                ['codigo' => 'registro_ya_completado'],
+                409
+            );
+        }
+
+        if ($proveedor->estatus === EstadoUsuario::BLOQUEADO->value) {
+            return $this->error(
+                'Cuenta bloqueada. Contacta a soporte.',
+                ['codigo' => 'proveedor_bloqueado'],
+                403
+            );
+        }
+
+        if ($proveedor->estatus === EstadoUsuario::SUSPENDIDO->value) {
+            return $this->error(
+                'Cuenta suspendida. Contacta a soporte.',
+                ['codigo' => 'proveedor_suspendido'],
+                403
+            );
+        }
+
+        if ((int) $proveedor->tipo_alta === 2) {
+            return $this->error(
+                'Registro desde Construcción: completa la activación en ese módulo.',
+                ['codigo' => 'registro_construccion_pendiente'],
+                422
+            );
+        }
+
+        $tieneUsuarioActivo = DB::table('user_proveedor')
+            ->where('proveedor_id', $proveedor->id)
+            ->where('activo', true)
+            ->exists();
+
+        if ($tieneUsuarioActivo) {
+            return $this->error(
+                'Ya tienes usuario. Inicia sesión o recupera tu contraseña.',
+                ['codigo' => 'usuario_ya_existe'],
+                409
+            );
+        }
 
         if (
-            $proveedor
-            && $proveedor->token_completar_registro !== null
-            && $proveedor->token_completar_registro_generado_at !== null
-            && $proveedor->registro_completado_at === null
+            $proveedor->token_completar_registro === null
+            || $proveedor->token_completar_registro_generado_at === null
         ) {
-            $plainToken = Str::random(60);
-
-            $proveedor->update([
-                'token_completar_registro' => hash('sha256', $plainToken),
-                'token_completar_registro_generado_at' => now(),
-            ]);
-
-            $url = config('services.frontend.url')."/gen-pass?token={$plainToken}";
-            Mail::to($proveedor->email)->send(new CompletaRegistroProveedorMail($url, $proveedor));
+            return $this->error(
+                'No hay activación pendiente. Regístrate de nuevo o contacta soporte.',
+                ['codigo' => 'sin_enlace_pendiente'],
+                422
+            );
         }
+
+        $this->enviarCorreoCompletarRegistroConTokenAlmacenado($proveedor);
 
         return $this->success(
             [],
-            'Si existe una cuenta pendiente asociada a este correo electrónico, se ha enviado un nuevo enlace de registro.',
+            'Correo reenviado. Revisa bandeja y spam.',
             200
         );
     }
@@ -225,18 +294,20 @@ class AuthController extends Controller
         $normalizedToken = preg_replace('/\s+/', '', urldecode(trim((string) $request->input('token'))));
         $tokenHash = hash('sha256', $normalizedToken);
 
-        $proveedor = Proveedor::where(
-            'token_completar_registro',
-            $tokenHash
-        )->first();
+        $proveedor = Proveedor::withoutGlobalScope('solo_activos')
+            ->where(function ($query) use ($normalizedToken, $tokenHash) {
+                $query->where('token_completar_registro', $normalizedToken)
+                    ->orWhere('token_completar_registro', $tokenHash);
+            })
+            ->first();
 
         if (! $proveedor) {
             return $this->error('Token inválido o expirado', [], 498);
         }
 
-        if ($proveedor->registro_completado_at) {
+        if ($this->proveedorTieneRegistroCompletado($proveedor)) {
             return $this->error(
-                'Este registro ya fue completado anteriormente.',
+                'El registro ya está completado.',
                 [],
                 409
             );
@@ -287,6 +358,7 @@ class AuthController extends Controller
         $proveedor->update([
             'registro_completado_at' => now(),
             'token_completar_registro' => null,
+            'estatus' => EstadoUsuario::REGISTRO_COMPLETADO->value,
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -1466,17 +1538,33 @@ class AuthController extends Controller
         ], $existe ? 'El email ya está registrado.' : 'El email está disponible.', 200);
     }
 
-    private function asignarTokenYEnviarCorreoCompletarRegistro(Proveedor $proveedor): string
+    private function proveedorTieneRegistroCompletado(Proveedor $proveedor): bool
     {
-        $plainToken = Str::random(60);
+        return $proveedor->registro_completado_at !== null;
+    }
 
-        $proveedor->update([
-            'token_completar_registro' => hash('sha256', $plainToken),
-            'token_completar_registro_generado_at' => now(),
-        ]);
+    private function enviarCorreoCompletarRegistroConTokenAlmacenado(Proveedor $proveedor): string
+    {
+        if (filled($proveedor->token_completar_registro)) {
+            $plainToken = $proveedor->token_completar_registro;
+        } else {
+            $plainToken = Str::random(60);
+            $proveedor->update([
+                'token_completar_registro' => $plainToken,
+                'token_completar_registro_generado_at' => now(),
+            ]);
+        }
 
-        $url = config('services.frontend.url')."/gen-pass?token={$plainToken}";
-        Mail::to($proveedor->email)->send(new CompletaRegistroProveedorMail($url, $proveedor));
+        $url = config('services.frontend.url') . "/gen-pass?token={$plainToken}";
+        $proveedorId = $proveedor->id;
+        $correo = $proveedor->email;
+
+        dispatch(function () use ($url, $proveedorId, $correo) {
+            $proveedorMail = Proveedor::withoutGlobalScope('solo_activos')->find($proveedorId);
+            if ($proveedorMail && $correo) {
+                Mail::to($correo)->send(new CompletaRegistroProveedorMail($url, $proveedorMail));
+            }
+        })->afterResponse();
 
         return $plainToken;
     }

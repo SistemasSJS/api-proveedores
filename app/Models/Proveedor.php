@@ -442,7 +442,10 @@ class Proveedor extends BaseModel
     protected static function booted(): void
     {
         static::addGlobalScope('solo_activos', function (Builder $builder) {
-            $builder->where('estatus', '!=', EstadoUsuario::BLOQUEADO->value);
+            $builder->whereNotIn('estatus', [
+                EstadoUsuario::SUSPENDIDO->value,
+                EstadoUsuario::BLOQUEADO->value,
+            ]);
         });
     }
 }
