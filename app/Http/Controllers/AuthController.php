@@ -120,8 +120,8 @@ class AuthController extends Controller
         if ($proveedorExistente) {
             if ($this->proveedorTieneRegistroCompletado($proveedorExistente)) {
                 return $this->error(
-                    'El registro ya está completado.',
-                    [],
+                    'Tu empresa ya completó el registro en GestiónPlus. Inicia sesión con tu correo y contraseña.',
+                    ['codigo' => 'registro_ya_completado'],
                     409
                 );
             }
@@ -302,14 +302,42 @@ class AuthController extends Controller
             ->first();
 
         if (! $proveedor) {
-            return $this->error('Token inválido o expirado', [], 498);
+            return $this->error(
+                'Enlace inválido o ya utilizado. Si tu empresa ya activó la cuenta, inicia sesión. Si no, solicita un nuevo correo de activación.',
+                ['codigo' => 'token_invalido'],
+                498
+            );
         }
 
         if ($this->proveedorTieneRegistroCompletado($proveedor)) {
             return $this->error(
-                'El registro ya está completado.',
-                [],
+                'Tu empresa ya completó el registro en GestiónPlus. Inicia sesión con tu correo y contraseña.',
+                ['codigo' => 'registro_ya_completado'],
                 409
+            );
+        }
+
+        if ($proveedor->estatus === EstadoUsuario::BLOQUEADO->value) {
+            return $this->error(
+                'La cuenta de la empresa está bloqueada. Contacta a soporte para reactivarla.',
+                ['codigo' => 'proveedor_bloqueado'],
+                403
+            );
+        }
+
+        if ($proveedor->estatus === EstadoUsuario::SUSPENDIDO->value) {
+            return $this->error(
+                'La cuenta de la empresa está suspendida. Contacta a soporte.',
+                ['codigo' => 'proveedor_suspendido'],
+                403
+            );
+        }
+
+        if ((int) $proveedor->tipo_alta === 2) {
+            return $this->error(
+                'Este registro debe completarse desde el módulo de Construcción.',
+                ['codigo' => 'registro_construccion_pendiente'],
+                422
             );
         }
 
