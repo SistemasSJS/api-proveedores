@@ -16,6 +16,8 @@ class PurificadoraPedido extends BaseModel
 
     public const ESTADO_CANCELADO = 3;
 
+    public const ESTADO_ELIMINADO = 4;
+
     protected $table = 'purificadora_pedidos';
 
     protected $hidden = [];

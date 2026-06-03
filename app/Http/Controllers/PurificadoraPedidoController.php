@@ -77,26 +77,16 @@ class PurificadoraPedidoController extends Controller
      */
 
     public function index(Request $request): JsonResponse
-
     {
-
         $filters = $request->only(PurificadoraPedido::getFilters());
-
         $sortBy = $request->input('sort_by', 'created_at');
-
         $order = $request->input('order', 'desc');
 
-
-
         $pedidos = PurificadoraPedido::query()
-
+            ->where('estado', '!=', PurificadoraPedido::ESTADO_ELIMINADO)
             ->filter($filters)
-
             ->orderBy($sortBy, $order)
-
             ->get();
-
-
 
         return $this->success($pedidos, 'Pedidos obtenidos correctamente.');
     }
@@ -305,30 +295,20 @@ class PurificadoraPedidoController extends Controller
         return $this->success($pedido->fresh(), 'Pedido cancelado.');
     }
 
-    /**
-
-     * Elimina un pedido.
-
-     *
-
-     * DELETE /api/purificadora-pedidos/{id}
-
-     * Auth: Bearer Sanctum.
-
-     */
-
-    public function delete(PurificadoraPedido $pedido): JsonResponse
+    public function marcarDelete(int $id): JsonResponse
     {
-
-        // $pedido = PurificadoraPedido::query()->find($id);
+        $pedido = PurificadoraPedido::query()->find($id);
 
         if ($pedido === null) {
-
             return $this->error('Pedido no encontrado.', null, 404);
         }
 
-        $pedido->delete();
+        $pedido->update([
+            'estado' => PurificadoraPedido::ESTADO_ELIMINADO,
+            'cancelado_fecha' => now(),
+        ]);
 
-        return $this->success(null, 'Pedido eliminado correctamente.');
+
+        return $this->success($pedido->fresh(), 'Pedido eliminado.');
     }
 }
