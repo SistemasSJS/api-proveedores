@@ -99,7 +99,6 @@ class PurificadoraPedidoController extends Controller
 
 
         return $this->success($pedidos, 'Pedidos obtenidos correctamente.');
-
     }
 
 
@@ -145,7 +144,6 @@ class PurificadoraPedidoController extends Controller
             'whatsapp_url' => $pedido->urlWhatsappEnlace(),
 
         ], 'Pedido registrado correctamente.', 201);
-
     }
 
 
@@ -175,7 +173,6 @@ class PurificadoraPedidoController extends Controller
         if ($pedido === null) {
 
             return $this->error('Pedido no encontrado.', null, 404);
-
         }
 
 
@@ -183,7 +180,6 @@ class PurificadoraPedidoController extends Controller
         if ((int) $pedido->estado !== PurificadoraPedido::ESTADO_PENDIENTE) {
 
             return $this->error('Solo se puede pasar a en proceso un pedido pendiente.', null, 422);
-
         }
 
 
@@ -199,7 +195,6 @@ class PurificadoraPedidoController extends Controller
 
 
         return $this->success($pedido->fresh(), 'Pedido marcado en proceso (enlace WhatsApp).');
-
     }
 
 
@@ -229,7 +224,6 @@ class PurificadoraPedidoController extends Controller
         if ($pedido === null) {
 
             return $this->error('Pedido no encontrado.', null, 404);
-
         }
 
 
@@ -237,7 +231,6 @@ class PurificadoraPedidoController extends Controller
         if ((int) $pedido->estado !== PurificadoraPedido::ESTADO_EN_PROCESO) {
 
             return $this->error('Solo se puede completar un pedido en proceso.', null, 422);
-
         }
 
 
@@ -253,7 +246,6 @@ class PurificadoraPedidoController extends Controller
 
 
         return $this->success($pedido->fresh(), 'Pedido marcado como completado.');
-
     }
 
 
@@ -283,7 +275,6 @@ class PurificadoraPedidoController extends Controller
         if ($pedido === null) {
 
             return $this->error('Pedido no encontrado.', null, 404);
-
         }
 
 
@@ -297,7 +288,6 @@ class PurificadoraPedidoController extends Controller
         ], true)) {
 
             return $this->error('No se puede cancelar un pedido completado o ya cancelado.', null, 422);
-
         }
 
 
@@ -313,9 +303,32 @@ class PurificadoraPedidoController extends Controller
 
 
         return $this->success($pedido->fresh(), 'Pedido cancelado.');
-
     }
 
+    /**
+
+     * Elimina un pedido.
+
+     *
+
+     * DELETE /api/purificadora-pedidos/{id}
+
+     * Auth: Bearer Sanctum.
+
+     */
+
+    public function delete(PurificadoraPedido $pedido): JsonResponse
+    {
+
+        $pedido = PurificadoraPedido::query()->find($id);
+
+        if ($pedido === null) {
+
+            return $this->error('Pedido no encontrado.', null, 404);
+        }
+
+        $pedido->delete();
+
+        return $this->success(null, 'Pedido eliminado correctamente.');
+    }
 }
-
-
