@@ -1,10 +1,15 @@
 @php
+    use App\Services\Presupuesto\PresupuestoThemeService;
+
     $margenMm = 20;
     $footerHeightMm = 25.4;
     $terminosLista = $presupuesto['terminos_enunciados'] ?? [];
     $validacionesLista = $presupuesto['validaciones_enunciados'] ?? [];
     $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
     $anexosLista = $presupuesto['anexos'] ?? [];
+    $presupuestoThemeService = app(PresupuestoThemeService::class);
+    $pdfThemeKey = $presupuestoThemeService->resolveThemeKey($presupuesto['pdf_theme'] ?? null);
+    $presupuestoThemeCss = $presupuestoThemeService->generateCssVariables($pdfThemeKey);
 @endphp
 <!DOCTYPE html>
 <html lang="es">
@@ -22,40 +27,9 @@
         margin: 25.5mm;
     }
 
+    {!! $presupuestoThemeCss !!}
+
     :root {
-
-        /* =========================
-           PALETA BASE
-        ========================== */
-
-        --color-white: #ffffff;
-
-        --color-slate-50: #f8fafc;
-        --color-slate-100: #f1f5f9;
-        --color-slate-200: #e2e8f0;
-        --color-slate-400: #94a3b8;
-        --color-slate-500: #64748b;
-        --color-slate-600: #475569;
-        --color-slate-700: #334155;
-        --color-slate-800: #1e293b;
-        --color-slate-900: #0f172a;
-
-        --color-primary: #3498db;
-        --color-primary-dark: #2980b9;
-        --color-primary-soft: #eaf4fc;
-        --color-primary-border: #d6eaf8;
-
-        --color-heading: #2c3e50;
-
-        --color-receptor-line: #5f6f89;
-
-        --color-row-even: #eef6fc;
-
-        --color-paragraph-bg: #f8fafc;
-
-        --color-importe-label-bg: #fafbfc;
-        --color-importe-value-bg: #fcfdfe;
-
         /* =========================
            VARIABLES SEMÁNTICAS
         ========================== */
@@ -90,12 +64,6 @@
 
         --importe-label-bg: var(--color-importe-label-bg);
         --importe-value-bg: var(--color-importe-value-bg);
-
-        /* =========================
-           TIPOGRAFÍA
-        ========================== */
-
-        --section-line-height: 1.05;
     }
 
     html,
@@ -931,12 +899,12 @@
             <table class="tw-table">
                 <thead>
                     <tr>
-                        <th scope="col" style="width:5%;background:#3498db;color:#ffffff;">#</th>
-                        <th scope="col" style="width:36%;background:#3498db;color:#ffffff;">Descripción</th>
-                        <th scope="col" style="width:10%;background:#3498db;color:#ffffff;">Cantidad</th>
-                        <th scope="col" style="width:10%;background:#3498db;color:#ffffff;">Unidad</th>
-                        <th scope="col" style="width:19%;background:#3498db;color:#ffffff;">Precio unitario</th>
-                        <th scope="col" style="width:20%;background:#3498db;color:#ffffff;">Importe</th>
+                        <th scope="col" style="width:5%;background:var(--color-primary);color:var(--color-white);">#</th>
+                        <th scope="col" style="width:36%;background:var(--color-primary);color:var(--color-white);">Descripción</th>
+                        <th scope="col" style="width:10%;background:var(--color-primary);color:var(--color-white);">Cantidad</th>
+                        <th scope="col" style="width:10%;background:var(--color-primary);color:var(--color-white);">Unidad</th>
+                        <th scope="col" style="width:19%;background:var(--color-primary);color:var(--color-white);">Precio unitario</th>
+                        <th scope="col" style="width:20%;background:var(--color-primary);color:var(--color-white);">Importe</th>
                     </tr>
                 </thead>
                 <tbody>

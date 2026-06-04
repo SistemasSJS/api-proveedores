@@ -6,6 +6,7 @@ use App\Http\Requests\Presupuesto\StorePresupuestoRequest;
 use App\Http\Requests\Presupuesto\UpdatePresupuestoRequest;
 use App\Http\Resources\Presupuesto\PresupuestoResource;
 use App\Http\Resources\ProveedorResource;
+use App\Services\Presupuesto\PresupuestoThemeService;
 use App\Support\PresupuestoPdf;
 use App\Support\PresupuestoPdfTemplate;
 use App\Models\CarteraCliente;
@@ -34,6 +35,27 @@ use Throwable;
 class ProveedorPresupuestoController extends Controller
 {
     private bool $logEnabled = true;
+
+    public function __construct(
+        private readonly PresupuestoThemeService $presupuestoThemeService,
+    ) {}
+
+    /**
+     * Catálogo de temas visuales para PDF / vista previa de presupuestos.
+     */
+    public function listPdfThemes(Request $request, Proveedor $proveedor): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user || ! $user->tieneAccesoAProveedor((int) $proveedor->id)) {
+            return $this->error('El usuario autenticado no tiene acceso a la empresa en GestionPlus.', null, 403);
+        }
+
+        return $this->success([
+            'themes' => $this->presupuestoThemeService->getThemes(),
+            'default_theme' => $this->presupuestoThemeService->getDefaultThemeKey(),
+        ], 'Temas de presupuesto obtenidos correctamente.');
+    }
 
     /**
      * Obtiene el siguiente folio de presupuesto para el proveedor autenticado.
@@ -538,6 +560,10 @@ class ProveedorPresupuestoController extends Controller
             $datosPresupuesto['monto_descuento'] = $totalesDoc['monto_descuento'];
             $datosPresupuesto['iva_total'] = $totalesDoc['iva_total'];
             $datosPresupuesto['total'] = $totalesDoc['total'];
+            $datosPresupuesto = $this->aplicarTemaPdfADatos(
+                $datosPresupuesto,
+                $request->input('pdf_theme') ?? $request->query('theme')
+            );
 
             $this->log('Generación de PDF desde formulario solicitada', [
                 'proveedor_id' => $proveedor->id,
@@ -753,7 +779,7 @@ class ProveedorPresupuestoController extends Controller
     /**
      * Genera y descarga el PDF de un presupuesto guardado.
      */
-    public function generarPdf(Proveedor $proveedor, Presupuesto $presupuesto): Response
+    public function generarPdf(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): Response
     {
         try {
             if (! $this->presupuestoAccesiblePorProveedor($proveedor, $presupuesto)) {
@@ -783,6 +809,10 @@ class ProveedorPresupuestoController extends Controller
                 $logoProveedorBase64,
                 $lugar,
                 $qrCode
+            );
+            $datosVista = $this->aplicarTemaPdfADatos(
+                $datosVista,
+                $request->query('theme') ?? $request->query('pdf_theme')
             );
 
             return $this->generarPdfResponse($datosVista, $presupuesto->numero_presupuesto);
@@ -1530,6 +1560,17 @@ class ProveedorPresupuestoController extends Controller
                 'message' => 'No fue posible generar el PDF: ' . $errorMessage,
             ], 500);
         }
+    }
+
+    /**
+     * @param  array<string, mixed>  $datos
+     * @return array<string, mixed>
+     */
+    private function aplicarTemaPdfADatos(array $datos, ?string $theme): array
+    {
+        $datos['pdf_theme'] = $this->presupuestoThemeService->resolveThemeKey($theme);
+
+        return $datos;
     }
 
     /**

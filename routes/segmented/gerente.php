@@ -241,6 +241,7 @@ Route::prefix('proveedores')
                 });
 
                 Route::get('/next-folio', [ProveedorPresupuestoController::class, 'nextFolioByProveedor']);
+                Route::get('/pdf-themes', [ProveedorPresupuestoController::class, 'listPdfThemes']);
                 Route::get('/', [ProveedorPresupuestoController::class, 'index']);
                 Route::post('/', [ProveedorPresupuestoController::class, 'store']);
                 Route::post('/generar-pdf', [ProveedorPresupuestoController::class, 'generarPdfDesdeFormulario']);
