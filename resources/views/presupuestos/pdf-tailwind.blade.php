@@ -10,6 +10,9 @@
     $presupuestoThemeService = app(PresupuestoThemeService::class);
     $pdfThemeKey = $presupuestoThemeService->resolveThemeKey($presupuesto['pdf_theme'] ?? null);
     $presupuestoThemeCss = $presupuestoThemeService->generateCssVariables($pdfThemeKey);
+    $presupuestoTableHeaderCss = $presupuestoThemeService->generateTableHeaderCss($pdfThemeKey);
+    $thColors = $presupuestoThemeService->tableHeaderColors($pdfThemeKey);
+    $thCellStyle = 'background-color:'.$thColors['bg'].';color:'.$thColors['text'].';border:1px solid '.$thColors['border'].';';
 @endphp
 <!DOCTYPE html>
 <html lang="es">
@@ -29,6 +32,8 @@
 
     {!! $presupuestoThemeCss !!}
 
+    {!! $presupuestoTableHeaderCss !!}
+
     :root {
         /* =========================
            VARIABLES SEMÁNTICAS
@@ -36,10 +41,10 @@
 
         --bg-body: var(--color-white);
 
-        --text-primary: var(--color-slate-800);
-        --text-secondary: var(--color-slate-600);
-        --text-muted: var(--color-slate-500);
-        --text-soft: var(--color-slate-400);
+        --text-primary: #111827;
+        --text-secondary: #4b5563;
+        --text-muted: #4b5563;
+        --text-soft: #4b5563;
 
         --text-heading: var(--color-heading);
 
@@ -175,7 +180,7 @@
     .tw-emisor-name {
         font-size: 9.5pt;
         font-weight: 700;
-        color: var(--text-heading);
+        color: #111827;
         text-transform: uppercase;
         margin-bottom: 0.4mm;
         letter-spacing: 0.03em;
@@ -184,7 +189,7 @@
 
     .tw-emisor-line {
         font-size: 7pt;
-        color: var(--text-secondary);
+        color: #111827;
         margin-bottom: 0.2mm;
         line-height: var(--section-line-height);
     }
@@ -200,7 +205,7 @@
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: var(--text-muted);
+        color: var(--primary);
         margin-bottom: 0.6mm;
     }
 
@@ -292,14 +297,14 @@
     .tw-receptor-strong {
         font-size: 9pt;
         font-weight: 700;
-        color: var(--text-heading);
+        color: #111827;
         margin-bottom: 1mm;
         line-height: 1.15;
     }
 
     .tw-receptor-line {
         font-size: 7pt;
-        color: var(--color-receptor-line);
+        color: #111827;
         margin-bottom: 0.8mm;
         line-height: 1.15;
     }
@@ -307,7 +312,7 @@
     .tw-desc-text {
         font-size: 9pt;
         font-weight: 700;
-        color: var(--text-heading);
+        color: #111827;
         line-height: 1.15;
         text-align: left;
         white-space: pre-wrap;
@@ -343,16 +348,14 @@
     }
 
     .tw-table thead th {
-        padding: 1mm 0.5mm;
-        font-size: 5.8pt;
+        padding: 1.4mm 0.8mm;
+        font-size: 6.2pt;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.03em;
         text-align: center;
-        color: var(--table-header-text) !important;
-        background: var(--table-header-bg) !important;
-        border: 1px solid var(--table-header-border);
-        line-height: 1.12;
+        line-height: 1.2;
+        vertical-align: middle;
     }
 
     .tw-table thead th:nth-child(2) {
@@ -389,7 +392,7 @@
 
     .tw-table tbody td:nth-child(2) {
         text-align: left;
-        color: var(--text-heading);
+        color: #111827;
         padding-left: 1.2mm;
     }
 
@@ -420,7 +423,7 @@
     .tw-table tbody tr.tw-linea-parrafo td {
         text-align: left;
         font-weight: 400;
-        color: var(--text-secondary);
+        color: #111827;
         padding: 3mm 2.5mm;
         line-height: 1.45;
         white-space: pre-wrap;
@@ -533,7 +536,7 @@
         text-align: center;
         font-size: 6.5pt;
         font-weight: 400;
-        color: var(--text-muted);
+        color: #111827;
         padding: 1.8mm 2.5mm;
         line-height: 1.3;
         background: var(--importe-value-bg);
@@ -617,14 +620,14 @@
     .tw-anexo-simple-heading {
         font-size: 8.4pt;
         font-weight: 700;
-        color: var(--text-heading);
+        color: #111827;
         line-height: 1.2;
         margin-bottom: 1.1mm;
     }
 
     .tw-anexo-simple-desc {
         font-size: 7.1pt;
-        color: var(--text-secondary);
+        color: #111827;
         line-height: 1.3;
         word-break: break-word;
         white-space: pre-wrap;
@@ -674,7 +677,7 @@
 
     .tw-terms ul.tw-terms-num li {
         font-size: 6.2pt;
-        color: var(--text-secondary);
+        color: #111827;
         line-height: var(--section-line-height);
         margin-bottom: 0.6mm;
         padding-left: 5mm;
@@ -697,7 +700,7 @@
 
     .tw-terms ul.tw-obs-list li {
         font-size: 6.2pt;
-        color: var(--text-secondary);
+        color: #111827;
         line-height: var(--section-line-height);
         margin-bottom: 0.6mm;
         padding-left: 5mm;
@@ -723,7 +726,7 @@
         min-height: {{ $footerHeightMm - 2 }}mm;
         padding: 1mm 0 2mm;
         font-size: 6.5pt;
-        color: var(--text-muted);
+        color: #111827;
         line-height: 1.3;
         overflow: visible;
     }
@@ -899,12 +902,12 @@
             <table class="tw-table">
                 <thead>
                     <tr>
-                        <th scope="col" style="width:5%;background:var(--color-primary);color:var(--color-white);">#</th>
-                        <th scope="col" style="width:36%;background:var(--color-primary);color:var(--color-white);">Descripción</th>
-                        <th scope="col" style="width:10%;background:var(--color-primary);color:var(--color-white);">Cantidad</th>
-                        <th scope="col" style="width:10%;background:var(--color-primary);color:var(--color-white);">Unidad</th>
-                        <th scope="col" style="width:19%;background:var(--color-primary);color:var(--color-white);">Precio unitario</th>
-                        <th scope="col" style="width:20%;background:var(--color-primary);color:var(--color-white);">Importe</th>
+                        <th scope="col" style="width:5%;{{ $thCellStyle }}">#</th>
+                        <th scope="col" style="width:36%;{{ $thCellStyle }}">Descripción</th>
+                        <th scope="col" style="width:10%;{{ $thCellStyle }}">Cantidad</th>
+                        <th scope="col" style="width:10%;{{ $thCellStyle }}">Unidad</th>
+                        <th scope="col" style="width:19%;{{ $thCellStyle }}">Precio unitario</th>
+                        <th scope="col" style="width:20%;{{ $thCellStyle }}">Importe</th>
                     </tr>
                 </thead>
                 <tbody>

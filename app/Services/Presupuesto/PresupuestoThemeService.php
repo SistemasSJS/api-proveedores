@@ -369,6 +369,42 @@ final class PresupuestoThemeService
     }
 
     /**
+     * Estilos de encabezado de tabla con colores literales (DomPDF no aplica bien var() en celdas).
+     */
+    public function generateTableHeaderCss(string $theme): string
+    {
+        $v = $this->getTheme($theme)['variables'];
+        $bg = $v['color-primary'];
+        $text = $v['color-white'];
+        $border = $v['color-primary-dark'];
+
+        return implode("\n", [
+            '.tw-table thead tr{background-color:'.$bg.'!important;}',
+            '.tw-table thead th{',
+            'background-color:'.$bg.'!important;',
+            'color:'.$text.'!important;',
+            'border:1px solid '.$border.'!important;',
+            '-webkit-print-color-adjust:exact;',
+            'print-color-adjust:exact;',
+            '}',
+        ]);
+    }
+
+    /**
+     * @return array{bg: string, text: string, border: string}
+     */
+    public function tableHeaderColors(string $theme): array
+    {
+        $v = $this->getTheme($theme)['variables'];
+
+        return [
+            'bg' => (string) $v['color-primary'],
+            'text' => (string) $v['color-white'],
+            'border' => (string) $v['color-primary-dark'],
+        ];
+    }
+
+    /**
      * @return array<string, string>
      */
     public function variablesAsCssMap(string $theme): array
