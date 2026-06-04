@@ -18,6 +18,8 @@ class PurificadoraPedido extends BaseModel
 
     public const ESTADO_ELIMINADO = 4;
 
+    public const PRECIO_UNITARIO_DEFAULT = 25.0;
+
     protected $table = 'purificadora_pedidos';
 
     protected $hidden = [];
@@ -44,6 +46,9 @@ class PurificadoraPedido extends BaseModel
         'colonia',
         'codigo_postal',
         'municipio',
+        'cantidad_garrafones',
+        'precio_unitario',
+        'total',
         'estado',
         'pendiente_fecha',
         'en_proceso_fecha',
@@ -53,6 +58,9 @@ class PurificadoraPedido extends BaseModel
 
     protected $casts = [
         'estado' => 'integer',
+        'cantidad_garrafones' => 'integer',
+        'precio_unitario' => 'decimal:2',
+        'total' => 'decimal:2',
         'pendiente_fecha' => 'datetime',
         'en_proceso_fecha' => 'datetime',
         'completado_fecha' => 'datetime',

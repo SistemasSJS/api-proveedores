@@ -2,12 +2,11 @@
 
 namespace App\Http\Requests;
 
-use App\Models\PurificadoraPedido;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class PurificadoraPedidoRequest extends FormRequest
+class PurificadoraPedidoUpdateRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -33,16 +32,16 @@ class PurificadoraPedidoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre' => ['required', 'string', 'max:120'],
-            'celular' => ['required', 'regex:/^[0-9]+$/', 'size:10'],
+            'nombre' => ['sometimes', 'required', 'string', 'max:120'],
+            'celular' => ['sometimes', 'required', 'regex:/^[0-9]+$/', 'size:10'],
             'correo' => ['nullable', 'email', 'max:180'],
-            'calle' => ['required', 'string', 'max:120'],
-            'numero' => ['required', 'string', 'max:20'],
-            'colonia' => ['required', 'string', 'max:120'],
+            'calle' => ['sometimes', 'required', 'string', 'max:120'],
+            'numero' => ['sometimes', 'required', 'string', 'max:20'],
+            'colonia' => ['sometimes', 'required', 'string', 'max:120'],
             'codigoPostal' => ['nullable', 'regex:/^[0-9]{5}$/'],
             'municipio' => ['nullable', 'string', 'max:120'],
-            'cantidadGarrafones' => ['nullable', 'integer', 'min:1'],
-            'precioUnitario' => ['nullable', 'numeric', 'min:0'],
+            'cantidadGarrafones' => ['sometimes', 'required', 'integer', 'min:1'],
+            'precioUnitario' => ['sometimes', 'required', 'numeric', 'min:0'],
         ];
     }
 
@@ -66,8 +65,10 @@ class PurificadoraPedidoRequest extends FormRequest
             'colonia.required' => 'La colonia es obligatoria.',
             'colonia.max' => 'La colonia no debe exceder 120 caracteres.',
             'codigoPostal.regex' => 'El código postal debe tener 5 dígitos.',
+            'cantidadGarrafones.required' => 'La cantidad de garrafones es obligatoria.',
             'cantidadGarrafones.integer' => 'La cantidad de garrafones debe ser un número entero.',
             'cantidadGarrafones.min' => 'La cantidad de garrafones debe ser al menos 1.',
+            'precioUnitario.required' => 'El precio unitario es obligatorio.',
             'precioUnitario.numeric' => 'El precio unitario debe ser numérico.',
             'precioUnitario.min' => 'El precio unitario no puede ser negativo.',
         ];
@@ -76,26 +77,29 @@ class PurificadoraPedidoRequest extends FormRequest
     /**
      * @return array<string, mixed>
      */
-    public function datosPedido(): array
+    public function datosActualizacion(): array
     {
         $validated = $this->validated();
-        $ahora = now();
-        $cantidad = (int) ($validated['cantidadGarrafones'] ?? 1);
-        $precioUnitario = (float) ($validated['precioUnitario'] ?? PurificadoraPedido::PRECIO_UNITARIO_DEFAULT);
-
-        return [
-            'nombre' => $validated['nombre'],
-            'celular' => $validated['celular'],
-            'correo' => $validated['correo'] ?? null,
-            'calle' => $validated['calle'],
-            'numero' => $validated['numero'],
-            'colonia' => $validated['colonia'],
-            'codigo_postal' => $validated['codigoPostal'] ?? null,
-            'municipio' => $validated['municipio'] ?? 'Ahome',
-            'cantidad_garrafones' => $cantidad,
-            'precio_unitario' => $precioUnitario,
-            'estado' => PurificadoraPedido::ESTADO_PENDIENTE,
-            'pendiente_fecha' => $ahora,
+        $mapa = [
+            'nombre' => 'nombre',
+            'celular' => 'celular',
+            'correo' => 'correo',
+            'calle' => 'calle',
+            'numero' => 'numero',
+            'colonia' => 'colonia',
+            'codigoPostal' => 'codigo_postal',
+            'municipio' => 'municipio',
+            'cantidadGarrafones' => 'cantidad_garrafones',
+            'precioUnitario' => 'precio_unitario',
         ];
+
+        $datos = [];
+        foreach ($mapa as $input => $columna) {
+            if (array_key_exists($input, $validated)) {
+                $datos[$columna] = $validated[$input];
+            }
+        }
+
+        return $datos;
     }
 }
