@@ -407,6 +407,14 @@ class Proveedor extends BaseModel
 
 
     /**
+     * Consultas de listado/gestión en rutas administradoras (incluye suspendidos y bloqueados).
+     */
+    public static function queryParaAdmin(): Builder
+    {
+        return static::withoutGlobalScope('solo_activos');
+    }
+
+    /**
      * Boot del modelo.
      *
      * Se ejecuta automáticamente cuando el modelo es inicializado por Eloquent.

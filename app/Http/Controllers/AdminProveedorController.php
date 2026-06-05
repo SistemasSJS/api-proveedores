@@ -23,7 +23,8 @@ class AdminProveedorController extends Controller
         $order = $request->input('order', 'asc');
         $perPage = $request->input('per_page', 10);
 
-        $originalPaginator = Proveedor::with(Proveedor::eagerLodable())
+        $originalPaginator = Proveedor::queryParaAdmin()
+            ->with(Proveedor::eagerLodable())
             ->filter($filters)
             ->orderBy($sortBy, $order)
             ->paginate($perPage);
@@ -88,7 +89,7 @@ class AdminProveedorController extends Controller
      */
     public function proveedoresConCategoriasConSubcatCountProductos(Request $request)
     {
-        $proveedores = Proveedor::with([
+        $proveedores = Proveedor::queryParaAdmin()->with([
             'categorias' => function ($query) {
                 $query->whereNull('parent_id') // solo categorías raíz
                     ->with([
