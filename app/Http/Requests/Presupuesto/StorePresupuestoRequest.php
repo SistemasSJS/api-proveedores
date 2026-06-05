@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Presupuesto;
 
 use App\Models\PresupuestoConcepto;
+use App\Services\Presupuesto\PresupuestoThemeService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -109,7 +110,7 @@ class StorePresupuestoRequest extends FormRequest
             'validacion_alcances.adicionales_requieren_autorizacion_escrita' => 'nullable|boolean',
             
             'configuracion_condiciones' => 'nullable|array',
-
+            'pdf_theme' => 'nullable|string|max:64',
 
             /**
              * conceptos includos en el presupuesto
@@ -130,6 +131,11 @@ class StorePresupuestoRequest extends FormRequest
     {
         $validator->after(function (Validator $v): void {
             $data = $v->getData();
+            $pdfTheme = $data['pdf_theme'] ?? null;
+            if ($pdfTheme !== null && $pdfTheme !== '' && ! app(PresupuestoThemeService::class)->themeExists((string) $pdfTheme)) {
+                $v->errors()->add('pdf_theme', 'El estilo seleccionado no está disponible.');
+            }
+
             $id = $data['empresa_receptora_id'] ?? null;
             $esProveedorReceptor = filter_var($data['es_proveedor_receptor'] ?? false, FILTER_VALIDATE_BOOLEAN);
             $inicioTrabajo = isset($data['term_cond_inicio_trabajo']) ? (int) $data['term_cond_inicio_trabajo'] : null;

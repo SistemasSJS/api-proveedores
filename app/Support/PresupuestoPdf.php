@@ -100,6 +100,7 @@ final class PresupuestoPdf
             'observaciones_enunciados' => $enunciadosClasificados['observaciones'],
             'qr_code' => $qrCode,
             'qr_url' => $qrUrl,
+            'pdf_theme' => $presupuesto->pdf_theme,
         ];
 
         return Pdf::loadView(PresupuestoPdfTemplate::viewName(), ['presupuesto' => $datosPresupuesto])

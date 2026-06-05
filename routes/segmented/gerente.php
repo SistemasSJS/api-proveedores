@@ -254,6 +254,7 @@ Route::prefix('proveedores')
                     Route::delete('/{anexo}', [ProveedorPresupuestoAnexoController::class, 'destroy']);
                 });
 
+                Route::patch('/{presupuesto}/pdf-theme', [ProveedorPresupuestoController::class, 'updatePdfTheme']);
                 Route::get('/{presupuesto}/pdf', [ProveedorPresupuestoController::class, 'generarPdf']);
                 Route::post('/{presupuesto}/duplicar', [ProveedorPresupuestoController::class, 'duplicar']);
                 Route::post('/{presupuesto}/enviar', [ProveedorPresupuestoController::class, 'enviar']);

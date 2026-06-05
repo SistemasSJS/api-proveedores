@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Presupuesto\StorePresupuestoRequest;
+use App\Http\Requests\Presupuesto\UpdatePresupuestoPdfThemeRequest;
 use App\Http\Requests\Presupuesto\UpdatePresupuestoRequest;
 use App\Http\Resources\Presupuesto\PresupuestoResource;
 use App\Http\Resources\ProveedorResource;
@@ -43,6 +44,34 @@ class ProveedorPresupuestoController extends Controller
     /**
      * Catálogo de temas visuales para PDF / vista previa de presupuestos.
      */
+    public function updatePdfTheme(
+        UpdatePresupuestoPdfThemeRequest $request,
+        Proveedor $proveedor,
+        Presupuesto $presupuesto
+    ): JsonResponse {
+        if (! $this->presupuestoEsEmisor($proveedor, $presupuesto)) {
+            return $this->error('La empresa no tiene acceso a este presupuesto en GestionPlus.', null, 403);
+        }
+
+        if (! $this->puedeEditarPresupuesto($presupuesto)) {
+            return $this->error(
+                'No se puede modificar el estilo de este presupuesto en su estado actual.',
+                ['estado_actual' => $presupuesto->estado],
+                422
+            );
+        }
+
+        $presupuesto->pdf_theme = $this->presupuestoThemeService->resolveThemeKey(
+            $request->validated('pdf_theme')
+        );
+        $presupuesto->save();
+
+        return $this->success(
+            new PresupuestoResource($presupuesto->fresh(Presupuesto::eagerLodable())),
+            'Estilo del presupuesto actualizado correctamente.'
+        );
+    }
+
     public function listPdfThemes(Request $request, Proveedor $proveedor): JsonResponse
     {
         $user = $request->user();
@@ -307,6 +336,7 @@ class ProveedorPresupuestoController extends Controller
                 $payload['iva_porcentaje'] = $payload['iva_porcentaje'] ?? 16.00;
                 $payload['estado'] = $payload['estado'] ?? Presupuesto::ESTADO_BORRADOR;
                 $payload = $this->normalizarEmpresaReceptora($payload, (int) $payload['proveedor_id']);
+                $payload = $this->normalizarPdfThemeEnPayload($payload);
 
                 $presupuesto = Presupuesto::create($payload);
                 $presupuesto->asegurarTokenPublico();
@@ -399,6 +429,7 @@ class ProveedorPresupuestoController extends Controller
                 $payload['proveedor_id'] = (int) $validated['proveedor_id'];
                 $payload['numero_presupuesto'] = $payload['numero_presupuesto'] ?? $presupuesto->numero_presupuesto;
                 $payload = $this->normalizarEmpresaReceptora($payload, (int) $payload['proveedor_id']);
+                $payload = $this->normalizarPdfThemeEnPayload($payload);
 
                 $presupuesto->update($payload);
                 if ($presupuesto->estado === Presupuesto::ESTADO_BORRADOR) {
@@ -562,7 +593,7 @@ class ProveedorPresupuestoController extends Controller
             $datosPresupuesto['total'] = $totalesDoc['total'];
             $datosPresupuesto = $this->aplicarTemaPdfADatos(
                 $datosPresupuesto,
-                $request->input('pdf_theme') ?? $request->query('theme')
+                $request->input('pdf_theme') ?? $request->query('theme') ?? $presupuestoGuardado->pdf_theme
             );
 
             $this->log('Generación de PDF desde formulario solicitada', [
@@ -812,7 +843,7 @@ class ProveedorPresupuestoController extends Controller
             );
             $datosVista = $this->aplicarTemaPdfADatos(
                 $datosVista,
-                $request->query('theme') ?? $request->query('pdf_theme')
+                $request->query('theme') ?? $request->query('pdf_theme') ?? $presupuesto->pdf_theme
             );
 
             return $this->generarPdfResponse($datosVista, $presupuesto->numero_presupuesto);
@@ -1789,7 +1820,27 @@ class ProveedorPresupuestoController extends Controller
             'validaciones_enunciados' => $enunciadosClasificados['validaciones'],
             'observaciones_enunciados' => $enunciadosClasificados['observaciones'],
             'qr_code' => $qrCodeDataUri,
+            'pdf_theme' => $presupuesto->pdf_theme,
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function normalizarPdfThemeEnPayload(array $payload): array
+    {
+        if (! array_key_exists('pdf_theme', $payload)) {
+            return $payload;
+        }
+
+        $payload['pdf_theme'] = $this->presupuestoThemeService->resolveThemeKey(
+            $payload['pdf_theme'] !== null && $payload['pdf_theme'] !== ''
+                ? (string) $payload['pdf_theme']
+                : null
+        );
+
+        return $payload;
     }
 
     /**

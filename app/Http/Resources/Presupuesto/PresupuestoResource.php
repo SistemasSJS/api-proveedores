@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Presupuesto;
 
 use App\Models\Presupuesto;
+use App\Services\Presupuesto\PresupuestoThemeService;
 // use App\Http\Resources\Presupuesto\PresupuestoEstadoLogResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -127,7 +128,7 @@ class PresupuestoResource extends JsonResource
             'motivo_rechazo' => $this->motivo_rechazo,
             'item_visto' => (bool) ($this->item_visto ?? false),
             'token_publico' => $this->token_publico,
-
+            'pdf_theme' => $this->pdf_theme ?? PresupuestoThemeService::DEFAULT_THEME_KEY,
 
             'proveedor' => [
                 'id' => $this->proveedor?->id ?? $this->proveedor_id,

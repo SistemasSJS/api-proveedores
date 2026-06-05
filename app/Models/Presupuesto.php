@@ -107,6 +107,7 @@ class Presupuesto extends BaseModel
         'item_visto',
         'notification_id',
         'token_publico',
+        'pdf_theme',
         'proveedor_id',
         'empresa_receptora_id',
         'proveedor_receptor_id',
