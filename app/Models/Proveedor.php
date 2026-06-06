@@ -111,6 +111,7 @@ class Proveedor extends BaseModel
         'municipio' => 'municipio',
         'fecha_registro' => 'fecha_registro',
         'estatus' => 'estatus',
+        'grupo_operativos' => 'grupo_operativos',
         'notas' => 'notas',
         'email' => 'email',
         'descripcion_giro_empresa' => 'descripcion_giro_empresa',
@@ -176,6 +177,18 @@ class Proveedor extends BaseModel
     public function scopeFilterByEstatus($query, $value)
     {
         return $query->where('estatus', $value);
+    }
+
+    /**
+     * Listado admin: segmento «Operativos» (excluye bloqueados y suspendidos).
+     */
+    public function scopeFilterByGrupoOperativos($query, $value)
+    {
+        if ($value === null || $value === '' || $value === '0' || $value === false) {
+            return $query;
+        }
+
+        return $query->whereNotIn('estatus', ['bloqueado', 'suspendido']);
     }
 
     public function scopeFilterByNotas($query, $value)
@@ -358,6 +371,13 @@ class Proveedor extends BaseModel
         return $this->belongsToMany(EmpresaConstrucc::class, 'empresa_construcc_proveedor')
             ->withPivot('usuario_construcc_id', 'usuario_construcc_nombre')
             ->withTimestamps();
+    }
+
+    // ================== PRESUPUESTOS ==================
+
+    public function presupuestos(): HasMany
+    {
+        return $this->hasMany(Presupuesto::class);
     }
 
     // ================== SOLICITUDES DE PAGO ==================

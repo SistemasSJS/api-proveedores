@@ -179,7 +179,7 @@ class ProveedorPresupuestoController extends Controller
 
         $sortBy = $request->input('sort_by', 'created_at');
         $order = $request->input('order', 'desc');
-        $perPage = $request->input('per_page', 10);
+        $perPage = min(max(1, (int) $request->input('per_page', 10)), 100);
 
         $ultimasN = isset($filters['ultimas_presupuestos']) ? (int) $filters['ultimas_presupuestos'] : 0;
         $hasUltimas = $ultimasN > 0;

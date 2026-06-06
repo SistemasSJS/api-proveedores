@@ -32,8 +32,12 @@ class ProveedorUpdateRequest extends FormRequest
         $data = parent::validated();
 
         if ($this->has('telefono')) {
-            $data['telefono'] = $this->input('telefono.telefono');
-            $data['telefono_codigo_pais'] = $this->input('telefono.codigo');
+            if (is_array($this->input('telefono'))) {
+                $data['telefono'] = $this->input('telefono.telefono');
+                $data['telefono_codigo_pais'] = $this->input('telefono.codigo');
+            } else {
+                $data['telefono'] = $this->input('telefono');
+            }
         }
 
         return $data;
@@ -47,7 +51,7 @@ class ProveedorUpdateRequest extends FormRequest
             // -------- DATOS GENERALES (REQUERIDOS) --------
             'nombre_comercial' => ['sometimes', 'string', 'max:255'],
             'email' => ['sometimes', 'email', 'max:255'],
-            'telefono' => ['sometimes', 'array'],
+            'telefono' => ['sometimes'],
             'telefono.codigo' => ['sometimes', 'string', 'max:10'],
             'telefono.telefono' => ['sometimes', 'string', 'max:20'],
 
@@ -90,6 +94,14 @@ class ProveedorUpdateRequest extends FormRequest
             'contacto_cargo' => ['nullable', 'string', 'max:60'],
             'contacto_telefono' => ['nullable', 'string', 'max:15'],
             'contacto_correo' => ['nullable', 'email', 'max:60'],
+
+            // -------- ESTADO (gestión administrativa) --------
+            'estatus' => ['sometimes', Rule::in(EstadoUsuario::values())],
+            'notas' => ['nullable', 'string'],
+            'is_proveedor_sp' => ['sometimes', 'boolean'],
+            'is_proveedor_catalogo' => ['sometimes', 'boolean'],
+            'tipos_empresa_id' => ['sometimes', 'integer', 'exists:tipos_empresa,id'],
+            'tipos_empresa_otro' => ['nullable', 'string', 'max:255'],
         ];
     }
 

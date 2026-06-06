@@ -104,10 +104,22 @@ class ProveedorResource extends JsonResource
             'is_proveedor_sp' => $this->is_proveedor_sp ?? null,
             'is_proveedor_catalogo' => $this->is_proveedor_catalogo ?? null,
             'perfil_empresa_completo' => $this->perfil_empresa_completo ?? null,
+            'fecha_registro' => $this->fecha_registro?->toDateTimeString(),
+            'registro_completado_at' => $this->registro_completado_at?->toDateTimeString(),
+            'consecutivo_presupuesto_siguiente' => $this->consecutivo_presupuesto_siguiente,
 
             /* =========================
              * Relaciones
              * ========================= */
+            'cuentas_bancarias' => $this->whenLoaded('cuentasBancarias', function () {
+                return $this->cuentasBancarias->map(fn ($c) => [
+                    'id' => $c->id,
+                    'alias' => $c->alias,
+                    'banco_nombre' => $c->banco_nombre,
+                    'estatus' => $c->estatus,
+                ]);
+            }),
+
             'tipos_empresa' => $this->whenLoaded('tipos_empresa', function () {
                 return [
                     'id' => $this->tipos_empresa->id,
