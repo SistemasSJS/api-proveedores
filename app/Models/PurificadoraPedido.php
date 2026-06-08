@@ -49,6 +49,7 @@ class PurificadoraPedido extends BaseModel
         'cantidad_garrafones',
         'precio_unitario',
         'total',
+        'notas',
         'estado',
         'pendiente_fecha',
         'en_proceso_fecha',

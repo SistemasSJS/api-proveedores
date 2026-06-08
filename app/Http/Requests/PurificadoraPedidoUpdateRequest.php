@@ -42,6 +42,7 @@ class PurificadoraPedidoUpdateRequest extends FormRequest
             'municipio' => ['nullable', 'string', 'max:120'],
             'cantidadGarrafones' => ['sometimes', 'required', 'integer', 'min:1'],
             'precioUnitario' => ['sometimes', 'required', 'numeric', 'min:0'],
+            'notas' => ['nullable', 'string', 'max:2000'],
         ];
     }
 
@@ -71,6 +72,7 @@ class PurificadoraPedidoUpdateRequest extends FormRequest
             'precioUnitario.required' => 'El precio unitario es obligatorio.',
             'precioUnitario.numeric' => 'El precio unitario debe ser numérico.',
             'precioUnitario.min' => 'El precio unitario no puede ser negativo.',
+            'notas.max' => 'Las notas no deben exceder 2000 caracteres.',
         ];
     }
 
@@ -91,6 +93,7 @@ class PurificadoraPedidoUpdateRequest extends FormRequest
             'municipio' => 'municipio',
             'cantidadGarrafones' => 'cantidad_garrafones',
             'precioUnitario' => 'precio_unitario',
+            'notas' => 'notas',
         ];
 
         $datos = [];

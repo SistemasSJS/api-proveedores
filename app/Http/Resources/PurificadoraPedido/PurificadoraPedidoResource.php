@@ -25,6 +25,7 @@ class PurificadoraPedidoResource extends JsonResource
             'cantidadGarrafones' => (int) $this->cantidad_garrafones,
             'precioUnitario' => (float) $this->precio_unitario,
             'total' => (float) $this->total,
+            'notas' => $this->notas,
             'estado' => (int) $this->estado,
             'pendienteFecha' => $this->pendiente_fecha,
             'enProcesoFecha' => $this->en_proceso_fecha,

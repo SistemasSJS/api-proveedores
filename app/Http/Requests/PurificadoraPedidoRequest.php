@@ -43,6 +43,7 @@ class PurificadoraPedidoRequest extends FormRequest
             'municipio' => ['nullable', 'string', 'max:120'],
             'cantidadGarrafones' => ['nullable', 'integer', 'min:1'],
             'precioUnitario' => ['nullable', 'numeric', 'min:0'],
+            'notas' => ['nullable', 'string', 'max:2000'],
         ];
     }
 
@@ -70,6 +71,7 @@ class PurificadoraPedidoRequest extends FormRequest
             'cantidadGarrafones.min' => 'La cantidad de garrafones debe ser al menos 1.',
             'precioUnitario.numeric' => 'El precio unitario debe ser numérico.',
             'precioUnitario.min' => 'El precio unitario no puede ser negativo.',
+            'notas.max' => 'Las notas no deben exceder 2000 caracteres.',
         ];
     }
 
@@ -94,6 +96,7 @@ class PurificadoraPedidoRequest extends FormRequest
             'municipio' => $validated['municipio'] ?? 'Ahome',
             'cantidad_garrafones' => $cantidad,
             'precio_unitario' => $precioUnitario,
+            'notas' => $validated['notas'] ?? null,
             'estado' => PurificadoraPedido::ESTADO_PENDIENTE,
             'pendiente_fecha' => $ahora,
         ];
