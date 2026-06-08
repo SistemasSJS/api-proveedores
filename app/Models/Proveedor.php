@@ -112,9 +112,9 @@ class Proveedor extends BaseModel
         'estado' => 'estado',
         'municipio' => 'municipio',
         'fecha_registro' => 'fecha_registro',
-        'estatus' => 'estatus',
-        'grupo_operativos' => 'grupo_operativos',
-        'tipo_alta' => 'tipo_alta',
+        'estatus' => 'Estatus',
+        'grupo_operativos' => 'GrupoOperativos',
+        'tipo_alta' => 'TipoAlta',
         'notas' => 'notas',
         'email' => 'email',
         'descripcion_giro_empresa' => 'descripcion_giro_empresa',
@@ -214,6 +214,11 @@ class Proveedor extends BaseModel
     /**
      * 1 = alta proveedor (incluye null). 2 = alta usuario construcción.
      */
+    public function scopeFilterByTipoAlta($query, $value)
+    {
+        return $this->filterByTipoAlta($query, $value);
+    }
+
     public function filterByTipoAlta($query, $value)
     {
         if ($value === null || $value === '') {

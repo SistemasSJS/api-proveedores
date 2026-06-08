@@ -80,10 +80,14 @@ class AdminProveedorController extends Controller
 
     /**
      * Conteos para segmentos del listado admin (Todos / Operativos / Suspendidos / Bloqueados).
+     * Respeta filtros del listado (búsqueda, tipo de alta, etc.) excepto estatus y grupo_operativos.
      */
-    public function conteosListado(): JsonResponse
+    public function conteosListado(Request $request): JsonResponse
     {
-        $base = Proveedor::queryParaAdmin();
+        $filters = $request->only(Proveedor::getFilters());
+        unset($filters['estatus'], $filters['grupo_operativos']);
+
+        $base = Proveedor::queryParaAdmin()->filter($filters);
 
         $todos = (clone $base)->count();
         $bloqueados = (clone $base)->where('estatus', 'bloqueado')->count();
