@@ -108,6 +108,21 @@ class ProveedorResource extends JsonResource
             'registro_completado_at' => $this->registro_completado_at?->toDateTimeString(),
             'consecutivo_presupuesto_siguiente' => $this->consecutivo_presupuesto_siguiente,
 
+            'tipo_alta' => $this->tipo_alta !== null ? (int) $this->tipo_alta : 1,
+
+            'alta_construcc' => $this->when((int) ($this->tipo_alta ?? 1) === 2, function () {
+                $empresaAlta = $this->relationLoaded('empresaConstruccAlta') ? $this->empresaConstruccAlta : null;
+
+                return [
+                    'user_construcc_alta' => $this->user_construcc_alta,
+                    'user_construcc_nombre' => $this->nombreUsuarioConstruccAlta(),
+                    'empresa_construcc_alta' => $this->empresa_construcc_alta,
+                    'empresa_construcc_nombre' => self::upper($empresaAlta?->nombre),
+                    'empresa_construcc_rfc' => $empresaAlta?->rfc,
+                    'empresa_construcc_razon_social' => self::upper($empresaAlta?->razon_social),
+                ];
+            }),
+
             /* =========================
              * Relaciones
              * ========================= */

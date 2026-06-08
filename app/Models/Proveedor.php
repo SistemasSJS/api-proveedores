@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Enums\EstadoUsuario;
@@ -95,6 +96,7 @@ class Proveedor extends BaseModel
         'is_proveedor_sp' => 'boolean',
         'is_proveedor_catalogo' => 'boolean',
         'perfil_empresa_completo' => 'boolean',
+        'tipo_alta' => 'integer',
         'user_construcc_alta' => 'integer',
         'empresa_construcc_alta' => 'integer',
         'consecutivo_presupuesto_siguiente' => 'integer',
@@ -110,8 +112,8 @@ class Proveedor extends BaseModel
         'estado' => 'estado',
         'municipio' => 'municipio',
         'fecha_registro' => 'fecha_registro',
-        'estatus' => 'estatus',
-        'grupo_operativos' => 'grupo_operativos',
+        'estatus' => 'Estatus',
+        'grupo_operativos' => 'GrupoOperativos',
         'notas' => 'notas',
         'email' => 'email',
         'descripcion_giro_empresa' => 'descripcion_giro_empresa',
@@ -176,6 +178,18 @@ class Proveedor extends BaseModel
 
     public function scopeFilterByEstatus($query, $value)
     {
+        return $this->filterByEstatus($query, $value);
+    }
+
+    /**
+     * Filtro por estatus (listado admin).
+     */
+    public function filterByEstatus($query, $value)
+    {
+        if ($value === null || $value === '') {
+            return $query;
+        }
+
         return $query->where('estatus', $value);
     }
 
@@ -183,6 +197,11 @@ class Proveedor extends BaseModel
      * Listado admin: segmento «Operativos» (excluye bloqueados y suspendidos).
      */
     public function scopeFilterByGrupoOperativos($query, $value)
+    {
+        return $this->filterByGrupoOperativos($query, $value);
+    }
+
+    public function filterByGrupoOperativos($query, $value)
     {
         if ($value === null || $value === '' || $value === '0' || $value === false) {
             return $query;
@@ -371,6 +390,37 @@ class Proveedor extends BaseModel
         return $this->belongsToMany(EmpresaConstrucc::class, 'empresa_construcc_proveedor')
             ->withPivot('usuario_construcc_id', 'usuario_construcc_nombre')
             ->withTimestamps();
+    }
+
+    /**
+     * Empresa constructora que registró el alta cuando tipo_alta = 2 (UserConstrucc).
+     */
+    public function empresaConstruccAlta(): BelongsTo
+    {
+        return $this->belongsTo(EmpresaConstrucc::class, 'empresa_construcc_alta');
+    }
+
+    /**
+     * Nombre del usuario construcción que dio de alta al proveedor (pivot empresa–proveedor).
+     */
+    public function nombreUsuarioConstruccAlta(): ?string
+    {
+        if (!$this->user_construcc_alta || !$this->relationLoaded('empresasConstrucc')) {
+            return null;
+        }
+
+        foreach ($this->empresasConstrucc as $empresa) {
+            if ($this->empresa_construcc_alta && (int) $empresa->id !== (int) $this->empresa_construcc_alta) {
+                continue;
+            }
+            if ((int) ($empresa->pivot->usuario_construcc_id ?? 0) === (int) $this->user_construcc_alta) {
+                $nombre = $empresa->pivot->usuario_construcc_nombre ?? null;
+
+                return $nombre !== null && $nombre !== '' ? $nombre : null;
+            }
+        }
+
+        return null;
     }
 
     // ================== PRESUPUESTOS ==================

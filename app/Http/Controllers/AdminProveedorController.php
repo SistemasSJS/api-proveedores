@@ -150,9 +150,7 @@ class AdminProveedorController extends Controller
 
     {
 
-        $proveedor->load(['tipos_empresa', 'cuentasBancarias']);
-
-
+        $proveedor->load(['tipos_empresa', 'cuentasBancarias', 'empresaConstruccAlta', 'empresasConstrucc']);
 
         return $this->success(new ProveedorResource($proveedor));
 
@@ -537,9 +535,7 @@ class AdminProveedorController extends Controller
 
         $proveedor = $proveedor->fresh(Proveedor::eagerLodable());
 
-        $proveedor->load(['tipos_empresa', 'cuentasBancarias']);
-
-
+        $proveedor->load(['tipos_empresa', 'cuentasBancarias', 'empresaConstruccAlta', 'empresasConstrucc']);
 
         return $this->success(new ProveedorResource($proveedor), 'Proveedor actualizado con éxito.', 200);
 
