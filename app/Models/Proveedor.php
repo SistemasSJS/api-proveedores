@@ -112,8 +112,9 @@ class Proveedor extends BaseModel
         'estado' => 'estado',
         'municipio' => 'municipio',
         'fecha_registro' => 'fecha_registro',
-        'estatus' => 'Estatus',
-        'grupo_operativos' => 'GrupoOperativos',
+        'estatus' => 'estatus',
+        'grupo_operativos' => 'grupo_operativos',
+        'tipo_alta' => 'tipo_alta',
         'notas' => 'notas',
         'email' => 'email',
         'descripcion_giro_empresa' => 'descripcion_giro_empresa',
@@ -208,6 +209,26 @@ class Proveedor extends BaseModel
         }
 
         return $query->whereNotIn('estatus', ['bloqueado', 'suspendido']);
+    }
+
+    /**
+     * 1 = alta proveedor (incluye null). 2 = alta usuario construcción.
+     */
+    public function filterByTipoAlta($query, $value)
+    {
+        if ($value === null || $value === '') {
+            return $query;
+        }
+
+        $tipo = (int) $value;
+
+        if ($tipo === 1) {
+            return $query->where(function ($q) {
+                $q->where('tipo_alta', 1)->orWhereNull('tipo_alta');
+            });
+        }
+
+        return $query->where('tipo_alta', $tipo);
     }
 
     public function scopeFilterByNotas($query, $value)

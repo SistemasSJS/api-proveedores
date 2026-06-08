@@ -74,14 +74,12 @@ class AdminProveedorController extends Controller
 
         $data = ProveedorResource::collection($originalPaginator)->resolve();
 
-
-
         return $this->paginated($originalPaginator->setCollection(collect($data)));
 
     }
 
     /**
-     * Conteos para segmentos del listado admin (sin paginar ni alterar `index`).
+     * Conteos para segmentos del listado admin (Todos / Operativos / Suspendidos / Bloqueados).
      */
     public function conteosListado(): JsonResponse
     {
