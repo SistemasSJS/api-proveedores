@@ -37,6 +37,12 @@ class User extends Authenticatable
         'nombre' => 'Nombre',
         'email' => 'Email',
         'role' => 'Role',
+        'search' => 'Search',
+        'role_id' => 'RoleId',
+        'proveedor_id' => 'ProveedorId',
+        'grupo_activos' => 'GrupoActivos',
+        'grupo_inactivos' => 'GrupoInactivos',
+        'grupo_pendientes' => 'GrupoPendientes',
     ];
 
     protected function casts(): array
@@ -52,7 +58,7 @@ class User extends Authenticatable
     // Filtro específico para 'name'
     public function filterByNombre($query, $value)
     {
-        return $query->where('nombre', 'like', "%$value%");
+        return $query->where('name', 'like', "%$value%");
     }
 
     // Filtro específico para 'email'
@@ -65,8 +71,69 @@ class User extends Authenticatable
     public function filterByRole($query, $value)
     {
         return $query->whereHas('role', function ($q) use ($value) {
-            $q->where('name', 'like', "%$value%");
+            $q->where('nombre', 'like', "%$value%");
         });
+    }
+
+    public function filterBySearch($query, $value)
+    {
+        return $query->where(function ($q) use ($value) {
+            $q->where('name', 'like', "%$value%")
+                ->orWhere('email', 'like', "%$value%")
+                ->orWhere('telefono', 'like', "%$value%");
+        });
+    }
+
+    public function filterByRoleId($query, $value)
+    {
+        if ($value === null || $value === '') {
+            return $query;
+        }
+
+        return $query->where('role_id', (int) $value);
+    }
+
+    public function filterByProveedorId($query, $value)
+    {
+        if ($value === null || $value === '') {
+            return $query;
+        }
+
+        $id = (int) $value;
+
+        return $query->whereHas('proveedores', function ($q) use ($id) {
+            $q->where('proveedores.id', $id);
+        });
+    }
+
+    /** Segmento listado admin: cuentas activas (status = true). */
+    public function filterByGrupoActivos($query, $value)
+    {
+        if ($value === null || $value === '' || $value === '0' || $value === false) {
+            return $query;
+        }
+
+        return $query->where('status', true);
+    }
+
+    /** Segmento listado admin: cuentas inactivas (status = false). */
+    public function filterByGrupoInactivos($query, $value)
+    {
+        if ($value === null || $value === '' || $value === '0' || $value === false) {
+            return $query;
+        }
+
+        return $query->where('status', false);
+    }
+
+    /** Segmento listado admin: correo sin verificar. */
+    public function filterByGrupoPendientes($query, $value)
+    {
+        if ($value === null || $value === '' || $value === '0' || $value === false) {
+            return $query;
+        }
+
+        return $query->whereNull('email_verified_at');
     }
 
     // /**

@@ -30,6 +30,7 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
     /**
      * GESTIÓN GENERAL DE USUARIOS
      */
+    Route::get('usuarios/conteos-listado', [UserController::class, 'conteosListado']);
     Route::apiResource('usuarios', UserController::class);
 
     /**

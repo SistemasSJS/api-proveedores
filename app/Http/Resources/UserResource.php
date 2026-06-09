@@ -44,6 +44,7 @@ class UserResource extends JsonResource
             'name' => $this->name,
             'foto_perfil_url' => $this->foto_perfil_url,
             'email' => $this->email,
+            'email_verified_at' => optional($this->email_verified_at)->toDateTimeString(),
             'role_id' => $this->whenLoaded('role', fn () => $this->role_id),
             'status' => $this->status,
             'estado' => $this->status,

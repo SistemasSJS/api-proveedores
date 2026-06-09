@@ -6,6 +6,7 @@ use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Http\Requests\User\UserStoreRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
@@ -33,13 +34,37 @@ class UserController extends Controller
      *     )
      * )
      */
+    /**
+     * Conteos para segmentos del listado admin (Todos / Activos / Inactivos / Pendientes).
+     * Respeta filtros del listado excepto grupo_activos, grupo_inactivos y grupo_pendientes.
+     */
+    public function conteosListado(Request $request): JsonResponse
+    {
+        $filters = $request->only(User::getFilters());
+        unset($filters['grupo_activos'], $filters['grupo_inactivos'], $filters['grupo_pendientes']);
+
+        $base = User::query()->filter($filters);
+
+        $todos = (clone $base)->count();
+        $activos = (clone $base)->where('status', true)->count();
+        $inactivos = (clone $base)->where('status', false)->count();
+        $pendientes = (clone $base)->whereNull('email_verified_at')->count();
+
+        return $this->success([
+            'todos' => $todos,
+            'activos' => $activos,
+            'inactivos' => $inactivos,
+            'pendientes' => $pendientes,
+        ], 'Conteos de usuarios para listado administrativo.');
+    }
+
     public function index(Request $request)
     {
         $filters = $request->only(User::getFilters());
 
-        $sortBy = $request->input('sort_by', 'created_at');
-        $order = $request->input('order', 'desc');
-        $perPage = $request->input('per_page', 10);
+        $sortBy = $request->input('sort_by', 'name');
+        $order = $request->input('order', 'asc');
+        $perPage = min(max(1, (int) $request->input('per_page', 10)), 100);
 
         $query = User::query()
             ->with(User::eagerLodable())
