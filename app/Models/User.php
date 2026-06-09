@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\EstadoUsuario;
 use App\Traits\AutoSwaggerSchema;
 use App\Traits\Filterable;
 use App\Traits\HasRoles;
@@ -43,6 +44,7 @@ class User extends Authenticatable
         'grupo_activos' => 'GrupoActivos',
         'grupo_inactivos' => 'GrupoInactivos',
         'grupo_pendientes' => 'GrupoPendientes',
+        'grupo_registro_completados' => 'GrupoRegistroCompletados',
     ];
 
     protected function casts(): array
@@ -134,6 +136,20 @@ class User extends Authenticatable
         }
 
         return $query->whereNull('email_verified_at');
+    }
+
+    /** Segmento listado admin: relación activa con estado registro_completado en user_proveedor. */
+    public function filterByGrupoRegistroCompletados($query, $value)
+    {
+        if ($value === null || $value === '' || $value === '0' || $value === false) {
+            return $query;
+        }
+
+        $estado = EstadoUsuario::REGISTRO_COMPLETADO->value;
+
+        return $query->whereHas('userProveedores', function ($q) use ($estado) {
+            $q->where('activo', true)->where('estado', $estado);
+        });
     }
 
     // /**

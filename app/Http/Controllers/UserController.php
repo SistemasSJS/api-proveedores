@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
+use App\Enums\EstadoUsuario;
 use App\Http\Requests\User\UserStoreRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
@@ -36,25 +37,35 @@ class UserController extends Controller
      */
     /**
      * Conteos para segmentos del listado admin (Todos / Activos / Inactivos / Pendientes).
-     * Respeta filtros del listado excepto grupo_activos, grupo_inactivos y grupo_pendientes.
+     * Respeta filtros del listado excepto filtros de segmento (grupo_*).
      */
     public function conteosListado(Request $request): JsonResponse
     {
         $filters = $request->only(User::getFilters());
-        unset($filters['grupo_activos'], $filters['grupo_inactivos'], $filters['grupo_pendientes']);
+        unset(
+            $filters['grupo_activos'],
+            $filters['grupo_inactivos'],
+            $filters['grupo_pendientes'],
+            $filters['grupo_registro_completados'],
+        );
 
         $base = User::query()->filter($filters);
+        $estadoRegistroCompletado = EstadoUsuario::REGISTRO_COMPLETADO->value;
 
         $todos = (clone $base)->count();
         $activos = (clone $base)->where('status', true)->count();
         $inactivos = (clone $base)->where('status', false)->count();
         $pendientes = (clone $base)->whereNull('email_verified_at')->count();
+        $registroCompletados = (clone $base)->whereHas('userProveedores', function ($q) use ($estadoRegistroCompletado) {
+            $q->where('activo', true)->where('estado', $estadoRegistroCompletado);
+        })->count();
 
         return $this->success([
             'todos' => $todos,
             'activos' => $activos,
             'inactivos' => $inactivos,
             'pendientes' => $pendientes,
+            'registro_completados' => $registroCompletados,
         ], 'Conteos de usuarios para listado administrativo.');
     }
 

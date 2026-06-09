@@ -247,6 +247,7 @@ Route::prefix('proveedores')
                 Route::post('/generar-pdf', [ProveedorPresupuestoController::class, 'generarPdfDesdeFormulario']);
                 Route::prefix('{presupuesto}/anexos')->group(function () {
                     Route::get('/', [ProveedorPresupuestoAnexoController::class, 'index']);
+                    Route::post('/bulk', [ProveedorPresupuestoAnexoController::class, 'storeBulk']);
                     Route::post('/', [ProveedorPresupuestoAnexoController::class, 'store']);
                     Route::get('/{anexo}', [ProveedorPresupuestoAnexoController::class, 'show']);
                     Route::post('/{anexo}', [ProveedorPresupuestoAnexoController::class, 'update']);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Presupuesto\StorePresupuestoAnexoBulkRequest;
 use App\Http\Requests\Presupuesto\StorePresupuestoAnexoRequest;
 use App\Http\Requests\Presupuesto\UpdatePresupuestoAnexoRequest;
 use App\Http\Resources\Presupuesto\PresupuestoAnexoResource;
@@ -11,6 +12,7 @@ use App\Models\Proveedor;
 use App\Support\PresupuestoAnexoImagenOptimizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Throwable;
@@ -30,6 +32,54 @@ class ProveedorPresupuestoAnexoController extends Controller
             ->get();
 
         return $this->success(PresupuestoAnexoResource::collection($anexos), 'Operación exitosa.');
+    }
+
+    public function storeBulk(
+        StorePresupuestoAnexoBulkRequest $request,
+        Proveedor $proveedor,
+        Presupuesto $presupuesto
+    ): JsonResponse {
+        $access = $this->validateAccess($request, $proveedor, $presupuesto);
+        if ($access !== null) {
+            return $access;
+        }
+
+        try {
+            $items = $request->validated()['anexos'];
+            $baseOrden = (int) $presupuesto->anexos()->max('orden');
+
+            $creados = DB::transaction(function () use ($items, $proveedor, $presupuesto, $baseOrden) {
+                $result = [];
+                foreach ($items as $index => $item) {
+                    $archivo = $this->guardarImagenBase64($proveedor, $presupuesto, $item['archivo_base64']);
+                    $orden = isset($item['orden'])
+                        ? (int) $item['orden']
+                        : ($baseOrden + $index + 1);
+
+                    $result[] = PresupuestoAnexo::create([
+                        'presupuesto_id' => (int) $presupuesto->id,
+                        'titulo' => $this->normalizarTituloAnexo($item['titulo'] ?? null),
+                        'descripcion' => $item['descripcion'] ?? null,
+                        'precio' => $item['precio'] ?? null,
+                        'orden' => $orden,
+                        'archivo_path' => $archivo['path'],
+                        'archivo_width' => $archivo['width'] ?: null,
+                        'archivo_height' => $archivo['height'] ?: null,
+                        'archivo_aspect_ratio' => $archivo['aspect_ratio'] ?: null,
+                    ])->fresh(PresupuestoAnexo::eagerLodable());
+                }
+
+                return $result;
+            });
+
+            return $this->success(
+                PresupuestoAnexoResource::collection(collect($creados)),
+                'Anexos creados correctamente.',
+                201
+            );
+        } catch (Throwable $e) {
+            return $this->error('No fue posible crear los anexos.', [$e->getMessage()], 500);
+        }
     }
 
     public function store(
