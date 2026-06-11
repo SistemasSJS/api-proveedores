@@ -21,6 +21,7 @@ use App\Http\Requests\Auth\ProveedorReenviarCorreoRegistroRequest;
 use App\Http\Requests\Auth\CompletarRegistroProveedorRequest;
 use App\Http\Resources\ProveedorResource;
 use App\Http\Resources\Auth\UserAuthenticateResource;
+use App\Support\UserCuentaEstado;
 use App\Mail\CompletaRegistroProveedorMail;
 use App\Mail\CompletaRegistroUsuarioMail;
 use App\Mail\VerifyUpdatedEmailMail;
@@ -437,13 +438,19 @@ class AuthController extends Controller
                 $q->where('email', $request->email)
                     ->orWhere('telefono', $request->email)
                     ->orWhere('telefono', $request->email);
-            })
-                ->where('status', '!=', EstadoUsuario::BLOQUEADO->value)
-                ->where('status', '!=', EstadoUsuario::SUSPENDIDO->value)
-                ->first();
+            })->first();
 
             if (! $user || ! Hash::check($request->password, $user->password)) {
                 throw new UnauthorizedException('Credenciales incorrectas en GestionPlus.');
+            }
+
+            $cuentaCheck = UserCuentaEstado::assertCanAuthenticate($user);
+            if (! $cuentaCheck['ok']) {
+                return $this->error(
+                    $cuentaCheck['message'],
+                    ['codigo' => $cuentaCheck['codigo']],
+                    403
+                );
             }
 
             $token = $user->createToken('API Token')->plainTextToken;

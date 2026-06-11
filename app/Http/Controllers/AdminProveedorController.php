@@ -28,17 +28,25 @@ use App\Models\Proveedor;
 
 use App\Models\SolicitudPago;
 
+use App\Services\Proveedor\ProveedorRestriccionUsuariosService;
+
 use Carbon\Carbon;
 
 use Illuminate\Http\JsonResponse;
 
 use Illuminate\Http\Request;
 
+use Illuminate\Validation\Rule;
+
 
 
 class AdminProveedorController extends Controller
 
 {
+
+    public function __construct(
+        private ProveedorRestriccionUsuariosService $restriccionUsuariosService
+    ) {}
 
     /**
 
@@ -527,19 +535,42 @@ class AdminProveedorController extends Controller
 
      */
 
+    public function impactoRestriccionEstatus(Request $request, Proveedor $proveedor): JsonResponse
+    {
+        $validated = $request->validate([
+            'estatus' => ['required', 'string', Rule::in(ProveedorRestriccionUsuariosService::ESTATUS_RESTRICTIVOS)],
+        ]);
+
+        $preview = $this->restriccionUsuariosService->previewImpacto(
+            $proveedor,
+            $validated['estatus']
+        );
+
+        return $this->success($preview, 'Vista previa de restricción por cambio de estatus.');
+    }
+
     public function update(ProveedorUpdateRequest $request, Proveedor $proveedor)
 
     {
 
         $validated = $request->validated();
 
+        $estatusAnterior = $proveedor->estatus;
+
         $proveedor->update($validated);
+
+        $restriccion = $this->restriccionUsuariosService->aplicarTrasCambioEstatus(
+            $proveedor->fresh(),
+            $estatusAnterior
+        );
 
         $proveedor = $proveedor->fresh(Proveedor::eagerLodable());
 
         $proveedor->load(['tipos_empresa', 'cuentasBancarias', 'empresaConstruccAlta', 'empresasConstrucc']);
 
-        return $this->success(new ProveedorResource($proveedor), 'Proveedor actualizado con éxito.', 200);
+        $mensaje = $restriccion['mensaje'] ?? 'Proveedor actualizado con éxito.';
+
+        return $this->success(new ProveedorResource($proveedor), $mensaje, 200);
 
     }
 

@@ -47,6 +47,7 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
         Route::get('proveedores/conteos-listado', [AdminProveedorController::class, 'conteosListado']);
         Route::post('proveedores', [AdminProveedorController::class, 'store']);
         Route::get('proveedores/{proveedor}/resumen', [AdminProveedorController::class, 'resumen']);
+        Route::get('proveedores/{proveedor}/impacto-restriccion-estatus', [AdminProveedorController::class, 'impactoRestriccionEstatus']);
         Route::get('proveedores/{proveedor}', [AdminProveedorController::class, 'show']);
         Route::put('proveedores/{proveedor}', [AdminProveedorController::class, 'update']);
         Route::patch('proveedores/{proveedor}', [AdminProveedorController::class, 'update']);
