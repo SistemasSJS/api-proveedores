@@ -28,6 +28,8 @@ use App\Models\Proveedor;
 
 use App\Models\SolicitudPago;
 
+use App\Models\User;
+
 use App\Services\Proveedor\ProveedorRestriccionUsuariosService;
 
 use Carbon\Carbon;
@@ -686,6 +688,96 @@ class AdminProveedorController extends Controller
 
         );
 
+    }
+
+    /**
+     * Línea de tiempo de actividad de un usuario dentro del contexto de la empresa.
+     */
+    public function actividadUsuario(Proveedor $proveedor, User $user): JsonResponse
+    {
+        $vinculo = $proveedor->users()->where('users.id', $user->id)->first();
+
+        if (! $vinculo) {
+            throw new ResourceNotFoundException('El usuario no está vinculado a esta empresa.');
+        }
+
+        $pivot = $vinculo->pivot;
+        $eventos = [];
+
+        if ($user->created_at) {
+            $eventos[] = [
+                'tipo' => 'cuenta_creada',
+                'titulo' => 'Cuenta de usuario creada',
+                'detalle' => $user->email,
+                'fecha' => $user->created_at->toDateTimeString(),
+            ];
+        }
+
+        if ($pivot->fecha_asignacion) {
+            $eventos[] = [
+                'tipo' => 'vinculo_creado',
+                'titulo' => 'Vinculado a la empresa',
+                'detalle' => sprintf(
+                    'Relación %s%s',
+                    $pivot->tipo_relacion,
+                    $pivot->activo ? '' : ' (inactivo)'
+                ),
+                'fecha' => Carbon::parse($pivot->fecha_asignacion)->toDateTimeString(),
+            ];
+        }
+
+        if ($pivot->fecha_desasignacion) {
+            $eventos[] = [
+                'tipo' => 'vinculo_desactivado',
+                'titulo' => 'Vínculo desactivado',
+                'detalle' => 'Se registró fecha de desasignación en la relación con la empresa.',
+                'fecha' => Carbon::parse($pivot->fecha_desasignacion)->toDateTimeString(),
+            ];
+        }
+
+        if ($user->updated_at && $user->created_at && ! $user->updated_at->equalTo($user->created_at)) {
+            $eventos[] = [
+                'tipo' => 'cuenta_actualizada',
+                'titulo' => 'Datos de cuenta actualizados',
+                'detalle' => 'Cambios en perfil, rol o estado de acceso.',
+                'fecha' => $user->updated_at->toDateTimeString(),
+            ];
+        }
+
+        if (! empty($pivot->observaciones)) {
+            $lineas = preg_split("/\r\n|\n|\r/", (string) $pivot->observaciones) ?: [];
+            foreach ($lineas as $linea) {
+                $linea = trim($linea);
+                if ($linea === '') {
+                    continue;
+                }
+                if (preg_match('/^\[([^\]]+)\]\s*(.+)$/', $linea, $matches)) {
+                    $eventos[] = [
+                        'tipo' => 'nota_vinculo',
+                        'titulo' => 'Nota en la relación',
+                        'detalle' => $matches[2],
+                        'fecha' => Carbon::parse($matches[1])->toDateTimeString(),
+                    ];
+                } else {
+                    $eventos[] = [
+                        'tipo' => 'nota_vinculo',
+                        'titulo' => 'Observación',
+                        'detalle' => $linea,
+                        'fecha' => $pivot->updated_at?->toDateTimeString()
+                            ?? $pivot->fecha_asignacion?->toDateTimeString()
+                            ?? now()->toDateTimeString(),
+                    ];
+                }
+            }
+        }
+
+        usort($eventos, fn (array $a, array $b) => strcmp($b['fecha'], $a['fecha']));
+
+        return $this->success([
+            'proveedor_id' => $proveedor->id,
+            'user_id' => $user->id,
+            'eventos' => array_values($eventos),
+        ], 'Actividad del usuario en la empresa.');
     }
 
 }

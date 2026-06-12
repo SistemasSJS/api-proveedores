@@ -175,11 +175,21 @@ class UserController extends Controller
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|string|max:255',
             'password' => ['nullable', 'string', Password::min(8)],
-            // 'email' => 'sometimes|string|email|max:255|unique:users,email,'.$user->id,
-            //             'password' => ['nullable', 'string', Password::min(8)],
+            'role_id' => ['sometimes', 'integer', 'exists:roles,id'],
+            'role' => ['sometimes', 'integer', 'exists:roles,id'],
+            'status' => ['sometimes'],
+            'estado' => ['sometimes'],
         ]);
 
-        $data = $request->only(['name', 'email']);
+        $data = $request->only(['name', 'email', 'role_id', 'status']);
+
+        if ($request->filled('role') && ! $request->filled('role_id')) {
+            $data['role_id'] = $request->input('role');
+        }
+
+        if ($request->filled('estado') && ! $request->filled('status')) {
+            $data['status'] = $request->input('estado');
+        }
 
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);

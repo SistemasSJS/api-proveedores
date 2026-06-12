@@ -55,6 +55,19 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
         Route::get('proveedores/{proveedor}/productos', [AdminProveedorController::class, 'productos']);
         Route::get('proveedores/all/count-categorias', [AdminProveedorController::class, 'proveedoresConCategoriasConSubcatCountProductos']);
 
+        Route::prefix('proveedores/{proveedor}/users')->group(function () {
+            Route::get('/', [ProveedorUsuarioController::class, 'index']);
+            Route::post('/', [ProveedorUsuarioController::class, 'store']);
+            Route::post('/vincular', [ProveedorUsuarioController::class, 'vincularExistente']);
+            Route::get('{user}/actividad', [AdminProveedorController::class, 'actividadUsuario']);
+            Route::get('{user}', [ProveedorUsuarioController::class, 'show']);
+            Route::patch('{user}', [ProveedorUsuarioController::class, 'update']);
+            Route::delete('{user}', [ProveedorUsuarioController::class, 'destroy']);
+            Route::post('{user}/logo', [ProveedorUsuarioController::class, 'updateLogo']);
+            Route::patch('{user}/relacion', [ProveedorUsuarioController::class, 'updateRelacion']);
+            Route::patch('{user}/estado', [ProveedorUsuarioController::class, 'cambiarEstado']);
+        });
+
         // Sucursales
         Route::get('sucursales', [SucursalController::class, 'index']);
         Route::post('sucursales', [SucursalController::class, 'store']);

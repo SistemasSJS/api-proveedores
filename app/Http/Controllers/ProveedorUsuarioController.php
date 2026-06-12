@@ -269,6 +269,60 @@ class ProveedorUsuarioController extends Controller
      * Reasigna un usuario de un proveedor origen a un proveedor destino
      * Actualiza todas las referencias en tablas relacionadas y notifica al gerente del proveedor destino
      */
+    /**
+     * Vincula un usuario existente (sin crear cuenta nueva) a la empresa.
+     */
+    public function vincularExistente(Request $request, Proveedor $proveedor)
+    {
+        $this->authorizeAccess($request->user(), $proveedor);
+
+        $validated = $request->validate([
+            'user_id' => ['required', 'integer', 'exists:users,id'],
+            'tipo_relacion' => ['sometimes', 'string', 'in:PRINCIPAL,SECUNDARIO'],
+            'activo' => ['sometimes', 'boolean'],
+            'observaciones' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $user = User::findOrFail($validated['user_id']);
+
+        if ($proveedor->users()->where('users.id', $user->id)->exists()) {
+            return $this->error('El usuario ya está vinculado a esta empresa.', null, 409);
+        }
+
+        $tipoRelacion = $validated['tipo_relacion'] ?? 'SECUNDARIO';
+        $activo = $validated['activo'] ?? true;
+
+        if ($tipoRelacion === 'PRINCIPAL' && $activo) {
+            $existePrincipal = $proveedor->users()
+                ->wherePivot('tipo_relacion', 'PRINCIPAL')
+                ->wherePivot('activo', true)
+                ->exists();
+
+            if ($existePrincipal) {
+                return $this->error('Ya existe un usuario principal activo en esta empresa.', null, 409);
+            }
+        }
+
+        $observacion = $validated['observaciones']
+            ?? "Usuario vinculado por administración ({$tipoRelacion})";
+
+        $proveedor->users()->attach($user->id, [
+            'tipo_relacion' => $tipoRelacion,
+            'activo' => $activo,
+            'estado' => 'registrado',
+            'fecha_asignacion' => now(),
+            'observaciones' => '[' . now()->format('Y-m-d H:i:s') . '] ' . $observacion,
+        ]);
+
+        $vinculo = $proveedor->users()->where('users.id', $user->id)->first();
+
+        return $this->success(
+            new UserResource($vinculo->load(User::eagerLodable())),
+            'Usuario vinculado a la empresa correctamente.',
+            201
+        );
+    }
+
     public function reasignarUsuario(ReasignarUsuarioRequest $request, $user_id)
     {
         $validated = $request->validated();
