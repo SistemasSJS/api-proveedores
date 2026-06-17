@@ -76,6 +76,8 @@ class PresupuestoRecibidoClienteProveedorNotification extends Notification imple
             'presupuesto_numero' => (string) $base['presupuesto_numero'],
             'proveedor_emisor_id' => (string) $base['proveedor_emisor_id'],
             'proveedor_receptor_id' => (string) ($base['proveedor_receptor_id'] ?? ''),
+            'usuario_envio_nombre' => (string) $base['usuario_envio_nombre'],
+            'empresa_emisora_nombre' => (string) $base['empresa_emisora_nombre'],
             'es_reenvio' => $base['es_reenvio'] ? '1' : '0',
             'timestamp' => (string) $base['timestamp'],
         ];
@@ -87,18 +89,23 @@ class PresupuestoRecibidoClienteProveedorNotification extends Notification imple
 
     private function baseData(): array
     {
-        $emisor = $this->presupuesto->proveedor?->nombre_comercial
+        $this->presupuesto->loadMissing(['user', 'proveedor']);
+
+        $nombreUsuario = $this->presupuesto->user?->name ?? 'Usuario';
+        $nombreEmpresa = $this->presupuesto->proveedor?->nombre_comercial
             ?? $this->presupuesto->proveedor?->razon_social
-            ?? 'Un proveedor';
+            ?? 'Empresa';
+
         $folio = $this->presupuesto->numero_presupuesto;
         $total = number_format((float) $this->presupuesto->total, 2) . ' ' . ($this->presupuesto->term_cond_moneda ?? 'MXN');
+        $quienEnvia = $nombreUsuario . ' de "' . $nombreEmpresa . '"';
 
         if ($this->esReenvio) {
             $titulo = 'Presupuesto actualizado #' . $folio;
-            $mensaje = $emisor . ' reenvió el presupuesto con cambios. Total: ' . $total . '.';
+            $mensaje = $quienEnvia . ' reenvió el presupuesto con cambios. Total: ' . $total . '.';
         } else {
-            $titulo = 'Nuevo presupuesto recibido #' . $folio;
-            $mensaje = $emisor . ' te envió un presupuesto. Total: ' . $total . '.';
+            $titulo = 'Nuevo presupuesto #' . $folio . ' — ' . $nombreUsuario;
+            $mensaje = $quienEnvia . ' te envió un presupuesto. Total: ' . $total . '.';
         }
 
         $frontendUrl = rtrim(config('app.frontend_url', config('app.url')), '/');
@@ -118,6 +125,9 @@ class PresupuestoRecibidoClienteProveedorNotification extends Notification imple
             'presupuesto_numero' => $this->presupuesto->numero_presupuesto,
             'proveedor_emisor_id' => $this->presupuesto->proveedor_id,
             'proveedor_receptor_id' => $this->presupuesto->proveedor_receptor_id,
+            'usuario_envio_id' => $this->presupuesto->user_id,
+            'usuario_envio_nombre' => $nombreUsuario,
+            'empresa_emisora_nombre' => $nombreEmpresa,
             'es_reenvio' => $this->esReenvio,
             'timestamp' => now()->toIso8601String(),
         ];

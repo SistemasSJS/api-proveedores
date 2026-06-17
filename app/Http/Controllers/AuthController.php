@@ -392,8 +392,10 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        $admin = User::find($this->id_user_admin_a_notificar);
-        if ($admin) {
+        // $admin = User::find($this->id_user_admin_a_notificar);
+        $admins = User::administradoresActivos()->get();
+
+        foreach ($admins as $admin) {
             $admin->notify(new NewUserNotification($user, $proveedor));
         }
 

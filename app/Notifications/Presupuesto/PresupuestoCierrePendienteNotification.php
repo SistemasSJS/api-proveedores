@@ -109,6 +109,8 @@ class PresupuestoCierrePendienteNotification extends Notification implements Sho
             'presupuesto_numero' => (string) $base['presupuesto_numero'],
             'proveedor_id' => (string) $base['proveedor_id'],
             'fecha_vencimiento' => (string) ($base['fecha_vencimiento'] ?? ''),
+            'usuario_envio_nombre' => (string) $base['usuario_envio_nombre'],
+            'empresa_emisora_nombre' => (string) $base['empresa_emisora_nombre'],
             'timestamp' => (string) $base['timestamp'],
         ];
 
@@ -119,6 +121,13 @@ class PresupuestoCierrePendienteNotification extends Notification implements Sho
 
     private function baseData(): array
     {
+        $this->presupuesto->loadMissing(['user', 'proveedor']);
+
+        $nombreUsuario = $this->presupuesto->user?->name ?? 'Usuario';
+        $nombreEmpresa = $this->presupuesto->proveedor?->nombre_comercial
+            ?? $this->presupuesto->proveedor?->razon_social
+            ?? 'Empresa';
+
         $fechaVenc = $this->presupuesto->fecha_vencimiento?->format('d/m/Y') ?? '';
         $cliente = $this->presupuesto->empresa_receptora_empresa
             ?? $this->presupuesto->empresa_receptora_nombre
@@ -128,11 +137,14 @@ class PresupuestoCierrePendienteNotification extends Notification implements Sho
             'tipo' => 'presupuesto',
             'subtipo' => 'cierre_pendiente',
             'titulo' => 'Presupuesto por vencer #' . $this->presupuesto->numero_presupuesto,
-            'mensaje' => 'El presupuesto enviado a ' . $cliente . ' vence el ' . $fechaVenc . '. Aún no hay respuesta.',
+            'mensaje' => 'El presupuesto que ' . $nombreUsuario . ' de "' . $nombreEmpresa . '" envió a ' . $cliente . ' vence el ' . $fechaVenc . '. Aún no hay respuesta.',
             'action_url' => '/pages/proveedor/presupuestos/preview/' . $this->presupuesto->id,
             'presupuesto_id' => $this->presupuesto->id,
             'presupuesto_numero' => $this->presupuesto->numero_presupuesto,
             'proveedor_id' => $this->presupuesto->proveedor_id,
+            'usuario_envio_id' => $this->presupuesto->user_id,
+            'usuario_envio_nombre' => $nombreUsuario,
+            'empresa_emisora_nombre' => $nombreEmpresa,
             'fecha_vencimiento' => $this->presupuesto->fecha_vencimiento?->toIso8601String(),
             'timestamp' => now()->toIso8601String(),
         ];

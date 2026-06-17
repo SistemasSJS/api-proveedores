@@ -108,6 +108,8 @@ class PresupuestoRechazadoNotification extends Notification implements ShouldBro
             'proveedor_id' => (string) $base['proveedor_id'],
             'estatus' => (string) $base['estatus'],
             'motivo_rechazo' => (string) ($base['motivo_rechazo'] ?? ''),
+            'usuario_envio_nombre' => (string) $base['usuario_envio_nombre'],
+            'empresa_emisora_nombre' => (string) $base['empresa_emisora_nombre'],
             'timestamp' => (string) $base['timestamp'],
         ];
 
@@ -118,8 +120,15 @@ class PresupuestoRechazadoNotification extends Notification implements ShouldBro
 
     private function baseData(): array
     {
+        $this->presupuesto->loadMissing(['user', 'proveedor']);
+
+        $nombreUsuario = $this->presupuesto->user?->name ?? 'Usuario';
+        $nombreEmpresa = $this->presupuesto->proveedor?->nombre_comercial
+            ?? $this->presupuesto->proveedor?->razon_social
+            ?? 'Empresa';
+
         $cliente = $this->presupuesto->empresa_receptora_empresa ?? $this->presupuesto->empresa_receptora_nombre ?? 'el cliente';
-        $mensaje = $cliente . ' rechazó tu presupuesto.';
+        $mensaje = $cliente . ' rechazó el presupuesto enviado por ' . $nombreUsuario . ' de "' . $nombreEmpresa . '".';
         if ($this->motivoRechazo) {
             $mensaje .= ' Motivo: ' . \Illuminate\Support\Str::limit($this->motivoRechazo, 100);
         }
@@ -134,6 +143,9 @@ class PresupuestoRechazadoNotification extends Notification implements ShouldBro
             'presupuesto_id' => $this->presupuesto->id,
             'presupuesto_numero' => $this->presupuesto->numero_presupuesto,
             'proveedor_id' => $this->presupuesto->proveedor_id,
+            'usuario_envio_id' => $this->presupuesto->user_id,
+            'usuario_envio_nombre' => $nombreUsuario,
+            'empresa_emisora_nombre' => $nombreEmpresa,
             'estatus' => 'rechazado',
             'timestamp' => now()->toIso8601String(),
         ];

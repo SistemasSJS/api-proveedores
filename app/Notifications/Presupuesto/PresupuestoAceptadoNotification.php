@@ -117,6 +117,8 @@ class PresupuestoAceptadoNotification extends Notification implements ShouldBroa
             'presupuesto_numero' => (string) $base['presupuesto_numero'],
             'proveedor_id' => (string) $base['proveedor_id'],
             'estatus' => (string) $base['estatus'],
+            'usuario_envio_nombre' => (string) $base['usuario_envio_nombre'],
+            'empresa_emisora_nombre' => (string) $base['empresa_emisora_nombre'],
             'timestamp' => (string) $base['timestamp'],
         ];
 
@@ -130,6 +132,13 @@ class PresupuestoAceptadoNotification extends Notification implements ShouldBroa
      */
     private function baseData(): array
     {
+        $this->presupuesto->loadMissing(['user', 'proveedor']);
+
+        $nombreUsuario = $this->presupuesto->user?->name ?? 'Usuario';
+        $nombreEmpresa = $this->presupuesto->proveedor?->nombre_comercial
+            ?? $this->presupuesto->proveedor?->razon_social
+            ?? 'Empresa';
+
         $cliente = $this->presupuesto->empresa_receptora_empresa
             ?? $this->presupuesto->empresa_receptora_nombre
             ?? 'el cliente';
@@ -138,11 +147,14 @@ class PresupuestoAceptadoNotification extends Notification implements ShouldBroa
             'tipo' => 'presupuesto',
             'subtipo' => 'aceptado',
             'titulo' => 'Presupuesto aceptado #' . $this->presupuesto->numero_presupuesto,
-            'mensaje' => $cliente . ' aceptó tu presupuesto.',
+            'mensaje' => $cliente . ' aceptó el presupuesto enviado por ' . $nombreUsuario . ' de "' . $nombreEmpresa . '".',
             'action_url' => '/pages/proveedor/presupuestos/preview/' . $this->presupuesto->id,
             'presupuesto_id' => $this->presupuesto->id,
             'presupuesto_numero' => $this->presupuesto->numero_presupuesto,
             'proveedor_id' => $this->presupuesto->proveedor_id,
+            'usuario_envio_id' => $this->presupuesto->user_id,
+            'usuario_envio_nombre' => $nombreUsuario,
+            'empresa_emisora_nombre' => $nombreEmpresa,
             'estatus' => 'aceptado',
             'timestamp' => now()->toIso8601String(),
         ];

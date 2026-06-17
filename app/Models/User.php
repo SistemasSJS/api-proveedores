@@ -359,4 +359,18 @@ class User extends Authenticatable
         $emailIsValid = filter_var($this->email, FILTER_VALIDATE_EMAIL) !== false;
         return $this->email !== null && !$emailIsValid;
     }
+
+
+    /**
+     * Obtiene los usuarios con rol de ADMINISTRADOR y status activo (true)
+     * Esto es útil para enviar notificaciones o asignar tareas a los administradores activos del sistema
+     * 
+     */
+    public function scopeAdministradoresActivos($query)
+    {
+        $roleId = Role::where('nombre', 'ADMINISTRADOR')->value('id');
+
+        return $query
+            ->where('role_id', $roleId);
+    }
 }

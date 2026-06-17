@@ -420,6 +420,7 @@ class ProveedorUsuarioController extends Controller
             if ($usuarioPrincipalDestino) {
                 $usuarioPrincipalDestino->notify(
                     new \App\Notifications\Usuario\UsuarioReasignadoNotification(
+                        $user->id,
                         $user->name,
                         $user->email,
                         $rol->name ?? 'N/A',

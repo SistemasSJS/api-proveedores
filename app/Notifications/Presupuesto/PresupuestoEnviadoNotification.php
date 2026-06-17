@@ -117,6 +117,8 @@ class PresupuestoEnviadoNotification extends Notification implements ShouldBroad
             'presupuesto_numero' => (string) $dataBase['presupuesto_numero'],
             'proveedor_id' => (string) $dataBase['proveedor_id'],
             'estatus' => (string) $dataBase['estatus'],
+            'usuario_envio_nombre' => (string) $dataBase['usuario_envio_nombre'],
+            'empresa_emisora_nombre' => (string) $dataBase['empresa_emisora_nombre'],
             'timestamp' => (string) $dataBase['timestamp'],
         ];
 
@@ -130,19 +132,29 @@ class PresupuestoEnviadoNotification extends Notification implements ShouldBroad
      */
     private function baseData(): array
     {
+        $this->presupuesto->loadMissing(['user', 'proveedor']);
+
+        $nombreUsuario = $this->presupuesto->user?->name ?? 'Usuario';
+        $nombreEmpresa = $this->presupuesto->proveedor?->nombre_comercial
+            ?? $this->presupuesto->proveedor?->razon_social
+            ?? 'Empresa';
+
+        $cliente = $this->presupuesto->empresa_receptora_empresa
+            ?? $this->presupuesto->empresa_receptora_nombre
+            ?? 'el cliente';
+
         return [
             'tipo' => 'presupuesto',
             'subtipo' => 'enviado',
             'titulo' => 'Presupuesto enviado #' . $this->presupuesto->numero_presupuesto,
-            'mensaje' => 'Se envió el presupuesto a ' . (
-                $this->presupuesto->empresa_receptora_empresa
-                ?? $this->presupuesto->empresa_receptora_nombre
-                ?? 'el cliente'
-            ) . '.',
+            'mensaje' => $nombreUsuario . ' de "' . $nombreEmpresa . '" envió el presupuesto a ' . $cliente . '.',
             'action_url' => '/pages/proveedor/presupuestos/preview/' . $this->presupuesto->id,
             'presupuesto_id' => $this->presupuesto->id,
             'presupuesto_numero' => $this->presupuesto->numero_presupuesto,
             'proveedor_id' => $this->presupuesto->proveedor_id,
+            'usuario_envio_id' => $this->presupuesto->user_id,
+            'usuario_envio_nombre' => $nombreUsuario,
+            'empresa_emisora_nombre' => $nombreEmpresa,
             'estatus' => 'enviado',
             'timestamp' => now()->toIso8601String(),
         ];
