@@ -1034,6 +1034,7 @@
                         </table>
 
                         <!-- 5) TOTALES -->
+                        @if ($presupuesto['config_mostrar_totales'] ?? true)
                         <div class="totales-section">
                             @php
                                 $subtotalCalculado = (float) ($presupuesto['subtotal'] ?? $subtotal);
@@ -1094,6 +1095,7 @@
                             </div>
                             <div class="after-table-space"></div>
                         </div>
+                        @endif
 
                     </div>
                     <div class="terms-block">

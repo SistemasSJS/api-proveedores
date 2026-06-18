@@ -554,6 +554,9 @@ class ProveedorPresupuestoController extends Controller
                 'porcentaje_descuento' => $normalized['porcentaje_descuento'] ?? null,
                 'cantidad_descuento' => $normalized['cantidad_descuento'] ?? null,
                 'term_cond_moneda' => $normalized['term_cond_moneda'] ?? 'MXN',
+                'config_mostrar_totales' => array_key_exists('config_mostrar_totales', $normalized)
+                    ? (bool) $normalized['config_mostrar_totales']
+                    : true,
                 'receptor_lineas' => PresupuestoPdf::lineasReceptorPdfDesdePayloadReceptor($normalized),
                 'conceptos' => $normalized['conceptos'] ?? [],
                 'anexos' => PresupuestoPdf::anexosParaPlantillaPdf($presupuestoGuardado),
@@ -758,6 +761,7 @@ class ProveedorPresupuestoController extends Controller
                     'obs_garantia_dias',
                     'obs_traslados',
                     'obs_viaticos',
+                    'config_mostrar_totales',
                 ]);
 
                 $payload['numero_presupuesto'] = Presupuesto::generarNumeroPresupuesto((int) $presupuesto->proveedor_id);
@@ -1804,6 +1808,7 @@ class ProveedorPresupuestoController extends Controller
             'cantidad_descuento' => $presupuesto->cantidad_descuento,
             'iva_total' => $presupuesto->iva_total,
             'total' => $presupuesto->total,
+            'config_mostrar_totales' => (bool) ($presupuesto->config_mostrar_totales ?? true),
             'receptor_lineas' => PresupuestoPdf::lineasReceptorPdfDesdeColumnasPresupuesto($presupuesto),
             'conceptos' => $presupuesto->conceptos->map(static function ($concepto) {
                 return [

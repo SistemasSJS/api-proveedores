@@ -949,6 +949,7 @@
                 </tbody>
             </table>
 
+            @if ($presupuesto['config_mostrar_totales'] ?? true)
             <div class="tw-totals-wrap">
                 @php
                     $subtotalCalculado = (float) ($presupuesto['subtotal'] ?? $subtotal);
@@ -1011,6 +1012,7 @@
                 </div>
                 <div class="after-table-space"></div>
             </div>
+            @endif
 
             <div class="terms-block">
                 @if (count($terminosLista) > 0)

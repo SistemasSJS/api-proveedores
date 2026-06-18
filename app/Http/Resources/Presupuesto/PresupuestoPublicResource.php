@@ -61,6 +61,7 @@ class PresupuestoPublicResource extends JsonResource
             'iva_porcentaje' => (float) $this->iva_porcentaje,
             'iva_total' => (float) $this->iva_total,
             'total' => (float) $this->total,
+            'config_mostrar_totales' => (bool) ($this->config_mostrar_totales ?? true),
             'condiciones' => $condiciones,
             'observaciones' => null,
             'term_cond_dias_vigencia' => $this->term_cond_dias_vigencia,

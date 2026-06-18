@@ -71,6 +71,7 @@ class UpdatePresupuestoRequest extends FormRequest
             'fecha_emision' => 'required|date',
             'concepto_general' => 'required|string',
             'con_iva' => 'nullable|boolean',
+            'config_mostrar_totales' => 'nullable|boolean',
             'iva_porcentaje' => 'nullable|numeric|min:0|max:100',
             'porcentaje_descuento' => 'nullable|integer|min:0|max:100',
             'cantidad_descuento' => 'nullable|numeric|min:0',

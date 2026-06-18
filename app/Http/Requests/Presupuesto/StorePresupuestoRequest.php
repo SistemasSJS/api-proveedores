@@ -81,6 +81,7 @@ class StorePresupuestoRequest extends FormRequest
              * Conf: Terminos Condiciones Obs
              */
             'con_iva' => 'nullable|boolean',
+            'config_mostrar_totales' => 'nullable|boolean',
             'iva_porcentaje' => 'nullable|numeric|min:0|max:100',
             'porcentaje_descuento' => 'nullable|integer|min:0|max:100',
             'cantidad_descuento' => 'nullable|numeric|min:0',

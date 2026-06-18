@@ -78,6 +78,7 @@ final class PresupuestoPdf
             'cantidad_descuento' => $presupuesto->cantidad_descuento,
             'iva_total' => $presupuesto->iva_total,
             'total' => $presupuesto->total,
+            'config_mostrar_totales' => (bool) ($presupuesto->config_mostrar_totales ?? true),
             'empresa_receptora' => $empDoc,
             'receptor_lineas' => self::lineasDirigidoUnicas([
                 'alias_empresa' => $empDoc['alias_empresa'],
