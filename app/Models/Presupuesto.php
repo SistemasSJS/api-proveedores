@@ -210,7 +210,8 @@ class Presupuesto extends BaseModel
         }
 
         // 3. impuestos
-        if (self::terminoActivoPersistido($config, 'impuestos_activo', $this->term_cond_impuestos_en_pdf !== false) && $this->term_cond_impuestos_en_pdf !== false) {
+        $mostrarTotalesDocumento = (bool) ($this->config_mostrar_totales ?? true);
+        if ($mostrarTotalesDocumento && self::terminoActivoPersistido($config, 'impuestos_activo', $this->term_cond_impuestos_en_pdf !== false) && $this->term_cond_impuestos_en_pdf !== false) {
             $ivaPct = (float) ($this->term_cond_iva ?? 16);
             $terminos[] = $this->con_iva
                 ? sprintf(self::ENUNCIADO_IVA_INCLUIDO, (int) $ivaPct)
@@ -384,8 +385,10 @@ class Presupuesto extends BaseModel
         }
 
         // 3. impuestos
+        $mostrarTotalesDocumento = ! array_key_exists('config_mostrar_totales', $data)
+            || (bool) $data['config_mostrar_totales'];
         $mostrarImpuestos = $data['term_cond_impuestos_en_pdf'] ?? false;
-        if (self::terminoActivoFormulario($config, 'impuestos_activo') && $mostrarImpuestos !== false) {
+        if ($mostrarTotalesDocumento && self::terminoActivoFormulario($config, 'impuestos_activo') && $mostrarImpuestos !== false) {
             $terminos[] = $conIva
                 ? sprintf(self::ENUNCIADO_IVA_INCLUIDO, (int) $ivaPct)
                 : self::ENUNCIADO_IVA_NO_INCLUIDO;

@@ -1335,6 +1335,17 @@ class ProveedorPresupuestoController extends Controller
             ];
         }
 
+        $mostrarTotales = ! array_key_exists('config_mostrar_totales', $payload)
+            || (bool) $payload['config_mostrar_totales'];
+        if (! $mostrarTotales) {
+            $payload['term_cond_impuestos_en_pdf'] = false;
+            $configuracion = is_array($payload['configuracion_condiciones'] ?? null)
+                ? $payload['configuracion_condiciones']
+                : [];
+            $configuracion['impuestos_activo'] = false;
+            $payload['configuracion_condiciones'] = $configuracion;
+        }
+
         return $payload;
     }
 

@@ -27,7 +27,9 @@ class PresupuestoPublicResource extends JsonResource
         $condiciones = is_array($this->configuracion_condiciones) ? $this->configuracion_condiciones : [];
         $condiciones = array_merge($condiciones, [
             'vigencia_dias' => $this->term_cond_dias_vigencia,
-            'impuestos_activo' => $this->term_cond_impuestos_en_pdf !== false,
+            'impuestos_activo' => ($this->config_mostrar_totales ?? true)
+                && $this->term_cond_impuestos_en_pdf !== false,
+            'config_mostrar_totales' => (bool) ($this->config_mostrar_totales ?? true),
             'anticipo_porcentaje' => $this->term_cond_anticipo_porcentaje,
             'tiempo_entrega_dias' => $this->term_cond_tiempo_entrega_dias,
             'inicio_trabajo' => $this->term_cond_inicio_trabajo,
@@ -66,6 +68,7 @@ class PresupuestoPublicResource extends JsonResource
             'observaciones' => null,
             'term_cond_dias_vigencia' => $this->term_cond_dias_vigencia,
             'term_cond_moneda' => $this->term_cond_moneda ?? 'MXN',
+            'term_cond_impuestos_en_pdf' => (bool) ($this->term_cond_impuestos_en_pdf ?? true),
             'term_cond_iva' => (float) ($this->term_cond_iva ?? 16),
             'term_cond_anticipo_porcentaje' => $this->term_cond_anticipo_porcentaje,
             'term_cond_tiempo_entrega_dias' => $this->term_cond_tiempo_entrega_dias,
