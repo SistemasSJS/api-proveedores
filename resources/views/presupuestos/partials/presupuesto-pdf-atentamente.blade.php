@@ -17,7 +17,8 @@
 @if ($mostrarAtentamente)
     <div class="atentamente-plain">
         @if ($variant === 'tailwind')
-            <div class="tw-card-title">Atentamente:</div>
+            <div class="tw-card-title atentamente-title">Atentamente:</div>
+            <div class="atentamente-spacer" aria-hidden="true"></div>
             @if (!empty($atentamente['nombre']))
                 <div class="tw-receptor-strong">{{ $upperPersona($atentamente['nombre']) }}</div>
             @endif
@@ -34,7 +35,8 @@
                 <div class="tw-receptor-line">{{ $atentamente['correo'] }}</div>
             @endif
         @else
-            <div class="receptor-title">Atentamente:</div>
+            <div class="receptor-title atentamente-title">Atentamente:</div>
+            <div class="atentamente-spacer" aria-hidden="true"></div>
             @if (!empty($atentamente['nombre']))
                 <div class="receptor-name">{{ $upperPersona($atentamente['nombre']) }}</div>
             @endif

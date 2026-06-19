@@ -112,7 +112,7 @@
     }
 
     .document-main-spacer--atentamente {
-        min-height: 35mm;
+        min-height: 28mm;
     }
 
     .document-closing {
@@ -123,6 +123,7 @@
     .document-closing--with-atentamente {
         display: block;
         width: 100%;
+        padding-bottom: {{ max(10, (int) round($atentamenteReserveMm * 0.45)) }}mm;
     }
 
     .document-closing--with-atentamente .terms-block {
@@ -136,8 +137,8 @@
 
     .atentamente-plain {
         width: 100%;
-        margin: 8mm 0 0 0;
-        padding: 0;
+        margin: 4mm 0 0 0;
+        padding: 0 0 {{ max(12, (int) round($atentamenteReserveMm * 0.55)) }}mm 0;
         background: transparent;
         border: none;
         page-break-inside: avoid;
@@ -145,8 +146,30 @@
     }
 
     .document-closing--with-atentamente .atentamente-plain {
-        margin-top: 8mm;
+        margin-top: 4mm;
         padding-top: 0;
+    }
+
+    .atentamente-plain .atentamente-spacer {
+        height: 2.8mm;
+        margin: 0;
+        padding: 0;
+        line-height: 0;
+        font-size: 0;
+    }
+
+    .atentamente-plain .atentamente-title {
+        margin-bottom: 0;
+    }
+
+    .atentamente-plain .tw-receptor-strong {
+        margin-bottom: 0.35mm;
+        line-height: 1.05;
+    }
+
+    .atentamente-plain .tw-receptor-line {
+        margin-bottom: 0.2mm;
+        line-height: 1.05;
     }
 
     .tw-header-wrap {
