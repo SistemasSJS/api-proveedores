@@ -6,9 +6,11 @@
         ? PresupuestoPdf::datosBloqueAtentamenteDesdePayload($presupuesto)
         : [];
 
-    $linea = static function (?string $text): string {
-        return trim((string) ($text ?? ''));
-    };
+    $nombreFmt = PresupuestoPdf::formatoNombrePersonaDocumento($atentamente['nombre'] ?? null);
+    $puestoFmt = PresupuestoPdf::formatoPuestoEmpresaDocumento($atentamente['puesto'] ?? null);
+    $empresaFmt = PresupuestoPdf::formatoPuestoEmpresaDocumento($atentamente['empresa'] ?? null);
+    $telefonoRaw = trim((string) ($atentamente['telefono'] ?? ''));
+    $correoRaw = trim((string) ($atentamente['correo'] ?? ''));
 
     $variant = (string) ($variant ?? 'default');
 @endphp
@@ -17,38 +19,38 @@
         @if ($variant === 'tailwind')
             <div class="tw-card-title atentamente-title">Atentamente:</div>
             <div class="atentamente-spacer" aria-hidden="true"></div>
-            @if ($linea($atentamente['nombre'] ?? null) !== '')
-                <div class="tw-receptor-strong">{{ $linea($atentamente['nombre']) }}</div>
+            @if ($nombreFmt !== null)
+                <div class="tw-receptor-strong">{{ $nombreFmt }}</div>
             @endif
-            @if ($linea($atentamente['puesto'] ?? null) !== '')
-                <div class="tw-receptor-line">{{ $linea($atentamente['puesto']) }}</div>
+            @if ($puestoFmt !== null)
+                <div class="tw-receptor-line">{{ $puestoFmt }}</div>
             @endif
-            @if ($linea($atentamente['empresa'] ?? null) !== '')
-                <div class="tw-receptor-line">{{ $linea($atentamente['empresa']) }}</div>
+            @if ($empresaFmt !== null)
+                <div class="tw-receptor-line">{{ $empresaFmt }}</div>
             @endif
-            @if ($linea($atentamente['telefono'] ?? null) !== '')
-                <div class="tw-receptor-line">Tel. {{ $linea($atentamente['telefono']) }}</div>
+            @if ($telefonoRaw !== '')
+                <div class="tw-receptor-line">Tel. {{ $telefonoRaw }}</div>
             @endif
-            @if ($linea($atentamente['correo'] ?? null) !== '')
-                <div class="tw-receptor-line">{{ $linea($atentamente['correo']) }}</div>
+            @if ($correoRaw !== '')
+                <div class="tw-receptor-line">{{ $correoRaw }}</div>
             @endif
         @else
             <div class="receptor-title atentamente-title">Atentamente:</div>
             <div class="atentamente-spacer" aria-hidden="true"></div>
-            @if ($linea($atentamente['nombre'] ?? null) !== '')
-                <div class="receptor-name">{{ $linea($atentamente['nombre']) }}</div>
+            @if ($nombreFmt !== null)
+                <div class="receptor-name">{{ $nombreFmt }}</div>
             @endif
-            @if ($linea($atentamente['puesto'] ?? null) !== '')
-                <div class="receptor-info">{{ $linea($atentamente['puesto']) }}</div>
+            @if ($puestoFmt !== null)
+                <div class="receptor-info">{{ $puestoFmt }}</div>
             @endif
-            @if ($linea($atentamente['empresa'] ?? null) !== '')
-                <div class="receptor-info">{{ $linea($atentamente['empresa']) }}</div>
+            @if ($empresaFmt !== null)
+                <div class="receptor-info">{{ $empresaFmt }}</div>
             @endif
-            @if ($linea($atentamente['telefono'] ?? null) !== '')
-                <div class="receptor-info">Tel. {{ $linea($atentamente['telefono']) }}</div>
+            @if ($telefonoRaw !== '')
+                <div class="receptor-info">Tel. {{ $telefonoRaw }}</div>
             @endif
-            @if ($linea($atentamente['correo'] ?? null) !== '')
-                <div class="receptor-info">{{ $linea($atentamente['correo']) }}</div>
+            @if ($correoRaw !== '')
+                <div class="receptor-info">{{ $correoRaw }}</div>
             @endif
         @endif
     </div>

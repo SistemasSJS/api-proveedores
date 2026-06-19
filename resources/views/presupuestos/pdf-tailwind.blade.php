@@ -5,8 +5,9 @@
     $margenMm = 20;
     $footerHeightMm = 25.4;
     $lineaEspacioMm = 2.8;
-    $gapReservaAtentamentePieMm = 12.0 + (2 * $lineaEspacioMm);
-    $margenSuperiorMm = max(8.0, $margenMm - (2 * $lineaEspacioMm));
+    $gapAtentamenteFooterMm = 12.0;
+    $espacioTrasTituloAtentamenteMm = 2 * $lineaEspacioMm;
+    $margenSuperiorMm = max(8.0, $margenMm - (3 * $lineaEspacioMm));
     $atentamenteReserveMm = 30;
     $terminosLista = $presupuesto['terminos_enunciados'] ?? [];
     $validacionesLista = $presupuesto['validaciones_enunciados'] ?? [];
@@ -18,7 +19,11 @@
         : 0;
     $bodyPaddingBottomMm = $footerHeightMm;
     if ($atentamenteLineasPieCount > 0) {
-        $bodyPaddingBottomMm += min(58, 10 + ($atentamenteLineasPieCount * $lineaEspacioMm) + $gapReservaAtentamentePieMm);
+        $extraReservaAtentamenteMm = 10 + ($atentamenteLineasPieCount * $lineaEspacioMm) + $gapAtentamenteFooterMm;
+        if ($atentamenteLineasPieCount > 1) {
+            $extraReservaAtentamenteMm += $espacioTrasTituloAtentamenteMm;
+        }
+        $bodyPaddingBottomMm += min(58, $extraReservaAtentamenteMm);
     }
     $tieneBloqueTerminos = count($terminosLista) > 0
         || count($validacionesLista) > 0
@@ -175,7 +180,7 @@
     }
 
     .atentamente-plain .atentamente-spacer {
-        height: 2.8mm;
+        height: {{ $espacioTrasTituloAtentamenteMm }}mm;
         margin: 0;
         padding: 0;
         line-height: 0;
@@ -1178,7 +1183,8 @@
         'footerHeightMm' => $footerHeightMm,
         'pdfVariant' => 'tailwind',
         'pdfThemeKey' => $pdfThemeKey,
-        'gapAtentamenteFooterMm' => $gapReservaAtentamentePieMm,
+        'gapAtentamenteFooterMm' => $gapAtentamenteFooterMm,
+        'espacioTrasTituloAtentamenteMm' => $espacioTrasTituloAtentamenteMm,
     ])
 </body>
 

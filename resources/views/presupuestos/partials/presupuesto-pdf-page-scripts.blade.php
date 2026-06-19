@@ -5,7 +5,8 @@
     $margenMm = (float) ($margenMm ?? 25.4);
     $footerHeightMm = (float) ($footerHeightMm ?? 25.4);
     $footerBottomMm = 6.0;
-    $gapAtentamenteFooterMm = (float) ($gapAtentamenteFooterMm ?? (12.0 + (2 * 2.8)));
+    $gapAtentamenteFooterMm = (float) ($gapAtentamenteFooterMm ?? 12.0);
+    $espacioTrasTituloAtentamenteMm = (float) ($espacioTrasTituloAtentamenteMm ?? (2 * 2.8));
     $pdfVariant = (string) ($pdfVariant ?? 'tailwind');
 
     $pdfThemeVariables = null;
@@ -23,9 +24,14 @@
     $atentamentePageScript = '';
     if (count($atentamentePieLineas) > 0) {
         $blockHeightPt = 6;
+        $espacioTrasTituloPt = $mmToPt($espacioTrasTituloAtentamenteMm);
+        $tieneLineasTrasTitulo = count($atentamentePieLineas) > 1;
         foreach ($atentamentePieLineas as $linea) {
             $role = $linea['role'] ?? 'info';
             $blockHeightPt += (int) ceil($atentamenteEstilos[$role]['lh'] ?? 9.0);
+        }
+        if ($tieneLineasTrasTitulo) {
+            $blockHeightPt += $espacioTrasTituloPt;
         }
         $footerReservePt = $mmToPt($footerBottomMm + $footerHeightMm + $gapAtentamenteFooterMm);
         $estilosJsonEsc = addcslashes(json_encode($atentamenteEstilos, JSON_UNESCAPED_UNICODE), "\\'");
@@ -74,6 +80,9 @@ foreach (\$lineas as \$i => \$item) {
         : \$fontMetrics->getFont('DejaVu Sans', 'normal');
     \$pdf->text(\$x, \$y, \$text, \$font, \$size, array((float) \$color[0], (float) \$color[1], (float) \$color[2]));
     \$y += \$lh;
+    if (\$role === 'title' && \$i < count(\$lineas) - 1) {
+        \$y += {$espacioTrasTituloPt};
+    }
 }
 SCRIPT;
     }

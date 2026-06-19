@@ -488,6 +488,24 @@ final class PresupuestoPdf
     }
 
     /**
+     * Nombre de persona en documento (mayúsculas).
+     */
+    public static function formatoNombrePersonaDocumento(?string $text): ?string
+    {
+        $t = trim((string) ($text ?? ''));
+
+        return $t === '' ? null : mb_strtoupper($t, 'UTF-8');
+    }
+
+    /**
+     * Puesto o razón social / empresa en documento (mayúsculas).
+     */
+    public static function formatoPuestoEmpresaDocumento(?string $text): ?string
+    {
+        return self::formatoNombrePersonaDocumento($text);
+    }
+
+    /**
      * Líneas para «Dirigido a:» en el PDF (misma vista que el preview: nombre → puesto → empresa).
      *
      * @param  array{
@@ -503,14 +521,14 @@ final class PresupuestoPdf
     public static function lineasDirigidoUnicas(array $r): array
     {
         $ordenados = [
-            trim((string) ($r['nombre'] ?? '')),
-            trim((string) ($r['puesto'] ?? '')),
-            trim((string) ($r['empresa'] ?? '')),
+            self::formatoNombrePersonaDocumento($r['nombre'] ?? null),
+            self::formatoPuestoEmpresaDocumento($r['puesto'] ?? null),
+            self::formatoPuestoEmpresaDocumento($r['empresa'] ?? null),
         ];
 
         $lines = [];
         foreach ($ordenados as $v) {
-            if ($v !== '') {
+            if ($v !== null && $v !== '') {
                 $lines[] = $v;
             }
         }
@@ -622,36 +640,34 @@ final class PresupuestoPdf
         }
 
         $datos = self::datosBloqueAtentamenteDesdePayload($payload);
-        $lineaTexto = static function (?string $text): ?string {
-            $t = trim((string) ($text ?? ''));
-
-            return $t === '' ? null : $t;
-        };
 
         $lineas = [
             ['text' => 'Atentamente:', 'role' => 'title'],
         ];
 
-        $nombre = $lineaTexto($datos['nombre'] ?? null);
+        $nombre = self::formatoNombrePersonaDocumento($datos['nombre'] ?? null);
         if ($nombre !== null) {
             $lineas[] = ['text' => $nombre, 'role' => 'name'];
         }
 
-        $puesto = $lineaTexto($datos['puesto'] ?? null);
+        $puesto = self::formatoPuestoEmpresaDocumento($datos['puesto'] ?? null);
         if ($puesto !== null) {
             $lineas[] = ['text' => $puesto, 'role' => 'info'];
         }
 
-        if (! empty($datos['empresa'])) {
-            $lineas[] = ['text' => (string) $datos['empresa'], 'role' => 'info'];
+        $empresa = self::formatoPuestoEmpresaDocumento($datos['empresa'] ?? null);
+        if ($empresa !== null) {
+            $lineas[] = ['text' => $empresa, 'role' => 'info'];
         }
 
-        if (! empty($datos['telefono'])) {
-            $lineas[] = ['text' => 'Tel. ' . $datos['telefono'], 'role' => 'info'];
+        $telefono = trim((string) ($datos['telefono'] ?? ''));
+        if ($telefono !== '') {
+            $lineas[] = ['text' => 'Tel. '.$telefono, 'role' => 'info'];
         }
 
-        if (! empty($datos['correo'])) {
-            $lineas[] = ['text' => (string) $datos['correo'], 'role' => 'info'];
+        $correo = trim((string) ($datos['correo'] ?? ''));
+        if ($correo !== '') {
+            $lineas[] = ['text' => $correo, 'role' => 'info'];
         }
 
         return $lineas;
