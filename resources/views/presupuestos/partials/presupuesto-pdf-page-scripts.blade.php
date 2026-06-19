@@ -5,7 +5,7 @@
     $margenMm = (float) ($margenMm ?? 25.4);
     $footerHeightMm = (float) ($footerHeightMm ?? 25.4);
     $footerBottomMm = 6.0;
-    $gapAtentamenteFooterMm = (float) ($gapAtentamenteFooterMm ?? 12.0);
+    $gapAtentamenteFooterMm = (float) ($gapAtentamenteFooterMm ?? 2.8);
     $espacioTrasTituloAtentamenteMm = (float) ($espacioTrasTituloAtentamenteMm ?? (2 * 2.8));
     $pdfVariant = (string) ($pdfVariant ?? 'tailwind');
 

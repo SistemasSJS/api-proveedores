@@ -5,9 +5,9 @@
     $margenMm = 20;
     $footerHeightMm = 25.4;
     $lineaEspacioMm = 2.8;
-    $gapAtentamenteFooterMm = 12.0;
+    $gapAtentamenteFooterMm = $lineaEspacioMm;
     $espacioTrasTituloAtentamenteMm = 2 * $lineaEspacioMm;
-    $margenSuperiorMm = max(8.0, $margenMm - (3 * $lineaEspacioMm));
+    $margenSuperiorMm = max(8.0, $margenMm - (4 * $lineaEspacioMm));
     $atentamenteReserveMm = 30;
     $terminosLista = $presupuesto['terminos_enunciados'] ?? [];
     $validacionesLista = $presupuesto['validaciones_enunciados'] ?? [];
@@ -969,7 +969,7 @@
             </div>
             <div class="footer-center">
                 <div class="footer-center-content">
-                    <div class="footer-slogan">"Calidad y compromiso en cada proyecto"</div>
+                    <div class="footer-slogan">"Creador de presupuestos"</div>
                     <div class="footer-webs">
                         <a href="https://heventec.com" class="footer-webs-link" target="_blank">heventec.com</a><span
                             class="footer-webs-sep">|</span><a href="https://gestion.heventec.com/" target="_blank"
@@ -1054,7 +1054,7 @@
                             <td colspan="6" class="tw-no-rows">No hay conceptos registrados</td>
                         </tr>
                     @endif
-                </tbody>
+                </tbody>    
             </table>
 
             @if ($presupuesto['config_mostrar_totales'] ?? true)

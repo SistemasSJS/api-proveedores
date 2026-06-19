@@ -4,9 +4,9 @@
             $margenMm = 25.4;
             $footerHeightMm = 25.4; // Espacio reservado para pie de página en cada hoja (carta)
             $lineaEspacioMm = 2.8;
-            $gapAtentamenteFooterMm = 12.0;
+            $gapAtentamenteFooterMm = $lineaEspacioMm;
             $espacioTrasTituloAtentamenteMm = 2 * $lineaEspacioMm;
-            $margenSuperiorMm = max(8.0, $margenMm - (3 * $lineaEspacioMm));
+            $margenSuperiorMm = max(8.0, $margenMm - (4 * $lineaEspacioMm));
             $atentamenteReserveMm = 30;
             $terminosLista = $presupuesto['terminos_enunciados'] ?? [];
             $validacionesLista = $presupuesto['validaciones_enunciados'] ?? [];
@@ -1044,7 +1044,7 @@
                     </div>
                     <div class="footer-center">
                         <div class="footer-center-content">
-                            <div class="footer-slogan">"Calidad y compromiso en cada proyecto"</div>
+                            <div class="footer-slogan">"Creador de presupuestos"</div>
                             <div class="footer-webs">
                                 <a href="https://heventec.com" class="footer-webs-link">heventec.com</a><span
                                     class="footer-webs-sep">|</span><a href="https://gestion.heventec.com/"
