@@ -467,8 +467,40 @@
                 /* ========== 5) TOTALES (alineado con tabla) ========== */
                 .terms-block {
                     margin-bottom: 4mm;
-                    page-break-inside: avoid;
+                    page-break-inside: auto;
                     page-break-before: auto;
+                }
+
+                .atentamente-block {
+                    margin-top: 6mm;
+                    page-break-inside: avoid;
+                }
+
+                .atentamente-title {
+                    font-size: 6pt;
+                    font-weight: 700;
+                    color: var(--primary, #3498db);
+                    text-transform: uppercase;
+                    margin-bottom: 1mm;
+                }
+
+                .atentamente-spacer {
+                    height: 3mm;
+                }
+
+                .atentamente-nombre {
+                    font-size: 7pt;
+                    font-weight: 700;
+                    color: #111827;
+                    margin-bottom: 0.8mm;
+                    line-height: 1.2;
+                }
+
+                .atentamente-line {
+                    font-size: 7pt;
+                    color: #111827;
+                    margin-bottom: 0.8mm;
+                    line-height: 1.15;
                 }
 
                 .totales-section {
@@ -1174,6 +1206,8 @@
                             </div>
                         @endforeach
                     @endif
+
+                    @include('presupuestos.partials.presupuesto-pdf-atentamente')
                 </div>
             </div>
             <script type="text/php">

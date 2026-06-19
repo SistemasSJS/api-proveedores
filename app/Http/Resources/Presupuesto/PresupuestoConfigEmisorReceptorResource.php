@@ -34,6 +34,7 @@ class PresupuestoConfigEmisorReceptorResource extends JsonResource
             'config_tarjeta' => [
                 'color_fondo' => $this->color_fondo,
             ],
+            'incluir_leyenda_atentamente' => (bool) ($this->incluir_leyenda_atentamente ?? true),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];

@@ -86,6 +86,8 @@ class StorePresupuestoRequest extends FormRequest
             'empresa_emisora_puesto' => 'nullable|string|max:255',
             'empresa_emisora_telefono' => 'nullable|string|max:30',
             'empresa_emisora_correo' => 'nullable|email|max:255',
+            'incluir_leyenda_atentamente' => 'nullable|boolean',
+            'empresa_emisora_nombre_comercial' => 'nullable|string|max:255',
             
             /**
              * Conf: Terminos Condiciones Obs

@@ -27,12 +27,14 @@ class ConfigEmisorReceptorPresupuesto extends BaseModel
         'foto_perfil',
         'file_firma',
         'estado',
+        'incluir_leyenda_atentamente',
     ];
 
     protected $casts = [
         'proveedor_id' => 'integer',
         'tipo' => 'integer',
         'estado' => 'integer',
+        'incluir_leyenda_atentamente' => 'boolean',
     ];
 
     const ESTADO_ACTIVO = 1;

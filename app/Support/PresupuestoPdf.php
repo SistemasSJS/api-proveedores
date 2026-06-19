@@ -549,28 +549,56 @@ final class PresupuestoPdf
      * Líneas de contacto emisor-persona desde columnas snapshot del presupuesto.
      *
      * @return list<string>
+     * @deprecated Usar bloque Atentamente ({@see debeMostrarBloqueAtentamenteDesdePayload}).
      */
     public static function lineasEmisorContactoPdf(Presupuesto $p): array
     {
-        $lines = [];
-        $nombre = trim((string) ($p->empresa_emisora_nombre ?? ''));
-        if ($nombre !== '') {
-            $lines[] = $nombre;
-        }
-        $puesto = trim((string) ($p->empresa_emisora_puesto ?? ''));
-        if ($puesto !== '') {
-            $lines[] = $puesto;
-        }
-        $tel = trim((string) ($p->empresa_emisora_telefono ?? ''));
-        if ($tel !== '') {
-            $lines[] = 'Tel. '.$tel;
-        }
-        $correo = trim((string) ($p->empresa_emisora_correo ?? ''));
-        if ($correo !== '') {
-            $lines[] = $correo;
+        return self::lineasEmisorContactoPdfDesdePayload([
+            'empresa_emisora_nombre' => $p->empresa_emisora_nombre,
+            'empresa_emisora_puesto' => $p->empresa_emisora_puesto,
+            'empresa_emisora_telefono' => $p->empresa_emisora_telefono,
+            'empresa_emisora_correo' => $p->empresa_emisora_correo,
+        ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    public static function debeMostrarBloqueAtentamenteDesdePayload(array $payload): bool
+    {
+        $id = $payload['config_emisor_presupuesto_id'] ?? null;
+        if ($id === null || $id === '' || (int) $id <= 0) {
+            return false;
         }
 
-        return $lines;
+        if (array_key_exists('incluir_leyenda_atentamente', $payload)) {
+            return (bool) $payload['incluir_leyenda_atentamente'];
+        }
+
+        return true;
+    }
+
+    /**
+     * Datos del cierre «Atentamente» (solo líneas con valor).
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{nombre: ?string, puesto: ?string, empresa: ?string, telefono: ?string, correo: ?string}
+     */
+    public static function datosBloqueAtentamenteDesdePayload(array $payload): array
+    {
+        $trim = static function (?string $value): ?string {
+            $text = trim((string) ($value ?? ''));
+
+            return $text !== '' ? $text : null;
+        };
+
+        return [
+            'nombre' => $trim($payload['empresa_emisora_nombre'] ?? null),
+            'puesto' => $trim($payload['empresa_emisora_puesto'] ?? null),
+            'empresa' => $trim($payload['empresa_emisora_nombre_comercial'] ?? null),
+            'telefono' => $trim($payload['empresa_emisora_telefono'] ?? null),
+            'correo' => $trim($payload['empresa_emisora_correo'] ?? null),
+        ];
     }
 
     /**

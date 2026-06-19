@@ -645,6 +645,39 @@
         page-break-inside: auto;
     }
 
+    .atentamente-block {
+        margin-top: 5mm;
+        page-break-inside: avoid;
+    }
+
+    .atentamente-title {
+        font-size: 6.5pt;
+        font-weight: 700;
+        color: var(--primary);
+        text-transform: uppercase;
+        margin-bottom: 1mm;
+        line-height: var(--section-line-height);
+    }
+
+    .atentamente-spacer {
+        height: 3mm;
+    }
+
+    .atentamente-nombre {
+        font-size: 7.2pt;
+        font-weight: 700;
+        color: var(--text-heading);
+        margin-bottom: 0.8mm;
+        line-height: 1.2;
+    }
+
+    .atentamente-line {
+        font-size: 7pt;
+        color: var(--text-body);
+        margin-bottom: 0.8mm;
+        line-height: 1.15;
+    }
+
     .tw-terms + .tw-terms {
         margin-top: 2mm;
     }
@@ -1091,6 +1124,8 @@
                     </div>
                 @endforeach
             @endif
+
+            @include('presupuestos.partials.presupuesto-pdf-atentamente')
         </div>
     </div>
 

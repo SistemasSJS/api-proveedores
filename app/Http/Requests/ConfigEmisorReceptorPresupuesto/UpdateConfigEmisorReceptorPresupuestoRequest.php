@@ -32,6 +32,7 @@ class UpdateConfigEmisorReceptorPresupuestoRequest extends FormRequest
             'foto_perfil' => ['sometimes', 'nullable', 'file', 'image', 'max:5120'],
             'file_firma' => ['sometimes', 'nullable', 'file', 'image', 'max:5120'],
             'estado' => ['sometimes', 'string', 'in:activo,inactivo,default'],
+            'incluir_leyenda_atentamente' => ['sometimes', 'boolean'],
         ];
     }
 

@@ -32,6 +32,7 @@ class StoreConfigEmisorReceptorPresupuestoRequest extends FormRequest
             'foto_perfil' => ['nullable', 'file', 'image', 'max:5120'],
             'file_firma' => ['nullable', 'file', 'image', 'max:5120'],
             'estado' => ['required', 'string', 'in:activo,inactivo,default'],
+            'incluir_leyenda_atentamente' => ['sometimes', 'boolean'],
         ];
     }
 

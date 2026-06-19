@@ -105,6 +105,8 @@ class PresupuestoPublicResource extends JsonResource
             'empresa_emisora_puesto' => $this->empresa_emisora_puesto,
             'empresa_emisora_telefono' => $this->empresa_emisora_telefono,
             'empresa_emisora_correo' => $this->empresa_emisora_correo,
+            'incluir_leyenda_atentamente' => (bool) ($this->incluir_leyenda_atentamente ?? true),
+            'empresa_emisora_nombre_comercial' => $this->empresa_emisora_nombre_comercial,
             'conceptos' => PresupuestoConceptoResource::collection($this->whenLoaded('conceptos')),
         ];
     }

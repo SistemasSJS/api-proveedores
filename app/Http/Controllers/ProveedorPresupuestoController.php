@@ -583,8 +583,15 @@ class ProveedorPresupuestoController extends Controller
                     ? (bool) $normalized['config_mostrar_totales']
                     : true,
                 'receptor_lineas' => PresupuestoPdf::lineasReceptorPdfDesdePayloadReceptor($normalized),
-                'emisor_contacto_lineas' => PresupuestoPdf::lineasEmisorContactoPdfDesdePayload($normalized),
                 'config_emisor_presupuesto_id' => $normalized['config_emisor_presupuesto_id'] ?? null,
+                'empresa_emisora_nombre' => $normalized['empresa_emisora_nombre'] ?? null,
+                'empresa_emisora_puesto' => $normalized['empresa_emisora_puesto'] ?? null,
+                'empresa_emisora_telefono' => $normalized['empresa_emisora_telefono'] ?? null,
+                'empresa_emisora_correo' => $normalized['empresa_emisora_correo'] ?? null,
+                'incluir_leyenda_atentamente' => array_key_exists('incluir_leyenda_atentamente', $normalized)
+                    ? (bool) $normalized['incluir_leyenda_atentamente']
+                    : true,
+                'empresa_emisora_nombre_comercial' => $normalized['empresa_emisora_nombre_comercial'] ?? null,
                 'conceptos' => $normalized['conceptos'] ?? [],
                 'anexos' => PresupuestoPdf::anexosParaPlantillaPdf($presupuestoGuardado),
                 'terminos_enunciados' => Presupuesto::buildTerminosEnunciadosFromArray($formData),
@@ -1853,8 +1860,13 @@ class ProveedorPresupuestoController extends Controller
             'total' => $presupuesto->total,
             'config_mostrar_totales' => (bool) ($presupuesto->config_mostrar_totales ?? true),
             'receptor_lineas' => PresupuestoPdf::lineasReceptorPdfDesdeColumnasPresupuesto($presupuesto),
-            'emisor_contacto_lineas' => PresupuestoPdf::lineasEmisorContactoPdf($presupuesto),
             'config_emisor_presupuesto_id' => $presupuesto->config_emisor_presupuesto_id,
+            'empresa_emisora_nombre' => $presupuesto->empresa_emisora_nombre,
+            'empresa_emisora_puesto' => $presupuesto->empresa_emisora_puesto,
+            'empresa_emisora_telefono' => $presupuesto->empresa_emisora_telefono,
+            'empresa_emisora_correo' => $presupuesto->empresa_emisora_correo,
+            'incluir_leyenda_atentamente' => (bool) ($presupuesto->incluir_leyenda_atentamente ?? true),
+            'empresa_emisora_nombre_comercial' => $presupuesto->empresa_emisora_nombre_comercial,
             'conceptos' => $presupuesto->conceptos->map(static function ($concepto) {
                 return [
                     'tipo' => $concepto->tipo ?? PresupuestoConcepto::TIPO_CONCEPTO,
@@ -1892,6 +1904,8 @@ class ProveedorPresupuestoController extends Controller
                 'empresa_emisora_puesto' => null,
                 'empresa_emisora_telefono' => null,
                 'empresa_emisora_correo' => null,
+                'incluir_leyenda_atentamente' => true,
+                'empresa_emisora_nombre_comercial' => null,
             ]);
         }
 
@@ -1910,6 +1924,11 @@ class ProveedorPresupuestoController extends Controller
         }
 
         $snap = $config->snapshotEmisorPersona();
+        $proveedor = Proveedor::query()->find($proveedorId);
+        $comercial = trim((string) ($proveedor->nombre_comercial ?? ''));
+        if ($comercial === '') {
+            $comercial = trim((string) ($proveedor->razon_social ?? ''));
+        }
 
         return array_merge($payload, [
             'config_emisor_presupuesto_id' => (int) $config->id,
@@ -1917,6 +1936,8 @@ class ProveedorPresupuestoController extends Controller
             'empresa_emisora_puesto' => $snap['puesto'],
             'empresa_emisora_telefono' => $snap['telefono'],
             'empresa_emisora_correo' => $snap['correo'],
+            'incluir_leyenda_atentamente' => (bool) ($config->incluir_leyenda_atentamente ?? true),
+            'empresa_emisora_nombre_comercial' => $comercial !== '' ? $comercial : null,
         ]);
     }
 
