@@ -172,6 +172,13 @@ class PresupuestoResource extends JsonResource
             'empresa_receptora_alias' => $doc['alias_empresa'],
             'empresa_receptora_telefono' => $doc['telefono'],
             'empresa_receptora_correo' => $doc['correo'],
+            'config_emisor_presupuesto_id' => $this->config_emisor_presupuesto_id !== null
+                ? (int) $this->config_emisor_presupuesto_id
+                : null,
+            'empresa_emisora_nombre' => $this->empresa_emisora_nombre,
+            'empresa_emisora_puesto' => $this->empresa_emisora_puesto,
+            'empresa_emisora_telefono' => $this->empresa_emisora_telefono,
+            'empresa_emisora_correo' => $this->empresa_emisora_correo,
             'conceptos' => PresupuestoConceptoResource::collection($this->whenLoaded('conceptos')),
             'anexos' => PresupuestoAnexoResource::collection($this->whenLoaded('anexos')),
             // 'estado_logs' => PresupuestoEstadoLogResource::collection($this->whenLoaded('estadoLogs')),

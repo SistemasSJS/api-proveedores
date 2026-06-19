@@ -116,17 +116,20 @@
                         @if ($emisorRfc)
                             <div class="tw-emisor-line">{{ $emisorRfc }}</div>
                         @endif
-                        <!-- @if ($emisorDireccion)
-                            <div class="tw-emisor-line">{{ $emisorDireccion }}</div>
-                        @endif
-                        @if ($emisorCiudad)
-                            <div class="tw-emisor-line">{{ $emisorCiudad }}</div>
-                        @endif -->
+                        @php
+                            $emisorContactoLineas = $presupuesto['emisor_contacto_lineas'] ?? [];
+                        @endphp
+                        @if (!empty($emisorContactoLineas))
+                            @foreach ($emisorContactoLineas as $lineaContacto)
+                                <div class="tw-emisor-line">{{ $lineaContacto }}</div>
+                            @endforeach
+                        @else
                         @if (!$headerCompact && $emisorTel)
                             <div class="tw-emisor-line">Tel. {{ $emisorTel }}</div>
                         @endif
                         @if (!$headerCompact && $emisorEmail)
                             <div class="tw-emisor-line">{{ $emisorEmail }}</div>
+                        @endif
                         @endif
                     </td>
                     <td class="tw-folio-cell">

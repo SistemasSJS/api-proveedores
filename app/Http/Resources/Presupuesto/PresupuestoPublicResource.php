@@ -98,6 +98,13 @@ class PresupuestoPublicResource extends JsonResource
                 'telefono' => $this->empresa_receptora_telefono,
                 'correo' => $this->empresa_receptora_correo,
             ],
+            'config_emisor_presupuesto_id' => $this->config_emisor_presupuesto_id !== null
+                ? (int) $this->config_emisor_presupuesto_id
+                : null,
+            'empresa_emisora_nombre' => $this->empresa_emisora_nombre,
+            'empresa_emisora_puesto' => $this->empresa_emisora_puesto,
+            'empresa_emisora_telefono' => $this->empresa_emisora_telefono,
+            'empresa_emisora_correo' => $this->empresa_emisora_correo,
             'conceptos' => PresupuestoConceptoResource::collection($this->whenLoaded('conceptos')),
         ];
     }

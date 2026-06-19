@@ -8,12 +8,16 @@ use App\Http\Requests\ConfigEmisorReceptorPresupuesto\UpdateConfigEmisorReceptor
 use App\Http\Resources\Presupuesto\PresupuestoConfigEmisorReceptorResource;
 use App\Models\ConfigEmisorReceptorPresupuesto;
 use App\Models\Proveedor;
+use App\Services\Presupuesto\ConfigEmisorReceptorDefaultService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class ProveedorPresupuestoConfigController extends Controller
 {
+    public function __construct(
+        private readonly ConfigEmisorReceptorDefaultService $defaultService,
+    ) {}
     public function index(Request $request, Proveedor $proveedor): JsonResponse
     {
         $user = $request->user();
@@ -66,8 +70,19 @@ class ProveedorPresupuestoConfigController extends Controller
             );
         }
 
-        $config = ConfigEmisorReceptorPresupuesto::create($data)
-            ->fresh(ConfigEmisorReceptorPresupuesto::eagerLodable());
+        $tipo = (int) $data['tipo'];
+        $requestedEstado = (int) ($data['estado'] ?? ConfigEmisorReceptorPresupuesto::ESTADO_ACTIVO);
+
+        $config = $this->defaultService->createWithDefaultRules(
+            (int) $proveedor->id,
+            $tipo,
+            $requestedEstado,
+            function (int $estado) use ($data) {
+                $data['estado'] = $estado;
+
+                return ConfigEmisorReceptorPresupuesto::create($data);
+            }
+        );
 
         return $this->success(
             new PresupuestoConfigEmisorReceptorResource($config),
@@ -129,6 +144,18 @@ class ProveedorPresupuestoConfigController extends Controller
         }
 
         $config->update($data);
+
+        if (array_key_exists('estado', $data)) {
+            $newEstado = (int) $data['estado'];
+            if ($newEstado === ConfigEmisorReceptorPresupuesto::ESTADO_DEFAULT) {
+                $this->defaultService->ensureSingleDefault(
+                    (int) $config->proveedor_id,
+                    (int) $config->tipo,
+                    (int) $config->id,
+                );
+            }
+        }
+
         $config = $config->fresh(ConfigEmisorReceptorPresupuesto::eagerLodable());
 
         return $this->success(
@@ -148,7 +175,14 @@ class ProveedorPresupuestoConfigController extends Controller
             return $this->error('El registro no pertenece al proveedor indicado.', null, 403);
         }
 
+        $tipo = (int) $config->tipo;
+        $wasDefault = (int) $config->estado === ConfigEmisorReceptorPresupuesto::ESTADO_DEFAULT;
+
         $config->update(['estado' => ConfigEmisorReceptorPresupuesto::ESTADO_INACTIVO]);
+
+        if ($wasDefault) {
+            $this->defaultService->promoteDefaultIfMissing((int) $proveedor->id, $tipo);
+        }
 
         return $this->success(null, 'Configuración de emisor/receptor de presupuestos desactivada correctamente.');
     }

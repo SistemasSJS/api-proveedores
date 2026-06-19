@@ -35,6 +35,10 @@ class UpdatePresupuestoRequest extends FormRequest
             'empresa_receptora_alias',
             'empresa_receptora_telefono',
             'empresa_receptora_correo',
+            'empresa_emisora_nombre',
+            'empresa_emisora_puesto',
+            'empresa_emisora_telefono',
+            'empresa_emisora_correo',
         ] as $field) {
             $merge[$field] = $this->normalizeReceptorText($this->input($field));
         }
@@ -68,6 +72,11 @@ class UpdatePresupuestoRequest extends FormRequest
             'empresa_receptora_alias' => 'nullable|string|max:255',
             'empresa_receptora_telefono' => 'nullable|string|max:30',
             'empresa_receptora_correo' => 'nullable|email|max:255',
+            'config_emisor_presupuesto_id' => 'nullable|integer|exists:config_emisor_receptor_presupuestos,id',
+            'empresa_emisora_nombre' => 'nullable|string|max:255',
+            'empresa_emisora_puesto' => 'nullable|string|max:255',
+            'empresa_emisora_telefono' => 'nullable|string|max:30',
+            'empresa_emisora_correo' => 'nullable|email|max:255',
             'fecha_emision' => 'required|date',
             'concepto_general' => 'required|string',
             'con_iva' => 'nullable|boolean',

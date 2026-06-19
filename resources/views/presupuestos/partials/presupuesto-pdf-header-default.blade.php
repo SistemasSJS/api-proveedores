@@ -55,11 +55,20 @@
                 @if ($emisorRfc)
                     <div class="company-header-info">{{ $emisorRfc }}</div>
                 @endif
+                @php
+                    $emisorContactoLineas = $presupuesto['emisor_contacto_lineas'] ?? [];
+                @endphp
+                @if (!empty($emisorContactoLineas))
+                    @foreach ($emisorContactoLineas as $lineaContacto)
+                        <div class="company-header-info">{{ $lineaContacto }}</div>
+                    @endforeach
+                @else
                 @if (!$headerCompact && $emisorTel)
                     <div class="company-header-info">Tel. {{ $emisorTel }}</div>
                 @endif
                 @if (!$headerCompact && $emisorEmail)
                     <div class="company-header-info">{{ $emisorEmail }}</div>
+                @endif
                 @endif
             </td>
             <td class="folio-section">

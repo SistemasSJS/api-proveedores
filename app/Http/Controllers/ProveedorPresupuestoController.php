@@ -11,6 +11,7 @@ use App\Services\Presupuesto\PresupuestoThemeService;
 use App\Support\PresupuestoPdf;
 use App\Support\PresupuestoPdfTemplate;
 use App\Models\CarteraCliente;
+use App\Models\ConfigEmisorReceptorPresupuesto;
 use App\Models\Presupuesto;
 use App\Models\PresupuestoConcepto;
 use App\Models\Proveedor;
@@ -308,6 +309,12 @@ class ProveedorPresupuestoController extends Controller
             $validated = $this->resolverReceptorEmpresaParaValidacion($validated, $proveedor);
             $validated = $this->normalizarTerminosPayload($validated);
 
+            try {
+                $validated = $this->normalizarTarjetaEmisorPresupuesto($validated, (int) $proveedor->id, true);
+            } catch (\InvalidArgumentException $e) {
+                return $this->error($e->getMessage(), null, 422);
+            }
+
             Log::info('Modificacion Validación de presupuesto', [
                 'payload' => $validated,
             ]);
@@ -408,6 +415,16 @@ class ProveedorPresupuestoController extends Controller
 
             $validated = $this->resolverReceptorEmpresaParaValidacion($validated, $proveedor);
             $validated = $this->normalizarTerminosPayload($validated);
+
+            try {
+                $validated = $this->normalizarTarjetaEmisorPresupuesto(
+                    $validated,
+                    (int) $proveedor->id,
+                    array_key_exists('config_emisor_presupuesto_id', $validated),
+                );
+            } catch (\InvalidArgumentException $e) {
+                return $this->error($e->getMessage(), null, 422);
+            }
 
             if (! empty($validated['empresa_receptora_id'])) {
                 $idReceptor = (int) $validated['empresa_receptora_id'];
@@ -524,6 +541,14 @@ class ProveedorPresupuestoController extends Controller
 
             $validated = $this->resolverReceptorEmpresaParaValidacion($validated, $proveedor);
             $validated = $this->normalizarTerminosPayload($validated);
+            try {
+                $validated = $this->normalizarTarjetaEmisorPresupuesto($validated, (int) $proveedor->id, true);
+            } catch (\InvalidArgumentException $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                ], 422);
+            }
             $normalized = $this->normalizarEmpresaReceptora($validated, (int) $proveedor->id);
             $presupuestoGuardado = $this->guardarBorradorParaPreview($request, $proveedor, $validated);
             $presupuestoGuardado->loadMissing('anexos');
@@ -558,6 +583,7 @@ class ProveedorPresupuestoController extends Controller
                     ? (bool) $normalized['config_mostrar_totales']
                     : true,
                 'receptor_lineas' => PresupuestoPdf::lineasReceptorPdfDesdePayloadReceptor($normalized),
+                'emisor_contacto_lineas' => PresupuestoPdf::lineasEmisorContactoPdfDesdePayload($normalized),
                 'conceptos' => $normalized['conceptos'] ?? [],
                 'anexos' => PresupuestoPdf::anexosParaPlantillaPdf($presupuestoGuardado),
                 'terminos_enunciados' => Presupuesto::buildTerminosEnunciadosFromArray($formData),
@@ -733,6 +759,11 @@ class ProveedorPresupuestoController extends Controller
             $nuevo = DB::transaction(function () use ($presupuesto, $user) {
                 $payload = $presupuesto->only([
                     'proveedor_id',
+                    'config_emisor_presupuesto_id',
+                    'empresa_emisora_nombre',
+                    'empresa_emisora_puesto',
+                    'empresa_emisora_telefono',
+                    'empresa_emisora_correo',
                     'empresa_receptora_id',
                     'proveedor_receptor_id',
                     'empresa_receptora_nombre',
@@ -1821,6 +1852,7 @@ class ProveedorPresupuestoController extends Controller
             'total' => $presupuesto->total,
             'config_mostrar_totales' => (bool) ($presupuesto->config_mostrar_totales ?? true),
             'receptor_lineas' => PresupuestoPdf::lineasReceptorPdfDesdeColumnasPresupuesto($presupuesto),
+            'emisor_contacto_lineas' => PresupuestoPdf::lineasEmisorContactoPdf($presupuesto),
             'conceptos' => $presupuesto->conceptos->map(static function ($concepto) {
                 return [
                     'tipo' => $concepto->tipo ?? PresupuestoConcepto::TIPO_CONCEPTO,
@@ -1838,6 +1870,52 @@ class ProveedorPresupuestoController extends Controller
             'qr_code' => $qrCodeDataUri,
             'pdf_theme' => $presupuesto->pdf_theme,
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function normalizarTarjetaEmisorPresupuesto(array $payload, int $proveedorId, bool $shouldApply): array
+    {
+        if (! $shouldApply) {
+            return $payload;
+        }
+
+        $id = $payload['config_emisor_presupuesto_id'] ?? null;
+        if ($id === null || $id === '' || (int) $id <= 0) {
+            return array_merge($payload, [
+                'config_emisor_presupuesto_id' => null,
+                'empresa_emisora_nombre' => null,
+                'empresa_emisora_puesto' => null,
+                'empresa_emisora_telefono' => null,
+                'empresa_emisora_correo' => null,
+            ]);
+        }
+
+        $config = ConfigEmisorReceptorPresupuesto::query()
+            ->whereKey((int) $id)
+            ->where('proveedor_id', $proveedorId)
+            ->where('tipo', ConfigEmisorReceptorPresupuesto::TIPO_EMISOR)
+            ->whereIn('estado', [
+                ConfigEmisorReceptorPresupuesto::ESTADO_ACTIVO,
+                ConfigEmisorReceptorPresupuesto::ESTADO_DEFAULT,
+            ])
+            ->first();
+
+        if (! $config) {
+            throw new \InvalidArgumentException('La tarjeta de emisor seleccionada no es válida para este proveedor.');
+        }
+
+        $snap = $config->snapshotEmisorPersona();
+
+        return array_merge($payload, [
+            'config_emisor_presupuesto_id' => (int) $config->id,
+            'empresa_emisora_nombre' => $snap['nombre'],
+            'empresa_emisora_puesto' => $snap['puesto'],
+            'empresa_emisora_telefono' => $snap['telefono'],
+            'empresa_emisora_correo' => $snap['correo'],
+        ]);
     }
 
     /**

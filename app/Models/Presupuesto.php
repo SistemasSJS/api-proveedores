@@ -110,6 +110,11 @@ class Presupuesto extends BaseModel
         'pdf_theme',
         'config_mostrar_totales',
         'proveedor_id',
+        'config_emisor_presupuesto_id',
+        'empresa_emisora_nombre',
+        'empresa_emisora_puesto',
+        'empresa_emisora_telefono',
+        'empresa_emisora_correo',
         'empresa_receptora_id',
         'proveedor_receptor_id',
         'user_id',
@@ -656,6 +661,14 @@ class Presupuesto extends BaseModel
     public function proveedor(): BelongsTo
     {
         return $this->belongsTo(Proveedor::class);
+    }
+
+    /**
+     * Tarjeta de contacto emisor seleccionada al guardar (opcional).
+     */
+    public function configEmisorPresupuesto(): BelongsTo
+    {
+        return $this->belongsTo(ConfigEmisorReceptorPresupuesto::class, 'config_emisor_presupuesto_id');
     }
 
     /**

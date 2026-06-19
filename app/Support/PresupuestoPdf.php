@@ -544,4 +544,59 @@ final class PresupuestoPdf
             'correo' => $payload['empresa_receptora_correo'] ?? null,
         ]);
     }
+
+    /**
+     * Líneas de contacto emisor-persona desde columnas snapshot del presupuesto.
+     *
+     * @return list<string>
+     */
+    public static function lineasEmisorContactoPdf(Presupuesto $p): array
+    {
+        $lines = [];
+        $nombre = trim((string) ($p->empresa_emisora_nombre ?? ''));
+        if ($nombre !== '') {
+            $lines[] = $nombre;
+        }
+        $puesto = trim((string) ($p->empresa_emisora_puesto ?? ''));
+        if ($puesto !== '') {
+            $lines[] = $puesto;
+        }
+        $tel = trim((string) ($p->empresa_emisora_telefono ?? ''));
+        if ($tel !== '') {
+            $lines[] = 'Tel. '.$tel;
+        }
+        $correo = trim((string) ($p->empresa_emisora_correo ?? ''));
+        if ($correo !== '') {
+            $lines[] = $correo;
+        }
+
+        return $lines;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return list<string>
+     */
+    public static function lineasEmisorContactoPdfDesdePayload(array $payload): array
+    {
+        $lines = [];
+        $nombre = trim((string) ($payload['empresa_emisora_nombre'] ?? ''));
+        if ($nombre !== '') {
+            $lines[] = $nombre;
+        }
+        $puesto = trim((string) ($payload['empresa_emisora_puesto'] ?? ''));
+        if ($puesto !== '') {
+            $lines[] = $puesto;
+        }
+        $tel = trim((string) ($payload['empresa_emisora_telefono'] ?? ''));
+        if ($tel !== '') {
+            $lines[] = 'Tel. '.$tel;
+        }
+        $correo = trim((string) ($payload['empresa_emisora_correo'] ?? ''));
+        if ($correo !== '') {
+            $lines[] = $correo;
+        }
+
+        return $lines;
+    }
 }

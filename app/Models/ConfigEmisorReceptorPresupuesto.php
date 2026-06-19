@@ -66,6 +66,43 @@ class ConfigEmisorReceptorPresupuesto extends BaseModel
         return $this->belongsTo(Proveedor::class);
     }
 
+    /**
+     * Nombre completo para documento (subfijo + nombre + apellidos).
+     */
+    public function nombreCompletoParaDocumento(): string
+    {
+        $partes = array_filter([
+            trim((string) ($this->subfijo ?? '')),
+            trim((string) ($this->nombre ?? '')),
+            trim((string) ($this->ape1 ?? '')),
+            trim((string) ($this->ape2 ?? '')),
+        ], static fn (string $p) => $p !== '');
+
+        return trim(implode(' ', $partes));
+    }
+
+    /**
+     * @return array{nombre: ?string, puesto: ?string, telefono: ?string, correo: ?string}
+     */
+    public function snapshotEmisorPersona(): array
+    {
+        $nombre = $this->nombreCompletoParaDocumento();
+
+        return [
+            'nombre' => $nombre !== '' ? $nombre : null,
+            'puesto' => $this->normalizarSnapshotTexto($this->puesto),
+            'telefono' => $this->normalizarSnapshotTexto($this->telefono),
+            'correo' => $this->normalizarSnapshotTexto($this->correo),
+        ];
+    }
+
+    private function normalizarSnapshotTexto(?string $value): ?string
+    {
+        $text = trim((string) ($value ?? ''));
+
+        return $text !== '' ? $text : null;
+    }
+
     public function filterByProveedorId($query, $value)
     {
         return $query->whereIn('proveedor_id', explode(',', (string) $value));
