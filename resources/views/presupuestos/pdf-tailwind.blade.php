@@ -4,6 +4,9 @@
 
     $margenMm = 20;
     $footerHeightMm = 25.4;
+    $lineaEspacioMm = 2.8;
+    $gapReservaAtentamentePieMm = 12.0 + (2 * $lineaEspacioMm);
+    $margenSuperiorMm = max(8.0, $margenMm - (2 * $lineaEspacioMm));
     $atentamenteReserveMm = 30;
     $terminosLista = $presupuesto['terminos_enunciados'] ?? [];
     $validacionesLista = $presupuesto['validaciones_enunciados'] ?? [];
@@ -15,7 +18,7 @@
         : 0;
     $bodyPaddingBottomMm = $footerHeightMm;
     if ($atentamenteLineasPieCount > 0) {
-        $bodyPaddingBottomMm += min(52, 10 + ($atentamenteLineasPieCount * 2.8) + 12);
+        $bodyPaddingBottomMm += min(58, 10 + ($atentamenteLineasPieCount * $lineaEspacioMm) + $gapReservaAtentamentePieMm);
     }
     $tieneBloqueTerminos = count($terminosLista) > 0
         || count($validacionesLista) > 0
@@ -97,7 +100,7 @@
     }
 
     body {
-        padding-top: {{ $margenMm }}mm;
+        padding-top: {{ $margenSuperiorMm }}mm;
     }
 
     .margin-sides {
@@ -400,7 +403,7 @@
 
     .tw-receptor-line {
         font-size: 7pt;
-        color: #111827;
+        color: var(--color-receptor-line);
         margin-bottom: 0.8mm;
         line-height: 1.15;
     }
@@ -1174,6 +1177,8 @@
         'margenMm' => $margenMm,
         'footerHeightMm' => $footerHeightMm,
         'pdfVariant' => 'tailwind',
+        'pdfThemeKey' => $pdfThemeKey,
+        'gapAtentamenteFooterMm' => $gapReservaAtentamentePieMm,
     ])
 </body>
 

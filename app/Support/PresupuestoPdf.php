@@ -622,22 +622,22 @@ final class PresupuestoPdf
         }
 
         $datos = self::datosBloqueAtentamenteDesdePayload($payload);
-        $upperPersona = static function (?string $text): ?string {
+        $lineaTexto = static function (?string $text): ?string {
             $t = trim((string) ($text ?? ''));
 
-            return $t === '' ? null : mb_strtoupper($t, 'UTF-8');
+            return $t === '' ? null : $t;
         };
 
         $lineas = [
             ['text' => 'Atentamente:', 'role' => 'title'],
         ];
 
-        $nombre = $upperPersona($datos['nombre'] ?? null);
+        $nombre = $lineaTexto($datos['nombre'] ?? null);
         if ($nombre !== null) {
             $lineas[] = ['text' => $nombre, 'role' => 'name'];
         }
 
-        $puesto = $upperPersona($datos['puesto'] ?? null);
+        $puesto = $lineaTexto($datos['puesto'] ?? null);
         if ($puesto !== null) {
             $lineas[] = ['text' => $puesto, 'role' => 'info'];
         }
@@ -658,24 +658,51 @@ final class PresupuestoPdf
     }
 
     /**
-     * Estilos por rol (pt, interlineado) alineados con .receptor-title / .receptor-name / .receptor-info del PDF.
+     * RGB normalizado 0–1 para DomPDF a partir de hex (#3498db o 3498db).
      *
-     * @return array<string, array{size: float, bold: bool, color: array{0: float, 1: float, 2: float}, lh: float}>
+     * @return array{0: float, 1: float, 2: float}
      */
-    public static function estilosAtentamentePiePorRol(string $variant = 'tailwind'): array
+    public static function hexColorToPdfRgb(string $hex): array
     {
-        if ($variant === 'default') {
-            return [
-                'title' => ['size' => 6.5, 'bold' => true, 'color' => [0.204, 0.596, 0.859], 'lh' => 10.0],
-                'name' => ['size' => 9.0, 'bold' => true, 'color' => [0.173, 0.243, 0.314], 'lh' => 11.0],
-                'info' => ['size' => 7.0, 'bold' => false, 'color' => [0.373, 0.435, 0.537], 'lh' => 9.0],
-            ];
+        $hex = ltrim(trim($hex), '#');
+        if (strlen($hex) === 3) {
+            $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+        }
+        if (strlen($hex) !== 6 || ! ctype_xdigit($hex)) {
+            return [0.204, 0.596, 0.859];
         }
 
         return [
-            'title' => ['size' => 6.0, 'bold' => true, 'color' => [0.204, 0.596, 0.859], 'lh' => 9.5],
-            'name' => ['size' => 9.0, 'bold' => true, 'color' => [0.067, 0.094, 0.153], 'lh' => 11.0],
-            'info' => ['size' => 7.0, 'bold' => false, 'color' => [0.067, 0.094, 0.153], 'lh' => 9.0],
+            hexdec(substr($hex, 0, 2)) / 255,
+            hexdec(substr($hex, 2, 2)) / 255,
+            hexdec(substr($hex, 4, 2)) / 255,
+        ];
+    }
+
+    /**
+     * Estilos por rol (pt, interlineado) alineados con «Dirigido a:» (.receptor-* / .tw-card-title + .tw-receptor-*).
+     *
+     * @param  array<string, string|float>|null  $themeVariables  Variables del tema PDF (plantilla tailwind).
+     * @return array<string, array{size: float, bold: bool, color: array{0: float, 1: float, 2: float}, lh: float}>
+     */
+    public static function estilosAtentamentePiePorRol(string $variant = 'tailwind', ?array $themeVariables = null): array
+    {
+        if ($variant === 'default') {
+            return [
+                'title' => ['size' => 6.5, 'bold' => true, 'color' => self::hexColorToPdfRgb('#3498db'), 'lh' => 10.0],
+                'name' => ['size' => 9.0, 'bold' => true, 'color' => self::hexColorToPdfRgb('#2c3e50'), 'lh' => 11.0],
+                'info' => ['size' => 7.0, 'bold' => false, 'color' => self::hexColorToPdfRgb('#5f6f89'), 'lh' => 9.0],
+            ];
+        }
+
+        $vars = $themeVariables ?? [];
+        $primary = (string) ($vars['color-primary'] ?? '#2563eb');
+        $infoLine = (string) ($vars['color-receptor-line'] ?? '#475569');
+
+        return [
+            'title' => ['size' => 6.0, 'bold' => true, 'color' => self::hexColorToPdfRgb($primary), 'lh' => 9.5],
+            'name' => ['size' => 9.0, 'bold' => true, 'color' => self::hexColorToPdfRgb('#111827'), 'lh' => 11.0],
+            'info' => ['size' => 7.0, 'bold' => false, 'color' => self::hexColorToPdfRgb($infoLine), 'lh' => 9.0],
         ];
     }
 

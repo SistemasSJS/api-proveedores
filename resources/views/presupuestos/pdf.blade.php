@@ -3,6 +3,9 @@
 
             $margenMm = 25.4;
             $footerHeightMm = 25.4; // Espacio reservado para pie de página en cada hoja (carta)
+            $lineaEspacioMm = 2.8;
+            $gapReservaAtentamentePieMm = 12.0 + (2 * $lineaEspacioMm);
+            $margenSuperiorMm = max(8.0, $margenMm - (2 * $lineaEspacioMm));
             $atentamenteReserveMm = 30;
             $terminosLista = $presupuesto['terminos_enunciados'] ?? [];
             $validacionesLista = $presupuesto['validaciones_enunciados'] ?? [];
@@ -14,7 +17,7 @@
                 : 0;
             $bodyPaddingBottomMm = $footerHeightMm;
             if ($atentamenteLineasPieCount > 0) {
-                $bodyPaddingBottomMm += min(52, 10 + ($atentamenteLineasPieCount * 2.8) + 12);
+                $bodyPaddingBottomMm += min(58, 10 + ($atentamenteLineasPieCount * $lineaEspacioMm) + $gapReservaAtentamentePieMm);
             }
             $tieneBloqueTerminos = count($terminosLista) > 0
                 || count($validacionesLista) > 0
@@ -42,7 +45,7 @@
                 }
 
                 .page-top-spacing {
-                    padding-top: {{ $margenMm }}mm;
+                    padding-top: {{ $margenSuperiorMm }}mm;
                 }
 
                 .content-wrapper {
@@ -71,7 +74,7 @@
                     background: #ffffff;
                     line-height: 1.15;
                     /* margin: 0; */
-                    padding-top: {{ $margenMm }}mm;
+                    padding-top: {{ $margenSuperiorMm }}mm;
                 }
 
                 /* Elementos de margen (cuando @page margin no funciona) */
@@ -1253,6 +1256,7 @@
                 'margenMm' => $margenMm,
                 'footerHeightMm' => $footerHeightMm,
                 'pdfVariant' => 'default',
+                'gapAtentamenteFooterMm' => $gapReservaAtentamentePieMm,
             ])
         </body>
 

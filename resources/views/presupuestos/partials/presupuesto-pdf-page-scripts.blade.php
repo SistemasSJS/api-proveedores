@@ -1,14 +1,21 @@
 @php
+    use App\Services\Presupuesto\PresupuestoThemeService;
     use App\Support\PresupuestoPdf;
 
     $margenMm = (float) ($margenMm ?? 25.4);
     $footerHeightMm = (float) ($footerHeightMm ?? 25.4);
     $footerBottomMm = 6.0;
-    $gapAtentamenteFooterMm = 12.0;
+    $gapAtentamenteFooterMm = (float) ($gapAtentamenteFooterMm ?? (12.0 + (2 * 2.8)));
     $pdfVariant = (string) ($pdfVariant ?? 'tailwind');
 
+    $pdfThemeVariables = null;
+    if ($pdfVariant === 'tailwind' && ! empty($pdfThemeKey ?? null)) {
+        $pdfThemeVariables = app(PresupuestoThemeService::class)
+            ->getTheme((string) $pdfThemeKey)['variables'];
+    }
+
     $atentamentePieLineas = PresupuestoPdf::lineasAtentamentePieUltimaPaginaDesdePayload($presupuesto);
-    $atentamenteEstilos = PresupuestoPdf::estilosAtentamentePiePorRol($pdfVariant);
+    $atentamenteEstilos = PresupuestoPdf::estilosAtentamentePiePorRol($pdfVariant, $pdfThemeVariables);
     $atentamentePieX = (int) round($margenMm * 2.834645669);
 
     $mmToPt = static fn (float $mm): int => (int) round($mm * 2.834645669);
