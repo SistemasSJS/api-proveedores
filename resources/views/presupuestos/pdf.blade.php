@@ -9,6 +9,9 @@
             $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
             $anexosLista = $presupuesto['anexos'] ?? [];
             $mostrarAtentamente = PresupuestoPdf::debeMostrarBloqueAtentamenteDesdePayload($presupuesto);
+            $tieneBloqueTerminos = count($terminosLista) > 0
+                || count($validacionesLista) > 0
+                || count($observacionesLista) > 0;
         @endphp
         <!DOCTYPE html>
         <html lang="es">
@@ -102,33 +105,38 @@
                     width: 100%;
                 }
 
-                .document-closing--with-atentamente {
-                    display: block;
+                .document-closing-atentamente {
+                    flex: 0 0 auto;
                     width: 100%;
-                    padding-bottom: {{ max(10, (int) round($atentamenteReserveMm * 0.45)) }}mm;
-                }
-
-                .document-closing--with-atentamente .terms-block {
-                    page-break-inside: auto;
-                    margin-bottom: 1mm;
-                }
-
-                .document-closing--with-atentamente .terminos-section {
                     page-break-inside: avoid;
+                    page-break-after: avoid;
+                }
+
+                .terms-block--pagina-siguiente {
+                    page-break-before: always;
+                    page-break-inside: auto;
+                }
+
+                .terms-block--pagina-siguiente .terminos-section {
+                    page-break-inside: auto;
+                }
+
+                .terms-block--pagina-siguiente .terminos-list li {
+                    page-break-inside: auto;
                 }
 
                 .atentamente-plain {
                     width: 100%;
                     margin: 4mm 0 0 0;
-                    padding: 0 0 {{ max(12, (int) round($atentamenteReserveMm * 0.55)) }}mm 0;
+                    padding: 0 0 {{ max(14, (int) round($atentamenteReserveMm * 0.6)) }}mm 0;
                     background: transparent;
                     border: none;
                     page-break-inside: avoid;
                     max-width: 90mm;
                 }
 
-                .document-closing--with-atentamente .atentamente-plain {
-                    margin-top: 4mm;
+                .document-closing-atentamente .atentamente-plain {
+                    margin-top: 0;
                     padding-top: 0;
                 }
 
@@ -1036,7 +1044,7 @@
 
             <div class="margin-sides">
                 <div class="document-container">
-                    <div class="document-main">
+                    <div class="document-main{{ $mostrarAtentamente ? ' document-main--with-atentamente-footer' : '' }}">
                         <!-- 1) ENCABEZADO -->
                         @include('presupuestos.partials.presupuesto-pdf-header-default')
 
@@ -1174,48 +1182,88 @@
                         </div>
                         @endif
 
-                    <div class="document-main-spacer {{ $mostrarAtentamente ? 'document-main-spacer--atentamente' : '' }}"></div>
-                    <div class="document-closing {{ $mostrarAtentamente ? 'document-closing--with-atentamente' : '' }}">
-                    <div class="terms-block">
-                        <!-- 6) TÉRMINOS Y CONDICIONES -->
-                        @if (count($terminosLista) > 0)
-                            <div class="terminos-section">
-                                <div class="terminos-main-title">Términos y Condiciones</div>
-                                <ul class="terminos-list">
-                                    @foreach ($terminosLista as $texto)
-                                        <li>{{ $texto }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
-
-                        @if (count($validacionesLista) > 0)
-                            <div class="terminos-section">
-                                <div class="terminos-title">Validación y Alcances</div>
-                                <ul class="observaciones-list">
-                                    @foreach ($validacionesLista as $item)
-                                        <li>{{ $item }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
-
-                        <!-- 7) OBSERVACIONES GENERALES -->
-                        @if (count($observacionesLista) > 0)
-                            <div class="terminos-section observaciones-section">
-                                <div class="terminos-title observaciones-title">Observaciones Generales</div>
-                                <ul class="observaciones-list">
-                                    @foreach ($observacionesLista as $obs)
-                                        <li>{{ $obs }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
-                    </div>
                     @if ($mostrarAtentamente)
-                        @include('presupuestos.partials.presupuesto-pdf-atentamente', ['variant' => 'default'])
+                        <div class="document-main-spacer document-main-spacer--atentamente"></div>
+                        <div class="document-closing-atentamente">
+                            @include('presupuestos.partials.presupuesto-pdf-atentamente', ['variant' => 'default'])
+                        </div>
+                    @else
+                        <div class="document-main-spacer"></div>
+                        <div class="document-closing">
+                            <div class="terms-block">
+                                @if (count($terminosLista) > 0)
+                                    <div class="terminos-section">
+                                        <div class="terminos-main-title">Términos y Condiciones</div>
+                                        <ul class="terminos-list">
+                                            @foreach ($terminosLista as $texto)
+                                                <li>{{ $texto }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endif
+
+                                @if (count($validacionesLista) > 0)
+                                    <div class="terminos-section">
+                                        <div class="terminos-title">Validación y Alcances</div>
+                                        <ul class="observaciones-list">
+                                            @foreach ($validacionesLista as $item)
+                                                <li>{{ $item }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endif
+
+                                @if (count($observacionesLista) > 0)
+                                    <div class="terminos-section observaciones-section">
+                                        <div class="terminos-title observaciones-title">Observaciones Generales</div>
+                                        <ul class="observaciones-list">
+                                            @foreach ($observacionesLista as $obs)
+                                                <li>{{ $obs }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
                     @endif
                     </div>
+
+                    @if ($mostrarAtentamente && $tieneBloqueTerminos)
+                        <div class="terms-block terms-block--pagina-siguiente">
+                            @if (count($terminosLista) > 0)
+                                <div class="terminos-section">
+                                    <div class="terminos-main-title">Términos y Condiciones</div>
+                                    <ul class="terminos-list">
+                                        @foreach ($terminosLista as $texto)
+                                            <li>{{ $texto }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+
+                            @if (count($validacionesLista) > 0)
+                                <div class="terminos-section">
+                                    <div class="terminos-title">Validación y Alcances</div>
+                                    <ul class="observaciones-list">
+                                        @foreach ($validacionesLista as $item)
+                                            <li>{{ $item }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+
+                            @if (count($observacionesLista) > 0)
+                                <div class="terminos-section observaciones-section">
+                                    <div class="terminos-title observaciones-title">Observaciones Generales</div>
+                                    <ul class="observaciones-list">
+                                        @foreach ($observacionesLista as $obs)
+                                            <li>{{ $obs }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
 
                     @if (count($anexosLista) > 0)
                         @foreach (collect($anexosLista)->chunk(4) as $pageIndex => $anexosPagina)

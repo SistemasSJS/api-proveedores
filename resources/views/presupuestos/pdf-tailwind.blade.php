@@ -10,6 +10,9 @@
     $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
     $anexosLista = $presupuesto['anexos'] ?? [];
     $mostrarAtentamente = PresupuestoPdf::debeMostrarBloqueAtentamenteDesdePayload($presupuesto);
+    $tieneBloqueTerminos = count($terminosLista) > 0
+        || count($validacionesLista) > 0
+        || count($observacionesLista) > 0;
     $presupuestoThemeService = app(PresupuestoThemeService::class);
     $pdfThemeKey = $presupuestoThemeService->resolveThemeKey($presupuesto['pdf_theme'] ?? null);
     $presupuestoThemeCss = $presupuestoThemeService->generateCssVariables($pdfThemeKey);
@@ -120,33 +123,38 @@
         width: 100%;
     }
 
-    .document-closing--with-atentamente {
-        display: block;
+    .document-closing-atentamente {
+        flex: 0 0 auto;
         width: 100%;
-        padding-bottom: {{ max(10, (int) round($atentamenteReserveMm * 0.45)) }}mm;
-    }
-
-    .document-closing--with-atentamente .terms-block {
-        page-break-inside: auto;
-        margin-bottom: 1mm;
-    }
-
-    .document-closing--with-atentamente .tw-terms {
         page-break-inside: avoid;
+        page-break-after: avoid;
+    }
+
+    .terms-block--pagina-siguiente {
+        page-break-before: always;
+        page-break-inside: auto;
+    }
+
+    .terms-block--pagina-siguiente .tw-terms {
+        page-break-inside: auto;
+    }
+
+    .terms-block--pagina-siguiente .tw-terms li {
+        page-break-inside: auto;
     }
 
     .atentamente-plain {
         width: 100%;
         margin: 4mm 0 0 0;
-        padding: 0 0 {{ max(12, (int) round($atentamenteReserveMm * 0.55)) }}mm 0;
+        padding: 0 0 {{ max(14, (int) round($atentamenteReserveMm * 0.6)) }}mm 0;
         background: transparent;
         border: none;
         page-break-inside: avoid;
         max-width: 90mm;
     }
 
-    .document-closing--with-atentamente .atentamente-plain {
-        margin-top: 4mm;
+    .document-closing-atentamente .atentamente-plain {
+        margin-top: 0;
         padding-top: 0;
     }
 
@@ -960,7 +968,7 @@
     </div>
 
     <div class="margin-sides">
-        <div class="document-container document-main">
+        <div class="document-container document-main{{ $mostrarAtentamente ? ' document-main--with-atentamente-footer' : '' }}">
             @include('presupuestos.partials.presupuesto-pdf-header-tailwind')
 
             <div class="tw-card">
@@ -1093,9 +1101,42 @@
             </div>
             @endif
 
-            <div class="document-main-spacer {{ $mostrarAtentamente ? 'document-main-spacer--atentamente' : '' }}"></div>
-            <div class="document-closing {{ $mostrarAtentamente ? 'document-closing--with-atentamente' : '' }}">
-            <div class="terms-block">
+            @if ($mostrarAtentamente)
+                <div class="document-main-spacer document-main-spacer--atentamente"></div>
+                <div class="document-closing-atentamente">
+                    @include('presupuestos.partials.presupuesto-pdf-atentamente', ['variant' => 'tailwind'])
+                </div>
+            @else
+                <div class="document-main-spacer"></div>
+                <div class="document-closing">
+                    <div class="terms-block">
+                        @if (count($terminosLista) > 0)
+                            <div class="tw-terms">
+                                <h3>Términos y Condiciones</h3>
+                                <ul class="tw-terms-num">
+                                    @foreach ($terminosLista as $texto)
+                                        <li>{{ $texto }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                        @if (count($observacionesLista) > 0)
+                            <div class="tw-terms">
+                                <h3>Observaciones</h3>
+                                <ul class="tw-obs-list">
+                                    @foreach ($observacionesLista as $obs)
+                                        <li>{{ $obs }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
+        </div>
+
+        @if ($mostrarAtentamente && $tieneBloqueTerminos)
+            <div class="terms-block terms-block--pagina-siguiente">
                 @if (count($terminosLista) > 0)
                     <div class="tw-terms">
                         <h3>Términos y Condiciones</h3>
@@ -1106,23 +1147,10 @@
                         </ul>
                     </div>
                 @endif
-                {{-- @if (count($validacionesLista) > 0)
-                    <div class="tw-terms">
-                        <h3>Validación y Alcances</h3>
-                        <ul class="tw-obs-list">
-                            @foreach ($validacionesLista as $item)
-                                <li>{{ $item }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                    @endif --}}
-                    @if (count($observacionesLista) > 0)
+                @if (count($observacionesLista) > 0)
                     <div class="tw-terms">
                         <h3>Observaciones</h3>
                         <ul class="tw-obs-list">
-                            {{-- @foreach ($validacionesLista as $item)
-                                <li>{{ $item }}</li>
-                            @endforeach --}}
                             @foreach ($observacionesLista as $obs)
                                 <li>{{ $obs }}</li>
                             @endforeach
@@ -1130,10 +1158,7 @@
                     </div>
                 @endif
             </div>
-            @if ($mostrarAtentamente)
-                @include('presupuestos.partials.presupuesto-pdf-atentamente', ['variant' => 'tailwind'])
-            @endif
-            </div>
+        @endif
 
             @if (count($anexosLista) > 0)
                 @foreach (collect($anexosLista)->chunk(4) as $pageIndex => $anexosPagina)
