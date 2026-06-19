@@ -10,13 +10,6 @@
     $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
     $anexosLista = $presupuesto['anexos'] ?? [];
     $mostrarAtentamente = PresupuestoPdf::debeMostrarBloqueAtentamenteDesdePayload($presupuesto);
-    $atentamenteLineasPieCount = $mostrarAtentamente
-        ? count(PresupuestoPdf::lineasAtentamentePieUltimaPaginaDesdePayload($presupuesto))
-        : 0;
-    $bodyPaddingBottomMm = $footerHeightMm;
-    if ($atentamenteLineasPieCount > 0) {
-        $bodyPaddingBottomMm += min(52, 10 + ($atentamenteLineasPieCount * 2.8) + 12);
-    }
     $tieneBloqueTerminos = count($terminosLista) > 0
         || count($validacionesLista) > 0
         || count($observacionesLista) > 0;
@@ -93,7 +86,7 @@
         line-height: 1.2;
         margin: 0;
         padding: 0;
-        padding-bottom: {{ $bodyPaddingBottomMm }}mm;
+        padding-bottom: {{ $footerHeightMm }}mm;
     }
 
     body {
@@ -137,22 +130,16 @@
         page-break-after: avoid;
     }
 
-    .terms-block--after-presupuesto {
-        flex: 0 0 auto;
-        width: 100%;
-        margin-bottom: 2mm;
+    .terms-block--pagina-siguiente {
+        page-break-before: always;
         page-break-inside: auto;
     }
 
-    .terms-block--after-presupuesto .tw-terms:first-child {
-        margin-top: 2mm;
-    }
-
-    .terms-block--after-presupuesto .tw-terms {
+    .terms-block--pagina-siguiente .tw-terms {
         page-break-inside: auto;
     }
 
-    .terms-block--after-presupuesto .tw-terms li {
+    .terms-block--pagina-siguiente .tw-terms li {
         page-break-inside: auto;
     }
 
@@ -981,7 +968,7 @@
     </div>
 
     <div class="margin-sides">
-        <div class="document-container document-main">
+        <div class="document-container document-main{{ $mostrarAtentamente ? ' document-main--with-atentamente-footer' : '' }}">
             @include('presupuestos.partials.presupuesto-pdf-header-tailwind')
 
             <div class="tw-card">
@@ -1114,17 +1101,64 @@
             </div>
             @endif
 
-            @if ($tieneBloqueTerminos)
-                <div class="terms-block terms-block--after-presupuesto">
-                    @include('presupuestos.partials.presupuesto-pdf-terminos', [
-                        'variant' => 'tailwind',
-                        'terminosLista' => $terminosLista,
-                        'validacionesLista' => $validacionesLista,
-                        'observacionesLista' => $observacionesLista,
-                    ])
+            @if ($mostrarAtentamente)
+                <div class="document-main-spacer document-main-spacer--atentamente"></div>
+                <div class="document-closing-atentamente">
+                    @include('presupuestos.partials.presupuesto-pdf-atentamente', ['variant' => 'tailwind'])
+                </div>
+            @else
+                <div class="document-main-spacer"></div>
+                <div class="document-closing">
+                    <div class="terms-block">
+                        @if (count($terminosLista) > 0)
+                            <div class="tw-terms">
+                                <h3>Términos y Condiciones</h3>
+                                <ul class="tw-terms-num">
+                                    @foreach ($terminosLista as $texto)
+                                        <li>{{ $texto }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                        @if (count($observacionesLista) > 0)
+                            <div class="tw-terms">
+                                <h3>Observaciones</h3>
+                                <ul class="tw-obs-list">
+                                    @foreach ($observacionesLista as $obs)
+                                        <li>{{ $obs }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             @endif
         </div>
+
+        @if ($mostrarAtentamente && $tieneBloqueTerminos)
+            <div class="terms-block terms-block--pagina-siguiente">
+                @if (count($terminosLista) > 0)
+                    <div class="tw-terms">
+                        <h3>Términos y Condiciones</h3>
+                        <ul class="tw-terms-num">
+                            @foreach ($terminosLista as $texto)
+                                <li>{{ $texto }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+                @if (count($observacionesLista) > 0)
+                    <div class="tw-terms">
+                        <h3>Observaciones</h3>
+                        <ul class="tw-obs-list">
+                            @foreach ($observacionesLista as $obs)
+                                <li>{{ $obs }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+            </div>
+        @endif
 
             @if (count($anexosLista) > 0)
                 @foreach (collect($anexosLista)->chunk(4) as $pageIndex => $anexosPagina)
@@ -1170,11 +1204,18 @@
         </div>
     </div>
 
-    @include('presupuestos.partials.presupuesto-pdf-page-scripts', [
-        'margenMm' => $margenMm,
-        'footerHeightMm' => $footerHeightMm,
-        'pdfVariant' => 'tailwind',
-    ])
+    <script type="text/php">
+        if (isset($pdf) && isset($fontMetrics)) {
+            $text = "Página {PAGE_NUM} de {PAGE_COUNT}";
+            $size = 7;
+            $font = $fontMetrics->getFont("DejaVu Sans", "normal");
+            $sample = "Página 99 de 99";
+            $width = $fontMetrics->getTextWidth($sample, $font, $size);
+            $x = ($pdf->get_width() - $width) / 2 + 5;
+            $y = $pdf->get_height() - 45;
+            $pdf->page_text($x, $y, $text, $font, $size);
+        }
+    </script>
 </body>
 
 </html>

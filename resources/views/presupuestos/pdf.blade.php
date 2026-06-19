@@ -9,6 +9,13 @@
             $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
             $anexosLista = $presupuesto['anexos'] ?? [];
             $mostrarAtentamente = PresupuestoPdf::debeMostrarBloqueAtentamenteDesdePayload($presupuesto);
+            $atentamenteLineasPieCount = $mostrarAtentamente
+                ? count(PresupuestoPdf::lineasAtentamentePieUltimaPaginaDesdePayload($presupuesto))
+                : 0;
+            $bodyPaddingBottomMm = $footerHeightMm;
+            if ($atentamenteLineasPieCount > 0) {
+                $bodyPaddingBottomMm += min(52, 10 + ($atentamenteLineasPieCount * 2.8) + 12);
+            }
             $tieneBloqueTerminos = count($terminosLista) > 0
                 || count($validacionesLista) > 0
                 || count($observacionesLista) > 0;
@@ -53,7 +60,7 @@
                     line-height: 1.15;
                     margin: 0;
                     padding: 0;
-                    padding-bottom: {{ $footerHeightMm }}mm;
+                    padding-bottom: {{ $bodyPaddingBottomMm }}mm;
                     /* 🔥 clave */
                 }
 
@@ -112,16 +119,23 @@
                     page-break-after: avoid;
                 }
 
-                .terms-block--pagina-siguiente {
-                    page-break-before: always;
+                .terms-block--after-presupuesto {
+                    flex: 0 0 auto;
+                    width: 100%;
+                    margin-bottom: 2mm;
                     page-break-inside: auto;
                 }
 
-                .terms-block--pagina-siguiente .terminos-section {
+                .terms-block--after-presupuesto .terminos-section:first-child {
+                    margin-top: 2mm;
+                    padding-top: 1mm;
+                }
+
+                .terms-block--after-presupuesto .terminos-section {
                     page-break-inside: auto;
                 }
 
-                .terms-block--pagina-siguiente .terminos-list li {
+                .terms-block--after-presupuesto .terminos-list li {
                     page-break-inside: auto;
                 }
 
@@ -1044,7 +1058,7 @@
 
             <div class="margin-sides">
                 <div class="document-container">
-                    <div class="document-main{{ $mostrarAtentamente ? ' document-main--with-atentamente-footer' : '' }}">
+                    <div class="document-main">
                         <!-- 1) ENCABEZADO -->
                         @include('presupuestos.partials.presupuesto-pdf-header-default')
 
@@ -1182,88 +1196,17 @@
                         </div>
                         @endif
 
-                    @if ($mostrarAtentamente)
-                        <div class="document-main-spacer document-main-spacer--atentamente"></div>
-                        <div class="document-closing-atentamente">
-                            @include('presupuestos.partials.presupuesto-pdf-atentamente', ['variant' => 'default'])
-                        </div>
-                    @else
-                        <div class="document-main-spacer"></div>
-                        <div class="document-closing">
-                            <div class="terms-block">
-                                @if (count($terminosLista) > 0)
-                                    <div class="terminos-section">
-                                        <div class="terminos-main-title">Términos y Condiciones</div>
-                                        <ul class="terminos-list">
-                                            @foreach ($terminosLista as $texto)
-                                                <li>{{ $texto }}</li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                @endif
-
-                                @if (count($validacionesLista) > 0)
-                                    <div class="terminos-section">
-                                        <div class="terminos-title">Validación y Alcances</div>
-                                        <ul class="observaciones-list">
-                                            @foreach ($validacionesLista as $item)
-                                                <li>{{ $item }}</li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                @endif
-
-                                @if (count($observacionesLista) > 0)
-                                    <div class="terminos-section observaciones-section">
-                                        <div class="terminos-title observaciones-title">Observaciones Generales</div>
-                                        <ul class="observaciones-list">
-                                            @foreach ($observacionesLista as $obs)
-                                                <li>{{ $obs }}</li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                @endif
-                            </div>
+                    @if ($tieneBloqueTerminos)
+                        <div class="terms-block terms-block--after-presupuesto">
+                            @include('presupuestos.partials.presupuesto-pdf-terminos', [
+                                'variant' => 'default',
+                                'terminosLista' => $terminosLista,
+                                'validacionesLista' => $validacionesLista,
+                                'observacionesLista' => $observacionesLista,
+                            ])
                         </div>
                     @endif
                     </div>
-
-                    @if ($mostrarAtentamente && $tieneBloqueTerminos)
-                        <div class="terms-block terms-block--pagina-siguiente">
-                            @if (count($terminosLista) > 0)
-                                <div class="terminos-section">
-                                    <div class="terminos-main-title">Términos y Condiciones</div>
-                                    <ul class="terminos-list">
-                                        @foreach ($terminosLista as $texto)
-                                            <li>{{ $texto }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            @endif
-
-                            @if (count($validacionesLista) > 0)
-                                <div class="terminos-section">
-                                    <div class="terminos-title">Validación y Alcances</div>
-                                    <ul class="observaciones-list">
-                                        @foreach ($validacionesLista as $item)
-                                            <li>{{ $item }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            @endif
-
-                            @if (count($observacionesLista) > 0)
-                                <div class="terminos-section observaciones-section">
-                                    <div class="terminos-title observaciones-title">Observaciones Generales</div>
-                                    <ul class="observaciones-list">
-                                        @foreach ($observacionesLista as $obs)
-                                            <li>{{ $obs }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            @endif
-                        </div>
-                    @endif
 
                     @if (count($anexosLista) > 0)
                         @foreach (collect($anexosLista)->chunk(4) as $pageIndex => $anexosPagina)
@@ -1306,24 +1249,11 @@
                     @endif
                 </div>
             </div>
-            <script type="text/php">
-                if (isset($pdf) && isset($fontMetrics)) {
-                    $text = "Página {PAGE_NUM} de {PAGE_COUNT}";
-                    $size = 7;
-                    $font = $fontMetrics->getFont("DejaVu Sans", "normal");
-            
-                    // 🔥 usar un ejemplo REAL para medir
-                    $sample = "Página 99 de 99";
-                    $width = $fontMetrics->getTextWidth($sample, $font, $size);
-            
-                    $x = ($pdf->get_width() - $width) / 2 + 5;
-            
-                    // 🔥 ya ajustado para no encimarse con footer
-                    $y = $pdf->get_height() - 45;
-            
-                    $pdf->page_text($x, $y, $text, $font, $size);
-                }
-            </script>
+            @include('presupuestos.partials.presupuesto-pdf-page-scripts', [
+                'margenMm' => $margenMm,
+                'footerHeightMm' => $footerHeightMm,
+                'pdfVariant' => 'default',
+            ])
         </body>
 
         </html>

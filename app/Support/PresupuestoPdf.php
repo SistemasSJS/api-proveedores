@@ -79,6 +79,13 @@ final class PresupuestoPdf
             'iva_total' => $presupuesto->iva_total,
             'total' => $presupuesto->total,
             'config_mostrar_totales' => (bool) ($presupuesto->config_mostrar_totales ?? true),
+            'config_emisor_presupuesto_id' => $presupuesto->config_emisor_presupuesto_id,
+            'empresa_emisora_nombre' => $presupuesto->empresa_emisora_nombre,
+            'empresa_emisora_puesto' => $presupuesto->empresa_emisora_puesto,
+            'empresa_emisora_telefono' => $presupuesto->empresa_emisora_telefono,
+            'empresa_emisora_correo' => $presupuesto->empresa_emisora_correo,
+            'incluir_leyenda_atentamente' => (bool) ($presupuesto->incluir_leyenda_atentamente ?? true),
+            'empresa_emisora_nombre_comercial' => $presupuesto->empresa_emisora_nombre_comercial,
             'empresa_receptora' => $empDoc,
             'receptor_lineas' => self::lineasDirigidoUnicas([
                 'alias_empresa' => $empDoc['alias_empresa'],
@@ -598,6 +605,77 @@ final class PresupuestoPdf
             'empresa' => $trim($payload['empresa_emisora_nombre_comercial'] ?? null),
             'telefono' => $trim($payload['empresa_emisora_telefono'] ?? null),
             'correo' => $trim($payload['empresa_emisora_correo'] ?? null),
+        ];
+    }
+
+    /**
+     * Líneas para dibujar «Atentamente» en el pie de la última página del PDF (DomPDF page_script).
+     * Misma jerarquía que «Dirigido a:» (título / nombre / líneas secundarias).
+     *
+     * @param  array<string, mixed>  $payload
+     * @return list<array{text: string, role: 'title'|'name'|'info'}>
+     */
+    public static function lineasAtentamentePieUltimaPaginaDesdePayload(array $payload): array
+    {
+        if (! self::debeMostrarBloqueAtentamenteDesdePayload($payload)) {
+            return [];
+        }
+
+        $datos = self::datosBloqueAtentamenteDesdePayload($payload);
+        $upperPersona = static function (?string $text): ?string {
+            $t = trim((string) ($text ?? ''));
+
+            return $t === '' ? null : mb_strtoupper($t, 'UTF-8');
+        };
+
+        $lineas = [
+            ['text' => 'Atentamente:', 'role' => 'title'],
+        ];
+
+        $nombre = $upperPersona($datos['nombre'] ?? null);
+        if ($nombre !== null) {
+            $lineas[] = ['text' => $nombre, 'role' => 'name'];
+        }
+
+        $puesto = $upperPersona($datos['puesto'] ?? null);
+        if ($puesto !== null) {
+            $lineas[] = ['text' => $puesto, 'role' => 'info'];
+        }
+
+        if (! empty($datos['empresa'])) {
+            $lineas[] = ['text' => (string) $datos['empresa'], 'role' => 'info'];
+        }
+
+        if (! empty($datos['telefono'])) {
+            $lineas[] = ['text' => 'Tel. ' . $datos['telefono'], 'role' => 'info'];
+        }
+
+        if (! empty($datos['correo'])) {
+            $lineas[] = ['text' => (string) $datos['correo'], 'role' => 'info'];
+        }
+
+        return $lineas;
+    }
+
+    /**
+     * Estilos por rol (pt, interlineado) alineados con .receptor-title / .receptor-name / .receptor-info del PDF.
+     *
+     * @return array<string, array{size: float, bold: bool, color: array{0: float, 1: float, 2: float}, lh: float}>
+     */
+    public static function estilosAtentamentePiePorRol(string $variant = 'tailwind'): array
+    {
+        if ($variant === 'default') {
+            return [
+                'title' => ['size' => 6.5, 'bold' => true, 'color' => [0.204, 0.596, 0.859], 'lh' => 10.0],
+                'name' => ['size' => 9.0, 'bold' => true, 'color' => [0.173, 0.243, 0.314], 'lh' => 11.0],
+                'info' => ['size' => 7.0, 'bold' => false, 'color' => [0.373, 0.435, 0.537], 'lh' => 9.0],
+            ];
+        }
+
+        return [
+            'title' => ['size' => 6.0, 'bold' => true, 'color' => [0.204, 0.596, 0.859], 'lh' => 9.5],
+            'name' => ['size' => 9.0, 'bold' => true, 'color' => [0.067, 0.094, 0.153], 'lh' => 11.0],
+            'info' => ['size' => 7.0, 'bold' => false, 'color' => [0.067, 0.094, 0.153], 'lh' => 9.0],
         ];
     }
 
