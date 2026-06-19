@@ -1,12 +1,15 @@
 @php
     use App\Services\Presupuesto\PresupuestoThemeService;
+    use App\Support\PresupuestoPdf;
 
     $margenMm = 20;
     $footerHeightMm = 25.4;
+    $atentamenteReserveMm = 30;
     $terminosLista = $presupuesto['terminos_enunciados'] ?? [];
     $validacionesLista = $presupuesto['validaciones_enunciados'] ?? [];
     $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
     $anexosLista = $presupuesto['anexos'] ?? [];
+    $mostrarAtentamente = PresupuestoPdf::debeMostrarBloqueAtentamenteDesdePayload($presupuesto);
     $presupuestoThemeService = app(PresupuestoThemeService::class);
     $pdfThemeKey = $presupuestoThemeService->resolveThemeKey($presupuesto['pdf_theme'] ?? null);
     $presupuestoThemeCss = $presupuestoThemeService->generateCssVariables($pdfThemeKey);
@@ -95,6 +98,55 @@
     .document-container {
         width: 100%;
         background: var(--bg-body);
+    }
+
+    .document-main {
+        min-height: calc(100vh - {{ $footerHeightMm + 42 }}mm);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .document-main-spacer {
+        flex: 1 1 auto;
+        min-height: 2mm;
+    }
+
+    .document-main-spacer--atentamente {
+        min-height: 35mm;
+    }
+
+    .document-closing {
+        flex: 0 0 auto;
+        width: 100%;
+    }
+
+    .document-closing--with-atentamente {
+        display: block;
+        width: 100%;
+    }
+
+    .document-closing--with-atentamente .terms-block {
+        page-break-inside: auto;
+        margin-bottom: 1mm;
+    }
+
+    .document-closing--with-atentamente .tw-terms {
+        page-break-inside: avoid;
+    }
+
+    .atentamente-plain {
+        width: 100%;
+        margin: 8mm 0 0 0;
+        padding: 0;
+        background: transparent;
+        border: none;
+        page-break-inside: avoid;
+        max-width: 90mm;
+    }
+
+    .document-closing--with-atentamente .atentamente-plain {
+        margin-top: 8mm;
+        padding-top: 0;
     }
 
     .tw-header-wrap {
@@ -548,6 +600,10 @@
         height: 8mm;
     }
 
+    .after-table-space--compact {
+        height: 3mm;
+    }
+
     .tw-page-break {
         page-break-before: always;
     }
@@ -643,39 +699,6 @@
     .terms-block {
         margin-bottom: 3mm;
         page-break-inside: auto;
-    }
-
-    .atentamente-block {
-        margin-top: 5mm;
-        page-break-inside: avoid;
-    }
-
-    .atentamente-title {
-        font-size: 6.5pt;
-        font-weight: 700;
-        color: var(--primary);
-        text-transform: uppercase;
-        margin-bottom: 1mm;
-        line-height: var(--section-line-height);
-    }
-
-    .atentamente-spacer {
-        height: 3mm;
-    }
-
-    .atentamente-nombre {
-        font-size: 7.2pt;
-        font-weight: 700;
-        color: var(--text-heading);
-        margin-bottom: 0.8mm;
-        line-height: 1.2;
-    }
-
-    .atentamente-line {
-        font-size: 7pt;
-        color: var(--text-body);
-        margin-bottom: 0.8mm;
-        line-height: 1.15;
     }
 
     .tw-terms + .tw-terms {
@@ -914,7 +937,7 @@
     </div>
 
     <div class="margin-sides">
-        <div class="document-container">
+        <div class="document-container document-main">
             @include('presupuestos.partials.presupuesto-pdf-header-tailwind')
 
             <div class="tw-card">
@@ -1043,10 +1066,12 @@
                         </div>
                     </div>
                 </div>
-                <div class="after-table-space"></div>
+                <div class="after-table-space after-table-space--compact"></div>
             </div>
             @endif
 
+            <div class="document-main-spacer {{ $mostrarAtentamente ? 'document-main-spacer--atentamente' : '' }}"></div>
+            <div class="document-closing {{ $mostrarAtentamente ? 'document-closing--with-atentamente' : '' }}">
             <div class="terms-block">
                 @if (count($terminosLista) > 0)
                     <div class="tw-terms">
@@ -1081,6 +1106,10 @@
                         </ul>
                     </div>
                 @endif
+            </div>
+            @if ($mostrarAtentamente)
+                @include('presupuestos.partials.presupuesto-pdf-atentamente', ['variant' => 'tailwind'])
+            @endif
             </div>
 
             @if (count($anexosLista) > 0)
@@ -1124,8 +1153,6 @@
                     </div>
                 @endforeach
             @endif
-
-            @include('presupuestos.partials.presupuesto-pdf-atentamente')
         </div>
     </div>
 

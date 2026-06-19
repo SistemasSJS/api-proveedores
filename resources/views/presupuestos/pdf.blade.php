@@ -1,10 +1,14 @@
         @php
+            use App\Support\PresupuestoPdf;
+
             $margenMm = 25.4;
             $footerHeightMm = 25.4; // Espacio reservado para pie de página en cada hoja (carta)
+            $atentamenteReserveMm = 30;
             $terminosLista = $presupuesto['terminos_enunciados'] ?? [];
             $validacionesLista = $presupuesto['validaciones_enunciados'] ?? [];
             $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
             $anexosLista = $presupuesto['anexos'] ?? [];
+            $mostrarAtentamente = PresupuestoPdf::debeMostrarBloqueAtentamenteDesdePayload($presupuesto);
         @endphp
         <!DOCTYPE html>
         <html lang="es">
@@ -79,6 +83,52 @@
 
                 .document-main {
                     margin-bottom: 6mm;
+                    min-height: calc(100vh - {{ $footerHeightMm + 42 }}mm);
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .document-main-spacer {
+                    flex: 1 1 auto;
+                    min-height: 2mm;
+                }
+
+                .document-main-spacer--atentamente {
+                    min-height: 35mm;
+                }
+
+                .document-closing {
+                    flex: 0 0 auto;
+                    width: 100%;
+                }
+
+                .document-closing--with-atentamente {
+                    display: block;
+                    width: 100%;
+                }
+
+                .document-closing--with-atentamente .terms-block {
+                    page-break-inside: auto;
+                    margin-bottom: 1mm;
+                }
+
+                .document-closing--with-atentamente .terminos-section {
+                    page-break-inside: avoid;
+                }
+
+                .atentamente-plain {
+                    width: 100%;
+                    margin: 8mm 0 0 0;
+                    padding: 0;
+                    background: transparent;
+                    border: none;
+                    page-break-inside: avoid;
+                    max-width: 90mm;
+                }
+
+                .document-closing--with-atentamente .atentamente-plain {
+                    margin-top: 8mm;
+                    padding-top: 0;
                 }
 
 
@@ -471,38 +521,6 @@
                     page-break-before: auto;
                 }
 
-                .atentamente-block {
-                    margin-top: 6mm;
-                    page-break-inside: avoid;
-                }
-
-                .atentamente-title {
-                    font-size: 6pt;
-                    font-weight: 700;
-                    color: var(--primary, #3498db);
-                    text-transform: uppercase;
-                    margin-bottom: 1mm;
-                }
-
-                .atentamente-spacer {
-                    height: 3mm;
-                }
-
-                .atentamente-nombre {
-                    font-size: 7pt;
-                    font-weight: 700;
-                    color: #111827;
-                    margin-bottom: 0.8mm;
-                    line-height: 1.2;
-                }
-
-                .atentamente-line {
-                    font-size: 7pt;
-                    color: #111827;
-                    margin-bottom: 0.8mm;
-                    line-height: 1.15;
-                }
-
                 .totales-section {
                     page-break-inside: avoid;
                 }
@@ -833,6 +851,10 @@
                     height: {{ $footerHeightMm + 5 }}mm;
                 }
 
+                .after-table-space--compact {
+                    height: 3mm;
+                }
+
                 .page-break {
                     page-break-before: always;
                 }
@@ -1125,11 +1147,12 @@
                                     {{ \App\Support\PresupuestoPdf::formatMontoLegal($total, $monedaCodigo) }}
                                 </div>
                             </div>
-                            <div class="after-table-space"></div>
+                            <div class="after-table-space after-table-space--compact"></div>
                         </div>
                         @endif
 
-                    </div>
+                    <div class="document-main-spacer {{ $mostrarAtentamente ? 'document-main-spacer--atentamente' : '' }}"></div>
+                    <div class="document-closing {{ $mostrarAtentamente ? 'document-closing--with-atentamente' : '' }}">
                     <div class="terms-block">
                         <!-- 6) TÉRMINOS Y CONDICIONES -->
                         @if (count($terminosLista) > 0)
@@ -1165,6 +1188,10 @@
                                 </ul>
                             </div>
                         @endif
+                    </div>
+                    @if ($mostrarAtentamente)
+                        @include('presupuestos.partials.presupuesto-pdf-atentamente', ['variant' => 'default'])
+                    @endif
                     </div>
 
                     @if (count($anexosLista) > 0)
@@ -1206,8 +1233,6 @@
                             </div>
                         @endforeach
                     @endif
-
-                    @include('presupuestos.partials.presupuesto-pdf-atentamente')
                 </div>
             </div>
             <script type="text/php">
