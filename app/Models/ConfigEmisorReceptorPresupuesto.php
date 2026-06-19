@@ -82,11 +82,25 @@ class ConfigEmisorReceptorPresupuesto extends BaseModel
     }
 
     /**
+     * Nombre persona emisor en presupuesto (sin subfijo).
+     */
+    public function nombrePersonaEmisorPresupuesto(): string
+    {
+        $partes = array_filter([
+            trim((string) ($this->nombre ?? '')),
+            trim((string) ($this->ape1 ?? '')),
+            trim((string) ($this->ape2 ?? '')),
+        ], static fn (string $p) => $p !== '');
+
+        return trim(implode(' ', $partes));
+    }
+
+    /**
      * @return array{nombre: ?string, puesto: ?string, telefono: ?string, correo: ?string}
      */
     public function snapshotEmisorPersona(): array
     {
-        $nombre = $this->nombreCompletoParaDocumento();
+        $nombre = $this->nombrePersonaEmisorPresupuesto();
 
         return [
             'nombre' => $nombre !== '' ? $nombre : null,

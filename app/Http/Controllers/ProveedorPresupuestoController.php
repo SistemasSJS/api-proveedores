@@ -584,6 +584,7 @@ class ProveedorPresupuestoController extends Controller
                     : true,
                 'receptor_lineas' => PresupuestoPdf::lineasReceptorPdfDesdePayloadReceptor($normalized),
                 'emisor_contacto_lineas' => PresupuestoPdf::lineasEmisorContactoPdfDesdePayload($normalized),
+                'config_emisor_presupuesto_id' => $normalized['config_emisor_presupuesto_id'] ?? null,
                 'conceptos' => $normalized['conceptos'] ?? [],
                 'anexos' => PresupuestoPdf::anexosParaPlantillaPdf($presupuestoGuardado),
                 'terminos_enunciados' => Presupuesto::buildTerminosEnunciadosFromArray($formData),
@@ -1853,6 +1854,7 @@ class ProveedorPresupuestoController extends Controller
             'config_mostrar_totales' => (bool) ($presupuesto->config_mostrar_totales ?? true),
             'receptor_lineas' => PresupuestoPdf::lineasReceptorPdfDesdeColumnasPresupuesto($presupuesto),
             'emisor_contacto_lineas' => PresupuestoPdf::lineasEmisorContactoPdf($presupuesto),
+            'config_emisor_presupuesto_id' => $presupuesto->config_emisor_presupuesto_id,
             'conceptos' => $presupuesto->conceptos->map(static function ($concepto) {
                 return [
                     'tipo' => $concepto->tipo ?? PresupuestoConcepto::TIPO_CONCEPTO,
