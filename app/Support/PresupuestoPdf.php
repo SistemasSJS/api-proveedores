@@ -103,6 +103,7 @@ final class PresupuestoPdf
                 'precio_total' => $c->precio_total,
             ])->toArray(),
             'anexos' => $anexosBase64,
+            'documentacion_adjuntos' => [],
             'terminos_enunciados' => $enunciadosClasificados['terminos'],
             'validaciones_enunciados' => $enunciadosClasificados['validaciones'],
             'observaciones_enunciados' => $enunciadosClasificados['observaciones'],

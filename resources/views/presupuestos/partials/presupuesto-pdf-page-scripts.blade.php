@@ -21,8 +21,10 @@
 
     $mmToPt = static fn (float $mm): int => (int) round($mm * 2.834645669);
 
+    $atentamenteEnPieDePagina = (bool) ($atentamenteEnPieDePagina ?? false);
+
     $atentamentePageScript = '';
-    if (count($atentamentePieLineas) > 0) {
+    if ($atentamenteEnPieDePagina && count($atentamentePieLineas) > 0) {
         $blockHeightPt = 6;
         $espacioTrasTituloPt = $mmToPt($espacioTrasTituloAtentamenteMm);
         $tieneLineasTrasTitulo = count($atentamentePieLineas) > 1;

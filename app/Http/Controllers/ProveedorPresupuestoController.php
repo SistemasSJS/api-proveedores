@@ -594,6 +594,7 @@ class ProveedorPresupuestoController extends Controller
                 'empresa_emisora_nombre_comercial' => $normalized['empresa_emisora_nombre_comercial'] ?? null,
                 'conceptos' => $normalized['conceptos'] ?? [],
                 'anexos' => PresupuestoPdf::anexosParaPlantillaPdf($presupuestoGuardado),
+                'documentacion_adjuntos' => [],
                 'terminos_enunciados' => Presupuesto::buildTerminosEnunciadosFromArray($formData),
                 'observaciones_enunciados' => Presupuesto::buildObservacionesEnunciadosFromArray($formData),
                 'qr_code' => null,
@@ -1878,6 +1879,7 @@ class ProveedorPresupuestoController extends Controller
                 ];
             })->values()->all(),
             'anexos' => PresupuestoPdf::anexosParaPlantillaPdf($presupuesto),
+            'documentacion_adjuntos' => [],
             'terminos_enunciados' => $enunciadosClasificados['terminos'],
             'validaciones_enunciados' => $enunciadosClasificados['validaciones'],
             'observaciones_enunciados' => $enunciadosClasificados['observaciones'],

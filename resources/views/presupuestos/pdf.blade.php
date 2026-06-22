@@ -12,18 +12,12 @@
             $validacionesLista = $presupuesto['validaciones_enunciados'] ?? [];
             $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
             $anexosLista = $presupuesto['anexos'] ?? [];
+            $documentacionLista = $presupuesto['documentacion_adjuntos'] ?? [];
+            $haySeccionAnexos = count($anexosLista) > 0;
+            $haySeccionDocumentacion = count($documentacionLista) > 0;
+            $saltoTrasSeccionPresupuesto = $haySeccionAnexos || $haySeccionDocumentacion;
             $mostrarAtentamente = PresupuestoPdf::debeMostrarBloqueAtentamenteDesdePayload($presupuesto);
-            $atentamenteLineasPieCount = $mostrarAtentamente
-                ? count(PresupuestoPdf::lineasAtentamentePieUltimaPaginaDesdePayload($presupuesto))
-                : 0;
             $bodyPaddingBottomMm = $footerHeightMm;
-            if ($atentamenteLineasPieCount > 0) {
-                $extraReservaAtentamenteMm = 10 + ($atentamenteLineasPieCount * $lineaEspacioMm) + $gapAtentamenteFooterMm;
-                if ($atentamenteLineasPieCount > 1) {
-                    $extraReservaAtentamenteMm += $espacioTrasTituloAtentamenteMm;
-                }
-                $bodyPaddingBottomMm += min(58, $extraReservaAtentamenteMm);
-            }
             $tieneBloqueTerminos = count($terminosLista) > 0
                 || count($validacionesLista) > 0
                 || count($observacionesLista) > 0;
@@ -101,9 +95,32 @@
 
                 .document-main {
                     margin-bottom: 6mm;
-                    min-height: calc(100vh - {{ $footerHeightMm + 42 }}mm);
-                    display: flex;
-                    flex-direction: column;
+                    min-height: auto;
+                    display: block;
+                }
+
+                .pdf-seccion--presupuesto {
+                    width: 100%;
+                }
+
+                .pdf-seccion--presupuesto.pdf-seccion--salto-siguiente {
+                    page-break-after: always;
+                }
+
+                .pdf-seccion-presupuesto__atentamente {
+                    margin-top: 4mm;
+                    margin-bottom: {{ $gapAtentamenteFooterMm }}mm;
+                    page-break-inside: avoid;
+                }
+
+                .pdf-seccion--anexos,
+                .pdf-seccion--documentacion {
+                    page-break-before: always;
+                    width: 100%;
+                }
+
+                .pdf-seccion-documentacion__pagina {
+                    width: 100%;
                 }
 
                 .document-main-spacer {
@@ -1065,6 +1082,7 @@
             </div>
 
             <div class="margin-sides">
+                <div class="pdf-seccion pdf-seccion--presupuesto{{ $saltoTrasSeccionPresupuesto ? ' pdf-seccion--salto-siguiente' : '' }}">
                 <div class="document-container">
                     <div class="document-main">
                         <!-- 1) ENCABEZADO -->
@@ -1214,48 +1232,25 @@
                             ])
                         </div>
                     @endif
-                    </div>
 
-                    @if (count($anexosLista) > 0)
-                        @foreach (collect($anexosLista)->chunk(4) as $pageIndex => $anexosPagina)
-                            <div class="page-break"></div>
-                            <div class="anexos-page">
-                                @include('presupuestos.partials.presupuesto-pdf-header-default', ['headerCompact' => true])
-                                <div class="anexos-preview-header">
-                                    <div class="anexos-preview-title">Anexos</div>
-                                </div>
-
-                                @foreach ($anexosPagina as $index => $anexo)
-                                    @php
-                                        $numeroAnexo = (($pageIndex * 4) + $index + 1);
-                                    @endphp
-                                    <div class="anexo-simple">
-                                        <table class="anexo-simple-table">
-                                            <tr>
-                                                @if (!empty($anexo['archivo_base64']))
-                                                    <td class="anexo-simple-media">
-                                                        <div class="anexo-simple-image-wrap">
-                                                            <img src="{{ $anexo['archivo_base64'] }}" alt="{{ $anexo['titulo'] ?? ('Anexo ' . (($anexo['orden'] ?? 0) ?: $numeroAnexo)) }}" class="anexo-simple-image" />
-                                                        </div>
-                                                    </td>
-                                                @endif
-                                                <td class="anexo-simple-text">
-                                                    <div class="anexo-simple-heading">{{ $anexo['titulo'] ?? '' }}</div>
-                                                    @if (!empty($anexo['descripcion']))
-                                                        <div class="anexo-simple-desc">{{ $anexo['descripcion'] }}</div>
-                                                    @endif
-                                                    @if (array_key_exists('precio', $anexo) && $anexo['precio'] !== null)
-                                                        <div class="anexo-simple-price">${{ number_format((float) $anexo['precio'], 2, '.', ',') }}</div>
-                                                    @endif
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @endforeach
+                    @if ($mostrarAtentamente)
+                        <div class="pdf-seccion-presupuesto__atentamente document-closing-atentamente">
+                            @include('presupuestos.partials.presupuesto-pdf-atentamente', ['variant' => 'default'])
+                        </div>
                     @endif
+                    </div>
                 </div>
+                </div>
+
+                @include('presupuestos.partials.presupuesto-pdf-seccion-anexos', [
+                    'anexosLista' => $anexosLista,
+                    'variant' => 'default',
+                ])
+
+                @include('presupuestos.partials.presupuesto-pdf-seccion-documentacion', [
+                    'documentacionLista' => $documentacionLista,
+                    'variant' => 'default',
+                ])
             </div>
             @include('presupuestos.partials.presupuesto-pdf-page-scripts', [
                 'margenMm' => $margenMm,
@@ -1263,6 +1258,7 @@
                 'pdfVariant' => 'default',
                 'gapAtentamenteFooterMm' => $gapAtentamenteFooterMm,
                 'espacioTrasTituloAtentamenteMm' => $espacioTrasTituloAtentamenteMm,
+                'atentamenteEnPieDePagina' => false,
             ])
         </body>
 
