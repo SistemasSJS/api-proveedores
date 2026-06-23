@@ -23,6 +23,7 @@
 
     $atentamenteEnPieDePagina = (bool) ($atentamenteEnPieDePagina ?? false);
     $paginasTrasSeccionPresupuesto = max(0, (int) ($paginasTrasSeccionPresupuesto ?? 0));
+    $saltoPaginaAntesAtentamente = (bool) ($saltoPaginaAntesAtentamente ?? false);
 
     $atentamentePageScript = '';
     if ($atentamenteEnPieDePagina && count($atentamentePieLineas) > 0) {
@@ -101,6 +102,15 @@ SCRIPT;
     }
 
     $atentamentePageScriptExport = var_export($atentamentePageScript, true);
+
+    $subencabezadoPageScript = PresupuestoPdf::generarPageScriptSubencabezadoPresupuesto(
+        $margenMm,
+        $paginasTrasSeccionPresupuesto,
+        $presupuesto,
+        $pdfVariant,
+        $saltoPaginaAntesAtentamente,
+    );
+    $subencabezadoPageScriptExport = var_export($subencabezadoPageScript, true);
 @endphp
 <script type="text/php">
 if (isset($pdf) && isset($fontMetrics)) {
@@ -114,6 +124,11 @@ if (isset($pdf) && isset($fontMetrics)) {
     $atentamentePieScript = {!! $atentamentePageScriptExport !!};
     if ($atentamentePieScript !== '') {
         $pdf->page_script($atentamentePieScript);
+    }
+
+    $subencabezadoScript = {!! $subencabezadoPageScriptExport !!};
+    if ($subencabezadoScript !== '') {
+        $pdf->page_script($subencabezadoScript);
     }
 }
 </script>

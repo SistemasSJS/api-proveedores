@@ -1,5 +1,6 @@
         @php
             use App\Support\PresupuestoPdf;
+            use App\Support\PresupuestoPdfLayout;
 
             $margenMm = 25.4;
             $footerHeightMm = 25.4; // Espacio reservado para pie de página en cada hoja (carta)
@@ -15,13 +16,12 @@
             $documentacionLista = $presupuesto['documentacion_adjuntos'] ?? [];
             $haySeccionAnexos = count($anexosLista) > 0;
             $haySeccionDocumentacion = count($documentacionLista) > 0;
-            $saltoTrasSeccionPresupuesto = $haySeccionAnexos || $haySeccionDocumentacion;
             $mostrarAtentamente = PresupuestoPdf::debeMostrarBloqueAtentamenteDesdePayload($presupuesto);
             $paginasAnexosPdf = $haySeccionAnexos ? (int) ceil(count($anexosLista) / 4) : 0;
             $paginasDocumentacionPdf = $haySeccionDocumentacion ? count($documentacionLista) : 0;
             $paginasTrasSeccionPresupuesto = $paginasAnexosPdf + $paginasDocumentacionPdf;
+            $cierreAtentamente = PresupuestoPdfLayout::calcularCierreAtentamente($presupuesto, 'default');
             $atentamenteEnPieDePaginaPdf = $mostrarAtentamente;
-            // Pie corporativo fijo; padding grande en body generaba hoja en blanco y Atentamente (page_script) quedaba ahí.
             $bodyPaddingBottomMm = 4;
             $tieneBloqueTerminos = count($terminosLista) > 0
                 || count($validacionesLista) > 0
@@ -108,8 +108,14 @@
                     width: 100%;
                 }
 
-                .pdf-seccion--presupuesto.pdf-seccion--salto-siguiente {
-                    page-break-after: always;
+                .presupuesto-reserva-atentamente-pie {
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                    page-break-inside: avoid;
+                    page-break-after: avoid;
+                    margin: 0;
+                    padding: 0;
                 }
 
                 .pdf-seccion-presupuesto__atentamente {
@@ -1073,7 +1079,7 @@
             </div>
 
             <div class="margin-sides">
-                <div class="pdf-seccion pdf-seccion--presupuesto{{ $saltoTrasSeccionPresupuesto ? ' pdf-seccion--salto-siguiente' : '' }}">
+                <div class="pdf-seccion pdf-seccion--presupuesto">
                 <div class="document-container">
                     <div class="document-main">
                         <!-- 1) ENCABEZADO -->
@@ -1226,10 +1232,25 @@
                         </div>
                     @endif
 
-                    @if ($mostrarAtentamente && ! $atentamenteEnPieDePaginaPdf)
-                        <div class="pdf-seccion-presupuesto__atentamente document-closing-atentamente">
-                            @include('presupuestos.partials.presupuesto-pdf-atentamente', ['variant' => 'default'])
-                        </div>
+                    @if ($mostrarAtentamente)
+                        @if ($cierreAtentamente['salto_pagina_antes'])
+                            <div class="page-break"></div>
+                            @include('presupuestos.partials.presupuesto-pdf-header-default', ['headerCompact' => true])
+                        @endif
+                        @if ($atentamenteEnPieDePaginaPdf)
+                            <div
+                                class="presupuesto-reserva-atentamente-pie"
+                                aria-hidden="true"
+                                style="height: {{ $cierreAtentamente['reserva_pie_html_mm'] ?? 32 }}mm; min-height: {{ $cierreAtentamente['reserva_pie_html_mm'] ?? 32 }}mm;"
+                            ></div>
+                        @else
+                            @if (($cierreAtentamente['espaciador_mm'] ?? 0) > 2)
+                                <div class="document-main-spacer" style="height: {{ $cierreAtentamente['espaciador_mm'] }}mm; min-height: {{ $cierreAtentamente['espaciador_mm'] }}mm;"></div>
+                            @endif
+                            <div class="pdf-seccion-presupuesto__atentamente document-closing-atentamente">
+                                @include('presupuestos.partials.presupuesto-pdf-atentamente', ['variant' => 'default'])
+                            </div>
+                        @endif
                     @endif
                         </div>
                     @endif
@@ -1255,6 +1276,7 @@
                 'espacioTrasTituloAtentamenteMm' => $espacioTrasTituloAtentamenteMm,
                 'atentamenteEnPieDePagina' => $atentamenteEnPieDePaginaPdf,
                 'paginasTrasSeccionPresupuesto' => $paginasTrasSeccionPresupuesto,
+                'saltoPaginaAntesAtentamente' => (bool) ($cierreAtentamente['salto_pagina_antes'] ?? false),
             ])
         </body>
 

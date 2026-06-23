@@ -87,6 +87,11 @@
                     outline: 1px solid #660099;
                 }
 
+                .terms-block--pagina-siguiente,
+                .presupuesto-cierre-terminos-atentamente {
+                    outline: 1px solid #6633cc;
+                }
+
                 .terminos-section,
                 .tw-terms {
                     outline: 1px solid #cc00ff;

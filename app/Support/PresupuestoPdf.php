@@ -749,4 +749,132 @@ final class PresupuestoPdf
 
         return $lines;
     }
+
+    /**
+     * Datos para subencabezado compacto (páginas 2+ de la sección presupuesto).
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{
+     *     nombre: string,
+     *     rfc: ?string,
+     *     contacto: ?string,
+     *     folio: string,
+     *     fecha: string
+     * }
+     */
+    public static function datosSubencabezadoCompactoDesdePayload(array $payload): array
+    {
+        $p = $payload['proveedor'] ?? null;
+        $emisorComercial = trim((string) ($p->nombre_comercial ?? ''));
+        $emisorRazonSocial = trim((string) ($p->razon_social ?? ''));
+        $nombre = $emisorComercial !== ''
+            ? $emisorComercial
+            : ($emisorRazonSocial !== '' ? $emisorRazonSocial : 'Empresa Proveedora');
+
+        $configId = (int) ($payload['config_emisor_presupuesto_id'] ?? 0);
+        $contacto = null;
+        if ($configId > 0) {
+            $contacto = trim((string) ($payload['empresa_emisora_nombre'] ?? ''));
+            if ($contacto === '') {
+                $contacto = null;
+            }
+        }
+
+        $fecha = $payload['fecha_emision'] ?? now();
+        if (is_string($fecha)) {
+            $fecha = \Carbon\Carbon::parse($fecha);
+        }
+        $fechaFormateada = $fecha->locale('es')->translatedFormat('d \d\e F \d\e\l Y');
+
+        return [
+            'nombre' => mb_strtoupper($nombre, 'UTF-8'),
+            'rfc' => trim((string) ($p->rfc ?? '')) ?: null,
+            'contacto' => $contacto !== null ? mb_strtoupper($contacto, 'UTF-8') : null,
+            'folio' => (string) ($payload['numero_presupuesto'] ?? 'PRES-000001'),
+            'fecha' => $fechaFormateada,
+        ];
+    }
+
+    /**
+     * DomPDF page_script: subencabezado en páginas de continuación de la sección presupuesto (no anexos/doc).
+     */
+    public static function generarPageScriptSubencabezadoPresupuesto(
+        float $margenMm,
+        int $paginasTrasSeccionPresupuesto,
+        array $payload,
+        string $variant = 'tailwind',
+        bool $saltoPaginaAntesAtentamente = false,
+    ): string {
+        $datos = self::datosSubencabezadoCompactoDesdePayload($payload);
+        $mmToPt = static fn (float $mm): int => (int) round($mm * 2.834645669);
+        $x = $mmToPt($margenMm);
+        $primary = $variant === 'tailwind' ? self::hexColorToPdfRgb('#2563eb') : self::hexColorToPdfRgb('#3498db');
+        $textDark = self::hexColorToPdfRgb('#111827');
+        $textMuted = self::hexColorToPdfRgb('#475569');
+
+        $nombreEsc = addcslashes($datos['nombre'], "\\'");
+        $folioEsc = addcslashes($datos['folio'], "\\'");
+        $fechaEsc = addcslashes($datos['fecha'], "\\'");
+        $rfcEsc = $datos['rfc'] !== null ? addcslashes($datos['rfc'], "\\'") : '';
+        $contactoEsc = $datos['contacto'] !== null ? addcslashes($datos['contacto'], "\\'") : '';
+        $paginasTrasPhp = max(0, $paginasTrasSeccionPresupuesto);
+        $saltoAtentamentePhp = $saltoPaginaAntesAtentamente ? 'true' : 'false';
+        $r = $primary[0];
+        $g = $primary[1];
+        $b = $primary[2];
+        $dr = $textDark[0];
+        $dg = $textDark[1];
+        $db = $textDark[2];
+        $mr = $textMuted[0];
+        $mg = $textMuted[1];
+        $mb = $textMuted[2];
+
+        return <<<SCRIPT
+\$paginasTrasPresupuesto = {$paginasTrasPhp};
+if (\$paginasTrasPresupuesto > 0) {
+    \$ultimaPaginaPresupuesto = \$PAGE_COUNT - \$paginasTrasPresupuesto;
+} else {
+    \$ultimaPaginaPresupuesto = \$PAGE_COUNT;
+}
+if (\$ultimaPaginaPresupuesto < 1) {
+    \$ultimaPaginaPresupuesto = 1;
+}
+if (\$PAGE_NUM <= 1 || \$PAGE_NUM > \$ultimaPaginaPresupuesto) {
+    return;
+}
+\$saltoAtentamente = {$saltoAtentamentePhp};
+if (\$saltoAtentamente && \$PAGE_NUM === \$ultimaPaginaPresupuesto) {
+    return;
+}
+\$fontBold = \$fontMetrics->getFont('DejaVu Sans', 'bold');
+\$fontNorm = \$fontMetrics->getFont('DejaVu Sans', 'normal');
+\$pageWidth = \$pdf->get_width();
+\$y = {$mmToPt(12.0)};
+\$pdf->text({$x}, \$y, '{$nombreEsc}', \$fontBold, 8.5, array({$dr}, {$dg}, {$db}));
+\$folioWidth = \$fontMetrics->getTextWidth('{$folioEsc}', \$fontBold, 11);
+\$pdf->text(\$pageWidth - {$x} - \$folioWidth, \$y - 2, '{$folioEsc}', \$fontBold, 11, array({$r}, {$g}, {$b}));
+\$y += 11;
+\$pdf->text({$x}, \$y, 'PRESUPUESTO', \$fontNorm, 6, array({$r}, {$g}, {$b}));
+\$fechaWidth = \$fontMetrics->getTextWidth('{$fechaEsc}', \$fontNorm, 6.5);
+\$pdf->text(\$pageWidth - {$x} - \$fechaWidth, \$y, '{$fechaEsc}', \$fontNorm, 6.5, array({$mr}, {$mg}, {$mb}));
+SCRIPT
+            .($datos['rfc'] !== null ? <<<SCRIPT
+
+\$y += 9;
+\$pdf->text({$x}, \$y, '{$rfcEsc}', \$fontNorm, 7, array({$mr}, {$mg}, {$mb}));
+SCRIPT
+                : '')
+            .($datos['contacto'] !== null ? <<<SCRIPT
+
+\$y += 9;
+\$pdf->text({$x}, \$y, '{$contactoEsc}', \$fontNorm, 7, array({$mr}, {$mg}, {$mb}));
+SCRIPT
+                : '')
+            .<<<SCRIPT
+
+\$y += 10;
+\$lineY = \$y;
+\$pdf->line({$x}, \$lineY, \$pageWidth - {$x}, \$lineY, array({$r}, {$g}, {$b}), 1.5);
+SCRIPT;
+    }
 }
