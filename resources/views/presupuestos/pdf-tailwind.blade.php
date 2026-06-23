@@ -18,6 +18,10 @@
     $haySeccionDocumentacion = count($documentacionLista) > 0;
     $saltoTrasSeccionPresupuesto = $haySeccionAnexos || $haySeccionDocumentacion;
     $mostrarAtentamente = PresupuestoPdf::debeMostrarBloqueAtentamenteDesdePayload($presupuesto);
+    $paginasAnexosPdf = $haySeccionAnexos ? (int) ceil(count($anexosLista) / 4) : 0;
+    $paginasDocumentacionPdf = $haySeccionDocumentacion ? count($documentacionLista) : 0;
+    $paginasTrasSeccionPresupuesto = $paginasAnexosPdf + $paginasDocumentacionPdf;
+    $atentamenteEnPieDePaginaPdf = $mostrarAtentamente;
     $tieneBloqueTerminos = count($terminosLista) > 0
         || count($validacionesLista) > 0
         || count($observacionesLista) > 0;
@@ -27,7 +31,8 @@
     $presupuestoTableHeaderCss = $presupuestoThemeService->generateTableHeaderCss($pdfThemeKey);
     $thColors = $presupuestoThemeService->tableHeaderColors($pdfThemeKey);
     $thCellStyle = 'background-color:'.$thColors['bg'].';color:'.$thColors['text'].';border:1px solid '.$thColors['border'].';';
-    $bodyPaddingBottomMm = $footerHeightMm;
+    $bodyPaddingBottomMm = 4;
+    $pdfDebugBordesContenedores = false;
 @endphp
 <!DOCTYPE html>
 <html lang="es">
@@ -113,7 +118,6 @@
     }
 
     .document-main {
-        min-height: auto;
         display: block;
     }
 
@@ -126,9 +130,10 @@
     }
 
     .pdf-seccion-presupuesto__atentamente {
-        margin-top: 4mm;
+        margin-top: 0;
         margin-bottom: {{ $gapAtentamenteFooterMm }}mm;
-        page-break-inside: avoid;
+        page-break-inside: auto;
+        page-break-before: avoid;
     }
 
     .pdf-seccion--anexos,
@@ -158,8 +163,13 @@
     .document-closing-atentamente {
         flex: 0 0 auto;
         width: 100%;
-        page-break-inside: avoid;
+        page-break-inside: auto;
+        page-break-before: avoid;
         page-break-after: avoid;
+    }
+
+    .presupuesto-cierre-terminos-atentamente {
+        width: 100%;
     }
 
     .terms-block--after-presupuesto {
@@ -183,11 +193,11 @@
 
     .atentamente-plain {
         width: 100%;
-        margin: 4mm 0 0 0;
-        padding: 0 0 {{ max(14, (int) round($atentamenteReserveMm * 0.6)) }}mm 0;
+        margin: 0;
+        padding: 0 0 {{ $gapAtentamenteFooterMm }}mm 0;
         background: transparent;
         border: none;
-        page-break-inside: avoid;
+        page-break-inside: auto;
         max-width: 90mm;
     }
 
@@ -961,6 +971,8 @@
         height: 100%;
         object-fit: contain;
     }
+
+    @include('presupuestos.partials.presupuesto-pdf-debug-bordes-css')
 </style>
 </head>
 
@@ -1140,6 +1152,8 @@
             </div>
             @endif
 
+            @if ($tieneBloqueTerminos || $mostrarAtentamente)
+                <div class="presupuesto-cierre-terminos-atentamente">
             @if ($tieneBloqueTerminos)
                 <div class="terms-block terms-block--after-presupuesto">
                     @include('presupuestos.partials.presupuesto-pdf-terminos', [
@@ -1151,9 +1165,11 @@
                 </div>
             @endif
 
-            @if ($mostrarAtentamente)
+            @if ($mostrarAtentamente && ! $atentamenteEnPieDePaginaPdf)
                 <div class="pdf-seccion-presupuesto__atentamente document-closing-atentamente">
                     @include('presupuestos.partials.presupuesto-pdf-atentamente', ['variant' => 'tailwind'])
+                </div>
+            @endif
                 </div>
             @endif
         </div>
@@ -1177,7 +1193,8 @@
         'pdfThemeKey' => $pdfThemeKey,
         'gapAtentamenteFooterMm' => $gapAtentamenteFooterMm,
         'espacioTrasTituloAtentamenteMm' => $espacioTrasTituloAtentamenteMm,
-        'atentamenteEnPieDePagina' => false,
+        'atentamenteEnPieDePagina' => $atentamenteEnPieDePaginaPdf,
+        'paginasTrasSeccionPresupuesto' => $paginasTrasSeccionPresupuesto,
     ])
 </body>
 

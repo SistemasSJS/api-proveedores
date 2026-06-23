@@ -22,6 +22,7 @@
     $mmToPt = static fn (float $mm): int => (int) round($mm * 2.834645669);
 
     $atentamenteEnPieDePagina = (bool) ($atentamenteEnPieDePagina ?? false);
+    $paginasTrasSeccionPresupuesto = max(0, (int) ($paginasTrasSeccionPresupuesto ?? 0));
 
     $atentamentePageScript = '';
     if ($atentamenteEnPieDePagina && count($atentamentePieLineas) > 0) {
@@ -42,8 +43,18 @@
             json_encode($atentamentePieLineas, JSON_UNESCAPED_UNICODE),
             "\\'"
         );
+        $paginasTrasPresupuestoPhp = $paginasTrasSeccionPresupuesto;
         $atentamentePageScript = <<<SCRIPT
-if (\$PAGE_NUM != \$PAGE_COUNT) {
+\$paginasTrasPresupuesto = {$paginasTrasPresupuestoPhp};
+if (\$paginasTrasPresupuesto > 0) {
+    \$ultimaPaginaPresupuesto = \$PAGE_COUNT - \$paginasTrasPresupuesto;
+} else {
+    \$ultimaPaginaPresupuesto = \$PAGE_COUNT;
+}
+if (\$ultimaPaginaPresupuesto < 1) {
+    \$ultimaPaginaPresupuesto = 1;
+}
+if (\$PAGE_NUM != \$ultimaPaginaPresupuesto) {
     return;
 }
 \$lineas = json_decode('{$jsonEsc}', true);
