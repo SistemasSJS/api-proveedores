@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Presupuesto;
 use App\Models\Proveedor;
+use App\Services\Presupuesto\PresupuestoThemeService;
 use BaconQrCode\Renderer\GDLibRenderer;
 use BaconQrCode\Writer;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -840,6 +841,73 @@ final class PresupuestoPdf
     }
 
     /**
+     * Variables del tema visual del presupuesto (estampado PDF, subencabezado, etc.).
+     *
+     * @return array<string, string|float>
+     */
+    public static function variablesTemaResueltas(?string $pdfThemeKey): array
+    {
+        $service = app(PresupuestoThemeService::class);
+        $key = $service->resolveThemeKey($pdfThemeKey);
+
+        return $service->getTheme($key)['variables'];
+    }
+
+    /**
+     * Colores de estampado en RGB 0–1 (DomPDF).
+     *
+     * @return array{
+     *     primary: array{0: float, 1: float, 2: float},
+     *     heading: array{0: float, 1: float, 2: float},
+     *     muted: array{0: float, 1: float, 2: float}
+     * }
+     */
+    public static function coloresEstampadoPdfRgb(?string $pdfThemeKey): array
+    {
+        $variables = self::variablesTemaResueltas($pdfThemeKey);
+
+        return [
+            'primary' => self::hexColorToPdfRgb((string) ($variables['color-primary'] ?? '#2563eb')),
+            'heading' => self::hexColorToPdfRgb((string) ($variables['color-heading'] ?? '#1e293b')),
+            'muted' => self::hexColorToPdfRgb((string) ($variables['color-slate-600'] ?? '#475569')),
+        ];
+    }
+
+    /**
+     * Paleta de estampado FPDI (RGB 0–255).
+     *
+     * @return array{
+     *     primary: array{0: int, 1: int, 2: int},
+     *     heading: array{0: int, 1: int, 2: int},
+     *     border: array{0: int, 1: int, 2: int}
+     * }
+     */
+    public static function paletteEstampadoFpdiRgb255(?string $pdfThemeKey): array
+    {
+        $variables = self::variablesTemaResueltas($pdfThemeKey);
+
+        return [
+            'primary' => self::hexToRgb255((string) ($variables['color-primary'] ?? '#2563eb')),
+            'heading' => self::hexToRgb255((string) ($variables['color-heading'] ?? '#1e293b')),
+            'border' => self::hexToRgb255((string) ($variables['color-slate-200'] ?? '#e2e8f0')),
+        ];
+    }
+
+    /**
+     * @return array{0: int, 1: int, 2: int}
+     */
+    public static function hexToRgb255(string $hex): array
+    {
+        $normalized = self::hexColorToPdfRgb($hex);
+
+        return [
+            (int) round($normalized[0] * 255),
+            (int) round($normalized[1] * 255),
+            (int) round($normalized[2] * 255),
+        ];
+    }
+
+    /**
      * DomPDF page_script: subencabezado compacto (como anexos) desde la página 2 en todo el documento.
      */
     public static function generarPageScriptSubencabezadoPresupuesto(
@@ -850,14 +918,16 @@ final class PresupuestoPdf
         bool $saltoPaginaAntesAtentamente = false,
         ?string $logoImagePath = null,
     ): string {
-        unset($paginasTrasSeccionPresupuesto, $saltoPaginaAntesAtentamente);
+        unset($paginasTrasSeccionPresupuesto, $saltoPaginaAntesAtentamente, $variant);
 
         $datos = self::datosSubencabezadoCompactoDesdePayload($payload);
         $mmToPt = static fn (float $mm): int => (int) round($mm * 2.834645669);
         $x = $mmToPt($margenMm);
-        $primary = $variant === 'tailwind' ? self::hexColorToPdfRgb('#2563eb') : self::hexColorToPdfRgb('#3498db');
-        $textDark = self::hexColorToPdfRgb('#111827');
-        $textMuted = self::hexColorToPdfRgb('#475569');
+        $pdfTheme = isset($payload['pdf_theme']) ? (string) $payload['pdf_theme'] : null;
+        $estampado = self::coloresEstampadoPdfRgb($pdfTheme !== '' ? $pdfTheme : null);
+        $primary = $estampado['primary'];
+        $textDark = $estampado['heading'];
+        $textMuted = $estampado['muted'];
 
         $nombreEsc = addcslashes($datos['nombre'], "\\'");
         $folioEsc = addcslashes($datos['folio'], "\\'");

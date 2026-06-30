@@ -3,7 +3,6 @@
 namespace App\Support;
 
 use App\Models\Presupuesto;
-use App\Services\Presupuesto\PresupuestoThemeService;
 
 /**
  * Encabezado de estampado para hojas de anexo PDF (inspirado en subencabezado compacto del presupuesto;
@@ -84,15 +83,7 @@ final class PresupuestoPdfAnexoEstampado
      */
     private static function paletteDesdePresupuesto(Presupuesto $presupuesto): array
     {
-        $service = app(PresupuestoThemeService::class);
-        $themeKey = $service->resolveThemeKey($presupuesto->pdf_theme);
-        $variables = $service->getTheme($themeKey)['variables'];
-
-        return [
-            'primary' => self::hexToRgb255((string) ($variables['color-primary'] ?? '#2563eb')),
-            'heading' => self::hexToRgb255((string) ($variables['color-heading'] ?? '#1e293b')),
-            'border' => self::hexToRgb255((string) ($variables['color-slate-200'] ?? '#e2e8f0')),
-        ];
+        return PresupuestoPdf::paletteEstampadoFpdiRgb255($presupuesto->pdf_theme);
     }
 
     /**
@@ -135,20 +126,6 @@ final class PresupuestoPdfAnexoEstampado
         }
 
         $pdf->SetTextColor($rgb[0], $rgb[1], $rgb[2]);
-    }
-
-    /**
-     * @return array{0: int, 1: int, 2: int}
-     */
-    private static function hexToRgb255(string $hex): array
-    {
-        $normalized = PresupuestoPdf::hexColorToPdfRgb($hex);
-
-        return [
-            (int) round($normalized[0] * 255),
-            (int) round($normalized[1] * 255),
-            (int) round($normalized[2] * 255),
-        ];
     }
 
     private static function truncar(string $text, int $maxLen): string
