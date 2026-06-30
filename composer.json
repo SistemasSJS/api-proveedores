@@ -24,6 +24,8 @@
         "maatwebsite/excel": "^1.1",
         "predis/predis": "^2.0",
         "pusher/pusher-php-server": "^7.2",
+        "setasign/fpdf": "1.8",
+        "setasign/fpdi": "2.6",
         "smalot/pdfparser": "^2.12",
         "spatie/laravel-query-builder": "^6.3",
         "spatie/pdf-to-text": "^1.54",

@@ -21,10 +21,13 @@ final class PresupuestoPdf
      */
     public static function generarPdf(Presupuesto $presupuesto): Response
     {
-        $pdf = self::buildPdf($presupuesto);
+        $binary = self::renderPdfBinary($presupuesto);
         $filename = "Presupuesto_{$presupuesto->numero_presupuesto}.pdf";
 
-        return $pdf->download($filename);
+        return response($binary, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+        ]);
     }
 
     /**
@@ -32,7 +35,9 @@ final class PresupuestoPdf
      */
     public static function renderPdfBinary(Presupuesto $presupuesto): string
     {
-        return self::buildPdf($presupuesto)->output();
+        $main = self::buildPdf($presupuesto)->output();
+
+        return PresupuestoPdfAnexoMerger::unirSiHayAnexos($presupuesto, $main);
     }
 
     private static function buildPdf(Presupuesto $presupuesto)

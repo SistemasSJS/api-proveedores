@@ -25,6 +25,7 @@ use App\Http\Controllers\ProveedorOrdenCompraController;
 use App\Http\Controllers\ProveedorPresupuestoController;
 use App\Http\Controllers\ProveedorPresupuestoCarteraClientesController;
 use App\Http\Controllers\ProveedorPresupuestoAnexoController;
+use App\Http\Controllers\ProveedorPresupuestoAnexoPdfController;
 use App\Http\Controllers\ProveedorPresupuestoConfigController;
 
 /**
@@ -253,6 +254,15 @@ Route::prefix('proveedores')
                     Route::post('/{anexo}', [ProveedorPresupuestoAnexoController::class, 'update']);
                     Route::patch('/{anexo}', [ProveedorPresupuestoAnexoController::class, 'update']);
                     Route::delete('/{anexo}', [ProveedorPresupuestoAnexoController::class, 'destroy']);
+                });
+
+                Route::prefix('{presupuesto}/anexos-pdf')->group(function () {
+                    Route::get('/', [ProveedorPresupuestoAnexoPdfController::class, 'index']);
+                    Route::post('/', [ProveedorPresupuestoAnexoPdfController::class, 'store']);
+                    Route::get('/{anexoPdf}', [ProveedorPresupuestoAnexoPdfController::class, 'show']);
+                    Route::post('/{anexoPdf}', [ProveedorPresupuestoAnexoPdfController::class, 'update']);
+                    Route::patch('/{anexoPdf}', [ProveedorPresupuestoAnexoPdfController::class, 'update']);
+                    Route::delete('/{anexoPdf}', [ProveedorPresupuestoAnexoPdfController::class, 'destroy']);
                 });
 
                 Route::patch('/{presupuesto}/pdf-theme', [ProveedorPresupuestoController::class, 'updatePdfTheme']);

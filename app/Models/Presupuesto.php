@@ -655,6 +655,7 @@ class Presupuesto extends BaseModel
             'user',
             'conceptos',
             'anexos',
+            'anexosPdf',
         ];
     }
 
@@ -824,6 +825,14 @@ class Presupuesto extends BaseModel
     public function anexos(): HasMany
     {
         return $this->hasMany(PresupuestoAnexo::class)->orderBy('orden')->orderBy('id');
+    }
+
+    /**
+     * Anexos PDF (se concatenan al final del PDF generado).
+     */
+    public function anexosPdf(): HasMany
+    {
+        return $this->hasMany(PresupuestoAnexoPdf::class)->orderBy('orden')->orderBy('id');
     }
 
     // public function estadoLogs(): HasMany

@@ -183,6 +183,7 @@ class PresupuestoResource extends JsonResource
             'empresa_emisora_nombre_comercial' => $this->empresa_emisora_nombre_comercial,
             'conceptos' => PresupuestoConceptoResource::collection($this->whenLoaded('conceptos')),
             'anexos' => PresupuestoAnexoResource::collection($this->whenLoaded('anexos')),
+            'anexos_pdf' => PresupuestoAnexoPdfResource::collection($this->whenLoaded('anexosPdf')),
             // 'estado_logs' => PresupuestoEstadoLogResource::collection($this->whenLoaded('estadoLogs')),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
