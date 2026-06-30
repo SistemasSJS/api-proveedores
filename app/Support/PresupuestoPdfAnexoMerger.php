@@ -72,11 +72,11 @@ final class PresupuestoPdfAnexoMerger
                 continue;
             }
 
-            $titulo = (string) $anexo->titulo;
-
             for ($page = 1; $page <= $total; $page++) {
                 self::importarPaginaSinEstampado($pdf, $abs, $page);
-                PresupuestoPdfAnexoEstampado::aplicar($pdf, $presupuesto, $titulo, $page, $total);
+                if ($anexo->mostrar_estampado ?? true) {
+                    PresupuestoPdfAnexoEstampado::aplicar($pdf, $presupuesto, $anexo, $page, $total);
+                }
             }
         }
 

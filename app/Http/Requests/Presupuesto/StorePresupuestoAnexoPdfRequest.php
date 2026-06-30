@@ -20,6 +20,9 @@ class StorePresupuestoAnexoPdfRequest extends FormRequest
         return [
             'titulo' => ['nullable', 'string', 'max:40'],
             'orden' => ['nullable', 'integer', 'min:1'],
+            'mostrar_estampado' => ['nullable', 'boolean'],
+            'mostrar_numero_pagina' => ['nullable', 'boolean'],
+            'mostrar_datos_presupuesto' => ['nullable', 'boolean'],
             'archivo_base64' => [
                 'required',
                 'string',

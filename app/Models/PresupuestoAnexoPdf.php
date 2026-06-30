@@ -22,11 +22,17 @@ class PresupuestoAnexoPdf extends BaseModel
         'orden',
         'archivo_path',
         'paginas',
+        'mostrar_estampado',
+        'mostrar_numero_pagina',
+        'mostrar_datos_presupuesto',
     ];
 
     protected $casts = [
         'orden' => 'integer',
         'paginas' => 'integer',
+        'mostrar_estampado' => 'boolean',
+        'mostrar_numero_pagina' => 'boolean',
+        'mostrar_datos_presupuesto' => 'boolean',
     ];
 
     /**

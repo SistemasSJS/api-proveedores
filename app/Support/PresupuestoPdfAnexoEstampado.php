@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Presupuesto;
+use App\Models\PresupuestoAnexoPdf;
 
 /**
  * Encabezado de estampado para hojas de anexo PDF (inspirado en subencabezado compacto del presupuesto;
@@ -16,11 +17,13 @@ final class PresupuestoPdfAnexoEstampado
     public static function aplicar(
         PresupuestoAnexoFpdi $pdf,
         Presupuesto $presupuesto,
-        string $tituloAnexo,
+        PresupuestoAnexoPdf $anexo,
         int $page,
         int $total
     ): void {
         $palette = self::paletteDesdePresupuesto($presupuesto);
+        $mostrarNumero = (bool) ($anexo->mostrar_numero_pagina ?? true);
+        $mostrarDatos = (bool) ($anexo->mostrar_datos_presupuesto ?? true);
 
         $pageWidth = $pdf->GetPageWidth();
         $marginX = min(25.0, max(8.0, $pageWidth * 0.08));
@@ -34,22 +37,34 @@ final class PresupuestoPdfAnexoEstampado
         $radius = 5.0;
         $circleGap = 2.5;
         $circleCx = $marginX + $radius;
-        self::dibujarBadgePagina($pdf, $circleCx, $rowCenterY, $radius, $page, $total, $palette['primary']);
+
+        if ($mostrarNumero) {
+            self::dibujarBadgePagina($pdf, $circleCx, $rowCenterY, $radius, $page, $total, $palette['primary']);
+        }
 
         $folio = (string) ($presupuesto->numero_presupuesto ?? '');
         $folioLabel = 'ANEXO';
 
-        $pdf->SetFont('Helvetica', 'B', 10);
-        $folioW = $folio !== '' ? $pdf->GetStringWidth($folio) : 0;
-        $pdf->SetFont('Helvetica', '', 5.5);
-        $labelW = $pdf->GetStringWidth($folioLabel);
-        $rightColW = max($folioW, $labelW);
-        $rightX = $pageWidth - $marginX - $rightColW;
+        $rightColW = 0.0;
+        $rightX = $pageWidth - $marginX;
+        if ($mostrarDatos) {
+            $pdf->SetFont('Helvetica', 'B', 10);
+            $folioW = $folio !== '' ? $pdf->GetStringWidth($folio) : 0;
+            $pdf->SetFont('Helvetica', '', 5.5);
+            $labelW = $pdf->GetStringWidth($folioLabel);
+            $rightColW = max($folioW, $labelW);
+            $rightX = $pageWidth - $marginX - $rightColW;
+        }
 
-        $textX = $circleCx + $radius + $circleGap;
+        $textX = $mostrarNumero
+            ? $circleCx + $radius + $circleGap
+            : $marginX;
         $textMaxW = max(20.0, $rightX - $textX - 3.0);
 
-        $tituloRaw = trim($tituloAnexo !== '' ? $tituloAnexo : 'Anexo PDF');
+        $tituloRaw = trim((string) ($anexo->titulo ?? ''));
+        if ($tituloRaw === '') {
+            $tituloRaw = 'Anexo PDF';
+        }
         $titulo = self::textoPdf(mb_strtoupper($tituloRaw, 'UTF-8'));
 
         $pdf->SetFont('Helvetica', 'B', 7.5);
@@ -58,18 +73,20 @@ final class PresupuestoPdfAnexoEstampado
         $pdf->SetXY($textX, $rowCenterY - ($titleLineH / 2));
         $pdf->Cell($textMaxW, $titleLineH, self::truncar($titulo, 52), 0, 0, 'L');
 
-        $rightBlockH = 9.0;
-        $rightTop = $rowCenterY - ($rightBlockH / 2);
-        $pdf->SetFont('Helvetica', '', 5.5);
-        self::aplicarColorRgb($pdf, 'text', $palette['primary']);
-        $pdf->SetXY($rightX, $rightTop);
-        $pdf->Cell($rightColW, 3.0, $folioLabel, 0, 2, 'R');
-
-        if ($folio !== '') {
-            $pdf->SetFont('Helvetica', 'B', 10);
+        if ($mostrarDatos) {
+            $rightBlockH = 9.0;
+            $rightTop = $rowCenterY - ($rightBlockH / 2);
+            $pdf->SetFont('Helvetica', '', 5.5);
             self::aplicarColorRgb($pdf, 'text', $palette['primary']);
-            $pdf->SetXY($rightX, $rightTop + 3.2);
-            $pdf->Cell($rightColW, 4.5, $folio, 0, 0, 'R');
+            $pdf->SetXY($rightX, $rightTop);
+            $pdf->Cell($rightColW, 3.0, $folioLabel, 0, 2, 'R');
+
+            if ($folio !== '') {
+                $pdf->SetFont('Helvetica', 'B', 10);
+                self::aplicarColorRgb($pdf, 'text', $palette['primary']);
+                $pdf->SetXY($rightX, $rightTop + 3.2);
+                $pdf->Cell($rightColW, 4.5, $folio, 0, 0, 'R');
+            }
         }
 
         $lineY = $bandTop + $bandHeight - 1.0;

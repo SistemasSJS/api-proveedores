@@ -57,6 +57,9 @@ class ProveedorPresupuestoAnexoPdfController extends Controller
                     : ((int) $presupuesto->anexosPdf()->max('orden') + 1),
                 'archivo_path' => $archivo['path'],
                 'paginas' => $archivo['paginas'],
+                'mostrar_estampado' => $this->booleanDesdeValidated($validated, 'mostrar_estampado', true),
+                'mostrar_numero_pagina' => $this->booleanDesdeValidated($validated, 'mostrar_numero_pagina', true),
+                'mostrar_datos_presupuesto' => $this->booleanDesdeValidated($validated, 'mostrar_datos_presupuesto', true),
             ])->fresh(PresupuestoAnexoPdf::eagerLodable());
 
             return $this->success(
@@ -114,6 +117,12 @@ class ProveedorPresupuestoAnexoPdfController extends Controller
                 $payload['paginas'] = $archivo['paginas'];
             }
 
+            foreach (['mostrar_estampado', 'mostrar_numero_pagina', 'mostrar_datos_presupuesto'] as $flag) {
+                if (array_key_exists($flag, $validated)) {
+                    $payload[$flag] = $this->booleanDesdeValidated($validated, $flag, true);
+                }
+            }
+
             $anexoPdf->update($payload);
 
             return $this->success(
@@ -155,6 +164,18 @@ class ProveedorPresupuestoAnexoPdfController extends Controller
         }
 
         return trim((string) $titulo);
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    private function booleanDesdeValidated(array $validated, string $key, bool $default): bool
+    {
+        if (! array_key_exists($key, $validated)) {
+            return $default;
+        }
+
+        return filter_var($validated[$key], FILTER_VALIDATE_BOOLEAN);
     }
 
     private function validateAccess(
