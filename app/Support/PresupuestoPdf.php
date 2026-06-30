@@ -796,7 +796,46 @@ final class PresupuestoPdf
     }
 
     /**
-     * DomPDF page_script: subencabezado en páginas de continuación de la sección presupuesto (no anexos/doc).
+     * Ruta temporal de logo para DomPDF page_script (reutiliza el mismo archivo por hash).
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    public static function prepararLogoParaPageScript(array $payload): ?string
+    {
+        $raw = $payload['logo_proveedor_base64'] ?? null;
+        if (! is_string($raw) || trim($raw) === '') {
+            return null;
+        }
+
+        $raw = trim($raw);
+        $mime = 'png';
+        if (str_starts_with($raw, 'data:image')) {
+            if (preg_match('#^data:image/(\w+);base64,#i', $raw, $m)) {
+                $mime = strtolower($m[1]);
+                if ($mime === 'jpeg') {
+                    $mime = 'jpg';
+                }
+            }
+            $parts = explode(',', $raw, 2);
+            $raw = $parts[1] ?? '';
+        }
+
+        $binary = base64_decode($raw, true);
+        if ($binary === false || $binary === '') {
+            return null;
+        }
+
+        $ext = in_array($mime, ['png', 'jpg', 'gif', 'webp'], true) ? $mime : 'png';
+        $path = sys_get_temp_dir().DIRECTORY_SEPARATOR.'presupuesto-pdf-logo-'.md5($binary).'.'.$ext;
+        if (! is_file($path)) {
+            file_put_contents($path, $binary);
+        }
+
+        return str_replace('\\', '/', $path);
+    }
+
+    /**
+     * DomPDF page_script: subencabezado compacto (como anexos) desde la página 2 en todo el documento.
      */
     public static function generarPageScriptSubencabezadoPresupuesto(
         float $margenMm,
@@ -804,7 +843,10 @@ final class PresupuestoPdf
         array $payload,
         string $variant = 'tailwind',
         bool $saltoPaginaAntesAtentamente = false,
+        ?string $logoImagePath = null,
     ): string {
+        unset($paginasTrasSeccionPresupuesto, $saltoPaginaAntesAtentamente);
+
         $datos = self::datosSubencabezadoCompactoDesdePayload($payload);
         $mmToPt = static fn (float $mm): int => (int) round($mm * 2.834645669);
         $x = $mmToPt($margenMm);
@@ -817,8 +859,10 @@ final class PresupuestoPdf
         $fechaEsc = addcslashes($datos['fecha'], "\\'");
         $rfcEsc = $datos['rfc'] !== null ? addcslashes($datos['rfc'], "\\'") : '';
         $contactoEsc = $datos['contacto'] !== null ? addcslashes($datos['contacto'], "\\'") : '';
-        $paginasTrasPhp = max(0, $paginasTrasSeccionPresupuesto);
-        $saltoAtentamentePhp = $saltoPaginaAntesAtentamente ? 'true' : 'false';
+        $logoPathEsc = $logoImagePath !== null && $logoImagePath !== ''
+            ? addcslashes(str_replace('\\', '/', $logoImagePath), "\\'")
+            : '';
+
         $r = $primary[0];
         $g = $primary[1];
         $b = $primary[2];
@@ -829,52 +873,55 @@ final class PresupuestoPdf
         $mg = $textMuted[1];
         $mb = $textMuted[2];
 
+        $logoMaxWPt = $mmToPt(26.0);
+        $logoMaxHPt = $mmToPt(15.0);
+        $logoGapPt = $mmToPt(2.5);
+        $bandTopPt = $mmToPt(10.0);
+        $bandHeightPt = $mmToPt(24.0);
+
         return <<<SCRIPT
-\$paginasTrasPresupuesto = {$paginasTrasPhp};
-if (\$paginasTrasPresupuesto > 0) {
-    \$ultimaPaginaPresupuesto = \$PAGE_COUNT - \$paginasTrasPresupuesto;
-} else {
-    \$ultimaPaginaPresupuesto = \$PAGE_COUNT;
-}
-if (\$ultimaPaginaPresupuesto < 1) {
-    \$ultimaPaginaPresupuesto = 1;
-}
-if (\$PAGE_NUM <= 1 || \$PAGE_NUM > \$ultimaPaginaPresupuesto) {
-    return;
-}
-\$saltoAtentamente = {$saltoAtentamentePhp};
-if (\$saltoAtentamente && \$PAGE_NUM === \$ultimaPaginaPresupuesto) {
+if (\$PAGE_NUM <= 1) {
     return;
 }
 \$fontBold = \$fontMetrics->getFont('DejaVu Sans', 'bold');
 \$fontNorm = \$fontMetrics->getFont('DejaVu Sans', 'normal');
 \$pageWidth = \$pdf->get_width();
-\$y = {$mmToPt(12.0)};
-\$pdf->text({$x}, \$y, '{$nombreEsc}', \$fontBold, 8.5, array({$dr}, {$dg}, {$db}));
-\$folioWidth = \$fontMetrics->getTextWidth('{$folioEsc}', \$fontBold, 11);
-\$pdf->text(\$pageWidth - {$x} - \$folioWidth, \$y - 2, '{$folioEsc}', \$fontBold, 11, array({$r}, {$g}, {$b}));
+\$x = {$x};
+\$y = {$bandTopPt};
+\$pdf->filled_rectangle(0, {$bandTopPt} - 4, \$pageWidth, {$bandHeightPt}, array(1, 1, 1));
+\$textX = \$x;
+if ('{$logoPathEsc}' !== '') {
+    \$logoW = {$logoMaxWPt};
+    \$logoH = {$logoMaxHPt};
+    \$pdf->image('{$logoPathEsc}', \$x, \$y, \$logoW, \$logoH);
+    \$textX = \$x + \$logoW + {$logoGapPt};
+}
+\$pdf->text(\$textX, \$y + 2, '{$nombreEsc}', \$fontBold, 7.5, array({$dr}, {$dg}, {$db}));
+\$folioWidth = \$fontMetrics->getTextWidth('{$folioEsc}', \$fontBold, 10);
+\$folioX = \$pageWidth - {$x} - \$folioWidth;
+\$pdf->text(\$folioX, \$y, 'PRESUPUESTO', \$fontNorm, 5.5, array({$r}, {$g}, {$b}));
+\$pdf->text(\$folioX, \$y + 7, '{$folioEsc}', \$fontBold, 10, array({$r}, {$g}, {$b}));
+\$yLine = \$y + 7;
 \$y += 11;
-\$pdf->text({$x}, \$y, 'PRESUPUESTO', \$fontNorm, 6, array({$r}, {$g}, {$b}));
-\$fechaWidth = \$fontMetrics->getTextWidth('{$fechaEsc}', \$fontNorm, 6.5);
-\$pdf->text(\$pageWidth - {$x} - \$fechaWidth, \$y, '{$fechaEsc}', \$fontNorm, 6.5, array({$mr}, {$mg}, {$mb}));
 SCRIPT
             .($datos['rfc'] !== null ? <<<SCRIPT
 
-\$y += 9;
-\$pdf->text({$x}, \$y, '{$rfcEsc}', \$fontNorm, 7, array({$mr}, {$mg}, {$mb}));
+\$pdf->text(\$textX, \$y, '{$rfcEsc}', \$fontNorm, 6, array({$mr}, {$mg}, {$mb}));
+\$y += 8;
 SCRIPT
                 : '')
             .($datos['contacto'] !== null ? <<<SCRIPT
 
-\$y += 9;
-\$pdf->text({$x}, \$y, '{$contactoEsc}', \$fontNorm, 7, array({$mr}, {$mg}, {$mb}));
+\$pdf->text(\$textX, \$y, '{$contactoEsc}', \$fontNorm, 6, array({$mr}, {$mg}, {$mb}));
+\$y += 8;
 SCRIPT
                 : '')
             .<<<SCRIPT
 
-\$y += 10;
-\$lineY = \$y;
-\$pdf->line({$x}, \$lineY, \$pageWidth - {$x}, \$lineY, array({$r}, {$g}, {$b}), 1.5);
+\$fechaWidth = \$fontMetrics->getTextWidth('{$fechaEsc}', \$fontNorm, 6);
+\$pdf->text(\$pageWidth - {$x} - \$fechaWidth, \$yLine + 11, '{$fechaEsc}', \$fontNorm, 6, array({$mr}, {$mg}, {$mb}));
+\$lineY = {$bandTopPt} + {$bandHeightPt} - 6;
+\$pdf->line({$x}, \$lineY, \$pageWidth - {$x}, \$lineY, array({$r}, {$g}, {$b}), 1.2);
 SCRIPT;
     }
 }

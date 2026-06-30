@@ -8,14 +8,12 @@
             @if ($docIndex > 0)
                 <div class="{{ $variant === 'tailwind' ? 'tw-page-break' : 'page-break' }}"></div>
             @endif
-            <div class="pdf-seccion-documentacion__pagina">
+            <div class="pdf-seccion-documentacion__pagina pdf-pagina-con-subencabezado">
                 @if ($variant === 'tailwind')
-                    @include('presupuestos.partials.presupuesto-pdf-header-tailwind', ['headerCompact' => true])
                     <div class="tw-anexos-header">
                         <div class="tw-anexos-title">Documentación</div>
                     </div>
                 @else
-                    @include('presupuestos.partials.presupuesto-pdf-header-default', ['headerCompact' => true])
                     <div class="anexos-preview-header">
                         <div class="anexos-preview-title">Documentación</div>
                     </div>

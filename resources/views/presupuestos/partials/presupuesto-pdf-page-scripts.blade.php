@@ -109,6 +109,7 @@ SCRIPT;
         $presupuesto,
         $pdfVariant,
         $saltoPaginaAntesAtentamente,
+        PresupuestoPdf::prepararLogoParaPageScript($presupuesto),
     );
     $subencabezadoPageScriptExport = var_export($subencabezadoPageScript, true);
 @endphp

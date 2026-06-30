@@ -690,6 +690,11 @@
         height: 3mm;
     }
 
+    .pdf-pagina-con-subencabezado {
+        padding-top: 23mm;
+        box-sizing: border-box;
+    }
+
     .tw-page-break {
         page-break-before: always;
     }
@@ -1175,7 +1180,7 @@
             @if ($mostrarAtentamente)
                 @if ($cierreAtentamente['salto_pagina_antes'])
                     <div class="tw-page-break"></div>
-                    @include('presupuestos.partials.presupuesto-pdf-header-tailwind', ['headerCompact' => true])
+                    <div class="presupuesto-pagina-con-subencabezado pdf-pagina-con-subencabezado">
                 @endif
                 @if ($atentamenteEnPieDePaginaPdf)
                     <div
@@ -1189,6 +1194,9 @@
                     @endif
                     <div class="pdf-seccion-presupuesto__atentamente document-closing-atentamente">
                         @include('presupuestos.partials.presupuesto-pdf-atentamente', ['variant' => 'tailwind'])
+                    </div>
+                @endif
+                @if ($cierreAtentamente['salto_pagina_antes'])
                     </div>
                 @endif
             @endif
