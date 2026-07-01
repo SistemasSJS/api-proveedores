@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Presupuesto;
+use App\Models\PresupuestoConcepto;
 use App\Models\Proveedor;
 use App\Services\Presupuesto\PresupuestoThemeService;
 use BaconQrCode\Renderer\GDLibRenderer;
@@ -102,6 +103,7 @@ final class PresupuestoPdf
                 'correo' => $empDoc['correo'],
             ]),
             'conceptos' => $presupuesto->conceptos->map(fn ($c) => [
+                'tipo' => $c->tipo ?? PresupuestoConcepto::TIPO_CONCEPTO,
                 'descripcion' => $c->descripcion,
                 'cantidad' => $c->cantidad,
                 'unidad' => $c->unidad,
@@ -841,6 +843,73 @@ final class PresupuestoPdf
     }
 
     /**
+     * Ancho y alto en mm del logo dentro de un recuadro máximo (object-fit: contain).
+     *
+     * @return array{width_mm: float, height_mm: float}
+     */
+    public static function dimensionesLogoEnRecuadroMm(
+        float $imageWidthPx,
+        float $imageHeightPx,
+        float $maxWidthMm,
+        float $maxHeightMm,
+    ): array {
+        if ($imageWidthPx <= 0 || $imageHeightPx <= 0) {
+            return [
+                'width_mm' => $maxWidthMm,
+                'height_mm' => $maxHeightMm,
+            ];
+        }
+
+        if ($imageWidthPx >= $imageHeightPx) {
+            $widthMm = $maxWidthMm;
+            $heightMm = $widthMm * ($imageHeightPx / $imageWidthPx);
+        } else {
+            $heightMm = $maxHeightMm;
+            $widthMm = $heightMm * ($imageWidthPx / $imageHeightPx);
+        }
+
+        $scaleDown = min(
+            1.0,
+            $maxWidthMm / max($widthMm, 0.0001),
+            $maxHeightMm / max($heightMm, 0.0001),
+        );
+        $widthMm *= $scaleDown;
+        $heightMm *= $scaleDown;
+
+        return [
+            'width_mm' => max(0.01, min($maxWidthMm, $widthMm)),
+            'height_mm' => max(0.01, min($maxHeightMm, $heightMm)),
+        ];
+    }
+
+    /**
+     * Dimensiones del logo de subencabezado (páginas 2+) a partir del archivo temporal.
+     *
+     * @return array{width_mm: float, height_mm: float}|null
+     */
+    public static function dimensionesLogoSubencabezadoDesdeRuta(
+        ?string $logoImagePath,
+        float $maxWidthMm = 26.0,
+        float $maxHeightMm = 15.0,
+    ): ?array {
+        if ($logoImagePath === null || $logoImagePath === '' || ! is_file($logoImagePath)) {
+            return null;
+        }
+
+        $info = @getimagesize($logoImagePath);
+        if (! is_array($info) || empty($info[0]) || empty($info[1])) {
+            return null;
+        }
+
+        return self::dimensionesLogoEnRecuadroMm(
+            (float) $info[0],
+            (float) $info[1],
+            $maxWidthMm,
+            $maxHeightMm,
+        );
+    }
+
+    /**
      * Variables del tema visual del presupuesto (estampado PDF, subencabezado, etc.).
      *
      * @return array<string, string|float>
@@ -948,8 +1017,15 @@ final class PresupuestoPdf
         $mg = $textMuted[1];
         $mb = $textMuted[2];
 
-        $logoMaxWPt = $mmToPt(26.0);
-        $logoMaxHPt = $mmToPt(15.0);
+        $logoMaxWMm = 26.0;
+        $logoMaxHMm = 15.0;
+        $logoDims = self::dimensionesLogoSubencabezadoDesdeRuta($logoImagePath, $logoMaxWMm, $logoMaxHMm);
+        $logoDrawWMm = $logoDims['width_mm'] ?? $logoMaxWMm;
+        $logoDrawHMm = $logoDims['height_mm'] ?? $logoMaxHMm;
+        $logoDrawWPt = $mmToPt($logoDrawWMm);
+        $logoDrawHPt = $mmToPt($logoDrawHMm);
+        $logoBoxMaxHPt = $mmToPt($logoMaxHMm);
+        $logoOffsetYPt = (int) max(0, (int) round(($logoBoxMaxHPt - $logoDrawHPt) / 2));
         $logoGapPt = $mmToPt(2.5);
         $bandTopPt = $mmToPt(10.0);
         $bandHeightPt = $mmToPt(24.0);
@@ -966,9 +1042,10 @@ if (\$PAGE_NUM <= 1) {
 \$pdf->filled_rectangle(0, {$bandTopPt} - 4, \$pageWidth, {$bandHeightPt}, array(1, 1, 1));
 \$textX = \$x;
 if ('{$logoPathEsc}' !== '') {
-    \$logoW = {$logoMaxWPt};
-    \$logoH = {$logoMaxHPt};
-    \$pdf->image('{$logoPathEsc}', \$x, \$y, \$logoW, \$logoH);
+    \$logoW = {$logoDrawWPt};
+    \$logoH = {$logoDrawHPt};
+    \$logoY = {$bandTopPt} + {$logoOffsetYPt};
+    \$pdf->image('{$logoPathEsc}', \$x, \$logoY, \$logoW, \$logoH);
     \$textX = \$x + \$logoW + {$logoGapPt};
 }
 \$pdf->text(\$textX, \$y + 2, '{$nombreEsc}', \$fontBold, 7.5, array({$dr}, {$dg}, {$db}));

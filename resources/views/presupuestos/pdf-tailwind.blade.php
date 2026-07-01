@@ -566,8 +566,11 @@
         line-height: 1.45;
         white-space: pre-wrap;
         background: var(--paragraph-row-bg);
-        max-height: 14mm;
-        overflow: hidden;
+    }
+
+    .tw-table tbody tr.tw-linea-parrafo td[colspan] {
+        text-align: left;
+        font-weight: 400;
     }
 
     .tw-totals-wrap {
@@ -1069,7 +1072,8 @@
                         @foreach ($conceptos as $index => $concepto)
                             @php
                                 $tipoLinea = $concepto['tipo'] ?? 'concepto';
-                                $esParrafo = $tipoLinea === 'parrafo';
+                                $esParrafo = $tipoLinea === 'parrafo'
+                                    || mb_strtolower(trim((string) ($concepto['unidad'] ?? ''))) === 'párrafo';
                                 $cantidad = $concepto['cantidad'] ?? 1;
                                 $precioUnitario = $concepto['precio_unitario'] ?? 0;
                                 $importe = $esParrafo ? 0 : $cantidad * $precioUnitario;
