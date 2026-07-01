@@ -1,4 +1,4 @@
-@php
+﻿@php
     use App\Services\Presupuesto\PresupuestoThemeService;
     use App\Support\PresupuestoPdf;
     use App\Support\PresupuestoPdfLayout;
@@ -6,34 +6,35 @@
     $margenMm = 20;
     $footerHeightMm = 25.4;
     $lineaEspacioMm = 2.8;
-    $gapAtentamenteFooterMm = $lineaEspacioMm;
+    $gapAtentamenteFooterMm = 12.0;
     $espacioTrasTituloAtentamenteMm = 2 * $lineaEspacioMm;
-    $margenSuperiorMm = max(8.0, $margenMm - (4 * $lineaEspacioMm));
-    $atentamenteReserveMm = 30;
     $terminosLista = $presupuesto['terminos_enunciados'] ?? [];
     $validacionesLista = $presupuesto['validaciones_enunciados'] ?? [];
     $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
     $anexosLista = $presupuesto['anexos'] ?? [];
-    $documentacionLista = $presupuesto['documentacion_adjuntos'] ?? [];
-    $haySeccionAnexos = count($anexosLista) > 0;
-    $haySeccionDocumentacion = count($documentacionLista) > 0;
+    $paginasTrasSeccionPresupuesto = PresupuestoPdf::paginasPdfTrasCuerpoPresupuesto($presupuesto);
+    $tieneAnexosTrasPresupuesto = count($anexosLista) > 0;
     $mostrarAtentamente = PresupuestoPdf::debeMostrarBloqueAtentamenteDesdePayload($presupuesto);
-    $paginasAnexosPdf = $haySeccionAnexos ? (int) ceil(count($anexosLista) / 4) : 0;
-    $paginasDocumentacionPdf = $haySeccionDocumentacion ? count($documentacionLista) : 0;
-    $paginasTrasSeccionPresupuesto = $paginasAnexosPdf + $paginasDocumentacionPdf;
     $cierreAtentamente = PresupuestoPdfLayout::calcularCierreAtentamente($presupuesto, 'tailwind');
-    $atentamenteEnPieDePaginaPdf = $mostrarAtentamente;
-    $tieneBloqueTerminos = count($terminosLista) > 0
-        || count($validacionesLista) > 0
-        || count($observacionesLista) > 0;
+    $saltoPaginaAntesAtentamente = (bool) ($cierreAtentamente['salto_pagina_antes'] ?? false);
+    $espaciadorAtentamenteMm = (float) ($cierreAtentamente['espaciador_mm'] ?? 0);
+    $atentamenteLineasPieCount = $mostrarAtentamente
+        ? count(PresupuestoPdf::lineasAtentamentePieUltimaPaginaDesdePayload($presupuesto))
+        : 0;
+    $bodyPaddingBottomMm = $footerHeightMm;
+    if ($atentamenteLineasPieCount > 0) {
+        $extraReservaAtentamenteMm = 10 + ($atentamenteLineasPieCount * $lineaEspacioMm) + $gapAtentamenteFooterMm;
+        if ($atentamenteLineasPieCount > 1) {
+            $extraReservaAtentamenteMm += $espacioTrasTituloAtentamenteMm;
+        }
+        $bodyPaddingBottomMm += min(58, $extraReservaAtentamenteMm);
+    }
     $presupuestoThemeService = app(PresupuestoThemeService::class);
     $pdfThemeKey = $presupuestoThemeService->resolveThemeKey($presupuesto['pdf_theme'] ?? null);
     $presupuestoThemeCss = $presupuestoThemeService->generateCssVariables($pdfThemeKey);
     $presupuestoTableHeaderCss = $presupuestoThemeService->generateTableHeaderCss($pdfThemeKey);
     $thColors = $presupuestoThemeService->tableHeaderColors($pdfThemeKey);
     $thCellStyle = 'background-color:'.$thColors['bg'].';color:'.$thColors['text'].';border:1px solid '.$thColors['border'].';';
-    $bodyPaddingBottomMm = 4;
-    $pdfDebugBordesContenedores = false;
 @endphp
 <!DOCTYPE html>
 <html lang="es">
@@ -105,7 +106,7 @@
     }
 
     body {
-        padding-top: {{ $margenSuperiorMm }}mm;
+        padding-top: {{ $margenMm }}mm;
     }
 
     .margin-sides {
@@ -116,123 +117,6 @@
     .document-container {
         width: 100%;
         background: var(--bg-body);
-    }
-
-    .document-main {
-        display: block;
-    }
-
-    .pdf-seccion--presupuesto {
-        width: 100%;
-    }
-
-    .presupuesto-reserva-atentamente-pie {
-        display: block;
-        width: 100%;
-        box-sizing: border-box;
-        page-break-inside: avoid;
-        page-break-after: avoid;
-        margin: 0;
-        padding: 0;
-    }
-
-    .pdf-seccion-presupuesto__atentamente {
-        margin-top: 0;
-        margin-bottom: {{ $gapAtentamenteFooterMm }}mm;
-        page-break-inside: auto;
-        page-break-before: avoid;
-    }
-
-    .pdf-seccion--anexos,
-    .pdf-seccion--documentacion {
-        page-break-before: always;
-        width: 100%;
-    }
-
-    .pdf-seccion-documentacion__pagina {
-        width: 100%;
-    }
-
-    .document-main-spacer {
-        flex: 1 1 auto;
-        min-height: 2mm;
-    }
-
-    .document-main-spacer--atentamente {
-        min-height: 28mm;
-    }
-
-    .document-closing {
-        flex: 0 0 auto;
-        width: 100%;
-    }
-
-    .document-closing-atentamente {
-        flex: 0 0 auto;
-        width: 100%;
-        page-break-inside: auto;
-        page-break-before: avoid;
-        page-break-after: avoid;
-    }
-
-    .presupuesto-cierre-terminos-atentamente {
-        width: 100%;
-    }
-
-    .terms-block--after-presupuesto {
-        flex: 0 0 auto;
-        width: 100%;
-        margin-bottom: 2mm;
-        page-break-inside: auto;
-    }
-
-    .terms-block--after-presupuesto .tw-terms:first-child {
-        margin-top: 2mm;
-    }
-
-    .terms-block--after-presupuesto .tw-terms {
-        page-break-inside: auto;
-    }
-
-    .terms-block--after-presupuesto .tw-terms li {
-        page-break-inside: auto;
-    }
-
-    .atentamente-plain {
-        width: 100%;
-        margin: 0;
-        padding: 0 0 {{ $gapAtentamenteFooterMm }}mm 0;
-        background: transparent;
-        border: none;
-        page-break-inside: auto;
-        max-width: 90mm;
-    }
-
-    .document-closing-atentamente .atentamente-plain {
-        margin-top: 0;
-        padding-top: 0;
-    }
-
-    .atentamente-plain .atentamente-spacer {
-        height: {{ $espacioTrasTituloAtentamenteMm }}mm;
-        margin: 0;
-        padding: 0;
-        line-height: 0;
-        font-size: 0;
-    }
-
-    .atentamente-plain .atentamente-title {
-        margin-bottom: 0;
-    }
-
-    .atentamente-plain .tw-receptor-strong {
-        margin-bottom: 0.35mm;
-        line-height: 1.05;
-    }
-
-    .atentamente-plain .tw-receptor-line {
-        margin-bottom: 0.2mm;
-        line-height: 1.05;
     }
 
     .tw-header-wrap {
@@ -442,7 +326,7 @@
 
     .tw-receptor-line {
         font-size: 7pt;
-        color: var(--color-receptor-line);
+        color: #111827;
         margin-bottom: 0.8mm;
         line-height: 1.15;
     }
@@ -686,15 +570,6 @@
         height: 8mm;
     }
 
-    .after-table-space--compact {
-        height: 3mm;
-    }
-
-    .pdf-pagina-con-subencabezado {
-        padding-top: 23mm;
-        box-sizing: border-box;
-    }
-
     .tw-page-break {
         page-break-before: always;
     }
@@ -792,6 +667,48 @@
         page-break-inside: auto;
     }
 
+    .tw-terms,
+    .tw-terms ul,
+    .tw-terms ul li {
+        page-break-inside: auto;
+    }
+
+    .presupuesto-cierre-atentamente-pie {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        page-break-inside: avoid;
+        page-break-after: avoid;
+    }
+
+    .presupuesto-cierre-atentamente-pie--antes-anexos {
+        page-break-after: always;
+    }
+
+    .presupuesto-salto-antes-atentamente {
+        page-break-before: always;
+        height: 0;
+        margin: 0;
+        padding: 0;
+        line-height: 0;
+        font-size: 0;
+    }
+
+    .document-main-spacer-atentamente {
+        display: block;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        line-height: 0;
+        font-size: 0;
+        page-break-inside: avoid;
+    }
+
+    .presupuesto-seccion-anexos {
+        page-break-before: always;
+        width: 100%;
+    }
+
     .tw-terms + .tw-terms {
         margin-top: 2mm;
     }
@@ -810,6 +727,7 @@
         letter-spacing: 0.02em;
         margin: 0 0 1mm 0;
         line-height: var(--section-line-height);
+        page-break-after: avoid;
     }
 
     .tw-terms ul {
@@ -983,8 +901,6 @@
         height: 100%;
         object-fit: contain;
     }
-
-    @include('presupuestos.partials.presupuesto-pdf-debug-bordes-css')
 </style>
 </head>
 
@@ -1010,7 +926,7 @@
             </div>
             <div class="footer-center">
                 <div class="footer-center-content">
-                    <div class="footer-slogan">"Creador de presupuestos"</div>
+                    <div class="footer-slogan">"Calidad y compromiso en cada proyecto"</div>
                     <div class="footer-webs">
                         <a href="https://heventec.com" class="footer-webs-link" target="_blank">heventec.com</a><span
                             class="footer-webs-sep">|</span><a href="https://gestion.heventec.com/" target="_blank"
@@ -1030,8 +946,7 @@
     </div>
 
     <div class="margin-sides">
-        <div class="pdf-seccion pdf-seccion--presupuesto">
-        <div class="document-container document-main">
+        <div class="document-container">
             @include('presupuestos.partials.presupuesto-pdf-header-tailwind')
 
             <div class="tw-card">
@@ -1096,10 +1011,9 @@
                             <td colspan="6" class="tw-no-rows">No hay conceptos registrados</td>
                         </tr>
                     @endif
-                </tbody>    
+                </tbody>
             </table>
 
-            @if ($presupuesto['config_mostrar_totales'] ?? true)
             <div class="tw-totals-wrap">
                 @php
                     $subtotalCalculado = (float) ($presupuesto['subtotal'] ?? $subtotal);
@@ -1160,60 +1074,107 @@
                         </div>
                     </div>
                 </div>
-                <div class="after-table-space after-table-space--compact"></div>
+                <div class="after-table-space"></div>
             </div>
-            @endif
 
-            @if ($tieneBloqueTerminos || $mostrarAtentamente)
-                <div class="presupuesto-cierre-terminos-atentamente">
-            @if ($tieneBloqueTerminos)
-                <div class="terms-block terms-block--after-presupuesto">
-                    @include('presupuestos.partials.presupuesto-pdf-terminos', [
-                        'variant' => 'tailwind',
-                        'terminosLista' => $terminosLista,
-                        'validacionesLista' => $validacionesLista,
-                        'observacionesLista' => $observacionesLista,
-                    ])
-                </div>
-            @endif
+            <div class="terms-block">
+                @if (count($terminosLista) > 0)
+                    <div class="tw-terms">
+                        <h3>Términos y Condiciones</h3>
+                        <ul class="tw-terms-num">
+                            @foreach ($terminosLista as $texto)
+                                <li>{{ $texto }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+                {{-- @if (count($validacionesLista) > 0)
+                    <div class="tw-terms">
+                        <h3>Validación y Alcances</h3>
+                        <ul class="tw-obs-list">
+                            @foreach ($validacionesLista as $item)
+                                <li>{{ $item }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    @endif --}}
+                    @if (count($observacionesLista) > 0)
+                    <div class="tw-terms">
+                        <h3>Observaciones</h3>
+                        <ul class="tw-obs-list">
+                            {{-- @foreach ($validacionesLista as $item)
+                                <li>{{ $item }}</li>
+                            @endforeach --}}
+                            @foreach ($observacionesLista as $obs)
+                                <li>{{ $obs }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+            </div>
 
             @if ($mostrarAtentamente)
-                @if ($cierreAtentamente['salto_pagina_antes'])
-                    <div class="tw-page-break"></div>
-                    <div class="presupuesto-pagina-con-subencabezado pdf-pagina-con-subencabezado">
-                @endif
-                @if ($atentamenteEnPieDePaginaPdf)
-                    <div
-                        class="presupuesto-reserva-atentamente-pie"
-                        aria-hidden="true"
-                        style="height: {{ $cierreAtentamente['reserva_pie_html_mm'] ?? 32 }}mm; min-height: {{ $cierreAtentamente['reserva_pie_html_mm'] ?? 32 }}mm;"
-                    ></div>
-                @else
-                    @if (($cierreAtentamente['espaciador_mm'] ?? 0) > 2)
-                        <div class="document-main-spacer" style="height: {{ $cierreAtentamente['espaciador_mm'] }}mm; min-height: {{ $cierreAtentamente['espaciador_mm'] }}mm;"></div>
+                <div @class([
+                    'presupuesto-cierre-atentamente-pie',
+                    'presupuesto-cierre-atentamente-pie--antes-anexos' => $tieneAnexosTrasPresupuesto,
+                ])>
+                    @if ($saltoPaginaAntesAtentamente)
+                        <div class="presupuesto-salto-antes-atentamente" aria-hidden="true"></div>
                     @endif
-                    <div class="pdf-seccion-presupuesto__atentamente document-closing-atentamente">
-                        @include('presupuestos.partials.presupuesto-pdf-atentamente', ['variant' => 'tailwind'])
-                    </div>
-                @endif
-                @if ($cierreAtentamente['salto_pagina_antes'])
-                    </div>
-                @endif
+                    <div
+                        class="document-main-spacer-atentamente"
+                        style="height: {{ max(2, $espaciadorAtentamenteMm) }}mm;"
+                        aria-hidden="true"
+                    ></div>
+                </div>
             @endif
+
+            @if (count($anexosLista) > 0)
+                <div class="presupuesto-seccion-anexos">
+                @foreach (collect($anexosLista)->chunk(4) as $pageIndex => $anexosPagina)
+                    @if ($pageIndex > 0)
+                    <div class="tw-page-break"></div>
+                    @endif
+                    <div class="tw-anexos-page">
+                        @include('presupuestos.partials.presupuesto-pdf-header-tailwind', ['headerCompact' => true])
+                        <div class="tw-anexos-header">
+                            <div class="tw-anexos-title">Anexos</div>
+                        </div>
+
+                        <div class="tw-anexos-list">
+                            @foreach ($anexosPagina as $index => $anexo)
+                                @php
+                                    $numeroAnexo = (($pageIndex * 4) + $index + 1);
+                                @endphp
+                                <div class="tw-anexo-simple">
+                                    <table class="tw-anexo-simple-table">
+                                        <tr>
+                                            @if (!empty($anexo['archivo_base64']))
+                                                <td class="tw-anexo-simple-media">
+                                                    <div class="tw-anexo-simple-image-wrap">
+                                                        <img src="{{ $anexo['archivo_base64'] }}" alt="{{ $anexo['titulo'] ?? ('Anexo ' . (($anexo['orden'] ?? 0) ?: $numeroAnexo)) }}" class="tw-anexo-simple-image" />
+                                                    </div>
+                                                </td>
+                                            @endif
+                                            <td class="tw-anexo-simple-text">
+                                                <div class="tw-anexo-simple-heading">{{ $anexo['titulo'] ?? '' }}</div>
+                                                @if (!empty($anexo['descripcion']))
+                                                    <div class="tw-anexo-simple-desc">{{ $anexo['descripcion'] }}</div>
+                                                @endif
+                                                @if (array_key_exists('precio', $anexo) && $anexo['precio'] !== null)
+                                                    <div class="tw-anexo-simple-price">${{ number_format((float) $anexo['precio'], 2, '.', ',') }}</div>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endforeach
                 </div>
             @endif
         </div>
-        </div>
-
-        @include('presupuestos.partials.presupuesto-pdf-seccion-anexos', [
-            'anexosLista' => $anexosLista,
-            'variant' => 'tailwind',
-        ])
-
-        @include('presupuestos.partials.presupuesto-pdf-seccion-documentacion', [
-            'documentacionLista' => $documentacionLista,
-            'variant' => 'tailwind',
-        ])
     </div>
 
     @include('presupuestos.partials.presupuesto-pdf-page-scripts', [
@@ -1223,9 +1184,9 @@
         'pdfThemeKey' => $pdfThemeKey,
         'gapAtentamenteFooterMm' => $gapAtentamenteFooterMm,
         'espacioTrasTituloAtentamenteMm' => $espacioTrasTituloAtentamenteMm,
-        'atentamenteEnPieDePagina' => $atentamenteEnPieDePaginaPdf,
+        'atentamenteEnPieDePagina' => $mostrarAtentamente,
         'paginasTrasSeccionPresupuesto' => $paginasTrasSeccionPresupuesto,
-        'saltoPaginaAntesAtentamente' => (bool) ($cierreAtentamente['salto_pagina_antes'] ?? false),
+        'saltoPaginaAntesAtentamente' => $saltoPaginaAntesAtentamente,
     ])
 </body>
 

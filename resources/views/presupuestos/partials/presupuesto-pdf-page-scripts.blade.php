@@ -5,7 +5,7 @@
     $margenMm = (float) ($margenMm ?? 25.4);
     $footerHeightMm = (float) ($footerHeightMm ?? 25.4);
     $footerBottomMm = 6.0;
-    $gapAtentamenteFooterMm = (float) ($gapAtentamenteFooterMm ?? 2.8);
+    $gapAtentamenteFooterMm = (float) ($gapAtentamenteFooterMm ?? 12.0);
     $espacioTrasTituloAtentamenteMm = (float) ($espacioTrasTituloAtentamenteMm ?? (2 * 2.8));
     $pdfVariant = (string) ($pdfVariant ?? 'tailwind');
 
@@ -102,16 +102,6 @@ SCRIPT;
     }
 
     $atentamentePageScriptExport = var_export($atentamentePageScript, true);
-
-    $subencabezadoPageScript = PresupuestoPdf::generarPageScriptSubencabezadoPresupuesto(
-        $margenMm,
-        $paginasTrasSeccionPresupuesto,
-        $presupuesto,
-        $pdfVariant,
-        $saltoPaginaAntesAtentamente,
-        PresupuestoPdf::prepararLogoParaPageScript($presupuesto),
-    );
-    $subencabezadoPageScriptExport = var_export($subencabezadoPageScript, true);
 @endphp
 <script type="text/php">
 if (isset($pdf) && isset($fontMetrics)) {
@@ -125,11 +115,6 @@ if (isset($pdf) && isset($fontMetrics)) {
     $atentamentePieScript = {!! $atentamentePageScriptExport !!};
     if ($atentamentePieScript !== '') {
         $pdf->page_script($atentamentePieScript);
-    }
-
-    $subencabezadoScript = {!! $subencabezadoPageScriptExport !!};
-    if ($subencabezadoScript !== '') {
-        $pdf->page_script($subencabezadoScript);
     }
 }
 </script>

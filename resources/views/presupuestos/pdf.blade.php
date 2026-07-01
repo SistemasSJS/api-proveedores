@@ -1,32 +1,33 @@
-        @php
+﻿        @php
             use App\Support\PresupuestoPdf;
             use App\Support\PresupuestoPdfLayout;
 
             $margenMm = 25.4;
-            $footerHeightMm = 25.4; // Espacio reservado para pie de página en cada hoja (carta)
+            $footerHeightMm = 25.4;
             $lineaEspacioMm = 2.8;
-            $gapAtentamenteFooterMm = $lineaEspacioMm;
+            $gapAtentamenteFooterMm = 12.0;
             $espacioTrasTituloAtentamenteMm = 2 * $lineaEspacioMm;
-            $margenSuperiorMm = max(8.0, $margenMm - (4 * $lineaEspacioMm));
-            $atentamenteReserveMm = 30;
             $terminosLista = $presupuesto['terminos_enunciados'] ?? [];
             $validacionesLista = $presupuesto['validaciones_enunciados'] ?? [];
             $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
             $anexosLista = $presupuesto['anexos'] ?? [];
-            $documentacionLista = $presupuesto['documentacion_adjuntos'] ?? [];
-            $haySeccionAnexos = count($anexosLista) > 0;
-            $haySeccionDocumentacion = count($documentacionLista) > 0;
+            $paginasTrasSeccionPresupuesto = PresupuestoPdf::paginasPdfTrasCuerpoPresupuesto($presupuesto);
+            $tieneAnexosTrasPresupuesto = count($anexosLista) > 0;
             $mostrarAtentamente = PresupuestoPdf::debeMostrarBloqueAtentamenteDesdePayload($presupuesto);
-            $paginasAnexosPdf = $haySeccionAnexos ? (int) ceil(count($anexosLista) / 4) : 0;
-            $paginasDocumentacionPdf = $haySeccionDocumentacion ? count($documentacionLista) : 0;
-            $paginasTrasSeccionPresupuesto = $paginasAnexosPdf + $paginasDocumentacionPdf;
             $cierreAtentamente = PresupuestoPdfLayout::calcularCierreAtentamente($presupuesto, 'default');
-            $atentamenteEnPieDePaginaPdf = $mostrarAtentamente;
-            $bodyPaddingBottomMm = 4;
-            $tieneBloqueTerminos = count($terminosLista) > 0
-                || count($validacionesLista) > 0
-                || count($observacionesLista) > 0;
-            $pdfDebugBordesContenedores = false;
+            $saltoPaginaAntesAtentamente = (bool) ($cierreAtentamente['salto_pagina_antes'] ?? false);
+            $espaciadorAtentamenteMm = (float) ($cierreAtentamente['espaciador_mm'] ?? 0);
+            $atentamenteLineasPieCount = $mostrarAtentamente
+                ? count(PresupuestoPdf::lineasAtentamentePieUltimaPaginaDesdePayload($presupuesto))
+                : 0;
+            $bodyPaddingBottomMm = $footerHeightMm;
+            if ($atentamenteLineasPieCount > 0) {
+                $extraReservaAtentamenteMm = 10 + ($atentamenteLineasPieCount * $lineaEspacioMm) + $gapAtentamenteFooterMm;
+                if ($atentamenteLineasPieCount > 1) {
+                    $extraReservaAtentamenteMm += $espacioTrasTituloAtentamenteMm;
+                }
+                $bodyPaddingBottomMm += min(58, $extraReservaAtentamenteMm);
+            }
         @endphp
         <!DOCTYPE html>
         <html lang="es">
@@ -50,7 +51,7 @@
                 }
 
                 .page-top-spacing {
-                    padding-top: {{ $margenSuperiorMm }}mm;
+                    padding-top: {{ $margenMm }}mm;
                 }
 
                 .content-wrapper {
@@ -79,7 +80,7 @@
                     background: #ffffff;
                     line-height: 1.15;
                     /* margin: 0; */
-                    padding-top: {{ $margenSuperiorMm }}mm;
+                    padding-top: {{ $margenMm }}mm;
                 }
 
                 /* Elementos de margen (cuando @page margin no funciona) */
@@ -100,122 +101,7 @@
                 }
 
                 .document-main {
-                    margin-bottom: 0;
-                    display: block;
-                }
-
-                .pdf-seccion--presupuesto {
-                    width: 100%;
-                }
-
-                .presupuesto-reserva-atentamente-pie {
-                    display: block;
-                    width: 100%;
-                    box-sizing: border-box;
-                    page-break-inside: avoid;
-                    page-break-after: avoid;
-                    margin: 0;
-                    padding: 0;
-                }
-
-                .pdf-seccion-presupuesto__atentamente {
-                    margin-top: 0;
-                    margin-bottom: {{ $gapAtentamenteFooterMm }}mm;
-                    page-break-inside: auto;
-                    page-break-before: avoid;
-                }
-
-                .pdf-seccion--anexos,
-                .pdf-seccion--documentacion {
-                    page-break-before: always;
-                    width: 100%;
-                }
-
-                .pdf-seccion-documentacion__pagina {
-                    width: 100%;
-                }
-
-                .document-main-spacer {
-                    flex: 1 1 auto;
-                    min-height: 2mm;
-                }
-
-                .document-main-spacer--atentamente {
-                    min-height: 28mm;
-                }
-
-                .document-closing {
-                    flex: 0 0 auto;
-                    width: 100%;
-                }
-
-                .document-closing-atentamente {
-                    flex: 0 0 auto;
-                    width: 100%;
-                    page-break-inside: auto;
-                    page-break-before: avoid;
-                    page-break-after: avoid;
-                }
-
-                .presupuesto-cierre-terminos-atentamente {
-                    width: 100%;
-                }
-
-                .terms-block--after-presupuesto {
-                    flex: 0 0 auto;
-                    width: 100%;
-                    margin-bottom: 2mm;
-                    page-break-inside: auto;
-                }
-
-                .terms-block--after-presupuesto .terminos-section:first-child {
-                    margin-top: 2mm;
-                    padding-top: 1mm;
-                }
-
-                .terms-block--after-presupuesto .terminos-section {
-                    page-break-inside: auto;
-                }
-
-                .terms-block--after-presupuesto .terminos-list li {
-                    page-break-inside: auto;
-                }
-
-                .atentamente-plain {
-                    width: 100%;
-                    margin: 0;
-                    padding: 0 0 {{ $gapAtentamenteFooterMm }}mm 0;
-                    background: transparent;
-                    border: none;
-                    page-break-inside: auto;
-                    max-width: 90mm;
-                }
-
-                .document-closing-atentamente .atentamente-plain {
-                    margin-top: 0;
-                    padding-top: 0;
-                }
-
-                .atentamente-plain .atentamente-spacer {
-                    height: {{ $espacioTrasTituloAtentamenteMm }}mm;
-                    margin: 0;
-                    padding: 0;
-                    line-height: 0;
-                    font-size: 0;
-                }
-
-                .atentamente-plain .atentamente-title {
-                    margin-bottom: 0;
-                }
-
-                .atentamente-plain .receptor-name {
-                    margin-bottom: 0.35mm;
-                    line-height: 1.05;
-                }
-
-                .atentamente-plain .receptor-info {
-                    margin-bottom: 0.2mm;
-                    line-height: 1.05;
+                    margin-bottom: 6mm;
                 }
 
 
@@ -605,11 +491,61 @@
                 .terms-block {
                     margin-bottom: 4mm;
                     page-break-inside: auto;
-                    page-break-before: auto;
+                }
+
+                .terminos-section,
+                .terminos-list,
+                .terminos-list li,
+                .observaciones-section,
+                .observaciones-list,
+                .observaciones-list li {
+                    page-break-inside: auto;
+                }
+
+                .terminos-main-title,
+                .terminos-title,
+                .observaciones-title {
+                    page-break-after: avoid;
                 }
 
                 .totales-section {
                     page-break-inside: avoid;
+                }
+
+                .presupuesto-cierre-atentamente-pie {
+                    width: 100%;
+                    margin: 0;
+                    padding: 0;
+                    page-break-inside: avoid;
+                    page-break-after: avoid;
+                }
+
+                .presupuesto-cierre-atentamente-pie--antes-anexos {
+                    page-break-after: always;
+                }
+
+                .presupuesto-salto-antes-atentamente {
+                    page-break-before: always;
+                    height: 0;
+                    margin: 0;
+                    padding: 0;
+                    line-height: 0;
+                    font-size: 0;
+                }
+
+                .document-main-spacer-atentamente {
+                    display: block;
+                    width: 100%;
+                    margin: 0;
+                    padding: 0;
+                    line-height: 0;
+                    font-size: 0;
+                    page-break-inside: avoid;
+                }
+
+                .presupuesto-seccion-anexos {
+                    page-break-before: always;
+                    width: 100%;
                 }
 
                 .importe-con-letra {
@@ -938,15 +874,6 @@
                     height: {{ $footerHeightMm + 5 }}mm;
                 }
 
-                .after-table-space--compact {
-                    height: 3mm;
-                }
-
-                .pdf-pagina-con-subencabezado {
-                    padding-top: 23mm;
-                    box-sizing: border-box;
-                }
-
                 .page-break {
                     page-break-before: always;
                 }
@@ -1035,7 +962,27 @@
                     color: var(--accent);
                 }
 
-                @include('presupuestos.partials.presupuesto-pdf-debug-bordes-css')
+                /* ===== DEBUG VISUAL SIN MODIFICAR HTML =====
+
+                .header { border: 1px solid red; }
+                .logo-section { border: 1px solid blue; }
+                .header-info { border: 1px solid green; }
+                .folio-section { border: 1px solid orange; }
+
+                .descripcion-section { border: 1px solid teal; }
+
+                .presupuesto-title { border: 1px solid brown; }
+                .presupuesto-table { border: 1px solid black; }
+
+                .totales-section { border: 1px solid darkgreen; }
+
+                .terminos-section { border: 1px solid magenta; }
+                .observaciones-section { border: 1px solid cyan; }
+
+                .footer { border: 2px dashed red; }
+                .footer-left { border: 1px solid blue; }
+                .footer-center { border: 1px solid green; }
+                .footer-right { border: 1px solid orange; } */
             </style>
         </head>
 
@@ -1063,7 +1010,7 @@
                     </div>
                     <div class="footer-center">
                         <div class="footer-center-content">
-                            <div class="footer-slogan">"Creador de presupuestos"</div>
+                            <div class="footer-slogan">"Calidad y compromiso en cada proyecto"</div>
                             <div class="footer-webs">
                                 <a href="https://heventec.com" class="footer-webs-link">heventec.com</a><span
                                     class="footer-webs-sep">|</span><a href="https://gestion.heventec.com/"
@@ -1084,7 +1031,6 @@
             </div>
 
             <div class="margin-sides">
-                <div class="pdf-seccion pdf-seccion--presupuesto">
                 <div class="document-container">
                     <div class="document-main">
                         <!-- 1) ENCABEZADO -->
@@ -1161,7 +1107,6 @@
                         </table>
 
                         <!-- 5) TOTALES -->
-                        @if ($presupuesto['config_mostrar_totales'] ?? true)
                         <div class="totales-section">
                             @php
                                 $subtotalCalculado = (float) ($presupuesto['subtotal'] ?? $subtotal);
@@ -1220,61 +1165,107 @@
                                     {{ \App\Support\PresupuestoPdf::formatMontoLegal($total, $monedaCodigo) }}
                                 </div>
                             </div>
-                            <div class="after-table-space after-table-space--compact"></div>
+                            <div class="after-table-space"></div>
                         </div>
+
+                    </div>
+                    <div class="terms-block">
+                        <!-- 6) TÉRMINOS Y CONDICIONES -->
+                        @if (count($terminosLista) > 0)
+                            <div class="terminos-section">
+                                <div class="terminos-main-title">Términos y Condiciones</div>
+                                <ul class="terminos-list">
+                                    @foreach ($terminosLista as $texto)
+                                        <li>{{ $texto }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
                         @endif
 
-                    @if ($tieneBloqueTerminos || $mostrarAtentamente)
-                        <div class="presupuesto-cierre-terminos-atentamente">
-                    @if ($tieneBloqueTerminos)
-                        <div class="terms-block terms-block--after-presupuesto">
-                            @include('presupuestos.partials.presupuesto-pdf-terminos', [
-                                'variant' => 'default',
-                                'terminosLista' => $terminosLista,
-                                'validacionesLista' => $validacionesLista,
-                                'observacionesLista' => $observacionesLista,
-                            ])
-                        </div>
-                    @endif
+                        @if (count($validacionesLista) > 0)
+                            <div class="terminos-section">
+                                <div class="terminos-title">Validación y Alcances</div>
+                                <ul class="observaciones-list">
+                                    @foreach ($validacionesLista as $item)
+                                        <li>{{ $item }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
+                        <!-- 7) OBSERVACIONES GENERALES -->
+                        @if (count($observacionesLista) > 0)
+                            <div class="terminos-section observaciones-section">
+                                <div class="terminos-title observaciones-title">Observaciones Generales</div>
+                                <ul class="observaciones-list">
+                                    @foreach ($observacionesLista as $obs)
+                                        <li>{{ $obs }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                    </div>
 
                     @if ($mostrarAtentamente)
-                        @if ($cierreAtentamente['salto_pagina_antes'])
-                            <div class="page-break"></div>
-                            <div class="presupuesto-pagina-con-subencabezado pdf-pagina-con-subencabezado">
-                        @endif
-                        @if ($atentamenteEnPieDePaginaPdf)
-                            <div
-                                class="presupuesto-reserva-atentamente-pie"
-                                aria-hidden="true"
-                                style="height: {{ $cierreAtentamente['reserva_pie_html_mm'] ?? 32 }}mm; min-height: {{ $cierreAtentamente['reserva_pie_html_mm'] ?? 32 }}mm;"
-                            ></div>
-                        @else
-                            @if (($cierreAtentamente['espaciador_mm'] ?? 0) > 2)
-                                <div class="document-main-spacer" style="height: {{ $cierreAtentamente['espaciador_mm'] }}mm; min-height: {{ $cierreAtentamente['espaciador_mm'] }}mm;"></div>
+                        <div @class([
+                            'presupuesto-cierre-atentamente-pie',
+                            'presupuesto-cierre-atentamente-pie--antes-anexos' => $tieneAnexosTrasPresupuesto,
+                        ])>
+                            @if ($saltoPaginaAntesAtentamente)
+                                <div class="presupuesto-salto-antes-atentamente" aria-hidden="true"></div>
                             @endif
-                            <div class="pdf-seccion-presupuesto__atentamente document-closing-atentamente">
-                                @include('presupuestos.partials.presupuesto-pdf-atentamente', ['variant' => 'default'])
-                            </div>
-                        @endif
-                        @if ($cierreAtentamente['salto_pagina_antes'])
-                            </div>
-                        @endif
-                    @endif
+                            <div
+                                class="document-main-spacer-atentamente"
+                                style="height: {{ max(2, $espaciadorAtentamenteMm) }}mm;"
+                                aria-hidden="true"
+                            ></div>
                         </div>
                     @endif
-                    </div>
-                </div>
-                </div>
 
-                @include('presupuestos.partials.presupuesto-pdf-seccion-anexos', [
-                    'anexosLista' => $anexosLista,
-                    'variant' => 'default',
-                ])
+                    @if (count($anexosLista) > 0)
+                        <div class="presupuesto-seccion-anexos">
+                        @foreach (collect($anexosLista)->chunk(4) as $pageIndex => $anexosPagina)
+                            @if ($pageIndex > 0)
+                            <div class="page-break"></div>
+                            @endif
+                            <div class="anexos-page">
+                                @include('presupuestos.partials.presupuesto-pdf-header-default', ['headerCompact' => true])
+                                <div class="anexos-preview-header">
+                                    <div class="anexos-preview-title">Anexos</div>
+                                </div>
 
-                @include('presupuestos.partials.presupuesto-pdf-seccion-documentacion', [
-                    'documentacionLista' => $documentacionLista,
-                    'variant' => 'default',
-                ])
+                                @foreach ($anexosPagina as $index => $anexo)
+                                    @php
+                                        $numeroAnexo = (($pageIndex * 4) + $index + 1);
+                                    @endphp
+                                    <div class="anexo-simple">
+                                        <table class="anexo-simple-table">
+                                            <tr>
+                                                @if (!empty($anexo['archivo_base64']))
+                                                    <td class="anexo-simple-media">
+                                                        <div class="anexo-simple-image-wrap">
+                                                            <img src="{{ $anexo['archivo_base64'] }}" alt="{{ $anexo['titulo'] ?? ('Anexo ' . (($anexo['orden'] ?? 0) ?: $numeroAnexo)) }}" class="anexo-simple-image" />
+                                                        </div>
+                                                    </td>
+                                                @endif
+                                                <td class="anexo-simple-text">
+                                                    <div class="anexo-simple-heading">{{ $anexo['titulo'] ?? '' }}</div>
+                                                    @if (!empty($anexo['descripcion']))
+                                                        <div class="anexo-simple-desc">{{ $anexo['descripcion'] }}</div>
+                                                    @endif
+                                                    @if (array_key_exists('precio', $anexo) && $anexo['precio'] !== null)
+                                                        <div class="anexo-simple-price">${{ number_format((float) $anexo['precio'], 2, '.', ',') }}</div>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endforeach
+                        </div>
+                    @endif
+                </div>
             </div>
             @include('presupuestos.partials.presupuesto-pdf-page-scripts', [
                 'margenMm' => $margenMm,
@@ -1282,9 +1273,9 @@
                 'pdfVariant' => 'default',
                 'gapAtentamenteFooterMm' => $gapAtentamenteFooterMm,
                 'espacioTrasTituloAtentamenteMm' => $espacioTrasTituloAtentamenteMm,
-                'atentamenteEnPieDePagina' => $atentamenteEnPieDePaginaPdf,
+                'atentamenteEnPieDePagina' => $mostrarAtentamente,
                 'paginasTrasSeccionPresupuesto' => $paginasTrasSeccionPresupuesto,
-                'saltoPaginaAntesAtentamente' => (bool) ($cierreAtentamente['salto_pagina_antes'] ?? false),
+                'saltoPaginaAntesAtentamente' => $saltoPaginaAntesAtentamente,
             ])
         </body>
 

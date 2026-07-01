@@ -82,10 +82,52 @@
                         @endif
                     </td>
                     <td class="tw-emisor-cell">
-                        @include('presupuestos.partials.presupuesto-pdf-emisor-info-lines', [
-                            'lineClass' => 'tw-emisor-line',
-                            'nameClass' => 'tw-emisor-name',
-                        ])
+                        @php
+                            $p = $presupuesto['proveedor'];
+                            $emisorComercial = trim((string) ($p->nombre_comercial ?? ''));
+                            $emisorRazonSocial = trim((string) ($p->razon_social ?? ''));
+                            $emisorNombre =
+                                $emisorComercial !== ''
+                                    ? $emisorComercial
+                                    : $emisorRazonSocial;
+                            $emisorNombre = \Illuminate\Support\Str::limit($emisorNombre, 40, '');
+                            $emisorRazonSocialLinea =
+                                $emisorRazonSocial !== '' &&
+                                strcasecmp($emisorRazonSocial, $emisorNombre) !== 0
+                                    ? \Illuminate\Support\Str::limit($emisorRazonSocial, 50, '')
+                                    : null;
+                            $emisorRfc = $p->rfc ?? null;
+                            $emisorDireccion = $p->direccion_empresa ?? null;
+                            $df = $p->direccion_fiscal ?? null;
+                            $ciudad =
+                                $p->ciudad ??
+                                (is_array($df)
+                                    ? $df['ciudad'] ?? 'Ciudad de México'
+                                    : $df->ciudad ?? 'Ciudad de México');
+                            $estado = is_array($df) ? $df['estado'] ?? 'CDMX' : $df->estado ?? 'CDMX';
+                            $emisorCiudad = $ciudad . ', ' . $estado . ', México';
+                            $emisorTel = $p->telefono ?? null;
+                            $emisorEmail = $p->email ?? null;
+                        @endphp
+                        <div class="tw-emisor-name">{{ $emisorNombre }}</div>
+                        @if ($emisorRazonSocialLinea)
+                            <div class="tw-emisor-line">{{ $emisorRazonSocialLinea }}</div>
+                        @endif
+                        @if ($emisorRfc)
+                            <div class="tw-emisor-line">{{ $emisorRfc }}</div>
+                        @endif
+                        <!-- @if ($emisorDireccion)
+                            <div class="tw-emisor-line">{{ $emisorDireccion }}</div>
+                        @endif
+                        @if ($emisorCiudad)
+                            <div class="tw-emisor-line">{{ $emisorCiudad }}</div>
+                        @endif -->
+                        @if (!$headerCompact && $emisorTel)
+                            <div class="tw-emisor-line">Tel. {{ $emisorTel }}</div>
+                        @endif
+                        @if (!$headerCompact && $emisorEmail)
+                            <div class="tw-emisor-line">{{ $emisorEmail }}</div>
+                        @endif
                     </td>
                     <td class="tw-folio-cell">
                         <div class="tw-badge-label">Presupuesto</div>

@@ -102,6 +102,7 @@ final class PresupuestoPdf
                 'correo' => $empDoc['correo'],
             ]),
             'conceptos' => $presupuesto->conceptos->map(fn ($c) => [
+                'tipo' => $c->tipo ?? 'concepto',
                 'descripcion' => $c->descripcion,
                 'cantidad' => $c->cantidad,
                 'unidad' => $c->unidad,
@@ -291,6 +292,21 @@ final class PresupuestoPdf
     public static function anexosParaPlantillaPdf(Presupuesto $presupuesto): array
     {
         return self::normalizarAnexosParaPdf($presupuesto);
+    }
+
+    /**
+     * Páginas del PDF que van después del cuerpo del presupuesto (términos + Atentamente).
+     * Los anexos no participan en el cálculo de cierre de Atentamente; solo definen en qué hoja
+     * NO debe dibujarse el page_script (última hoja del presupuesto = PAGE_COUNT - este valor).
+     */
+    public static function paginasPdfTrasCuerpoPresupuesto(array $payload): int
+    {
+        $anexos = $payload['anexos'] ?? [];
+        if (! is_array($anexos) || count($anexos) === 0) {
+            return 0;
+        }
+
+        return (int) ceil(count($anexos) / 4);
     }
 
     public static function formatMontoLegal(float|int|string|null $value, ?string $currency = 'MXN'): string

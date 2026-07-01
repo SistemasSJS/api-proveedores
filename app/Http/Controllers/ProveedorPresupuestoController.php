@@ -541,35 +541,94 @@ class ProveedorPresupuestoController extends Controller
 
             $validated = $this->resolverReceptorEmpresaParaValidacion($validated, $proveedor);
             $validated = $this->normalizarTerminosPayload($validated);
-            try {
-                $validated = $this->normalizarTarjetaEmisorPresupuesto($validated, (int) $proveedor->id, true);
-            } catch (\InvalidArgumentException $e) {
-                return response()->json([
-                    'success' => false,
-                    'message' => $e->getMessage(),
-                ], 422);
-            }
             $normalized = $this->normalizarEmpresaReceptora($validated, (int) $proveedor->id);
             $presupuestoGuardado = $this->guardarBorradorParaPreview($request, $proveedor, $validated);
+            $presupuestoGuardado->loadMissing('anexos');
+
+            $logoProveedorBase64 = $this->convertirLogoProveedorABase64($proveedor);
+
+            $df = $proveedor->direccion_fiscal ?? null;
+            $estado = \Illuminate\Support\Arr::get((array) ($df ?? []), 'estado', $proveedor->estado ?? 'México');
+            $lugar = $proveedor->ciudad ? ($proveedor->ciudad . ', ' . $estado) : null;
+
+            $formData = array_merge($normalized, [
+                'con_iva' => $normalized['con_iva'] ?? true,
+                'iva_porcentaje' => $normalized['iva_porcentaje'] ?? 16,
+            ]);
+
+            $datosPresupuesto = [
+                'proveedor' => $proveedor,
+                'logo_proveedor_base64' => $logoProveedorBase64,
+                'numero_presupuesto' => $presupuestoGuardado->numero_presupuesto,
+                'uuid' => $presupuestoGuardado->uuid,
+                'fecha_emision' => $presupuestoGuardado->fecha_emision,
+                'lugar' => $lugar,
+                'concepto_general' => $normalized['concepto_general'],
+                'con_iva' => $normalized['con_iva'] ?? true,
+                'iva_porcentaje' => $normalized['iva_porcentaje'] ?? 16.00,
+                'porcentaje_descuento' => $normalized['porcentaje_descuento'] ?? null,
+                'cantidad_descuento' => $normalized['cantidad_descuento'] ?? null,
+                'term_cond_moneda' => $normalized['term_cond_moneda'] ?? 'MXN',
+                'receptor_lineas' => PresupuestoPdf::lineasReceptorPdfDesdePayloadReceptor($normalized),
+                'conceptos' => $normalized['conceptos'] ?? [],
+                'anexos' => PresupuestoPdf::anexosParaPlantillaPdf($presupuestoGuardado),
+                'terminos_enunciados' => Presupuesto::buildTerminosEnunciadosFromArray($formData),
+                'observaciones_enunciados' => Presupuesto::buildObservacionesEnunciadosFromArray($formData),
+                'qr_code' => null,
+            ];
+
+            $subtotal = collect($datosPresupuesto['conceptos'])->sum(function ($concepto) {
+                if (($concepto['tipo'] ?? 'concepto') === 'parrafo') {
+                    return 0;
+                }
+
+                return ($concepto['cantidad'] ?? 0) * ($concepto['precio_unitario'] ?? 0);
+            });
+
+            $pctDesc = isset($datosPresupuesto['porcentaje_descuento'])
+                ? (int) $datosPresupuesto['porcentaje_descuento']
+                : null;
+            $cantidadDesc = isset($datosPresupuesto['cantidad_descuento'])
+                ? (float) $datosPresupuesto['cantidad_descuento']
+                : null;
+            $totalesDoc = Presupuesto::calcularTotalesDocumento(
+                (float) $subtotal,
+                $pctDesc,
+                $cantidadDesc,
+                (bool) ($datosPresupuesto['con_iva'] ?? false),
+                (float) ($datosPresupuesto['iva_porcentaje'] ?? 16)
+            );
+
+            $datosPresupuesto['subtotal'] = $totalesDoc['subtotal'];
+            $datosPresupuesto['porcentaje_descuento'] = $totalesDoc['porcentaje_descuento'];
+            $datosPresupuesto['cantidad_descuento'] = $totalesDoc['cantidad_descuento'];
+            $datosPresupuesto['monto_descuento'] = $totalesDoc['monto_descuento'];
+            $datosPresupuesto['iva_total'] = $totalesDoc['iva_total'];
+            $datosPresupuesto['total'] = $totalesDoc['total'];
+            $datosPresupuesto = $this->aplicarTemaPdfADatos(
+                $datosPresupuesto,
+                $request->input('pdf_theme') ?? $request->query('theme') ?? $presupuestoGuardado->pdf_theme
+            );
+
+            $datosPresupuesto['config_mostrar_totales'] = (bool) ($presupuestoGuardado->config_mostrar_totales ?? true);
+            $datosPresupuesto['config_emisor_presupuesto_id'] = $presupuestoGuardado->config_emisor_presupuesto_id;
+            $datosPresupuesto['empresa_emisora_nombre'] = $presupuestoGuardado->empresa_emisora_nombre;
+            $datosPresupuesto['empresa_emisora_puesto'] = $presupuestoGuardado->empresa_emisora_puesto;
+            $datosPresupuesto['empresa_emisora_telefono'] = $presupuestoGuardado->empresa_emisora_telefono;
+            $datosPresupuesto['empresa_emisora_correo'] = $presupuestoGuardado->empresa_emisora_correo;
+            $datosPresupuesto['incluir_leyenda_atentamente'] = (bool) ($presupuestoGuardado->incluir_leyenda_atentamente ?? true);
+            $datosPresupuesto['empresa_emisora_nombre_comercial'] = $presupuestoGuardado->empresa_emisora_nombre_comercial;
 
             $this->log('Generación de PDF desde formulario solicitada', [
                 'proveedor_id' => $proveedor->id,
-                'numero_presupuesto' => $presupuestoGuardado->numero_presupuesto,
+                'numero_presupuesto' => $datosPresupuesto['numero_presupuesto'],
             ]);
 
-            $theme = $request->input('pdf_theme')
-                ?? $request->query('theme')
-                ?? $request->query('pdf_theme')
-                ?? $presupuestoGuardado->pdf_theme;
+            $response = $this->generarPdfResponse($datosPresupuesto, $datosPresupuesto['numero_presupuesto']);
+            $response->headers->set('X-Presupuesto-Id', (string) $presupuestoGuardado->id);
+            $response->headers->set('X-Presupuesto-Numero', (string) $presupuestoGuardado->numero_presupuesto);
 
-            return $this->respuestaPdfPresupuestoUnificado(
-                $presupuestoGuardado,
-                is_string($theme) ? $theme : null,
-                [
-                    'X-Presupuesto-Id' => (string) $presupuestoGuardado->id,
-                    'X-Presupuesto-Numero' => (string) $presupuestoGuardado->numero_presupuesto,
-                ]
-            );
+            return $response;
         } catch (Throwable $e) {
             $this->log('Error al generar PDF desde formulario', [
                 'proveedor_id' => $proveedor->id,
@@ -797,12 +856,26 @@ class ProveedorPresupuestoController extends Controller
                 'numero_presupuesto' => $presupuesto->numero_presupuesto,
             ]);
 
-            $theme = $request->query('theme') ?? $request->query('pdf_theme');
+            $logoProveedorBase64 = $this->convertirLogoProveedorABase64($presupuesto->proveedor);
+            $proveedorEmisor = $presupuesto->proveedor;
+            $df = $proveedorEmisor?->direccion_fiscal;
+            $estado = \Illuminate\Support\Arr::get((array) ($df ?? []), 'estado', $proveedorEmisor->estado ?? 'México');
+            $lugar = $proveedorEmisor?->ciudad ? ($proveedorEmisor->ciudad . ', ' . $estado) : null;
+            $qrCode = $this->generarQrCodeParaPresupuesto($presupuesto);
 
-            return $this->respuestaPdfPresupuestoUnificado(
+            $datosVista = $this->datosVistaPdfPresupuestoGuardado(
                 $presupuesto,
-                is_string($theme) ? $theme : null
+                $proveedorEmisor,
+                $logoProveedorBase64,
+                $lugar,
+                $qrCode
             );
+            $datosVista = $this->aplicarTemaPdfADatos(
+                $datosVista,
+                $request->query('theme') ?? $request->query('pdf_theme') ?? $presupuesto->pdf_theme
+            );
+
+            return $this->generarPdfResponse($datosVista, $presupuesto->numero_presupuesto);
         } catch (Throwable $e) {
             $this->log('Error al generar PDF', [
                 'presupuesto_id' => $presupuesto->id,
@@ -1492,35 +1565,9 @@ class ProveedorPresupuestoController extends Controller
     }
 
     /**
-     * PDF unificado (DomPDF + merge de anexos PDF con título y numeración).
-     *
-     * @param  array<string, string>  $extraHeaders
-     */
-    private function respuestaPdfPresupuestoUnificado(
-        Presupuesto $presupuesto,
-        ?string $themeOverride = null,
-        array $extraHeaders = []
-    ): Response {
-        if ($themeOverride !== null && $themeOverride !== '') {
-            $presupuesto->pdf_theme = $this->presupuestoThemeService->resolveThemeKey($themeOverride);
-        }
-
-        $presupuesto->loadMissing(Presupuesto::eagerLodable());
-
-        $response = PresupuestoPdf::generarPdf($presupuesto);
-
-        foreach ($extraHeaders as $header => $value) {
-            $response->headers->set($header, $value);
-        }
-
-        return $response;
-    }
-
-    /**
      * Genera la respuesta PDF usando Laravel DomPDF.
      *
      * @param array<string, mixed> $datosPresupuesto
-     * @deprecated Usar {@see respuestaPdfPresupuestoUnificado()} para incluir anexos PDF.
      */
     private function generarPdfResponse(array $datosPresupuesto, string $numeroPresupuesto): Response
     {
@@ -1797,15 +1844,7 @@ class ProveedorPresupuestoController extends Controller
             'cantidad_descuento' => $presupuesto->cantidad_descuento,
             'iva_total' => $presupuesto->iva_total,
             'total' => $presupuesto->total,
-            'config_mostrar_totales' => (bool) ($presupuesto->config_mostrar_totales ?? true),
             'receptor_lineas' => PresupuestoPdf::lineasReceptorPdfDesdeColumnasPresupuesto($presupuesto),
-            'config_emisor_presupuesto_id' => $presupuesto->config_emisor_presupuesto_id,
-            'empresa_emisora_nombre' => $presupuesto->empresa_emisora_nombre,
-            'empresa_emisora_puesto' => $presupuesto->empresa_emisora_puesto,
-            'empresa_emisora_telefono' => $presupuesto->empresa_emisora_telefono,
-            'empresa_emisora_correo' => $presupuesto->empresa_emisora_correo,
-            'incluir_leyenda_atentamente' => (bool) ($presupuesto->incluir_leyenda_atentamente ?? true),
-            'empresa_emisora_nombre_comercial' => $presupuesto->empresa_emisora_nombre_comercial,
             'conceptos' => $presupuesto->conceptos->map(static function ($concepto) {
                 return [
                     'tipo' => $concepto->tipo ?? PresupuestoConcepto::TIPO_CONCEPTO,
@@ -1817,12 +1856,19 @@ class ProveedorPresupuestoController extends Controller
                 ];
             })->values()->all(),
             'anexos' => PresupuestoPdf::anexosParaPlantillaPdf($presupuesto),
-            'documentacion_adjuntos' => [],
             'terminos_enunciados' => $enunciadosClasificados['terminos'],
             'validaciones_enunciados' => $enunciadosClasificados['validaciones'],
             'observaciones_enunciados' => $enunciadosClasificados['observaciones'],
             'qr_code' => $qrCodeDataUri,
             'pdf_theme' => $presupuesto->pdf_theme,
+            'config_mostrar_totales' => (bool) ($presupuesto->config_mostrar_totales ?? true),
+            'config_emisor_presupuesto_id' => $presupuesto->config_emisor_presupuesto_id,
+            'empresa_emisora_nombre' => $presupuesto->empresa_emisora_nombre,
+            'empresa_emisora_puesto' => $presupuesto->empresa_emisora_puesto,
+            'empresa_emisora_telefono' => $presupuesto->empresa_emisora_telefono,
+            'empresa_emisora_correo' => $presupuesto->empresa_emisora_correo,
+            'incluir_leyenda_atentamente' => (bool) ($presupuesto->incluir_leyenda_atentamente ?? true),
+            'empresa_emisora_nombre_comercial' => $presupuesto->empresa_emisora_nombre_comercial,
         ];
     }
 

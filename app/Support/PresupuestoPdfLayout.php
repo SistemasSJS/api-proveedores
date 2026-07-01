@@ -3,7 +3,8 @@
 namespace App\Support;
 
 /**
- * Estimación de alturas (mm) del cuerpo presupuesto para alinear «Atentamente» al pie de la última hoja de la sección 1.
+ * Estimación de alturas (mm) del cuerpo del presupuesto (sin anexos) para alinear «Atentamente»
+ * al pie de la última hoja del presupuesto. Los anexos van siempre después en la plantilla PDF.
  */
 final class PresupuestoPdfLayout
 {
@@ -40,7 +41,6 @@ final class PresupuestoPdfLayout
         $gapPie = $medidas['gap_atentamente_footer_mm'];
 
         $secciones = self::estimarSeccionesMm($payload, $variant);
-        $terminosMm = (float) ($secciones['terminos_y_observaciones'] ?? 0.0);
         $alturaAntesTerminos = 0.0;
         foreach ($secciones as $clave => $valor) {
             if ($clave === 'terminos_y_observaciones') {
@@ -50,21 +50,21 @@ final class PresupuestoPdfLayout
         }
         $alturaAntesTerminos += self::huecosEntreSeccionesMm($secciones);
 
-        $alturaAntesCierre = $alturaAntesTerminos + $terminosMm;
+        $fragmentosTerminosMm = self::fragmentosVerticalesTerminosMm($payload, $variant);
+        $posicionFin = self::posicionTrasFlujoVerticalMm($alturaAntesTerminos, $fragmentosTerminosMm, $alturaUtil);
+        $alturaAntesCierre = $alturaAntesTerminos + array_sum($fragmentosTerminosMm);
         $alturaAtentamente = self::estimarAlturaBloqueAtentamenteMm($payload, $medidas);
-
-        $posicionFin = fmod($alturaAntesCierre, $alturaUtil);
-        if ($alturaAntesCierre > 0 && $posicionFin < 1.0) {
-            $posicionFin = $alturaUtil;
-        }
 
         $espacioLibre = max(0.0, $alturaUtil - $posicionFin);
         $necesario = $alturaAtentamente + $gapPie;
         $margenSeguridadMm = 3.0;
 
         $salto = $espacioLibre < ($necesario + $margenSeguridadMm);
-        // Espaciador solo para empujar Atentamente al pie de la misma hoja; nunca rellenar una hoja entera (evita hoja en blanco).
-        $espaciador = max(2.0, $espacioLibre - $necesario);
+        if ($salto) {
+            $espaciador = max(2.0, $alturaUtil - $necesario - $margenSeguridadMm);
+        } else {
+            $espaciador = max(2.0, $espacioLibre - $necesario);
+        }
         $espaciadorMaximoMm = max(2.0, $alturaUtil - $necesario - $margenSeguridadMm);
         if ($espaciador > $espaciadorMaximoMm) {
             $espaciador = $espaciadorMaximoMm;
@@ -133,7 +133,7 @@ final class PresupuestoPdfLayout
 
         return [
             'altura_util_mm' => max(165.0, $alturaUtil),
-            'gap_atentamente_footer_mm' => $lineaEspacioMm,
+            'gap_atentamente_footer_mm' => 12.0,
             'espacio_tras_titulo_atentamente_mm' => 2 * $lineaEspacioMm,
         ];
     }
@@ -239,6 +239,91 @@ final class PresupuestoPdfLayout
         }
 
         return $altura + 1.5;
+    }
+
+    /**
+     * Fragmentos de altura (mm) en orden de flujo: títulos y cada ítem de términos/observaciones por separado.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return list<float>
+     */
+    private static function fragmentosVerticalesTerminosMm(array $payload, string $variant = 'default'): array
+    {
+        $terminos = $payload['terminos_enunciados'] ?? [];
+        $validaciones = $payload['validaciones_enunciados'] ?? [];
+        $observaciones = $payload['observaciones_enunciados'] ?? [];
+        $lineaTermino = 4.2;
+        $fragmentos = [];
+
+        if (count($terminos) > 0) {
+            $fragmentos[] = 6.5;
+            foreach ($terminos as $texto) {
+                $fragmentos[] = self::alturaTextoMm((string) $texto, 95, $lineaTermino);
+            }
+        }
+        if (count($validaciones) > 0) {
+            $fragmentos[] = 5.0;
+            foreach ($validaciones as $texto) {
+                $fragmentos[] = $lineaTermino;
+            }
+        }
+        if (count($observaciones) > 0) {
+            $fragmentos[] = 5.0;
+            foreach ($observaciones as $obs) {
+                $fragmentos[] = self::alturaTextoMm((string) $obs, 95, $lineaTermino);
+            }
+        }
+
+        if ($fragmentos !== []) {
+            array_unshift($fragmentos, 4.0);
+        }
+
+        return $fragmentos;
+    }
+
+    /**
+     * Posición vertical (mm) al final del flujo, simulando saltos de página entre fragmentos.
+     *
+     * @param  list<float>  $fragmentosMm
+     */
+    private static function posicionTrasFlujoVerticalMm(float $alturaInicialMm, array $fragmentosMm, float $alturaUtil): float
+    {
+        if ($fragmentosMm === []) {
+            $pos = fmod($alturaInicialMm, $alturaUtil);
+            if ($alturaInicialMm > 0 && $pos < 1.0) {
+                return $alturaUtil;
+            }
+
+            return $pos;
+        }
+
+        $y = fmod($alturaInicialMm, $alturaUtil);
+        if ($alturaInicialMm > 0 && $y < 1.0) {
+            $y = 0.0;
+        }
+
+        foreach ($fragmentosMm as $frag) {
+            $frag = (float) $frag;
+            if ($frag <= 0) {
+                continue;
+            }
+            $restante = $frag;
+            while ($restante > 0.01) {
+                $espacioEnHoja = $alturaUtil - $y;
+                if ($espacioEnHoja < 0.5) {
+                    $y = 0.0;
+                    $espacioEnHoja = $alturaUtil;
+                }
+                $colocado = min($restante, $espacioEnHoja);
+                $restante -= $colocado;
+                $y += $colocado;
+                if ($y >= $alturaUtil - 0.5) {
+                    $y = 0.0;
+                }
+            }
+        }
+
+        return $y;
     }
 
     private static function alturaTextoMm(string $text, float $charsPorLinea, float $alturaLineaMm): float
