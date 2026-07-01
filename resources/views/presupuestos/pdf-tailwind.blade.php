@@ -194,10 +194,6 @@
         page-break-inside: auto;
     }
 
-    .terms-block--after-presupuesto .tw-terms li {
-        page-break-inside: auto;
-    }
-
     .atentamente-plain {
         width: 100%;
         margin: 0;
@@ -793,6 +789,20 @@
     .terms-block {
         margin-bottom: 3mm;
         page-break-inside: auto;
+    }
+
+    .terms-block--after-presupuesto .tw-terms,
+    .terms-block--after-presupuesto .tw-terms ul {
+        page-break-inside: auto;
+    }
+
+    .terms-block--after-presupuesto .tw-terms h3 {
+        page-break-after: avoid;
+    }
+
+    .terms-block--after-presupuesto .tw-terms ul li {
+        page-break-inside: avoid;
+        break-inside: avoid;
     }
 
     .tw-terms + .tw-terms {

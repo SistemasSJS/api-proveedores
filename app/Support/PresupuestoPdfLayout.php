@@ -9,6 +9,16 @@ final class PresupuestoPdfLayout
 {
     private const ALTURA_HOJA_LETRA_MM = 279.4;
 
+    /** Reserva vertical del subencabezado compacto (page_script) en páginas 2+. */
+    private const SUBENCABEZADO_CONTINUACION_MM = 24.0;
+
+    private const THEAD_TABLA_MM = 6.0;
+
+    /** Padding superior del contenedor tras salto antes de Atentamente (pdf-pagina-con-subencabezado). */
+    private const PADDING_SALTO_ATENTAMENTE_MM = 23.0;
+
+    private const MARGEN_SEGURIDAD_MM = 3.0;
+
     /**
      * @param  array<string, mixed>  $payload
      * @return array{
@@ -38,42 +48,37 @@ final class PresupuestoPdfLayout
         $medidas = self::medidasHojaMm($variant);
         $alturaUtil = $medidas['altura_util_mm'];
         $gapPie = $medidas['gap_atentamente_footer_mm'];
-
         $secciones = self::estimarSeccionesMm($payload, $variant);
-        $terminosMm = (float) ($secciones['terminos_y_observaciones'] ?? 0.0);
-        $alturaAntesTerminos = 0.0;
-        foreach ($secciones as $clave => $valor) {
-            if ($clave === 'terminos_y_observaciones') {
-                continue;
-            }
-            $alturaAntesTerminos += (float) $valor;
-        }
-        $alturaAntesTerminos += self::huecosEntreSeccionesMm($secciones);
 
-        $alturaAntesCierre = $alturaAntesTerminos + $terminosMm;
         $alturaAtentamente = self::estimarAlturaBloqueAtentamenteMm($payload, $medidas);
+        $reservaPieHtmlMm = $alturaAtentamente + $gapPie + 2.0;
 
-        $posicionFin = fmod($alturaAntesCierre, $alturaUtil);
-        if ($alturaAntesCierre > 0 && $posicionFin < 1.0) {
-            $posicionFin = $alturaUtil;
+        $flujo = self::simularFlujoHastaFinTerminos($payload, $variant, $alturaUtil);
+        $pageFin = $flujo['page'];
+        $yFin = $flujo['y'];
+        $alturaAntesCierre = $flujo['altura_total'];
+
+        $capFin = self::capacidadPaginaMm($pageFin, $alturaUtil);
+        $salto = ($yFin + $reservaPieHtmlMm + self::MARGEN_SEGURIDAD_MM) > $capFin;
+
+        if ($salto) {
+            $capAtte = self::capacidadPaginaMm($pageFin + 1, $alturaUtil) - self::PADDING_SALTO_ATENTAMENTE_MM;
+            $espacioLibre = max(0.0, $capAtte - $reservaPieHtmlMm);
+            $espaciador = max(2.0, $espacioLibre - self::MARGEN_SEGURIDAD_MM);
+        } else {
+            $espacioLibre = max(0.0, $capFin - $yFin - $reservaPieHtmlMm);
+            $espaciador = max(2.0, $espacioLibre);
         }
 
-        $espacioLibre = max(0.0, $alturaUtil - $posicionFin);
-        $necesario = $alturaAtentamente + $gapPie;
-        $margenSeguridadMm = 3.0;
-
-        $salto = $espacioLibre < ($necesario + $margenSeguridadMm);
-        // Espaciador solo para empujar Atentamente al pie de la misma hoja; nunca rellenar una hoja entera (evita hoja en blanco).
-        $espaciador = max(2.0, $espacioLibre - $necesario);
-        $espaciadorMaximoMm = max(2.0, $alturaUtil - $necesario - $margenSeguridadMm);
+        $espaciadorMaximoMm = max(2.0, $alturaUtil - $reservaPieHtmlMm - self::MARGEN_SEGURIDAD_MM);
         if ($espaciador > $espaciadorMaximoMm) {
             $espaciador = $espaciadorMaximoMm;
         }
 
         return [
-            'espaciador_mm' => max(2.0, round($espaciador, 2)),
+            'espaciador_mm' => round($espaciador, 2),
             'salto_pagina_antes' => $salto,
-            'reserva_pie_html_mm' => round($alturaAtentamente + $gapPie + 2.0, 2),
+            'reserva_pie_html_mm' => round($reservaPieHtmlMm, 2),
             'altura_contenido_antes_cierre_mm' => round($alturaAntesCierre, 2),
             'altura_atentamente_mm' => round($alturaAtentamente, 2),
             'altura_util_pagina_mm' => round($alturaUtil, 2),
@@ -82,30 +87,190 @@ final class PresupuestoPdfLayout
     }
 
     /**
-     * Espacio vertical estimado entre bloques del cuerpo (márgenes / separadores).
+     * Simula paginación vertical: bloques fijos, tabla fila a fila (con subencabezado pág. 2+)
+     * y términos ítem a ítem (sin partir cada enunciado).
      *
-     * @param  array<string, float>  $secciones
+     * @param  array<string, mixed>  $payload
+     * @return array{page: int, y: float, altura_total: float}
      */
-    private static function huecosEntreSeccionesMm(array $secciones): float
+    private static function simularFlujoHastaFinTerminos(array $payload, string $variant, float $alturaUtil): array
     {
-        $hueco = 0.0;
+        $pageNum = 1;
+        $y = 0.0;
+        $alturaTotal = 0.0;
+
+        $consumir = static function (float $h, bool $evitarCorte = false) use (&$pageNum, &$y, &$alturaTotal, $alturaUtil): void {
+            if ($h <= 0) {
+                return;
+            }
+            $pendiente = $h;
+            while ($pendiente > 0.01) {
+                $cap = self::capacidadPaginaMm($pageNum, $alturaUtil);
+                $resto = $cap - $y;
+                if ($evitarCorte && $pendiente > $resto && $y > 0.01) {
+                    $pageNum++;
+                    $y = 0.0;
+
+                    continue;
+                }
+                if ($pendiente <= $resto + 0.01) {
+                    $y += $pendiente;
+                    $alturaTotal += $pendiente;
+                    $pendiente = 0.0;
+
+                    continue;
+                }
+                if ($y > 0.01) {
+                    $alturaTotal += $resto;
+                    $pendiente -= $resto;
+                    $pageNum++;
+                    $y = 0.0;
+
+                    continue;
+                }
+                $alturaTotal += $cap;
+                $pendiente -= $cap;
+                $pageNum++;
+                $y = 0.0;
+            }
+        };
+
+        $consumirFilaTabla = static function (float $h) use (&$pageNum, &$y, &$alturaTotal, $alturaUtil): void {
+            if ($h <= 0) {
+                return;
+            }
+            $resto = self::capacidadPaginaMm($pageNum, $alturaUtil) - $y;
+            if ($h > $resto && $y > 0.01) {
+                $pageNum++;
+                $y = self::THEAD_TABLA_MM;
+                $alturaTotal += self::THEAD_TABLA_MM;
+            }
+            $y += $h;
+            $alturaTotal += $h;
+        };
+
+        $secciones = self::estimarSeccionesMm($payload, $variant);
+
+        $consumir((float) ($secciones['encabezado'] ?? 0));
+        $consumir((float) ($secciones['receptor'] ?? 0));
         if (($secciones['descripcion_general'] ?? 0) > 0) {
-            $hueco += 3.0;
+            $consumir(3.0);
+            $consumir((float) $secciones['descripcion_general']);
         }
-        if (($secciones['titulo_presupuesto'] ?? 0) > 0) {
-            $hueco += 4.0;
-        }
-        if (($secciones['tabla_conceptos'] ?? 0) > 0) {
-            $hueco += 3.0;
-        }
-        if (($secciones['totales'] ?? 0) > 0) {
-            $hueco += 3.0;
-        }
-        if (($secciones['terminos_y_observaciones'] ?? 0) > 0) {
-            $hueco += 2.0;
+        $consumir(4.0);
+        $consumir((float) ($secciones['titulo_presupuesto'] ?? 0));
+        $consumir(3.0);
+
+        $conceptos = $payload['conceptos'] ?? [];
+        $lineaTabla = $variant === 'tailwind' ? 5.2 : 5.5;
+        $consumir(self::THEAD_TABLA_MM);
+        if (count($conceptos) === 0) {
+            $consumirFilaTabla(10.0);
+        } else {
+            foreach ($conceptos as $concepto) {
+                if (! is_array($concepto)) {
+                    continue;
+                }
+                if (self::esConceptoParrafo($concepto)) {
+                    $h = self::alturaTextoMm((string) ($concepto['descripcion'] ?? ''), 72, 4.0) + 2.5;
+                    $consumirFilaTabla($h);
+                } else {
+                    $consumirFilaTabla($lineaTabla);
+                }
+            }
         }
 
-        return $hueco;
+        $consumir(3.0);
+        if (($payload['config_mostrar_totales'] ?? true) && ($secciones['totales'] ?? 0) > 0) {
+            $consumir((float) $secciones['totales'], true);
+        }
+
+        foreach (self::fragmentosVerticalesTerminosMm($payload, $variant) as $fragmento) {
+            $consumir($fragmento['altura_mm'], $fragmento['evitar_corte']);
+        }
+
+        return [
+            'page' => $pageNum,
+            'y' => $y,
+            'altura_total' => $alturaTotal,
+        ];
+    }
+
+    /**
+     * Fragmentos verticales de términos / observaciones (un ítem = un bloque indivisible).
+     *
+     * @param  array<string, mixed>  $payload
+     * @return list<array{altura_mm: float, evitar_corte: bool}>
+     */
+    private static function fragmentosVerticalesTerminosMm(array $payload, string $variant): array
+    {
+        $terminos = $payload['terminos_enunciados'] ?? [];
+        $validaciones = $payload['validaciones_enunciados'] ?? [];
+        $observaciones = $payload['observaciones_enunciados'] ?? [];
+        $lineaTermino = 4.2;
+        $fragmentos = [];
+
+        $hayAlguno = count($terminos) > 0 || count($validaciones) > 0 || count($observaciones) > 0;
+        if (! $hayAlguno) {
+            return $fragmentos;
+        }
+
+        $fragmentos[] = ['altura_mm' => 4.0, 'evitar_corte' => true];
+
+        if (count($terminos) > 0) {
+            $fragmentos[] = ['altura_mm' => 6.5, 'evitar_corte' => true];
+            foreach ($terminos as $texto) {
+                $fragmentos[] = [
+                    'altura_mm' => self::alturaTextoMm((string) $texto, 95, $lineaTermino) + 0.6,
+                    'evitar_corte' => true,
+                ];
+            }
+        }
+        if (count($validaciones) > 0) {
+            $fragmentos[] = ['altura_mm' => 5.0, 'evitar_corte' => true];
+            foreach ($validaciones as $item) {
+                $fragmentos[] = [
+                    'altura_mm' => self::alturaTextoMm((string) $item, 95, $lineaTermino) + 0.6,
+                    'evitar_corte' => true,
+                ];
+            }
+        }
+        if (count($observaciones) > 0) {
+            $fragmentos[] = ['altura_mm' => 5.0, 'evitar_corte' => true];
+            foreach ($observaciones as $obs) {
+                $fragmentos[] = [
+                    'altura_mm' => self::alturaTextoMm((string) $obs, 95, $lineaTermino) + 0.6,
+                    'evitar_corte' => true,
+                ];
+            }
+        }
+
+        if ($variant === 'tailwind' && count($fragmentos) > 1) {
+            $fragmentos[0]['altura_mm'] = 3.0;
+        }
+
+        return $fragmentos;
+    }
+
+    private static function capacidadPaginaMm(int $pageNum, float $alturaUtil): float
+    {
+        if ($pageNum <= 1) {
+            return $alturaUtil;
+        }
+
+        return max(100.0, $alturaUtil - self::SUBENCABEZADO_CONTINUACION_MM);
+    }
+
+    /**
+     * @param  array<string, mixed>  $concepto
+     */
+    private static function esConceptoParrafo(array $concepto): bool
+    {
+        if (($concepto['tipo'] ?? 'concepto') === 'parrafo') {
+            return true;
+        }
+
+        return mb_strtolower(trim((string) ($concepto['unidad'] ?? ''))) === 'párrafo';
     }
 
     /**
@@ -156,8 +321,10 @@ final class PresupuestoPdfLayout
 
         $tablaMm = 6.0;
         foreach ($conceptos as $concepto) {
-            $tipo = (string) ($concepto['tipo'] ?? 'concepto');
-            if ($tipo === 'parrafo') {
+            if (! is_array($concepto)) {
+                continue;
+            }
+            if (self::esConceptoParrafo($concepto)) {
                 $tablaMm += self::alturaTextoMm((string) ($concepto['descripcion'] ?? ''), 72, 4.0) + 2.5;
             } else {
                 $tablaMm += $lineaTabla;

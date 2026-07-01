@@ -177,8 +177,10 @@
                     page-break-inside: auto;
                 }
 
-                .terms-block--after-presupuesto .terminos-list li {
-                    page-break-inside: auto;
+                .terms-block--after-presupuesto .terminos-list li,
+                .terms-block--after-presupuesto .observaciones-list li {
+                    page-break-inside: avoid;
+                    break-inside: avoid;
                 }
 
                 .atentamente-plain {
