@@ -1,6 +1,7 @@
         @php
             use App\Support\PresupuestoPdf;
             use App\Support\PresupuestoPdfLayout;
+            use App\Support\PresupuestoParrafoPdf;
 
             $margenMm = 25.4;
             $footerHeightMm = 25.4; // Espacio reservado para pie de página en cada hoja (carta)
@@ -20,9 +21,31 @@
             $paginasAnexosPdf = $haySeccionAnexos ? (int) ceil(count($anexosLista) / 4) : 0;
             $paginasDocumentacionPdf = $haySeccionDocumentacion ? count($documentacionLista) : 0;
             $paginasTrasSeccionPresupuesto = $paginasAnexosPdf + $paginasDocumentacionPdf;
-            $cierreAtentamente = PresupuestoPdfLayout::calcularCierreAtentamente($presupuesto, 'default');
+            $paginacionBloques = PresupuestoPdfLayout::calcularPaginacionBloquesPresupuesto($presupuesto, 'default');
+            $cierreAtentamente = $paginacionBloques['cierre_atentamente'];
+            $saltoAntesTotales = (bool) ($paginacionBloques['salto_antes_totales'] ?? false);
+            $saltoAntesTerminos = (bool) ($paginacionBloques['salto_antes_terminos'] ?? false);
+            $saltoAntesUltimoConcepto = (bool) ($paginacionBloques['salto_antes_ultimo_concepto'] ?? false);
+            $conceptosListaPdf = $presupuesto['conceptos'] ?? [];
+            $ultimoConceptoSeparado = null;
+            $conceptosEnTablaPdf = $conceptosListaPdf;
+            if (count($conceptosListaPdf) > 0) {
+                $ultimoConceptoPdf = $conceptosListaPdf[array_key_last($conceptosListaPdf)];
+                if (! is_array($ultimoConceptoPdf)) {
+                    $ultimoConceptoPdf = null;
+                }
+                if ($ultimoConceptoPdf !== null) {
+                    $ultimoEsParrafoPdf = PresupuestoParrafoPdf::esLineaParrafo($ultimoConceptoPdf);
+                    if ($ultimoEsParrafoPdf || $saltoAntesUltimoConcepto) {
+                        $ultimoConceptoSeparado = $ultimoConceptoPdf;
+                        $conceptosEnTablaPdf = array_slice($conceptosListaPdf, 0, -1);
+                    }
+                }
+            }
             $atentamenteEnPieDePaginaPdf = $mostrarAtentamente;
-            $bodyPaddingBottomMm = 4;
+            $bodyPaddingBottomMm = $footerHeightMm + 8;
+            $margenPaginaMm = 25.5;
+            $margenPaginaSuperiorContinuacionMm = $margenPaginaMm + 24;
             $tieneBloqueTerminos = count($terminosLista) > 0
                 || count($validacionesLista) > 0
                 || count($observacionesLista) > 0;
@@ -46,7 +69,12 @@
 
                 @page {
                     size: letter;
-                    margin: 25.5mm;
+                    margin: {{ $margenPaginaMm }}mm;
+                    margin-top: {{ $margenPaginaSuperiorContinuacionMm }}mm;
+                }
+
+                @page :first {
+                    margin-top: {{ $margenPaginaMm }}mm;
                 }
 
                 .page-top-spacing {
@@ -591,27 +619,84 @@
                     font-size: 7pt;
                 }
 
+                .presupuesto-table tbody tr:not(.linea-parrafo) {
+                    page-break-inside: avoid;
+                    break-inside: avoid;
+                }
+
+                .presupuesto-table tbody tr.linea-parrafo {
+                    page-break-inside: avoid;
+                    break-inside: avoid;
+                    height: 14mm;
+                    max-height: 14mm;
+                }
+
                 .presupuesto-table tbody tr.linea-parrafo td {
                     text-align: left;
                     font-weight: 400;
                     color: #334155;
-                    padding: 3mm 2.5mm;
+                    padding: 2mm 2.5mm;
                     line-height: 1.45;
-                    white-space: pre-wrap;
+                    white-space: normal;
+                    word-wrap: break-word;
                     background: #f8fafc;
+                    height: 14mm;
                     max-height: 14mm;
                     overflow: hidden;
+                    box-sizing: border-box;
+                    vertical-align: top;
                 }
 
                 /* ========== 5) TOTALES (alineado con tabla) ========== */
+                .presupuesto-bloque-ultimo-concepto {
+                    width: 100%;
+                    margin-bottom: 4mm;
+                    page-break-inside: avoid;
+                    break-inside: avoid;
+                }
+
+                .presupuesto-bloque-ultimo-concepto--salto-pagina {
+                    page-break-before: always;
+                    break-before: page;
+                    padding-top: 2mm;
+                    box-sizing: border-box;
+                }
+
+                .presupuesto-bloque-conceptos {
+                    display: block;
+                    width: 100%;
+                    page-break-inside: auto;
+                    page-break-after: auto;
+                    margin-bottom: 6mm;
+                }
+
                 .terms-block {
                     margin-bottom: 4mm;
                     page-break-inside: auto;
                     page-break-before: auto;
                 }
 
+                .presupuesto-bloque-totales {
+                    display: block;
+                    width: 100%;
+                    page-break-before: auto;
+                    page-break-inside: avoid;
+                    break-inside: avoid;
+                    margin-bottom: 4mm;
+                    padding-bottom: 2mm;
+                }
+
                 .totales-section {
                     page-break-inside: avoid;
+                    break-inside: avoid;
+                }
+
+                .presupuesto-bloque-totales--salto-pagina,
+                .presupuesto-bloque-terminos--salto-pagina {
+                    page-break-before: always;
+                    break-before: page;
+                    padding-top: 2mm;
+                    box-sizing: border-box;
                 }
 
                 .importe-con-letra {
@@ -945,7 +1030,7 @@
                 }
 
                 .pdf-pagina-con-subencabezado {
-                    padding-top: 23mm;
+                    padding-top: 2mm;
                     box-sizing: border-box;
                 }
 
@@ -1110,50 +1195,38 @@
                         @endif
 
                         <!-- 4) TÍTULO Y TABLA PRESUPUESTO -->
+                        <div class="presupuesto-bloque-conceptos">
                         <div class="presupuesto-title">Presupuesto</div>
                         <table class="presupuesto-table">
                             <thead>
-                                <tr>
-                                    <th scope="col">#</th>
-                                    <th scope="col">Descripción</th>
-                                    <th scope="col">Cantidad</th>
-                                    <th scope="col">Unidad</th>
-                                    <th scope="col">Precio Unitario</th>
-                                    <th scope="col">Importe</th>
-                                </tr>
+                                @include('presupuestos.partials.presupuesto-pdf-tabla-conceptos-thead', [
+                                    'variant' => 'default',
+                                ])
                             </thead>
                             <tbody>
                                 @php
-                                    $conceptos = $presupuesto['conceptos'] ?? [];
+                                    $conceptos = $conceptosEnTablaPdf;
                                     $subtotal = 0;
+                                    foreach ($conceptosListaPdf as $conceptoSubtotal) {
+                                        if (! is_array($conceptoSubtotal)) {
+                                            continue;
+                                        }
+                                        if (! PresupuestoParrafoPdf::esLineaParrafo($conceptoSubtotal)) {
+                                            $cant = $conceptoSubtotal['cantidad'] ?? 1;
+                                            $precio = $conceptoSubtotal['precio_unitario'] ?? 0;
+                                            $subtotal += $cant * $precio;
+                                        }
+                                    }
                                 @endphp
                                 @if (count($conceptos) > 0)
                                     @foreach ($conceptos as $index => $concepto)
-                                        @php
-                                            $tipoLinea = $concepto['tipo'] ?? 'concepto';
-                                            $esParrafo = $tipoLinea === 'parrafo';
-                                            $cantidad = $concepto['cantidad'] ?? 1;
-                                            $precioUnitario = $concepto['precio_unitario'] ?? 0;
-                                            $importe = $esParrafo ? 0 : $cantidad * $precioUnitario;
-                                            $subtotal += $importe;
-                                        @endphp
-                                        @if ($esParrafo)
-                                            <tr class="linea-parrafo">
-                                                <td>{{ $index + 1 }}</td>
-                                                <td colspan="5">{{ $concepto['descripcion'] ?? '' }}</td>
-                                            </tr>
-                                        @else
-                                        <tr>
-                                            <td>{{ $index + 1 }}</td>
-                                            <td>{{ $concepto['descripcion'] ?? 'Sin descripción' }}</td>
-                                            <td>{{ number_format($cantidad, 2, '.', ',') }}</td>
-                                            <td>{{ strtoupper($concepto['unidad'] ?? 'PZA') }}</td>
-                                            <td>${{ number_format($precioUnitario, 2, '.', ',') }}</td>
-                                            <td>${{ number_format($importe, 2, '.', ',') }}</td>
-                                        </tr>
-                                        @endif
+                                        @include('presupuestos.partials.presupuesto-pdf-fila-concepto', [
+                                            'concepto' => $concepto,
+                                            'numeroFila' => $index + 1,
+                                            'variant' => 'default',
+                                        ])
                                     @endforeach
-                                @else
+                                @elseif ($ultimoConceptoSeparado === null)
                                     <tr>
                                         <td colspan="6" class="no-conceptos">No hay conceptos registrados
                                         </td>
@@ -1161,9 +1234,37 @@
                                 @endif
                             </tbody>
                         </table>
+                        @if ($ultimoConceptoSeparado !== null)
+                            <div @class([
+                                'presupuesto-bloque-ultimo-concepto',
+                                'presupuesto-bloque-ultimo-concepto--salto-pagina' => $saltoAntesUltimoConcepto,
+                            ])>
+                                <table class="presupuesto-table presupuesto-table--ultimo-concepto">
+                                    @if ($saltoAntesUltimoConcepto)
+                                        <thead>
+                                            @include('presupuestos.partials.presupuesto-pdf-tabla-conceptos-thead', [
+                                                'variant' => 'default',
+                                            ])
+                                        </thead>
+                                    @endif
+                                    <tbody>
+                                        @include('presupuestos.partials.presupuesto-pdf-fila-concepto', [
+                                            'concepto' => $ultimoConceptoSeparado,
+                                            'numeroFila' => count($conceptosListaPdf),
+                                            'variant' => 'default',
+                                        ])
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
+                        </div>
 
                         <!-- 5) TOTALES -->
                         @if ($presupuesto['config_mostrar_totales'] ?? true)
+                        <div @class([
+                            'presupuesto-bloque-totales',
+                            'presupuesto-bloque-totales--salto-pagina' => $saltoAntesTotales,
+                        ])>
                         <div class="totales-section">
                             @php
                                 $subtotalCalculado = (float) ($presupuesto['subtotal'] ?? $subtotal);
@@ -1224,12 +1325,16 @@
                             </div>
                             <div class="after-table-space after-table-space--compact"></div>
                         </div>
+                        </div>
                         @endif
 
                     @if ($tieneBloqueTerminos || $mostrarAtentamente)
                         <div class="presupuesto-cierre-terminos-atentamente">
                     @if ($tieneBloqueTerminos)
-                        <div class="terms-block terms-block--after-presupuesto">
+                        <div @class([
+                            'terms-block terms-block--after-presupuesto presupuesto-bloque-terminos',
+                            'presupuesto-bloque-terminos--salto-pagina' => $saltoAntesTerminos,
+                        ])>
                             @include('presupuestos.partials.presupuesto-pdf-terminos', [
                                 'variant' => 'default',
                                 'terminosLista' => $terminosLista,

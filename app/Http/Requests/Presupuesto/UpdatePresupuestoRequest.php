@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Presupuesto;
 
 use App\Models\PresupuestoConcepto;
+use App\Support\PresupuestoParrafoPdf;
 use App\Services\Presupuesto\PresupuestoThemeService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
@@ -44,6 +45,23 @@ class UpdatePresupuestoRequest extends FormRequest
         }
 
         $this->merge($merge);
+
+        $conceptos = $this->input('conceptos');
+        if (is_array($conceptos)) {
+            foreach ($conceptos as $index => $concepto) {
+                if (! is_array($concepto)) {
+                    continue;
+                }
+                $tipo = $concepto['tipo'] ?? PresupuestoConcepto::TIPO_CONCEPTO;
+                if ($tipo !== PresupuestoConcepto::TIPO_PARRAFO) {
+                    continue;
+                }
+                $conceptos[$index]['descripcion'] = PresupuestoParrafoPdf::sanitizarTexto(
+                    (string) ($concepto['descripcion'] ?? '')
+                );
+            }
+            $this->merge(['conceptos' => $conceptos]);
+        }
     }
 
     private function normalizeReceptorText(mixed $value): ?string

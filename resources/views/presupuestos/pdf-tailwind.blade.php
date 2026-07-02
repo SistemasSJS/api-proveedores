@@ -2,6 +2,7 @@
     use App\Services\Presupuesto\PresupuestoThemeService;
     use App\Support\PresupuestoPdf;
     use App\Support\PresupuestoPdfLayout;
+    use App\Support\PresupuestoParrafoPdf;
 
     $margenMm = 20;
     $footerHeightMm = 25.4;
@@ -21,7 +22,27 @@
     $paginasAnexosPdf = $haySeccionAnexos ? (int) ceil(count($anexosLista) / 4) : 0;
     $paginasDocumentacionPdf = $haySeccionDocumentacion ? count($documentacionLista) : 0;
     $paginasTrasSeccionPresupuesto = $paginasAnexosPdf + $paginasDocumentacionPdf;
-    $cierreAtentamente = PresupuestoPdfLayout::calcularCierreAtentamente($presupuesto, 'tailwind');
+    $paginacionBloques = PresupuestoPdfLayout::calcularPaginacionBloquesPresupuesto($presupuesto, 'tailwind');
+    $cierreAtentamente = $paginacionBloques['cierre_atentamente'];
+    $saltoAntesTotales = (bool) ($paginacionBloques['salto_antes_totales'] ?? false);
+    $saltoAntesTerminos = (bool) ($paginacionBloques['salto_antes_terminos'] ?? false);
+    $saltoAntesUltimoConcepto = (bool) ($paginacionBloques['salto_antes_ultimo_concepto'] ?? false);
+    $conceptosListaPdf = $presupuesto['conceptos'] ?? [];
+    $ultimoConceptoSeparado = null;
+    $conceptosEnTablaPdf = $conceptosListaPdf;
+    if (count($conceptosListaPdf) > 0) {
+        $ultimoConceptoPdf = $conceptosListaPdf[array_key_last($conceptosListaPdf)];
+        if (! is_array($ultimoConceptoPdf)) {
+            $ultimoConceptoPdf = null;
+        }
+        if ($ultimoConceptoPdf !== null) {
+            $ultimoEsParrafoPdf = PresupuestoParrafoPdf::esLineaParrafo($ultimoConceptoPdf);
+            if ($ultimoEsParrafoPdf || $saltoAntesUltimoConcepto) {
+                $ultimoConceptoSeparado = $ultimoConceptoPdf;
+                $conceptosEnTablaPdf = array_slice($conceptosListaPdf, 0, -1);
+            }
+        }
+    }
     $atentamenteEnPieDePaginaPdf = $mostrarAtentamente;
     $tieneBloqueTerminos = count($terminosLista) > 0
         || count($validacionesLista) > 0
@@ -32,7 +53,9 @@
     $presupuestoTableHeaderCss = $presupuestoThemeService->generateTableHeaderCss($pdfThemeKey);
     $thColors = $presupuestoThemeService->tableHeaderColors($pdfThemeKey);
     $thCellStyle = 'background-color:'.$thColors['bg'].';color:'.$thColors['text'].';border:1px solid '.$thColors['border'].';';
-    $bodyPaddingBottomMm = 4;
+    $bodyPaddingBottomMm = $footerHeightMm + 8;
+    $margenPaginaMm = 25.5;
+    $margenPaginaSuperiorContinuacionMm = $margenPaginaMm + 24;
     $pdfDebugBordesContenedores = false;
 @endphp
 <!DOCTYPE html>
@@ -48,7 +71,12 @@
 <style>
     @page {
         size: letter;
-        margin: 25.5mm;
+        margin: {{ $margenPaginaMm }}mm;
+        margin-top: {{ $margenPaginaSuperiorContinuacionMm }}mm;
+    }
+
+    @page :first {
+        margin-top: {{ $margenPaginaMm }}mm;
     }
 
     {!! $presupuestoThemeCss !!}
@@ -468,8 +496,73 @@
     .tw-table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 6mm;
+        margin-bottom: 0;
         table-layout: fixed;
+    }
+
+    .presupuesto-bloque-ultimo-concepto {
+        width: 100%;
+        margin-top: 0;
+        margin-bottom: 4mm;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    .presupuesto-bloque-ultimo-concepto--salto-pagina {
+        page-break-before: always;
+        break-before: page;
+        padding-top: 2mm;
+        box-sizing: border-box;
+    }
+
+    .tw-table.tw-table--ultimo-concepto {
+        margin-bottom: 0;
+    }
+
+    .presupuesto-bloque-conceptos {
+        display: block;
+        width: 100%;
+        page-break-inside: auto;
+        page-break-after: auto;
+        margin-bottom: 6mm;
+    }
+
+    .presupuesto-bloque-totales {
+        display: block;
+        width: 100%;
+        page-break-before: auto;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        margin-bottom: 4mm;
+        padding-bottom: 2mm;
+    }
+
+    .presupuesto-bloque-totales--salto-pagina,
+    .presupuesto-bloque-totales.presupuesto-bloque-totales--salto-pagina {
+        page-break-before: always;
+        break-before: page;
+    }
+
+    .tw-totals-wrap {
+        width: 100%;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    .presupuesto-bloque-totales--salto-pagina,
+    .presupuesto-bloque-terminos--salto-pagina {
+        page-break-before: always;
+        break-before: page;
+        padding-top: 2mm;
+        box-sizing: border-box;
+    }
+
+    .tw-page-break {
+        page-break-before: always;
+    }
+
+    .presupuesto-bloque-totales.presupuesto-bloque-totales--salto-pagina {
+        page-break-before: always;
     }
 
     .tw-table thead {
@@ -554,24 +647,37 @@
         padding: 5mm !important;
     }
 
+    .tw-table tbody tr:not(.tw-linea-parrafo) {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    .tw-table tbody tr.tw-linea-parrafo {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        height: 14mm;
+        max-height: 14mm;
+    }
+
     .tw-table tbody tr.tw-linea-parrafo td {
         text-align: left;
         font-weight: 400;
         color: #111827;
-        padding: 3mm 2.5mm;
+        padding: 2mm 2.5mm;
         line-height: 1.45;
-        white-space: pre-wrap;
+        white-space: normal;
+        word-wrap: break-word;
+        overflow: hidden;
+        height: 14mm;
+        max-height: 14mm;
+        box-sizing: border-box;
+        vertical-align: top;
         background: var(--paragraph-row-bg);
     }
 
     .tw-table tbody tr.tw-linea-parrafo td[colspan] {
         text-align: left;
         font-weight: 400;
-    }
-
-    .tw-totals-wrap {
-        width: 100%;
-        page-break-inside: avoid;
     }
 
     .tw-totals-inner {
@@ -581,12 +687,16 @@
         border-radius: 1mm;
         overflow: hidden;
         background: var(--bg-body);
+        page-break-inside: avoid;
+        break-inside: avoid;
     }
 
     .tw-totals-table {
         width: 100%;
         border-collapse: collapse;
         table-layout: fixed;
+        page-break-inside: avoid;
+        break-inside: avoid;
     }
 
     .tw-totals-table td {
@@ -690,12 +800,8 @@
     }
 
     .pdf-pagina-con-subencabezado {
-        padding-top: 23mm;
+        padding-top: 2mm;
         box-sizing: border-box;
-    }
-
-    .tw-page-break {
-        page-break-before: always;
     }
 
     .tw-anexos-page {
@@ -1061,59 +1167,77 @@
                 </div>
             @endif
 
+            <div class="presupuesto-bloque-conceptos">
             <div class="tw-section-title">Presupuesto</div>
             <table class="tw-table">
                 <thead>
-                    <tr>
-                        <th scope="col" style="width:5%;{{ $thCellStyle }}">#</th>
-                        <th scope="col" style="width:36%;{{ $thCellStyle }}">Descripción</th>
-                        <th scope="col" style="width:10%;{{ $thCellStyle }}">Cantidad</th>
-                        <th scope="col" style="width:10%;{{ $thCellStyle }}">Unidad</th>
-                        <th scope="col" style="width:19%;{{ $thCellStyle }}">Precio unitario</th>
-                        <th scope="col" style="width:20%;{{ $thCellStyle }}">Importe</th>
-                    </tr>
+                    @include('presupuestos.partials.presupuesto-pdf-tabla-conceptos-thead', [
+                        'variant' => 'tailwind',
+                        'thCellStyle' => $thCellStyle,
+                    ])
                 </thead>
                 <tbody>
                     @php
-                        $conceptos = $presupuesto['conceptos'] ?? [];
+                        $conceptos = $conceptosEnTablaPdf;
                         $subtotal = 0;
+                        foreach ($conceptosListaPdf as $conceptoSubtotal) {
+                            if (! is_array($conceptoSubtotal)) {
+                                continue;
+                            }
+                            $esParrafoSub = PresupuestoParrafoPdf::esLineaParrafo($conceptoSubtotal);
+                            if (! $esParrafoSub) {
+                                $cant = $conceptoSubtotal['cantidad'] ?? 1;
+                                $precio = $conceptoSubtotal['precio_unitario'] ?? 0;
+                                $subtotal += $cant * $precio;
+                            }
+                        }
                     @endphp
                     @if (count($conceptos) > 0)
                         @foreach ($conceptos as $index => $concepto)
-                            @php
-                                $tipoLinea = $concepto['tipo'] ?? 'concepto';
-                                $esParrafo = $tipoLinea === 'parrafo'
-                                    || mb_strtolower(trim((string) ($concepto['unidad'] ?? ''))) === 'párrafo';
-                                $cantidad = $concepto['cantidad'] ?? 1;
-                                $precioUnitario = $concepto['precio_unitario'] ?? 0;
-                                $importe = $esParrafo ? 0 : $cantidad * $precioUnitario;
-                                $subtotal += $importe;
-                            @endphp
-                            @if ($esParrafo)
-                                <tr class="tw-linea-parrafo">
-                                    <td>{{ $index + 1 }}</td>
-                                    <td colspan="5">{{ $concepto['descripcion'] ?? '' }}</td>
-                                </tr>
-                            @else
-                            <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ $concepto['descripcion'] ?? 'Sin descripción' }}</td>
-                                <td>{{ number_format($cantidad, 2, '.', ',') }}</td>
-                                <td>{{ strtoupper($concepto['unidad'] ?? 'PZA') }}</td>
-                                <td>${{ number_format($precioUnitario, 2, '.', ',') }}</td>
-                                <td>${{ number_format($importe, 2, '.', ',') }}</td>
-                            </tr>
-                            @endif
+                            @include('presupuestos.partials.presupuesto-pdf-fila-concepto', [
+                                'concepto' => $concepto,
+                                'numeroFila' => $index + 1,
+                                'variant' => 'tailwind',
+                            ])
                         @endforeach
-                    @else
+                    @elseif ($ultimoConceptoSeparado === null)
                         <tr>
                             <td colspan="6" class="tw-no-rows">No hay conceptos registrados</td>
                         </tr>
                     @endif
                 </tbody>    
             </table>
+            @if ($ultimoConceptoSeparado !== null)
+                <div @class([
+                    'presupuesto-bloque-ultimo-concepto',
+                    'presupuesto-bloque-ultimo-concepto--salto-pagina' => $saltoAntesUltimoConcepto,
+                ])>
+                    <table class="tw-table tw-table--ultimo-concepto">
+                        @if ($saltoAntesUltimoConcepto)
+                            <thead>
+                                @include('presupuestos.partials.presupuesto-pdf-tabla-conceptos-thead', [
+                                    'variant' => 'tailwind',
+                                    'thCellStyle' => $thCellStyle,
+                                ])
+                            </thead>
+                        @endif
+                        <tbody>
+                            @include('presupuestos.partials.presupuesto-pdf-fila-concepto', [
+                                'concepto' => $ultimoConceptoSeparado,
+                                'numeroFila' => count($conceptosListaPdf),
+                                'variant' => 'tailwind',
+                            ])
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+            </div>
 
             @if ($presupuesto['config_mostrar_totales'] ?? true)
+            <div @class([
+                'presupuesto-bloque-totales',
+                'presupuesto-bloque-totales--salto-pagina' => $saltoAntesTotales,
+            ])>
             <div class="tw-totals-wrap">
                 @php
                     $subtotalCalculado = (float) ($presupuesto['subtotal'] ?? $subtotal);
@@ -1176,12 +1300,16 @@
                 </div>
                 <div class="after-table-space after-table-space--compact"></div>
             </div>
+            </div>
             @endif
 
             @if ($tieneBloqueTerminos || $mostrarAtentamente)
                 <div class="presupuesto-cierre-terminos-atentamente">
             @if ($tieneBloqueTerminos)
-                <div class="terms-block terms-block--after-presupuesto">
+                <div @class([
+                    'terms-block terms-block--after-presupuesto presupuesto-bloque-terminos',
+                    'presupuesto-bloque-terminos--salto-pagina' => $saltoAntesTerminos,
+                ])>
                     @include('presupuestos.partials.presupuesto-pdf-terminos', [
                         'variant' => 'tailwind',
                         'terminosLista' => $terminosLista,

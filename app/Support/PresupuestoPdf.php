@@ -102,14 +102,21 @@ final class PresupuestoPdf
                 'telefono' => $empDoc['telefono'],
                 'correo' => $empDoc['correo'],
             ]),
-            'conceptos' => $presupuesto->conceptos->map(fn ($c) => [
-                'tipo' => $c->tipo ?? PresupuestoConcepto::TIPO_CONCEPTO,
-                'descripcion' => $c->descripcion,
-                'cantidad' => $c->cantidad,
-                'unidad' => $c->unidad,
-                'precio_unitario' => $c->precio_unitario,
-                'precio_total' => $c->precio_total,
-            ])->toArray(),
+            'conceptos' => $presupuesto->conceptos->map(function ($c) {
+                $fila = [
+                    'tipo' => $c->tipo ?? PresupuestoConcepto::TIPO_CONCEPTO,
+                    'descripcion' => $c->descripcion,
+                    'cantidad' => $c->cantidad,
+                    'unidad' => $c->unidad,
+                    'precio_unitario' => $c->precio_unitario,
+                    'precio_total' => $c->precio_total,
+                ];
+                if ($c->esParrafo()) {
+                    $fila['descripcion'] = PresupuestoParrafoPdf::sanitizarTexto((string) $c->descripcion);
+                }
+
+                return $fila;
+            })->toArray(),
             'anexos' => $anexosBase64,
             'documentacion_adjuntos' => [],
             'terminos_enunciados' => $enunciadosClasificados['terminos'],
