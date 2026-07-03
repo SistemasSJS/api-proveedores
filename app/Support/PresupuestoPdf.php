@@ -172,6 +172,23 @@ final class PresupuestoPdf
         return null;
     }
 
+    /**
+     * Logo GestiónPlus del pie del PDF de presupuestos (no se usa en correos).
+     */
+    public static function rutaLogoGestionPlusPresupuestoPdf(): ?string
+    {
+        foreach ([
+            public_path('assets/logos/logo-gestionplus_only_blade.png'),
+            public_path('assets/logos/logo-gestionplus_only_blade.webp'),
+        ] as $path) {
+            if (is_readable($path)) {
+                return $path;
+            }
+        }
+
+        return null;
+    }
+
     private static function convertirLogosABase64(): array
     {
         $logos = ['facturapro' => '', 'constucc' => '', 'gestionplus' => ''];
@@ -183,20 +200,43 @@ final class PresupuestoPdf
         $paths = [
             'facturapro' => public_path('assets/logos/logo-facturapro.png'),
             'constucc' => public_path('assets/logos/logo-construcc.png'),
-            'gestionplus' => EmailLogoHelper::gestionPlusLogoAbsolutePath(),
+            'gestionplus' => self::rutaLogoGestionPlusPresupuestoPdf(),
         ];
 
         foreach ($paths as $key => $path) {
-            if (! $path || ! file_exists($path) || ! is_readable($path)) {
-                continue;
-            }
-            $data = @file_get_contents($path);
-            if ($data !== false && $data !== '') {
-                $logos[$key] = 'data:image/png;base64,' . base64_encode($data);
+            $dataUri = self::archivoImagenLocalADataUri($path);
+            if ($dataUri !== '') {
+                $logos[$key] = $dataUri;
             }
         }
 
         return $logos;
+    }
+
+    private static function archivoImagenLocalADataUri(?string $absolutePath): string
+    {
+        if ($absolutePath === null || $absolutePath === '' || ! is_readable($absolutePath)) {
+            return '';
+        }
+
+        $ext = strtolower(pathinfo($absolutePath, PATHINFO_EXTENSION));
+        if (in_array($ext, ['png', 'gif', 'webp'], true) && ! extension_loaded('gd')) {
+            return '';
+        }
+
+        $data = @file_get_contents($absolutePath);
+        if ($data === false || $data === '') {
+            return '';
+        }
+
+        $mime = match ($ext) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+            default => 'image/png',
+        };
+
+        return 'data:'.$mime.';base64,'.base64_encode($data);
     }
 
     private static function convertirLogoProveedorABase64(?Proveedor $proveedor): string

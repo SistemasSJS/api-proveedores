@@ -1624,7 +1624,7 @@ class ProveedorPresupuestoController extends Controller
 
         $facturaproPath = public_path('assets/logos/logo-facturapro.png');
         $constuccPath = public_path('assets/logos/logo-construcc.png');
-        $gestionPlusPath = \App\Support\EmailLogoHelper::gestionPlusLogoAbsolutePath();
+        $gestionPlusPath = \App\Support\PresupuestoPdf::rutaLogoGestionPlusPresupuestoPdf();
 
         try {
             if (file_exists($facturaproPath) && is_readable($facturaproPath)) {
