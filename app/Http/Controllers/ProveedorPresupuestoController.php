@@ -9,7 +9,7 @@ use App\Http\Resources\Presupuesto\PresupuestoResource;
 use App\Http\Resources\ProveedorResource;
 use App\Services\Presupuesto\PresupuestoThemeService;
 use App\Support\PresupuestoPdf;
-use App\Support\PresupuestoPdfTemplate;
+use App\Support\PresupuestoPdfDocumentConfig;
 use App\Models\CarteraCliente;
 use App\Models\ConfigEmisorReceptorPresupuesto;
 use App\Models\Presupuesto;
@@ -1548,20 +1548,15 @@ class ProveedorPresupuestoController extends Controller
             // Generar PDF usando el facade PDF de barryvdh/laravel-dompdf
             // Tamaño carta (8.5" x 11") con márgenes estándar 1 pulgada (25.4mm)
             // $pdf = Pdf::loadView('presupuestos.pdf', ['presupuesto' => $datosPresupuesto])
-            $pdf = Pdf::loadView(PresupuestoPdfTemplate::viewName(), ['presupuesto' => $datosPresupuesto])
-                ->setPaper('letter', 'portrait') // Tamaño carta (8.5" x 11")
-                ->setOption('isRemoteEnabled', false) // Deshabilitar carga remota para evitar timeouts
-                ->setOption('isHtml5ParserEnabled', true)
-                ->setOption('isPhpEnabled', true) // Requerido para script de número de página
-                ->setOption('defaultFont', 'DejaVu Sans')
-                ->setOption('margin-top', 25)
-                ->setOption('margin-bottom', 70) // ~25mm: reserva espacio para pie de página
-                ->setOption('margin-left', 25)
-                ->setOption('margin-right', 25)
-                ->setOption('enable-local-file-access', false) // No necesitamos acceso a archivos locales si usamos base64
-                ->setOption('chroot', public_path()) // Establecer directorio raíz para archivos locales
-                ->setOption('compress', true)
-                ->setOption('dpi', 96);
+            $pdfDocument = PresupuestoPdfDocumentConfig::fromPresupuestoPayload($datosPresupuesto);
+            $pdfBuilder = Pdf::loadView($pdfDocument->viewName(), [
+                'presupuesto' => $datosPresupuesto,
+                'pdf' => $pdfDocument,
+            ])->setPaper('letter', 'portrait');
+            foreach ($pdfDocument->dompdfOptions() as $option => $value) {
+                $pdfBuilder->setOption($option, $value);
+            }
+            $pdf = $pdfBuilder;
 
             // Retornar PDF como descarga
             return $pdf->download($filename);

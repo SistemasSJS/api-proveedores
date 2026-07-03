@@ -7,107 +7,75 @@ namespace App\Support;
  */
 final class PresupuestoPdfLayout
 {
-    private const ALTURA_HOJA_LETRA_MM = 279.4;
-
-    /** Reserva vertical del subencabezado compacto (page_script) en páginas 2+. */
-    private const SUBENCABEZADO_CONTINUACION_MM = 24.0;
-
     private const THEAD_TABLA_MM = 6.0;
-
-    /** Padding superior del contenedor tras salto antes de Atentamente (pdf-pagina-con-subencabezado). */
-    private const PADDING_SALTO_ATENTAMENTE_MM = 23.0;
-
-    private const MARGEN_SEGURIDAD_MM = 3.0;
 
     /**
      * @param  array<string, mixed>  $payload
-     * @return array{
-     *     espaciador_mm: float,
-     *     salto_pagina_antes: bool,
-     *     reserva_pie_html_mm: float,
-     *     altura_contenido_antes_cierre_mm: float,
-     *     altura_atentamente_mm: float,
-     *     altura_util_pagina_mm: float,
-     *     secciones_mm: array<string, float>
-     * }
+     * @return array{salto_pagina_antes: bool, pagina_atentamente: int}
      */
-    public static function calcularCierreAtentamente(array $payload, string $variant = 'default'): array
+    public static function calcularCierreAtentamente(array $payload, PresupuestoPdfDocumentConfig $pdf): array
     {
         $vacio = [
-            'espaciador_mm' => 0.0,
             'salto_pagina_antes' => false,
-            'reserva_pie_html_mm' => 0.0,
-            'altura_contenido_antes_cierre_mm' => 0.0,
-            'altura_atentamente_mm' => 0.0,
-            'altura_util_pagina_mm' => 0.0,
-            'secciones_mm' => [],
+            'pagina_atentamente' => 0,
         ];
 
         if (! PresupuestoPdf::debeMostrarBloqueAtentamenteDesdePayload($payload)) {
             return $vacio;
         }
 
-        $medidas = self::medidasHojaMm($variant);
+        $medidas = $pdf->medidasSimulacionPaginaMm();
         $alturaUtil = $medidas['altura_util_mm'];
         $gapPie = $medidas['gap_atentamente_footer_mm'];
-        $secciones = self::estimarSeccionesMm($payload, $variant);
 
         $alturaAtentamente = self::estimarAlturaBloqueAtentamenteMm($payload, $medidas);
-        $reservaPieHtmlMm = $alturaAtentamente + $gapPie + 2.0;
+        $reservaPieMm = $alturaAtentamente + $gapPie + 2.0;
 
-        $flujo = self::simularFlujoHastaFinTerminos($payload, $variant, $alturaUtil);
-        $pageFin = $flujo['page'];
+        $variant = $pdf->layoutVariantKey();
+        $flujo = self::simularFlujoHastaFinTerminos($payload, $pdf, $variant, $alturaUtil);
+        $pageFin = max(1, (int) $flujo['page']);
+
+        if ($pdf->atentamenteEnPiePageScript()) {
+            return [
+                'salto_pagina_antes' => false,
+                'pagina_atentamente' => $pageFin,
+            ];
+        }
+
         $yFin = $flujo['y'];
-        $alturaAntesCierre = $flujo['altura_total'];
-
-        $capFin = self::capacidadPaginaMm($pageFin, $alturaUtil);
-        $salto = ($yFin + $reservaPieHtmlMm + self::MARGEN_SEGURIDAD_MM) > $capFin;
-
-        if ($salto) {
-            $capAtte = self::capacidadPaginaMm($pageFin + 1, $alturaUtil) - self::PADDING_SALTO_ATENTAMENTE_MM;
-            $espacioLibre = max(0.0, $capAtte - $reservaPieHtmlMm);
-            $espaciador = max(2.0, $espacioLibre - self::MARGEN_SEGURIDAD_MM);
-        } else {
-            $espacioLibre = max(0.0, $capFin - $yFin - $reservaPieHtmlMm);
-            $espaciador = max(2.0, $espacioLibre);
-        }
-
-        $espaciadorMaximoMm = max(2.0, $alturaUtil - $reservaPieHtmlMm - self::MARGEN_SEGURIDAD_MM);
-        if ($espaciador > $espaciadorMaximoMm) {
-            $espaciador = $espaciadorMaximoMm;
-        }
+        $capFin = self::capacidadPaginaMm($pageFin, $alturaUtil, $pdf);
+        $salto = ($yFin + $reservaPieMm + $pdf->margenSeguridadAtentamenteMm()) > $capFin;
 
         return [
-            'espaciador_mm' => round($espaciador, 2),
             'salto_pagina_antes' => $salto,
-            'reserva_pie_html_mm' => round($reservaPieHtmlMm, 2),
-            'altura_contenido_antes_cierre_mm' => round($alturaAntesCierre, 2),
-            'altura_atentamente_mm' => round($alturaAtentamente, 2),
-            'altura_util_pagina_mm' => round($alturaUtil, 2),
-            'secciones_mm' => $secciones,
+            'pagina_atentamente' => $salto ? $pageFin + 1 : $pageFin,
         ];
     }
 
     /**
-     * Simula paginación vertical: bloques fijos, tabla fila a fila (con subencabezado pág. 2+)
+     * Simula paginación vertical: bloques fijos, tabla fila a fila
      * y términos ítem a ítem (sin partir cada enunciado).
      *
      * @param  array<string, mixed>  $payload
      * @return array{page: int, y: float, altura_total: float}
      */
-    private static function simularFlujoHastaFinTerminos(array $payload, string $variant, float $alturaUtil): array
-    {
+    private static function simularFlujoHastaFinTerminos(
+        array $payload,
+        PresupuestoPdfDocumentConfig $pdf,
+        string $variant,
+        float $alturaUtil
+    ): array {
         $pageNum = 1;
         $y = 0.0;
         $alturaTotal = 0.0;
 
-        $consumir = static function (float $h, bool $evitarCorte = false) use (&$pageNum, &$y, &$alturaTotal, $alturaUtil): void {
+        $consumir = static function (float $h, bool $evitarCorte = false) use (&$pageNum, &$y, &$alturaTotal, $alturaUtil, $pdf): void {
             if ($h <= 0) {
                 return;
             }
             $pendiente = $h;
             while ($pendiente > 0.01) {
-                $cap = self::capacidadPaginaMm($pageNum, $alturaUtil);
+                $cap = self::capacidadPaginaMm($pageNum, $alturaUtil, $pdf);
                 $resto = $cap - $y;
                 if ($evitarCorte && $pendiente > $resto && $y > 0.01) {
                     $pageNum++;
@@ -137,11 +105,11 @@ final class PresupuestoPdfLayout
             }
         };
 
-        $consumirFilaTabla = static function (float $h) use (&$pageNum, &$y, &$alturaTotal, $alturaUtil): void {
+        $consumirFilaTabla = static function (float $h) use (&$pageNum, &$y, &$alturaTotal, $alturaUtil, $pdf): void {
             if ($h <= 0) {
                 return;
             }
-            $resto = self::capacidadPaginaMm($pageNum, $alturaUtil) - $y;
+            $resto = self::capacidadPaginaMm($pageNum, $alturaUtil, $pdf) - $y;
             if ($h > $resto && $y > 0.01) {
                 $pageNum++;
                 $y = self::THEAD_TABLA_MM;
@@ -164,7 +132,7 @@ final class PresupuestoPdfLayout
         $consumir(3.0);
 
         $conceptos = $payload['conceptos'] ?? [];
-        $lineaTabla = $variant === 'tailwind' ? 6.8 : 5.5;
+        $lineaTabla = $pdf->lineaTablaMm();
         $consumir(self::THEAD_TABLA_MM);
         if (count($conceptos) === 0) {
             $consumirFilaTabla(10.0);
@@ -253,13 +221,9 @@ final class PresupuestoPdfLayout
         return $fragmentos;
     }
 
-    private static function capacidadPaginaMm(int $pageNum, float $alturaUtil): float
+    private static function capacidadPaginaMm(int $pageNum, float $alturaUtil, PresupuestoPdfDocumentConfig $pdf): float
     {
-        if ($pageNum <= 1) {
-            return $alturaUtil;
-        }
-
-        return max(100.0, $alturaUtil - self::SUBENCABEZADO_CONTINUACION_MM);
+        return $alturaUtil;
     }
 
     /**
@@ -271,6 +235,8 @@ final class PresupuestoPdfLayout
     }
 
     /**
+     * @deprecated Use {@see PresupuestoPdfDocumentConfig::medidasSimulacionPaginaMm()}
+     *
      * @return array{
      *     altura_util_mm: float,
      *     gap_atentamente_footer_mm: float,
@@ -279,25 +245,8 @@ final class PresupuestoPdfLayout
      */
     public static function medidasHojaMm(string $variant = 'default'): array
     {
-        $margenMm = $variant === 'tailwind' ? 20.0 : 25.4;
-        $footerHeightMm = 25.4;
-        $lineaEspacioMm = 2.8;
-        $margenSuperiorMm = max(8.0, $margenMm - (4 * $lineaEspacioMm));
-        $footerBottomMm = 6.0;
-        $margenPaginaMm = 25.5;
-
-        $alturaUtil = self::ALTURA_HOJA_LETRA_MM
-            - $margenSuperiorMm
-            - $margenPaginaMm
-            - $footerHeightMm
-            - $footerBottomMm
-            - $margenPaginaMm;
-
-        return [
-            'altura_util_mm' => max(165.0, $alturaUtil),
-            'gap_atentamente_footer_mm' => $lineaEspacioMm,
-            'espacio_tras_titulo_atentamente_mm' => 2 * $lineaEspacioMm,
-        ];
+        return self::forLayoutVariant($variant === 'tailwind' ? 'tailwind' : 'default')
+            ->medidasSimulacionPaginaMm();
     }
 
     /**

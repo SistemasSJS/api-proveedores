@@ -18,6 +18,11 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class PresupuestoPdf
 {
+    public static function mostrarSubencabezadoCompactoPdf(): bool
+    {
+        return PresupuestoPdfDocumentConfig::defaults()->mostrarSubencabezadoCompacto();
+    }
+
     /**
      * Genera y retorna la respuesta PDF de un presupuesto.
      */
@@ -127,20 +132,19 @@ final class PresupuestoPdf
             'pdf_theme' => $presupuesto->pdf_theme,
         ];
 
-        return Pdf::loadView(PresupuestoPdfTemplate::viewName(), ['presupuesto' => $datosPresupuesto])
-            ->setPaper('letter', 'portrait')
-            ->setOption('isRemoteEnabled', false)
-            ->setOption('isHtml5ParserEnabled', true)
-            ->setOption('isPhpEnabled', true)
-            ->setOption('defaultFont', 'DejaVu Sans')
-            ->setOption('margin-top', 25)
-            ->setOption('margin-bottom', 70) // ~25mm: reserva espacio para pie de página
-            ->setOption('margin-left', 25)
-            ->setOption('margin-right', 25)
-            ->setOption('enable-local-file-access', false)
-            ->setOption('chroot', public_path())
-            ->setOption('compress', true)
-            ->setOption('dpi', 96);
+        $pdfDocument = PresupuestoPdfDocumentConfig::fromPresupuestoPayload($datosPresupuesto);
+
+        $pdfBuilder = Pdf::loadView($pdfDocument->viewName(), [
+            'presupuesto' => $datosPresupuesto,
+            'pdf' => $pdfDocument,
+        ])
+            ->setPaper('letter', 'portrait');
+
+        foreach ($pdfDocument->dompdfOptions() as $option => $value) {
+            $pdfBuilder->setOption($option, $value);
+        }
+
+        return $pdfBuilder;
     }
 
     private static function generarQrCodeParaPresupuesto(Presupuesto $presupuesto): ?string
@@ -1024,7 +1028,7 @@ final class PresupuestoPdf
     }
 
     /**
-     * DomPDF page_script: subencabezado compacto (como anexos) desde la página 2 en todo el documento.
+     * DomPDF page_script: subencabezado compacto (págs. 2+). No se registra si {@see mostrarSubencabezadoCompactoPdf()} es false.
      */
     public static function generarPageScriptSubencabezadoPresupuesto(
         float $margenMm,
@@ -1034,6 +1038,10 @@ final class PresupuestoPdf
         bool $saltoPaginaAntesAtentamente = false,
         ?string $logoImagePath = null,
     ): string {
+        if (! self::mostrarSubencabezadoCompactoPdf()) {
+            return '';
+        }
+
         unset($paginasTrasSeccionPresupuesto, $saltoPaginaAntesAtentamente, $variant);
 
         $datos = self::datosSubencabezadoCompactoDesdePayload($payload);

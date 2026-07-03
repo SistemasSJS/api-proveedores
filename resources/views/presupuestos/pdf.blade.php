@@ -1,35 +1,8 @@
         @php
-            use App\Support\PresupuestoPdf;
-            use App\Support\PresupuestoPdfLayout;
-            use App\Support\PresupuestoParrafoPdf;
-
-            $margenMm = 25.4;
-            $footerHeightMm = 25.4; // Espacio reservado para pie de página en cada hoja (carta)
-            $lineaEspacioMm = 2.8;
-            $gapAtentamenteFooterMm = $lineaEspacioMm;
-            $espacioTrasTituloAtentamenteMm = 2 * $lineaEspacioMm;
-            $margenSuperiorMm = max(8.0, $margenMm - (4 * $lineaEspacioMm));
-            $atentamenteReserveMm = 30;
-            $terminosLista = $presupuesto['terminos_enunciados'] ?? [];
-            $validacionesLista = $presupuesto['validaciones_enunciados'] ?? [];
-            $observacionesLista = $presupuesto['observaciones_enunciados'] ?? [];
-            $anexosLista = $presupuesto['anexos'] ?? [];
-            $documentacionLista = $presupuesto['documentacion_adjuntos'] ?? [];
-            $haySeccionAnexos = count($anexosLista) > 0;
-            $haySeccionDocumentacion = count($documentacionLista) > 0;
-            $mostrarAtentamente = PresupuestoPdf::debeMostrarBloqueAtentamenteDesdePayload($presupuesto);
-            $paginasAnexosPdf = $haySeccionAnexos ? (int) ceil(count($anexosLista) / 4) : 0;
-            $paginasDocumentacionPdf = $haySeccionDocumentacion ? count($documentacionLista) : 0;
-            $paginasTrasSeccionPresupuesto = $paginasAnexosPdf + $paginasDocumentacionPdf;
-            $cierreAtentamente = PresupuestoPdfLayout::calcularCierreAtentamente($presupuesto, 'default');
-            $conceptosListaPdf = $presupuesto['conceptos'] ?? [];
-            $atentamenteEnPieDePaginaPdf = $mostrarAtentamente;
-            $bodyPaddingBottomMm = $footerHeightMm + 8;
-            $margenPaginaMm = 25.5;
-            $tieneBloqueTerminos = count($terminosLista) > 0
-                || count($validacionesLista) > 0
-                || count($observacionesLista) > 0;
-            $pdfDebugBordesContenedores = false;
+            /** @var array<string, mixed> $presupuesto */
+            /** @var \App\Support\PresupuestoPdfDocumentConfig|null $pdf */
+            $pdf = $pdf ?? \App\Support\PresupuestoPdfDocumentConfig::fromPresupuestoPayload($presupuesto);
+            extract($pdf->bladeViewVariables($presupuesto), EXTR_SKIP);
         @endphp
         <!DOCTYPE html>
         <html lang="es">
@@ -1138,7 +1111,7 @@
                                         if (! is_array($conceptoSubtotal)) {
                                             continue;
                                         }
-                                        if (! PresupuestoParrafoPdf::esLineaParrafo($conceptoSubtotal)) {
+                                        if (! \App\Support\PresupuestoParrafoPdf::esLineaParrafo($conceptoSubtotal)) {
                                             $cant = $conceptoSubtotal['cantidad'] ?? 1;
                                             $precio = $conceptoSubtotal['precio_unitario'] ?? 0;
                                             $subtotal += $cant * $precio;
@@ -1239,28 +1212,8 @@
                         </div>
                     @endif
 
-                    @if ($mostrarAtentamente)
-                        @if ($cierreAtentamente['salto_pagina_antes'])
-                            <div class="page-break"></div>
-                            <div class="presupuesto-pagina-con-subencabezado pdf-pagina-con-subencabezado">
-                        @endif
-                        @if ($atentamenteEnPieDePaginaPdf)
-                            <div
-                                class="presupuesto-reserva-atentamente-pie"
-                                aria-hidden="true"
-                                style="height: {{ $cierreAtentamente['reserva_pie_html_mm'] ?? 32 }}mm; min-height: {{ $cierreAtentamente['reserva_pie_html_mm'] ?? 32 }}mm;"
-                            ></div>
-                        @else
-                            @if (($cierreAtentamente['espaciador_mm'] ?? 0) > 2)
-                                <div class="document-main-spacer" style="height: {{ $cierreAtentamente['espaciador_mm'] }}mm; min-height: {{ $cierreAtentamente['espaciador_mm'] }}mm;"></div>
-                            @endif
-                            <div class="pdf-seccion-presupuesto__atentamente document-closing-atentamente">
-                                @include('presupuestos.partials.presupuesto-pdf-atentamente', ['variant' => 'default'])
-                            </div>
-                        @endif
-                        @if ($cierreAtentamente['salto_pagina_antes'])
-                            </div>
-                        @endif
+                    @if ($mostrarAtentamente && ($cierreAtentamente['salto_pagina_antes'] ?? false))
+                        <div class="page-break"></div>
                     @endif
                         </div>
                     @endif
@@ -1279,14 +1232,10 @@
                 ])
             </div>
             @include('presupuestos.partials.presupuesto-pdf-page-scripts', [
-                'margenMm' => $margenMm,
-                'footerHeightMm' => $footerHeightMm,
-                'pdfVariant' => 'default',
-                'gapAtentamenteFooterMm' => $gapAtentamenteFooterMm,
-                'espacioTrasTituloAtentamenteMm' => $espacioTrasTituloAtentamenteMm,
-                'atentamenteEnPieDePagina' => $atentamenteEnPieDePaginaPdf,
+                'pdf' => $pdf,
+                'presupuesto' => $presupuesto,
+                'paginaAtentamente' => (int) ($cierreAtentamente['pagina_atentamente'] ?? 0),
                 'paginasTrasSeccionPresupuesto' => $paginasTrasSeccionPresupuesto,
-                'saltoPaginaAntesAtentamente' => (bool) ($cierreAtentamente['salto_pagina_antes'] ?? false),
             ])
         </body>
 

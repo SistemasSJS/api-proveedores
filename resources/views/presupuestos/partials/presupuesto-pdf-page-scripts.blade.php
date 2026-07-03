@@ -1,32 +1,26 @@
 @php
-    use App\Services\Presupuesto\PresupuestoThemeService;
     use App\Support\PresupuestoPdf;
 
-    $margenMm = (float) ($margenMm ?? 25.4);
-    $footerHeightMm = (float) ($footerHeightMm ?? 25.4);
-    $footerBottomMm = 6.0;
-    $gapAtentamenteFooterMm = (float) ($gapAtentamenteFooterMm ?? 2.8);
-    $espacioTrasTituloAtentamenteMm = (float) ($espacioTrasTituloAtentamenteMm ?? (2 * 2.8));
-    $pdfVariant = (string) ($pdfVariant ?? 'tailwind');
+    /** @var \App\Support\PresupuestoPdfDocumentConfig $pdf */
+    /** @var array<string, mixed> $presupuesto */
 
-    $pdfThemeVariables = null;
-    if ($pdfVariant === 'tailwind' && ! empty($pdfThemeKey ?? null)) {
-        $pdfThemeVariables = app(PresupuestoThemeService::class)
-            ->getTheme((string) $pdfThemeKey)['variables'];
-    }
+    $margenMm = $pdf->margenContenidoLateralMm();
+    $footerHeightMm = $pdf->footerHeightMm();
+    $footerBottomMm = $pdf->footerBottomMm();
+    $gapAtentamenteFooterMm = $pdf->gapAtentamenteFooterMm();
+    $espacioTrasTituloAtentamenteMm = $pdf->espacioTrasTituloAtentamenteMm();
+    $pdfVariant = $pdf->layoutVariantKey();
+    $paginaAtentamente = max(0, (int) ($paginaAtentamente ?? 0));
+    $paginasTrasSeccionPresupuesto = max(0, (int) ($paginasTrasSeccionPresupuesto ?? 0));
 
     $atentamentePieLineas = PresupuestoPdf::lineasAtentamentePieUltimaPaginaDesdePayload($presupuesto);
-    $atentamenteEstilos = PresupuestoPdf::estilosAtentamentePiePorRol($pdfVariant, $pdfThemeVariables);
+    $atentamenteEstilos = PresupuestoPdf::estilosAtentamentePiePorRol($pdfVariant, $pdf->themeVariablesArray());
     $atentamentePieX = (int) round($margenMm * 2.834645669);
 
     $mmToPt = static fn (float $mm): int => (int) round($mm * 2.834645669);
 
-    $atentamenteEnPieDePagina = (bool) ($atentamenteEnPieDePagina ?? false);
-    $paginasTrasSeccionPresupuesto = max(0, (int) ($paginasTrasSeccionPresupuesto ?? 0));
-    $saltoPaginaAntesAtentamente = (bool) ($saltoPaginaAntesAtentamente ?? false);
-
     $atentamentePageScript = '';
-    if ($atentamenteEnPieDePagina && count($atentamentePieLineas) > 0) {
+    if ($pdf->atentamenteEnPiePageScript() && $paginaAtentamente > 0 && count($atentamentePieLineas) > 0) {
         $blockHeightPt = 6;
         $espacioTrasTituloPt = $mmToPt($espacioTrasTituloAtentamenteMm);
         $tieneLineasTrasTitulo = count($atentamentePieLineas) > 1;
@@ -44,18 +38,9 @@
             json_encode($atentamentePieLineas, JSON_UNESCAPED_UNICODE),
             "\\'"
         );
-        $paginasTrasPresupuestoPhp = $paginasTrasSeccionPresupuesto;
+        $paginaAtentamentePhp = $paginaAtentamente;
         $atentamentePageScript = <<<SCRIPT
-\$paginasTrasPresupuesto = {$paginasTrasPresupuestoPhp};
-if (\$paginasTrasPresupuesto > 0) {
-    \$ultimaPaginaPresupuesto = \$PAGE_COUNT - \$paginasTrasPresupuesto;
-} else {
-    \$ultimaPaginaPresupuesto = \$PAGE_COUNT;
-}
-if (\$ultimaPaginaPresupuesto < 1) {
-    \$ultimaPaginaPresupuesto = 1;
-}
-if (\$PAGE_NUM != \$ultimaPaginaPresupuesto) {
+if (\$PAGE_NUM != {$paginaAtentamentePhp}) {
     return;
 }
 \$lineas = json_decode('{$jsonEsc}', true);
@@ -103,14 +88,17 @@ SCRIPT;
 
     $atentamentePageScriptExport = var_export($atentamentePageScript, true);
 
-    $subencabezadoPageScript = PresupuestoPdf::generarPageScriptSubencabezadoPresupuesto(
-        $margenMm,
-        $paginasTrasSeccionPresupuesto,
-        $presupuesto,
-        $pdfVariant,
-        $saltoPaginaAntesAtentamente,
-        PresupuestoPdf::prepararLogoParaPageScript($presupuesto),
-    );
+    $subencabezadoPageScript = '';
+    if ($pdf->mostrarSubencabezadoCompacto()) {
+        $subencabezadoPageScript = PresupuestoPdf::generarPageScriptSubencabezadoPresupuesto(
+            $margenMm,
+            $paginasTrasSeccionPresupuesto,
+            $presupuesto,
+            $pdfVariant,
+            false,
+            PresupuestoPdf::prepararLogoParaPageScript($presupuesto),
+        );
+    }
     $subencabezadoPageScriptExport = var_export($subencabezadoPageScript, true);
 @endphp
 <script type="text/php">

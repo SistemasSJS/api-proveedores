@@ -8,7 +8,7 @@
             @if ($docIndex > 0)
                 <div class="{{ $variant === 'tailwind' ? 'tw-page-break' : 'page-break' }}"></div>
             @endif
-            <div class="pdf-seccion-documentacion__pagina pdf-pagina-con-subencabezado">
+            <div class="pdf-seccion-documentacion__pagina">
                 @if ($variant === 'tailwind')
                     <div class="tw-anexos-header">
                         <div class="tw-anexos-title">Documentación</div>

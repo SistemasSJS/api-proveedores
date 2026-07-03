@@ -8,7 +8,7 @@
             @if ($pageIndex > 0)
                 <div class="{{ $variant === 'tailwind' ? 'tw-page-break' : 'page-break' }}"></div>
             @endif
-            <div class="{{ $variant === 'tailwind' ? 'tw-anexos-page pdf-pagina-con-subencabezado' : 'anexos-page pdf-pagina-con-subencabezado' }}">
+            <div class="{{ $variant === 'tailwind' ? 'tw-anexos-page' : 'anexos-page' }}">
                 @if ($variant === 'tailwind')
                     <div class="tw-anexos-header">
                         <div class="tw-anexos-title">Anexos</div>
