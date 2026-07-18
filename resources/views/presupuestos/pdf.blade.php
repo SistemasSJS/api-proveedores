@@ -588,6 +588,22 @@
                     vertical-align: top;
                 }
 
+                .presupuesto-table tbody tr.linea-con-imagen {
+                    height: 18mm;
+                }
+
+                .concepto-imagen-wrap {
+                    margin-top: 1mm;
+                }
+
+                .concepto-imagen {
+                    width: 15mm;
+                    height: 15mm;
+                    object-fit: cover;
+                    border: 1px solid #e9ecef;
+                    border-radius: 1mm;
+                }
+
                 /* ========== 5) TOTALES (alineado con tabla) ========== */
                 .terms-block {
                     margin-bottom: 4mm;

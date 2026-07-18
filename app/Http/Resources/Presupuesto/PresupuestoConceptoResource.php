@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Presupuesto;
 
 use App\Models\PresupuestoConcepto;
+use App\Support\PresupuestoAnexoArchivoResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -27,6 +28,11 @@ class PresupuestoConceptoResource extends JsonResource
             'unidad' => $this->unidad,
             'precio_unitario' => (float) $this->precio_unitario,
             'precio_total' => (float) $this->precio_total,
+            'imagen_path' => PresupuestoAnexoArchivoResponse::archivoPathPublico($this->imagen_path),
+            'imagen_url' => PresupuestoAnexoArchivoResponse::archivoUrl($this->imagen_path),
+            'imagen_base64' => PresupuestoAnexoArchivoResponse::solicitaArchivoBase64($request)
+                ? PresupuestoAnexoArchivoResponse::archivoBase64($this->imagen_path)
+                : null,
         ];
     }
 }

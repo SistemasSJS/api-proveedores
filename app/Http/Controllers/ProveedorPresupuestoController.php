@@ -8,6 +8,8 @@ use App\Http\Requests\Presupuesto\UpdatePresupuestoRequest;
 use App\Http\Resources\Presupuesto\PresupuestoResource;
 use App\Http\Resources\ProveedorResource;
 use App\Services\Presupuesto\PresupuestoThemeService;
+use App\Support\PresupuestoAnexoArchivoResponse;
+use App\Support\PresupuestoAnexoImagenOptimizer;
 use App\Support\PresupuestoPdf;
 use App\Support\PresupuestoPdfDocumentConfig;
 use App\Models\CarteraCliente;
@@ -28,6 +30,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -738,14 +742,22 @@ class ProveedorPresupuestoController extends Controller
                 $nuevo = Presupuesto::create($payload);
                 $nuevo->asegurarTokenPublico();
 
-                $conceptos = $presupuesto->conceptos->map(function (PresupuestoConcepto $c, int $index) {
-                    return [
+                $conceptos = $presupuesto->conceptos->map(function (PresupuestoConcepto $c) {
+                    $fila = [
                         'tipo' => $c->tipo ?? PresupuestoConcepto::TIPO_CONCEPTO,
                         'descripcion' => $c->descripcion,
                         'cantidad' => (float) $c->cantidad,
                         'unidad' => $c->unidad,
                         'precio_unitario' => (float) $c->precio_unitario,
                     ];
+
+                    // Se re-almacena como copia propia del nuevo presupuesto (evita compartir archivo).
+                    $imagenBase64 = PresupuestoAnexoArchivoResponse::archivoBase64($c->imagen_path);
+                    if ($imagenBase64 !== null) {
+                        $fila['imagen_base64'] = $imagenBase64;
+                    }
+
+                    return $fila;
                 })->values()->all();
 
                 $this->sincronizarConceptos($nuevo, $conceptos);
@@ -1445,9 +1457,23 @@ class ProveedorPresupuestoController extends Controller
      */
     private function sincronizarConceptos(Presupuesto $presupuesto, array $conceptos): void
     {
+        $pathsAnteriores = $presupuesto->conceptos()
+            ->whereNotNull('imagen_path')
+            ->pluck('imagen_path')
+            ->filter()
+            ->values()
+            ->all();
+
         $presupuesto->conceptos()->delete();
 
+        $pathsConservados = [];
+
         foreach ($conceptos as $index => $conceptoData) {
+            $imagenPath = $this->resolverImagenConcepto($presupuesto, $conceptoData, $pathsAnteriores);
+            if ($imagenPath !== null) {
+                $pathsConservados[] = $imagenPath;
+            }
+
             $concepto = new PresupuestoConcepto([
                 'numero' => $index + 1,
                 'tipo' => $conceptoData['tipo'] ?? PresupuestoConcepto::TIPO_CONCEPTO,
@@ -1455,10 +1481,67 @@ class ProveedorPresupuestoController extends Controller
                 'cantidad' => $conceptoData['cantidad'],
                 'unidad' => $conceptoData['unidad'],
                 'precio_unitario' => $conceptoData['precio_unitario'],
+                'imagen_path' => $imagenPath,
             ]);
             $concepto->calcularImporte();
             $presupuesto->conceptos()->save($concepto);
         }
+
+        // Elimina del storage las imágenes de conceptos que ya no se referencian (patrón delete+insert).
+        foreach (array_diff($pathsAnteriores, $pathsConservados) as $pathHuerfano) {
+            if ($pathHuerfano && Storage::disk('public')->exists($pathHuerfano)) {
+                Storage::disk('public')->delete($pathHuerfano);
+            }
+        }
+    }
+
+    /**
+     * Resuelve el imagen_path de un concepto entrante: guarda una imagen nueva (base64),
+     * conserva la existente (imagen_path previo válido) o retorna null.
+     *
+     * @param array<string, mixed> $conceptoData
+     * @param array<int, string> $pathsAnteriores
+     */
+    private function resolverImagenConcepto(Presupuesto $presupuesto, array $conceptoData, array $pathsAnteriores): ?string
+    {
+        $base64 = $conceptoData['imagen_base64'] ?? null;
+        if (is_string($base64) && trim($base64) !== '') {
+            return $this->guardarImagenConceptoBase64($presupuesto, $base64);
+        }
+
+        $pathExistente = $conceptoData['imagen_path'] ?? null;
+        if (is_string($pathExistente) && trim($pathExistente) !== '' && in_array($pathExistente, $pathsAnteriores, true)) {
+            return $pathExistente;
+        }
+
+        return null;
+    }
+
+    private function guardarImagenConceptoBase64(Presupuesto $presupuesto, string $dataUri): ?string
+    {
+        if (! preg_match('/^data:image\/(jpeg|jpg|png|webp);base64,(.+)$/i', $dataUri, $matches)) {
+            return null;
+        }
+
+        $binary = base64_decode($matches[2], true);
+        if ($binary === false) {
+            return null;
+        }
+
+        $optimizado = PresupuestoAnexoImagenOptimizer::optimizarParaAlmacenamiento($binary);
+        $extension = $optimizado['extension'] ?? 'jpg';
+
+        $path = sprintf(
+            'proveedores/%d/presupuestos/%d/conceptos/%s.%s',
+            (int) $presupuesto->proveedor_id,
+            (int) $presupuesto->id,
+            Str::uuid()->toString(),
+            $extension
+        );
+
+        Storage::disk('public')->put($path, $optimizado['binary']);
+
+        return $path;
     }
 
     /**

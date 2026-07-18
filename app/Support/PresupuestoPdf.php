@@ -115,6 +115,7 @@ final class PresupuestoPdf
                     'unidad' => $c->unidad,
                     'precio_unitario' => $c->precio_unitario,
                     'precio_total' => $c->precio_total,
+                    'imagen_base64' => self::convertirArchivoAnexoABase64($c->imagen_path),
                 ];
                 if ($c->esParrafo()) {
                     $fila['descripcion'] = PresupuestoParrafoPdf::sanitizarTexto((string) $c->descripcion);

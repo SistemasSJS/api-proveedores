@@ -559,6 +559,22 @@
         font-weight: 400;
     }
 
+    .tw-table tbody tr.linea-con-imagen {
+        height: 18mm;
+    }
+
+    .concepto-imagen-wrap {
+        margin-top: 1mm;
+    }
+
+    .concepto-imagen {
+        width: 15mm;
+        height: 15mm;
+        object-fit: cover;
+        border: 1px solid var(--border-default);
+        border-radius: 1mm;
+    }
+
     .tw-totals-inner {
         width: 52%;
         margin-left: 48%;

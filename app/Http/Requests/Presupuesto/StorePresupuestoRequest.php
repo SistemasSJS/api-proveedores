@@ -74,6 +74,29 @@ class StorePresupuestoRequest extends FormRequest
         return preg_match('/^[_\-\x{2013}\x{2014}]+$/u', $text) === 1 ? null : $text;
     }
 
+    private function validateConceptoImagenBase64(string $attribute, mixed $value, \Closure $fail): void
+    {
+        if ($value === null || (is_string($value) && trim($value) === '')) {
+            return;
+        }
+
+        $matches = [];
+        if (! is_string($value) || ! preg_match('/^data:image\/(jpeg|jpg|png|webp);base64,(.+)$/', $value, $matches)) {
+            $fail('La imagen del concepto debe estar en formato JPG, JPEG, PNG o WEBP en base64.');
+            return;
+        }
+
+        $binary = base64_decode($matches[2], true);
+        if ($binary === false) {
+            $fail('La imagen del concepto no contiene un base64 válido.');
+            return;
+        }
+
+        if (strlen($binary) > 5 * 1024 * 1024) {
+            $fail('La imagen del concepto no debe superar 5 MB.');
+        }
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -152,6 +175,14 @@ class StorePresupuestoRequest extends FormRequest
             'conceptos.*.cantidad' => 'required|numeric|min:0.0001',
             'conceptos.*.unidad' => 'required|string|max:50',
             'conceptos.*.precio_unitario' => 'required|numeric|min:0',
+            'conceptos.*.imagen_path' => 'nullable|string|max:255',
+            'conceptos.*.imagen_base64' => [
+                'nullable',
+                'string',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    $this->validateConceptoImagenBase64($attribute, $value, $fail);
+                },
+            ],
 
 
             'estado' => 'nullable|string|in:borrador,enviado,aceptado,rechazado,rechazado_con_observacion,vencido',

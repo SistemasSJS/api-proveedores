@@ -30,6 +30,7 @@ class PresupuestoConcepto extends BaseModel
         'unidad',
         'precio_unitario',
         'precio_total',
+        'imagen_path',
     ];
 
     protected $casts = [
