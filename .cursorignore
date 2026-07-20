@@ -52,5 +52,3 @@ _ide_helper_models.php
 Thumbs.db
 
 # custom ignore
-docs/
-.docs/
