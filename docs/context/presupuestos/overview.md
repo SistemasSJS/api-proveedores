@@ -1,34 +1,57 @@
 # Presupuestos — Overview
 
-Dominio **aislado**: documento comercial (presupuesto) entre un proveedor emisor y un receptor (cartera, otro proveedor o datos manuales).
+Dominio **aislado**: herramienta para generar presupuestos a distintos giros comerciales (mecánicos, herreros, constructores, vendedores, etc.) con una UX simple, al alcance de cualquier usuario.
 
-## PropÓsito
+Parte de un **esquema gratuito** (plan base) y funciones **Plus** (ver [front.md](./front.md) — badge / directiva). A futuro puede evolucionar a apps independientes; hoy cohabita en el monorepo sin mezclarse con catálogo de productos ni solicitudes de pago.
 
-Crear, editar, enviar y aceptar/rechazar presupuestos; generar PDF; gestionar cartera de clientes del presupuesto y tarjetas emisor/receptor.
+## Propósito
 
-## LÍmites (quÉ entra)
+Facilitar la presupuestación comercial: crear, personalizar, enviar y cerrar (aceptar/rechazar) presupuestos; PDF con temas; cartera propia; acceso a empresas ya registradas; configuración de emisor (usuario ≠ solo datos de empresa).
 
-- Presupuesto + conceptos (lÍneas / pÁrrafos) + anexos imagen/PDF
-- Cartera de clientes del presupuesto
-- Config emisor/receptor (tarjetas de contacto)
-- PDF, correo, notificaciones de presupuesto
-- Enlace pÚblico (token) aceptar/rechazar
+## Capacidad (mapa Hecho / Pendiente / Roadmap)
 
-## QuÉ NO es este dominio
+| Capacidad | Estado | Notas |
+|-----------|--------|-------|
+| Cartera de clientes propia | **Hecho** | `cartera-clientes` |
+| Acceso a empresas/proveedores registrados | **Hecho** | `proveedores-registrados` |
+| Receptor manual (texto) | **Hecho** | Sin entidad previa |
+| Conceptos libres (línea / párrafo) | **Hecho** | Snapshot; sin `producto_id` |
+| Catálogo de conceptos reutilizable | **Pendiente** | UI stub; feature **Plus** |
+| Descuentos, IVA, términos y condiciones | **Hecho** | En formulario / PDF |
+| Monedas | **Hecho** | Solo **MXN**, **USD**, **EUR** (`term_cond_moneda`; default MXN) |
+| Anexos imagen y PDF | **Hecho** | |
+| Temas PDF personalizables | **Hecho** | `pdf-themes` |
+| Datos usuario emisor ≠ empresa emisora | **Hecho** | Config / tarjetas emisor-receptor |
+| Envío app + correo + enlace público | **Hecho** | Aceptar / rechazar |
+| Cuentas bancarias (perfil empresa) | **Hecho** (soporte) | Perfil; no cobranza automática |
+| Pasarelas PayPal / Stripe | **Roadmap** | UI en perfil (“Servicios digitales”); **sin implementar** |
+| Pago → finalización del presupuesto | **Roadmap** | Tras aceptar; no confundir con dominio SP |
+
+## Límites (qué entra)
+
+- Documento presupuesto + conceptos + anexos
+- Cartera y config emisor/receptor
+- PDF, correo, notificaciones de presupuesto, token público
+- Monedas MXN | USD | EUR
+- Roadmap de cobro (cuentas / pasarelas) **como parte de este dominio**, no vía Solicitudes de pago
+
+## Qué NO es este dominio
 
 | No mezclar con | Motivo |
 |----------------|--------|
-| Solicitudes de pago | No hay conversiÓn presupuesto a SP |
-| CatÁlogo de productos | Conceptos son texto/snapshot; sin `producto_id` |
-| Cotizaciones / pedidos | Dominios hermanos o legado, no este flujo |
+| Solicitudes de pago (SP/SPP) | No hay conversión presupuesto → SP |
+| Catálogo de **productos** | Conceptos sin FK a producto |
+| Cotizaciones / pedidos | Otros flujos |
 
 ## Advertencia de lenguaje
 
-En este dominio, **"catÁlogo"** suele referirse a **clientes/receptores** (cartera o proveedores registrados), **no** al catÁlogo de productos.
+- **“Catálogo”** en presupuestos suele ser **clientes/receptores** o el futuro **catálogo de conceptos** — **no** el dominio Catálogo de productos.
+- Funciones **Plus**: marcar en UI con `appPlanPlusBadge` / `<app-plan-plus-badge>` ([front.md](./front.md)).
 
-## Estado
+## Estado general
 
-Maduro y en uso activo (API + front montados en el router).
+Ciclo **borrador → enviar → aceptar/rechazar** maduro (API + front activos).  
+**Pago → finalización** y **catálogo de conceptos**: pendientes / roadmap.
 
 ## Docs del dominio
 
@@ -37,4 +60,4 @@ Maduro y en uso activo (API + front montados en el router).
 - [front.md](./front.md)
 - [workflows.md](./workflows.md)
 
-Ver tambiÉn: [../cross-domain.md](../cross-domain.md)
+Ver también: [../cross-domain.md](../cross-domain.md)

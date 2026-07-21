@@ -23,6 +23,19 @@
 
 `borrador` | `enviado` | `aceptado` | `rechazado` | `rechazado_con_observacion` | `vencido`
 
+Roadmap (aún no en BD de presupuesto): estados o flags de **pago** / **finalización**.
+
+## Moneda
+
+Campo típico `term_cond_moneda`: valores admitidos **MXN** | **USD** | **EUR** (default MXN).
+
 ## Conceptos
 
 Tipos: `concepto` | `parrafo`. Campos libres: descripción, cantidad, unidad, precios, imagen. **Sin `producto_id`.**
+
+Catálogo de conceptos reutilizable: **pendiente** (no hay tabla/API dedicada aún).
+
+## Cobro (relacionado, no SP)
+
+- Cuentas bancarias del proveedor: dominio de soporte en perfil (tabla `cuentas_bancarias` / model `CuentaBancaria`).
+- Pasarelas PayPal/Stripe: **sin persistencia de integración** todavía.

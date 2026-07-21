@@ -38,3 +38,9 @@ Controller: `PresupuestoPublicController`.
 | Notifications | `app/Notifications/Presupuesto/*` |
 | Resources | `app/Http/Resources/Presupuesto/*` |
 | Requests | `app/Http/Requests/Presupuesto/*` |
+
+## Notas de contrato
+
+- Moneda del documento: `term_cond_moneda` ∈ `MXN` \| `USD` \| `EUR`.
+- No hay endpoints de cobro PayPal/Stripe ni de “finalizar por pago” en presupuestos (roadmap).
+- Cuentas bancarias: rutas de `{proveedor}/cuentas-bancarias` (perfil / soporte); no son el flujo SP.

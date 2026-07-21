@@ -12,7 +12,7 @@ Este ecosistema (`api-proveedores` + `app-proveedores`) tiene **tres dominios de
 |---------|---------|--------|-----------|
 | **Catalogo** | [catalogo/](./catalogo/) | Productos, categorias, marcas, unidades, stock sucursal, import CSV | No es SP ni presupuestos |
 | **Solicitudes de pago** | [solicitudes-pago/](./solicitudes-pago/) | SP/SPP, facturas, comprobantes, OC a SP, empresas constructoras | No es catalogo ni presupuestos |
-| **Presupuestos** | [presupuestos/](./presupuestos/) | Presupuestos, conceptos, PDF, cartera clientes, enlace publico | No es SP ni catalogo de productos |
+| **Presupuestos** | [presupuestos/](./presupuestos/) | Presupuestos multi-giro, PDF, cartera, monedas MXN/USD/EUR; cobro roadmap (Plus / pasarelas) | No es SP ni catalogo de productos |
 
 La UI Angular se describe en cada dominio en `front.md`, pero el codigo vive en `app-proveedores`.
 
