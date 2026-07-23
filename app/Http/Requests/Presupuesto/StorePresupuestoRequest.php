@@ -110,6 +110,7 @@ class StorePresupuestoRequest extends FormRequest
             'fecha_emision' => 'required|date',
             'concepto_general' => 'required|string',
             'titulo_anexos' => 'nullable|string|max:80',
+            'titulo_anexos_pdf' => 'nullable|string|max:80',
 
             /**
              * Validación de cartera vs proveedor: 
@@ -308,6 +309,8 @@ class StorePresupuestoRequest extends FormRequest
             'concepto_general.string' => 'El concepto general debe ser texto.',
             'titulo_anexos.string' => 'El título de anexos debe ser texto.',
             'titulo_anexos.max' => 'El título de anexos no debe exceder 80 caracteres.',
+            'titulo_anexos_pdf.string' => 'El título de anexos PDF debe ser texto.',
+            'titulo_anexos_pdf.max' => 'El título de anexos PDF no debe exceder 80 caracteres.',
             'con_iva.boolean' => 'El indicador con IVA debe ser verdadero o falso.',
             'iva_porcentaje.numeric' => 'El porcentaje de IVA debe ser numérico.',
             'iva_porcentaje.min' => 'El porcentaje de IVA no puede ser menor a 0.',

@@ -85,6 +85,9 @@ final class PresupuestoPdf
             'titulo_anexos' => trim((string) ($presupuesto->titulo_anexos ?? '')) !== ''
                 ? trim((string) $presupuesto->titulo_anexos)
                 : 'Anexos',
+            'titulo_anexos_pdf' => trim((string) ($presupuesto->titulo_anexos_pdf ?? '')) !== ''
+                ? trim((string) $presupuesto->titulo_anexos_pdf)
+                : 'Anexos PDF',
             'con_iva' => $presupuesto->con_iva,
             'iva_porcentaje' => $presupuesto->iva_porcentaje,
             'term_cond_moneda' => $presupuesto->term_cond_moneda ?? 'MXN',

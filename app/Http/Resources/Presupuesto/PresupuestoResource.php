@@ -63,6 +63,9 @@ class PresupuestoResource extends JsonResource
             'titulo_anexos' => trim((string) ($this->titulo_anexos ?? '')) !== ''
                 ? trim((string) $this->titulo_anexos)
                 : 'Anexos',
+            'titulo_anexos_pdf' => trim((string) ($this->titulo_anexos_pdf ?? '')) !== ''
+                ? trim((string) $this->titulo_anexos_pdf)
+                : 'Anexos PDF',
             'subtotal' => (float) $this->subtotal,
             'porcentaje_descuento' => $this->porcentaje_descuento !== null ? (int) $this->porcentaje_descuento : null,
             'cantidad_descuento' => $this->cantidad_descuento !== null ? (float) $this->cantidad_descuento : null,

@@ -20,7 +20,7 @@ Estados actuales del model: `borrador` \| `enviado` \| `aceptado` \| `rechazado`
 ## Flujo operativo (implementado)
 
 1. **Borrador** — receptor (cartera \| proveedor registrado \| manual) + tarjeta emisor + conceptos + anexos + términos/descuento/moneda.
-2. **Ajustes de documento (borrador)** — `fecha_emision` vía modal settings (≤ hoy); `titulo_anexos` inline en card de anexos (default **Anexos**; commit en blur / guardar / preview).
+2. **Ajustes de documento (borrador)** — `fecha_emision` vía modal settings (≤ hoy); `titulo_anexos` e `titulo_anexos_pdf` inline en sus cards (defaults **Anexos** / **Anexos PDF**; commit en blur / guardar / preview).
 3. **Enviar** — `enviar` / `enviar-correo` / `notificar-receptor-app` / `reenviar`.
 4. **Receptor** — listado “recibidos”, notificación, o enlace público.
 5. **Aceptar / rechazar** — preview autenticado o `public/presupuestos/{token}/…`.
@@ -31,7 +31,8 @@ Estados actuales del model: `borrador` \| `enviado` \| `aceptado` \| `rechazado`
 - Preview sin guardar: `POST …/generar-pdf`
 - PDF persistido: `GET …/{presupuesto}/pdf`
 - Tema por presupuesto: `PATCH …/pdf-theme` + listado `GET …/pdf-themes`
-- Sección anexos: título = `titulo_anexos` o **Anexos**
+- Sección anexos imágenes: título = `titulo_anexos` o **Anexos**
+- Sección anexos PDF (captura): título = `titulo_anexos_pdf` o **Anexos PDF** (los archivos PDF se mergean al final del documento generado)
 - Tabla de conceptos: numeración (`#`) centrada también en filas párrafo
 - Folio impreso: `numero_presupuesto` (`PRES-XXXX`)
 

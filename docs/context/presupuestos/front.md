@@ -49,14 +49,14 @@ Campo `term_cond_moneda`: solo **MXN** \| **USD** \| **EUR** (default MXN). Pref
 - Estilos overlay: `ion-modal.modal-ajustes-presupuesto` y `ion-modal.fecha-picker-modal` en `src/global.scss`.
 - Preview **no** sobrescribe la fecha del borrador con “hoy” al abrir.
 
-### Título de sección de anexos (`titulo_anexos`)
+### Título de sección de anexos (`titulo_anexos` / `titulo_anexos_pdf`)
 
-- Editable **inline** en el encabezado de la card de anexos (no en el modal de ajustes).
-- Default de presentación: **Anexos** (vacío/null → Anexos en form, preview y PDF).
+- **Imágenes**: editable **inline** en el encabezado de la card de anexos (default **Anexos**).
+- **PDF**: mismo patrón en la card de anexos PDF (default **Anexos PDF**); no en el modal de ajustes.
 - Máx. 80 caracteres (alineado al API).
-- Persistencia: borrador local `tituloAnexosDraft` + `ngModel` standalone; se confirma al **blur**, al guardar borrador y antes de vista previa (`commitTituloAnexosDraft`). Evita que el autosave por tecla deje valores parciales en BD.
+- Persistencia: borradores locales `tituloAnexosDraft` / `tituloAnexosPdfDraft` + `ngModel` standalone; se confirman al **blur**, al guardar borrador y antes de vista previa (`commitTituloAnexosDraft` / `commitTituloAnexosPdfDraft`). Evita que el autosave por tecla deje valores parciales en BD.
 - Autosave: si hubo edición concurrente durante un guardado (`autosaveDrainPending`), **no** marcar pristine hasta drenar el valor completo.
-- Preview: getter `tituloAnexosPreview` / `normalizeTituloAnexos`; binding con `[textContent]` (no interpolación que escape mal).
+- Preview: getter `tituloAnexosPreview` / `normalizeTituloAnexos` para la sección de imágenes; binding con `[textContent]`.
 
 ### PDF / preview — numeración
 

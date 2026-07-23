@@ -20,7 +20,7 @@ Facilitar la presupuestación comercial: crear, personalizar, enviar y cerrar (a
 | Descuentos, IVA, términos y condiciones | **Hecho** | En formulario / PDF |
 | Monedas | **Hecho** | Solo **MXN**, **USD**, **EUR** (`term_cond_moneda`; default MXN) |
 | Anexos imagen y PDF | **Hecho** | |
-| Título editable de sección anexos | **Hecho** | Campo `titulo_anexos` (default **Anexos**); PDF + preview |
+| Título editable de sección anexos | **Hecho** | `titulo_anexos` (img, default **Anexos**) y `titulo_anexos_pdf` (default **Anexos PDF**) |
 | Fecha de emisión editable | **Hecho** | Modal ajustes; no permite fecha futura |
 | Folio `PRES-XXXX` | **Hecho** | Consecutivo por proveedor; bump histórico +200 (migración) |
 | Numeración alineada concepto/párrafo | **Hecho** | Columna # centrada en PDF + preview |
@@ -55,7 +55,7 @@ Facilitar la presupuestación comercial: crear, personalizar, enviar y cerrar (a
 ## Estado general
 
 Ciclo **borrador → enviar → aceptar/rechazar** maduro (API + front activos).  
-Ajustes de documento en captura: `fecha_emision` (modal settings) y `titulo_anexos` (inline en anexos).  
+Ajustes de documento en captura: `fecha_emision` (modal settings), `titulo_anexos` e `titulo_anexos_pdf` (inline).  
 **Pago → finalización**: roadmap. Catálogo de conceptos: API + UI de listado/alta/edición/baja (snapshot a la línea).
 
 ## Docs del dominio

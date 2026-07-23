@@ -61,6 +61,7 @@ class Presupuesto extends BaseModel
         'fecha_vencimiento',
         'concepto_general',
         'titulo_anexos',
+        'titulo_anexos_pdf',
         'subtotal',
         /**
          * NOTE: 
