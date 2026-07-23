@@ -43,5 +43,9 @@ Controller: `PresupuestoPublicController`.
 ## Notas de contrato
 
 - Moneda del documento: `term_cond_moneda` ∈ `MXN` \| `USD` \| `EUR`.
+- Folio: `GET …/next-folio` / asignación al crear usan `PRES-` + `proveedores.consecutivo_presupuesto_siguiente` (no el `id` del presupuesto).
+- `fecha_emision`: aceptada en store/update; el front limita a **≤ hoy**.
+- `titulo_anexos`: `nullable|string|max:80` en `StorePresupuestoRequest` / `UpdatePresupuestoRequest`. Resources y PDF (`PresupuestoPdf`, blades) normalizan vacío → **Anexos**.
+- PDF: columna de numeración de líneas (concepto y párrafo) alineada al centro (`td:first-child`).
 - No hay endpoints de cobro PayPal/Stripe ni de “finalizar por pago” en presupuestos (roadmap).
 - Cuentas bancarias: rutas de `{proveedor}/cuentas-bancarias` (perfil / soporte); no son el flujo SP.

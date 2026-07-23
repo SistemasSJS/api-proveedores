@@ -42,8 +42,29 @@ Campo `term_cond_moneda`: solo **MXN** \| **USD** \| **EUR** (default MXN). Pref
 
 ## Ajustes del documento (fecha / título anexos)
 
-- En captura (`presupuesto-page-modals`), icono **settings** en la card «Presupuesto dirigido a» abre modal solo para `fecha_emision`.
-- `titulo_anexos` se edita **inline** en el encabezado de la card de anexos (input + icono edit; default **Anexos**).
+### Fecha de emisión
+
+- En captura (`presupuesto-page-modals`), icono **settings** en la card «Presupuesto dirigido a» abre `presupuesto-ajustes-modal` **solo** con `fecha_emision` (no mezclar otros campos ahí).
+- UI: trigger con icono calendario + fecha en español; `ion-datetime` (`presentation="date"`, locale `es-MX`) con **`max` = hoy** (zona local). Validación / clamp: no se puede guardar fecha futura.
+- Estilos overlay: `ion-modal.modal-ajustes-presupuesto` y `ion-modal.fecha-picker-modal` en `src/global.scss`.
+- Preview **no** sobrescribe la fecha del borrador con “hoy” al abrir.
+
+### Título de sección de anexos (`titulo_anexos`)
+
+- Editable **inline** en el encabezado de la card de anexos (no en el modal de ajustes).
+- Default de presentación: **Anexos** (vacío/null → Anexos en form, preview y PDF).
+- Máx. 80 caracteres (alineado al API).
+- Persistencia: borrador local `tituloAnexosDraft` + `ngModel` standalone; se confirma al **blur**, al guardar borrador y antes de vista previa (`commitTituloAnexosDraft`). Evita que el autosave por tecla deje valores parciales en BD.
+- Autosave: si hubo edición concurrente durante un guardado (`autosaveDrainPending`), **no** marcar pristine hasta drenar el valor completo.
+- Preview: getter `tituloAnexosPreview` / `normalizeTituloAnexos`; binding con `[textContent]` (no interpolación que escape mal).
+
+### PDF / preview — numeración
+
+- Filas de concepto y párrafo: primera columna (`#`) centrada en preview (`presupuesto-proveedor-preview.page.scss`) y en blades PDF (`pdf.blade.php` / `pdf-tailwind.blade.php`).
+
+## Folio en UI
+
+- Muestra `numero_presupuesto` (`PRES-XXXX`) del API; el consecutivo lo lleva el backend por proveedor.
 
 ## Plan Plus — badge obligatorio en features Plus
 

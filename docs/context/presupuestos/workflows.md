@@ -20,16 +20,20 @@ Estados actuales del model: `borrador` \| `enviado` \| `aceptado` \| `rechazado`
 ## Flujo operativo (implementado)
 
 1. **Borrador** — receptor (cartera \| proveedor registrado \| manual) + tarjeta emisor + conceptos + anexos + términos/descuento/moneda.
-2. **Enviar** — `enviar` / `enviar-correo` / `notificar-receptor-app` / `reenviar`.
-3. **Receptor** — listado “recibidos”, notificación, o enlace público.
-4. **Aceptar / rechazar** — preview autenticado o `public/presupuestos/{token}/…`.
-5. **Duplicar** — nuevo borrador desde uno existente.
+2. **Ajustes de documento (borrador)** — `fecha_emision` vía modal settings (≤ hoy); `titulo_anexos` inline en card de anexos (default **Anexos**; commit en blur / guardar / preview).
+3. **Enviar** — `enviar` / `enviar-correo` / `notificar-receptor-app` / `reenviar`.
+4. **Receptor** — listado “recibidos”, notificación, o enlace público.
+5. **Aceptar / rechazar** — preview autenticado o `public/presupuestos/{token}/…`.
+6. **Duplicar** — nuevo borrador desde uno existente.
 
 ## PDF y personalización
 
 - Preview sin guardar: `POST …/generar-pdf`
 - PDF persistido: `GET …/{presupuesto}/pdf`
 - Tema por presupuesto: `PATCH …/pdf-theme` + listado `GET …/pdf-themes`
+- Sección anexos: título = `titulo_anexos` o **Anexos**
+- Tabla de conceptos: numeración (`#`) centrada también en filas párrafo
+- Folio impreso: `numero_presupuesto` (`PRES-XXXX`)
 
 ## Emisor: usuario vs empresa
 

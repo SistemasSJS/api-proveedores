@@ -26,6 +26,12 @@
 
 Roadmap (aún no en BD de presupuesto): estados o flags de **pago** / **finalización**.
 
+## Folio (`numero_presupuesto`)
+
+- Formato: `PRES-XXXX` (cero-padded, mínimo 4 dígitos).
+- Fuente del siguiente folio: `proveedores.consecutivo_presupuesto_siguiente` (no la PK del presupuesto).
+- Migración one-shot `2026_07_23_095250_bump_presupuesto_folios_by_200`: suma **200** al consecutivo numérico de cada `PRES-*` existente y realinea `consecutivo_presupuesto_siguiente` al `max(folio)+1` por proveedor (evita colisiones). Folios que no matchean `PRES-\d+` se omiten.
+
 ## Moneda
 
 Campo típico `term_cond_moneda`: valores admitidos **MXN** | **USD** | **EUR** (default MXN).
@@ -36,7 +42,12 @@ Tipos: `concepto` | `parrafo`. Campos libres: descripción, cantidad, unidad, pr
 
 Catálogo de conceptos reutilizable: tabla `presupuesto_catalogo_conceptos` (`descripcion`, `categoria` producto|servicio, `unidad`, `precio_unitario`, `imagen_path` opcional). Al usarlo en un presupuesto se hace **snapshot** a la línea (sin FK).
 
-Campo de documento: `titulo_anexos` (nullable; default de presentación **Anexos**) — título de la sección de anexos en PDF/preview.
+## Campos de documento (captura / PDF)
+
+| Campo | Tabla | Notas |
+|-------|-------|-------|
+| `fecha_emision` | `presupuestos` | Fecha del documento; editable en UI (no futura en front) |
+| `titulo_anexos` | `presupuestos` | `varchar(80)` nullable; migración `2026_07_23_095249_add_titulo_anexos_to_presupuestos_table`. Default de presentación **Anexos** si null/vacío (Resource, PDF, preview) |
 
 ## Cobro (relacionado, no SP)
 
