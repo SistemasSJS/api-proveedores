@@ -40,29 +40,34 @@ Rutas UI típicas: `/pages/proveedor/presupuestos/{list|recibidos|historial|crea
 
 Campo `term_cond_moneda`: solo **MXN** \| **USD** \| **EUR** (default MXN). Prefijo de monto: `€` para EUR, `$` para MXN/USD.
 
-## Ajustes del documento (fecha / título anexos)
+## Ajustes del documento (fecha / títulos de anexos)
 
 ### Fecha de emisión
 
-- En captura (`presupuesto-page-modals`), icono **settings** en la card «Presupuesto dirigido a» abre `presupuesto-ajustes-modal` **solo** con `fecha_emision` (no mezclar otros campos ahí).
+- En captura (`presupuesto-page-modals`), icono **settings** en la card «Presupuesto dirigido a» abre `presupuesto-ajustes-modal` **solo** con `fecha_emision` (no mezclar títulos de anexos ahí).
 - UI: trigger con icono calendario + fecha en español; `ion-datetime` (`presentation="date"`, locale `es-MX`) con **`max` = hoy** (zona local). Validación / clamp: no se puede guardar fecha futura.
 - Estilos overlay: `ion-modal.modal-ajustes-presupuesto` y `ion-modal.fecha-picker-modal` en `src/global.scss`.
 - Preview **no** sobrescribe la fecha del borrador con “hoy” al abrir.
 
-### Título de sección de anexos (`titulo_anexos` / `titulo_anexos_pdf`)
+### Títulos de sección de anexos
 
-- **Imágenes**: editable **inline** en el encabezado de la card de anexos (default **Anexos**).
-- **PDF**: mismo patrón en la card de anexos PDF (default **Anexos PDF**); no en el modal de ajustes. Ese valor se refleja en el PDF generado (estampado de hojas de anexo PDF).
+| Campo | Card UI | Default | Dónde se ve en PDF / preview |
+|-------|---------|---------|------------------------------|
+| `titulo_anexos` | Anexos imagen (inline) | **Anexos** | Blade sección imágenes + preview (`tituloAnexosPreview`) |
+| `titulo_anexos_pdf` | Anexos PDF (inline) | **Anexos PDF** | Estampado de hojas PDF mergeadas (mismo texto que el formulario) |
+
 - Máx. 80 caracteres (alineado al API).
-- Persistencia: borradores locales `tituloAnexosDraft` / `tituloAnexosPdfDraft` + `ngModel` standalone; se confirman al **blur**, al guardar borrador y antes de vista previa (`commitTituloAnexosDraft` / `commitTituloAnexosPdfDraft`). Evita que el autosave por tecla deje valores parciales en BD.
-- Autosave: si hubo edición concurrente durante un guardado (`autosaveDrainPending`), **no** marcar pristine hasta drenar el valor completo.
-- Preview: getter `tituloAnexosPreview` / `normalizeTituloAnexos` para la sección de imágenes; binding con `[textContent]`.
+- Persistencia: borradores `tituloAnexosDraft` / `tituloAnexosPdfDraft` + `ngModel` standalone; commit al **blur**, al guardar borrador y antes de vista previa (`commitTituloAnexosDraft` / `commitTituloAnexosPdfDraft`). Evita truncado por autosave por tecla.
+- Autosave: si hubo edición concurrente (`autosaveDrainPending`), **no** marcar pristine hasta drenar el valor completo.
+- Preview imágenes: binding con `[textContent]` (no interpolación frágil).
 
 ### Límite de anexos imagen (solo front)
 
-- Máximo **4** imágenes por presupuesto en captura (`PRESUPUESTO_ANEXOS_IMAGEN_MAX`).
-- La API **no** impone este tope; el front bloquea dropzone/selección al llegar al límite y recorta lotes que lo excedan (aviso al usuario).
-- Motivo UX/PDF: una página de anexos imagen muestra 4 por hoja.
+- Constante: `PRESUPUESTO_ANEXOS_IMAGEN_MAX = 4` en `helpers/presupuesto-anexo-imagen.helper.ts`.
+- Al llegar al tope: dropzone deshabilitada (`anexos-dropzone--disabled`).
+- Si el lote supera los cupos libres: se recorta y se avisa.
+- La API **no** impone este tope.
+- Motivo UX: una página de anexos imagen en PDF muestra 4 por hoja.
 
 ### PDF / preview — numeración
 

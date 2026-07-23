@@ -19,11 +19,11 @@ Facilitar la presupuestación comercial: crear, personalizar, enviar y cerrar (a
 | Catálogo de conceptos reutilizable | **Hecho** (API + listado UI) | `presupuesto-catalogo-conceptos`; feature **Plus**; snapshot a la línea |
 | Descuentos, IVA, términos y condiciones | **Hecho** | En formulario / PDF |
 | Monedas | **Hecho** | Solo **MXN**, **USD**, **EUR** (`term_cond_moneda`; default MXN) |
-| Anexos imagen y PDF | **Hecho** | |
-| Título editable de sección anexos | **Hecho** | `titulo_anexos` (img, default **Anexos**) y `titulo_anexos_pdf` (default **Anexos PDF**) |
-| Fecha de emisión editable | **Hecho** | Modal ajustes; no permite fecha futura |
+| Anexos imagen | **Hecho** | Máx. **4** en captura (solo front); título sección `titulo_anexos` → PDF/preview |
+| Anexos PDF | **Hecho** | Merge al final; título sección `titulo_anexos_pdf` → estampado; título por archivo opcional |
+| Fecha de emisión editable | **Hecho** | Modal ajustes; front: no fecha futura |
 | Folio `PRES-XXXX` | **Hecho** | Consecutivo por proveedor; bump histórico +200 (migración) |
-| Numeración alineada concepto/párrafo | **Hecho** | Columna # centrada en PDF + preview |
+| Numeración alineada concepto/párrafo | **Hecho** | Columna `#` centrada en PDF + preview |
 | Temas PDF personalizables | **Hecho** | `pdf-themes` |
 | Datos usuario emisor ≠ empresa emisora | **Hecho** | Config / tarjetas emisor-receptor |
 | Envío app + correo + enlace público | **Hecho** | Aceptar / rechazar |
@@ -33,7 +33,7 @@ Facilitar la presupuestación comercial: crear, personalizar, enviar y cerrar (a
 
 ## Límites (qué entra)
 
-- Documento presupuesto + conceptos + anexos
+- Documento presupuesto + conceptos + anexos (imagen / PDF)
 - Cartera y config emisor/receptor
 - PDF, correo, notificaciones de presupuesto, token público
 - Monedas MXN | USD | EUR
@@ -49,13 +49,20 @@ Facilitar la presupuestación comercial: crear, personalizar, enviar y cerrar (a
 
 ## Advertencia de lenguaje
 
-- **“Catálogo”** en presupuestos suele ser **clientes/receptores** o el futuro **catálogo de conceptos** — **no** el dominio Catálogo de productos.
+- **“Catálogo”** en presupuestos suele ser **clientes/receptores** o el **catálogo de conceptos** — **no** el dominio Catálogo de productos.
 - Funciones **Plus**: marcar en UI con `appPlanPlusBadge` / `<app-plan-plus-badge>` ([front.md](./front.md)).
 
 ## Estado general
 
-Ciclo **borrador → enviar → aceptar/rechazar** maduro (API + front activos).  
-Ajustes de documento en captura: `fecha_emision` (modal settings), `titulo_anexos` e `titulo_anexos_pdf` (inline).  
+Ciclo **borrador → enviar → aceptar/rechazar** maduro (API + front activos).
+
+Ajustes de documento en captura (cerrados):
+
+- `fecha_emision` — modal settings (≤ hoy en front)
+- `titulo_anexos` — inline en card anexos imagen (default **Anexos**; PDF sección imágenes + preview)
+- `titulo_anexos_pdf` — inline en card anexos PDF (default **Anexos PDF**; estampado al mergear PDFs)
+- Anexos imagen: tope **4** solo en front (`PRESUPUESTO_ANEXOS_IMAGEN_MAX`)
+
 **Pago → finalización**: roadmap. Catálogo de conceptos: API + UI de listado/alta/edición/baja (snapshot a la línea).
 
 ## Docs del dominio

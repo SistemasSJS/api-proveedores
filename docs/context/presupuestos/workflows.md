@@ -8,7 +8,7 @@ borrador → enviar → aceptar / rechazar → pago → finalización
 
 | Etapa | Estado en código | Notas |
 |-------|------------------|-------|
-| Borrador | `borrador` | Crear/editar: receptor, emisor, líneas, anexos, términos, moneda, tema |
+| Borrador | `borrador` | Crear/editar: receptor, emisor, líneas, anexos, títulos de sección, fecha, términos, moneda, tema |
 | Enviar | `enviado` | App y/o correo; opcional notificar receptor en app; enlace público |
 | Aceptar / rechazar | `aceptado` \| `rechazado` \| `rechazado_con_observacion` | Autenticado o token público |
 | Vencido | `vencido` | Si aplica reglas de vigencia |
@@ -20,19 +20,23 @@ Estados actuales del model: `borrador` \| `enviado` \| `aceptado` \| `rechazado`
 ## Flujo operativo (implementado)
 
 1. **Borrador** — receptor (cartera \| proveedor registrado \| manual) + tarjeta emisor + conceptos + anexos + términos/descuento/moneda.
-2. **Ajustes de documento (borrador)** — `fecha_emision` vía modal settings (≤ hoy); `titulo_anexos` e `titulo_anexos_pdf` inline en sus cards (defaults **Anexos** / **Anexos PDF**; commit en blur / guardar / preview).
+2. **Ajustes de documento (borrador)**
+   - `fecha_emision` — modal settings (≤ hoy).
+   - `titulo_anexos` — inline en card anexos imagen (default **Anexos**; commit blur / guardar / preview).
+   - `titulo_anexos_pdf` — inline en card anexos PDF (default **Anexos PDF**; mismo commit).
+   - Anexos imagen: máximo 4 en captura (solo front).
 3. **Enviar** — `enviar` / `enviar-correo` / `notificar-receptor-app` / `reenviar`.
 4. **Receptor** — listado “recibidos”, notificación, o enlace público.
 5. **Aceptar / rechazar** — preview autenticado o `public/presupuestos/{token}/…`.
-6. **Duplicar** — nuevo borrador desde uno existente.
+6. **Duplicar** — nuevo borrador desde uno existente (incluye títulos de anexos).
 
 ## PDF y personalización
 
 - Preview sin guardar: `POST …/generar-pdf`
 - PDF persistido: `GET …/{presupuesto}/pdf`
 - Tema por presupuesto: `PATCH …/pdf-theme` + listado `GET …/pdf-themes`
-- Sección anexos imágenes: título = `titulo_anexos` o **Anexos**
-- Sección anexos PDF: título de sección = `titulo_anexos_pdf` o **Anexos PDF** (estampado al mergear; archivos PDF se concatenan al final)
+- **Anexos imagen**: título de página = `titulo_anexos` o **Anexos**; hasta 4 imágenes por hoja Blade
+- **Anexos PDF**: archivos se mergean al final (`PresupuestoPdfAnexoMerger`); título de sección en estampado = `titulo_anexos_pdf` o **Anexos PDF** (`PresupuestoPdfAnexoEstampado`); título del archivo PDF como subtítulo si es distinto
 - Tabla de conceptos: numeración (`#`) centrada también en filas párrafo
 - Folio impreso: `numero_presupuesto` (`PRES-XXXX`)
 

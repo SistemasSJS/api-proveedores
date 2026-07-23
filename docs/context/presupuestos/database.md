@@ -7,7 +7,7 @@
 | `Presupuesto` | `presupuestos` | Documento principal |
 | `PresupuestoConcepto` | `presupuesto_conceptos` | Líneas (concepto/párrafo); snapshot sin FK a productos |
 | `PresupuestoAnexo` | `presupuesto_anexos` | Anexos imagen |
-| `PresupuestoAnexoPdf` | `presupuesto_anexo_pdf` | Anexos PDF |
+| `PresupuestoAnexoPdf` | `presupuesto_anexo_pdf` | Anexos PDF (merge al final del documento) |
 | `CarteraCliente` | `cartera_clientes` | Clientes del emisor (dominio presupuestos) |
 | `PresupuestoCatalogoConcepto` | `presupuesto_catalogo_conceptos` | Biblioteca reutilizable de conceptos (Plus) |
 | `ConfigEmisorReceptorPresupuesto` | `config_emisor_receptor_presupuestos` | Tarjetas emisor/receptor |
@@ -46,9 +46,16 @@ Catálogo de conceptos reutilizable: tabla `presupuesto_catalogo_conceptos` (`de
 
 | Campo | Tabla | Notas |
 |-------|-------|-------|
-| `fecha_emision` | `presupuestos` | Fecha del documento; editable en UI (no futura en front) |
-| `titulo_anexos` | `presupuestos` | `varchar(80)` nullable; migración `2026_07_23_095249_…`. Default de presentación **Anexos** si null/vacío (Resource, PDF sección imágenes, preview) |
-| `titulo_anexos_pdf` | `presupuestos` | `varchar(80)` nullable; migración `2026_07_23_103654_…`. Default de presentación **Anexos PDF** (card en captura + estampado en PDF de anexos) |
+| `fecha_emision` | `presupuestos` | Fecha del documento; editable en UI (front: no futura) |
+| `titulo_anexos` | `presupuestos` | `varchar(80)` nullable; mig. `2026_07_23_095249_…`. Vacío → **Anexos** (Resource, Blade sección imágenes, preview) |
+| `titulo_anexos_pdf` | `presupuestos` | `varchar(80)` nullable; mig. `2026_07_23_103654_…`. Vacío → **Anexos PDF** (Resource + estampado FPDI de hojas mergeadas) |
+
+## Anexos
+
+| Tipo | Tabla | Persistencia de título de sección | Notas |
+|------|-------|-----------------------------------|-------|
+| Imagen | `presupuesto_anexos` | `presupuestos.titulo_anexos` | Front limita alta a **4** (`PRESUPUESTO_ANEXOS_IMAGEN_MAX`); API sin tope. PDF: 4 por página en Blade |
+| PDF | `presupuesto_anexo_pdf` | `presupuestos.titulo_anexos_pdf` | Se concatenan tras el DomPDF (`PresupuestoPdfAnexoMerger`). Título de sección en estampado; cada fila puede tener `titulo` propio (subtítulo si distinto) |
 
 ## Cobro (relacionado, no SP)
 

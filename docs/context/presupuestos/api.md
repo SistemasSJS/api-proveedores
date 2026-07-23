@@ -34,7 +34,9 @@ Controller: `PresupuestoPublicController`.
 
 | Pieza | Ubicación |
 |-------|-----------|
-| PDF | `app/Support/PresupuestoPdf.php` (+ layout/tema/anexos) |
+| PDF DomPDF | `app/Support/PresupuestoPdf.php` (+ `PresupuestoPdfDocumentConfig`, layout/tema) |
+| Merge anexos PDF | `app/Support/PresupuestoPdfAnexoMerger.php` |
+| Estampado anexos PDF | `app/Support/PresupuestoPdfAnexoEstampado.php` (usa `titulo_anexos_pdf`) |
 | Mail | `app/Mail/PresupuestoEnviadoMail.php` |
 | Notifications | `app/Notifications/Presupuesto/*` |
 | Resources | `app/Http/Resources/Presupuesto/*` |
@@ -45,8 +47,10 @@ Controller: `PresupuestoPublicController`.
 - Moneda del documento: `term_cond_moneda` ∈ `MXN` \| `USD` \| `EUR`.
 - Folio: `GET …/next-folio` / asignación al crear usan `PRES-` + `proveedores.consecutivo_presupuesto_siguiente` (no el `id` del presupuesto).
 - `fecha_emision`: aceptada en store/update; el front limita a **≤ hoy**.
-- `titulo_anexos`: `nullable|string|max:80` en `StorePresupuestoRequest` / `UpdatePresupuestoRequest`. Resources y PDF (sección imágenes) normalizan vacío → **Anexos**.
-- `titulo_anexos_pdf`: `nullable|string|max:80`. Resources normalizan vacío → **Anexos PDF**. En el PDF generado aparece en el **estampado** de cada hoja de anexo PDF (`PresupuestoPdfAnexoEstampado`; mismo texto que en captura). Si el archivo tiene título propio distinto, se muestra como subtítulo.
-- PDF: columna de numeración de líneas (concepto y párrafo) alineada al centro (`td:first-child`).
+- `titulo_anexos`: `nullable|string|max:80` en `StorePresupuestoRequest` / `UpdatePresupuestoRequest`. Resources y Blade (sección imágenes) normalizan vacío → **Anexos**.
+- `titulo_anexos_pdf`: `nullable|string|max:80`. Resources normalizan vacío → **Anexos PDF**. En el PDF generado: título principal del **estampado** de cada hoja mergeada (`PresupuestoPdfAnexoEstampado`). Si el anexo PDF tiene `titulo` propio distinto, se muestra como subtítulo.
+- Duplicar: copia `titulo_anexos` y `titulo_anexos_pdf` (incluido en `only([...])` del controller).
+- PDF tabla de conceptos: columna `#` centrada (`td:first-child`) en concepto y párrafo.
+- Anexos imagen: **sin** límite de cantidad en API (el tope de 4 es solo front).
 - No hay endpoints de cobro PayPal/Stripe ni de “finalizar por pago” en presupuestos (roadmap).
 - Cuentas bancarias: rutas de `{proveedor}/cuentas-bancarias` (perfil / soporte); no son el flujo SP.
