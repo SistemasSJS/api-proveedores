@@ -12,6 +12,9 @@ return new class extends Migration
     /**
      * Suma 200 al consecutivo de numero_presupuesto (PRES-XXXX) y alinea
      * proveedores.consecutivo_presupuesto_siguiente para evitar colisiones.
+     *
+     * Usa dos fases (valor temporal único → folio final) para no chocar con
+     * el unique (proveedor_id, numero_presupuesto) al solaparse rangos.
      */
     public function up(): void
     {
@@ -19,64 +22,33 @@ return new class extends Migration
             return;
         }
 
-        $updated = 0;
-        $skipped = 0;
-
-        DB::table('presupuestos')
+        $rows = DB::table('presupuestos')
             ->select(['id', 'proveedor_id', 'numero_presupuesto'])
             ->orderBy('id')
-            ->chunkById(200, function ($rows) use (&$updated, &$skipped) {
-                foreach ($rows as $row) {
-                    $numero = trim((string) ($row->numero_presupuesto ?? ''));
-                    if (! preg_match('/^(PRES-)(\d+)$/i', $numero, $m)) {
-                        $skipped++;
-                        continue;
-                    }
+            ->get();
 
-                    $prefix = strtoupper($m[1]);
-                    $consecutivo = (int) $m[2] + self::OFFSET;
-                    $nuevo = $prefix . str_pad((string) $consecutivo, max(4, strlen($m[2])), '0', STR_PAD_LEFT);
+        $targets = [];
+        $skipped = 0;
 
-                    DB::table('presupuestos')
-                        ->where('id', $row->id)
-                        ->update(['numero_presupuesto' => $nuevo]);
-
-                    $updated++;
-                }
-            });
-
-        $proveedoresAlineados = 0;
-        if (Schema::hasTable('proveedores') && Schema::hasColumn('proveedores', 'consecutivo_presupuesto_siguiente')) {
-            $proveedorIds = DB::table('presupuestos')
-                ->whereNotNull('proveedor_id')
-                ->distinct()
-                ->pluck('proveedor_id');
-
-            foreach ($proveedorIds as $proveedorId) {
-                $maxConsecutivo = 0;
-                $folios = DB::table('presupuestos')
-                    ->where('proveedor_id', $proveedorId)
-                    ->pluck('numero_presupuesto');
-
-                foreach ($folios as $folio) {
-                    if (preg_match('/^PRES-(\d+)$/i', (string) $folio, $m)) {
-                        $maxConsecutivo = max($maxConsecutivo, (int) $m[1]);
-                    }
-                }
-
-                $actual = (int) (DB::table('proveedores')
-                    ->where('id', $proveedorId)
-                    ->value('consecutivo_presupuesto_siguiente') ?? 1);
-
-                $siguiente = max($actual, $maxConsecutivo + 1);
-                if ($siguiente !== $actual) {
-                    DB::table('proveedores')
-                        ->where('id', $proveedorId)
-                        ->update(['consecutivo_presupuesto_siguiente' => $siguiente]);
-                    $proveedoresAlineados++;
-                }
+        foreach ($rows as $row) {
+            $numero = trim((string) ($row->numero_presupuesto ?? ''));
+            if (! preg_match('/^(PRES-)(\d+)$/i', $numero, $m)) {
+                $skipped++;
+                continue;
             }
+
+            $prefix = strtoupper($m[1]);
+            $digits = $m[2];
+            $consecutivo = (int) $digits + self::OFFSET;
+            $targets[] = (object) [
+                'id' => (int) $row->id,
+                'nuevo' => $prefix . str_pad((string) $consecutivo, max(4, strlen($digits)), '0', STR_PAD_LEFT),
+            ];
         }
+
+        $updated = $this->aplicarFoliosEnDosFases($targets);
+
+        $proveedoresAlineados = $this->alinearConsecutivoSiguiente();
 
         $this->logMigrations('info', 'bump_presupuesto_folios_by_200', [
             'offset' => self::OFFSET,
@@ -95,42 +67,106 @@ return new class extends Migration
             return;
         }
 
-        $updated = 0;
-        $skipped = 0;
-
-        DB::table('presupuestos')
+        $rows = DB::table('presupuestos')
             ->select(['id', 'numero_presupuesto'])
             ->orderBy('id')
-            ->chunkById(200, function ($rows) use (&$updated, &$skipped) {
-                foreach ($rows as $row) {
-                    $numero = trim((string) ($row->numero_presupuesto ?? ''));
-                    if (! preg_match('/^(PRES-)(\d+)$/i', $numero, $m)) {
-                        $skipped++;
-                        continue;
-                    }
+            ->get();
 
-                    $consecutivo = (int) $m[2] - self::OFFSET;
-                    if ($consecutivo < 1) {
-                        $skipped++;
-                        continue;
-                    }
+        $targets = [];
+        $skipped = 0;
 
-                    $prefix = strtoupper($m[1]);
-                    $nuevo = $prefix . str_pad((string) $consecutivo, max(4, strlen($m[2])), '0', STR_PAD_LEFT);
+        foreach ($rows as $row) {
+            $numero = trim((string) ($row->numero_presupuesto ?? ''));
+            if (! preg_match('/^(PRES-)(\d+)$/i', $numero, $m)) {
+                $skipped++;
+                continue;
+            }
 
-                    DB::table('presupuestos')
-                        ->where('id', $row->id)
-                        ->update(['numero_presupuesto' => $nuevo]);
+            $consecutivo = (int) $m[2] - self::OFFSET;
+            if ($consecutivo < 1) {
+                $skipped++;
+                continue;
+            }
 
-                    $updated++;
-                }
-            });
+            $prefix = strtoupper($m[1]);
+            $digits = $m[2];
+            $targets[] = (object) [
+                'id' => (int) $row->id,
+                'nuevo' => $prefix . str_pad((string) $consecutivo, max(4, strlen($digits)), '0', STR_PAD_LEFT),
+            ];
+        }
+
+        $updated = $this->aplicarFoliosEnDosFases($targets);
 
         $this->logMigrations('info', 'bump_presupuesto_folios_by_200_down', [
             'offset' => self::OFFSET,
             'presupuestos_actualizados' => $updated,
             'presupuestos_omitidos' => $skipped,
         ]);
+    }
+
+    /**
+     * @param  array<int, object{id: int, nuevo: string}>  $targets
+     */
+    private function aplicarFoliosEnDosFases(array $targets): int
+    {
+        if ($targets === []) {
+            return 0;
+        }
+
+        foreach ($targets as $target) {
+            DB::table('presupuestos')
+                ->where('id', $target->id)
+                ->update(['numero_presupuesto' => '__TMP_BUMP_' . $target->id]);
+        }
+
+        foreach ($targets as $target) {
+            DB::table('presupuestos')
+                ->where('id', $target->id)
+                ->update(['numero_presupuesto' => $target->nuevo]);
+        }
+
+        return count($targets);
+    }
+
+    private function alinearConsecutivoSiguiente(): int
+    {
+        if (! Schema::hasTable('proveedores') || ! Schema::hasColumn('proveedores', 'consecutivo_presupuesto_siguiente')) {
+            return 0;
+        }
+
+        $proveedoresAlineados = 0;
+        $proveedorIds = DB::table('presupuestos')
+            ->whereNotNull('proveedor_id')
+            ->distinct()
+            ->pluck('proveedor_id');
+
+        foreach ($proveedorIds as $proveedorId) {
+            $maxConsecutivo = 0;
+            $folios = DB::table('presupuestos')
+                ->where('proveedor_id', $proveedorId)
+                ->pluck('numero_presupuesto');
+
+            foreach ($folios as $folio) {
+                if (preg_match('/^PRES-(\d+)$/i', (string) $folio, $m)) {
+                    $maxConsecutivo = max($maxConsecutivo, (int) $m[1]);
+                }
+            }
+
+            $actual = (int) (DB::table('proveedores')
+                ->where('id', $proveedorId)
+                ->value('consecutivo_presupuesto_siguiente') ?? 1);
+
+            $siguiente = max($actual, $maxConsecutivo + 1);
+            if ($siguiente !== $actual) {
+                DB::table('proveedores')
+                    ->where('id', $proveedorId)
+                    ->update(['consecutivo_presupuesto_siguiente' => $siguiente]);
+                $proveedoresAlineados++;
+            }
+        }
+
+        return $proveedoresAlineados;
     }
 
     /**

@@ -30,7 +30,7 @@ Roadmap (aún no en BD de presupuesto): estados o flags de **pago** / **finaliza
 
 - Formato: `PRES-XXXX` (cero-padded, mínimo 4 dígitos).
 - Fuente del siguiente folio: `proveedores.consecutivo_presupuesto_siguiente` (no la PK del presupuesto).
-- Migración one-shot `2026_07_23_095250_bump_presupuesto_folios_by_200`: suma **200** al consecutivo numérico de cada `PRES-*` existente y realinea `consecutivo_presupuesto_siguiente` al `max(folio)+1` por proveedor (evita colisiones). Folios que no matchean `PRES-\d+` se omiten.
+- Migración one-shot `2026_07_23_095250_bump_presupuesto_folios_by_200`: suma **200** al consecutivo numérico de cada `PRES-*` existente y realinea `consecutivo_presupuesto_siguiente` al `max(folio)+1` por proveedor. Actualiza en **dos fases** (temporal `__TMP_BUMP_{id}` → folio final) para no chocar con el unique `(proveedor_id, numero_presupuesto)`. Folios que no matchean `PRES-\d+` se omiten.
 
 ## Moneda
 
