@@ -1,6 +1,10 @@
 @php
     $anexosLista = $anexosLista ?? [];
     $variant = (string) ($variant ?? 'tailwind');
+    $tituloAnexos = trim((string) ($tituloAnexos ?? ''));
+    if ($tituloAnexos === '') {
+        $tituloAnexos = 'Anexos';
+    }
 @endphp
 @if (count($anexosLista) > 0)
     <div class="pdf-seccion pdf-seccion--anexos">
@@ -11,7 +15,7 @@
             <div class="{{ $variant === 'tailwind' ? 'tw-anexos-page' : 'anexos-page' }}">
                 @if ($variant === 'tailwind')
                     <div class="tw-anexos-header">
-                        <div class="tw-anexos-title">Anexos</div>
+                        <div class="tw-anexos-title">{{ $tituloAnexos }}</div>
                     </div>
                     <div class="tw-anexos-list">
                         @foreach ($anexosPagina as $index => $anexo)
@@ -42,7 +46,7 @@
                     </div>
                 @else
                     <div class="anexos-preview-header">
-                        <div class="anexos-preview-title">Anexos</div>
+                        <div class="anexos-preview-title">{{ $tituloAnexos }}</div>
                     </div>
                     @foreach ($anexosPagina as $index => $anexo)
                         @php $numeroAnexo = (($pageIndex * 4) + $index + 1); @endphp

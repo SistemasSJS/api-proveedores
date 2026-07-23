@@ -9,6 +9,7 @@
 | `PresupuestoAnexo` | `presupuesto_anexos` | Anexos imagen |
 | `PresupuestoAnexoPdf` | `presupuesto_anexo_pdf` | Anexos PDF |
 | `CarteraCliente` | `cartera_clientes` | Clientes del emisor (dominio presupuestos) |
+| `PresupuestoCatalogoConcepto` | `presupuesto_catalogo_conceptos` | Biblioteca reutilizable de conceptos (Plus) |
 | `ConfigEmisorReceptorPresupuesto` | `config_emisor_receptor_presupuestos` | Tarjetas emisor/receptor |
 
 ## Relaciones clave (`Presupuesto`)
@@ -33,7 +34,9 @@ Campo típico `term_cond_moneda`: valores admitidos **MXN** | **USD** | **EUR** 
 
 Tipos: `concepto` | `parrafo`. Campos libres: descripción, cantidad, unidad, precios, imagen. **Sin `producto_id`.**
 
-Catálogo de conceptos reutilizable: **pendiente** (no hay tabla/API dedicada aún).
+Catálogo de conceptos reutilizable: tabla `presupuesto_catalogo_conceptos` (`descripcion`, `categoria` producto|servicio, `unidad`, `precio_unitario`, `imagen_path` opcional). Al usarlo en un presupuesto se hace **snapshot** a la línea (sin FK).
+
+Campo de documento: `titulo_anexos` (nullable; default de presentación **Anexos**) — título de la sección de anexos en PDF/preview.
 
 ## Cobro (relacionado, no SP)
 

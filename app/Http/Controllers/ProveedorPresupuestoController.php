@@ -713,6 +713,7 @@ class ProveedorPresupuestoController extends Controller
                     'empresa_receptora_correo',
                     'configuracion_condiciones',
                     'concepto_general',
+                    'titulo_anexos',
                     'con_iva',
                     'iva_porcentaje',
                     'porcentaje_descuento',
@@ -1867,6 +1868,9 @@ class ProveedorPresupuestoController extends Controller
             'fecha_emision' => $presupuesto->fecha_emision,
             'lugar' => $lugar,
             'concepto_general' => $presupuesto->concepto_general,
+            'titulo_anexos' => trim((string) ($presupuesto->titulo_anexos ?? '')) !== ''
+                ? trim((string) $presupuesto->titulo_anexos)
+                : 'Anexos',
             'con_iva' => $presupuesto->con_iva,
             'iva_porcentaje' => $presupuesto->iva_porcentaje,
             'term_cond_moneda' => $presupuesto->term_cond_moneda ?? 'MXN',

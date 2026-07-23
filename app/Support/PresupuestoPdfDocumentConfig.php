@@ -302,6 +302,10 @@ final class PresupuestoPdfDocumentConfig
         $observacionesLista = $presupuestoPayload['observaciones_enunciados'] ?? [];
         $anexosLista = $presupuestoPayload['anexos'] ?? [];
         $documentacionLista = $presupuestoPayload['documentacion_adjuntos'] ?? [];
+        $tituloAnexos = trim((string) ($presupuestoPayload['titulo_anexos'] ?? ''));
+        if ($tituloAnexos === '') {
+            $tituloAnexos = 'Anexos';
+        }
         $haySeccionAnexos = count($anexosLista) > 0;
         $haySeccionDocumentacion = count($documentacionLista) > 0;
         $paginasAnexosPdf = $haySeccionAnexos
@@ -328,6 +332,7 @@ final class PresupuestoPdfDocumentConfig
             'validacionesLista' => $validacionesLista,
             'observacionesLista' => $observacionesLista,
             'anexosLista' => $anexosLista,
+            'tituloAnexos' => $tituloAnexos,
             'documentacionLista' => $documentacionLista,
             'haySeccionAnexos' => $haySeccionAnexos,
             'haySeccionDocumentacion' => $haySeccionDocumentacion,

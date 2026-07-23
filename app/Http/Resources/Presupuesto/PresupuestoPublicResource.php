@@ -56,6 +56,9 @@ class PresupuestoPublicResource extends JsonResource
             'fecha_emision' => $this->fecha_emision?->format('Y-m-d'),
             'fecha_vencimiento' => $this->fecha_vencimiento?->format('Y-m-d'),
             'concepto_general' => $this->concepto_general,
+            'titulo_anexos' => trim((string) ($this->titulo_anexos ?? '')) !== ''
+                ? trim((string) $this->titulo_anexos)
+                : 'Anexos',
             'subtotal' => (float) $this->subtotal,
             'porcentaje_descuento' => $this->porcentaje_descuento !== null ? (int) $this->porcentaje_descuento : null,
             'cantidad_descuento' => $this->cantidad_descuento !== null ? (float) $this->cantidad_descuento : null,

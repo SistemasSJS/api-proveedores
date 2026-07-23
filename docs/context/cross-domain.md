@@ -7,7 +7,7 @@ Los tres dominios son **aislados**. Este archivo lista solo lo que existe de ver
 | De → A | ¿Relación de negocio? | Detalle |
 |--------|------------------------|---------|
 | Catálogo → SP | **No** | SP no usa `producto_id` ni líneas de catálogo |
-| Catálogo → Presupuestos | **No en datos** | Conceptos son snapshot (texto). UI tiene tab “catálogo” stub sin API de productos |
+| Catálogo → Presupuestos | **No en datos de producto** | Conceptos son snapshot (texto). Catálogo de conceptos es propio del dominio presupuestos (`presupuesto_catalogo_conceptos`), no del dominio Catálogo de productos |
 | Presupuestos → SP | **No** | No hay conversión presupuesto → SP. El cobro/finalización de presupuestos es **roadmap dentro de presupuestos** (cuentas + pasarelas), no el dominio SP |
 | SP → Catálogo | **No** | Endpoints de productos bajo `construcc/…` son otro dominio, mismo archivo de rutas |
 | Cualquiera → Plataforma | **Sí** | Auth, `proveedor_id`, storage, notificaciones infra |

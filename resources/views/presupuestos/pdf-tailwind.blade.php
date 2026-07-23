@@ -554,6 +554,12 @@
         background: var(--paragraph-row-bg);
     }
 
+    .tw-table tbody tr.tw-linea-parrafo td:first-child {
+        text-align: center;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
     .tw-table tbody tr.tw-linea-parrafo td[colspan] {
         text-align: left;
         font-weight: 400;
@@ -1189,6 +1195,7 @@
 
         @include('presupuestos.partials.presupuesto-pdf-seccion-anexos', [
             'anexosLista' => $anexosLista,
+            'tituloAnexos' => $tituloAnexos ?? 'Anexos',
             'variant' => $pdfVariant === 'tailwind' ? 'tailwind' : 'default',
         ])
 

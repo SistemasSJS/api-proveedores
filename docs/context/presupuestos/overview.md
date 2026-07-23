@@ -16,7 +16,7 @@ Facilitar la presupuestación comercial: crear, personalizar, enviar y cerrar (a
 | Acceso a empresas/proveedores registrados | **Hecho** | `proveedores-registrados` |
 | Receptor manual (texto) | **Hecho** | Sin entidad previa |
 | Conceptos libres (línea / párrafo) | **Hecho** | Snapshot; sin `producto_id` |
-| Catálogo de conceptos reutilizable | **Pendiente** | UI stub; feature **Plus** |
+| Catálogo de conceptos reutilizable | **Hecho** (API + listado UI) | `presupuesto-catalogo-conceptos`; feature **Plus**; snapshot a la línea |
 | Descuentos, IVA, términos y condiciones | **Hecho** | En formulario / PDF |
 | Monedas | **Hecho** | Solo **MXN**, **USD**, **EUR** (`term_cond_moneda`; default MXN) |
 | Anexos imagen y PDF | **Hecho** | |
@@ -51,7 +51,7 @@ Facilitar la presupuestación comercial: crear, personalizar, enviar y cerrar (a
 ## Estado general
 
 Ciclo **borrador → enviar → aceptar/rechazar** maduro (API + front activos).  
-**Pago → finalización** y **catálogo de conceptos**: pendientes / roadmap.
+**Pago → finalización**: roadmap. Catálogo de conceptos: API + UI de listado/alta/edición/baja (snapshot a la línea).
 
 ## Docs del dominio
 

@@ -588,6 +588,12 @@
                     vertical-align: top;
                 }
 
+                .presupuesto-table tbody tr.linea-parrafo td:first-child {
+                    text-align: center;
+                    color: #6b7280;
+                    font-weight: 600;
+                }
+
                 .presupuesto-table tbody tr.linea-con-imagen {
                     height: 18mm;
                 }
@@ -1239,6 +1245,7 @@
 
                 @include('presupuestos.partials.presupuesto-pdf-seccion-anexos', [
                     'anexosLista' => $anexosLista,
+                    'tituloAnexos' => $tituloAnexos ?? 'Anexos',
                     'variant' => 'default',
                 ])
 

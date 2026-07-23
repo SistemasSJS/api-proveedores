@@ -24,6 +24,7 @@ use App\Http\Controllers\OrdenCompraSolicitudPagoController;
 use App\Http\Controllers\ProveedorOrdenCompraController;
 use App\Http\Controllers\ProveedorPresupuestoController;
 use App\Http\Controllers\ProveedorPresupuestoCarteraClientesController;
+use App\Http\Controllers\ProveedorPresupuestoCatalogoConceptosController;
 use App\Http\Controllers\ProveedorPresupuestoAnexoController;
 use App\Http\Controllers\ProveedorPresupuestoAnexoPdfController;
 use App\Http\Controllers\ProveedorPresupuestoConfigController;
@@ -239,6 +240,15 @@ Route::prefix('proveedores')
                     Route::put('/{carteraCliente}', [ProveedorPresupuestoCarteraClientesController::class, 'update']);
                     Route::patch('/{carteraCliente}', [ProveedorPresupuestoCarteraClientesController::class, 'update']);
                     Route::delete('/{carteraCliente}', [ProveedorPresupuestoCarteraClientesController::class, 'destroy']);
+                });
+
+                Route::prefix('presupuesto-catalogo-conceptos')->group(function () {
+                    Route::get('/', [ProveedorPresupuestoCatalogoConceptosController::class, 'index']);
+                    Route::post('/', [ProveedorPresupuestoCatalogoConceptosController::class, 'store']);
+                    Route::get('/{presupuestoCatalogoConcepto}', [ProveedorPresupuestoCatalogoConceptosController::class, 'show']);
+                    Route::put('/{presupuestoCatalogoConcepto}', [ProveedorPresupuestoCatalogoConceptosController::class, 'update']);
+                    Route::patch('/{presupuestoCatalogoConcepto}', [ProveedorPresupuestoCatalogoConceptosController::class, 'update']);
+                    Route::delete('/{presupuestoCatalogoConcepto}', [ProveedorPresupuestoCatalogoConceptosController::class, 'destroy']);
                 });
 
                 Route::get('/next-folio', [ProveedorPresupuestoController::class, 'nextFolioByProveedor']);

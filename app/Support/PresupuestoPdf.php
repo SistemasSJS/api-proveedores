@@ -82,6 +82,9 @@ final class PresupuestoPdf
             'fecha_emision' => $presupuesto->fecha_emision,
             'lugar' => $lugar,
             'concepto_general' => $presupuesto->concepto_general,
+            'titulo_anexos' => trim((string) ($presupuesto->titulo_anexos ?? '')) !== ''
+                ? trim((string) $presupuesto->titulo_anexos)
+                : 'Anexos',
             'con_iva' => $presupuesto->con_iva,
             'iva_porcentaje' => $presupuesto->iva_porcentaje,
             'term_cond_moneda' => $presupuesto->term_cond_moneda ?? 'MXN',

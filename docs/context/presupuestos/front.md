@@ -40,6 +40,11 @@ Rutas UI típicas: `/pages/proveedor/presupuestos/{list|recibidos|historial|crea
 
 Campo `term_cond_moneda`: solo **MXN** \| **USD** \| **EUR** (default MXN). Prefijo de monto: `€` para EUR, `$` para MXN/USD.
 
+## Ajustes del documento (fecha / título anexos)
+
+- En captura (`presupuesto-page-modals`), icono **settings** en la card «Presupuesto dirigido a» abre modal solo para `fecha_emision`.
+- `titulo_anexos` se edita **inline** en el encabezado de la card de anexos (input + icono edit; default **Anexos**).
+
 ## Plan Plus — badge obligatorio en features Plus
 
 Cuando una capacidad sea **Plus** (plan superior / no incluida en el esquema gratuito), la UI **debe** mostrar el badge con la directiva o el componente de `@theme`.
@@ -74,6 +79,10 @@ Cuando una capacidad sea **Plus** (plan superior / no incluida en el esquema gra
 
 **Regla para agentes:** si el requisito dice que algo es Plus → añadir `appPlanPlusBadge` o `<app-plan-plus-badge>` en la UI afectada.
 
-## Catálogo de conceptos (stub + Plus)
+## Catálogo de conceptos (Plus)
 
-Modal de concepto con tab “catálogo”: lista vacía / sin API de productos ni catálogo de conceptos persistido. Marcar como Plus; **no** integrar el dominio Catálogo de productos salvo decisión explícita.
+- API: `{proveedor}/presupuestos/presupuesto-catalogo-conceptos` (CRUD).
+- Modal de concepto:
+  - Tab Catálogo: listar / buscar / filtrar; click = snapshot a la línea; editar / eliminar; **Nuevo en catálogo**.
+  - Tab Manual: checkbox «Guardar también en el catálogo» (+ categoría producto/servicio) al añadir línea.
+- Badge Plus en tab y acciones de catálogo. **No** integrar el dominio Catálogo de productos salvo decisión explícita.

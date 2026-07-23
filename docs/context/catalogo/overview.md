@@ -18,7 +18,7 @@ Administrar productos, categorÍas (y subcategorÍas), marcas, unidades de medid
 | No mezclar con | Motivo |
 |----------------|--------|
 | Solicitudes de pago | Sin `producto_id` en SP |
-| Presupuestos | Conceptos sin FK a producto; tab UI stub |
+| Presupuestos | Conceptos sin FK a producto; catálogo de conceptos propio del dominio presupuestos |
 | "CatÁlogo" de clientes en presupuestos | Otro significado |
 
 ## Estado / gap front
