@@ -32,7 +32,7 @@ Estados actuales del model: `borrador` \| `enviado` \| `aceptado` \| `rechazado`
 - PDF persistido: `GET …/{presupuesto}/pdf`
 - Tema por presupuesto: `PATCH …/pdf-theme` + listado `GET …/pdf-themes`
 - Sección anexos imágenes: título = `titulo_anexos` o **Anexos**
-- Sección anexos PDF (captura): título = `titulo_anexos_pdf` o **Anexos PDF** (los archivos PDF se mergean al final del documento generado)
+- Sección anexos PDF: título de sección = `titulo_anexos_pdf` o **Anexos PDF** (estampado al mergear; archivos PDF se concatenan al final)
 - Tabla de conceptos: numeración (`#`) centrada también en filas párrafo
 - Folio impreso: `numero_presupuesto` (`PRES-XXXX`)
 

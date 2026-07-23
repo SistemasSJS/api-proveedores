@@ -61,17 +61,38 @@ final class PresupuestoPdfAnexoEstampado
             : $marginX;
         $textMaxW = max(20.0, $rightX - $textX - 3.0);
 
-        $tituloRaw = trim((string) ($anexo->titulo ?? ''));
-        if ($tituloRaw === '') {
-            $tituloRaw = 'Anexo PDF';
+        // Título de sección (mismo campo editable en el formulario: titulo_anexos_pdf).
+        $tituloSeccionRaw = trim((string) ($presupuesto->titulo_anexos_pdf ?? ''));
+        if ($tituloSeccionRaw === '') {
+            $tituloSeccionRaw = 'Anexos PDF';
         }
-        $titulo = self::textoPdf(mb_strtoupper($tituloRaw, 'UTF-8'));
+        $tituloSeccion = self::textoPdf(mb_strtoupper($tituloSeccionRaw, 'UTF-8'));
 
-        $pdf->SetFont('Helvetica', 'B', 7.5);
+        $tituloAnexoRaw = trim((string) ($anexo->titulo ?? ''));
+        $mostrarTituloAnexo = $tituloAnexoRaw !== ''
+            && mb_strtoupper($tituloAnexoRaw, 'UTF-8') !== mb_strtoupper($tituloSeccionRaw, 'UTF-8');
+
         self::aplicarColorRgb($pdf, 'text', $palette['heading']);
-        $titleLineH = 4.0;
-        $pdf->SetXY($textX, $rowCenterY - ($titleLineH / 2));
-        $pdf->Cell($textMaxW, $titleLineH, self::truncar($titulo, 52), 0, 0, 'L');
+        if ($mostrarTituloAnexo) {
+            $tituloAnexo = self::textoPdf(mb_strtoupper($tituloAnexoRaw, 'UTF-8'));
+            $titleLineH = 3.6;
+            $subLineH = 3.2;
+            $blockH = $titleLineH + $subLineH;
+            $blockTop = $rowCenterY - ($blockH / 2);
+
+            $pdf->SetFont('Helvetica', 'B', 7.5);
+            $pdf->SetXY($textX, $blockTop);
+            $pdf->Cell($textMaxW, $titleLineH, self::truncar($tituloSeccion, 52), 0, 0, 'L');
+
+            $pdf->SetFont('Helvetica', '', 6.5);
+            $pdf->SetXY($textX, $blockTop + $titleLineH);
+            $pdf->Cell($textMaxW, $subLineH, self::truncar($tituloAnexo, 56), 0, 0, 'L');
+        } else {
+            $pdf->SetFont('Helvetica', 'B', 7.5);
+            $titleLineH = 4.0;
+            $pdf->SetXY($textX, $rowCenterY - ($titleLineH / 2));
+            $pdf->Cell($textMaxW, $titleLineH, self::truncar($tituloSeccion, 52), 0, 0, 'L');
+        }
 
         if ($mostrarDatos) {
             $rightBlockH = 9.0;

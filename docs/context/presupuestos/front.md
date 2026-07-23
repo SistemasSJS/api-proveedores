@@ -52,11 +52,17 @@ Campo `term_cond_moneda`: solo **MXN** \| **USD** \| **EUR** (default MXN). Pref
 ### Título de sección de anexos (`titulo_anexos` / `titulo_anexos_pdf`)
 
 - **Imágenes**: editable **inline** en el encabezado de la card de anexos (default **Anexos**).
-- **PDF**: mismo patrón en la card de anexos PDF (default **Anexos PDF**); no en el modal de ajustes.
+- **PDF**: mismo patrón en la card de anexos PDF (default **Anexos PDF**); no en el modal de ajustes. Ese valor se refleja en el PDF generado (estampado de hojas de anexo PDF).
 - Máx. 80 caracteres (alineado al API).
 - Persistencia: borradores locales `tituloAnexosDraft` / `tituloAnexosPdfDraft` + `ngModel` standalone; se confirman al **blur**, al guardar borrador y antes de vista previa (`commitTituloAnexosDraft` / `commitTituloAnexosPdfDraft`). Evita que el autosave por tecla deje valores parciales en BD.
 - Autosave: si hubo edición concurrente durante un guardado (`autosaveDrainPending`), **no** marcar pristine hasta drenar el valor completo.
 - Preview: getter `tituloAnexosPreview` / `normalizeTituloAnexos` para la sección de imágenes; binding con `[textContent]`.
+
+### Límite de anexos imagen (solo front)
+
+- Máximo **4** imágenes por presupuesto en captura (`PRESUPUESTO_ANEXOS_IMAGEN_MAX`).
+- La API **no** impone este tope; el front bloquea dropzone/selección al llegar al límite y recorta lotes que lo excedan (aviso al usuario).
+- Motivo UX/PDF: una página de anexos imagen muestra 4 por hoja.
 
 ### PDF / preview — numeración
 

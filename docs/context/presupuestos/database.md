@@ -48,7 +48,7 @@ Catálogo de conceptos reutilizable: tabla `presupuesto_catalogo_conceptos` (`de
 |-------|-------|-------|
 | `fecha_emision` | `presupuestos` | Fecha del documento; editable en UI (no futura en front) |
 | `titulo_anexos` | `presupuestos` | `varchar(80)` nullable; migración `2026_07_23_095249_…`. Default de presentación **Anexos** si null/vacío (Resource, PDF sección imágenes, preview) |
-| `titulo_anexos_pdf` | `presupuestos` | `varchar(80)` nullable; migración `2026_07_23_103654_…`. Default de presentación **Anexos PDF** (card de anexos PDF en captura; Resources) |
+| `titulo_anexos_pdf` | `presupuestos` | `varchar(80)` nullable; migración `2026_07_23_103654_…`. Default de presentación **Anexos PDF** (card en captura + estampado en PDF de anexos) |
 
 ## Cobro (relacionado, no SP)
 
