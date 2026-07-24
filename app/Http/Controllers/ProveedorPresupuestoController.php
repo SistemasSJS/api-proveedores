@@ -615,8 +615,7 @@ class ProveedorPresupuestoController extends Controller
             // $this->despacharCorreoPresupuesto($presupuesto, $incluirInvitacion);
 
             $appUrl = config('app.frontend_url', config('app.url'));
-            // $enlacePublico = $appUrl . '/public/presupuesto/' . $presupuesto->token_publico;
-            $enlacePublico = $appUrl . '/pages/proveedor/presupuesto/preview/' . $presupuesto->id;
+            $enlacePublico = rtrim((string) $appUrl, '/') . '/public/presupuesto/' . $presupuesto->token_publico;
 
             $nombreReceptor = $presupuesto->empresa_receptora_nombre ?? $presupuesto->empresa_receptora_empresa;
 
@@ -1753,8 +1752,7 @@ class ProveedorPresupuestoController extends Controller
         }
 
         $appUrl = config('app.frontend_url', config('app.url'));
-        $urlWeb = rtrim($appUrl, '/') . '/pages/proveedor/presupuesto/preview/' . $presupuesto->id;
-        // $urlWeb = rtrim($appUrl, '/') . '/public/presupuesto/' . $token;
+        $urlWeb = rtrim((string) $appUrl, '/') . '/public/presupuesto/' . $token;
 
         try {
             $renderer = new GDLibRenderer(200);
@@ -2039,8 +2037,7 @@ class ProveedorPresupuestoController extends Controller
     private function despacharCorreoPresupuesto(Presupuesto $presupuesto, bool $incluirInvitacion = false): void
     {
         $appUrl = config('app.frontend_url', config('app.url'));
-        // $enlacePublico = $appUrl . '/public/presupuesto/' . $presupuesto->token_publico;
-        $enlacePublico = $appUrl . '/pages/proveedor/presupuesto/preview/' . $presupuesto->id;
+        $enlacePublico = rtrim((string) $appUrl, '/') . '/public/presupuesto/' . $presupuesto->token_publico;
         $nombreReceptor = $presupuesto->empresa_receptora_nombre
             ?? $presupuesto->empresa_receptora_empresa
             ?? 'Cliente';

@@ -30,6 +30,13 @@ Repo: `api-proveedores`. Prefijo gerente: `proveedores/{proveedor}/…` + `prove
 
 Controller: `PresupuestoPublicController`.
 
+## Enlace web / QR (pie del PDF y correos)
+
+- URL canónica front: `{APP_FRONTEND_URL}/public/presupuesto/{token_publico}`.
+- Generación QR PDF: `PresupuestoPdf::generarQrCodeParaPresupuesto` (BaconQrCode → data URI).
+- Correo / QR auxiliar en controller: `ProveedorPresupuestoController` usa la misma URL pública (no la preview autenticada).
+- Requiere `asegurarTokenPublico()` antes de armar el enlace.
+
 ## Piezas de soporte
 
 | Pieza | Ubicación |

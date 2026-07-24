@@ -39,6 +39,7 @@ Estados actuales del model: `borrador` \| `enviado` \| `aceptado` \| `rechazado`
 - **Anexos PDF**: archivos se mergean al final (`PresupuestoPdfAnexoMerger`); título de sección en estampado = `titulo_anexos_pdf` o **Anexos PDF** (`PresupuestoPdfAnexoEstampado`); título del archivo PDF como subtítulo si es distinto
 - Tabla de conceptos: numeración (`#`) centrada también en filas párrafo
 - Folio impreso: `numero_presupuesto` (`PRES-XXXX`)
+- **QR pie de página**: apunta a `/public/presupuesto/{token}`; con sesión el front abre `enlace-publico/:token` (no `preview/:id`)
 
 ## Emisor: usuario vs empresa
 

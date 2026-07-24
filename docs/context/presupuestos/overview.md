@@ -27,6 +27,7 @@ Facilitar la presupuestación comercial: crear, personalizar, enviar y cerrar (a
 | Temas PDF personalizables | **Hecho** | `pdf-themes` |
 | Datos usuario emisor ≠ empresa emisora | **Hecho** | Config / tarjetas emisor-receptor |
 | Envío app + correo + enlace público | **Hecho** | Aceptar / rechazar |
+| QR pie PDF → enlace público | **Hecho** | `{frontend}/public/presupuesto/{token}`; con sesión → `enlace-publico/:token` |
 | Cuentas bancarias (perfil empresa) | **Hecho** (soporte) | Perfil; no cobranza automática |
 | Pasarelas PayPal / Stripe | **Roadmap** | UI en perfil (“Servicios digitales”); **sin implementar** |
 | Pago → finalización del presupuesto | **Roadmap** | Tras aceptar; no confundir con dominio SP |

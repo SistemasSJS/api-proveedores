@@ -14,7 +14,7 @@ Montado en `proveedor-routing.module.ts` como ruta `presupuestos`.
 | Listados | `pages/presupuesto-proveedor-list` (enviados / recibidos / historial) |
 | Form | `pages/presupuesto-proveedor-form` |
 | Preview | `pages/presupuesto-proveedor-preview` |
-| Enlace (auth) | `pages/presupuesto-enlace-publico` |
+| Enlace (auth) | `pages/presupuesto-enlace-publico` (`…/presupuestos/enlace-publico/:token`) |
 | Stepper / modales | `components/presupuesto-form`, `presupuesto-page-modals` |
 
 Rutas UI típicas: `/pages/proveedor/presupuestos/{list|recibidos|historial|crear|editar/:id|detalle/:id|preview/:id|…}`.
@@ -35,6 +35,16 @@ Rutas UI típicas: `/pages/proveedor/presupuestos/{list|recibidos|historial|crea
 - `src/app/public/presupuesto-publico/`
 - `src/app/public/visor-presupuesto-publico/`
 - Rutas en `public-routing.module.ts`
+- URL pública: `/public/presupuesto/{token_publico}` (param se llama `id` en la ruta, pero es el **token**, no la PK).
+
+### Enlace público y QR del pie del PDF
+
+- El QR del PDF y los correos usan `{APP_FRONTEND_URL}/public/presupuesto/{token}`.
+- Si el usuario **tiene sesión** y abre esa URL, `publicPresupuestoAuthRedirectGuard` redirige a  
+  `/pages/proveedor/presupuestos/enlace-publico/{token}` (vista dentro del shell; **no** a `preview/:id`, porque el param no es el id numérico).
+- Sin sesión: se muestra `presupuesto-publico` con cabecera propia.
+- Guard: `src/app/public/guards/public-presupuesto-auth-redirect.guard.ts`.
+- Config API: `APP_FRONTEND_URL` (`config('app.frontend_url')`) debe apuntar al front, no a la API.
 
 ## Monedas (UI)
 
