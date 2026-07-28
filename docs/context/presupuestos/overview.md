@@ -8,15 +8,19 @@ Parte de un **esquema gratuito** (plan base) y funciones **Plus** (ver [front.md
 
 Facilitar la presupuestación comercial: crear, personalizar, enviar y cerrar (aceptar/rechazar) presupuestos; PDF con temas; cartera propia; acceso a empresas ya registradas; configuración de emisor (usuario ≠ solo datos de empresa).
 
+Visión de producto (menú / secciones): el módulo no es solo el ciclo del documento. Bajo **Presupuestos** conviven secciones hermanas (sin paraguas “Biblioteca”): generar, listados, gestión de **Clientes**, **Catálogo de conceptos** y **Tarjetas Presentación**. Detalle de menú y rutas en [front.md](./front.md).
+
 ## Capacidad (mapa Hecho / Pendiente / Roadmap)
 
 | Capacidad | Estado | Notas |
 |-----------|--------|-------|
-| Cartera de clientes propia | **Hecho** | `cartera-clientes` |
+| Cartera de clientes propia | **Hecho** | API `cartera-clientes` + sección menú **Clientes** (list/form/detail) |
 | Acceso a empresas/proveedores registrados | **Hecho** | `proveedores-registrados` |
 | Receptor manual (texto) | **Hecho** | Sin entidad previa |
 | Conceptos libres (línea / párrafo) | **Hecho** | Snapshot; sin `producto_id` |
-| Catálogo de conceptos reutilizable | **Hecho** (API + listado UI) | `presupuesto-catalogo-conceptos`; feature **Plus**; snapshot a la línea |
+| Catálogo de conceptos reutilizable | **Hecho** | API + modal captura (Plus) + sección menú **Catálogo de conceptos** (list/form/detail) |
+| Tarjetas Presentación (emisor / Atte.) | **Hecho** | API config + sección menú **Tarjetas** (list/form/detail); Perfil enlaza al listado |
+| Menú producto (Generar / Mis presupuestos / …) | **Hecho** | Ver [front.md](./front.md) |
 | Descuentos, IVA, términos y condiciones | **Hecho** | En formulario / PDF |
 | Monedas | **Hecho** | Solo **MXN**, **USD**, **EUR** (`term_cond_moneda`; default MXN) |
 | Anexos imagen | **Hecho** | Máx. **4** en captura (solo front); título sección `titulo_anexos` → PDF/preview |
@@ -29,13 +33,15 @@ Facilitar la presupuestación comercial: crear, personalizar, enviar y cerrar (a
 | Envío app + correo + enlace público | **Hecho** | Aceptar / rechazar |
 | QR pie PDF → enlace público | **Hecho** | `{frontend}/public/presupuesto/{token}`; con sesión → `enlace-publico/:token` |
 | Cuentas bancarias (perfil empresa) | **Hecho** (soporte) | Perfil; no cobranza automática |
+| Historial en menú | **Fuera de v1** | Ruta `historial` puede existir; no foco del rework de menú |
+| Plantillas de presupuesto | **Roadmap** | Candidato a sección hermana; no en menú v1 |
 | Pasarelas PayPal / Stripe | **Roadmap** | UI en perfil (“Servicios digitales”); **sin implementar** |
 | Pago → finalización del presupuesto | **Roadmap** | Tras aceptar; no confundir con dominio SP |
 
 ## Límites (qué entra)
 
 - Documento presupuesto + conceptos + anexos (imagen / PDF)
-- Cartera y config emisor/receptor
+- Cartera y config emisor/receptor (incl. gestión en secciones propias del módulo)
 - PDF, correo, notificaciones de presupuesto, token público
 - Monedas MXN | USD | EUR
 - Roadmap de cobro (cuentas / pasarelas) **como parte de este dominio**, no vía Solicitudes de pago
@@ -50,7 +56,10 @@ Facilitar la presupuestación comercial: crear, personalizar, enviar y cerrar (a
 
 ## Advertencia de lenguaje
 
-- **“Catálogo”** en presupuestos suele ser **clientes/receptores** o el **catálogo de conceptos** — **no** el dominio Catálogo de productos.
+- **“Catálogo de conceptos”** (menú / Plus) = biblioteca reutilizable de líneas del dominio presupuestos — **no** el dominio Catálogo de productos.
+- **“Clientes”** = cartera de presupuestos (`cartera-clientes`), no clientes/empresas de SP.
+- **“Tarjetas Presentación”** = config emisor/receptor / cierre Atte. — no tarjetas bancarias ni pasarelas.
+- **“Mis presupuestos”** = listados / ciclo del documento (no llamarlo “Documentos”).
 - Funciones **Plus**: marcar en UI con `appPlanPlusBadge` / `<app-plan-plus-badge>` ([front.md](./front.md)).
 
 ## Estado general
@@ -64,7 +73,9 @@ Ajustes de documento en captura (cerrados):
 - `titulo_anexos_pdf` — inline en card anexos PDF (default **Anexos PDF**; estampado al mergear PDFs)
 - Anexos imagen: tope **4** solo en front (`PRESUPUESTO_ANEXOS_IMAGEN_MAX`)
 
-**Pago → finalización**: roadmap. Catálogo de conceptos: API + UI de listado/alta/edición/baja (snapshot a la línea).
+**Pago → finalización**: roadmap.
+
+**Gestión de recursos (v1 UI):** menú Generar / Mis presupuestos / Clientes / Catálogo de conceptos / Tarjetas Presentación; CRUD list/form/detail por recurso (patrón SPP). Detalle en [front.md](./front.md).
 
 ## Docs del dominio
 

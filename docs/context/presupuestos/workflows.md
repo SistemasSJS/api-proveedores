@@ -45,6 +45,8 @@ Estados actuales del model: `borrador` \| `enviado` \| `aceptado` \| `rechazado`
 
 La config emisor/receptor permite datos de **contacto/usuario emisor** distintos al snapshot de **empresa emisora** (logo, razón social, etc.). Se elige tarjeta al armar el presupuesto.
 
+Gestión en sección **Tarjetas Presentación** (list / form / detail); Perfil (pestaña Tarjetas) enlaza al listado. En captura solo se elige tarjeta (snapshot al documento).
+
 ## Cobro (roadmap — no es dominio SP)
 
 Tras aceptación, la visión es cobro/finalización **dentro de presupuestos**:
@@ -53,7 +55,13 @@ Tras aceptación, la visión es cobro/finalización **dentro de presupuestos**:
 2. **Pasarelas** — PayPal y Stripe: sección “Servicios digitales” en el mismo perfil; botones Configurar; **aún no implementadas**.
 3. **No** convertir el presupuesto en Solicitud de pago (SP) salvo decisión futura explícita (hoy: dominios aislados).
 
-## Cartera
+## Cartera (Clientes)
 
-- Alta/edición en modal de selección de cliente al crear presupuesto.
-- Guardar receptor en cartera / ciertas acciones de catálogo de clientes pueden ser **Plus** (badge en UI).
+- Alta/edición también en modal de selección de cliente al crear presupuesto.
+- Guardar receptor en cartera / ciertas acciones pueden ser **Plus** (badge en UI).
+- Sección menú **Clientes**: list / form / detail propios (`presupuesto-clientes-*`). En captura se elige de la cartera (o manual / proveedor registrado).
+
+## Catálogo de conceptos
+
+- CRUD embebido en modal de línea (tab Catálogo + “guardar también en catálogo” en Manual); feature **Plus**.
+- Sección menú **Catálogo de conceptos**: list / form / detail propios (`presupuesto-catalogo-conceptos-*`); al usarlo en el presupuesto se hace **snapshot** a la línea (sin FK).

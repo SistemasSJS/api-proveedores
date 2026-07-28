@@ -16,13 +16,55 @@ Montado en `proveedor-routing.module.ts` como ruta `presupuestos`.
 | Preview | `pages/presupuesto-proveedor-preview` |
 | Enlace (auth) | `pages/presupuesto-enlace-publico` (`…/presupuestos/enlace-publico/:token`) |
 | Stepper / modales | `components/presupuesto-form`, `presupuesto-page-modals` |
+| Gestión Clientes | `pages/presupuesto-clientes-{list\|form\|detail}` + `components/presupuesto-cliente-*` |
+| Gestión Conceptos | `pages/presupuesto-catalogo-conceptos-{list\|form\|detail}` + `components/presupuesto-concepto-*` |
+| Gestión Tarjetas | `pages/presupuesto-tarjetas-{list\|form\|detail}` + `components/presupuesto-tarjeta-*` |
+| Paths / estilos gestión | `constants/presupuesto-gestion.paths.ts`, `styles/presupuesto-gestion-shared.scss` |
 
-Rutas UI típicas: `/pages/proveedor/presupuestos/{list|recibidos|historial|crear|editar/:id|detalle/:id|preview/:id|…}`.
+Rutas UI: `/pages/proveedor/presupuestos/{list|recibidos|historial|crear|editar/:id|detalle/:id|preview/:id|clientes|…|catalogo-conceptos|…|tarjetas-presentacion|…}`.
 
-## Config emisor/receptor (perfil)
+## Menú y secciones (v1 — implementado)
 
-- UI: `perfil-usuario-proveedor/components/presupuesto-config-form/`
-- Servicio: `perfil-usuario-proveedor/services/proveedor-presupuesto-config.service.ts`
+Orden en `user-menu-new.ts`:
+
+```text
+Presupuestos
+├── Generar Presupuesto       →  /pages/proveedor/presupuestos/crear
+├── Mis presupuestos          →  /pages/proveedor/presupuestos/list
+│                                 (segmentos internos: enviados | recibidos)
+├── Clientes                  →  /pages/proveedor/presupuestos/clientes
+├── Catálogo de conceptos     →  /pages/proveedor/presupuestos/catalogo-conceptos
+└── Tarjetas Presentación     →  /pages/proveedor/presupuestos/tarjetas-presentacion
+                                  (Perfil → pestaña Tarjetas navega al listado)
+```
+
+Principios:
+
+- Secciones **hermanas** (flat). Sin paraguas “Biblioteca” / “Recursos”.
+- Cada recurso tiene **CRUD en pages propias** (patrón SPP: list / form / detail + components), **sin** embeber modales de captura.
+- Captura (`crear` / `editar`) sigue eligiendo de esos recursos vía modales/selectores (snapshot).
+- Dos entradas a Tarjetas: menú Presupuestos + Perfil (misma ruta de listado).
+- **Historial** en menú: fuera de v1.
+- **Plantillas**: roadmap; no en menú v1.
+
+### Páginas de gestión (patrón list / form / detail)
+
+| Recurso | List | Form | Detail | Components |
+|---------|------|------|--------|------------|
+| Clientes | `presupuesto-clientes-list` | `presupuesto-clientes-form` | `presupuesto-clientes-detail` | `presupuesto-cliente-card`, `presupuesto-cliente-form`, `presupuesto-cliente-detail-view` |
+| Catálogo conceptos | `presupuesto-catalogo-conceptos-list` | `…-form` | `…-detail` | `presupuesto-concepto-card`, `presupuesto-concepto-form`, `presupuesto-concepto-detail-view` |
+| Tarjetas Presentación | `presupuesto-tarjetas-list` | `…-form` | `…-detail` | `presupuesto-tarjeta-card`, `presupuesto-tarjeta-form`, `presupuesto-tarjeta-detail-view` |
+
+Rutas hijas: `presupuestos/{recurso}` + `crear` | `editar/:id` | `detalle/:id` (declaradas en `presupuesto-proveedor.routes.ts`).
+
+UI: look alineado a cards/forms de captura (`presupuesto-gestion-shared.scss`); no reutiliza el markup de los modales de captura.
+
+## Config emisor/receptor (Tarjetas Presentación)
+
+- API / servicio: `perfil-usuario-proveedor/services/proveedor-presupuesto-config.service.ts`
+- UI de gestión: páginas `presupuesto-tarjetas-*` bajo Presupuestos
+- Entradas: menú → Tarjetas Presentación; Perfil → pestaña **Tarjetas** (navigate a listado). Fragment `#presupuestos` → `…/tarjetas-presentacion`
+- `PresupuestoConfigSharedModule` / `presupuesto-config-form` quedan como pieza de perfil/legacy; la casa de gestión es el CRUD de Tarjetas en Presupuestos
 
 ## Cuentas bancarias y pasarelas (perfil — cobro roadmap)
 
@@ -124,7 +166,8 @@ Cuando una capacidad sea **Plus** (plan superior / no incluida en el esquema gra
 ## Catálogo de conceptos (Plus)
 
 - API: `{proveedor}/presupuestos/presupuesto-catalogo-conceptos` (CRUD).
-- Modal de concepto:
+- Modal de concepto (hoy):
   - Tab Catálogo: listar / buscar / filtrar; click = snapshot a la línea; editar / eliminar; **Nuevo en catálogo**.
   - Tab Manual: checkbox «Guardar también en el catálogo» (+ categoría producto/servicio) al añadir línea.
 - Badge Plus en tab y acciones de catálogo. **No** integrar el dominio Catálogo de productos salvo decisión explícita.
+- Sección **Catálogo de conceptos** en rutas propias (`…/catalogo-conceptos` + crear/editar/detalle); el modal de captura sigue pudiendo elegir/snapshot.
