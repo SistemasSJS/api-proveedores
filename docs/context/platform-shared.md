@@ -17,6 +17,18 @@ Infraestructura que usan los tres dominios. **No expandir** como “módulo núc
 | Acceso | `tieneAccesoAProveedor`, middleware `proveedor.access` / `api.access` | Autorización por proveedor |
 | Roles | `UserRoleEnumerate` (ADMINISTRADOR, GERENTE, CLIENTE, CONSTRUCC_APP, …) | Rutas segmentadas |
 | Storage / mail / FCM | Traits, Mail, Notifications genéricas | Archivos, correo, push |
+| Shell menús (front) | `app-sidebar-menu` / `app-desktop-sidebar` | Dos menús distintos; ver sección siguiente |
+
+## Shell UI (menús)
+
+Hay **dos menús** (móvil drawer / escritorio rail) con **la misma línea visual y paleta**:
+
+| Menú | Componente |
+|------|------------|
+| Móvil | `app-sidebar-menu` |
+| Escritorio | `app-desktop-sidebar` |
+
+Estructura común: marca/empresa (cabecera clara) → nav navy → tarjeta usuario + logout abajo. Grupos expandibles. Tokens en `sidebar-menu-sections.scss` (`$sidebar-dark` ~ `#243b55`, primary Gestión para activo).
 
 ## Qué no va aquí
 
