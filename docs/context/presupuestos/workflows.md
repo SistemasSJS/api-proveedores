@@ -59,9 +59,9 @@ Tras aceptación, la visión es cobro/finalización **dentro de presupuestos**:
 
 - Alta/edición también en modal de selección de cliente al crear presupuesto.
 - Guardar receptor en cartera / ciertas acciones pueden ser **Plus** (badge en UI).
-- Sección menú **Clientes**: list / form / detail propios (`presupuesto-clientes-*`). En captura se elige de la cartera (o manual / proveedor registrado).
+- Sección menú **Recursos → Clientes**: list / form / detail propios (`presupuesto-clientes-*`). En captura se elige de la cartera (o manual / proveedor registrado).
 
 ## Catálogo de conceptos
 
 - CRUD embebido en modal de línea (tab Catálogo + “guardar también en catálogo” en Manual); feature **Plus**.
-- Sección menú **Catálogo de conceptos**: list / form / detail propios (`presupuesto-catalogo-conceptos-*`); al usarlo en el presupuesto se hace **snapshot** a la línea (sin FK).
+- Sección menú **Recursos → Catálogo de conceptos**: list / form / detail propios (`presupuesto-catalogo-conceptos-*`); al usarlo en el presupuesto se hace **snapshot** a la línea (sin FK).

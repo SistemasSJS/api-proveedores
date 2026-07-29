@@ -32,20 +32,23 @@ Presupuestos
 ├── Generar Presupuesto       →  /pages/proveedor/presupuestos/crear
 ├── Mis presupuestos          →  /pages/proveedor/presupuestos/list
 │                                 (segmentos internos: enviados | recibidos)
-├── Clientes                  →  /pages/proveedor/presupuestos/clientes
-├── Catálogo de conceptos     →  /pages/proveedor/presupuestos/catalogo-conceptos
-└── Tarjetas Presentación     →  /pages/proveedor/presupuestos/tarjetas-presentacion
+└── Recursos (colapsable)
+    ├── Clientes              →  /pages/proveedor/presupuestos/clientes
+    ├── Catálogo de conceptos →  /pages/proveedor/presupuestos/catalogo-conceptos
+    └── Tarjetas Presentación →  /pages/proveedor/presupuestos/tarjetas-presentacion
                                   (Perfil → pestaña Tarjetas navega al listado)
 ```
 
 Principios:
 
-- Secciones **hermanas** (flat). Sin paraguas “Biblioteca” / “Recursos”.
+- Bajo Presupuestos: acciones de documento (Generar / Mis presupuestos) + grupo **Recursos** (Clientes, Conceptos, Tarjetas).
 - Cada recurso tiene **CRUD en pages propias** (patrón SPP: list / form / detail + components), **sin** embeber modales de captura.
 - Captura (`crear` / `editar`) sigue eligiendo de esos recursos vía modales/selectores (snapshot).
-- Dos entradas a Tarjetas: menú Presupuestos + Perfil (misma ruta de listado).
+- Dos entradas a Tarjetas: menú Presupuestos → Recursos + Perfil (misma ruta de listado).
 - **Historial** en menú: fuera de v1.
 - **Plantillas**: roadmap; no en menú v1.
+
+Shell (menús): tema claro compartido móvil/desktop — ver `docs/context/platform-shared.md` (Shell UI) y `sidebar-menu-sections.scss`.
 
 ### Páginas de gestión (patrón list / form / detail)
 

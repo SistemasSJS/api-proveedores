@@ -8,7 +8,7 @@ Parte de un **esquema gratuito** (plan base) y funciones **Plus** (ver [front.md
 
 Facilitar la presupuestación comercial: crear, personalizar, enviar y cerrar (aceptar/rechazar) presupuestos; PDF con temas; cartera propia; acceso a empresas ya registradas; configuración de emisor (usuario ≠ solo datos de empresa).
 
-Visión de producto (menú / secciones): el módulo no es solo el ciclo del documento. Bajo **Presupuestos** conviven secciones hermanas (sin paraguas “Biblioteca”): generar, listados, gestión de **Clientes**, **Catálogo de conceptos** y **Tarjetas Presentación**. Detalle de menú y rutas en [front.md](./front.md).
+Visión de producto (menú / secciones): el módulo no es solo el ciclo del documento. Bajo **Presupuestos** conviven Generar / Mis presupuestos y el grupo colapsable **Recursos** (Clientes, Catálogo de conceptos, Tarjetas Presentación). Detalle de menú y rutas en [front.md](./front.md).
 
 ## Capacidad (mapa Hecho / Pendiente / Roadmap)
 
@@ -75,7 +75,7 @@ Ajustes de documento en captura (cerrados):
 
 **Pago → finalización**: roadmap.
 
-**Gestión de recursos (v1 UI):** menú Generar / Mis presupuestos / Clientes / Catálogo de conceptos / Tarjetas Presentación; CRUD list/form/detail por recurso (patrón SPP). Detalle en [front.md](./front.md).
+**Gestión de recursos (v1 UI):** menú Generar / Mis presupuestos / **Recursos** (Clientes, Catálogo de conceptos, Tarjetas Presentación); CRUD list/form/detail por recurso (patrón SPP). Detalle en [front.md](./front.md).
 
 ## Docs del dominio
 
