@@ -28,19 +28,13 @@ Hay **dos menús** (móvil drawer / escritorio rail) con **la misma línea visua
 | Móvil | `app-sidebar-menu` |
 | Escritorio | `app-desktop-sidebar` |
 
-Estructura común (tema **claro**, misma gama que la app):
+Estructura común (ambos: `app-sidebar-menu` + `app-desktop-sidebar`; `sidebar-menu-sections.scss`):
 
-1. Cabecera marca/empresa (fondo blanco)
-2. Nav con grupos expandibles (p. ej. Presupuestos → **Recursos**)
-3. Pie: acciones tipo card (Invitar amigo / Compartir constancia) + tarjeta usuario + logout + versión
+1. **Cabecera** charcoal más oscuro `#222428` (texto blanco)
+2. **Cuerpo** claro `#f4f9f9` — ítems legibles, activo primary
+3. **Pie** `#2a2e34` (oscuro pero más claro que la cabecera): Invitar / Compartir + tarjeta usuario (con margen)
 
-| Menú | Componente |
-|------|------------|
-| Móvil (drawer) | `app-sidebar-menu` |
-| Escritorio (rail) | `app-desktop-sidebar` |
-
-Tokens / estilos: `src/app/@theme/components/sidebar-menu/sidebar-menu-sections.scss`  
-Paleta: fondo `#f4f9f9`, texto `#2f3640`, activo primary `#006eff`. Sin hueco menú–contenido en desktop (`pages.page` flex `gap: 0`).
+Sin hueco menú–contenido en desktop.
 
 ## Qué no va aquí
 

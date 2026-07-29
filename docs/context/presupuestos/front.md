@@ -171,6 +171,6 @@ Cuando una capacidad sea **Plus** (plan superior / no incluida en el esquema gra
 - API: `{proveedor}/presupuestos/presupuesto-catalogo-conceptos` (CRUD).
 - Modal de concepto (hoy):
   - Tab Catálogo: listar / buscar / filtrar; click = snapshot a la línea; editar / eliminar; **Nuevo en catálogo**.
-  - Tab Manual: checkbox «Guardar también en el catálogo» (+ categoría producto/servicio) al añadir línea.
+  - Tab Manual: checkbox «Guardar también en el catálogo» (+ categoría producto/servicio) al añadir línea. En **móvil**, el modal usa altura ~`96dvh` y el pie (CANCELAR / Añadir) queda **fijo fuera del scroll** para que no se oculte al marcar el checkbox.
 - Badge Plus en tab y acciones de catálogo. **No** integrar el dominio Catálogo de productos salvo decisión explícita.
 - Sección **Catálogo de conceptos** en rutas propias (`…/catalogo-conceptos` + crear/editar/detalle); el modal de captura sigue pudiendo elegir/snapshot.
