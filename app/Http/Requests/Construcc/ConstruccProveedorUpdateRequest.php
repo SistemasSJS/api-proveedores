@@ -72,16 +72,11 @@ class ConstruccProveedorUpdateRequest extends FormRequest
 
                     $tipoCuenta = $this->input('cuentas_bancarias.tipo_cuenta');
 
-                    // Validación para CUENTA
+                    // Validación para CUENTA — longitud libre; solo dígitos.
                     if ($tipoCuenta === 'cuenta') {
                         if (! ctype_digit((string) $value)) {
                             $fail('La cuenta debe contener solo números.');
                             return;
-                        }
-
-                        $length = strlen((string) $value);
-                        if (! in_array($length, [10, 11, 12, 13])) {
-                            $fail('La cuenta debe tener exactamente 10, 11, 12 o 13 dígitos.');
                         }
                     }
 

@@ -23,3 +23,13 @@
 | `EstadoOrdenCompra` | pendiente / aprobada / … |
 
 Flags ortogonales frecuentes: `tiene_factura`, `verificada`. Campos OC: `referencia_oc`, `origen_oc`.
+
+## Cuenta bancaria (`cuentas_bancarias`)
+
+| Campo | Regla de negocio |
+|-------|------------------|
+| `cuenta` | Solo dígitos. **Longitud libre** en validación. Columna BD: `string(255)`. |
+| `clabe` | Exactamente 18 dígitos. |
+| `tarjeta` | Exactamente 16 dígitos. |
+
+Al menos uno de `cuenta` / `clabe` / `tarjeta` debe venir informado. Si hay `clabe`, `cuenta` es obligatoria.

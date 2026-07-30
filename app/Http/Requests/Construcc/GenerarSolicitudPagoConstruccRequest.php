@@ -50,16 +50,12 @@ class GenerarSolicitudPagoConstruccRequest extends FormRequest
             'cuenta_bancaria_alias' => 'required|string|max:255',
             'cuenta_bancaria_banco_clave' => 'required|string|max:10',
             'cuenta_bancaria_banco_nombre' => 'required|string|max:255',
+            // Nota: longitud de cuenta libre (sin rango fijo); solo dígitos.
             'cuenta_bancaria_cuenta' => [
                 'required_if:cuenta_bancaria_clabe,*',
-                'numeric',
-                // valida que la cuenta tenga la longitud exacta de 10 o 13 dígitos
-                function ($attribute, $value, $fail) {
-                    $length = strlen((string) $value);
-                    if (! in_array($length, [10, 11, 12, 13])) {
-                        $fail('La cuenta debe tener exactamente 10, 11, 12 o 13 dígitos.');
-                    }
-                },
+                'nullable',
+                'string',
+                'regex:/^\d+$/',
             ],
             'cuenta_bancaria_clabe' => 'nullable|string|size:18|regex:/^\d+$/',
             'cuenta_bancaria_tarjeta' => 'nullable|string|size:16|regex:/^\d+$/',
@@ -131,7 +127,7 @@ class GenerarSolicitudPagoConstruccRequest extends FormRequest
             'cuenta_bancaria_banco_nombre.required' => 'El nombre del banco es obligatorio',
             'cuenta_bancaria_banco_nombre.max' => 'El nombre del banco no debe exceder los 255 caracteres',
             'cuenta_bancaria_cuenta.required_if' => 'El número de cuenta es obligatorio cuando se ingresa CLABE.',
-            'cuenta_bancaria_cuenta.regex' => 'La cuenta debe tener entre 10 y 12 dígitos numéricos.',
+            'cuenta_bancaria_cuenta.regex' => 'La cuenta debe contener solo números.',
             'cuenta_bancaria_clabe.size' => 'La CLABE debe tener exactamente 18 dígitos.',
             'cuenta_bancaria_tarjeta.size' => 'La tarjeta debe tener exactamente 16 dígitos.',
             'cuenta_bancaria_titular_cuenta.required' => 'El titular de la cuenta es obligatorio',

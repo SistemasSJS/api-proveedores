@@ -24,3 +24,9 @@ Tabs OC + SP, conversión OC→SP, histórico, métricas (`oc-sp-converter`, etc
 ## Notificaciones UI
 
 Sección `solicitud_pago` en `@notificaciones` (deep-link a detalle).
+
+## Cuentas bancarias (perfil)
+
+Formulario: `perfil-usuario-proveedor/components/datos-bancarios-form/`.
+
+Validación de `cuenta` (front + API): solo dígitos, **longitud libre**. CLABE = 18; tarjeta = 16.
