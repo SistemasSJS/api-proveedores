@@ -7,9 +7,12 @@ use App\Http\Requests\Presupuesto\ProveedorUpdatePresupuestoCarteraClienteReques
 use App\Http\Resources\Presupuesto\ProveedorPresupuestoCarteraClienteResource;
 use App\Models\CarteraCliente;
 use App\Models\Proveedor;
+use App\Support\PresupuestoAnexoImagenOptimizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Throwable;
 
 class ProveedorPresupuestoCarteraClientesController extends Controller
@@ -61,6 +64,12 @@ class ProveedorPresupuestoCarteraClientesController extends Controller
 
             $validated = $request->validated();
 
+            $logoPath = null;
+            $base64 = $validated['logo_base64'] ?? null;
+            if (is_string($base64) && trim($base64) !== '') {
+                $logoPath = $this->guardarLogoBase64((int) $proveedor->id, $base64);
+            }
+
             $cliente = CarteraCliente::create([
                 'proveedor_id' => $proveedor->id,
                 'nombre' => $validated['nombre'],
@@ -69,6 +78,7 @@ class ProveedorPresupuestoCarteraClientesController extends Controller
                 'alias_empresa' => $validated['alias_empresa'] ?? null,
                 'telefono' => $validated['telefono'] ?? null,
                 'correo' => $validated['correo'] ?? null,
+                'logo_path' => $logoPath,
             ]);
 
             $this->log('Cliente agregado a cartera', [
@@ -137,15 +147,36 @@ class ProveedorPresupuestoCarteraClientesController extends Controller
             }
 
             $validated = $request->validated();
+            $logoPath = $carteraCliente->logo_path;
 
-            $carteraCliente->update($validated);
+            $base64 = $validated['logo_base64'] ?? null;
+            if (is_string($base64) && trim($base64) !== '') {
+                $nuevoPath = $this->guardarLogoBase64((int) $proveedor->id, $base64);
+                if ($nuevoPath !== null) {
+                    $this->eliminarLogoSiExiste($logoPath);
+                    $logoPath = $nuevoPath;
+                }
+            } elseif (! empty($validated['eliminar_logo'])) {
+                $this->eliminarLogoSiExiste($logoPath);
+                $logoPath = null;
+            }
+
+            $carteraCliente->update([
+                'nombre' => $validated['nombre'],
+                'puesto' => $validated['puesto'] ?? null,
+                'empresa' => $validated['empresa'],
+                'alias_empresa' => $validated['alias_empresa'] ?? null,
+                'telefono' => $validated['telefono'] ?? null,
+                'correo' => $validated['correo'] ?? null,
+                'logo_path' => $logoPath,
+            ]);
 
             $this->log('Cliente de cartera actualizado', [
                 'cliente_id' => $carteraCliente->id,
             ]);
 
             return $this->success(
-                new ProveedorPresupuestoCarteraClienteResource($carteraCliente),
+                new ProveedorPresupuestoCarteraClienteResource($carteraCliente->fresh()),
                 'Cliente actualizado correctamente.'
             );
         } catch (Throwable $e) {
@@ -180,6 +211,7 @@ class ProveedorPresupuestoCarteraClientesController extends Controller
                 return $this->error('El cliente no pertenece a este proveedor.', null, 403);
             }
 
+            $this->eliminarLogoSiExiste($carteraCliente->logo_path);
             $carteraCliente->delete();
 
             $this->log('Cliente eliminado de cartera', [
@@ -198,6 +230,51 @@ class ProveedorPresupuestoCarteraClientesController extends Controller
         }
     }
 
+    private function guardarLogoBase64(int $proveedorId, string $dataUri): ?string
+    {
+        if (! preg_match('/^data:image\/(jpeg|jpg|png|webp);base64,(.+)$/i', $dataUri, $matches)) {
+            return null;
+        }
+
+        $binary = base64_decode($matches[2], true);
+        if ($binary === false) {
+            return null;
+        }
+
+        $optimizado = PresupuestoAnexoImagenOptimizer::optimizarParaAlmacenamiento($binary);
+        $extension = $optimizado['extension'] ?? 'jpg';
+
+        $path = sprintf(
+            'proveedores/%d/presupuestos/cartera-clientes/%s.%s',
+            $proveedorId,
+            Str::uuid()->toString(),
+            $extension
+        );
+
+        Storage::disk('public')->put($path, $optimizado['binary']);
+
+        return $path;
+    }
+
+    private function eliminarLogoSiExiste(?string $path): void
+    {
+        if (! filled($path)) {
+            return;
+        }
+
+        $path = trim((string) $path);
+        if (str_starts_with($path, 'data:image/')) {
+            return;
+        }
+
+        if (Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
     private function log($message, $data = []): void
     {
         if (! $this->logEnabled) {

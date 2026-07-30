@@ -25,6 +25,7 @@ class CarteraCliente extends BaseModel
         'alias_empresa',
         'telefono',
         'correo',
+        'logo_path',
     ];
 
     /**

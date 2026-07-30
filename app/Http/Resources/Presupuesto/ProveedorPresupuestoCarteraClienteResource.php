@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Presupuesto;
 
+use App\Support\PresupuestoAnexoArchivoResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -23,6 +24,8 @@ class ProveedorPresupuestoCarteraClienteResource extends JsonResource
             'alias_empresa' => $this->alias_empresa,
             'telefono' => $this->telefono,
             'correo' => $this->correo,
+            'logo_path' => PresupuestoAnexoArchivoResponse::archivoPathPublico($this->logo_path),
+            'logo_url' => PresupuestoAnexoArchivoResponse::archivoUrl($this->logo_path),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

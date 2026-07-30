@@ -10,16 +10,14 @@ Montado en `proveedor-routing.module.ts` como ruta `presupuestos`.
 
 | Área | Path relativo |
 |------|----------------|
-| Servicio | `services/presupuesto-proveedor.service.ts` |
+| Servicio documento | `services/presupuesto-proveedor.service.ts` (delega cartera/conceptos a módulos hijos) |
 | Listados | `pages/presupuesto-proveedor-list` (enviados / recibidos / historial) |
 | Form | `pages/presupuesto-proveedor-form` |
 | Preview | `pages/presupuesto-proveedor-preview` |
 | Enlace (auth) | `pages/presupuesto-enlace-publico` (`…/presupuestos/enlace-publico/:token`) |
 | Stepper / modales | `components/presupuesto-form`, `presupuesto-page-modals` |
-| Gestión Clientes | `pages/presupuesto-clientes-{list\|form\|detail}` + `components/presupuesto-cliente-*` |
-| Gestión Conceptos | `pages/presupuesto-catalogo-conceptos-{list\|form\|detail}` + `components/presupuesto-concepto-*` |
-| Gestión Tarjetas | `pages/presupuesto-tarjetas-{list\|form\|detail}` + `components/presupuesto-tarjeta-*` |
-| Paths / estilos gestión | `constants/presupuesto-gestion.paths.ts`, `styles/presupuesto-gestion-shared.scss` |
+| Recursos CRUD (lazy) | `pages/{clientes\|catalogo-conceptos\|tarjetas}/` — module + routes + services + models + constants |
+| Paths (barrel) | `constants/presupuesto-gestion.paths.ts` → reexporta paths de cada recurso |
 
 Rutas UI: `/pages/proveedor/presupuestos/{list|recibidos|historial|crear|editar/:id|detalle/:id|preview/:id|clientes|…|catalogo-conceptos|…|tarjetas-presentacion|…}`.
 
@@ -50,17 +48,21 @@ Principios:
 
 Shell (menús): tema claro compartido móvil/desktop — ver `docs/context/platform-shared.md` (Shell UI) y `sidebar-menu-sections.scss`.
 
-### Páginas de gestión (patrón list / form / detail)
+### Páginas de gestión (módulos lazy bajo `pages/{recurso}/`)
 
-| Recurso | List | Form | Detail | Components |
-|---------|------|------|--------|------------|
-| Clientes | `presupuesto-clientes-list` | `presupuesto-clientes-form` | `presupuesto-clientes-detail` | `presupuesto-cliente-card`, `presupuesto-cliente-form`, `presupuesto-cliente-detail-view` |
-| Catálogo conceptos | `presupuesto-catalogo-conceptos-list` | `…-form` | `…-detail` | `presupuesto-concepto-card`, `presupuesto-concepto-form`, `presupuesto-concepto-detail-view` |
-| Tarjetas Presentación | `presupuesto-tarjetas-list` | `…-form` | `…-detail` | `presupuesto-tarjeta-card`, `presupuesto-tarjeta-form`, `presupuesto-tarjeta-detail-view` |
+Cada recurso es un NgModule completo (`services`, `models`, `constants`, `pages`, `components`) con `loadChildren` desde `presupuesto-proveedor.routes.ts`. URLs públicas sin cambio.
 
-Rutas hijas: `presupuestos/{recurso}` + `crear` | `editar/:id` | `detalle/:id` (declaradas en `presupuesto-proveedor.routes.ts`).
+| Recurso | Módulo | Path URL | Servicio |
+|---------|--------|----------|----------|
+| Clientes | `pages/clientes/presupuesto-clientes.module.ts` | `…/clientes` | `PresupuestoClientesService` |
+| Catálogo conceptos | `pages/catalogo-conceptos/…` | `…/catalogo-conceptos` | `PresupuestoCatalogoConceptosService` |
+| Tarjetas Presentación | `pages/tarjetas/…` | `…/tarjetas-presentacion` | `PresupuestoTarjetasService` (fachada sobre config perfil) |
 
-UI: look alineado a cards/forms de captura (`presupuesto-gestion-shared.scss`); no reutiliza el markup de los modales de captura.
+Rutas hijas por módulo: `''` \| `crear` \| `editar/:id` \| `detalle/:id`. Patrón: regla `front-feature-crud.mdc` en app-proveedores.
+
+UI: look alineado a cards/forms de captura (`styles/*-shared.scss` del recurso → `presupuesto-gestion-shared.scss`); no reutiliza el markup de los modales de captura.
+
+Listados de gestión: barra search + toggle **detallada / mosaico** (constantes `presupuesto-gestion-view.constants.ts`), card con `[viewMode]`, conteo + `setItemCount`. Patrón: regla `front-listados.mdc` en app-proveedores.
 
 ## Config emisor/receptor (Tarjetas Presentación)
 
