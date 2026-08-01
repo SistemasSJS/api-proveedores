@@ -1,4 +1,4 @@
-﻿# Presupuestos — Base de datos
+# Presupuestos — Base de datos
 
 ## Models / tablas
 
@@ -10,6 +10,7 @@
 | `PresupuestoAnexoPdf` | `presupuesto_anexo_pdf` | Anexos PDF (merge al final del documento) |
 | `CarteraCliente` | `cartera_clientes` | Clientes del emisor (dominio presupuestos) |
 | `PresupuestoCatalogoConcepto` | `presupuesto_catalogo_conceptos` | Biblioteca reutilizable de conceptos (Plus) |
+| `PresupuestoEstadoLog` | `presupuesto_estado_logs` | Histórico de cambios de estado (timeline) |
 | `ConfigEmisorReceptorPresupuesto` | `config_emisor_receptor_presupuestos` | Tarjetas emisor/receptor |
 
 ## Relaciones clave (`Presupuesto`)
@@ -17,12 +18,19 @@
 - Emisor: `proveedor_id` → `Proveedor`
 - Receptor: `empresa_receptora_id` → `CarteraCliente` **o** `proveedor_receptor_id` → `Proveedor` **o** solo campos texto
 - Snapshot emisor: `config_emisor_presupuesto_id` + campos `empresa_emisora_*`
-- Hijos: `conceptos`, `anexos`, `anexosPdf`
+- Hijos: `conceptos`, `anexos`, `anexosPdf`, `estadoLogs`
 - Público: `token_publico`
+- Layout PDF: `ppto_config` (JSON plano key→mm; whitelist en `PresupuestoPdfDocumentConfig::PPTO_CONFIG_KEYS`)
 
 ## Estados
 
 `borrador` | `enviado` | `aceptado` | `rechazado` | `rechazado_con_observacion` | `vencido`
+
+- **Sin log** al crear `borrador`. Primer log al **enviar**.
+- `rechazado_con_observacion` (o `rechazado` con `motivo_rechazo`) = solicitud de corrección: emisor puede editar y **reenviar** → `enviado`.
+- En `enviado` el emisor **no** edita hasta acción del cliente.
+- Fechas de envío/aceptación/rechazo: **derivadas** del historial (`fechaDeEstado`), no columnas sueltas.
+- Columna `nota` en logs: en rechazo guarda el motivo.
 
 Roadmap (aún no en BD de presupuesto): estados o flags de **pago** / **finalización**.
 
@@ -49,6 +57,19 @@ Catálogo de conceptos reutilizable: tabla `presupuesto_catalogo_conceptos` (`de
 | `fecha_emision` | `presupuestos` | Fecha del documento; editable en UI (front: no futura) |
 | `titulo_anexos` | `presupuestos` | `varchar(80)` nullable; mig. `2026_07_23_095249_…`. Vacío → **Anexos** (Resource, Blade sección imágenes, preview) |
 | `titulo_anexos_pdf` | `presupuestos` | `varchar(80)` nullable; mig. `2026_07_23_103654_…`. Vacío → **Anexos PDF** (Resource + estampado FPDI de hojas mergeadas) |
+| `config_mostrar_totales` | `presupuestos` | Si false, oculta subtotal/IVA/total/importe letra en preview y PDF |
+| `ppto_config` | `presupuestos` | JSON nullable; márgenes/gaps mm (`gap_logo_info_mm` default 7, etc.). Modal Ajustes + merge en `PresupuestoPdfDocumentConfig` |
+
+## Histórico de estados (`presupuesto_estado_logs`)
+
+| Columna | Notas |
+|---------|-------|
+| `presupuesto_id`, `user_id` | FK; user nullable (cron/sistema) |
+| `fecha` | Momento del cambio |
+| `estado_anterior`, `estado` | Strings de estado |
+| `nota` | Motivo de rechazo / nota del cambio |
+
+API `show` carga `estadoLogs.user`. Resource expone `estado_logs` + `fecha_envio` / `fecha_aceptacion` / `fecha_rechazo` derivados. UI: modal timeline en preview.
 
 ## Anexos
 

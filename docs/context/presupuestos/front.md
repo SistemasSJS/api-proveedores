@@ -1,4 +1,4 @@
-﻿# Presupuestos — Frontend
+# Presupuestos — Frontend
 
 Repo: `app-proveedores`.
 
@@ -97,14 +97,16 @@ Listados de gestión: barra search + toggle **detallada / mosaico** (constantes 
 
 Campo `term_cond_moneda`: solo **MXN** \| **USD** \| **EUR** (default MXN). Prefijo de monto: `€` para EUR, `$` para MXN/USD.
 
-## Ajustes del documento (fecha / títulos de anexos)
+## Ajustes del documento (fecha / layout / títulos de anexos)
 
-### Fecha de emisión
+### Fecha de emisión y `ppto_config`
 
-- En captura (`presupuesto-page-modals`), icono **settings** en la card «Presupuesto dirigido a» abre `presupuesto-ajustes-modal` **solo** con `fecha_emision` (no mezclar títulos de anexos ahí).
-- UI: trigger con icono calendario + fecha en español; `ion-datetime` (`presentation="date"`, locale `es-MX`) con **`max` = hoy** (zona local). Validación / clamp: no se puede guardar fecha futura.
+- En captura (`presupuesto-page-modals`), icono **settings** en la card «Presupuesto dirigido a» abre `presupuesto-ajustes-modal`.
+- Campos: `fecha_emision` (≤ hoy) + `ppto_config.gap_logo_info_mm` (y extensible a otros mm).
+- Preview: botón **Historial** → modal timeline de `estado_logs` (fecha, estados, nota, usuario).
+- Unidades en concepto (captura y catálogo CRUD): buscador + opción **Otro** (texto libre ≤ 50).
+- Nombres propios Dirigido a / Atentamente: sentence case (`presupuesto-texto-documento.helper.ts`).
 - Estilos overlay: `ion-modal.modal-ajustes-presupuesto` y `ion-modal.fecha-picker-modal` en `src/global.scss`.
-- Preview **no** sobrescribe la fecha del borrador con “hoy” al abrir.
 
 ### Títulos de sección de anexos
 

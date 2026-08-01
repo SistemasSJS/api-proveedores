@@ -99,13 +99,20 @@ class PresupuestoRecibidoClienteProveedorNotification extends Notification imple
         $folio = $this->presupuesto->numero_presupuesto;
         $total = number_format((float) $this->presupuesto->total, 2) . ' ' . ($this->presupuesto->term_cond_moneda ?? 'MXN');
         $quienEnvia = $nombreUsuario . ' de "' . $nombreEmpresa . '"';
+        $tituloDoc = trim((string) ($this->presupuesto->concepto_general ?? ''));
 
         if ($this->esReenvio) {
-            $titulo = 'Presupuesto actualizado #' . $folio;
+            $titulo = $tituloDoc !== ''
+                ? "Presupuesto actualizado #{$folio} — {$tituloDoc}"
+                : "Presupuesto actualizado #{$folio}";
             $mensaje = $quienEnvia . ' reenvió el presupuesto con cambios. Total: ' . $total . '.';
+            $evento = 'reenvio';
         } else {
-            $titulo = 'Nuevo presupuesto #' . $folio . ' — ' . $nombreUsuario;
-            $mensaje = $quienEnvia . ' te envió un presupuesto. Total: ' . $total . '.';
+            $titulo = $tituloDoc !== ''
+                ? "Solicitud de autorización #{$folio} — {$tituloDoc}"
+                : "Solicitud de autorización #{$folio}";
+            $mensaje = $quienEnvia . ' te envió un presupuesto para autorización (' . $nombreEmpresa . '). Total: ' . $total . '.';
+            $evento = 'solicitud_autorizacion';
         }
 
         $frontendUrl = rtrim(config('app.frontend_url', config('app.url')), '/');
@@ -123,11 +130,13 @@ class PresupuestoRecibidoClienteProveedorNotification extends Notification imple
             'url_publica' => $urlPublica,
             'presupuesto_id' => $this->presupuesto->id,
             'presupuesto_numero' => $this->presupuesto->numero_presupuesto,
+            'presupuesto_titulo' => $tituloDoc !== '' ? $tituloDoc : null,
             'proveedor_emisor_id' => $this->presupuesto->proveedor_id,
             'proveedor_receptor_id' => $this->presupuesto->proveedor_receptor_id,
             'usuario_envio_id' => $this->presupuesto->user_id,
             'usuario_envio_nombre' => $nombreUsuario,
             'empresa_emisora_nombre' => $nombreEmpresa,
+            'evento' => $evento,
             'es_reenvio' => $this->esReenvio,
             'timestamp' => now()->toIso8601String(),
         ];

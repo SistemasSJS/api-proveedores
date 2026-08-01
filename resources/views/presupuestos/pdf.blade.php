@@ -209,7 +209,7 @@
                 .header-rule {
                     width: 100%;
                     height: 0;
-                    margin: 3mm 0 3mm 0;
+                    margin: {{ $gapHeaderRuleMm ?? 3 }}mm 0 {{ $gapHeaderRuleMm ?? 3 }}mm 0;
                     padding: 0;
                     border: 0;
                     border-top: 3px solid var(--accent);
@@ -233,7 +233,7 @@
 
                 .header-info {
                     vertical-align: top;
-                    padding-left: 4mm;
+                    padding-left: {{ $gapLogoInfoMm ?? 7 }}mm;
                     width: 55%;
                     min-width: 0;
                     overflow: hidden;

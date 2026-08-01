@@ -26,6 +26,9 @@ Visión de producto (menú / secciones): el módulo no es solo el ciclo del docu
 | Anexos imagen | **Hecho** | Máx. **4** en captura (solo front); título sección `titulo_anexos` → PDF/preview |
 | Anexos PDF | **Hecho** | Merge al final; título sección `titulo_anexos_pdf` → estampado; título por archivo opcional |
 | Fecha de emisión editable | **Hecho** | Modal ajustes; front: no fecha futura |
+| Layout PDF `ppto_config` | **Hecho** | JSON mm + modal Ajustes (`gap_logo_info_mm` default 7) |
+| Histórico estados / timeline | **Hecho** | `presupuesto_estado_logs` + modal Historial; sin log en borrador |
+| Totales opcionales | **Hecho** | `config_mostrar_totales` (oculta IVA/total/letra) |
 | Folio `PRES-XXXX` | **Hecho** | Consecutivo por proveedor; bump histórico +200 (migración) |
 | Numeración alineada concepto/párrafo | **Hecho** | Columna `#` centrada en PDF + preview |
 | Temas PDF personalizables | **Hecho** | `pdf-themes` |

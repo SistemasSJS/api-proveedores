@@ -4,7 +4,7 @@ namespace App\Http\Resources\Presupuesto;
 
 use App\Models\Presupuesto;
 use App\Services\Presupuesto\PresupuestoThemeService;
-// use App\Http\Resources\Presupuesto\PresupuestoEstadoLogResource;
+use App\Http\Resources\Presupuesto\PresupuestoEstadoLogResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -136,6 +136,12 @@ class PresupuestoResource extends JsonResource
             'item_visto' => (bool) ($this->item_visto ?? false),
             'token_publico' => $this->token_publico,
             'pdf_theme' => $this->pdf_theme ?? PresupuestoThemeService::DEFAULT_THEME_KEY,
+            'ppto_config' => is_array($this->ppto_config) ? $this->ppto_config : new \stdClass(),
+            'fecha_envio' => $this->resource->fechaDeEstado(Presupuesto::ESTADO_ENVIADO)?->format('Y-m-d H:i:s'),
+            'fecha_aceptacion' => $this->resource->fechaDeEstado(Presupuesto::ESTADO_ACEPTADO)?->format('Y-m-d H:i:s'),
+            'fecha_rechazo' => ($this->resource->fechaDeEstado(Presupuesto::ESTADO_RECHAZADO_CON_OBSERVACION)
+                ?? $this->resource->fechaDeEstado(Presupuesto::ESTADO_RECHAZADO))?->format('Y-m-d H:i:s'),
+            'estado_logs' => PresupuestoEstadoLogResource::collection($this->whenLoaded('estadoLogs')),
 
             'proveedor' => [
                 'id' => $this->proveedor?->id ?? $this->proveedor_id,
@@ -190,7 +196,6 @@ class PresupuestoResource extends JsonResource
             'conceptos' => PresupuestoConceptoResource::collection($this->whenLoaded('conceptos')),
             'anexos' => PresupuestoAnexoResource::collection($this->whenLoaded('anexos')),
             'anexos_pdf' => PresupuestoAnexoPdfResource::collection($this->whenLoaded('anexosPdf')),
-            // 'estado_logs' => PresupuestoEstadoLogResource::collection($this->whenLoaded('estadoLogs')),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];

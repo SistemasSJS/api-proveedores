@@ -143,18 +143,26 @@ class PresupuestoEnviadoNotification extends Notification implements ShouldBroad
             ?? $this->presupuesto->empresa_receptora_nombre
             ?? 'el cliente';
 
+        $tituloDoc = trim((string) ($this->presupuesto->concepto_general ?? ''));
+        $folio = $this->presupuesto->numero_presupuesto;
+        $titulo = $tituloDoc !== ''
+            ? "Presupuesto enviado #{$folio} — {$tituloDoc}"
+            : "Presupuesto enviado #{$folio}";
+
         return [
             'tipo' => 'presupuesto',
             'subtipo' => 'enviado',
-            'titulo' => 'Presupuesto enviado #' . $this->presupuesto->numero_presupuesto,
+            'titulo' => $titulo,
             'mensaje' => $nombreUsuario . ' de "' . $nombreEmpresa . '" envió el presupuesto a ' . $cliente . '.',
             'action_url' => '/pages/proveedor/presupuestos/preview/' . $this->presupuesto->id,
             'presupuesto_id' => $this->presupuesto->id,
             'presupuesto_numero' => $this->presupuesto->numero_presupuesto,
+            'presupuesto_titulo' => $tituloDoc !== '' ? $tituloDoc : null,
             'proveedor_id' => $this->presupuesto->proveedor_id,
             'usuario_envio_id' => $this->presupuesto->user_id,
             'usuario_envio_nombre' => $nombreUsuario,
             'empresa_emisora_nombre' => $nombreEmpresa,
+            'evento' => 'envio',
             'estatus' => 'enviado',
             'timestamp' => now()->toIso8601String(),
         ];

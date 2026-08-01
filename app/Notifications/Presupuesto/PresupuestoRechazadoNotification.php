@@ -128,24 +128,36 @@ class PresupuestoRechazadoNotification extends Notification implements ShouldBro
             ?? 'Empresa';
 
         $cliente = $this->presupuesto->empresa_receptora_empresa ?? $this->presupuesto->empresa_receptora_nombre ?? 'el cliente';
-        $mensaje = $cliente . ' rechazó el presupuesto enviado por ' . $nombreUsuario . ' de "' . $nombreEmpresa . '".';
+        $tituloDoc = trim((string) ($this->presupuesto->concepto_general ?? ''));
+        $folio = $this->presupuesto->numero_presupuesto;
+        $esCorreccion = $this->motivoRechazo !== null && trim((string) $this->motivoRechazo) !== '';
+        $eventoLabel = $esCorreccion ? 'Solicitud de corrección' : 'Presupuesto rechazado';
+        $titulo = $tituloDoc !== ''
+            ? "{$eventoLabel} #{$folio} — {$tituloDoc}"
+            : "{$eventoLabel} #{$folio}";
+
+        $mensaje = $esCorreccion
+            ? $cliente . ' solicitó corrección del presupuesto de ' . $nombreUsuario . ' de "' . $nombreEmpresa . '".'
+            : $cliente . ' rechazó el presupuesto enviado por ' . $nombreUsuario . ' de "' . $nombreEmpresa . '".';
         if ($this->motivoRechazo) {
             $mensaje .= ' Motivo: ' . \Illuminate\Support\Str::limit($this->motivoRechazo, 100);
         }
 
         return [
             'tipo' => 'presupuesto',
-            'subtipo' => 'rechazado',
-            'titulo' => 'Presupuesto rechazado #' . $this->presupuesto->numero_presupuesto,
+            'subtipo' => $esCorreccion ? 'correccion_solicitada' : 'rechazado',
+            'titulo' => $titulo,
             'mensaje' => $mensaje,
             'motivo_rechazo' => $this->motivoRechazo,
             'action_url' => '/pages/proveedor/presupuestos/preview/' . $this->presupuesto->id,
             'presupuesto_id' => $this->presupuesto->id,
             'presupuesto_numero' => $this->presupuesto->numero_presupuesto,
+            'presupuesto_titulo' => $tituloDoc !== '' ? $tituloDoc : null,
             'proveedor_id' => $this->presupuesto->proveedor_id,
             'usuario_envio_id' => $this->presupuesto->user_id,
             'usuario_envio_nombre' => $nombreUsuario,
             'empresa_emisora_nombre' => $nombreEmpresa,
+            'evento' => $esCorreccion ? 'solicitud_correccion' : 'rechazo',
             'estatus' => 'rechazado',
             'timestamp' => now()->toIso8601String(),
         ];

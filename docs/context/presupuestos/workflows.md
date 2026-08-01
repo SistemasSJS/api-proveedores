@@ -1,45 +1,44 @@
-﻿# Presupuestos — Workflows
+# Presupuestos — Workflows
 
 ## Ciclo de vida objetivo
 
 ```
-borrador → enviar → aceptar / rechazar → pago → finalización
+borrador → enviado → aceptar | rechazar(/con observación) → [reenviar si corrección] → … → pago → finalización
 ```
 
 | Etapa | Estado en código | Notas |
 |-------|------------------|-------|
-| Borrador | `borrador` | Crear/editar: receptor, emisor, líneas, anexos, títulos de sección, fecha, términos, moneda, tema |
-| Enviar | `enviado` | App y/o correo; opcional notificar receptor en app; enlace público |
-| Aceptar / rechazar | `aceptado` \| `rechazado` \| `rechazado_con_observacion` | Autenticado o token público |
-| Vencido | `vencido` | Si aplica reglas de vigencia |
-| Pago | — | **Roadmap**: cuentas bancarias (hechas) + pasarelas PayPal/Stripe (UI sin backend) |
-| Finalización | — | **Roadmap**: cierre tras pago; aún no modelado como estado |
-
-Estados actuales del model: `borrador` \| `enviado` \| `aceptado` \| `rechazado` \| `rechazado_con_observacion` \| `vencido`.
+| Borrador | `borrador` | Crear/editar; **sin** fila en `presupuesto_estado_logs` |
+| Enviar | `enviado` | Primer log; emisor no edita mientras esté enviado |
+| Aceptar | `aceptado` | Log; fechas derivadas del historial |
+| Rechazar / pedir corrección | `rechazado` \| `rechazado_con_observacion` | Con motivo → observación/corrección; `nota` en log = motivo |
+| Reenviar tras corrección | `enviado` | Desde rechazado(+motivo); limpia `motivo_rechazo`; nuevo log |
+| Vencido | `vencido` | Cron `actualizarVencidos` también registra log |
+| Pago | — | **Roadmap**: cuentas + pasarelas |
+| Finalización | — | **Roadmap** |
 
 ## Flujo operativo (implementado)
 
 1. **Borrador** — receptor (cartera \| proveedor registrado \| manual) + tarjeta emisor + conceptos + anexos + términos/descuento/moneda.
 2. **Ajustes de documento (borrador)**
    - `fecha_emision` — modal settings (≤ hoy).
-   - `titulo_anexos` — inline en card anexos imagen (default **Anexos**; commit blur / guardar / preview).
-   - `titulo_anexos_pdf` — inline en card anexos PDF (default **Anexos PDF**; mismo commit).
+   - `ppto_config.gap_logo_info_mm` (y otros mm) — mismo modal; defaults en `PresupuestoPdfDocumentConfig` (gap logo↔info = **7 mm**).
+   - `titulo_anexos` / `titulo_anexos_pdf` — inline en cards anexos.
    - Anexos imagen: máximo 4 en captura (solo front).
-3. **Enviar** — `enviar` / `enviar-correo` / `notificar-receptor-app` / `reenviar`.
-4. **Receptor** — listado “recibidos”, notificación, o enlace público.
-5. **Aceptar / rechazar** — preview autenticado o `public/presupuestos/{token}/…`.
-6. **Duplicar** — nuevo borrador desde uno existente (incluye títulos de anexos).
+3. **Enviar** — `enviar` (también desde rechazo con observación) / `enviar-correo` / `notificar-receptor-app` / `reenviar` (correo).
+4. **Receptor** — listado “recibidos”, notificación (nº + empresa + título/`concepto_general` + tipo de evento), o enlace público.
+5. **Aceptar / rechazar** — preview autenticado o token público; rechazo con motivo → `rechazado_con_observacion`.
+6. **Timeline** — modal Historial en preview (`estado_logs`).
+7. **Duplicar** — nuevo borrador desde uno existente.
 
 ## PDF y personalización
 
-- Preview sin guardar: `POST …/generar-pdf`
-- PDF persistido: `GET …/{presupuesto}/pdf`
-- Tema por presupuesto: `PATCH …/pdf-theme` + listado `GET …/pdf-themes`
-- **Anexos imagen**: título de página = `titulo_anexos` o **Anexos**; hasta 4 imágenes por hoja Blade
-- **Anexos PDF**: archivos se mergean al final (`PresupuestoPdfAnexoMerger`); título de sección en estampado = `titulo_anexos_pdf` o **Anexos PDF** (`PresupuestoPdfAnexoEstampado`); título del archivo PDF como subtítulo si es distinto
-- Tabla de conceptos: numeración (`#`) centrada también en filas párrafo
-- Folio impreso: `numero_presupuesto` (`PRES-XXXX`)
-- **QR pie de página**: apunta a `/public/presupuesto/{token}`; con sesión el front abre `enlace-publico/:token` (no `preview/:id`)
+- Preview sin preguntar guardar (flujo page-modals: autosave si dirty).
+- `config_mostrar_totales` oculta totales + IVA + importe con letra.
+- **QR pie**: `{APP_FRONTEND_URL}/public/presupuesto/{token}` — debe coincidir con ruta front; con sesión → `enlace-publico/:token`.
+- Márgenes/gaps: variables Blade desde config + override `ppto_config`.
+- Icono marca: app sin borde (`assets/icon` / `presupuestos/app-sin-borde`); impresión/PDF con borde (`logo-gestionplus_only_blade.png` / `presupuestos/impresion-con-borde`).
+- Nombres propios Dirigido a / Atentamente: sentence case (1ª mayúscula) en helper front.
 
 ## Emisor: usuario vs empresa
 

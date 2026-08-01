@@ -32,6 +32,28 @@ final class PresupuestoPdfDocumentConfig
 
     public const ANEXOS_IMAGENES_POR_PAGINA = 4;
 
+    /** Separación logo ↔ información general del encabezado (mm). */
+    public const GAP_LOGO_INFO_MM = 7.0;
+
+    /** Separación de la regla bajo el encabezado (mm). */
+    public const GAP_HEADER_RULE_MM = 3.0;
+
+    /**
+     * Keys admitidas en presupuestos.ppto_config (JSON plano).
+     *
+     * @var list<string>
+     */
+    public const PPTO_CONFIG_KEYS = [
+        'margen_hoja_mm',
+        'margen_lateral_mm',
+        'margen_superior_mm',
+        'gap_logo_info_mm',
+        'gap_header_rule_mm',
+        'footer_height_mm',
+        'gap_atentamente_footer_mm',
+        'espacio_tras_titulo_atentamente_mm',
+    ];
+
     private const ALTURA_HOJA_LETRA_MM = 279.4;
 
     private const MARGEN_CONTENIDO_TAILWIND_MM = 20.0;
@@ -59,7 +81,45 @@ final class PresupuestoPdfDocumentConfig
         private readonly string $templateVariant,
         private readonly string $themeKey,
         private readonly PresupuestoThemeService $themeService,
+        /** @var array<string, float> */
+        private readonly array $layoutOverrides = [],
     ) {}
+
+    /**
+     * @param  array<string, mixed>|null  $raw
+     * @return array<string, float>
+     */
+    public static function sanitizePptoConfig(mixed $raw): array
+    {
+        if (! is_array($raw)) {
+            return [];
+        }
+
+        $out = [];
+        foreach (self::PPTO_CONFIG_KEYS as $key) {
+            if (! array_key_exists($key, $raw)) {
+                continue;
+            }
+            $value = $raw[$key];
+            if (! is_numeric($value)) {
+                continue;
+            }
+            $float = (float) $value;
+            if ($float < 0 || $float > 80) {
+                continue;
+            }
+            $out[$key] = $float;
+        }
+
+        return $out;
+    }
+
+    private function layoutOverride(string $key): ?float
+    {
+        return array_key_exists($key, $this->layoutOverrides)
+            ? $this->layoutOverrides[$key]
+            : null;
+    }
 
     /**
      * @param  array<string, mixed>  $presupuestoPayload
@@ -83,6 +143,7 @@ final class PresupuestoPdfDocumentConfig
             self::resolveTemplateVariant(),
             $themeKey,
             $service,
+            self::sanitizePptoConfig($presupuestoPayload['ppto_config'] ?? null),
         );
     }
 
@@ -158,11 +219,16 @@ final class PresupuestoPdfDocumentConfig
 
     public function margenHojaMm(): float
     {
-        return self::MARGEN_HOJA_MM;
+        return $this->layoutOverride('margen_hoja_mm') ?? self::MARGEN_HOJA_MM;
     }
 
     public function margenContenidoLateralMm(): float
     {
+        $override = $this->layoutOverride('margen_lateral_mm');
+        if ($override !== null) {
+            return $override;
+        }
+
         return $this->templateVariant === self::TEMPLATE_TAILWIND
             ? self::MARGEN_CONTENIDO_TAILWIND_MM
             : self::MARGEN_CONTENIDO_CLASSIC_MM;
@@ -170,6 +236,11 @@ final class PresupuestoPdfDocumentConfig
 
     public function margenSuperiorContenidoMm(): float
     {
+        $override = $this->layoutOverride('margen_superior_mm');
+        if ($override !== null) {
+            return $override;
+        }
+
         $margenLateral = $this->margenContenidoLateralMm();
 
         return max(8.0, $margenLateral - (4 * self::LINEA_MM));
@@ -177,7 +248,7 @@ final class PresupuestoPdfDocumentConfig
 
     public function footerHeightMm(): float
     {
-        return self::FOOTER_HEIGHT_MM;
+        return $this->layoutOverride('footer_height_mm') ?? self::FOOTER_HEIGHT_MM;
     }
 
     public function footerBottomMm(): float
@@ -192,17 +263,27 @@ final class PresupuestoPdfDocumentConfig
 
     public function gapAtentamenteFooterMm(): float
     {
-        return self::LINEA_MM;
+        return $this->layoutOverride('gap_atentamente_footer_mm') ?? self::LINEA_MM;
     }
 
     public function espacioTrasTituloAtentamenteMm(): float
     {
-        return 2 * self::LINEA_MM;
+        return $this->layoutOverride('espacio_tras_titulo_atentamente_mm') ?? (2 * self::LINEA_MM);
+    }
+
+    public function gapLogoInfoMm(): float
+    {
+        return $this->layoutOverride('gap_logo_info_mm') ?? self::GAP_LOGO_INFO_MM;
+    }
+
+    public function gapHeaderRuleMm(): float
+    {
+        return $this->layoutOverride('gap_header_rule_mm') ?? self::GAP_HEADER_RULE_MM;
     }
 
     public function bodyPaddingBottomMm(): float
     {
-        return self::FOOTER_HEIGHT_MM + self::BODY_PADDING_BOTTOM_EXTRA_MM;
+        return $this->footerHeightMm() + self::BODY_PADDING_BOTTOM_EXTRA_MM;
     }
 
     public function margenSeguridadAtentamenteMm(): float
@@ -236,12 +317,12 @@ final class PresupuestoPdfDocumentConfig
     public function medidasSimulacionPaginaMm(): array
     {
         $margenSuperiorMm = $this->margenSuperiorContenidoMm();
-        $margenPaginaMm = self::MARGEN_HOJA_MM;
+        $margenPaginaMm = $this->margenHojaMm();
 
         $alturaUtil = self::ALTURA_HOJA_LETRA_MM
             - $margenSuperiorMm
             - $margenPaginaMm
-            - self::FOOTER_HEIGHT_MM
+            - $this->footerHeightMm()
             - self::FOOTER_BOTTOM_MM
             - $margenPaginaMm;
 
@@ -322,6 +403,8 @@ final class PresupuestoPdfDocumentConfig
             'espacioTrasTituloAtentamenteMm' => $this->espacioTrasTituloAtentamenteMm(),
             'margenSuperiorMm' => $this->margenSuperiorContenidoMm(),
             'bodyPaddingBottomMm' => $this->bodyPaddingBottomMm(),
+            'gapLogoInfoMm' => $this->gapLogoInfoMm(),
+            'gapHeaderRuleMm' => $this->gapHeaderRuleMm(),
             'pdfDebugBordesContenedores' => $this->debugBordesContenedores(),
             'pdfThemeKey' => $this->themeKey(),
             'presupuestoThemeCss' => $this->themeCssVariables(),

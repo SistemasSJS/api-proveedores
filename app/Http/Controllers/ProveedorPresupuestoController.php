@@ -390,8 +390,7 @@ class ProveedorPresupuestoController extends Controller
             $this->marcarNotificacionesPresupuestoRecibidoLeidas($user, (int) $presupuesto->id);
         }
 
-        // $presupuesto->load(array_merge(Presupuesto::eagerLodable(), ['estadoLogs.user']));
-        $presupuesto->load(Presupuesto::eagerLodable());
+        $presupuesto->load(array_merge(Presupuesto::eagerLodable(), ['estadoLogs.user']));
         $presupuesto->asegurarTokenPublico();
 
         return $this->success(new PresupuestoResource($presupuesto));
@@ -843,12 +842,30 @@ class ProveedorPresupuestoController extends Controller
                 return $this->error('La empresa no tiene acceso a este presupuesto en GestionPlus.', null, 403);
             }
 
-            if ($presupuesto->estado !== Presupuesto::ESTADO_BORRADOR) {
+            if (! in_array($presupuesto->estado, [
+                Presupuesto::ESTADO_BORRADOR,
+                Presupuesto::ESTADO_RECHAZADO,
+                Presupuesto::ESTADO_RECHAZADO_CON_OBSERVACION,
+            ], true)) {
                 return $this->error(
-                    'Solo se puede enviar un presupuesto en estado borrador en GestionPlus.',
+                    'Solo se puede enviar un presupuesto en borrador o tras una corrección solicitada (rechazo con observación).',
                     ['estado_actual' => $presupuesto->estado],
                     422
                 );
+            }
+
+            if (in_array($presupuesto->estado, [
+                Presupuesto::ESTADO_RECHAZADO,
+                Presupuesto::ESTADO_RECHAZADO_CON_OBSERVACION,
+            ], true)) {
+                $motivo = trim((string) ($presupuesto->motivo_rechazo ?? ''));
+                if ($motivo === '') {
+                    return $this->error(
+                        'Solo se puede reenviar un presupuesto rechazado cuando hay motivo u observación del cliente.',
+                        ['estado_actual' => $presupuesto->estado],
+                        422
+                    );
+                }
             }
 
             $presupuesto->load(Presupuesto::eagerLodable());
@@ -856,9 +873,10 @@ class ProveedorPresupuestoController extends Controller
             DB::transaction(function () use ($request, $presupuesto) {
                 $estadoAnterior = $presupuesto->estado;
 
-                // Al enviar desde borrador, la fecha de emision se fija al dia actual.
+                // Al enviar desde borrador (o reenviar tras corrección), la fecha de emision se fija al dia actual.
                 $presupuesto->fecha_emision = now()->toDateString();
                 $presupuesto->estado = Presupuesto::ESTADO_ENVIADO;
+                $presupuesto->motivo_rechazo = null;
                 $presupuesto->asegurarTokenPublico();
 
                 if (! $presupuesto->fecha_vencimiento) {

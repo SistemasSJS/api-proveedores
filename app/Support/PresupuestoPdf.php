@@ -97,6 +97,7 @@ final class PresupuestoPdf
             'iva_total' => $presupuesto->iva_total,
             'total' => $presupuesto->total,
             'config_mostrar_totales' => (bool) ($presupuesto->config_mostrar_totales ?? true),
+            'ppto_config' => is_array($presupuesto->ppto_config) ? $presupuesto->ppto_config : [],
             'config_emisor_presupuesto_id' => $presupuesto->config_emisor_presupuesto_id,
             'empresa_emisora_nombre' => $presupuesto->empresa_emisora_nombre,
             'empresa_emisora_puesto' => $presupuesto->empresa_emisora_puesto,

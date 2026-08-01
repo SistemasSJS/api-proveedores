@@ -111,6 +111,7 @@ class Presupuesto extends BaseModel
         'token_publico',
         'pdf_theme',
         'config_mostrar_totales',
+        'ppto_config',
         'proveedor_id',
         'config_emisor_presupuesto_id',
         'empresa_emisora_nombre',
@@ -133,6 +134,7 @@ class Presupuesto extends BaseModel
         'fecha_vencimiento' => 'date',
         'con_iva' => 'boolean',
         'config_mostrar_totales' => 'boolean',
+        'ppto_config' => 'array',
         'incluir_leyenda_atentamente' => 'boolean',
         'term_cond_impuestos_en_pdf' => 'boolean',
         'item_visto' => 'boolean',
@@ -837,17 +839,24 @@ class Presupuesto extends BaseModel
         return $this->hasMany(PresupuestoAnexoPdf::class)->orderBy('orden')->orderBy('id');
     }
 
-    // public function estadoLogs(): HasMany
-    // {
-    //     return $this->hasMany(PresupuestoEstadoLog::class)
-    //         ->orderByDesc('fecha')
-    //         ->orderByDesc('id');
-    // }
-
-    public function registrarCambioEstado(?string $estadoAnterior = null, ?int $userId = null, $fecha = null): void
+    public function estadoLogs(): HasMany
     {
-        // FIXME: Implementar la tabla de logs de estados
-        return;
+        return $this->hasMany(PresupuestoEstadoLog::class)
+            ->orderByDesc('fecha')
+            ->orderByDesc('id');
+    }
+
+    /**
+     * Registra un cambio de estado. No se usa en alta de borrador.
+     *
+     * @param  \DateTimeInterface|string|null  $fecha
+     */
+    public function registrarCambioEstado(
+        ?string $estadoAnterior = null,
+        ?int $userId = null,
+        $fecha = null,
+        ?string $nota = null
+    ): void {
         $estadoNuevo = (string) $this->estado;
         $estadoAnterior = $estadoAnterior ?? $this->getOriginal('estado');
 
@@ -856,18 +865,43 @@ class Presupuesto extends BaseModel
         }
 
         $momento = $fecha ?? now();
+        $notaLimpia = $nota !== null ? trim($nota) : null;
+        if ($notaLimpia === '') {
+            $notaLimpia = null;
+        }
 
-        DB::table('presupuesto_estado_logs')->insert([
+        PresupuestoEstadoLog::query()->create([
             'presupuesto_id' => $this->id,
             'user_id' => $userId,
             'fecha' => $momento,
             'estado_anterior' => $estadoAnterior,
             'estado' => $estadoNuevo,
-            'created_at' => $momento,
-            'updated_at' => $momento,
+            'nota' => $notaLimpia,
         ]);
     }
 
+    /**
+     * Fecha del último log con el estado indicado.
+     * Solo consulta en memoria si `estadoLogs` está eager-loaded (evita N+1 en listados).
+     */
+    public function fechaDeEstado(string $estado): ?\Illuminate\Support\Carbon
+    {
+        if (! $this->relationLoaded('estadoLogs')) {
+            return null;
+        }
+
+        $log = $this->estadoLogs->firstWhere('estado', $estado);
+
+        return $log?->fecha;
+    }
+
+    public function setPptoConfigAttribute(mixed $value): void
+    {
+        $sanitized = \App\Support\PresupuestoPdfDocumentConfig::sanitizePptoConfig($value);
+        $this->attributes['ppto_config'] = empty($sanitized)
+            ? null
+            : json_encode($sanitized, JSON_UNESCAPED_UNICODE);
+    }
 
     /**
      * HELPERS

@@ -1,4 +1,4 @@
-﻿# Presupuestos — API
+# Presupuestos — API
 
 Repo: `api-proveedores`. Prefijo gerente: `proveedores/{proveedor}/…` + `proveedor.access`.
 
@@ -11,13 +11,15 @@ Repo: `api-proveedores`. Prefijo gerente: `proveedores/{proveedor}/…` + `prove
 | | `GET /next-folio`, `GET /pdf-themes` | Folio / temas |
 | | `POST /generar-pdf` | PDF sin persistir |
 | | `GET /{presupuesto}/pdf`, `PATCH …/pdf-theme` | PDF guardado / tema |
-| | `POST …/duplicar`, `…/enviar`, `…/enviar-correo`, `…/notificar-receptor-app`, `…/reenviar` | Ciclo de vida |
+| | `POST …/duplicar`, `…/enviar`, `…/enviar-correo`, `…/notificar-receptor-app`, `…/reenviar` | Ciclo de vida (`enviar` también desde rechazo con observación) |
 | | `GET /proveedores-registrados` | Receptores = proveedores del sistema |
 | Cartera | `{proveedor}/presupuestos/cartera-clientes` | `ProveedorPresupuestoCarteraClientesController` |
 | Catálogo conceptos | `{proveedor}/presupuestos/presupuesto-catalogo-conceptos` | `ProveedorPresupuestoCatalogoConceptosController` |
 | Anexos | `{proveedor}/presupuestos/{presupuesto}/anexos` (+ `/bulk`) | `ProveedorPresupuestoAnexoController` |
 | Anexos PDF | `…/anexos-pdf` | `ProveedorPresupuestoAnexoPdfController` |
 | Config | `{proveedor}/config-emisor-receptor-presupuestos` | `ProveedorPresupuestoConfigController` |
+
+`show` carga `estadoLogs.user`. Payload incluye `estado_logs`, fechas derivadas, `ppto_config`.
 
 ## Público (`routes/segmented/public.php`)
 
@@ -26,16 +28,16 @@ Repo: `api-proveedores`. Prefijo gerente: `proveedores/{proveedor}/…` + `prove
 | GET | `public/presupuestos/{token}` | Ver |
 | GET | `public/presupuestos/{token}/pdf` | PDF |
 | POST | `public/presupuestos/{token}/aceptar` | Aceptar |
-| POST | `public/presupuestos/{token}/rechazar` | Rechazar |
+| POST | `public/presupuestos/{token}/rechazar` | Rechazar (`motivo` → `rechazado_con_observacion` + `nota` en log) |
 
 Controller: `PresupuestoPublicController`.
 
 ## Enlace web / QR (pie del PDF y correos)
 
-- URL canónica front: `{APP_FRONTEND_URL}/public/presupuesto/{token_publico}`.
+- URL canónica front: `{APP_FRONTEND_URL}/public/presupuesto/{token_publico}` (misma ruta que `public-routing`).
 - Generación QR PDF: `PresupuestoPdf::generarQrCodeParaPresupuesto` (BaconQrCode → data URI).
 - Correo / QR auxiliar en controller: `ProveedorPresupuestoController` usa la misma URL pública (no la preview autenticada).
-- Requiere `asegurarTokenPublico()` antes de armar el enlace.
+- Requiere `asegurarTokenPublico()` antes de armar el enlace. Si `frontend_url` apunta a la API, el QR “no existe”.
 
 ## Piezas de soporte
 

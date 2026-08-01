@@ -143,18 +143,26 @@ class PresupuestoAceptadoNotification extends Notification implements ShouldBroa
             ?? $this->presupuesto->empresa_receptora_nombre
             ?? 'el cliente';
 
+        $tituloDoc = trim((string) ($this->presupuesto->concepto_general ?? ''));
+        $folio = $this->presupuesto->numero_presupuesto;
+        $titulo = $tituloDoc !== ''
+            ? "Presupuesto aceptado #{$folio} — {$tituloDoc}"
+            : "Presupuesto aceptado #{$folio}";
+
         return [
             'tipo' => 'presupuesto',
             'subtipo' => 'aceptado',
-            'titulo' => 'Presupuesto aceptado #' . $this->presupuesto->numero_presupuesto,
+            'titulo' => $titulo,
             'mensaje' => $cliente . ' aceptó el presupuesto enviado por ' . $nombreUsuario . ' de "' . $nombreEmpresa . '".',
             'action_url' => '/pages/proveedor/presupuestos/preview/' . $this->presupuesto->id,
             'presupuesto_id' => $this->presupuesto->id,
             'presupuesto_numero' => $this->presupuesto->numero_presupuesto,
+            'presupuesto_titulo' => $tituloDoc !== '' ? $tituloDoc : null,
             'proveedor_id' => $this->presupuesto->proveedor_id,
             'usuario_envio_id' => $this->presupuesto->user_id,
             'usuario_envio_nombre' => $nombreUsuario,
             'empresa_emisora_nombre' => $nombreEmpresa,
+            'evento' => 'aceptacion',
             'estatus' => 'aceptado',
             'timestamp' => now()->toIso8601String(),
         ];

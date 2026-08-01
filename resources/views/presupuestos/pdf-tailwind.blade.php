@@ -216,7 +216,7 @@
     .tw-header-rule {
         width: 100%;
         height: 0;
-        margin: 3mm 0 3mm 0;
+        margin: {{ $gapHeaderRuleMm ?? 3 }}mm 0 {{ $gapHeaderRuleMm ?? 3 }}mm 0;
         padding: 0;
         border: 0;
         border-top: 3px solid var(--primary);
@@ -232,7 +232,7 @@
 
     .tw-logo-cell {
         box-sizing: border-box;
-        padding: 0 0.7mm 0 0;
+        padding: 0 {{ $gapLogoInfoMm ?? 7 }}mm 0 0;
         vertical-align: top;
         text-align: left;
     }
