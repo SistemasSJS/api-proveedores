@@ -22,13 +22,13 @@ borrador → enviado → aceptar | rechazar(/con observación) → [reenviar si 
 1. **Borrador** — receptor (cartera \| proveedor registrado \| manual) + tarjeta emisor + conceptos + anexos + términos/descuento/moneda.
 2. **Ajustes de documento (borrador)**
    - `fecha_emision` — modal settings (≤ hoy).
-   - `ppto_config.gap_logo_info_mm` (y otros mm) — mismo modal; defaults en `PresupuestoPdfDocumentConfig` (gap logo↔info = **7 mm**).
+   - `ppto_config` — 8 medidas mm (márgenes, gaps logo/regla/footer/Atentamente); defaults en `PresupuestoPdfDocumentConfig`; UI modal Ajustes con «Restaurar defaults».
    - `titulo_anexos` / `titulo_anexos_pdf` — inline en cards anexos.
    - Anexos imagen: máximo 4 en captura (solo front).
-3. **Enviar** — `enviar` (también desde rechazo con observación) / `enviar-correo` / `notificar-receptor-app` / `reenviar` (correo).
-4. **Receptor** — listado “recibidos”, notificación (nº + empresa + título/`concepto_general` + tipo de evento), o enlace público.
+3. **Enviar / Solicitar aprobación** — solo el **emisor** (`esEmisorSesion`); `enviar` también desde rechazo con observación / `enviar-correo` / `notificar-receptor-app` / `reenviar` (correo).
+4. **Receptor** — listado “recibidos”, notificación (nº + empresa + título/`concepto_general` + tipo de evento), o enlace público; acciones Aceptar/Rechazar (no solicitar aprobación).
 5. **Aceptar / rechazar** — preview autenticado o token público; rechazo con motivo → `rechazado_con_observacion`.
-6. **Timeline** — modal Historial en preview (`estado_logs`).
+6. **Timeline** — sheet historial: icono en **cards del listado** + botón al **final del preview** (`estado_logs`).
 7. **Duplicar** — nuevo borrador desde uno existente.
 
 ## PDF y personalización

@@ -102,11 +102,12 @@ Campo `term_cond_moneda`: solo **MXN** \| **USD** \| **EUR** (default MXN). Pref
 ### Fecha de emisión y `ppto_config`
 
 - En captura (`presupuesto-page-modals`), icono **settings** en la card «Presupuesto dirigido a» abre `presupuesto-ajustes-modal`.
-- Campos: `fecha_emision` (≤ hoy) + `ppto_config.gap_logo_info_mm` (y extensible a otros mm).
-- Preview: botón **Historial** → modal timeline de `estado_logs` (fecha, estados, nota, usuario).
-- Unidades en concepto (captura y catálogo CRUD): buscador + opción **Otro** (texto libre ≤ 50).
+- Campos: `fecha_emision` (≤ hoy) + todos los mm de `ppto_config` (márgenes, gaps logo/regla/footer/Atentamente). Defaults alineados a API; botón «Restaurar defaults».
+- Listado: icono historial en cards (estado ≠ borrador) → sheet `estado_logs`. Preview: botón al final del documento (no en footer de acciones).
+- **Solicitar aprobación / Enviar**: solo emisor (`esEmisorSesion` / `puedeEnviar`); el receptor ve Aceptar/Rechazar.
+- Unidades e imagen en concepto (captura y catálogo CRUD): buscador + **Otro**; card imagen Reajustar / Cambiar / Quitar.
 - Nombres propios Dirigido a / Atentamente: sentence case (`presupuesto-texto-documento.helper.ts`).
-- Estilos overlay: `ion-modal.modal-ajustes-presupuesto` y `ion-modal.fecha-picker-modal` en `src/global.scss`.
+- Estilos overlay: `ion-modal.modal-ajustes-presupuesto`, `ion-modal.modal-historial-presupuesto` y `ion-modal.fecha-picker-modal` en `src/global.scss`.
 
 ### Títulos de sección de anexos
 

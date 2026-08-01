@@ -1,7 +1,7 @@
 # Mapa de pendientes ClickUp — Presupuestos + generalidades
 
 > **No es contexto operativo.** No sustituye `docs/context/`.  
-> Última actualización: 2026-08-01  
+> Última actualización: 2026-08-01 (cierre jornada)  
 > Alcance: tareas ClickUp de presupuestos y aspectos generales de la app (no catálogo de productos; no SP salvo outlier anotado).
 
 **Estados de tarea:** `pendiente` | `en_curso` | `hecho` | `hecho · review`  
@@ -24,7 +24,7 @@
 | 86aht32jb | Notificación: nº, empresa, título, tipo | A | **hecho** |
 | 86aj0n50y | Preview sin preguntar guardar | A | **hecho** |
 | 86aj4b61q | Vista preliminar cuadrada | A | **hecho · review** |
-| 86aj4b779 | Márgenes PDF / `ppto_config` | A | **hecho** (fases 1–2 base) |
+| 86aj4b779 | Márgenes PDF / `ppto_config` | A | **hecho** |
 | wdx6zev52j | Icono sin borde en app (borde solo impresión) | A | **hecho** |
 | wdx6zerea7 | QR pie de página no funciona | A | **hecho** (rutas alineadas; validar `APP_FRONTEND_URL`) |
 | wdx6zetawe | Mayúscula automática 1ª letra (nombres propios) | A | **hecho** |
@@ -64,23 +64,27 @@
 
 ---
 
-## Acuerdos de implementación — Oleada A (cerrados en código)
+## Acuerdos de implementación — Oleada A
 
-### Hechos en este ciclo
-- A1–A2 unidades + Otro (modal captura y form catálogo).
-- A8 `presupuesto_estado_logs` + timeline; rechazo con motivo = corrección; reenvío desde rechazo.
+### Hechos en este ciclo (jornada 2026-08-01)
+- A1–A2 unidades + Otro (modal captura y form catálogo); control imagen catálogo = mismo card Reajustar/Cambiar/Quitar que captura.
+- A8 `presupuesto_estado_logs` + sheet historial (listado cards + final del preview); rechazo con motivo = corrección; reenvío desde rechazo.
 - A9 notificaciones con nº, empresa, `concepto_general`, tipo de evento.
-- A12 `ppto_config` + gap logo 7 mm + modal Ajustes.
-- A13 iconos app sin borde / impresión con borde (assets + logos public).
+- A12 `ppto_config` completo (8 keys mm) en modal Ajustes + API/Blade; gap logo default 7 mm.
+- A13 iconos app sin borde / impresión con borde.
 - A14 QR URL = `/public/presupuesto/{token}` (validar env `frontend_url`).
 - A15 sentence case nombres propios presupuestos.
+- Regla UX: **Solicitar aprobación** solo emisor (`esEmisorSesion`); el receptor no ve ese botón.
 
 ### Pendientes de A
-- A5 postdata
-- A6 investigación formas de pago
+- A5 postdata (`86aj541y2`)
+- A6 investigación formas de pago (`86ahkrr1d`)
 
 ### Ya estaban cerrados
 - A3, A4·review, A7, A10, A11·review, `86ahxkanc`
+
+### Siguiente oleada
+**H** (usuarios / facultades / stats)
 
 ---
 

@@ -58,7 +58,7 @@ Catálogo de conceptos reutilizable: tabla `presupuesto_catalogo_conceptos` (`de
 | `titulo_anexos` | `presupuestos` | `varchar(80)` nullable; mig. `2026_07_23_095249_…`. Vacío → **Anexos** (Resource, Blade sección imágenes, preview) |
 | `titulo_anexos_pdf` | `presupuestos` | `varchar(80)` nullable; mig. `2026_07_23_103654_…`. Vacío → **Anexos PDF** (Resource + estampado FPDI de hojas mergeadas) |
 | `config_mostrar_totales` | `presupuestos` | Si false, oculta subtotal/IVA/total/importe letra en preview y PDF |
-| `ppto_config` | `presupuestos` | JSON nullable; márgenes/gaps mm (`gap_logo_info_mm` default 7, etc.). Modal Ajustes + merge en `PresupuestoPdfDocumentConfig` |
+| `ppto_config` | `presupuestos` | JSON nullable; 8 keys mm whitelist (`margen_*`, `gap_*`, `footer_height_mm`, `espacio_tras_titulo_atentamente_mm`). Modal Ajustes + merge en `PresupuestoPdfDocumentConfig` (gap logo default **7**) |
 
 ## Histórico de estados (`presupuesto_estado_logs`)
 
@@ -69,7 +69,7 @@ Catálogo de conceptos reutilizable: tabla `presupuesto_catalogo_conceptos` (`de
 | `estado_anterior`, `estado` | Strings de estado |
 | `nota` | Motivo de rechazo / nota del cambio |
 
-API `show` carga `estadoLogs.user`. Resource expone `estado_logs` + `fecha_envio` / `fecha_aceptacion` / `fecha_rechazo` derivados. UI: modal timeline en preview.
+API `show` carga `estadoLogs.user`. Resource expone `estado_logs` + `fecha_envio` / `fecha_aceptacion` / `fecha_rechazo` derivados. UI: sheet historial en **listado (cards)** y al **final del preview**.
 
 ## Anexos
 

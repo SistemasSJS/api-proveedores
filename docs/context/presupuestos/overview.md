@@ -26,7 +26,7 @@ Visión de producto (menú / secciones): el módulo no es solo el ciclo del docu
 | Anexos imagen | **Hecho** | Máx. **4** en captura (solo front); título sección `titulo_anexos` → PDF/preview |
 | Anexos PDF | **Hecho** | Merge al final; título sección `titulo_anexos_pdf` → estampado; título por archivo opcional |
 | Fecha de emisión editable | **Hecho** | Modal ajustes; front: no fecha futura |
-| Layout PDF `ppto_config` | **Hecho** | JSON mm + modal Ajustes (`gap_logo_info_mm` default 7) |
+| Layout PDF `ppto_config` | **Hecho** | JSON mm (8 keys) + modal Ajustes completo; gap logo default 7 |
 | Histórico estados / timeline | **Hecho** | `presupuesto_estado_logs` + modal Historial; sin log en borrador |
 | Totales opcionales | **Hecho** | `config_mostrar_totales` (oculta IVA/total/letra) |
 | Folio `PRES-XXXX` | **Hecho** | Consecutivo por proveedor; bump histórico +200 (migración) |
@@ -72,9 +72,11 @@ Ciclo **borrador → enviar → aceptar/rechazar** maduro (API + front activos).
 Ajustes de documento en captura (cerrados):
 
 - `fecha_emision` — modal settings (≤ hoy en front)
+- `ppto_config` — 8 keys mm (márgenes / gaps); modal Ajustes + PDF
 - `titulo_anexos` — inline en card anexos imagen (default **Anexos**; PDF sección imágenes + preview)
 - `titulo_anexos_pdf` — inline en card anexos PDF (default **Anexos PDF**; estampado al mergear PDFs)
 - Anexos imagen: tope **4** solo en front (`PRESUPUESTO_ANEXOS_IMAGEN_MAX`)
+- Historial estados: sheet en listado + final del preview; Solicitar aprobación solo emisor
 
 **Pago → finalización**: roadmap.
 
