@@ -1,11 +1,7 @@
 # Mapa de pendientes ClickUp — Presupuestos + generalidades
 
 > **No es contexto operativo.** No sustituye `docs/context/`.  
-<<<<<<< HEAD
 > Última actualización: 2026-08-01 (cierre jornada)  
-=======
-> Última actualización: 2026-08-02  
->>>>>>> 09ace841fc774a62b1db165d295b5fe4bdb9e2ee
 > Alcance: tareas ClickUp de presupuestos y aspectos generales de la app (no catálogo de productos; no SP salvo outlier anotado).
 
 **Estados de tarea:** `pendiente` | `en_curso` | `hecho` | `hecho · review`  
@@ -70,33 +66,19 @@
 
 ## Acuerdos de implementación — Oleada A
 
-<<<<<<< HEAD
 ### Hechos en este ciclo (jornada 2026-08-01)
 - A1–A2 unidades + Otro (modal captura y form catálogo); control imagen catálogo = mismo card Reajustar/Cambiar/Quitar que captura.
 - A8 `presupuesto_estado_logs` + sheet historial (listado cards + final del preview); rechazo con motivo = corrección; reenvío desde rechazo.
 - A9 notificaciones con nº, empresa, `concepto_general`, tipo de evento.
 - A12 `ppto_config` completo (8 keys mm) en modal Ajustes + API/Blade; gap logo default 7 mm.
 - A13 iconos app sin borde / impresión con borde.
-=======
-### Hechos en este ciclo
-- A1–A2 unidades + Otro (modal captura y form catálogo).
-- A8 `presupuesto_estado_logs` + timeline; rechazo con motivo = corrección; reenvío desde rechazo.
-- A12 `ppto_config` + gap logo 7 mm + modal Ajustes.
-- A13 iconos app sin borde / impresión con borde (assets + logos public).
->>>>>>> 09ace841fc774a62b1db165d295b5fe4bdb9e2ee
 - A14 QR URL = `/public/presupuesto/{token}` (validar env `frontend_url`).
 - A15 sentence case nombres propios presupuestos.
 - Regla UX: **Solicitar aprobación** solo emisor (`esEmisorSesion`); el receptor no ve ese botón.
 
 ### Pendientes de A
-<<<<<<< HEAD
 - A5 postdata (`86aj541y2`)
 - A6 investigación formas de pago (`86ahkrr1d`)
-=======
-- A5 postdata
-- A6 investigación formas de pago
-- A9 notificaciones (nº, empresa, título/`concepto_general`, tipo de evento)
->>>>>>> 09ace841fc774a62b1db165d295b5fe4bdb9e2ee
 
 ### Ya estaban cerrados
 - A3, A4·review, A7, A10, A11·review, `86ahxkanc`
