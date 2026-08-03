@@ -33,7 +33,8 @@ Visión de producto (menú / secciones): el módulo no es solo el ciclo del docu
 | Numeración alineada concepto/párrafo | **Hecho** | Columna `#` centrada en PDF + preview |
 | Temas PDF personalizables | **Hecho** | `pdf-themes` |
 | Datos usuario emisor ≠ empresa emisora | **Hecho** | Config / tarjetas emisor-receptor |
-| Envío app + correo + enlace público | **Hecho** | Aceptar / rechazar |
+| Envío app + correo + enlace público | **Hecho** | Aceptar / rechazar; notifs: ver workflows |
+| Notificaciones ppto (copy bandeja) | **Hecho** | Título `FOLIO · EMPRESA · NOMBRE · ACCIÓN` + hechos en mensaje |
 | QR pie PDF → enlace público | **Hecho** | `{frontend}/public/presupuesto/{token}`; con sesión → `enlace-publico/:token` |
 | Cuentas bancarias (perfil empresa) | **Hecho** (soporte) | Perfil; no cobranza automática |
 | Historial en menú | **Fuera de v1** | Ruta `historial` puede existir; no foco del rework de menú |

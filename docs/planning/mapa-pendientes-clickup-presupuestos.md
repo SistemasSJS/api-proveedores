@@ -69,7 +69,7 @@
 ### Hechos en este ciclo (jornada 2026-08-01)
 - A1–A2 unidades + Otro (modal captura y form catálogo); control imagen catálogo = mismo card Reajustar/Cambiar/Quitar que captura.
 - A8 `presupuesto_estado_logs` + sheet historial (listado cards + final del preview); rechazo con motivo = corrección; reenvío desde rechazo.
-- A9 notificaciones con nº, empresa, `concepto_general`, tipo de evento.
+- A9 notificaciones: título bandeja `FOLIO · EMPRESA · NOMBRE · ACCIÓN` + mensaje con hechos (descripción, emisión, destinatario); flujo documentado en `docs/context/presupuestos/workflows.md`.
 - A12 `ppto_config` completo (8 keys mm) en modal Ajustes + API/Blade; gap logo default 7 mm.
 - A13 iconos app sin borde / impresión con borde.
 - A14 QR URL = `/public/presupuesto/{token}` (validar env `frontend_url`).

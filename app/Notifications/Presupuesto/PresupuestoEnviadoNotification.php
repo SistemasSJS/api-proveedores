@@ -3,6 +3,7 @@
 namespace App\Notifications\Presupuesto;
 
 use App\Models\Presupuesto;
+use App\Support\PresupuestoNotificationContent;
 use App\Support\PresupuestoPdf;
 use App\Traits\NotificationStyleTrait;
 use App\Services\FcmService;
@@ -110,6 +111,8 @@ class PresupuestoEnviadoNotification extends Notification implements ShouldBroad
         ];
 
         $data = [
+            'titulo' => (string) $dataBase['titulo'],
+            'mensaje' => (string) $dataBase['mensaje'],
             'tipo' => 'presupuesto',
             'subtipo' => (string) $dataBase['subtipo'],
             'action_url' => (string) $dataBase['action_url'],
@@ -119,6 +122,9 @@ class PresupuestoEnviadoNotification extends Notification implements ShouldBroad
             'estatus' => (string) $dataBase['estatus'],
             'usuario_envio_nombre' => (string) $dataBase['usuario_envio_nombre'],
             'empresa_emisora_nombre' => (string) $dataBase['empresa_emisora_nombre'],
+            'fecha_emision' => (string) ($dataBase['fecha_emision'] ?? ''),
+            'destinatario_nombre' => (string) ($dataBase['destinatario_nombre'] ?? ''),
+            'empresa_logo_url' => (string) ($dataBase['empresa_logo_url'] ?? ''),
             'timestamp' => (string) $dataBase['timestamp'],
         ];
 
@@ -132,40 +138,22 @@ class PresupuestoEnviadoNotification extends Notification implements ShouldBroad
      */
     private function baseData(): array
     {
-        $this->presupuesto->loadMissing(['user', 'proveedor']);
+        $ctx = PresupuestoNotificationContent::contexto($this->presupuesto);
+        $mensajeBase = 'Para '.$ctx['destinatario'].' · Emisión '.$ctx['fecha_emision_display'];
 
-        $nombreUsuario = $this->presupuesto->user?->name ?? 'Usuario';
-        $nombreEmpresa = $this->presupuesto->proveedor?->nombre_comercial
-            ?? $this->presupuesto->proveedor?->razon_social
-            ?? 'Empresa';
-
-        $cliente = $this->presupuesto->empresa_receptora_empresa
-            ?? $this->presupuesto->empresa_receptora_nombre
-            ?? 'el cliente';
-
-        $tituloDoc = trim((string) ($this->presupuesto->concepto_general ?? ''));
-        $folio = $this->presupuesto->numero_presupuesto;
-        $titulo = $tituloDoc !== ''
-            ? "Presupuesto enviado #{$folio} — {$tituloDoc}"
-            : "Presupuesto enviado #{$folio}";
-
-        return [
+        return array_merge([
             'tipo' => 'presupuesto',
             'subtipo' => 'enviado',
-            'titulo' => $titulo,
-            'mensaje' => $nombreUsuario . ' de "' . $nombreEmpresa . '" envió el presupuesto a ' . $cliente . '.',
-            'action_url' => '/pages/proveedor/presupuestos/preview/' . $this->presupuesto->id,
+            'titulo' => PresupuestoNotificationContent::tituloBandeja($this->presupuesto, 'enviado'),
+            'mensaje' => PresupuestoNotificationContent::mensajeConHechos($mensajeBase, $this->presupuesto),
+            'action_url' => '/pages/proveedor/presupuestos/preview/'.$this->presupuesto->id,
             'presupuesto_id' => $this->presupuesto->id,
-            'presupuesto_numero' => $this->presupuesto->numero_presupuesto,
-            'presupuesto_titulo' => $tituloDoc !== '' ? $tituloDoc : null,
             'proveedor_id' => $this->presupuesto->proveedor_id,
             'usuario_envio_id' => $this->presupuesto->user_id,
-            'usuario_envio_nombre' => $nombreUsuario,
-            'empresa_emisora_nombre' => $nombreEmpresa,
             'evento' => 'envio',
             'estatus' => 'enviado',
             'timestamp' => now()->toIso8601String(),
-        ];
+        ], PresupuestoNotificationContent::camposEstructurados($this->presupuesto, 'enviado'));
     }
 
     private function resolverLogoProveedorBase64(): ?string

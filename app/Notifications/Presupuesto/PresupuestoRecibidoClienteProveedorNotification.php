@@ -4,6 +4,7 @@ namespace App\Notifications\Presupuesto;
 
 use App\Models\Presupuesto;
 use App\Services\FcmService;
+use App\Support\PresupuestoNotificationContent;
 use App\Traits\NotificationStyleTrait;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Notifications\Messages\BroadcastMessage;
@@ -68,6 +69,8 @@ class PresupuestoRecibidoClienteProveedorNotification extends Notification imple
         ];
 
         $data = [
+            'titulo' => (string) $base['titulo'],
+            'mensaje' => (string) $base['mensaje'],
             'tipo' => 'presupuesto',
             'subtipo' => (string) $base['subtipo'],
             'action_url' => (string) $base['action_url'],
@@ -78,6 +81,9 @@ class PresupuestoRecibidoClienteProveedorNotification extends Notification imple
             'proveedor_receptor_id' => (string) ($base['proveedor_receptor_id'] ?? ''),
             'usuario_envio_nombre' => (string) $base['usuario_envio_nombre'],
             'empresa_emisora_nombre' => (string) $base['empresa_emisora_nombre'],
+            'fecha_emision' => (string) ($base['fecha_emision'] ?? ''),
+            'destinatario_nombre' => (string) ($base['destinatario_nombre'] ?? ''),
+            'empresa_logo_url' => (string) ($base['empresa_logo_url'] ?? ''),
             'es_reenvio' => $base['es_reenvio'] ? '1' : '0',
             'timestamp' => (string) $base['timestamp'],
         ];
@@ -89,57 +95,38 @@ class PresupuestoRecibidoClienteProveedorNotification extends Notification imple
 
     private function baseData(): array
     {
-        $this->presupuesto->loadMissing(['user', 'proveedor']);
-
-        $nombreUsuario = $this->presupuesto->user?->name ?? 'Usuario';
-        $nombreEmpresa = $this->presupuesto->proveedor?->nombre_comercial
-            ?? $this->presupuesto->proveedor?->razon_social
-            ?? 'Empresa';
-
-        $folio = $this->presupuesto->numero_presupuesto;
-        $total = number_format((float) $this->presupuesto->total, 2) . ' ' . ($this->presupuesto->term_cond_moneda ?? 'MXN');
-        $quienEnvia = $nombreUsuario . ' de "' . $nombreEmpresa . '"';
-        $tituloDoc = trim((string) ($this->presupuesto->concepto_general ?? ''));
+        $total = number_format((float) $this->presupuesto->total, 2).' '.($this->presupuesto->term_cond_moneda ?? 'MXN');
 
         if ($this->esReenvio) {
-            $titulo = $tituloDoc !== ''
-                ? "Presupuesto actualizado #{$folio} — {$tituloDoc}"
-                : "Presupuesto actualizado #{$folio}";
-            $mensaje = $quienEnvia . ' reenvió el presupuesto con cambios. Total: ' . $total . '.';
+            $eventoTitulo = 'actualizado';
+            $mensajeBase = 'Incluye cambios · Total '.$total;
             $evento = 'reenvio';
         } else {
-            $titulo = $tituloDoc !== ''
-                ? "Solicitud de autorización #{$folio} — {$tituloDoc}"
-                : "Solicitud de autorización #{$folio}";
-            $mensaje = $quienEnvia . ' te envió un presupuesto para autorización (' . $nombreEmpresa . '). Total: ' . $total . '.';
+            $eventoTitulo = 'recibido';
+            $mensajeBase = 'Pendiente de autorización · Total '.$total;
             $evento = 'solicitud_autorizacion';
         }
 
-        $frontendUrl = rtrim(config('app.frontend_url', config('app.url')), '/');
+        $frontendUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/');
         $urlPublica = $this->presupuesto->token_publico
-            ? $frontendUrl . '/public/presupuesto/' . $this->presupuesto->token_publico
-            : $frontendUrl . '/public/presupuesto/' . $this->presupuesto->id;
-        $actionUrl = '/pages/proveedor/presupuestos/preview/' . $this->presupuesto->id;
+            ? $frontendUrl.'/public/presupuesto/'.$this->presupuesto->token_publico
+            : $frontendUrl.'/public/presupuesto/'.$this->presupuesto->id;
 
-        return [
+        return array_merge([
             'tipo' => 'presupuesto',
             'subtipo' => 'recibido_cliente_proveedor',
-            'titulo' => $titulo,
-            'mensaje' => $mensaje,
-            'action_url' => $actionUrl,
+            'titulo' => PresupuestoNotificationContent::tituloBandeja($this->presupuesto, $eventoTitulo),
+            'mensaje' => PresupuestoNotificationContent::mensajeConHechos($mensajeBase, $this->presupuesto),
+            'action_url' => '/pages/proveedor/presupuestos/preview/'.$this->presupuesto->id,
             'url_publica' => $urlPublica,
             'presupuesto_id' => $this->presupuesto->id,
-            'presupuesto_numero' => $this->presupuesto->numero_presupuesto,
-            'presupuesto_titulo' => $tituloDoc !== '' ? $tituloDoc : null,
             'proveedor_emisor_id' => $this->presupuesto->proveedor_id,
             'proveedor_receptor_id' => $this->presupuesto->proveedor_receptor_id,
             'usuario_envio_id' => $this->presupuesto->user_id,
-            'usuario_envio_nombre' => $nombreUsuario,
-            'empresa_emisora_nombre' => $nombreEmpresa,
             'evento' => $evento,
             'es_reenvio' => $this->esReenvio,
             'timestamp' => now()->toIso8601String(),
-        ];
+        ], PresupuestoNotificationContent::camposEstructurados($this->presupuesto, $eventoTitulo));
     }
 
     protected function getNotificationTipo(): string

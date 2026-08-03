@@ -4,6 +4,7 @@ namespace App\Notifications\Presupuesto;
 
 use App\Models\Presupuesto;
 use App\Services\FcmService;
+use App\Support\PresupuestoNotificationContent;
 use App\Support\PresupuestoPdf;
 use App\Traits\NotificationStyleTrait;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
@@ -102,6 +103,8 @@ class PresupuestoCierrePendienteNotification extends Notification implements Sho
         ];
 
         $data = [
+            'titulo' => (string) $base['titulo'],
+            'mensaje' => (string) $base['mensaje'],
             'tipo' => 'presupuesto',
             'subtipo' => (string) $base['subtipo'],
             'action_url' => (string) $base['action_url'],
@@ -111,6 +114,9 @@ class PresupuestoCierrePendienteNotification extends Notification implements Sho
             'fecha_vencimiento' => (string) ($base['fecha_vencimiento'] ?? ''),
             'usuario_envio_nombre' => (string) $base['usuario_envio_nombre'],
             'empresa_emisora_nombre' => (string) $base['empresa_emisora_nombre'],
+            'fecha_emision' => (string) ($base['fecha_emision'] ?? ''),
+            'destinatario_nombre' => (string) ($base['destinatario_nombre'] ?? ''),
+            'empresa_logo_url' => (string) ($base['empresa_logo_url'] ?? ''),
             'timestamp' => (string) $base['timestamp'],
         ];
 
@@ -121,33 +127,21 @@ class PresupuestoCierrePendienteNotification extends Notification implements Sho
 
     private function baseData(): array
     {
-        $this->presupuesto->loadMissing(['user', 'proveedor']);
+        $fechaVenc = $this->presupuesto->fecha_vencimiento?->format('d/m/Y') ?? '—';
+        $mensajeBase = 'Vence el '.$fechaVenc.' · Aún sin respuesta';
 
-        $nombreUsuario = $this->presupuesto->user?->name ?? 'Usuario';
-        $nombreEmpresa = $this->presupuesto->proveedor?->nombre_comercial
-            ?? $this->presupuesto->proveedor?->razon_social
-            ?? 'Empresa';
-
-        $fechaVenc = $this->presupuesto->fecha_vencimiento?->format('d/m/Y') ?? '';
-        $cliente = $this->presupuesto->empresa_receptora_empresa
-            ?? $this->presupuesto->empresa_receptora_nombre
-            ?? 'el cliente';
-
-        return [
+        return array_merge([
             'tipo' => 'presupuesto',
             'subtipo' => 'cierre_pendiente',
-            'titulo' => 'Presupuesto por vencer #' . $this->presupuesto->numero_presupuesto,
-            'mensaje' => 'El presupuesto que ' . $nombreUsuario . ' de "' . $nombreEmpresa . '" envió a ' . $cliente . ' vence el ' . $fechaVenc . '. Aún no hay respuesta.',
-            'action_url' => '/pages/proveedor/presupuestos/preview/' . $this->presupuesto->id,
+            'titulo' => PresupuestoNotificationContent::tituloBandeja($this->presupuesto, 'por_vencer'),
+            'mensaje' => PresupuestoNotificationContent::mensajeConHechos($mensajeBase, $this->presupuesto),
+            'action_url' => '/pages/proveedor/presupuestos/preview/'.$this->presupuesto->id,
             'presupuesto_id' => $this->presupuesto->id,
-            'presupuesto_numero' => $this->presupuesto->numero_presupuesto,
             'proveedor_id' => $this->presupuesto->proveedor_id,
             'usuario_envio_id' => $this->presupuesto->user_id,
-            'usuario_envio_nombre' => $nombreUsuario,
-            'empresa_emisora_nombre' => $nombreEmpresa,
             'fecha_vencimiento' => $this->presupuesto->fecha_vencimiento?->toIso8601String(),
             'timestamp' => now()->toIso8601String(),
-        ];
+        ], PresupuestoNotificationContent::camposEstructurados($this->presupuesto, 'por_vencer'));
     }
 
     private function resolverLogoProveedorBase64(): ?string
