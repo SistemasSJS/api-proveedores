@@ -26,10 +26,64 @@ borrador → enviado → aceptar | rechazar(/con observación) → [reenviar si 
    - `titulo_anexos` / `titulo_anexos_pdf` — inline en cards anexos.
    - Anexos imagen: máximo 4 en captura (solo front).
 3. **Enviar / Solicitar aprobación** — solo el **emisor** (`esEmisorSesion`); `enviar` también desde rechazo con observación / `enviar-correo` / `notificar-receptor-app` / `reenviar` (correo).
-4. **Receptor** — listado “recibidos”, notificación (nº + empresa + título/`concepto_general` + tipo de evento), o enlace público; acciones Aceptar/Rechazar (no solicitar aprobación).
+4. **Receptor** — ver sección **Notificaciones** (app vs correo según registro).
 5. **Aceptar / rechazar** — preview autenticado o token público; rechazo con motivo → `rechazado_con_observacion`.
 6. **Timeline** — sheet historial: icono en **cards del listado** + botón al **final del preview** (`estado_logs`).
 7. **Duplicar** — nuevo borrador desde uno existente.
+
+## Notificaciones (presupuesto)
+
+Código: `app/Notifications/Presupuesto/*` + copy compartido `app/Support/PresupuestoNotificationContent.php`.
+
+### Contenido visible
+
+| Superficie | Campo | Formato |
+|------------|-------|---------|
+| Bandeja del teléfono (Capacitor/FCM) y título del listado in-app | `titulo` | Oración: `{NombreTarjeta} envió el presupuesto {folio}.` (aceptado/rechazado/corrección usan destinatario; por vencer: `El presupuesto {folio} de {NombreTarjeta} está por vencer.`) |
+| Cuerpo listado in-app + body push | `mensaje` | Corto y complementario al título (sin repetir quién/acción/folio). Ej.: total, emisión, motivo, vencimiento · descripción si hay |
+
+Hechos siempre presentes en data: `usuario_envio_nombre`, `empresa_emisora_nombre`, `empresa_logo_url` (logo de la empresa **del actor** del evento: emisor en enviado/recibido/actualizado/por vencer; receptor/destinatario en aceptado/rechazado/corrección), `presupuesto_numero`, `presupuesto_titulo`, `fecha_emision`, `destinatario_nombre`.
+
+### Cuándo se dispara cada una
+
+| Notificación | Momento / disparador | Destinatarios | Canales típicos |
+|--------------|----------------------|---------------|-----------------|
+| **Recibido** (`PresupuestoRecibidoClienteProveedorNotification`) | Tras `enviar` (usuario principal del receptor catálogo) y/o `POST …/notificar-receptor-app`; también en `reenviar` (app) | Usuarios activos del **proveedor receptor** (o usuarios cuyo email = correo receptor y tienen otro proveedor ≠ emisor) | DB + broadcast + FCM |
+| **Aceptado** (`PresupuestoAceptadoNotification`) | Cliente acepta (API pública o preview autenticado) | Creador del presupuesto (`user_id`), una sola vez | DB + broadcast + FCM (+ mail si aplica) |
+| **Rechazado / Corrección** (`PresupuestoRechazadoNotification`) | Cliente rechaza; con motivo → copy de “Corrección” | Creador (`user_id`), una sola vez | DB + broadcast + FCM (+ mail) |
+| **Cierre pendiente** (`PresupuestoCierrePendienteNotification`) | Cron `presupuestos:notificar-cierre-pendiente` (enviados que vencen **mañana**) | Usuarios activos del **proveedor emisor** | DB + broadcast + FCM (+ mail) |
+| **Enviado** (`PresupuestoEnviadoNotification`) | Clase lista (estilo “emisor notificó envío”); hoy se usa en comandos QA/`dispatch-all`, **no** en el flujo principal de `enviar` | Emisor (cuando se despache) | DB + broadcast + FCM |
+
+Acciones de bandeja (claves de título): enviado | recibido | actualizado | aceptado | rechazado | correccion | por_vencer.
+
+### Casos de receptor: registrado vs no registrado
+
+```text
+Emisor solicita aprobación / envía
+        │
+        ▼
+¿Receptor es proveedor del catálogo (proveedor_receptor_id / flag)?
+   │                              │
+  SÍ                             NO
+   │                              │
+   ▼                              ▼
+Notificación in-app          ¿Email receptor coincide con
+(Recibido) a usuarios         User en otro proveedor activo?
+del proveedor receptor            │              │
+(+ opcional correo               SÍ             NO
+ vía enviar-correo)               │              │
+                                  ▼              ▼
+                           Notificación     Sin push/campana.
+                           Recibido a       Solo correo
+                           esos users       PresupuestoEnviadoMail
+                                            (enlace público / QR)
+                                            ± invitación a registrarse
+```
+
+- **Registrado en app (otro proveedor):** push + listado in-app (“recibidos”); puede abrir preview autenticado.
+- **No registrado:** no hay `PresupuestoRecibido…`; se usa **correo** (`PresupuestoEnviadoMail`) con enlace `/public/presupuesto/{token}`. Aceptar/rechazar vía token público; el emisor sí recibe Aceptado/Rechazado in-app.
+- **Duplicados cruzados:** si un user también pertenece al emisor, se **excluye** de la notificación de receptor (evita doble campana).
+- Al abrir el preview de un recibido, se marcan leídas las notificaciones `PresupuestoRecibido…` de ese presupuesto (badge).
 
 ## PDF y personalización
 

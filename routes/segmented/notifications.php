@@ -36,6 +36,7 @@ Route::prefix('notifications')->group(function () {
         Route::post('/send', [NotificationController::class, 'sendToCurrentUser']);
         Route::post('/send/{userId}', [NotificationController::class, 'sendToUser']);
         Route::patch('/{notificationId}/read', [NotificationController::class, 'markAsRead']);
+        Route::delete('/{notificationId}', [NotificationController::class, 'destroy']);
         Route::patch('/mark-all-read', [NotificationController::class, 'markAllAsRead']);
         Route::post('/marcar-leida/por-tipo-notificacion', [NotificationController::class, 'markAsReadByTipoAndSP']);
     });

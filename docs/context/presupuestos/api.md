@@ -47,9 +47,9 @@ Controller: `PresupuestoPublicController`.
 | Merge anexos PDF | `app/Support/PresupuestoPdfAnexoMerger.php` |
 | Estampado anexos PDF | `app/Support/PresupuestoPdfAnexoEstampado.php` (usa `titulo_anexos_pdf`) |
 | Mail | `app/Mail/PresupuestoEnviadoMail.php` |
-| Notifications | `app/Notifications/Presupuesto/*` |
-| Resources | `app/Http/Resources/Presupuesto/*` |
-| Requests | `app/Http/Requests/Presupuesto/*` |
+| Notifications | `app/Notifications/Presupuesto/*` (+ `PresupuestoNotificationContent`) |
+
+Flujo de disparo, casos receptor registrado/no registrado y formato de título/mensaje: [workflows.md — Notificaciones](./workflows.md#notificaciones-presupuesto).
 
 ## Notas de contrato
 
