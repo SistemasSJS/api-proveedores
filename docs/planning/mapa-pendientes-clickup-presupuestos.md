@@ -1,7 +1,7 @@
 # Mapa de pendientes ClickUp — Presupuestos + generalidades
 
 > **No es contexto operativo.** No sustituye `docs/context/`.  
-> Última actualización: 2026-08-01 (cierre jornada)  
+> Última actualización: 2026-08-03 (cierre oleada A · inicio H)  
 > Alcance: tareas ClickUp de presupuestos y aspectos generales de la app (no catálogo de productos; no SP salvo outlier anotado).
 
 **Estados de tarea:** `pendiente` | `en_curso` | `hecho` | `hecho · review`  
@@ -17,11 +17,11 @@
 | 86aj0nc3v | Form conceptos: unificar modal → página catálogo | A | **hecho** |
 | 86aj3y86n | Totalizar opcional | A | **hecho** |
 | 86aj4b9zb | Ocultar total / IVA / importe letra | A | **hecho · review** |
-| 86aj541y2 | Párrafo postdata | A | pendiente |
-| 86ahkrr1d | Términos: investigar formas de pago | A | pendiente (solo investigación) |
+| 86aj541y2 | Párrafo postdata | A | **hecho** |
+| 86ahkrr1d | Términos: investigar formas de pago | A | **hecho** (investigación cerrada con A) |
 | 86ahha5cu | Corregir y agregar “Más términos” | A | **hecho** |
 | 86agutpem | Histórico estados / fechas aceptación-rechazo | A | **hecho** |
-| 86aht32jb | Notificación: nº, empresa, título, tipo | A | pendiente |
+| 86aht32jb | Notificación: nº, empresa, título, tipo | A | **hecho** |
 | 86aj0n50y | Preview sin preguntar guardar | A | **hecho** |
 | 86aj4b61q | Vista preliminar cuadrada | A | **hecho · review** |
 | 86aj4b779 | Márgenes PDF / `ppto_config` | A | **hecho** |
@@ -29,6 +29,7 @@
 | wdx6zerea7 | QR pie de página no funciona | A | **hecho** (rutas alineadas; validar `APP_FRONTEND_URL`) |
 | wdx6zetawe | Mayúscula automática 1ª letra (nombres propios) | A | **hecho** |
 | 86ahxkanc | Imagen en concepto (print vs preview) | A | **hecho** |
+| wdx6zev52a | Cerrar sesión + menú de usuario | A | **hecho** (movido desde Z; btn / menú usuario) |
 | wdx6zev52b | Usuarios: agregar | H | pendiente |
 | wdx6zev52c | Usuarios: facultades | H | pendiente |
 | 86ah82rb5 | Excluir admin/prueba de estadísticas | H | pendiente |
@@ -53,44 +54,45 @@
 | 86ah6ygvb | Seed ≥30 empresas Construc | E | pendiente (outlier datos/SP) |
 | 86ahcnymh | Borrar aceptados → bandeja eliminados | G | pendiente |
 | 86ahcnyxn | Marcar pagado + comprobante | G | pendiente |
-| wdx6zeunk3 | Ventana en blanco al actualizar | B | pendiente |
+| wdx6zeunk3 | Ventana en blanco al actualizar | B | pendiente (avance: splash boot PWA en 2.5.2) |
 | 86aj1hjwx | Ajuste tamaño de ventanas | B | pendiente |
 | 86agj0a6a | Socialite | Z | pendiente |
 | 86agz21gv | Guardar usuario/contraseña iPhone | Z | pendiente |
-| wdx6zev52a | Cerrar sesión | Z | pendiente |
 | 86ahcrgfw | PayPal y Stripe | Z | pendiente |
 
 **URLs ClickUp:** `https://app.clickup.com/t/90131590108/{id}`
 
 ---
 
-## Acuerdos de implementación — Oleada A
+## Oleada A — **COMPLETADA** (2026-08-03)
 
-### Hechos en este ciclo (jornada 2026-08-01)
-- A1–A2 unidades + Otro (modal captura y form catálogo); control imagen catálogo = mismo card Reajustar/Cambiar/Quitar que captura.
-- A8 `presupuesto_estado_logs` + sheet historial (listado cards + final del preview); rechazo con motivo = corrección; reenvío desde rechazo.
-- A9 notificaciones: título bandeja `FOLIO · EMPRESA · NOMBRE · ACCIÓN` + mensaje con hechos (descripción, emisión, destinatario); flujo documentado en `docs/context/presupuestos/workflows.md`.
-- A12 `ppto_config` completo (8 keys mm) en modal Ajustes + API/Blade; gap logo default 7 mm.
-- A13 iconos app sin borde / impresión con borde.
-- A14 QR URL = `/public/presupuesto/{token}` (validar env `frontend_url`).
-- A15 sentence case nombres propios presupuestos.
-- Regla UX: **Solicitar aprobación** solo emisor (`esEmisorSesion`); el receptor no ve ese botón.
+### Hechos (ciclo A)
+- A1–A2 unidades + Otro; control imagen catálogo = Reajustar/Cambiar/Quitar.
+- A3 totalizar opcional; A4 ocultar total/IVA/letra (**review**); A5 postdata; A6 formas de pago (investigación cerrada).
+- A7 Más términos; A8 historial estados (sheet + logs); A9 notificaciones (títulos oración, mensajes cortos, logo actor, panel campana, API unread-default).
+- A10 preview sin preguntar guardar; A11 vista preliminar (**review**); A12 `ppto_config`; A13 iconos; A14 QR; A15 mayúsculas; imagen concepto.
+- UX: **Solicitar aprobación** solo emisor.
+- **Cerrar sesión + menú de usuario** (`wdx6zev52a`): botón/flujo de logout y menú de usuario alineados a la app actual (incluido en cierre de A; originaba en Z).
 
-### Pendientes de A
-- A5 postdata (`86aj541y2`)
-- A6 investigación formas de pago (`86ahkrr1d`)
+### Siguiente
+**Oleada H** — usuarios / facultades / estadísticas  
+Orden sugerido: `wdx6zev52b` (agregar) → `wdx6zev52c` (facultades) → `86ah82rb5` (excluir admin/prueba de stats).
 
-### Ya estaban cerrados
-- A3, A4·review, A7, A10, A11·review, `86ahxkanc`
+---
 
-### Siguiente oleada
-**H** (usuarios / facultades / stats)
+## Oleada H — en curso (inicio)
+
+| ID | Título | Estado |
+|----|--------|--------|
+| wdx6zev52b | Usuarios: agregar | pendiente |
+| wdx6zev52c | Usuarios: facultades | pendiente |
+| 86ah82rb5 | Excluir admin/prueba de estadísticas | pendiente |
 
 ---
 
 ## Oleadas (orden)
 
-A → H → F → C → D → E → G → B → Z
+~~A~~ → **H** → F → C → D → E → G → B → Z
 
 ---
 

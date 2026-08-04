@@ -84,7 +84,8 @@ Route::prefix('proveedores')
             Route::post('/', [ProveedorUsuarioController::class, 'store']);
             Route::middleware(['api.access', 'proveedor.user'])->group(function () {
                 Route::get('{user}', [ProveedorUsuarioController::class, 'show']);
-                Route::patch('{user}', [ProveedorUsuarioController::class, 'update']);
+                // POST también: multipart (logo) no siempre llega bien con PATCH en PHP
+                Route::match(['patch', 'post'], '{user}', [ProveedorUsuarioController::class, 'update']);
                 Route::delete('{user}', [ProveedorUsuarioController::class, 'destroy']);
                 Route::post('{user}/logo', [ProveedorUsuarioController::class, 'updateLogo']);
                 Route::patch('{user}/relacion', [ProveedorUsuarioController::class, 'updateRelacion']);

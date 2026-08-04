@@ -10,7 +10,7 @@ Los tres dominios son **aislados**. Este archivo lista solo lo que existe de ver
 | Catálogo → Presupuestos | **No en datos de producto** | Conceptos son snapshot (texto). Catálogo de conceptos es propio del dominio presupuestos (`presupuesto_catalogo_conceptos`), no del dominio Catálogo de productos |
 | Presupuestos → SP | **No** | No hay conversión presupuesto → SP. El cobro/finalización de presupuestos es **roadmap dentro de presupuestos** (cuentas + pasarelas), no el dominio SP |
 | SP → Catálogo | **No** | Endpoints de productos bajo `construcc/…` son otro dominio, mismo archivo de rutas |
-| Cualquiera → Plataforma | **Sí** | Auth, `proveedor_id`, storage, notificaciones infra |
+| Cualquiera → Plataforma | **Sí** | Auth, `proveedor_id`, roles/usuarios (core), storage, notificaciones infra |
 
 ## Acoplamientos suaves (no son puentes de negocio)
 

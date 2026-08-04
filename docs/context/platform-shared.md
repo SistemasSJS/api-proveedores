@@ -15,7 +15,8 @@ Infraestructura que usan los tres dominios. **No expandir** como “módulo núc
 | Auth / sesión | `routes/segmented/auth.php`, front `@auth/` | Login, token, `/auth/me` |
 | Proveedor | Model `Proveedor`, prefijo `proveedores/{proveedor}/…` | Contenedor multi-proveedor |
 | Acceso | `tieneAccesoAProveedor`, middleware `proveedor.access` / `api.access` | Autorización por proveedor |
-| Roles | `UserRoleEnumerate` (ADMINISTRADOR, GERENTE, CLIENTE, CONSTRUCC_APP, …) | Rutas segmentadas |
+| Roles | `UserRoleEnumerate` (ADMINISTRADOR, GERENTE, SUPERVISOR, VENTAS, AUXILIAR, …) | Rutas segmentadas + menú |
+| Usuarios / matriz MVP | [platform-users-roles.md](./platform-users-roles.md) | Gestión empresa: principal GERENTE, roles asignables SUP/VEN/AUX |
 | Storage / mail / FCM | Traits, Mail, Notifications genéricas | Archivos, correo, push |
 | Shell menús (front) | `app-sidebar-menu` / `app-desktop-sidebar` | Dos menús distintos; ver sección siguiente |
 

@@ -14,23 +14,20 @@ use Illuminate\Support\Facades\Storage;
  *     type="object",
  *     title="UserResource",
  *     properties={
- *
  *         @OA\Property(property="id", type="integer", example=1),
  *         @OA\Property(property="name", type="string", example="Juan Pérez"),
  *         @OA\Property(property="email", type="string", example="juan@example.com"),
- *         @OA\Property(property="role", type="string", example="user"),
- *         @OA\Property(property="is_main", type="boolean", example=false),
+ *         @OA\Property(property="foto_perfil_url", type="string", nullable=true),
+ *         @OA\Property(property="role_id", type="integer", example=2),
  *         @OA\Property(property="status", type="string", example="activo"),
- *         @OA\Property(property="created_at", type="string", example="2023-01-01T00:00:00Z"),
- *         @OA\Property(property="updated_at", type="string", example="2023-01-01T00:00:00Z")
+ *         @OA\Property(property="created_at", type="string", example="2023-01-01 00:00:00"),
+ *         @OA\Property(property="updated_at", type="string", example="2023-01-01 00:00:00")
  *     }
  * )
  */
 class UserResource extends JsonResource
 {
     /**
-     * Transform the resource into an array.
-     *
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
@@ -42,13 +39,15 @@ class UserResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'foto_perfil_url' => $this->foto_perfil_url,
             'email' => $this->email,
-            'email_verified_at' => optional($this->email_verified_at)->toDateTimeString(),
+            'telefono' => $this->telefono,
+            'telefono_codigo_pais' => $this->telefono_codigo_pais,
+            'foto_perfil_url' => $this->resolveFotoPerfilUrl(),
+            'email_verified_at' => $this->email_verified_at?->format('Y-m-d H:i:s'),
             'role_id' => $this->whenLoaded('role', fn () => $this->role_id),
             'status' => $this->status,
             'estado' => $this->status,
-            'role' => new RoleResource($this->whenLoaded('role')),
+            'role' => $this->whenLoaded('role', fn () => new RoleResource($this->role)),
             'proveedor' => $proveedor === null ? null : [
                 'id' => $proveedor->id,
                 'nombre_comercial' => $proveedor->nombre_comercial,
@@ -62,17 +61,31 @@ class UserResource extends JsonResource
                     ? Storage::disk('public')->url($proveedor->logo)
                     : null,
             ],
-            'created_at' => optional($this->created_at)->toDateTimeString(),
-            'updated_at' => optional($this->updated_at)->toDateTimeString(),
+            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
             'extra_data' => $pivot ? [
                 'tipo_relacion' => $pivot->tipo_relacion,
-                'activo' => $pivot->activo,
+                'activo' => (bool) $pivot->activo,
                 'estado' => $pivot->estado ?? 'registrado',
-                'fecha_asignacion' => optional($pivot->fecha_asignacion)->toDateTimeString(),
-                'fecha_desasignacion' => optional($pivot->fecha_desasignacion)->toDateTimeString(),
+                'fecha_asignacion' => optional($pivot->fecha_asignacion)->format('Y-m-d H:i:s'),
+                'fecha_desasignacion' => optional($pivot->fecha_desasignacion)->format('Y-m-d H:i:s'),
                 'observaciones' => $pivot->observaciones,
             ] : null,
         ];
+    }
+
+    protected function resolveFotoPerfilUrl(): ?string
+    {
+        $path = $this->foto_perfil_url;
+        if (! $path) {
+            return null;
+        }
+
+        if (preg_match('/^https?:\/\//', $path)) {
+            return $path;
+        }
+
+        return Storage::disk('public')->url(ltrim($path, '/'));
     }
 
     /**
