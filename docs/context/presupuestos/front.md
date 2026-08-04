@@ -21,6 +21,14 @@ Montado en `proveedor-routing.module.ts` como ruta `presupuestos`.
 
 Rutas UI: `/pages/proveedor/presupuestos/{list|recibidos|historial|crear|editar/:id|detalle/:id|preview/:id|clientes|…|catalogo-conceptos|…|tarjetas-presentacion|…}`.
 
+## Header del shell (obligatorio)
+
+Todas las `*.page.ts` del módulo siguen `app-proveedores/.cursor/rules/front-header-appstate.mdc`:
+
+- `data.title` / `data.subtitle` en routing
+- `setHeader` en `ngOnInit` + `ionViewWillEnter`
+- `clearHeader` (+ `clearItemCount` en listados) en `ionViewWillLeave` — **nunca** en `ngOnDestroy`
+
 ## Menú y secciones (v1 — implementado)
 
 Orden en `user-menu-new.ts`:

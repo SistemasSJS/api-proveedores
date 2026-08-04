@@ -37,6 +37,16 @@ Estructura común (ambos: `app-sidebar-menu` + `app-desktop-sidebar`; `sidebar-m
 
 Sin hueco menú–contenido en desktop.
 
+### Título del toolbar (AppStateService)
+
+El shell muestra `appName$` + `headerSubtitle$`. Contrato obligatorio en pages (presupuestos, Mi Empresa, Mi Perfil, usuarios, etc.): regla Cursor `front-header-appstate.mdc` — `setHeader` en init/WillEnter, `clearHeader` en WillLeave (nunca en Destroy).
+
+| Pantalla | title (routing) | subtitle tipico |
+|----------|-----------------|-----------------|
+| Mi Empresa | Mi Empresa | Perfil de la empresa (o segmento activo) |
+| Mi Perfil | Mi Perfil | Datos de usuario |
+| Presupuestos | según `presupuesto-proveedor.routes.ts` / recursos | listado, crear, preview, clientes… |
+
 ## Qué no va aquí
 
 - Productos, categorías, marcas → [catalogo](./catalogo/)
