@@ -41,11 +41,17 @@ Sin hueco menú–contenido en desktop.
 
 El shell muestra `appName$` + `headerSubtitle$`. Contrato obligatorio en pages (presupuestos, Mi Empresa, Mi Perfil, usuarios, etc.): regla Cursor `front-header-appstate.mdc` — `setHeader` en init/WillEnter, `clearHeader` en WillLeave (nunca en Destroy).
 
+Al leer `route.data` en cadena de padres: **priorizar la ruta hoja**; no dejar que un padre genérico (`Proveedor`) pise títulos específicos (`Mi Empresa`, `Inicio`, …).
+
 | Pantalla | title (routing) | subtitle tipico |
 |----------|-----------------|-----------------|
 | Mi Empresa | Mi Empresa | Perfil de la empresa (o segmento activo) |
 | Mi Perfil | Mi Perfil | Datos de usuario |
+| Inicio | Inicio | Panel de control / nombre del proveedor |
+| Solicitudes de pago | Solicitudes de pago | listado, historial, crear, detalle… |
+| Catálogo productos | Productos / Marcas / Categorías / Importación | según cada routing |
 | Presupuestos | según `presupuesto-proveedor.routes.ts` / recursos | listado, crear, preview, clientes… |
+| Dashboard Admin | Dashboard | Panel administrativo |
 
 ## Qué no va aquí
 

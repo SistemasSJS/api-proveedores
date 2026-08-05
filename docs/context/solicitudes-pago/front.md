@@ -17,6 +17,14 @@ Stepper: empresa/usuario → información → formas de pago → documentos.
 
 Servicio: `solicitud-pago-proveedor/services/solicitud-pago-proveedor.service.ts`.
 
+### Header del shell (obligatorio)
+
+Todas las pages (y `historico-sp-proveedor` como ruta) siguen `app-proveedores/.cursor/rules/front-header-appstate.mdc`:
+
+- `data.title` = `Solicitudes de pago` + subtítulo por pantalla en el routing
+- `setHeader` en `ngOnInit` + `ionViewWillEnter`
+- `clearHeader` (+ `clearItemCount` en listados) en `ionViewWillLeave` — nunca en `ngOnDestroy`
+
 ## Dashboard OC-SP
 
 Tabs OC + SP, conversión OC→SP, histórico, métricas (`oc-sp-converter`, etc.).

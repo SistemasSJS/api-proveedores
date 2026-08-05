@@ -14,6 +14,10 @@ Repo: `app-proveedores`. Carpetas bajo `src/app/pages/proveedor/`:
 
 Modelos compartidos: `shared/models/producto.model.ts`.
 
+## Header del shell (obligatorio)
+
+Las pages de productos / marcas / categorías / importación siguen `app-proveedores/.cursor/rules/front-header-appstate.mdc` (`setHeader` init+WillEnter; `clearHeader` en WillLeave).
+
 ## Gap de routing
 
 En `proveedor-routing.module.ts` **actual** están montados perfil, dashboard, sp, presupuestos, empresas, usuarios — **no** productos/categorías/marcas/import.
