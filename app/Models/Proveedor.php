@@ -415,6 +415,11 @@ class Proveedor extends BaseModel
         return $this->hasMany(CuentaBancaria::class);
     }
 
+    public function perfilPublico(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(ProveedorPerfilPublico::class);
+    }
+
     public function scopeCuentasActivas($query)
     {
         return $query->whereHas('cuentasBancarias', function ($q) {

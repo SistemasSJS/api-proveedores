@@ -28,6 +28,7 @@ use App\Http\Controllers\ProveedorPresupuestoCatalogoConceptosController;
 use App\Http\Controllers\ProveedorPresupuestoAnexoController;
 use App\Http\Controllers\ProveedorPresupuestoAnexoPdfController;
 use App\Http\Controllers\ProveedorPresupuestoConfigController;
+use App\Http\Controllers\ProveedorPerfilPublicoController;
 
 /**
  * GESTIÓN DE PROVEEDORES
@@ -74,6 +75,17 @@ Route::prefix('proveedores')
             Route::post('/', [ProveedorController::class, 'updateConstanciaFiscal']);
             Route::get('/preview', [ProveedorController::class, 'previewConstanciaFiscal']);
             Route::get('/download', [ProveedorController::class, 'downloadConstanciaFiscal']);
+        });
+
+        /**
+         * PERFIL PÚBLICO DE EMPRESA (plataforma — compartir información)
+         */
+        Route::prefix('{proveedor}/perfil-publico')->middleware(['proveedor.access'])->group(function () {
+            Route::get('/themes', [ProveedorPerfilPublicoController::class, 'themes']);
+            Route::get('/', [ProveedorPerfilPublicoController::class, 'show']);
+            Route::put('/', [ProveedorPerfilPublicoController::class, 'update']);
+            Route::post('/publicar', [ProveedorPerfilPublicoController::class, 'publicar']);
+            Route::post('/despublicar', [ProveedorPerfilPublicoController::class, 'despublicar']);
         });
 
         /**

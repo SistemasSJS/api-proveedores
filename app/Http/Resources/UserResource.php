@@ -58,6 +58,7 @@ class UserResource extends JsonResource
                 'telefono' => $proveedor->telefono,
                 'telefono_codigo_pais' => $proveedor->telefono_codigo_pais,
                 'direccion_empresa' => $proveedor->direccion_empresa,
+                'es_cuenta_de_pruebas' => (bool) ($proveedor->es_cuenta_de_pruebas ?? false),
                 'logo' => $proveedor->logo
                     ? Storage::disk('public')->url($proveedor->logo)
                     : null,

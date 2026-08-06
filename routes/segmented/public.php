@@ -104,6 +104,16 @@ Route::get(
 );
 
 /**
+ * PERFIL PÚBLICO DE EMPRESA (enlace compartido sin autenticación)
+ */
+Route::middleware(['throttle:60,1'])->group(function () {
+    Route::get(
+        'public/perfil/{token}',
+        [ProveedorPublicController::class, 'perfilPublico']
+    );
+});
+
+/**
  * PRESUPUESTOS PÚBLICOS (enlace compartido sin autenticación)
  */
 Route::middleware(['throttle:60,1'])->group(function () {

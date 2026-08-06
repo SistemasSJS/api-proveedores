@@ -20,6 +20,7 @@ Infraestructura que usan los tres dominios. **No expandir** como “módulo núc
 | Métricas de plataforma | Sección siguiente + [platform-users-roles.md](./platform-users-roles.md#métricas-y-cuentas-de-pruebas) | Totales / actividad: excluye roles internos y cuentas/empresas de pruebas |
 | Storage / mail / FCM | Traits, Mail, Notifications genéricas | Archivos, correo, push |
 | Shell menús (front) | `app-sidebar-menu` / `app-desktop-sidebar` | Dos menús distintos; ver sección siguiente |
+| **Perfil público** | Sección siguiente | Página de presentación compartible por enlace |
 
 ## Shell UI (menús)
 
@@ -47,6 +48,7 @@ Al leer `route.data` en cadena de padres: **priorizar la ruta hoja**; no dejar q
 | Pantalla | title (routing) | subtitle tipico |
 |----------|-----------------|-----------------|
 | Mi Empresa | Mi Empresa | Perfil de la empresa (o segmento activo) |
+| Perfil público | Perfil público | Qué ven quienes reciben tu enlace |
 | Mi Perfil | Mi Perfil | Datos de usuario |
 | Inicio | Inicio | Panel de control / nombre del proveedor |
 | Solicitudes de pago | Solicitudes de pago | listado, historial, crear, detalle… |
@@ -67,6 +69,28 @@ KPIs de producto (totales de usuarios/empresas, usuarios activos, series diarias
 El flag es de negocio/operación (marcar QA, demos, sandboxes), no un permiso. El listado admin de usuarios registrados usa otro criterio (whitelist de roles de producto); ver [platform-users-roles.md](./platform-users-roles.md#métricas-y-cuentas-de-pruebas).
 
 La lista de roles excluidos / visibles y el cableado de queries viven en código (`config/metricas_plataforma.php`); este contexto solo fija **quién cuenta / quién se lista**.
+
+## Perfil público (compartir información de la empresa)
+
+**Plataforma**, no es un dominio de negocio. Un solo enlace activo por proveedor; el gerente elige qué secciones publicar.
+
+| Pieza | Dónde |
+|-------|--------|
+| Tabla | `proveedor_perfil_publico` (token opaco, `theme_key`, `sections`, `snapshot`, `is_published`) |
+| API auth | `proveedores/{proveedor}/perfil-publico` — GET / PUT / POST `publicar` / POST `despublicar` / GET `themes` |
+| API pública | `GET /public/perfil/{token}` (throttle) |
+| Temas | `App\Services\PerfilPublico\PerfilPublicoThemeService` (paletas predefinidas; patrón similar a presupuestos, sin mezclar dominios) |
+| Snapshot | `PerfilPublicoSnapshotBuilder` — congela solo lo marcado al publicar/actualizar |
+| Front editor | `app-proveedores` → `pages/proveedor/perfil-publico/` · ruta UI `/pages/proveedor/perfil-publico` · menú **Perfil público** |
+| Front público | `/public/perfil/{token}` · invite a `/reg` en el snapshot |
+
+Secciones configurables: empresa, contacto, tarjetas (configs emisor), bancos, fiscal + constancias (`constancias[]`; hoy suele haber una con id virtual `principal`).
+
+UX obligatoria: avisos claros de que el contenido **será público** (sin login); confirmación extra al publicar con bancos/fiscal. El borrador se guarda al editar; el enlace público solo cambia con **Publicar / Actualizar**.
+
+Pie del menú (Invitar / Constancia): coexisten por ahora; la superficie canónica de “compartir datos de empresa” es Perfil público.
+
+Migración: `database/migrations/*_create_proveedor_perfil_publico_table.php` (ejecutar en cada entorno).
 
 ## Qué no va aquí
 

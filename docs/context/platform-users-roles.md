@@ -113,6 +113,7 @@ No aparecen ahí `ADMINISTRADOR`, `CONSTRUCC_APP`, `ventas_purificadora_colibri`
 
 Por defecto el listado admin de empresas muestra **solo productivas** (`es_cuenta_de_pruebas = false`). Desde filtros avanzados se puede ver «solo pruebas» o «todas».
 La marca de pruebas se gestiona en la **edición de la empresa** (panel admin).
+En UI admin, las empresas de pruebas llevan el distintivo **DEV** (badge ámbar, mismo patrón visual que Plus; tooltip «Empresa de pruebas») en listado, ficha, usuarios vinculados y reasignación.
 
 ### Criterio operativo (métricas)
 

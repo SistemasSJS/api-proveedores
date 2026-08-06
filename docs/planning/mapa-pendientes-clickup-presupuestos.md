@@ -33,8 +33,8 @@
 | wdx6zev52b | Usuarios: agregar | H | pendiente |
 | wdx6zev52c | Usuarios: facultades | H | pendiente |
 | 86ah82rb5 | Excluir admin/prueba de estadísticas | H | pendiente |
-| 86af16v4f | Sección compartir información | F | pendiente |
-| 86ahct5vm | Botones compartir (invitar, cédula, bancos, tarjeta) | F | pendiente |
+| 86af16v4f | Sección compartir información | F | **en_curso** (Perfil público MVP) |
+| 86ahct5vm | Botones compartir (invitar, cédula, bancos, tarjeta) | F | **en_curso** (unificado en Perfil público) |
 | 86agv2bbd | Solicitud permiso info bancaria | F | pendiente |
 | wdx6zeuxr4 | Ver/corregir datos bancos al compartir | F | pendiente |
 | 86ahxk9mz | Evitar doble enlace en invitación | F | pendiente |
