@@ -47,6 +47,7 @@ class UserResource extends JsonResource
             'role_id' => $this->whenLoaded('role', fn () => $this->role_id),
             'status' => $this->status,
             'estado' => $this->status,
+            'es_cuenta_de_pruebas' => (bool) $this->es_cuenta_de_pruebas,
             'role' => $this->whenLoaded('role', fn () => new RoleResource($this->role)),
             'proveedor' => $proveedor === null ? null : [
                 'id' => $proveedor->id,

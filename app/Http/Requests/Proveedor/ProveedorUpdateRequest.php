@@ -47,7 +47,7 @@ class ProveedorUpdateRequest extends FormRequest
     {
         $proveedor = $this->route('proveedor');
 
-        return [
+        $rules = [
             // -------- DATOS GENERALES (REQUERIDOS) --------
             'nombre_comercial' => ['sometimes', 'string', 'max:255'],
             'email' => ['sometimes', 'email', 'max:255'],
@@ -103,6 +103,19 @@ class ProveedorUpdateRequest extends FormRequest
             'tipos_empresa_id' => ['sometimes', 'integer', 'exists:tipos_empresa,id'],
             'tipos_empresa_otro' => ['nullable', 'string', 'max:255'],
         ];
+
+        // Solo panel admin puede marcar/desmarcar cuenta de pruebas
+        if ($this->isAdminGestionRequest()) {
+            $rules['es_cuenta_de_pruebas'] = ['sometimes', 'boolean'];
+        }
+
+        return $rules;
+    }
+
+    private function isAdminGestionRequest(): bool
+    {
+        return $this->routeIs('admin.*')
+            || str_contains($this->path(), 'admin/');
     }
 
     public function messages()

@@ -7,6 +7,7 @@ use App\Enums\EstadoUsuario;
 use App\Http\Requests\User\UserStoreRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Support\MetricasPlataforma;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -49,7 +50,7 @@ class UserController extends Controller
             $filters['grupo_registro_completados'],
         );
 
-        $base = User::query()->filter($filters);
+        $base = User::query()->paraListadoAdminUsuarios()->filter($filters);
         $estadoRegistroCompletado = EstadoUsuario::REGISTRO_COMPLETADO->value;
 
         $todos = (clone $base)->count();
@@ -78,6 +79,7 @@ class UserController extends Controller
         $perPage = min(max(1, (int) $request->input('per_page', 10)), 100);
 
         $query = User::query()
+            ->paraListadoAdminUsuarios()
             ->with(User::eagerLodable())
             ->filter($filters);
         $originalPaginator = $query
@@ -179,9 +181,10 @@ class UserController extends Controller
             'role' => ['sometimes', 'integer', 'exists:roles,id'],
             'status' => ['sometimes'],
             'estado' => ['sometimes'],
+            'es_cuenta_de_pruebas' => ['sometimes', 'boolean'],
         ]);
 
-        $data = $request->only(['name', 'email', 'role_id', 'status']);
+        $data = $request->only(['name', 'email', 'role_id', 'status', 'es_cuenta_de_pruebas']);
 
         if ($request->filled('role') && ! $request->filled('role_id')) {
             $data['role_id'] = $request->input('role');
@@ -196,6 +199,10 @@ class UserController extends Controller
         }
 
         $user->update($data);
+
+        if (array_key_exists('es_cuenta_de_pruebas', $data) || array_key_exists('role_id', $data)) {
+            MetricasPlataforma::forgetCache();
+        }
 
         return $this->success(new UserResource($user->load(['role'])));
     }

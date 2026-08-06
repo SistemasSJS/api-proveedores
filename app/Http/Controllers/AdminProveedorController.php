@@ -62,6 +62,10 @@ class AdminProveedorController extends Controller
 
         $filters = $request->only(Proveedor::getFilters());
 
+        if (! array_key_exists('cuentas_pruebas', $filters) || $filters['cuentas_pruebas'] === null || $filters['cuentas_pruebas'] === '') {
+            $filters['cuentas_pruebas'] = 'excluir';
+        }
+
         $sortBy = $request->input('sort_by', 'nombre_comercial');
 
         $order = $request->input('order', 'asc');
@@ -96,6 +100,10 @@ class AdminProveedorController extends Controller
     {
         $filters = $request->only(Proveedor::getFilters());
         unset($filters['estatus'], $filters['grupo_operativos']);
+
+        if (! array_key_exists('cuentas_pruebas', $filters) || $filters['cuentas_pruebas'] === null || $filters['cuentas_pruebas'] === '') {
+            $filters['cuentas_pruebas'] = 'excluir';
+        }
 
         $base = Proveedor::queryParaAdmin()->filter($filters);
 
@@ -560,6 +568,10 @@ class AdminProveedorController extends Controller
         $estatusAnterior = $proveedor->estatus;
 
         $proveedor->update($validated);
+
+        if (array_key_exists('es_cuenta_de_pruebas', $validated)) {
+            \App\Support\MetricasPlataforma::forgetCache();
+        }
 
         $restriccion = $this->restriccionUsuariosService->aplicarTrasCambioEstatus(
             $proveedor->fresh(),

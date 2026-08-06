@@ -14,7 +14,7 @@ class TotalProveedores extends Card
     public function render(): Renderable
     {
         [[$totalProveedores], $time, $runAt] = $this->remember(fn () => [
-            Proveedor::query()->withoutGlobalScopes()->count(),
+            Proveedor::query()->withoutGlobalScopes()->paraMetricasPlataforma()->count(),
         ]);
 
         return View::make('livewire.pulse.total-proveedores', [

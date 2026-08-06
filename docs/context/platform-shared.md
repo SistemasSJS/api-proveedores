@@ -17,6 +17,7 @@ Infraestructura que usan los tres dominios. **No expandir** como “módulo núc
 | Acceso | `tieneAccesoAProveedor`, middleware `proveedor.access` / `api.access` | Autorización por proveedor |
 | Roles | `UserRoleEnumerate` (ADMINISTRADOR, GERENTE, SUPERVISOR, VENTAS, AUXILIAR, …) | Rutas segmentadas + menú |
 | Usuarios / matriz MVP | [platform-users-roles.md](./platform-users-roles.md) | Gestión empresa: principal GERENTE, roles asignables SUP/VEN/AUX |
+| Métricas de plataforma | Sección siguiente + [platform-users-roles.md](./platform-users-roles.md#métricas-y-cuentas-de-pruebas) | Totales / actividad: excluye roles internos y cuentas/empresas de pruebas |
 | Storage / mail / FCM | Traits, Mail, Notifications genéricas | Archivos, correo, push |
 | Shell menús (front) | `app-sidebar-menu` / `app-desktop-sidebar` | Dos menús distintos; ver sección siguiente |
 
@@ -52,6 +53,20 @@ Al leer `route.data` en cadena de padres: **priorizar la ruta hoja**; no dejar q
 | Catálogo productos | Productos / Marcas / Categorías / Importación | según cada routing |
 | Presupuestos | según `presupuesto-proveedor.routes.ts` / recursos | listado, crear, preview, clientes… |
 | Dashboard Admin | Dashboard | Panel administrativo |
+
+## Métricas de plataforma (operativo)
+
+KPIs de producto (totales de usuarios/empresas, usuarios activos, series diarias, Looker, Pulse) **no** miden operación interna ni datos de QA.
+
+**Quedan fuera** si aplica cualquiera de:
+
+1. **Rol interno / integración:** `ADMINISTRADOR`, `CONSTRUCC_APP`, `ventas_purificadora_colibri`
+2. **Cuenta de pruebas (usuario):** flag `es_cuenta_de_pruebas` en el usuario (cualquier rol de negocio)
+3. **Empresa de pruebas (proveedor):** flag `es_cuenta_de_pruebas` en el proveedor — se marca desde el **formulario admin de la empresa**; excluye la empresa de totales y la actividad bajo ese `proveedor_id`; usuarios vinculados a esa empresa tampoco entran en totales de usuarios
+
+El flag es de negocio/operación (marcar QA, demos, sandboxes), no un permiso. El listado admin de usuarios registrados usa otro criterio (whitelist de roles de producto); ver [platform-users-roles.md](./platform-users-roles.md#métricas-y-cuentas-de-pruebas).
+
+La lista de roles excluidos / visibles y el cableado de queries viven en código (`config/metricas_plataforma.php`); este contexto solo fija **quién cuenta / quién se lista**.
 
 ## Qué no va aquí
 

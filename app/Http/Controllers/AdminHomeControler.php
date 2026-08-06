@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Presupuesto;
 use App\Models\Proveedor;
-use App\Models\SolicitudPago;
 use App\Models\User;
+use App\Support\MetricasPlataforma;
 use App\Traits\ApiResponse;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class AdminHomeControler extends Controller
 {
@@ -23,6 +22,8 @@ class AdminHomeControler extends Controller
      *  - Promedio de presupuesto por usuario (últimos 15 días)
      *  - Promedio de SPP por usuario (últimos 15 días)
      *  - Serie diaria de los últimos 15 días (usuarios activos, presupuestos, SPP)
+     *
+     * Excluye roles de gestión/integración y cuentas/empresas de pruebas.
      */
     public function dashboardDatos(Request $request)
     {
@@ -59,13 +60,13 @@ class AdminHomeControler extends Controller
         $catalogos = [
             [
                 'name'  => 'Proveedores',
-                'count' => Proveedor::withoutGlobalScope('solo_activos')->count(),
+                'count' => Proveedor::withoutGlobalScope('solo_activos')->paraMetricasPlataforma()->count(),
                 'route' => '/pages/panel-admin/proveedores',
                 'icon'  => 'briefcase',
             ],
             [
                 'name'  => 'Usuarios',
-                'count' => User::count(),
+                'count' => User::paraMetricasPlataforma()->count(),
                 'route' => '/pages/panel-admin/usuarios',
                 'icon'  => 'people',
             ],
@@ -88,7 +89,7 @@ class AdminHomeControler extends Controller
 
         return $this->success([
             'activos'    => $datos['total'],
-            'total'      => User::count(),
+            'total'      => User::paraMetricasPlataforma()->count(),
             'porcentaje' => $datos['porcentaje'],
             'periodo_dias' => $dias,
         ]);
@@ -103,12 +104,9 @@ class AdminHomeControler extends Controller
      */
     private function getTotalesGenerales(): array
     {
-        $totalUsuarios   = User::count();
-        $totalEmpresas   = Proveedor::withoutGlobalScope('solo_activos')->count();
-
         return [
-            'total_usuarios'  => $totalUsuarios,
-            'total_empresas'  => $totalEmpresas,
+            'total_usuarios'  => User::paraMetricasPlataforma()->count(),
+            'total_empresas'  => Proveedor::withoutGlobalScope('solo_activos')->paraMetricasPlataforma()->count(),
         ];
     }
 
@@ -118,23 +116,21 @@ class AdminHomeControler extends Controller
      */
     private function getUsuariosActivosDatos(Carbon $fechaLimite): array
     {
-        $idsPresupuestos = DB::table('presupuestos')
+        $qPres = DB::table('presupuestos')
             ->where('updated_at', '>=', $fechaLimite)
-            ->whereNotNull('user_id')
-            ->distinct()
-            ->pluck('user_id')
-            ->toArray();
+            ->whereNotNull('user_id');
+        MetricasPlataforma::aplicarExclusionActividadPresupuesto($qPres);
+        $idsPresupuestos = $qPres->distinct()->pluck('user_id')->toArray();
 
-        $idsSpp = DB::table('solicitudes_pago')
+        $qSpp = DB::table('solicitudes_pago')
             ->where('updated_at', '>=', $fechaLimite)
-            ->whereNotNull('usuario_creador_id')
-            ->distinct()
-            ->pluck('usuario_creador_id')
-            ->toArray();
+            ->whereNotNull('usuario_creador_id');
+        MetricasPlataforma::aplicarExclusionActividadSpp($qSpp);
+        $idsSpp = $qSpp->distinct()->pluck('usuario_creador_id')->toArray();
 
         $idsActivos = array_values(array_unique(array_merge($idsPresupuestos, $idsSpp)));
         $totalActivos = count($idsActivos);
-        $totalUsuarios = User::count();
+        $totalUsuarios = User::paraMetricasPlataforma()->count();
 
         $porcentaje = $totalUsuarios > 0
             ? round(($totalActivos / $totalUsuarios) * 100, 2) . '%'
@@ -151,11 +147,12 @@ class AdminHomeControler extends Controller
      */
     private function getPromedioPresupuestoPorUsuario(Carbon $fechaLimite): array
     {
-        $resultado = DB::table('presupuestos')
+        $q = DB::table('presupuestos')
             ->selectRaw('COUNT(*) as total_presupuestos, COUNT(DISTINCT user_id) as usuarios_con_presupuesto, COALESCE(AVG(total), 0) as promedio_monto')
             ->where('updated_at', '>=', $fechaLimite)
-            ->whereNotNull('user_id')
-            ->first();
+            ->whereNotNull('user_id');
+        MetricasPlataforma::aplicarExclusionActividadPresupuesto($q);
+        $resultado = $q->first();
 
         $totalPresupuestos      = (int)   ($resultado->total_presupuestos ?? 0);
         $usuariosCon            = (int)   ($resultado->usuarios_con_presupuesto ?? 0);
@@ -175,11 +172,12 @@ class AdminHomeControler extends Controller
      */
     private function getPromedioSppPorUsuario(Carbon $fechaLimite): array
     {
-        $resultado = DB::table('solicitudes_pago')
+        $q = DB::table('solicitudes_pago')
             ->selectRaw('COUNT(*) as total_spp, COUNT(DISTINCT usuario_creador_id) as usuarios_con_spp, COALESCE(AVG(monto_total), 0) as promedio_monto')
             ->where('updated_at', '>=', $fechaLimite)
-            ->whereNotNull('usuario_creador_id')
-            ->first();
+            ->whereNotNull('usuario_creador_id');
+        MetricasPlataforma::aplicarExclusionActividadSpp($q);
+        $resultado = $q->first();
 
         $totalSpp         = (int)   ($resultado->total_spp ?? 0);
         $usuariosCon      = (int)   ($resultado->usuarios_con_spp ?? 0);
@@ -200,19 +198,21 @@ class AdminHomeControler extends Controller
      */
     private function getSerieDiaria(Carbon $fechaLimite, int $dias): array
     {
-        // Presupuestos por día
-        $presupuestosPorDia = DB::table('presupuestos')
+        $qPres = DB::table('presupuestos')
             ->selectRaw('DATE(updated_at) as fecha, COUNT(*) as total, COUNT(DISTINCT user_id) as usuarios')
-            ->where('updated_at', '>=', $fechaLimite)
+            ->where('updated_at', '>=', $fechaLimite);
+        MetricasPlataforma::aplicarExclusionActividadPresupuesto($qPres);
+        $presupuestosPorDia = $qPres
             ->groupByRaw('DATE(updated_at)')
             ->get()
             ->keyBy('fecha');
 
-        // SPP por día
-        $sppPorDia = DB::table('solicitudes_pago')
+        $qSpp = DB::table('solicitudes_pago')
             ->selectRaw('DATE(updated_at) as fecha, COUNT(*) as total, COUNT(DISTINCT usuario_creador_id) as usuarios')
             ->where('updated_at', '>=', $fechaLimite)
-            ->whereNotNull('usuario_creador_id')
+            ->whereNotNull('usuario_creador_id');
+        MetricasPlataforma::aplicarExclusionActividadSpp($qSpp);
+        $sppPorDia = $qSpp
             ->groupByRaw('DATE(updated_at)')
             ->get()
             ->keyBy('fecha');
@@ -247,58 +247,29 @@ class AdminHomeControler extends Controller
     private function getMetricasOptimizadas(): array
     {
         $fechaLimite = Carbon::now()->subDays(7)->startOfDay();
-
-        $conteos = DB::select("
-            SELECT
-                (SELECT COUNT(*) FROM proveedores) as total_proveedores,
-                (SELECT COUNT(*) FROM users) as total_usuarios,
-                (
-                    SELECT COUNT(DISTINCT u.id)
-                    FROM users u
-                    WHERE u.id IN (
-                        SELECT DISTINCT p.user_id FROM presupuestos p
-                        WHERE p.updated_at >= ? AND p.user_id IS NOT NULL
-                    )
-                    OR u.id IN (
-                        SELECT DISTINCT sp.usuario_creador_id FROM solicitudes_pago sp
-                        WHERE sp.updated_at >= ? AND sp.usuario_creador_id IS NOT NULL
-                    )
-                ) as usuarios_activos_7dias
-        ", [$fechaLimite, $fechaLimite]);
-
-        $conteo = $conteos[0];
+        $totales = $this->getTotalesGenerales();
+        $activos = $this->getUsuariosActivosDatos($fechaLimite);
 
         return [
             'catalogos' => [
                 [
                     'name'  => 'Proveedores',
-                    'count' => (int) $conteo->total_proveedores,
+                    'count' => $totales['total_empresas'],
                     'route' => '/pages/panel-admin/proveedores',
                     'icon'  => 'briefcase',
                 ],
                 [
                     'name'  => 'Usuarios',
-                    'count' => (int) $conteo->total_usuarios,
+                    'count' => $totales['total_usuarios'],
                     'route' => '/pages/panel-admin/usuarios',
                     'icon'  => 'people',
                 ],
             ],
             'metricas_actividad' => [
-                'usuarios_activos_ultimos_7_dias' => (int) $conteo->usuarios_activos_7dias,
-                'porcentaje_actividad'            => $this->calcularPorcentajeActividad(
-                    (int) $conteo->usuarios_activos_7dias,
-                    (int) $conteo->total_usuarios
-                ),
+                'usuarios_activos_ultimos_7_dias' => $activos['total'],
+                'porcentaje_actividad'            => $activos['porcentaje'],
                 'fecha_referencia' => Carbon::now()->subDays(7)->toDateString(),
             ],
         ];
-    }
-
-    private function calcularPorcentajeActividad(int $activos, int $total): string
-    {
-        if ($total === 0) {
-            return '0%';
-        }
-        return round(($activos / $total) * 100, 2) . '%';
     }
 }

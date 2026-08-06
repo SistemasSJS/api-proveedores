@@ -215,6 +215,8 @@ class ProveedorController extends Controller
     public function update(ProveedorUpdateRequest $request, Proveedor $proveedor)
     {
         $validated = $request->validated();
+        // El flag de pruebas solo lo gestiona admin (AdminProveedorController).
+        unset($validated['es_cuenta_de_pruebas']);
         $proveedor->update($validated);
         $proveedor = $proveedor->fresh(Proveedor::eagerLodable());
 

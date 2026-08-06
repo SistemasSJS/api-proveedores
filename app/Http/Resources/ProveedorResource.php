@@ -103,6 +103,7 @@ class ProveedorResource extends JsonResource
 
             'is_proveedor_sp' => $this->is_proveedor_sp ?? null,
             'is_proveedor_catalogo' => $this->is_proveedor_catalogo ?? null,
+            'es_cuenta_de_pruebas' => (bool) ($this->es_cuenta_de_pruebas ?? false),
             'perfil_empresa_completo' => $this->perfil_empresa_completo ?? null,
             'fecha_registro' => $this->fecha_registro?->toDateTimeString(),
             'registro_completado_at' => $this->registro_completado_at?->toDateTimeString(),

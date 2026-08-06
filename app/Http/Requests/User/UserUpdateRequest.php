@@ -38,6 +38,7 @@ class UserUpdateRequest extends FormRequest
             ],
             // 'password' => ['nullable', 'string', 'min:8', 'confirmed'], // opcional, solo si cambia
             // 'role' => ['nullable', 'string', 'in:admin,uDser,editor'],
+            'es_cuenta_de_pruebas' => ['sometimes', 'boolean'],
         ];
     }
 

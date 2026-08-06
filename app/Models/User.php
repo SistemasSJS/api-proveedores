@@ -29,6 +29,7 @@ class User extends Authenticatable
         'cambiar_pass_default',
         'role_id',
         'status',
+        'es_cuenta_de_pruebas',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -53,7 +54,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'status' => 'string',
-            'cambiar_pass_default' => 'boolean'
+            'cambiar_pass_default' => 'boolean',
+            'es_cuenta_de_pruebas' => 'boolean',
         ];
     }
 
@@ -372,5 +374,67 @@ class User extends Authenticatable
 
         return $query
             ->where('role_id', $roleId);
+    }
+
+    /**
+     * Usuarios que sí deben contar en totales / altas de métricas de plataforma.
+     * Excluye roles internos (config), es_cuenta_de_pruebas y vínculos a empresas de pruebas.
+     *
+     * @see docs/context/platform-shared.md
+     */
+    public function scopeParaMetricasPlataforma($query)
+    {
+        $rolesExcluidos = config('metricas_plataforma.roles_excluidos', []);
+
+        return $query
+            ->where('es_cuenta_de_pruebas', false)
+            ->where(function ($q) use ($rolesExcluidos) {
+                $q->whereNull('role_id')
+                    ->orWhereDoesntHave('role', function ($roleQuery) use ($rolesExcluidos) {
+                        $roleQuery->whereIn('nombre', $rolesExcluidos);
+                    });
+            })
+            ->whereDoesntHave('proveedores', function ($proveedorQuery) {
+                $proveedorQuery->withoutGlobalScopes()
+                    ->where('es_cuenta_de_pruebas', true);
+            });
+    }
+
+    /**
+     * Complemento de paraMetricasPlataforma: usuarios a excluir de KPIs.
+     */
+    public function scopeExcluidosDeMetricasPlataforma($query)
+    {
+        $rolesExcluidos = config('metricas_plataforma.roles_excluidos', []);
+
+        return $query->where(function ($q) use ($rolesExcluidos) {
+            $q->where('es_cuenta_de_pruebas', true)
+                ->orWhereHas('role', function ($roleQuery) use ($rolesExcluidos) {
+                    $roleQuery->whereIn('nombre', $rolesExcluidos);
+                })
+                ->orWhereHas('proveedores', function ($proveedorQuery) {
+                    $proveedorQuery->withoutGlobalScopes()
+                        ->where('es_cuenta_de_pruebas', true);
+                });
+        });
+    }
+
+    /**
+     * Usuarios de producto para el listado admin (registrados).
+     * Solo GERENTE / SUPERVISOR / VENTAS / AUXILIAR / CLIENTE.
+     */
+    public function scopeParaListadoAdminUsuarios($query)
+    {
+        $roles = config('metricas_plataforma.roles_listado_usuarios_admin', [
+            'GERENTE',
+            'SUPERVISOR',
+            'VENTAS',
+            'AUXILIAR',
+            'CLIENTE',
+        ]);
+
+        return $query->whereHas('role', function ($roleQuery) use ($roles) {
+            $roleQuery->whereIn('nombre', $roles);
+        });
     }
 }

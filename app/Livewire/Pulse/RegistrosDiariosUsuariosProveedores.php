@@ -19,6 +19,7 @@ class RegistrosDiariosUsuariosProveedores extends Card
     {
         [[$series], $time, $runAt] = $this->remember(function () {
             $usuariosPorDia = User::query()
+                ->paraMetricasPlataforma()
                 ->selectRaw('DATE(created_at) as fecha, COUNT(*) as total')
                 ->whereNotNull('created_at')
                 ->where('created_at', '>=', now()->subDays(13)->startOfDay())
@@ -29,6 +30,7 @@ class RegistrosDiariosUsuariosProveedores extends Card
 
             $proveedoresPorDia = Proveedor::query()
                 ->withoutGlobalScopes()
+                ->paraMetricasPlataforma()
                 ->selectRaw('DATE(created_at) as fecha, COUNT(*) as total')
                 ->whereNotNull('created_at')
                 ->where('created_at', '>=', now()->subDays(13)->startOfDay())

@@ -97,6 +97,44 @@ Sigue visible solo para **GERENTE** en menú hasta nueva definición.
 - Permitir que el gerente asigne `GERENTE` / `ADMINISTRADOR` desde la app empresa.
 - Mezclar esta lógica dentro de `docs/context/catalogo|solicitudes-pago|presupuestos` — aquí es plataforma.
 
+## Métricas y cuentas de pruebas
+
+Relacionado con KPIs de plataforma (ver también [platform-shared.md](./platform-shared.md#métricas-de-plataforma-operativo)).
+
+### Listado admin de usuarios registrados
+
+En el panel administrativo, el listado de usuarios **solo incluye** roles de producto:
+
+`GERENTE` · `SUPERVISOR` · `VENTAS` · `AUXILIAR` · `CLIENTE`
+
+No aparecen ahí `ADMINISTRADOR`, `CONSTRUCC_APP`, `ventas_purificadora_colibri` ni otros roles de plataforma/integración. Los conteos del listado (todos / activos / …) usan el mismo universo.
+
+### Listado admin de empresas
+
+Por defecto el listado admin de empresas muestra **solo productivas** (`es_cuenta_de_pruebas = false`). Desde filtros avanzados se puede ver «solo pruebas» o «todas».
+La marca de pruebas se gestiona en la **edición de la empresa** (panel admin).
+
+### Criterio operativo (métricas)
+
+| Exclusión | Criterio |
+|-----------|----------|
+| Roles internos | `ADMINISTRADOR`, `CONSTRUCC_APP`, `ventas_purificadora_colibri` — siempre fuera de totales/actividad de producto |
+| Usuario de pruebas | `users.es_cuenta_de_pruebas = true` — aplica a **cualquier** rol (p. ej. GERENTE de QA) |
+| Empresa de pruebas | `proveedores.es_cuenta_de_pruebas = true` — empresa fuera de totales; actividad con ese `proveedor_id` fuera; usuarios vinculados a ella fuera de totales de usuarios |
+
+Un registro/actividad cuenta solo si **no** cae en ninguna de las tres.
+
+### Alcance
+
+- Afecta métricas de plataforma (dashboard admin, Looker, Pulse de usuarios/empresas).
+- **No** borra datos ni restringe login: solo el universo de conteo/reportes de producto.
+- El flag puede usarse después para filtros admin / reportes; el nombre describe “pruebas”, no “métricas”.
+**Quién marca el flag de pruebas:** solo gestión de plataforma, **en la ficha/edición de la empresa** (`es_cuenta_de_pruebas` del proveedor). El gerente de empresa no lo asigna desde “Mi Empresa”.
+
+### Qué no documentar aquí
+
+Listas de archivos PHP, SQL o nombres de scopes: eso es implementación (`config/metricas_plataforma.php` + modelos). Este doc fija **quién cuenta** como producto.
+
 ## Relación con dominios
 
 Ver [cross-domain.md](./cross-domain.md): auth, roles y gestión de usuarios son **plataforma → cualquiera**; no crean puente presupuesto↔SP.

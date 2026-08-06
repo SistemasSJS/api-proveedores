@@ -14,7 +14,7 @@ class TotalUsuarios extends Card
     public function render(): Renderable
     {
         [[$totalUsuarios], $time, $runAt] = $this->remember(fn () => [
-            User::query()->count(),
+            User::query()->paraMetricasPlataforma()->count(),
         ]);
 
         return View::make('livewire.pulse.total-usuarios', [

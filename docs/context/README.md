@@ -31,7 +31,7 @@ La UI Angular se describe en cada dominio en `front.md`, pero el codigo vive en 
 | SP, facturas, pagos, OC, Construcciones | `@docs/context/solicitudes-pago/overview.md` |
 | Presupuestos, PDF, cartera, enlace publico | `@docs/context/presupuestos/overview.md` |
 | Usuarios, roles, matriz de acceso por rol (MVP) | `@docs/context/platform-users-roles.md` |
-| Auth / shell / ApiResponse | `@docs/context/platform-shared.md` |
+| Auth / shell / ApiResponse / métricas plataforma | `@docs/context/platform-shared.md` |
 | Hay relacion entre dominios? | `@docs/context/cross-domain.md` |
 
 ## Repos

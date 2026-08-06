@@ -55,6 +55,7 @@ class Proveedor extends BaseModel
         'is_proveedor_sp',
         'is_proveedor_catalogo',
         'perfil_empresa_completo',
+        'es_cuenta_de_pruebas',
 
         // Información fiscal (al final)
         'rfc',
@@ -86,6 +87,7 @@ class Proveedor extends BaseModel
         'is_proveedor_sp' => true,
         'is_proveedor_catalogo' => false,
         'perfil_empresa_completo' => false,
+        'es_cuenta_de_pruebas' => false,
         'tipo_alta' => 1, // Por defecto se asume que el alta es por Proveedor, no por UserConstrucc
         'consecutivo_presupuesto_siguiente' => 1, // Iniciar el consecutivo de presupuestos en 1
         'calificacion' => 0, // Calificación inicial en 0
@@ -96,6 +98,7 @@ class Proveedor extends BaseModel
         'is_proveedor_sp' => 'boolean',
         'is_proveedor_catalogo' => 'boolean',
         'perfil_empresa_completo' => 'boolean',
+        'es_cuenta_de_pruebas' => 'boolean',
         'tipo_alta' => 'integer',
         'user_construcc_alta' => 'integer',
         'empresa_construcc_alta' => 'integer',
@@ -115,6 +118,7 @@ class Proveedor extends BaseModel
         'estatus' => 'Estatus',
         'grupo_operativos' => 'GrupoOperativos',
         'tipo_alta' => 'TipoAlta',
+        'cuentas_pruebas' => 'CuentasPruebas',
         'notas' => 'notas',
         'email' => 'email',
         'descripcion_giro_empresa' => 'descripcion_giro_empresa',
@@ -234,6 +238,34 @@ class Proveedor extends BaseModel
         }
 
         return $query->where('tipo_alta', $tipo);
+    }
+
+    /**
+     * Listado admin: productivas (default) / solo pruebas / todas.
+     * Valores: excluir|0 · solo|1 · todas|all
+     */
+    public function scopeFilterByCuentasPruebas($query, $value)
+    {
+        return $this->filterByCuentasPruebas($query, $value);
+    }
+
+    public function filterByCuentasPruebas($query, $value)
+    {
+        $v = is_string($value) ? strtolower(trim($value)) : $value;
+
+        if ($v === null || $v === '' || $v === 'excluir' || $v === '0' || $v === false) {
+            return $query->where('es_cuenta_de_pruebas', false);
+        }
+
+        if ($v === 'solo' || $v === '1' || $v === true) {
+            return $query->where('es_cuenta_de_pruebas', true);
+        }
+
+        if ($v === 'todas' || $v === 'all') {
+            return $query;
+        }
+
+        return $query->where('es_cuenta_de_pruebas', false);
     }
 
     public function scopeFilterByNotas($query, $value)
@@ -508,6 +540,16 @@ class Proveedor extends BaseModel
     public static function queryParaAdmin(): Builder
     {
         return static::withoutGlobalScope('solo_activos');
+    }
+
+    /**
+     * Empresas que sí cuentan en totales de métricas de plataforma.
+     *
+     * @see docs/context/platform-shared.md
+     */
+    public function scopeParaMetricasPlataforma($query)
+    {
+        return $query->where('es_cuenta_de_pruebas', false);
     }
 
     /**

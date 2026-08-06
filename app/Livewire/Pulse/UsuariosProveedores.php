@@ -19,6 +19,7 @@ class UsuariosProveedores extends Card
     {
         [[$usuariosPorDia, $usuariosTotal, $proveedoresTotal], $time, $runAt] = $this->remember(function () {
             $usuariosPorDia = User::query()
+                ->paraMetricasPlataforma()
                 ->selectRaw('DATE(created_at) as fecha, COUNT(*) as total')
                 ->whereNotNull('created_at')
                 ->where('created_at', '>=', now()->subDays(13)->startOfDay())
@@ -39,8 +40,8 @@ class UsuariosProveedores extends Card
 
             return [
                 $serieCompleta,
-                User::query()->count(),
-                Proveedor::query()->withoutGlobalScopes()->count(),
+                User::query()->paraMetricasPlataforma()->count(),
+                Proveedor::query()->withoutGlobalScopes()->paraMetricasPlataforma()->count(),
             ];
         });
 
