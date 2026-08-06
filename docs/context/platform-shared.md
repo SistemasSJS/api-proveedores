@@ -79,7 +79,7 @@ La lista de roles excluidos / visibles y el cableado de queries viven en código
 | Tabla | `proveedor_perfil_publico` (token opaco, `theme_key`, `sections`, `snapshot`, `is_published`) |
 | API auth | `proveedores/{proveedor}/perfil-publico` — GET / PUT / POST `publicar` / POST `despublicar` / GET `themes` |
 | API pública | `GET /public/perfil/{token}` (throttle) |
-| Temas | `App\Services\PerfilPublico\PerfilPublicoThemeService` (paletas predefinidas; patrón similar a presupuestos, sin mezclar dominios) |
+| Temas | `App\Services\PerfilPublico\PerfilPublicoThemeService` (paletas solo para **cards/contenido de empresa**; cabecera de marca + invite usan identidad fija GestionPro `#006eff` / `#222428`) |
 | Snapshot | `PerfilPublicoSnapshotBuilder` — congela solo lo marcado al publicar/actualizar |
 | Front editor | `app-proveedores` → `pages/proveedor/perfil-publico/` · ruta UI `/pages/proveedor/perfil-publico` · menú **Perfil público** |
 | Front público | `/public/perfil/{token}` · invite a `/reg` en el snapshot |

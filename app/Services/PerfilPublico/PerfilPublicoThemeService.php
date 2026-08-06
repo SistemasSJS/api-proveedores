@@ -28,8 +28,6 @@ final class PerfilPublicoThemeService
                 'color-text' => '#2f3640',
                 'color-muted' => '#64748b',
                 'color-border' => '#e2e8f0',
-                'color-invite-bg' => '#1e3a5f',
-                'color-invite-text' => '#ffffff',
             ],
         ],
         'finanzas-confianza' => [
@@ -46,8 +44,6 @@ final class PerfilPublicoThemeService
                 'color-text' => '#2f3640',
                 'color-muted' => '#64748b',
                 'color-border' => '#e2e8f0',
-                'color-invite-bg' => '#064e3b',
-                'color-invite-text' => '#ffffff',
             ],
         ],
         'tecnologia-digital' => [
@@ -64,8 +60,6 @@ final class PerfilPublicoThemeService
                 'color-text' => '#2f3640',
                 'color-muted' => '#64748b',
                 'color-border' => '#e2e8f0',
-                'color-invite-bg' => '#155e75',
-                'color-invite-text' => '#ffffff',
             ],
         ],
         'premium-lujo' => [
@@ -82,8 +76,6 @@ final class PerfilPublicoThemeService
                 'color-text' => '#2f3640',
                 'color-muted' => '#78716c',
                 'color-border' => '#e7e5e4',
-                'color-invite-bg' => '#451a03',
-                'color-invite-text' => '#ffffff',
             ],
         ],
         'reporte-ejecutivo' => [
@@ -100,8 +92,6 @@ final class PerfilPublicoThemeService
                 'color-text' => '#2f3640',
                 'color-muted' => '#64748b',
                 'color-border' => '#e2e8f0',
-                'color-invite-bg' => '#0f172a',
-                'color-invite-text' => '#ffffff',
             ],
         ],
     ];
