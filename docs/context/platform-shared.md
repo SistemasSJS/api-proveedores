@@ -88,6 +88,8 @@ Secciones configurables: empresa, contacto, tarjetas (configs emisor), bancos, f
 
 UX obligatoria: avisos claros de que el contenido **será público** (sin login); confirmación extra al publicar con bancos/fiscal. El borrador se guarda al editar; el enlace público solo cambia con **Publicar / Actualizar**.
 
+Compartir: cada sección del preview y el perfil completo pueden enviarse por WhatsApp como **mensaje estructurado** (no solo el link). Desde **Mi Empresa** hay atajo (abrir Perfil público / compartir WhatsApp).
+
 Pie del menú (Invitar / Constancia): coexisten por ahora; la superficie canónica de “compartir datos de empresa” es Perfil público.
 
 Migración: `database/migrations/*_create_proveedor_perfil_publico_table.php` (ejecutar en cada entorno).
