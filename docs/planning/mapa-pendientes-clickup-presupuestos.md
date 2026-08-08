@@ -1,7 +1,7 @@
 # Mapa de pendientes ClickUp — Presupuestos + generalidades
 
 > **No es contexto operativo.** No sustituye `docs/context/`.  
-> Última actualización: 2026-08-03 (cierre oleada A · inicio H)  
+> Última actualización: 2026-08-05 (cierre H · avance F Perfil público MVP)  
 > Alcance: tareas ClickUp de presupuestos y aspectos generales de la app (no catálogo de productos; no SP salvo outlier anotado).
 
 **Estados de tarea:** `pendiente` | `en_curso` | `hecho` | `hecho · review`  
@@ -30,10 +30,10 @@
 | wdx6zetawe | Mayúscula automática 1ª letra (nombres propios) | A | **hecho** |
 | 86ahxkanc | Imagen en concepto (print vs preview) | A | **hecho** |
 | wdx6zev52a | Cerrar sesión + menú de usuario | A | **hecho** (movido desde Z; btn / menú usuario) |
-| wdx6zev52b | Usuarios: agregar | H | pendiente |
-| wdx6zev52c | Usuarios: facultades | H | pendiente |
-| 86ah82rb5 | Excluir admin/prueba de estadísticas | H | pendiente |
-| 86af16v4f | Sección compartir información | F | **en_curso** (Perfil público MVP) |
+| wdx6zev52b | Usuarios: agregar | H | **hecho** |
+| wdx6zev52c | Usuarios: facultades | H | **hecho** |
+| 86ah82rb5 | Excluir admin/prueba de estadísticas | H | **hecho** |
+| 86af16v4f | Sección compartir información | F | **en_curso** (Perfil público MVP API) |
 | 86ahct5vm | Botones compartir (invitar, cédula, bancos, tarjeta) | F | **en_curso** (unificado en Perfil público) |
 | 86agv2bbd | Solicitud permiso info bancaria | F | pendiente |
 | wdx6zeuxr4 | Ver/corregir datos bancos al compartir | F | pendiente |
@@ -75,24 +75,37 @@
 - **Cerrar sesión + menú de usuario** (`wdx6zev52a`): botón/flujo de logout y menú de usuario alineados a la app actual (incluido en cierre de A; originaba en Z).
 
 ### Siguiente
-**Oleada H** — usuarios / facultades / estadísticas  
-Orden sugerido: `wdx6zev52b` (agregar) → `wdx6zev52c` (facultades) → `86ah82rb5` (excluir admin/prueba de stats).
+**Oleada F** — compartir información (Perfil público)  
+Restos F: permiso bancario, corrección bancos al compartir, evitar doble enlace.
 
 ---
 
-## Oleada H — en curso (inicio)
+## Oleada H — **COMPLETADA** (2026-08-05)
 
 | ID | Título | Estado |
 |----|--------|--------|
-| wdx6zev52b | Usuarios: agregar | pendiente |
-| wdx6zev52c | Usuarios: facultades | pendiente |
-| 86ah82rb5 | Excluir admin/prueba de estadísticas | pendiente |
+| wdx6zev52b | Usuarios: agregar | **hecho** |
+| wdx6zev52c | Usuarios: facultades | **hecho** |
+| 86ah82rb5 | Excluir admin/prueba de estadísticas | **hecho** (`es_cuenta_de_pruebas`) |
+
+---
+
+## Oleada F — en curso (Perfil público MVP)
+
+| ID | Título | Estado |
+|----|--------|--------|
+| 86af16v4f | Sección compartir información | **en_curso** (API MVP) |
+| 86ahct5vm | Botones compartir | **en_curso** (unificado en perfil público) |
+| 86agv2bbd | Solicitud permiso info bancaria | pendiente |
+| wdx6zeuxr4 | Ver/corregir datos bancos al compartir | pendiente |
+| 86ahxk9mz | Evitar doble enlace en invitación | pendiente |
+| 86ae5jcfj | Invitación DG: validaciones desistibles | pendiente |
 
 ---
 
 ## Oleadas (orden)
 
-~~A~~ → **H** → F → C → D → E → G → B → Z
+~~A~~ → ~~H~~ → **F** → C → D → E → G → B → Z
 
 ---
 
