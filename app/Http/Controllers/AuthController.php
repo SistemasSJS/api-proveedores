@@ -442,7 +442,7 @@ class AuthController extends Controller
                     ->orWhere('telefono', $request->email);
             })->first();
 
-            if (! $user || ! Hash::check($request->password, $user->password)) {
+            if (! $user || blank($user->password) || ! Hash::check($request->password, $user->password)) {
                 throw new UnauthorizedException('Credenciales incorrectas en GestionPlus.');
             }
 

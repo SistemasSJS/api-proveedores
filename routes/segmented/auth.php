@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Auth\SocialAuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,6 +37,19 @@ Route::prefix('auth')->group(function () {
      */
     Route::post('password/forgot', [AuthController::class, 'requestPasswordReset']);
     Route::post('password/reset', [AuthController::class, 'resetPassword']);
+
+    /**
+     * LOGIN SOCIAL (Socialite) — PWA redirect
+     * Whitelist de providers en config('services.oauth.providers')
+     */
+    Route::middleware('throttle:20,1')->group(function () {
+        Route::get('{provider}/redirect', [SocialAuthController::class, 'redirect'])
+            ->where('provider', '[a-z]+')
+            ->name('auth.social.redirect');
+        Route::get('{provider}/callback', [SocialAuthController::class, 'callback'])
+            ->where('provider', '[a-z]+')
+            ->name('auth.social.callback');
+    });
 
     /**
      * PERFIL Y GESTIÓN DE CUENTA

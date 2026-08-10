@@ -209,6 +209,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Cuentas OAuth vinculadas (Google, etc.). Ver docs/context/platform-auth-socialite.md
+     */
+    public function oauthAccounts(): HasMany
+    {
+        return $this->hasMany(OauthAccount::class);
+    }
+
+    /**
      * Relación directa con la tabla pivot user_proveedor
      * Útil para consultas complejas y acceso a campos pivot
      *

@@ -13,6 +13,7 @@ Infraestructura que usan los tres dominios. **No expandir** como “módulo núc
 | Pieza | Dónde | Uso |
 |-------|--------|-----|
 | Auth / sesión | `routes/segmented/auth.php`, front `@auth/` | Login, token, `/auth/me` |
+| **Login social (OAuth)** | [platform-auth-socialite.md](./platform-auth-socialite.md) | Google vía Socialite + Sanctum; multi-provider listo |
 | Proveedor | Model `Proveedor`, prefijo `proveedores/{proveedor}/…` | Contenedor multi-proveedor |
 | Acceso | `tieneAccesoAProveedor`, middleware `proveedor.access` / `api.access` | Autorización por proveedor |
 | Roles | `UserRoleEnumerate` (ADMINISTRADOR, GERENTE, SUPERVISOR, VENTAS, AUXILIAR, …) | Rutas segmentadas + menú |
