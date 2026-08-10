@@ -76,7 +76,13 @@ class AdminProveedorController extends Controller
 
         $originalPaginator = Proveedor::queryParaAdmin()
 
-            ->with(Proveedor::eagerLodable())
+            ->with(array_merge(Proveedor::eagerLodable(), [
+                'users' => function ($q) {
+                    $q->wherePivot('tipo_relacion', 'PRINCIPAL')
+                        ->wherePivot('activo', true)
+                        ->with('oauthAccounts:id,user_id,provider');
+                },
+            ]))
 
             ->filter($filters)
 

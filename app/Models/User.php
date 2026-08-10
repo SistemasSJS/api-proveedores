@@ -46,6 +46,7 @@ class User extends Authenticatable
         'grupo_inactivos' => 'GrupoInactivos',
         'grupo_pendientes' => 'GrupoPendientes',
         'grupo_registro_completados' => 'GrupoRegistroCompletados',
+        'oauth_provider' => 'OauthProvider',
     ];
 
     protected function casts(): array
@@ -95,6 +96,18 @@ class User extends Authenticatable
         }
 
         return $query->where('role_id', (int) $value);
+    }
+
+    public function filterByOauthProvider($query, $value)
+    {
+        $provider = strtolower(trim((string) $value));
+        if ($provider === '') {
+            return $query;
+        }
+
+        return $query->whereHas('oauthAccounts', function ($q) use ($provider) {
+            $q->where('provider', $provider);
+        });
     }
 
     public function filterByProveedorId($query, $value)
@@ -195,6 +208,7 @@ class User extends Authenticatable
         return [
             'role',
             'proveedores',
+            'oauthAccounts',
         ];
     }
 

@@ -110,6 +110,8 @@ class ProveedorResource extends JsonResource
             'consecutivo_presupuesto_siguiente' => $this->consecutivo_presupuesto_siguiente,
 
             'tipo_alta' => $this->tipo_alta !== null ? (int) $this->tipo_alta : 1,
+            'oauth_providers' => $this->resolveOwnerOauthProviders(),
+            'auth_google' => in_array('google', $this->resolveOwnerOauthProviders(), true),
 
             'alta_construcc' => $this->when((int) ($this->tipo_alta ?? 1) === 2, function () {
                 $empresaAlta = $this->relationLoaded('empresaConstruccAlta') ? $this->empresaConstruccAlta : null;
@@ -150,5 +152,45 @@ class ProveedorResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
+    }
+
+    /**
+     * Providers OAuth del usuario PRINCIPAL activo de la empresa.
+     *
+     * @return list<string>
+     */
+    private function resolveOwnerOauthProviders(): array
+    {
+        if ($this->relationLoaded('users')) {
+            $owner = $this->users->first(function ($user) {
+                $pivot = $user->pivot;
+
+                return $pivot
+                    && (bool) $pivot->activo
+                    && ($pivot->tipo_relacion ?? null) === 'PRINCIPAL';
+            }) ?? $this->users->first();
+
+            if (! $owner) {
+                return [];
+            }
+
+            if ($owner->relationLoaded('oauthAccounts')) {
+                return $owner->oauthAccounts->pluck('provider')->unique()->values()->all();
+            }
+
+            return $owner->oauthAccounts()->pluck('provider')->unique()->values()->all();
+        }
+
+        $owner = $this->users()
+            ->wherePivot('tipo_relacion', 'PRINCIPAL')
+            ->wherePivot('activo', true)
+            ->with('oauthAccounts')
+            ->first();
+
+        if (! $owner) {
+            return [];
+        }
+
+        return $owner->oauthAccounts->pluck('provider')->unique()->values()->all();
     }
 }

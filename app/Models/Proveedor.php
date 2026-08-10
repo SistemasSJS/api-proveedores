@@ -127,6 +127,7 @@ class Proveedor extends BaseModel
         // 👇 Nuevo filtro
         'empresas_construcc' => 'EmpresasConstrucc',
         'search' => 'Search',
+        'oauth_provider' => 'OauthProvider',
     ];
 
 
@@ -266,6 +267,25 @@ class Proveedor extends BaseModel
         }
 
         return $query->where('es_cuenta_de_pruebas', false);
+    }
+
+    /**
+     * Empresas cuyo usuario PRINCIPAL activo tiene OAuth (ej. google).
+     */
+    public function filterByOauthProvider($query, $value)
+    {
+        $provider = strtolower(trim((string) $value));
+        if ($provider === '') {
+            return $query;
+        }
+
+        return $query->whereHas('users', function ($q) use ($provider) {
+            $q->where('user_proveedor.tipo_relacion', 'PRINCIPAL')
+                ->where('user_proveedor.activo', true)
+                ->whereHas('oauthAccounts', function ($oq) use ($provider) {
+                    $oq->where('provider', $provider);
+                });
+        });
     }
 
     public function scopeFilterByNotas($query, $value)

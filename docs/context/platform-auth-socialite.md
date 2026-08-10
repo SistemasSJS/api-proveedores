@@ -95,11 +95,13 @@ Hueco futuro (nativo): `POST /auth/{provider}/token` con ID token — mismo `Soc
 
 | Pieza | Ubicación |
 |-------|-----------|
-| Botón | `@auth/login` → `loginWithProvider('google')` |
+| Botón | `@auth/login` → `loginWithProvider('google')` (estilo Identity) |
 | Callback | `/auth/callback` → `@auth/oauth-callback` |
 | Config | `environment.oauthProviders: ['google']` |
 | Routing | En `app-routing`, `auth/callback` **antes** de `auth` `path: ''` (login); si no, NG04002 |
 | Token | Tras OAuth: `UserStore.setToken` (el interceptor usa `token$`; solo `TokenService` deja `/auth/me` en 401) |
+| Mi Perfil | Badge Google junto al rol (campos `oauth_providers` / `auth_google`) |
+| Admin | Tag + filtro `oauth_provider` en usuarios y empresas |
 
 ## Checklist de puesta en marcha
 

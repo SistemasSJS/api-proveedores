@@ -49,6 +49,8 @@ class UserResource extends JsonResource
             'estado' => $this->status,
             'es_cuenta_de_pruebas' => (bool) $this->es_cuenta_de_pruebas,
             'role' => $this->whenLoaded('role', fn () => new RoleResource($this->role)),
+            'oauth_providers' => $this->resolveOauthProviders(),
+            'auth_google' => in_array('google', $this->resolveOauthProviders(), true),
             'proveedor' => $proveedor === null ? null : [
                 'id' => $proveedor->id,
                 'nombre_comercial' => $proveedor->nombre_comercial,
@@ -117,5 +119,17 @@ class UserResource extends JsonResource
         }
 
         return $user->proveedorPrincipal();
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function resolveOauthProviders(): array
+    {
+        if ($this->relationLoaded('oauthAccounts')) {
+            return $this->oauthAccounts->pluck('provider')->unique()->values()->all();
+        }
+
+        return $this->oauthAccounts()->pluck('provider')->unique()->values()->all();
     }
 }
