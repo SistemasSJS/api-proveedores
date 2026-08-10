@@ -78,7 +78,7 @@ Sigue visible solo para **GERENTE** en menú hasta nueva definición.
 
 1. **Front menú** (`user-menu-new.ts`): `roles: [...]` por ítem según esta matriz.
 2. **API usuarios** (`ProveedorUsuarioController` + requests): acceso CRU gerente/supervisor; delete solo gerente (o admin); whitelist de `role_id`; fuerza `SECUNDARIO`.
-3. **Dominios (presupuestos / SP):** menú alineado; **por ahora** las rutas `/proveedores/...` aceptan `GERENTE|SUPERVISOR|VENTAS|AUXILIAR` con acceso completo (`config/proveedor_gestion_mvp.php` → `roles_acceso_rutas_proveedor`). Pendiente: endurecer endpoints por rol (lectura AUXILIAR, SPP solo G/S, catálogo solo G, etc.).
+3. **Dominios (presupuestos / SP):** menú alineado; **por ahora** las rutas `/proveedores/...` aceptan `GERENTE|SUPERVISOR|VENTAS|AUXILIAR` con acceso completo (`config/proveedor_gestion_mvp.php` → `roles_acceso_rutas_proveedor`). Front (`ROLES_PROVEEDOR_OPS` / `user-menu-new.ts`) muestra la **misma vista** a roles operativos que a GERENTE. Pendiente: endurecer endpoints y menú por rol (lectura AUXILIAR, SPP solo G/S, catálogo solo G, etc.).
 4. **No hay** UI de facultades por usuario en esta versión.
 
 ## Config / código de referencia

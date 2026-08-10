@@ -25,10 +25,15 @@ return [
         'AUXILIAR',
     ],
 
-    /** Roles que pueden listar/crear/editar usuarios del proveedor */
+    /**
+     * Temporal: mismo acceso CRU usuarios que GERENTE (alineado a front/ops).
+     * Después: volver a GERENTE + SUPERVISOR según matriz.
+     */
     'roles_gestion_usuarios_cru' => [
         'GERENTE',
         'SUPERVISOR',
+        'VENTAS',
+        'AUXILIAR',
     ],
 
     /** Roles que pueden borrar usuarios (nunca al PRINCIPAL; admin siempre puede) */
