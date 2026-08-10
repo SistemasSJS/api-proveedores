@@ -32,9 +32,20 @@ use App\Http\Controllers\ProveedorPerfilPublicoController;
 
 /**
  * GESTIÓN DE PROVEEDORES
+ * Acceso temporal completo a GERENTE / SUPERVISOR / VENTAS / AUXILIAR.
+ * La matriz fina (lectura vs escritura por módulo) se pulirá después.
+ * @see docs/context/platform-users-roles.md
+ * @see config/proveedor_gestion_mvp.php → roles_acceso_rutas_proveedor
  */
+$rolesProveedor = implode(',', config('proveedor_gestion_mvp.roles_acceso_rutas_proveedor', [
+    UserRoleEnumerate::GERENTE->value,
+    UserRoleEnumerate::SUPERVISOR->value,
+    UserRoleEnumerate::VENTAS->value,
+    UserRoleEnumerate::AUXILIAR->value,
+]));
+
 Route::prefix('proveedores')
-    ->middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::GERENTE->value])
+    ->middleware(['auth:sanctum', 'role:' . $rolesProveedor])
     ->group(function () {
         Route::prefix('api-proveedor/presupuestos')->group(function () {
             Route::get('/next-folio', [ProveedorPresupuestoController::class, 'nextFolio']);
