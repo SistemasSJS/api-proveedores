@@ -88,6 +88,7 @@ class PresupuestoPublicResource extends JsonResource
             'proveedor' => [
                 'id' => $proveedor?->id ?? $this->proveedor_id,
                 'nombre' => self::upper($proveedor?->nombre_comercial ?? $proveedor?->razon_social ?? null),
+                'razon_social' => self::upper($proveedor?->razon_social ?? null),
                 'logo' => $logoUrl,
                 'rfc' => $proveedor?->rfc ?? null,
                 'direccion_empresa' => self::upper($proveedor?->direccion_empresa ?? null),

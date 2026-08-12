@@ -838,15 +838,6 @@ final class PresupuestoPdf
             ? $emisorComercial
             : ($emisorRazonSocial !== '' ? $emisorRazonSocial : 'Empresa Proveedora');
 
-        $configId = (int) ($payload['config_emisor_presupuesto_id'] ?? 0);
-        $contacto = null;
-        if ($configId > 0) {
-            $contacto = trim((string) ($payload['empresa_emisora_nombre'] ?? ''));
-            if ($contacto === '') {
-                $contacto = null;
-            }
-        }
-
         $fecha = $payload['fecha_emision'] ?? now();
         if (is_string($fecha)) {
             $fecha = \Carbon\Carbon::parse($fecha);
@@ -856,7 +847,8 @@ final class PresupuestoPdf
         return [
             'nombre' => mb_strtoupper($nombre, 'UTF-8'),
             'rfc' => trim((string) ($p->rfc ?? '')) ?: null,
-            'contacto' => $contacto !== null ? mb_strtoupper($contacto, 'UTF-8') : null,
+            // Cabecera/subencabezado: solo perfil empresa; contacto de tarjeta va en Atentamente.
+            'contacto' => null,
             'folio' => (string) ($payload['numero_presupuesto'] ?? 'PRES-000001'),
             'fecha' => $fechaFormateada,
         ];
