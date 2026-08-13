@@ -37,12 +37,16 @@ class ProveedorUsuairoUpdateRequest extends FormRequest
     public function rules(): array
     {
         $userId = $this->resolveRouteUserId();
+        $isAdmin = (bool) $this->user()?->isUserAdmin();
+        $rolesPermitidos = $isAdmin
+            ? config('proveedor_gestion_mvp.roles_asignables_admin', ['GERENTE', 'SUPERVISOR', 'VENTAS', 'AUXILIAR', 'CLIENTE'])
+            : config('proveedor_gestion_mvp.roles_asignables_empresa', ['GERENTE', 'SUPERVISOR', 'VENTAS', 'AUXILIAR']);
 
         return [
             'name' => ['sometimes', 'string', 'max:255'],
             'email' => [
                 'sometimes',
-                'string',
+                'email',
                 'max:255',
                 Rule::unique('users', 'email')->ignore($userId),
             ],
@@ -50,20 +54,19 @@ class ProveedorUsuairoUpdateRequest extends FormRequest
             'role_id' => [
                 'sometimes',
                 'integer',
-                Rule::exists('roles', 'id')->whereIn(
-                    'nombre',
-                    config('proveedor_gestion_mvp.roles_asignables_empresa', ['SUPERVISOR', 'VENTAS', 'AUXILIAR'])
-                ),
+                Rule::exists('roles', 'id')->whereIn('nombre', $rolesPermitidos),
             ],
             'telefono' => ['sometimes', 'nullable', 'string', 'max:20'],
             'telefono_codigo_pais' => ['sometimes', 'nullable', 'string', 'max:10'],
 
-            // Relación pivot (solo si se envían) — no promover a PRINCIPAL desde gestión empresa
-            'tipo_relacion' => ['sometimes', 'string', 'in:SECUNDARIO'],
+            'tipo_relacion' => [
+                'sometimes',
+                'string',
+                Rule::in($isAdmin ? ['PRINCIPAL', 'SECUNDARIO'] : ['SECUNDARIO']),
+            ],
             'activo' => ['sometimes', 'boolean'],
             'observaciones' => ['sometimes', 'nullable', 'string', 'max:500'],
 
-            // Foto opcional: si no se envía, no afecta la existente
             'logo' => ['sometimes', 'nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
         ];
     }
@@ -73,13 +76,20 @@ class ProveedorUsuairoUpdateRequest extends FormRequest
      */
     public function messages(): array
     {
+        $isAdmin = (bool) $this->user()?->isUserAdmin();
+
         return [
             'name.string' => 'El nombre debe ser texto.',
+            'email.email' => 'El correo electrónico debe ser válido.',
             'email.unique' => 'Este correo ya está registrado.',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
             'password.confirmed' => 'La confirmación de la contraseña no coincide.',
-            'role_id.exists' => 'Solo se pueden asignar los roles Supervisor, Ventas o Auxiliar.',
-            'tipo_relacion.in' => 'No se puede promover a usuario principal desde la gestión de la empresa.',
+            'role_id.exists' => $isAdmin
+                ? 'El rol seleccionado no es válido para asignar a la empresa.'
+                : 'Solo se pueden asignar los roles Gerente, Supervisor, Ventas o Auxiliar.',
+            'tipo_relacion.in' => $isAdmin
+                ? 'El tipo de relación debe ser PRINCIPAL o SECUNDARIO.'
+                : 'No se puede promover a usuario principal desde la gestión de la empresa.',
             'logo.image' => 'El archivo debe ser una imagen válida.',
             'logo.mimes' => 'La imagen debe estar en formato JPG, PNG o WEBP.',
             'logo.max' => 'La imagen no debe pesar más de 2MB.',

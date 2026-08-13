@@ -251,7 +251,7 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Proveedor::class, 'user_proveedor')
             ->using(UserProveedor::class)
-            ->withPivot('tipo_relacion', 'activo', 'fecha_asignacion', 'fecha_desasignacion', 'observaciones')
+            ->withPivot('tipo_relacion', 'activo', 'estado', 'fecha_asignacion', 'fecha_desasignacion', 'observaciones')
             ->withTimestamps();
     }
 

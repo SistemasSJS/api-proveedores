@@ -20,9 +20,22 @@ return [
 
     /** Roles que gerente/supervisor pueden asignar al crear/editar usuarios de la empresa */
     'roles_asignables_empresa' => [
+        'GERENTE',
         'SUPERVISOR',
         'VENTAS',
         'AUXILIAR',
+    ],
+
+    /**
+     * Roles que el ADMIN puede asignar al crear/editar usuarios vinculados a un proveedor.
+     * Incluye GERENTE (usuario principal) además de los operativos.
+     */
+    'roles_asignables_admin' => [
+        'GERENTE',
+        'SUPERVISOR',
+        'VENTAS',
+        'AUXILIAR',
+        'CLIENTE',
     ],
 
     /**

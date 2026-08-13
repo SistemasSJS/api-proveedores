@@ -11,13 +11,10 @@ use App\Http\Controllers\UnidadMedidaController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\PedidoController;
-use App\Notifications\PushNotification;
-use App\Models\User;
-use Illuminate\Support\Facades\Request;
 use App\Http\Controllers\ProveedorPublicController;
 use App\Http\Controllers\ContactoController;
 use App\Http\Controllers\MetricasLookerstudioController;
-use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\ApiStatusController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,46 +23,7 @@ use Illuminate\Support\Facades\Mail;
 | Estas rutas no requieren autenticación
 */
 
-
-Route::get('status', function (Request $request) {
-    // $userId = $request->query('id'); // o $request->get('id')
-    // $user = User::find($userId);
-
-
-    // if (!$user) {
-    //     return response()->json([
-    //         'status' => 'error',
-    //         'message' => 'Usuario no encontrado',
-    //     ], 404);
-    // }
-
-    // // Crear la notificación CON el canal push
-    // $notification = new PushNotification(
-    //     'Título de prueba',
-    //     'Este es un mensaje de prueba',
-    //     'info',
-    //     [
-    //         'channel' => 'push',  // ← AGREGAR ESTO
-    //         'extra' => 'datos opcionales',
-    //         // Opcional: agregar deep-link
-    //         'type' => 'product',
-    //         'entityId' => '123',
-    //         'action' => 'view'
-    //     ]
-    // );
-
-    // // Enviar la notificación
-    // $user->notify($notification);
-
-    return response()->json([
-        'status' => 'ok',
-        'message' => 'Notificación push enviada al usuario 14',
-        // 'user' => [
-        //     'id' => $user->id,
-        //     'name' => $user->name
-        // ]
-    ]);
-});
+Route::get('status', ApiStatusController::class);
 
 /**
  * CATÁLOGOS PÚBLICOS

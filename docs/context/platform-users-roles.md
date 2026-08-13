@@ -9,7 +9,7 @@ Documento de referencia del **MVP de permisos fijos por rol** (sin facultades po
 | Área | Qué cubre en MVP |
 |------|------------------|
 | **Usuarios** | Alta, consulta, edición, baja (según rol) dentro de un proveedor |
-| **Roles** | Solo **asignación** de plantillas fijas: `SUPERVISOR`, `VENTAS`, `AUXILIAR` |
+| **Roles** | Solo **asignación** de plantillas fijas: `GERENTE`, `SUPERVISOR`, `VENTAS`, `AUXILIAR` |
 | **Empresas** | Contexto “mi empresa”; reasignación entre empresas = **solo admin** |
 
 ## Usuario principal
@@ -22,8 +22,9 @@ Documento de referencia del **MVP de permisos fijos por rol** (sin facultades po
 
 Desde la gestión de empresa (gerente/supervisor):
 
-- Solo se crean usuarios **`SECUNDARIO`**.
-- Solo se asignan roles **`SUPERVISOR` | `VENTAS` | `AUXILIAR`** (nunca `GERENTE` ni `ADMINISTRADOR`).
+- Solo se crean usuarios **`SECUNDARIO`** (el vínculo `PRINCIPAL` lo gestiona admin).
+- Se pueden asignar roles **`GERENTE` | `SUPERVISOR` | `VENTAS` | `AUXILIAR`** (nunca `ADMINISTRADOR`).
+- Un usuario con rol `GERENTE` secundario tiene el menú/accesos de gerente; la gestión de usuarios (CRU/delete) sigue reservada al **GERENTE principal**.
 
 ## Quién gestiona usuarios
 
@@ -89,12 +90,13 @@ Sigue visible solo para **GERENTE** en menú hasta nueva definición.
 | Enum roles | `App\Enums\UserRoleEnumerate` |
 | Controller usuarios | `App\Http\Controllers\ProveedorUsuarioController` |
 | Menú front | `app-proveedores/.../pages/user-menu-new.ts` |
-| Roles en forms | filtro a SUP / VEN / AUX |
+| Roles en forms | filtro a GERENTE / SUP / VEN / AUX |
 
 ## Qué no hacer
 
 - Inventar facultades por usuario sin actualizar este doc.
-- Permitir que el gerente asigne `GERENTE` / `ADMINISTRADOR` desde la app empresa.
+- Permitir que el gerente asigne `ADMINISTRADOR` desde la app empresa.
+- Promover a vínculo `PRINCIPAL` desde la gestión de empresa (solo admin).
 - Mezclar esta lógica dentro de `docs/context/catalogo|solicitudes-pago|presupuestos` — aquí es plataforma.
 
 ## Métricas y cuentas de pruebas

@@ -52,14 +52,33 @@ class ProveedorUsuarioController extends Controller
         $this->authorizeAccess($request->user(), $proveedor);
 
         $validated = $request->validated();
+        $isAdmin = $request->user()->isUserAdmin();
 
-        // MVP gestión empresa: siempre secundario (el principal se gestiona fuera / admin)
-        $tipoRelacion = 'SECUNDARIO';
+        // Empresa MVP: siempre secundario. Admin puede crear PRINCIPAL.
+        $tipoRelacion = $isAdmin
+            ? ($validated['tipo_relacion'] ?? 'SECUNDARIO')
+            : 'SECUNDARIO';
         $activo = array_key_exists('activo', $validated) ? (bool) $validated['activo'] : true;
         $observaciones = $validated['observaciones'] ?? null;
         $logo = $request->file('logo');
 
-        $user = DB::transaction(function () use ($proveedor, $validated, $tipoRelacion, $activo, $observaciones, $logo) {
+        if ($tipoRelacion === 'PRINCIPAL' && $activo) {
+            $existePrincipal = $proveedor->users()
+                ->wherePivot('tipo_relacion', 'PRINCIPAL')
+                ->wherePivot('activo', true)
+                ->exists();
+
+            if ($existePrincipal) {
+                throw new MainUserDuplicateException(
+                    'Ya existe un usuario principal activo. Debe desactivarlo primero.'
+                );
+            }
+        }
+
+        $userId = DB::transaction(function () use ($proveedor, $validated, $tipoRelacion, $activo, $observaciones, $logo) {
+            // User vive en conexión `mysql`; Proveedor en `mysql5` (misma BD).
+            // El attach DEBE hacerse desde el User para compartir sesión/transacción;
+            // si se hace desde Proveedor, el FK a users espera el commit → lock wait timeout.
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
@@ -69,7 +88,7 @@ class ProveedorUsuarioController extends Controller
                 'telefono_codigo_pais' => $validated['telefono_codigo_pais'] ?? null,
             ]);
 
-            $proveedor->users()->attach($user->id, [
+            $user->proveedores()->attach($proveedor->id, [
                 'tipo_relacion' => $tipoRelacion,
                 'activo' => $activo,
                 'estado' => 'registrado',
@@ -81,8 +100,12 @@ class ProveedorUsuarioController extends Controller
                 $user->update(['foto_perfil_url' => $this->storeUserLogo($user, $logo)]);
             }
 
-            return $this->loadProveedorUser($proveedor, $user->id);
+            return $user->id;
         });
+
+        // Cargar fuera de la transacción: el listado vía Proveedor usa mysql5
+        // y ya puede ver el user committed en mysql.
+        $user = $this->loadProveedorUser($proveedor, $userId);
 
         return $this->success(
             new UserResource($user),

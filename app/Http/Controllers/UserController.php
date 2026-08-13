@@ -10,7 +10,6 @@ use App\Models\User;
 use App\Support\MetricasPlataforma;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
@@ -122,11 +121,23 @@ class UserController extends Controller
      */
     public function store(UserStoreRequest $request)
     {
-        $user = User::create($request->validate());
+        $validated = $request->validated();
 
-        return $this->success([
-            'user' => new UserResource($user->load(['role'])),
-        ], 201);
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => $validated['password'],
+            'role_id' => $validated['role_id'],
+            'telefono' => $validated['telefono'] ?? null,
+            'telefono_codigo_pais' => $validated['telefono_codigo_pais'] ?? null,
+            'status' => $validated['status'] ?? EstadoUsuario::REGISTRADO->value,
+        ]);
+
+        return $this->success(
+            new UserResource($user->load(User::eagerLodable())),
+            'Usuario creado correctamente.',
+            201
+        );
     }
 
     /**
@@ -175,11 +186,11 @@ class UserController extends Controller
 
         $request->validate([
             'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|string|max:255',
-            'password' => ['nullable', 'string', Password::min(8)],
+            'email' => 'sometimes|email|max:255|unique:users,email,'.$id,
+            'password' => ['nullable', 'string', Password::min(8), 'confirmed'],
             'role_id' => ['sometimes', 'integer', 'exists:roles,id'],
             'role' => ['sometimes', 'integer', 'exists:roles,id'],
-            'status' => ['sometimes'],
+            'status' => ['sometimes', 'string', 'in:'.implode(',', EstadoUsuario::values())],
             'estado' => ['sometimes'],
             'es_cuenta_de_pruebas' => ['sometimes', 'boolean'],
         ]);
@@ -195,7 +206,8 @@ class UserController extends Controller
         }
 
         if ($request->filled('password')) {
-            $data['password'] = Hash::make($request->password);
+            // El cast `hashed` del modelo se encarga del hash
+            $data['password'] = $request->password;
         }
 
         $user->update($data);
