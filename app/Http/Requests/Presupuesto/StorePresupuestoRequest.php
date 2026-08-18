@@ -281,7 +281,7 @@ class StorePresupuestoRequest extends FormRequest
                     if (mb_strlen($desc) > $maxParrafo) {
                         $v->errors()->add(
                             "conceptos.{$index}.descripcion",
-                            "El párrafo no puede exceder {$maxParrafo} caracteres (aprox. cinco renglones en el PDF)."
+                            "El párrafo no puede exceder {$maxParrafo} caracteres (aprox. nueve renglones en el PDF)."
                         );
                     }
                 }

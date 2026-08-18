@@ -6,13 +6,13 @@ use App\Models\PresupuestoConcepto;
 
 /**
  * Texto y altura de líneas tipo párrafo en el PDF del presupuesto.
- * La altura se calcula por renglones (máx. ~5) para no reservar espacio en blanco.
+ * La altura se calcula por renglones (máx. ~9) para no reservar espacio en blanco.
  */
 final class PresupuestoParrafoPdf
 {
     public const CHARS_POR_LINEA = 120;
 
-    public const MAX_LINEAS = 5;
+    public const MAX_LINEAS = 9;
 
     /** Padding vertical de la fila (2 mm arriba + 2 mm abajo). */
     public const ALTURA_PADDING_MM = 4.0;
@@ -23,7 +23,7 @@ final class PresupuestoParrafoPdf
     public const DESCRIPCION_MAX = PresupuestoConcepto::DESCRIPCION_PARRAFO_MAX;
 
     /** Tope de reserva (padding + MAX_LINEAS renglones). */
-    public const ALTURA_FILA_MAX_MM = 21.0;
+    public const ALTURA_FILA_MAX_MM = 34.6;
 
     public static function alturaFilaMm(string $descripcion = ''): float
     {
