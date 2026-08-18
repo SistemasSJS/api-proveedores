@@ -568,8 +568,8 @@
                 }
 
                 .presupuesto-table tbody tr.linea-parrafo {
-                    height: 14mm;
-                    max-height: 14mm;
+                    height: 22mm;
+                    max-height: 22mm;
                 }
 
                 .presupuesto-table tbody tr.linea-parrafo td {
@@ -581,8 +581,8 @@
                     white-space: normal;
                     word-wrap: break-word;
                     background: #f8fafc;
-                    height: 14mm;
-                    max-height: 14mm;
+                    height: 22mm;
+                    max-height: 22mm;
                     overflow: hidden;
                     box-sizing: border-box;
                     vertical-align: top;

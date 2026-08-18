@@ -5,17 +5,17 @@ namespace App\Support;
 use App\Models\PresupuestoConcepto;
 
 /**
- * Texto y altura fija de líneas tipo párrafo en el PDF del presupuesto (~3 renglones).
+ * Texto y altura fija de líneas tipo párrafo en el PDF del presupuesto (~5 renglones).
  */
 final class PresupuestoParrafoPdf
 {
-    public const ALTURA_FILA_MM = 14.0;
+    public const ALTURA_FILA_MM = 22.0;
 
     public const CHARS_POR_LINEA = 120;
 
-    public const MAX_LINEAS = 3;
+    public const MAX_LINEAS = 5;
 
-    public const DESCRIPCION_MAX = self::CHARS_POR_LINEA * self::MAX_LINEAS;
+    public const DESCRIPCION_MAX = PresupuestoConcepto::DESCRIPCION_PARRAFO_MAX;
 
     public static function alturaFilaMm(): float
     {

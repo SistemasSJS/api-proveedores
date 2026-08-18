@@ -10,7 +10,7 @@ class PresupuestoCatalogoConcepto extends BaseModel
 
     public const CATEGORIA_SERVICIO = 'servicio';
 
-    public const DESCRIPCION_MAX = 200;
+    public const DESCRIPCION_MAX = 500;
 
     protected $table = 'presupuesto_catalogo_conceptos';
 
