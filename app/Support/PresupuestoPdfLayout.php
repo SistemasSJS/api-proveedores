@@ -142,7 +142,7 @@ final class PresupuestoPdfLayout
                     continue;
                 }
                 if (self::esConceptoParrafo($concepto)) {
-                    $consumirFilaTabla(PresupuestoParrafoPdf::alturaFilaMm());
+                    $consumirFilaTabla(PresupuestoParrafoPdf::alturaFilaDesdeConcepto($concepto));
                 } else {
                     $consumirFilaTabla($lineaTabla);
                 }
@@ -271,7 +271,7 @@ final class PresupuestoPdfLayout
                 continue;
             }
             if (self::esConceptoParrafo($concepto)) {
-                $tablaMm += PresupuestoParrafoPdf::alturaFilaMm();
+                $tablaMm += PresupuestoParrafoPdf::alturaFilaDesdeConcepto($concepto);
             } else {
                 $tablaMm += $lineaTabla;
             }

@@ -534,8 +534,8 @@
     }
 
     .tw-table tbody tr.tw-linea-parrafo {
-        height: 22mm;
-        max-height: 22mm;
+        page-break-inside: avoid;
+        break-inside: avoid;
     }
 
     .tw-table tbody tr.tw-linea-parrafo td {
@@ -546,9 +546,6 @@
         line-height: 1.45;
         white-space: normal;
         word-wrap: break-word;
-        overflow: hidden;
-        height: 22mm;
-        max-height: 22mm;
         box-sizing: border-box;
         vertical-align: top;
         background: var(--paragraph-row-bg);

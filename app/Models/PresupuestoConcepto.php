@@ -16,8 +16,8 @@ class PresupuestoConcepto extends BaseModel
     /** Longitud máxima del texto de un párrafo (~5 renglones en el PDF). */
     public const DESCRIPCION_PARRAFO_MAX = 500;
 
-    /** Altura fija de la fila párrafo en plantillas PDF (mm). */
-    public const ALTURA_FILA_PARRAFO_PDF_MM = 22.0;
+    /** Tope de altura de fila párrafo en PDF cuando el texto usa los 5 renglones. */
+    public const ALTURA_FILA_PARRAFO_PDF_MM = 21.0;
 
     protected $table = 'presupuesto_conceptos';
 

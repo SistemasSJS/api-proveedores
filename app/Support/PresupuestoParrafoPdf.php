@@ -5,21 +5,42 @@ namespace App\Support;
 use App\Models\PresupuestoConcepto;
 
 /**
- * Texto y altura fija de líneas tipo párrafo en el PDF del presupuesto (~5 renglones).
+ * Texto y altura de líneas tipo párrafo en el PDF del presupuesto.
+ * La altura se calcula por renglones (máx. ~5) para no reservar espacio en blanco.
  */
 final class PresupuestoParrafoPdf
 {
-    public const ALTURA_FILA_MM = 22.0;
-
     public const CHARS_POR_LINEA = 120;
 
     public const MAX_LINEAS = 5;
 
+    /** Padding vertical de la fila (2 mm arriba + 2 mm abajo). */
+    public const ALTURA_PADDING_MM = 4.0;
+
+    /** Altura estimada de un renglón a 6.5pt / line-height 1.45. */
+    public const ALTURA_LINEA_MM = 3.4;
+
     public const DESCRIPCION_MAX = PresupuestoConcepto::DESCRIPCION_PARRAFO_MAX;
 
-    public static function alturaFilaMm(): float
+    /** Tope de reserva (padding + MAX_LINEAS renglones). */
+    public const ALTURA_FILA_MAX_MM = 21.0;
+
+    public static function alturaFilaMm(string $descripcion = ''): float
     {
-        return self::ALTURA_FILA_MM;
+        $texto = self::sanitizarTexto($descripcion);
+        $lineas = (int) ceil(mb_strlen($texto) / self::CHARS_POR_LINEA);
+        $lineas = max(1, min(self::MAX_LINEAS, $lineas));
+        $altura = self::ALTURA_PADDING_MM + ($lineas * self::ALTURA_LINEA_MM);
+
+        return min(self::ALTURA_FILA_MAX_MM, $altura);
+    }
+
+    /**
+     * @param  array<string, mixed>  $concepto
+     */
+    public static function alturaFilaDesdeConcepto(array $concepto): float
+    {
+        return self::alturaFilaMm((string) ($concepto['descripcion'] ?? ''));
     }
 
     /**
