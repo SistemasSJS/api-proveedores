@@ -74,12 +74,14 @@ class ProveedorPresupuestoCatalogoConceptosController extends Controller
 
         $search = trim((string) $request->input('search', ''));
         $categoria = trim((string) $request->input('categoria', ''));
+        $empresa = trim((string) $request->input('empresa', ''));
         $perPage = (int) $request->input('per_page', 50);
         $limit = max(1, min($perPage, 100));
 
-        $items = [];
+        $conceptosItems = [];
+        $catalogoItems = [];
 
-        if (in_array($origen, ['todos', 'concepto'], true)) {
+        if (in_array($origen, ['todos', 'concepto'], true) && $empresa === '') {
             $conceptosQuery = PresupuestoCatalogoConcepto::query()
                 ->where('proveedor_id', $proveedor->id);
 
@@ -96,7 +98,7 @@ class ProveedorPresupuestoCatalogoConceptosController extends Controller
                 ->get();
 
             foreach ($conceptos as $concepto) {
-                $items[] = [
+                $conceptosItems[] = [
                     'origen' => 'concepto',
                     'id' => $concepto->id,
                     'nombre' => $concepto->descripcion,
@@ -122,14 +124,17 @@ class ProveedorPresupuestoCatalogoConceptosController extends Controller
             if ($search !== '') {
                 $catalogoQuery->filter(['search' => $search]);
             }
+            if ($empresa !== '') {
+                $catalogoQuery->where('empresa', $empresa);
+            }
 
-            $catalogoItems = $catalogoQuery
+            $catalogoRows = $catalogoQuery
                 ->orderBy('nombre')
                 ->limit($limit)
                 ->get();
 
-            foreach ($catalogoItems as $item) {
-                $items[] = [
+            foreach ($catalogoRows as $item) {
+                $catalogoItems[] = [
                     'origen' => 'catalogo',
                     'id' => $item->id,
                     'nombre' => $item->nombre,
@@ -138,18 +143,15 @@ class ProveedorPresupuestoCatalogoConceptosController extends Controller
                     'empresa' => $item->empresa,
                     'logo' => $item->logo,
                     'categoria_ui' => $item->categoria ?: 'producto',
-                    'imagen_url' => $item->logo,
+                    'imagen_url' => $item->imagen ?: null,
                     'imagen_path' => null,
                     'imagen_base64' => null,
                 ];
             }
         }
 
-        usort($items, function (array $a, array $b) {
-            return strcasecmp((string) $a['nombre'], (string) $b['nombre']);
-        });
-
-        $items = array_slice($items, 0, $limit);
+        // Catálogo público primero (agrupable por empresa en UI), luego mis conceptos.
+        $items = array_merge($catalogoItems, $conceptosItems);
         $data = PresupuestoSugerenciaLineaResource::collection(collect($items))->resolve();
 
         return $this->success($data, 'Sugerencias de línea.');

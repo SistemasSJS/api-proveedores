@@ -17,6 +17,7 @@ class CatalogoPublicoItem extends BaseModel
         'modelo',
         'empresa',
         'logo',
+        'imagen',
         'precio_base',
         'precio_mayoreo',
         'precio_menudeo',
@@ -64,7 +65,7 @@ class CatalogoPublicoItem extends BaseModel
 
     public function filterByEmpresa($query, $value)
     {
-        return $query->where('empresa', 'like', '%'.trim((string) $value).'%');
+        return $query->where('empresa', trim((string) $value));
     }
 
     public function filterByCategoria($query, $value)

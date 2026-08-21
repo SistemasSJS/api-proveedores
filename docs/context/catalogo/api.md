@@ -33,8 +33,8 @@ Middleware de recurso: `proveedor.producto`, `proveedor.categoria`, `proveedor.m
 | Prefijo | Controller |
 |---------|------------|
 | `admin/catalogo-publico` | `AdminCatalogoPublicoController` (`POST /import`, GET, PATCH) |
-| `catalogo-publico` (shared, auth) | `CatalogoPublicoItemController` (lectura) |
-| `{proveedor}/presupuestos/presupuesto-catalogo-conceptos/sugerencias` | Picker combinado (lectura; dominio presupuestos) |
+| `catalogo-publico` (shared, auth) | `CatalogoPublicoItemController` (lectura: index, show, `GET empresas`) |
+| `{proveedor}/presupuestos/presupuesto-catalogo-conceptos/sugerencias` | Picker combinado (lectura; dominio presupuestos). Query: `origen`, `search`, `empresa` |
 
 Import: `CatalogoPublicoImportService`. Upsert por `(empresa, codigo)`.
 

@@ -15,7 +15,7 @@
 
 ## Catálogo público (feed)
 
-Tabla plana, **sin** `proveedor_id`. `empresa` y `logo` vienen del Excel. Columnas típicas de import: codigo, producto/nombre, descripcion, marca, categoria, subcategoria, unidad, modelo, empresa, logo, precio, precio_mayoreo, precio_menudeo. Extras → JSON `propiedades`.
+Tabla plana, **sin** `proveedor_id`. `empresa` y `logo` (logo de la empresa) vienen del Excel; `imagen` es la foto del producto. Columnas típicas de import: codigo, producto/nombre, descripcion, marca, categoria, subcategoria, unidad, modelo, empresa, logo, imagen, precio, precio_mayoreo, precio_menudeo. Extras → JSON `propiedades`.
 
 
 ## Relaciones

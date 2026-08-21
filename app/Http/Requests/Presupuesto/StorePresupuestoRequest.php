@@ -187,6 +187,7 @@ class StorePresupuestoRequest extends FormRequest
             'conceptos.*.unidad' => 'required|string|max:50',
             'conceptos.*.precio_unitario' => 'required|numeric|min:0',
             'conceptos.*.imagen_path' => 'nullable|string|max:255',
+            'conceptos.*.imagen_url' => 'nullable|string|max:500|url',
             'conceptos.*.imagen_base64' => [
                 'nullable',
                 'string',

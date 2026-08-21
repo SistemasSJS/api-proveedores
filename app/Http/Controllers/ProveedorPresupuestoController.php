@@ -28,6 +28,7 @@ use App\Notifications\Presupuesto\PresupuestoEnviadoNotification;
 use App\Notifications\Presupuesto\PresupuestoRecibidoClienteProveedorNotification;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -1516,10 +1517,10 @@ class ProveedorPresupuestoController extends Controller
 
     /**
      * Resuelve el imagen_path de un concepto entrante: guarda una imagen nueva (base64),
-     * conserva la existente (imagen_path previo válido) o retorna null.
+     * copia desde catálogo propio (path en storage), descarga URL externa o conserva path del ppto.
      *
-     * @param array<string, mixed> $conceptoData
-     * @param array<int, string> $pathsAnteriores
+     * @param  array<string, mixed>  $conceptoData
+     * @param  array<int, string>  $pathsAnteriores
      */
     private function resolverImagenConcepto(Presupuesto $presupuesto, array $conceptoData, array $pathsAnteriores): ?string
     {
@@ -1528,12 +1529,136 @@ class ProveedorPresupuestoController extends Controller
             return $this->guardarImagenConceptoBase64($presupuesto, $base64);
         }
 
-        $pathExistente = $conceptoData['imagen_path'] ?? null;
-        if (is_string($pathExistente) && trim($pathExistente) !== '' && in_array($pathExistente, $pathsAnteriores, true)) {
-            return $pathExistente;
+        $pathEntrante = $conceptoData['imagen_path'] ?? null;
+        if (is_string($pathEntrante) && trim($pathEntrante) !== '') {
+            $pathNormalizado = $this->normalizarPathImagenConcepto(trim($pathEntrante));
+            if ($pathNormalizado !== null) {
+                if (in_array($pathNormalizado, $pathsAnteriores, true)) {
+                    return $pathNormalizado;
+                }
+
+                $copiada = $this->copiarImagenConceptoDesdeStorage($presupuesto, $pathNormalizado);
+                if ($copiada !== null) {
+                    return $copiada;
+                }
+            }
+        }
+
+        $url = $conceptoData['imagen_url'] ?? null;
+        if (is_string($url) && trim($url) !== '') {
+            $descargada = $this->guardarImagenConceptoDesdeUrl($presupuesto, trim($url));
+            if ($descargada !== null) {
+                return $descargada;
+            }
         }
 
         return null;
+    }
+
+    private function normalizarPathImagenConcepto(string $path): ?string
+    {
+        $path = str_replace('\\', '/', trim($path));
+        if ($path === '' || str_starts_with($path, 'data:image/') || preg_match('/^https?:\/\//i', $path)) {
+            return null;
+        }
+
+        if (str_starts_with($path, '/storage/')) {
+            $path = substr($path, strlen('/storage/'));
+        } elseif (str_starts_with($path, 'storage/')) {
+            $path = substr($path, strlen('storage/'));
+        }
+
+        $path = ltrim($path, '/');
+
+        return $path !== '' ? $path : null;
+    }
+
+    /**
+     * Copia una imagen ya en disco público (p. ej. catálogo propio) al folder del presupuesto.
+     */
+    private function copiarImagenConceptoDesdeStorage(Presupuesto $presupuesto, string $sourcePath): ?string
+    {
+        $allowedPrefix = sprintf('proveedores/%d/', (int) $presupuesto->proveedor_id);
+        if (! str_starts_with($sourcePath, $allowedPrefix)) {
+            return null;
+        }
+
+        if (! Storage::disk('public')->exists($sourcePath)) {
+            return null;
+        }
+
+        try {
+            $binary = Storage::disk('public')->get($sourcePath);
+            if ($binary === false || $binary === '') {
+                return null;
+            }
+
+            $optimizado = PresupuestoAnexoImagenOptimizer::optimizarParaAlmacenamiento($binary);
+            $extension = $optimizado['extension'] ?? 'jpg';
+            $contenido = $optimizado['binary'] ?? $binary;
+
+            $path = sprintf(
+                'proveedores/%d/presupuestos/%d/conceptos/%s.%s',
+                (int) $presupuesto->proveedor_id,
+                (int) $presupuesto->id,
+                Str::uuid()->toString(),
+                $extension
+            );
+
+            Storage::disk('public')->put($path, $contenido);
+
+            return $path;
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function guardarImagenConceptoDesdeUrl(Presupuesto $presupuesto, string $url): ?string
+    {
+        if (! filter_var($url, FILTER_VALIDATE_URL) || ! preg_match('/^https?:\/\//i', $url)) {
+            return null;
+        }
+
+        try {
+            $response = Http::timeout(20)
+                ->withHeaders(['Accept' => 'image/*,*/*'])
+                ->get($url);
+
+            if (! $response->successful()) {
+                return null;
+            }
+
+            $binary = $response->body();
+            if ($binary === '' || strlen($binary) > 5 * 1024 * 1024) {
+                return null;
+            }
+
+            $contentType = strtolower((string) ($response->header('Content-Type') ?? ''));
+            $esImagen = str_starts_with($contentType, 'image/')
+                || (bool) @getimagesizefromstring($binary);
+
+            if (! $esImagen) {
+                return null;
+            }
+
+            $optimizado = PresupuestoAnexoImagenOptimizer::optimizarParaAlmacenamiento($binary);
+            $extension = $optimizado['extension'] ?? 'jpg';
+            $contenido = $optimizado['binary'] ?? $binary;
+
+            $path = sprintf(
+                'proveedores/%d/presupuestos/%d/conceptos/%s.%s',
+                (int) $presupuesto->proveedor_id,
+                (int) $presupuesto->id,
+                Str::uuid()->toString(),
+                $extension
+            );
+
+            Storage::disk('public')->put($path, $contenido);
+
+            return $path;
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     private function guardarImagenConceptoBase64(Presupuesto $presupuesto, string $dataUri): ?string

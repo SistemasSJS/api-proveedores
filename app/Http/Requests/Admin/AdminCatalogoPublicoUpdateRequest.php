@@ -26,6 +26,7 @@ class AdminCatalogoPublicoUpdateRequest extends FormRequest
             'modelo' => ['sometimes', 'nullable', 'string', 'max:100'],
             'empresa' => ['sometimes', 'string', 'max:255'],
             'logo' => ['sometimes', 'nullable', 'string', 'max:500'],
+            'imagen' => ['sometimes', 'nullable', 'string', 'max:500'],
             'precio_base' => ['sometimes', 'nullable', 'numeric', 'min:0'],
             'precio_mayoreo' => ['sometimes', 'nullable', 'numeric', 'min:0'],
             'precio_menudeo' => ['sometimes', 'nullable', 'numeric', 'min:0'],

@@ -24,6 +24,7 @@ class CatalogoPublicoItemResource extends JsonResource
             'modelo' => $this->modelo,
             'empresa' => $this->empresa,
             'logo' => $this->logo,
+            'imagen' => $this->imagen,
             'precio_base' => $this->precio_base !== null ? (float) $this->precio_base : null,
             'precio_mayoreo' => $this->precio_mayoreo !== null ? (float) $this->precio_mayoreo : null,
             'precio_menudeo' => $this->precio_menudeo !== null ? (float) $this->precio_menudeo : null,

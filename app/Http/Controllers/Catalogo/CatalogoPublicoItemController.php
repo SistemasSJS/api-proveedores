@@ -10,6 +10,42 @@ use Illuminate\Http\Request;
 
 class CatalogoPublicoItemController extends Controller
 {
+    /**
+     * Resumen de empresas del catálogo público (logo + conteo).
+     */
+    public function empresas(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->input('search', ''));
+
+        $query = CatalogoPublicoItem::query()->where('activo', true);
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('empresa', 'like', "%{$search}%")
+                    ->orWhere('nombre', 'like', "%{$search}%")
+                    ->orWhere('codigo', 'like', "%{$search}%")
+                    ->orWhere('marca', 'like', "%{$search}%");
+            });
+        }
+
+        $empresas = $query
+            ->select('empresa')
+            ->selectRaw('COUNT(*) as total_productos')
+            ->selectRaw('MAX(logo) as logo')
+            ->groupBy('empresa')
+            ->orderBy('empresa')
+            ->get()
+            ->map(fn ($row) => [
+                'empresa' => (string) $row->empresa,
+                'logo' => $row->logo ? (string) $row->logo : null,
+                'total_productos' => (int) $row->total_productos,
+            ])
+            ->values()
+            ->all();
+
+        return $this->success($empresas, 'Empresas del catálogo público.');
+    }
+
     public function index(Request $request): JsonResponse
     {
         $filters = $request->only(CatalogoPublicoItem::getFilters());

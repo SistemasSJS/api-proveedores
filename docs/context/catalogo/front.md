@@ -30,5 +30,5 @@ Al trabajar el front de catálogo: verificar si hay que **volver a registrar** l
 
 Admin: `src/app/pages/panel-administrativo/pages/catalogo-publico/` — import Excel/CSV + listado. Ruta UI: `/pages/panel-admin/catalogo-publico`.
 
-No vive en `producto-proveedor` ni en `csv-import`.
+Picker presupuestos (`concepto-catalogo-manual-modal`): al añadir concepto abre en **Catálogo**. Filtros: Todos (acordeones por empresa + mis conceptos), Mis conceptos, Catálogo empresas (cards → productos).
 
