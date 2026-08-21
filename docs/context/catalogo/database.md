@@ -11,6 +11,12 @@
 | `Sucursal` | Sucursales; pivot con producto |
 | `ProductoImagen` / `ProductoEspecificacion` | Satélites |
 | `ImportAudit` / `ImportValidationCache` | Import CSV |
+| `CatalogoPublicoItem` | Feed plano global (`catalogo_publico_items`); unique `(empresa, codigo)` |
+
+## Catálogo público (feed)
+
+Tabla plana, **sin** `proveedor_id`. `empresa` y `logo` vienen del Excel. Columnas típicas de import: codigo, producto/nombre, descripcion, marca, categoria, subcategoria, unidad, modelo, empresa, logo, precio, precio_mayoreo, precio_menudeo. Extras → JSON `propiedades`.
+
 
 ## Relaciones
 

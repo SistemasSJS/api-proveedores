@@ -15,6 +15,7 @@ Repo: `api-proveedores`. Prefijo gerente: `proveedores/{proveedor}/…` + `prove
 | | `GET /proveedores-registrados` | Receptores = proveedores del sistema |
 | Cartera | `{proveedor}/presupuestos/cartera-clientes` | `ProveedorPresupuestoCarteraClientesController` |
 | Catálogo conceptos | `{proveedor}/presupuestos/presupuesto-catalogo-conceptos` | `ProveedorPresupuestoCatalogoConceptosController` |
+| | `GET …/sugerencias` | Interno + catálogo público (snapshot al elegir) |
 | Anexos | `{proveedor}/presupuestos/{presupuesto}/anexos` (+ `/bulk`) | `ProveedorPresupuestoAnexoController` |
 | Anexos PDF | `…/anexos-pdf` | `ProveedorPresupuestoAnexoPdfController` |
 | Config | `{proveedor}/config-emisor-receptor-presupuestos` | `ProveedorPresupuestoConfigController` |

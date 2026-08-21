@@ -25,3 +25,10 @@ En `proveedor-routing.module.ts` **actual** están montados perfil, dashboard, s
 Los módulos y el menú (`PROVEEDOR_CATALOG` / tipo catálogo) siguen existiendo. URLs esperadas históricamente: `/pages/proveedor/productos`, `categorias`, `import-productos`, `csv-import`, etc.
 
 Al trabajar el front de catálogo: verificar si hay que **volver a registrar** lazy routes, no asumir que ya navegan.
+
+## Catálogo público
+
+Admin: `src/app/pages/panel-administrativo/pages/catalogo-publico/` — import Excel/CSV + listado. Ruta UI: `/pages/panel-admin/catalogo-publico`.
+
+No vive en `producto-proveedor` ni en `csv-import`.
+

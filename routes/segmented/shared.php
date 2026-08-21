@@ -13,6 +13,7 @@ use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\SucursalController;
 use App\Http\Controllers\TipoEmpresaController;
 use App\Http\Controllers\UnidadMedidaController;
+use App\Http\Controllers\Catalogo\CatalogoPublicoItemController;
 
 /*
 |--------------------------------------------------------------------------
@@ -63,6 +64,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('productos')->group(function () {
         Route::get('buscar', [ProductoBusquedaController::class, 'buscar'])->middleware(['audit']);
         Route::get('{producto}/disponibilidad', [ProductoBusquedaController::class, 'verificarDisponibilidad'])->middleware(['audit']);
+    });
+
+    /**
+     * CATÁLOGO PÚBLICO (lectura; importado por admin)
+     */
+    Route::prefix('catalogo-publico')->group(function () {
+        Route::get('/', [CatalogoPublicoItemController::class, 'index'])->middleware(['audit']);
+        Route::get('{catalogoPublicoItem}', [CatalogoPublicoItemController::class, 'show'])->middleware(['audit']);
     });
 
 

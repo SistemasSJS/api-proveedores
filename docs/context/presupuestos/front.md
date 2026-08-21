@@ -185,5 +185,5 @@ Cuando una capacidad sea **Plus** (plan superior / no incluida en el esquema gra
 - Modal de concepto (hoy):
   - Tab Catálogo: listar / buscar / filtrar; click = snapshot a la línea; editar / eliminar; **Nuevo en catálogo**.
   - Tab Manual: checkbox «Guardar también en el catálogo» (+ categoría producto/servicio) al añadir línea. En **móvil**, el modal usa altura ~`96dvh` y el pie (CANCELAR / Añadir) queda **fijo fuera del scroll** para que no se oculte al marcar el checkbox.
-- Badge Plus en tab y acciones de catálogo. **No** integrar el dominio Catálogo de productos salvo decisión explícita.
+- Badge Plus en tab y acciones de catálogo. El tab Catálogo también puede listar el **catálogo público** (origen `catalogo`, empresa/logo del Excel) junto a los conceptos internos; al elegir se hace snapshot. Editar/eliminar solo aplica a conceptos internos.
 - Sección **Catálogo de conceptos** en rutas propias (`…/catalogo-conceptos` + crear/editar/detalle); el modal de captura sigue pudiendo elegir/snapshot.

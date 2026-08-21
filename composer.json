@@ -23,6 +23,7 @@
         "laravel/tinker": "^2.10.1",
         "livewire/livewire": "3.6.4",
         "maatwebsite/excel": "^1.1",
+        "phpoffice/phpspreadsheet": "^5.9",
         "predis/predis": "^2.0",
         "pusher/pusher-php-server": "^7.2",
         "setasign/fpdf": "^1.8.6",

@@ -269,6 +269,7 @@ Route::prefix('proveedores')
                 Route::prefix('presupuesto-catalogo-conceptos')->group(function () {
                     Route::get('/', [ProveedorPresupuestoCatalogoConceptosController::class, 'index']);
                     Route::post('/', [ProveedorPresupuestoCatalogoConceptosController::class, 'store']);
+                    Route::get('/sugerencias', [ProveedorPresupuestoCatalogoConceptosController::class, 'sugerencias']);
                     Route::get('/{presupuestoCatalogoConcepto}', [ProveedorPresupuestoCatalogoConceptosController::class, 'show']);
                     Route::put('/{presupuestoCatalogoConcepto}', [ProveedorPresupuestoCatalogoConceptosController::class, 'update']);
                     Route::patch('/{presupuestoCatalogoConcepto}', [ProveedorPresupuestoCatalogoConceptosController::class, 'update']);

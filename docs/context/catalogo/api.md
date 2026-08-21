@@ -26,4 +26,15 @@ Middleware de recurso: `proveedor.producto`, `proveedor.categoria`, `proveedor.m
 
 ## Servicios import
 
-`app/Services/CSVImport/` — processor, validators, export.
+`app/Services/CSVImport/` — processor, validators, export (catálogo comercial / NextPro). **No** usar para el catálogo público.
+
+## Catálogo público (feed admin)
+
+| Prefijo | Controller |
+|---------|------------|
+| `admin/catalogo-publico` | `AdminCatalogoPublicoController` (`POST /import`, GET, PATCH) |
+| `catalogo-publico` (shared, auth) | `CatalogoPublicoItemController` (lectura) |
+| `{proveedor}/presupuestos/presupuesto-catalogo-conceptos/sugerencias` | Picker combinado (lectura; dominio presupuestos) |
+
+Import: `CatalogoPublicoImportService`. Upsert por `(empresa, codigo)`.
+

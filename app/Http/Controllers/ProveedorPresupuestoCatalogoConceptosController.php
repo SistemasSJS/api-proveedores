@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Presupuesto\ProveedorStorePresupuestoCatalogoConceptoRequest;
 use App\Http\Requests\Presupuesto\ProveedorUpdatePresupuestoCatalogoConceptoRequest;
+use App\Http\Resources\Presupuesto\PresupuestoSugerenciaLineaResource;
 use App\Http\Resources\Presupuesto\ProveedorPresupuestoCatalogoConceptoResource;
+use App\Models\CatalogoPublicoItem;
 use App\Models\PresupuestoCatalogoConcepto;
 use App\Models\Proveedor;
+use App\Support\PresupuestoAnexoArchivoResponse;
 use App\Support\PresupuestoAnexoImagenOptimizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -51,6 +54,105 @@ class ProveedorPresupuestoCatalogoConceptosController extends Controller
         $data = ProveedorPresupuestoCatalogoConceptoResource::collection($originalPaginator)->resolve();
 
         return $this->paginated($originalPaginator->setCollection(collect($data)));
+    }
+
+    /**
+     * Sugerencias combinadas: catálogo interno del proveedor + catálogo público.
+     */
+    public function sugerencias(Request $request, Proveedor $proveedor): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user || ! $user->tieneAccesoAProveedor((int) $proveedor->id)) {
+            return $this->error('El usuario autenticado no tiene acceso al proveedor indicado.', null, 403);
+        }
+
+        $origen = strtolower(trim((string) $request->input('origen', 'todos')));
+        if (! in_array($origen, ['todos', 'concepto', 'catalogo'], true)) {
+            $origen = 'todos';
+        }
+
+        $search = trim((string) $request->input('search', ''));
+        $categoria = trim((string) $request->input('categoria', ''));
+        $perPage = (int) $request->input('per_page', 50);
+        $limit = max(1, min($perPage, 100));
+
+        $items = [];
+
+        if (in_array($origen, ['todos', 'concepto'], true)) {
+            $conceptosQuery = PresupuestoCatalogoConcepto::query()
+                ->where('proveedor_id', $proveedor->id);
+
+            if ($search !== '') {
+                $conceptosQuery->filter(['search' => $search]);
+            }
+            if (in_array($categoria, ['producto', 'servicio'], true)) {
+                $conceptosQuery->where('categoria', $categoria);
+            }
+
+            $conceptos = $conceptosQuery
+                ->orderBy('descripcion')
+                ->limit($limit)
+                ->get();
+
+            foreach ($conceptos as $concepto) {
+                $items[] = [
+                    'origen' => 'concepto',
+                    'id' => $concepto->id,
+                    'nombre' => $concepto->descripcion,
+                    'unidad' => $concepto->unidad,
+                    'precio_unitario' => (float) $concepto->precio_unitario,
+                    'empresa' => null,
+                    'logo' => null,
+                    'categoria_ui' => $concepto->categoria,
+                    'imagen_url' => PresupuestoAnexoArchivoResponse::archivoUrl($concepto->imagen_path),
+                    'imagen_path' => PresupuestoAnexoArchivoResponse::archivoPathPublico($concepto->imagen_path),
+                    'imagen_base64' => PresupuestoAnexoArchivoResponse::solicitaArchivoBase64($request)
+                        ? PresupuestoAnexoArchivoResponse::archivoBase64($concepto->imagen_path)
+                        : null,
+                ];
+            }
+        }
+
+        $incluyeCatalogo = in_array($origen, ['todos', 'catalogo'], true)
+            && ($categoria === '' || $categoria === 'todos' || $categoria === 'producto');
+
+        if ($incluyeCatalogo) {
+            $catalogoQuery = CatalogoPublicoItem::query()->where('activo', true);
+            if ($search !== '') {
+                $catalogoQuery->filter(['search' => $search]);
+            }
+
+            $catalogoItems = $catalogoQuery
+                ->orderBy('nombre')
+                ->limit($limit)
+                ->get();
+
+            foreach ($catalogoItems as $item) {
+                $items[] = [
+                    'origen' => 'catalogo',
+                    'id' => $item->id,
+                    'nombre' => $item->nombre,
+                    'unidad' => $item->unidad,
+                    'precio_unitario' => (float) ($item->precio_base ?? 0),
+                    'empresa' => $item->empresa,
+                    'logo' => $item->logo,
+                    'categoria_ui' => $item->categoria ?: 'producto',
+                    'imagen_url' => $item->logo,
+                    'imagen_path' => null,
+                    'imagen_base64' => null,
+                ];
+            }
+        }
+
+        usort($items, function (array $a, array $b) {
+            return strcasecmp((string) $a['nombre'], (string) $b['nombre']);
+        });
+
+        $items = array_slice($items, 0, $limit);
+        $data = PresupuestoSugerenciaLineaResource::collection(collect($items))->resolve();
+
+        return $this->success($data, 'Sugerencias de línea.');
     }
 
     /**

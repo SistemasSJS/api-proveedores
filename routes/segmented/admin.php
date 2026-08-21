@@ -17,6 +17,7 @@ use App\Http\Controllers\AdminPedidosController;
 use App\Http\Controllers\AdminProveedorController;
 use App\Http\Controllers\ProveedorUsuarioController;
 use App\Http\Controllers\Admin\ProveedorHomologacionController;
+use App\Http\Controllers\Admin\AdminCatalogoPublicoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -124,6 +125,17 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
         Route::put('tipos-empresa/{tipo_empresa}', [TipoEmpresaController::class, 'update']);
         Route::patch('tipos-empresa/{tipo_empresa}', [TipoEmpresaController::class, 'update']);
         Route::delete('tipos-empresa/{tipo_empresa}', [TipoEmpresaController::class, 'destroy']);
+    });
+
+    /**
+     * CATÁLOGO PÚBLICO (feed importado por admin; no es el catálogo NextPro)
+     */
+    Route::prefix('catalogo-publico')->group(function () {
+        Route::post('import', [AdminCatalogoPublicoController::class, 'import']);
+        Route::get('/', [AdminCatalogoPublicoController::class, 'index']);
+        Route::get('{catalogoPublicoItem}', [AdminCatalogoPublicoController::class, 'show']);
+        Route::patch('{catalogoPublicoItem}', [AdminCatalogoPublicoController::class, 'update']);
+        Route::put('{catalogoPublicoItem}', [AdminCatalogoPublicoController::class, 'update']);
     });
 
     /**
