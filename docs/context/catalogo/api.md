@@ -32,9 +32,15 @@ Middleware de recurso: `proveedor.producto`, `proveedor.categoria`, `proveedor.m
 
 | Prefijo | Controller |
 |---------|------------|
-| `admin/catalogo-publico` | `AdminCatalogoPublicoController` (`POST /import`, GET, PATCH) |
+| `admin/catalogo-publico` | `AdminCatalogoPublicoController` (`POST /import`, GET, GET empresas, GET facets, PATCH ítem, PATCH empresas) |
 | `catalogo-publico` (shared, auth) | `CatalogoPublicoItemController` (lectura: index, show, `GET empresas`) |
 | `{proveedor}/presupuestos/presupuesto-catalogo-conceptos/sugerencias` | Picker combinado (lectura; dominio presupuestos). Query: `origen`, `search`, `empresa` |
 
 Import: `CatalogoPublicoImportService`. Upsert por `(empresa, codigo)`.
+
+Admin extra:
+
+- `GET /admin/catalogo-publico/empresas` — agrupado por empresa (respeta `search`, `marca`, `categoria`, `empresa`).
+- `GET /admin/catalogo-publico/facets` — valores distintos de empresa, marca y categoría.
+- `PATCH /admin/catalogo-publico/empresas` — `{ empresa_actual, empresa?, logo? }` actualiza todas las filas de esa empresa (en transacción; no permite choque de `empresa+codigo`).
 
