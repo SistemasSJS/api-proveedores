@@ -105,10 +105,10 @@ class PresupuestoResource extends JsonResource
                     : true,
                 'incluye_traslados' => array_key_exists('incluye_traslados', $terminosVisibilidad)
                     ? (bool) $terminosVisibilidad['incluye_traslados']
-                    : (bool) ($this->obs_traslados ?? true),
+                    : true,
                 'incluye_viaticos' => array_key_exists('incluye_viaticos', $terminosVisibilidad)
                     ? (bool) $terminosVisibilidad['incluye_viaticos']
-                    : (bool) ($this->obs_viaticos ?? true),
+                    : true,
             ],
             'validacion_alcances' => [
                 'incluye_todos_los_costos' => array_key_exists('incluye_todos_los_costos', $validacionAlcances)
@@ -124,10 +124,14 @@ class PresupuestoResource extends JsonResource
             'term_cond_enunciados' => $enunciadosClasificados['terminos'],
             'validaciones_enunciados' => $enunciadosClasificados['validaciones'],
             'observaciones_enunciados' => $enunciadosClasificados['observaciones'],
-            // observaciones
+            // observaciones (traslados/viáticos: derivados de term_cond_visibilidad; columnas BD droppeadas)
             'obs_garantia_dias' => (int) ($this->obs_garantia_dias ?? 0),
-            'obs_traslados' => $this->obs_traslados === null ? null : (bool) $this->obs_traslados,
-            'obs_viaticos' => $this->obs_viaticos === null ? null : (bool) $this->obs_viaticos,
+            'obs_traslados' => array_key_exists('incluye_traslados', $terminosVisibilidad)
+                ? (bool) $terminosVisibilidad['incluye_traslados']
+                : null,
+            'obs_viaticos' => array_key_exists('incluye_viaticos', $terminosVisibilidad)
+                ? (bool) $terminosVisibilidad['incluye_viaticos']
+                : null,
             'configuracion_condiciones' => $this->configuracion_condiciones,
 
             // estado

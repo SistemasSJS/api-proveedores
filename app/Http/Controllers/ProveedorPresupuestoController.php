@@ -15,6 +15,8 @@ use App\Support\PresupuestoPdfDocumentConfig;
 use App\Models\CarteraCliente;
 use App\Models\ConfigEmisorReceptorPresupuesto;
 use App\Models\Presupuesto;
+use App\Models\PresupuestoAnexo;
+use App\Models\PresupuestoAnexoPdf;
 use App\Models\PresupuestoConcepto;
 use App\Models\Proveedor;
 use BaconQrCode\Renderer\GDLibRenderer;
@@ -679,6 +681,12 @@ class ProveedorPresupuestoController extends Controller
 
     /**
      * Duplica un presupuesto con un nuevo folio y estado borrador.
+     *
+     * Body opcional (bool, default true):
+     * - mantener_cliente
+     * - mantener_anexos_imagen
+     * - mantener_anexos_pdf
+     * - mantener_tarjeta
      */
     public function duplicar(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
     {
@@ -692,24 +700,23 @@ class ProveedorPresupuestoController extends Controller
                 return $this->error('El usuario autenticado no tiene acceso a la empresa en GestionPlus.', null, 403);
             }
 
-            $presupuesto->load('conceptos');
+            $presupuesto->load(['conceptos', 'anexos', 'anexosPdf']);
 
-            $nuevo = DB::transaction(function () use ($presupuesto, $user) {
+            $mantenerCliente = $this->boolFromRequest($request, 'mantener_cliente', true);
+            $mantenerAnexosImagen = $this->boolFromRequest($request, 'mantener_anexos_imagen', true);
+            $mantenerAnexosPdf = $this->boolFromRequest($request, 'mantener_anexos_pdf', true);
+            $mantenerTarjeta = $this->boolFromRequest($request, 'mantener_tarjeta', true);
+
+            $nuevo = DB::transaction(function () use (
+                $presupuesto,
+                $user,
+                $mantenerCliente,
+                $mantenerAnexosImagen,
+                $mantenerAnexosPdf,
+                $mantenerTarjeta
+            ) {
                 $payload = $presupuesto->only([
                     'proveedor_id',
-                    'config_emisor_presupuesto_id',
-                    'empresa_emisora_nombre',
-                    'empresa_emisora_puesto',
-                    'empresa_emisora_telefono',
-                    'empresa_emisora_correo',
-                    'empresa_receptora_id',
-                    'proveedor_receptor_id',
-                    'empresa_receptora_nombre',
-                    'empresa_receptora_puesto',
-                    'empresa_receptora_empresa',
-                    'empresa_receptora_alias',
-                    'empresa_receptora_telefono',
-                    'empresa_receptora_correo',
                     'configuracion_condiciones',
                     'concepto_general',
                     'titulo_anexos',
@@ -730,15 +737,60 @@ class ProveedorPresupuestoController extends Controller
                     'term_cond_visibilidad',
                     'validacion_alcances',
                     'obs_garantia_dias',
-                    'obs_traslados',
-                    'obs_viaticos',
                     'config_mostrar_totales',
+                    'pdf_theme',
+                    'ppto_config',
+                    'incluir_leyenda_atentamente',
                 ]);
 
+                if ($mantenerTarjeta) {
+                    $payload = array_merge($payload, $presupuesto->only([
+                        'config_emisor_presupuesto_id',
+                        'empresa_emisora_nombre',
+                        'empresa_emisora_puesto',
+                        'empresa_emisora_telefono',
+                        'empresa_emisora_correo',
+                        'empresa_emisora_nombre_comercial',
+                    ]));
+                } else {
+                    $payload['config_emisor_presupuesto_id'] = null;
+                    $payload['empresa_emisora_nombre'] = null;
+                    $payload['empresa_emisora_puesto'] = null;
+                    $payload['empresa_emisora_telefono'] = null;
+                    $payload['empresa_emisora_correo'] = null;
+                    $payload['empresa_emisora_nombre_comercial'] = null;
+                }
+
+                if ($mantenerCliente) {
+                    $payload = array_merge($payload, $presupuesto->only([
+                        'empresa_receptora_id',
+                        'proveedor_receptor_id',
+                        'empresa_receptora_nombre',
+                        'empresa_receptora_puesto',
+                        'empresa_receptora_empresa',
+                        'empresa_receptora_alias',
+                        'empresa_receptora_telefono',
+                        'empresa_receptora_correo',
+                    ]));
+                } else {
+                    $payload['empresa_receptora_id'] = null;
+                    $payload['proveedor_receptor_id'] = null;
+                    $payload['empresa_receptora_nombre'] = null;
+                    $payload['empresa_receptora_puesto'] = null;
+                    $payload['empresa_receptora_empresa'] = null;
+                    $payload['empresa_receptora_alias'] = null;
+                    $payload['empresa_receptora_telefono'] = null;
+                    $payload['empresa_receptora_correo'] = null;
+                }
+
+                // No copiar columnas droppeadas (obs_traslados / obs_viaticos / term_cond_anticipo_porcentaje)
+                // ni estado de ciclo del origen (rechazo, visto, token).
                 $payload['numero_presupuesto'] = Presupuesto::generarNumeroPresupuesto((int) $presupuesto->proveedor_id);
                 $payload['fecha_emision'] = now()->toDateString();
                 $payload['estado'] = Presupuesto::ESTADO_BORRADOR;
                 $payload['user_id'] = $user->id;
+                $payload['motivo_rechazo'] = null;
+                $payload['item_visto'] = false;
 
                 $nuevo = Presupuesto::create($payload);
                 $nuevo->asegurarTokenPublico();
@@ -765,6 +817,14 @@ class ProveedorPresupuestoController extends Controller
                 $nuevo->recalcularDesdeConceptos();
                 $nuevo->save();
 
+                if ($mantenerAnexosImagen) {
+                    $this->duplicarAnexosImagenDesdeOrigen($presupuesto, $nuevo);
+                }
+
+                if ($mantenerAnexosPdf) {
+                    $this->duplicarAnexosPdfDesdeOrigen($presupuesto, $nuevo);
+                }
+
                 return $nuevo->fresh(Presupuesto::eagerLodable());
             });
 
@@ -772,6 +832,10 @@ class ProveedorPresupuestoController extends Controller
                 'origen_id' => $presupuesto->id,
                 'nuevo_id' => $nuevo->id,
                 'numero_presupuesto' => $nuevo->numero_presupuesto,
+                'mantener_cliente' => $mantenerCliente,
+                'mantener_anexos_imagen' => $mantenerAnexosImagen,
+                'mantener_anexos_pdf' => $mantenerAnexosPdf,
+                'mantener_tarjeta' => $mantenerTarjeta,
             ]);
 
             return $this->success(
@@ -786,6 +850,84 @@ class ProveedorPresupuestoController extends Controller
             ]);
 
             return $this->error('No fue posible duplicar el presupuesto en GestionPlus.', [$e->getMessage()], 500);
+        }
+    }
+
+    private function boolFromRequest(Request $request, string $key, bool $default): bool
+    {
+        $value = filter_var(
+            $request->input($key, $default),
+            FILTER_VALIDATE_BOOLEAN,
+            FILTER_NULL_ON_FAILURE
+        );
+
+        return $value === null ? $default : $value;
+    }
+
+    private function duplicarAnexosImagenDesdeOrigen(Presupuesto $origen, Presupuesto $destino): void
+    {
+        $disk = Storage::disk('public');
+        $proveedorId = (int) $destino->proveedor_id;
+
+        foreach ($origen->anexos as $anexo) {
+            $origenPath = (string) ($anexo->archivo_path ?? '');
+            if ($origenPath === '' || ! $disk->exists($origenPath)) {
+                continue;
+            }
+
+            $extension = pathinfo($origenPath, PATHINFO_EXTENSION) ?: 'jpg';
+            $nuevoPath = sprintf(
+                'proveedores/%d/presupuestos/%d/anexos/%s.%s',
+                $proveedorId,
+                (int) $destino->id,
+                Str::uuid()->toString(),
+                $extension
+            );
+            $disk->copy($origenPath, $nuevoPath);
+
+            PresupuestoAnexo::create([
+                'presupuesto_id' => $destino->id,
+                'titulo' => $anexo->titulo,
+                'descripcion' => $anexo->descripcion,
+                'precio' => $anexo->precio,
+                'orden' => $anexo->orden,
+                'archivo_path' => $nuevoPath,
+                'archivo_width' => $anexo->archivo_width,
+                'archivo_height' => $anexo->archivo_height,
+                'archivo_aspect_ratio' => $anexo->archivo_aspect_ratio,
+            ]);
+        }
+    }
+
+    private function duplicarAnexosPdfDesdeOrigen(Presupuesto $origen, Presupuesto $destino): void
+    {
+        $disk = Storage::disk('public');
+        $proveedorId = (int) $destino->proveedor_id;
+
+        foreach ($origen->anexosPdf as $anexo) {
+            $origenPath = (string) ($anexo->archivo_path ?? '');
+            if ($origenPath === '' || ! $disk->exists($origenPath)) {
+                continue;
+            }
+
+            $nuevoPath = sprintf(
+                'proveedores/%d/presupuestos/%d/anexos-pdf/%s.pdf',
+                $proveedorId,
+                (int) $destino->id,
+                Str::uuid()->toString()
+            );
+            $disk->copy($origenPath, $nuevoPath);
+
+            PresupuestoAnexoPdf::create([
+                'presupuesto_id' => $destino->id,
+                'titulo' => $anexo->titulo,
+                'orden' => $anexo->orden,
+                'archivo_path' => $nuevoPath,
+                'paginas' => $anexo->paginas,
+                'mostrar_estampado' => $anexo->mostrar_estampado,
+                'mostrar_numero_pagina' => $anexo->mostrar_numero_pagina,
+                'mostrar_datos_presupuesto' => $anexo->mostrar_datos_presupuesto,
+            ]);
         }
     }
 

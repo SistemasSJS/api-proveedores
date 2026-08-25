@@ -36,6 +36,7 @@ Orden en `user-menu-new.ts`:
 ```text
 Presupuestos
 ├── Generar Presupuesto       →  /pages/proveedor/presupuestos/crear
+├── Plantillas                →  /pages/proveedor/presupuestos/plantillas
 ├── Mis presupuestos          →  /pages/proveedor/presupuestos/list
 │                                 (segmentos internos: enviados | recibidos)
 └── Recursos (colapsable)
@@ -47,12 +48,12 @@ Presupuestos
 
 Principios:
 
-- Bajo Presupuestos: acciones de documento (Generar / Mis presupuestos) + grupo **Recursos** (Clientes, Conceptos, Tarjetas).
-- Cada recurso tiene **CRUD en pages propias** (patrón SPP: list / form / detail + components), **sin** embeber modales de captura.
+- Bajo Presupuestos: **Generar** / **Plantillas** / **Mis presupuestos** + grupo **Recursos** (Clientes, Conceptos, Tarjetas).
+- **Plantillas** = receta reutilizable (CRUD en `pages/plantillas/`); **no** es el documento PPTO. Cards propias (`app-presupuesto-plantilla-card`, look distinto a Mis presupuestos). Acción **Usar** → `aplicar` → borrador sin cliente → `editar/:id`.
+- Cada recurso de Gestión tiene **CRUD en pages propias** (patrón SPP: list / form / detail + components), **sin** embeber modales de captura.
 - Captura (`crear` / `editar`) sigue eligiendo de esos recursos vía modales/selectores (snapshot).
 - Dos entradas a Tarjetas: menú Presupuestos → Recursos + Perfil (misma ruta de listado).
 - **Historial** en menú: fuera de v1.
-- **Plantillas**: roadmap; no en menú v1.
 
 Shell (menús): tema claro compartido móvil/desktop — ver `docs/context/platform-shared.md` (Shell UI) y `sidebar-menu-sections.scss`.
 
@@ -62,6 +63,7 @@ Cada recurso es un NgModule completo (`services`, `models`, `constants`, `pages`
 
 | Recurso | Módulo | Path URL | Servicio |
 |---------|--------|----------|----------|
+| Plantillas | `pages/plantillas/presupuesto-plantillas.module.ts` | `…/plantillas` | `PresupuestoPlantillasService` |
 | Clientes | `pages/clientes/presupuesto-clientes.module.ts` | `…/clientes` | `PresupuestoClientesService` |
 | Catálogo conceptos | `pages/catalogo-conceptos/…` | `…/catalogo-conceptos` | `PresupuestoCatalogoConceptosService` |
 | Tarjetas Presentación | `pages/tarjetas/…` | `…/tarjetas-presentacion` | `PresupuestoTarjetasService` (fachada sobre config perfil) |
@@ -124,10 +126,11 @@ Campo `term_cond_moneda`: solo **MXN** \| **USD** \| **EUR** (default MXN). Pref
 - En captura (`presupuesto-page-modals`), icono **settings** en la card «Presupuesto dirigido a» abre `presupuesto-ajustes-modal`.
 - Campos: `fecha_emision` (≤ hoy) + todos los mm de `ppto_config` (márgenes, gaps logo/regla/footer/Atentamente). Defaults alineados a API; botón «Restaurar defaults».
 - Listado: icono historial en cards (estado ≠ borrador) → sheet `estado_logs`. Preview: botón al final del documento (no en footer de acciones).
+- **Duplicar**: modal sheet con header «Duplicar presupuesto»; switches (como cliente) para **cliente**, **anexos imagen**, **anexos PDF** y **tarjeta**; resumen (conceptos/total). Mientras corre la API el sheet permanece abierto con overlay de loading (sin toast de éxito). Cierra con cancelar, clic fuera o **arrastrar hacia abajo solo desde el handle** (bloqueados durante loading) → al terminar navega a `editar/:id`.
 - **Solicitar aprobación / Enviar**: solo emisor (`esEmisorSesion` / `puedeEnviar`); el receptor ve Aceptar/Rechazar.
 - Unidades e imagen en concepto (captura y catálogo CRUD): buscador + **Otro**; card imagen Reajustar / Cambiar / Quitar.
 - Nombres propios Dirigido a / Atentamente: sentence case (`presupuesto-texto-documento.helper.ts`).
-- Estilos overlay: `ion-modal.modal-ajustes-presupuesto`, `ion-modal.modal-historial-presupuesto` y `ion-modal.fecha-picker-modal` en `src/global.scss`.
+- Estilos overlay: `ion-modal.modal-ajustes-presupuesto`, `ion-modal.modal-historial-presupuesto`, `ion-modal.modal-duplicar-presupuesto` y `ion-modal.fecha-picker-modal` en `src/global.scss`.
 
 ### Títulos de sección de anexos
 

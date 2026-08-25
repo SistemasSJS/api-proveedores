@@ -35,7 +35,7 @@ Laravel · PHP 8 · MySQL · Sanctum · ApiResponse (`status`, `code`, `message`
 | `api-resources.mdc` | Resources |
 | `api-models.mdc` | Models |
 | `api-requests.mdc` | Form Requests |
-| `api-database.mdc` | Migraciones |
+| `api-database.mdc` | Migraciones; **checklist drop/rename** → alinear modelo (+ requests/resources) |
 | `api-mail-notifications.mdc` | Mail / Notifications |
 | `api-routes.mdc` | Rutas segmentadas |
 

@@ -8,6 +8,8 @@
 | `PresupuestoConcepto` | `presupuesto_conceptos` | Líneas (concepto/párrafo); snapshot sin FK a productos |
 | `PresupuestoAnexo` | `presupuesto_anexos` | Anexos imagen |
 | `PresupuestoAnexoPdf` | `presupuesto_anexo_pdf` | Anexos PDF (merge al final del documento) |
+| `PresupuestoPlantilla` | `presupuesto_plantillas` | Receta reutilizable (aislada del documento) |
+| `PresupuestoPlantillaConcepto` | `presupuesto_plantilla_conceptos` | Líneas de la plantilla |
 | `CarteraCliente` | `cartera_clientes` | Clientes del emisor (dominio presupuestos) |
 | `PresupuestoCatalogoConcepto` | `presupuesto_catalogo_conceptos` | Biblioteca reutilizable de conceptos (Plus) |
 | `PresupuestoEstadoLog` | `presupuesto_estado_logs` | Histórico de cambios de estado (timeline) |
@@ -49,6 +51,12 @@ Campo típico `term_cond_moneda`: valores admitidos **MXN** | **USD** | **EUR** 
 Tipos: `concepto` | `parrafo`. Campos libres: descripción, cantidad, unidad, precios, imagen. **Sin `producto_id`.**
 
 Catálogo de conceptos reutilizable: tabla `presupuesto_catalogo_conceptos` (`descripcion`, `categoria` producto|servicio, `unidad`, `precio_unitario`, `imagen_path` opcional). Al usarlo en un presupuesto se hace **snapshot** a la línea (sin FK).
+
+Traslados / viáticos: **no** hay columnas `obs_traslados` / `obs_viaticos` (drop fase 3). Fuente de verdad: `term_cond_visibilidad.incluye_traslados` / `incluye_viaticos`. La API puede exponer `obs_traslados` / `obs_viaticos` en Resources como **alias derivados** de esa visibilidad (compat front).
+
+## Plantillas (`presupuesto_plantillas`)
+
+Recurso **aislado** del documento `presupuestos` (no `es_plantilla`). Guarda estructura/contenido/estilo default: nombre, concepto general, términos/IVA/moneda, `pdf_theme`/`ppto_config`, emisor opcional, líneas en `presupuesto_plantilla_conceptos`. **Sin** receptor, folio, estado, token ni logs. Al **aplicar** se crea un PPTO borrador por snapshot (`PresupuestoPlantillaAplicarService`); editar la plantilla no modifica PPTOs ya creados.
 
 ## Campos de documento (captura / PDF)
 

@@ -34,11 +34,12 @@ Visión de producto (menú / secciones): el módulo no es solo el ciclo del docu
 | Temas PDF personalizables | **Hecho** | `pdf-themes` |
 | Datos usuario emisor ≠ empresa emisora | **Hecho** | Config / tarjetas emisor-receptor |
 | Envío app + correo + enlace público | **Hecho** | Aceptar / rechazar; notifs: ver workflows |
+| Duplicar presupuesto | **Hecho** | API + icono en cards de Mis presupuestos; no en recibidos. Distinto de Plantillas |
+| Plantillas de presupuesto | **Hecho** | Menú entre Generar y Mis presupuestos; CRUD + `aplicar` → borrador. Lógica aislada del documento |
 | Notificaciones ppto (copy bandeja) | **Hecho** | Título `FOLIO · EMPRESA · NOMBRE · ACCIÓN` + hechos en mensaje |
 | QR pie PDF → enlace público | **Hecho** | `{frontend}/public/presupuesto/{token}`; con sesión → `enlace-publico/:token` |
 | Cuentas bancarias (perfil empresa) | **Hecho** (soporte) | Perfil; no cobranza automática |
 | Historial en menú | **Fuera de v1** | Ruta `historial` puede existir; no foco del rework de menú |
-| Plantillas de presupuesto | **Roadmap** | Candidato a sección hermana; no en menú v1 |
 | Pasarelas PayPal / Stripe | **Roadmap** | UI en perfil (“Servicios digitales”); **sin implementar** |
 | Pago → finalización del presupuesto | **Roadmap** | Tras aceptar; no confundir con dominio SP |
 

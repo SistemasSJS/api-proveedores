@@ -30,29 +30,36 @@ class PresupuestoPublicResource extends JsonResource
     {
         $proveedor = $this->proveedor;
         $condiciones = is_array($this->configuracion_condiciones) ? $this->configuracion_condiciones : [];
+        $terminosVisibilidadEarly = is_array($this->term_cond_visibilidad) ? $this->term_cond_visibilidad : [];
+        $incluyeTraslados = array_key_exists('incluye_traslados', $terminosVisibilidadEarly)
+            ? (bool) $terminosVisibilidadEarly['incluye_traslados']
+            : null;
+        $incluyeViaticos = array_key_exists('incluye_viaticos', $terminosVisibilidadEarly)
+            ? (bool) $terminosVisibilidadEarly['incluye_viaticos']
+            : null;
         $condiciones = array_merge($condiciones, [
             'vigencia_dias' => $this->term_cond_dias_vigencia,
             'impuestos_activo' => ($this->config_mostrar_totales ?? true)
                 && $this->term_cond_impuestos_en_pdf !== false,
             'config_mostrar_totales' => (bool) ($this->config_mostrar_totales ?? true),
-            'anticipo_porcentaje' => $this->term_cond_anticipo_porcentaje,
+            'anticipo_porcentaje' => $this->term_cond_inicio_trabajo_porcentaje,
             'tiempo_entrega_dias' => $this->term_cond_tiempo_entrega_dias,
             'inicio_trabajo' => $this->term_cond_inicio_trabajo,
             'inicio_trabajo_porcentaje' => $this->term_cond_inicio_trabajo_porcentaje,
             'garantia_dias' => $this->obs_garantia_dias,
-            'gastos_traslado' => $this->obs_traslados === null
+            'gastos_traslado' => $incluyeTraslados === null
                 ? null
-                : ($this->obs_traslados ? 'incluidos' : 'no_incluidos'),
-            'viaticos' => $this->obs_viaticos === null
+                : ($incluyeTraslados ? 'incluidos' : 'no_incluidos'),
+            'viaticos' => $incluyeViaticos === null
                 ? null
-                : ($this->obs_viaticos ? 'incluidos' : 'no_incluidos'),
+                : ($incluyeViaticos ? 'incluidos' : 'no_incluidos'),
         ]);
 
         $enunciadosClasificados = $this->resource->getEnunciadosClasificados();
         $terminosTextosLibres = is_array($this->term_cond_textos_libres)
             ? array_slice($this->term_cond_textos_libres, 0, 4)
             : [];
-        $terminosVisibilidad = is_array($this->term_cond_visibilidad) ? $this->term_cond_visibilidad : [];
+        $terminosVisibilidad = $terminosVisibilidadEarly;
         $validacionAlcances = is_array($this->validacion_alcances) ? $this->validacion_alcances : [];
 
         $logoUrl = null;
@@ -93,7 +100,9 @@ class PresupuestoPublicResource extends JsonResource
             'term_cond_moneda' => $this->term_cond_moneda ?? 'MXN',
             'term_cond_impuestos_en_pdf' => (bool) ($this->term_cond_impuestos_en_pdf ?? true),
             'term_cond_iva' => (float) ($this->term_cond_iva ?? 16),
-            'term_cond_anticipo_porcentaje' => $this->term_cond_anticipo_porcentaje,
+            'term_cond_anticipo_porcentaje' => $this->term_cond_inicio_trabajo_porcentaje !== null
+                ? (float) $this->term_cond_inicio_trabajo_porcentaje
+                : null,
             'term_cond_tiempo_entrega_dias' => $this->term_cond_tiempo_entrega_dias,
             'term_cond_inicio_trabajo' => $this->term_cond_inicio_trabajo,
             'term_cond_inicio_trabajo_porcentaje' => $this->term_cond_inicio_trabajo_porcentaje,
@@ -119,10 +128,10 @@ class PresupuestoPublicResource extends JsonResource
                     : true,
                 'incluye_traslados' => array_key_exists('incluye_traslados', $terminosVisibilidad)
                     ? (bool) $terminosVisibilidad['incluye_traslados']
-                    : (bool) ($this->obs_traslados ?? true),
+                    : true,
                 'incluye_viaticos' => array_key_exists('incluye_viaticos', $terminosVisibilidad)
                     ? (bool) $terminosVisibilidad['incluye_viaticos']
-                    : (bool) ($this->obs_viaticos ?? true),
+                    : true,
             ],
             'validacion_alcances' => [
                 'incluye_todos_los_costos' => array_key_exists('incluye_todos_los_costos', $validacionAlcances)
@@ -139,8 +148,12 @@ class PresupuestoPublicResource extends JsonResource
             'validaciones_enunciados' => $enunciadosClasificados['validaciones'],
             'observaciones_enunciados' => $enunciadosClasificados['observaciones'],
             'obs_garantia_dias' => (int) ($this->obs_garantia_dias ?? 0),
-            'obs_traslados' => $this->obs_traslados === null ? null : (bool) $this->obs_traslados,
-            'obs_viaticos' => $this->obs_viaticos === null ? null : (bool) $this->obs_viaticos,
+            'obs_traslados' => array_key_exists('incluye_traslados', $terminosVisibilidad)
+                ? (bool) $terminosVisibilidad['incluye_traslados']
+                : null,
+            'obs_viaticos' => array_key_exists('incluye_viaticos', $terminosVisibilidad)
+                ? (bool) $terminosVisibilidad['incluye_viaticos']
+                : null,
             'configuracion_condiciones' => $this->configuracion_condiciones,
 
             'motivo_rechazo' => $this->motivo_rechazo,

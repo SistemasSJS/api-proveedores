@@ -92,12 +92,10 @@ class Presupuesto extends BaseModel
         'term_cond_inicio_trabajo_cantidad', // solo aplica para inicio por anticipo (monto)
         'term_cond_impuestos_en_pdf',
         'term_cond_iva',
-        'term_cond_anticipo_porcentaje', // @deprecated: reemplazado por inicio_trabajo_porcentaje/cantidad
         // Garantía
         'obs_garantia_dias',
-        'obs_traslados', // @deprecated
-        'obs_viaticos', // @deprecated
         // Estructura escalable de términos/alcances
+        // (traslados/viáticos viven en term_cond_visibilidad; columnas obs_traslados/obs_viaticos droppeadas)
         'term_cond_textos_libres',
         'term_cond_visibilidad',
         'validacion_alcances',
@@ -146,9 +144,6 @@ class Presupuesto extends BaseModel
         'total' => 'decimal:2',
         'term_cond_iva' => 'decimal:2',
         'term_cond_inicio_trabajo_cantidad' => 'decimal:2',
-        'term_cond_anticipo_porcentaje' => 'decimal:2',
-        'obs_traslados' => 'boolean',
-        'obs_viaticos' => 'boolean',
         'term_cond_textos_libres' => 'array',
         'term_cond_visibilidad' => 'array',
         'validacion_alcances' => 'array',
@@ -271,10 +266,10 @@ class Presupuesto extends BaseModel
         if (self::flagVisible($visibilidad, 'incluye_materiales_insumos', $defaultVisibilidad)) {
             $terminos[] = self::ENUNCIADO_INCLUYE_MATERIALES_INSUMOS;
         }
-        if (self::flagVisible($visibilidad, 'incluye_traslados', $visibilidadEstricta ? false : (bool) $this->obs_traslados)) {
+        if (self::flagVisible($visibilidad, 'incluye_traslados', $visibilidadEstricta ? false : true)) {
             $terminos[] = self::ENUNCIADO_INCLUYE_TRASLADOS;
         }
-        if (self::flagVisible($visibilidad, 'incluye_viaticos', $visibilidadEstricta ? false : (bool) $this->obs_viaticos)) {
+        if (self::flagVisible($visibilidad, 'incluye_viaticos', $visibilidadEstricta ? false : true)) {
             $terminos[] = self::ENUNCIADO_INCLUYE_VIATICOS;
         }
 
@@ -442,10 +437,10 @@ class Presupuesto extends BaseModel
         if (self::flagVisible($visibilidad, 'incluye_materiales_insumos', $defaultVisibilidad)) {
             $terminos[] = self::ENUNCIADO_INCLUYE_MATERIALES_INSUMOS;
         }
-        if (self::flagVisible($visibilidad, 'incluye_traslados', $visibilidadEstricta ? false : (array_key_exists('obs_traslados', $data) ? (bool) $data['obs_traslados'] : true))) {
+        if (self::flagVisible($visibilidad, 'incluye_traslados', $defaultVisibilidad)) {
             $terminos[] = self::ENUNCIADO_INCLUYE_TRASLADOS;
         }
-        if (self::flagVisible($visibilidad, 'incluye_viaticos', $visibilidadEstricta ? false : (array_key_exists('obs_viaticos', $data) ? (bool) $data['obs_viaticos'] : true))) {
+        if (self::flagVisible($visibilidad, 'incluye_viaticos', $defaultVisibilidad)) {
             $terminos[] = self::ENUNCIADO_INCLUYE_VIATICOS;
         }
 

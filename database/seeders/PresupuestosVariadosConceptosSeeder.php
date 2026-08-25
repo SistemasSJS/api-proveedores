@@ -70,11 +70,14 @@ class PresupuestosVariadosConceptosSeeder extends Seeder
                         'term_cond_dias_vigencia' => 15,
                         'term_cond_moneda' => 'MXN',
                         'term_cond_iva' => 16,
-                        'term_cond_anticipo_porcentaje' => 50,
+                        'term_cond_inicio_trabajo' => 2,
+                        'term_cond_inicio_trabajo_porcentaje' => 50,
                         'term_cond_tiempo_entrega_dias' => 10,
                         'obs_garantia_dias' => 60,
-                        'obs_traslados' => true,
-                        'obs_viaticos' => true,
+                        'term_cond_visibilidad' => [
+                            'incluye_traslados' => true,
+                            'incluye_viaticos' => true,
+                        ],
                     ]);
 
                     $conceptos = $this->generarConceptos($numConceptos);
