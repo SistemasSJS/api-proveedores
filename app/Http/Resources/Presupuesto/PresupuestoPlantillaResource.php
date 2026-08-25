@@ -69,6 +69,8 @@ class PresupuestoPlantillaResource extends JsonResource
                 fn () => $this->conceptos->count()
             ),
             'conceptos' => PresupuestoPlantillaConceptoResource::collection($this->whenLoaded('conceptos')),
+            'anexos' => PresupuestoPlantillaAnexoResource::collection($this->whenLoaded('anexos')),
+            'anexos_pdf' => PresupuestoPlantillaAnexoPdfResource::collection($this->whenLoaded('anexosPdf')),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];

@@ -10,6 +10,8 @@
 | `PresupuestoAnexoPdf` | `presupuesto_anexo_pdf` | Anexos PDF (merge al final del documento) |
 | `PresupuestoPlantilla` | `presupuesto_plantillas` | Receta reutilizable (aislada del documento) |
 | `PresupuestoPlantillaConcepto` | `presupuesto_plantilla_conceptos` | Líneas de la plantilla |
+| `PresupuestoPlantillaAnexo` | `presupuesto_plantilla_anexos` | Anexos imagen de plantilla |
+| `PresupuestoPlantillaAnexoPdf` | `presupuesto_plantilla_anexo_pdf` | Anexos PDF de plantilla |
 | `CarteraCliente` | `cartera_clientes` | Clientes del emisor (dominio presupuestos) |
 | `PresupuestoCatalogoConcepto` | `presupuesto_catalogo_conceptos` | Biblioteca reutilizable de conceptos (Plus) |
 | `PresupuestoEstadoLog` | `presupuesto_estado_logs` | Histórico de cambios de estado (timeline) |
@@ -56,7 +58,7 @@ Traslados / viáticos: **no** hay columnas `obs_traslados` / `obs_viaticos` (dro
 
 ## Plantillas (`presupuesto_plantillas`)
 
-Recurso **aislado** del documento `presupuestos` (no `es_plantilla`). Guarda estructura/contenido/estilo default: nombre, concepto general, términos/IVA/moneda, `pdf_theme`/`ppto_config`, emisor opcional, líneas en `presupuesto_plantilla_conceptos`. **Sin** receptor, folio, estado, token ni logs. Al **aplicar** se crea un PPTO borrador por snapshot (`PresupuestoPlantillaAplicarService`); editar la plantilla no modifica PPTOs ya creados.
+Recurso **aislado** del documento `presupuestos` (no `es_plantilla`). Guarda estructura/contenido/estilo default: nombre, concepto general, términos/IVA/moneda, `pdf_theme`/`ppto_config`, emisor opcional, líneas en `presupuesto_plantilla_conceptos`, anexos en `presupuesto_plantilla_anexos` / `presupuesto_plantilla_anexo_pdf`. **Sin** receptor, folio, estado, token ni logs. Al **aplicar** se crea un PPTO borrador por snapshot (`PresupuestoPlantillaAplicarService`); **desde presupuesto** crea plantilla desde un PPTO (`PresupuestoPlantillaDesdePresupuestoService`). Editar la plantilla no modifica PPTOs ya creados.
 
 ## Campos de documento (captura / PDF)
 

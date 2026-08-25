@@ -35,7 +35,7 @@ Visión de producto (menú / secciones): el módulo no es solo el ciclo del docu
 | Datos usuario emisor ≠ empresa emisora | **Hecho** | Config / tarjetas emisor-receptor |
 | Envío app + correo + enlace público | **Hecho** | Aceptar / rechazar; notifs: ver workflows |
 | Duplicar presupuesto | **Hecho** | API + icono en cards de Mis presupuestos; no en recibidos. Distinto de Plantillas |
-| Plantillas de presupuesto | **Hecho** | Menú entre Generar y Mis presupuestos; CRUD + `aplicar` → borrador. Lógica aislada del documento |
+| Plantillas de presupuesto | **Hecho** | Captura = page-modals sin cliente; `aplicar` + `desde-presupuesto`; anexos propios |
 | Notificaciones ppto (copy bandeja) | **Hecho** | Título `FOLIO · EMPRESA · NOMBRE · ACCIÓN` + hechos en mensaje |
 | QR pie PDF → enlace público | **Hecho** | `{frontend}/public/presupuesto/{token}`; con sesión → `enlace-publico/:token` |
 | Cuentas bancarias (perfil empresa) | **Hecho** (soporte) | Perfil; no cobranza automática |

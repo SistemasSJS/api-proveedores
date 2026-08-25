@@ -6,10 +6,12 @@ use App\Http\Requests\Presupuesto\StorePresupuestoPlantillaRequest;
 use App\Http\Requests\Presupuesto\UpdatePresupuestoPlantillaRequest;
 use App\Http\Resources\Presupuesto\PresupuestoPlantillaResource;
 use App\Http\Resources\Presupuesto\PresupuestoResource;
+use App\Models\Presupuesto;
 use App\Models\PresupuestoPlantilla;
 use App\Models\PresupuestoPlantillaConcepto;
 use App\Models\Proveedor;
 use App\Services\Presupuesto\PresupuestoPlantillaAplicarService;
+use App\Services\Presupuesto\PresupuestoPlantillaDesdePresupuestoService;
 use App\Support\PresupuestoAnexoImagenOptimizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -27,7 +29,8 @@ class ProveedorPresupuestoPlantillaController extends Controller
     private bool $logEnabled = true;
 
     public function __construct(
-        private readonly PresupuestoPlantillaAplicarService $aplicarService
+        private readonly PresupuestoPlantillaAplicarService $aplicarService,
+        private readonly PresupuestoPlantillaDesdePresupuestoService $desdePresupuestoService
     ) {}
 
     public function index(Request $request, Proveedor $proveedor): JsonResponse
@@ -49,7 +52,7 @@ class ProveedorPresupuestoPlantillaController extends Controller
         }
 
         $paginator = PresupuestoPlantilla::query()
-            ->with(['conceptos'])
+            ->with(['conceptos', 'anexos', 'anexosPdf'])
             ->filter($filters)
             ->orderBy($sortBy, $order)
             ->paginate(max(1, min($perPage, 100)));
@@ -221,6 +224,65 @@ class ProveedorPresupuestoPlantillaController extends Controller
     }
 
     /**
+     * Crea una plantilla a partir de un presupuesto existente (sin receptor).
+     */
+    public function desdePresupuesto(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            if (! $user || ! $user->tieneAccesoAProveedor((int) $proveedor->id)) {
+                return $this->error('El usuario autenticado no tiene acceso a la empresa en GestionPlus.', null, 403);
+            }
+            if ((int) $presupuesto->proveedor_id !== (int) $proveedor->id) {
+                return $this->error('El presupuesto no pertenece a esta empresa.', null, 403);
+            }
+
+            $validated = $request->validate([
+                'nombre' => ['required', 'string', 'max:120'],
+                'descripcion' => ['nullable', 'string', 'max:500'],
+                'mantener_anexos_imagen' => ['sometimes', 'boolean'],
+                'mantener_anexos_pdf' => ['sometimes', 'boolean'],
+                'mantener_tarjeta' => ['sometimes', 'boolean'],
+                'mantener_tema' => ['sometimes', 'boolean'],
+            ], [
+                'nombre.required' => 'El nombre de la plantilla es obligatorio.',
+                'nombre.max' => 'El nombre de la plantilla no puede superar 120 caracteres.',
+            ]);
+
+            $plantilla = $this->desdePresupuestoService->crear(
+                $presupuesto,
+                $user,
+                trim((string) $validated['nombre']),
+                isset($validated['descripcion']) ? trim((string) $validated['descripcion']) : null,
+                [
+                    'mantener_anexos_imagen' => $this->boolFromRequest($request, 'mantener_anexos_imagen', true),
+                    'mantener_anexos_pdf' => $this->boolFromRequest($request, 'mantener_anexos_pdf', true),
+                    'mantener_tarjeta' => $this->boolFromRequest($request, 'mantener_tarjeta', true),
+                    'mantener_tema' => $this->boolFromRequest($request, 'mantener_tema', true),
+                ]
+            );
+
+            $this->log('Plantilla creada desde presupuesto', [
+                'plantilla_id' => $plantilla->id,
+                'presupuesto_id' => $presupuesto->id,
+            ]);
+
+            return $this->success(
+                new PresupuestoPlantillaResource($plantilla),
+                'Plantilla creada desde el presupuesto.',
+                201
+            );
+        } catch (Throwable $e) {
+            $this->log('Error al crear plantilla desde presupuesto', [
+                'presupuesto_id' => $presupuesto->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->error('No fue posible crear la plantilla desde el presupuesto.', [$e->getMessage()], 500);
+        }
+    }
+
+    /**
      * @param  array<int, array<string, mixed>>  $conceptos
      */
     private function sincronizarConceptos(PresupuestoPlantilla $plantilla, array $conceptos): void
@@ -247,7 +309,7 @@ class ProveedorPresupuestoPlantillaController extends Controller
                 'tipo' => $tipo,
                 'descripcion' => (string) ($fila['descripcion'] ?? ''),
                 'cantidad' => $esParrafo ? 0 : (float) ($fila['cantidad'] ?? 1),
-                'unidad' => $esParrafo ? null : (string) ($fila['unidad'] ?? 'pieza'),
+                'unidad' => $esParrafo ? '' : (string) ($fila['unidad'] ?? 'pieza'),
                 'precio_unitario' => $esParrafo ? 0 : (float) ($fila['precio_unitario'] ?? 0),
                 'imagen_path' => $imagenPath,
             ]);
@@ -274,6 +336,17 @@ class ProveedorPresupuestoPlantillaController extends Controller
         Storage::disk('public')->put($path, $optimized['binary'] ?? $binary);
 
         return $path;
+    }
+
+    private function boolFromRequest(Request $request, string $key, bool $default): bool
+    {
+        $value = filter_var(
+            $request->input($key, $default),
+            FILTER_VALIDATE_BOOLEAN,
+            FILTER_NULL_ON_FAILURE
+        );
+
+        return $value === null ? $default : $value;
     }
 
     private function log(string $message, array $context = []): void

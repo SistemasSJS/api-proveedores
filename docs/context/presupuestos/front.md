@@ -15,7 +15,7 @@ Montado en `proveedor-routing.module.ts` como ruta `presupuestos`.
 | Form | `pages/presupuesto-proveedor-form` |
 | Preview | `pages/presupuesto-proveedor-preview` |
 | Enlace (auth) | `pages/presupuesto-enlace-publico` (`…/presupuestos/enlace-publico/:token`) |
-| Stepper / modales | `components/presupuesto-form`, `presupuesto-page-modals` |
+| Stepper / modales | `components/presupuesto-form`, `presupuesto-page-modals` (también captura de **Plantillas** con `capturaMode: plantilla`) |
 | Recursos CRUD (lazy) | `pages/{clientes\|catalogo-conceptos\|tarjetas}/` — module + routes + services + models + constants |
 | Paths (barrel) | `constants/presupuesto-gestion.paths.ts` → reexporta paths de cada recurso |
 
@@ -49,7 +49,7 @@ Presupuestos
 Principios:
 
 - Bajo Presupuestos: **Generar** / **Plantillas** / **Mis presupuestos** + grupo **Recursos** (Clientes, Conceptos, Tarjetas).
-- **Plantillas** = receta reutilizable (CRUD en `pages/plantillas/`); **no** es el documento PPTO. Cards propias (`app-presupuesto-plantilla-card`, look distinto a Mis presupuestos). Acción **Usar** → `aplicar` → borrador sin cliente → `editar/:id`.
+- **Plantillas** = receta reutilizable (CRUD en `pages/plantillas/`); **no** es el documento PPTO. Cards propias (`app-presupuesto-plantilla-card`, teñidas con `pdf_theme`). Captura crear/editar = `app-presupuesto-page-modals` con `capturaMode: 'plantilla'` (rutas en módulo padre; list/detalle lazy). Atrás/cerrar en captura y detalle usa `navigateRoot` al listado de plantillas (evita historial hacia Mis presupuestos). Acción **Usar** → `aplicar` → borrador sin cliente → `editar/:id`. Desde Mis presupuestos / preview emisor: **Guardar como plantilla** → modal con toggles (`mantener_anexos_*`, `mantener_tarjeta`, `mantener_tema`) → `desde-presupuesto`.
 - Cada recurso de Gestión tiene **CRUD en pages propias** (patrón SPP: list / form / detail + components), **sin** embeber modales de captura.
 - Captura (`crear` / `editar`) sigue eligiendo de esos recursos vía modales/selectores (snapshot).
 - Dos entradas a Tarjetas: menú Presupuestos → Recursos + Perfil (misma ruta de listado).

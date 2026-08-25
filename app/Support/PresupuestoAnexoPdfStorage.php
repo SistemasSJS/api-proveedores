@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Presupuesto;
+use App\Models\PresupuestoPlantilla;
 use App\Models\Proveedor;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -65,14 +66,42 @@ final class PresupuestoAnexoPdfStorage
      */
     public static function guardarPdfBase64(Proveedor $proveedor, Presupuesto $presupuesto, string $dataUri): array
     {
-        $binary = self::decodificarPdfDesdeDataUri($dataUri);
-
         $path = sprintf(
             'proveedores/%d/presupuestos/%d/anexos-pdf/%s.pdf',
             (int) $proveedor->id,
             (int) $presupuesto->id,
             Str::uuid()->toString()
         );
+
+        return self::guardarPdfBase64EnPath($path, $dataUri);
+    }
+
+    /**
+     * Guarda un PDF de anexo asociado a una plantilla de presupuesto.
+     *
+     * @return array{path: string, paginas: int}
+     */
+    public static function guardarPdfBase64Plantilla(
+        Proveedor $proveedor,
+        PresupuestoPlantilla $plantilla,
+        string $dataUri
+    ): array {
+        $path = sprintf(
+            'presupuesto-plantillas/%d/%d/anexos-pdf/%s.pdf',
+            (int) $proveedor->id,
+            (int) $plantilla->id,
+            Str::uuid()->toString()
+        );
+
+        return self::guardarPdfBase64EnPath($path, $dataUri);
+    }
+
+    /**
+     * @return array{path: string, paginas: int}
+     */
+    public static function guardarPdfBase64EnPath(string $path, string $dataUri): array
+    {
+        $binary = self::decodificarPdfDesdeDataUri($dataUri);
 
         Storage::disk('public')->put($path, $binary);
 

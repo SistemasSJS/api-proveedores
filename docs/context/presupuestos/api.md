@@ -18,7 +18,10 @@ Repo: `api-proveedores`. Prefijo gerente: `proveedores/{proveedor}/…` + `prove
 | | `GET …/sugerencias` | Interno + catálogo público (snapshot al elegir) |
 | Plantillas | `{proveedor}/presupuestos/plantillas` | `ProveedorPresupuestoPlantillaController` |
 | | `GET/POST /`, `GET/PUT/PATCH/DELETE /{plantilla}` | CRUD aislado del documento |
+| | `POST …/plantillas/desde-presupuesto/{presupuesto}` | Snapshot PPTO → plantilla (sin receptor) |
 | | `POST …/plantillas/{plantilla}/aplicar` | Crea PPTO borrador (sin receptor); servicio propio, no `duplicar` |
+| | `…/plantillas/{plantilla}/anexos` (+ `/bulk`) | Anexos imagen de plantilla |
+| | `…/plantillas/{plantilla}/anexos-pdf` | Anexos PDF de plantilla |
 | Anexos | `{proveedor}/presupuestos/{presupuesto}/anexos` (+ `/bulk`) | `ProveedorPresupuestoAnexoController` |
 | Anexos PDF | `…/anexos-pdf` | `ProveedorPresupuestoAnexoPdfController` |
 | Config | `{proveedor}/config-emisor-receptor-presupuestos` | `ProveedorPresupuestoConfigController` |
@@ -81,7 +84,7 @@ Flujo de disparo, casos receptor registrado/no registrado y formato de título/m
 - `titulo_anexos`: `nullable|string|max:80` en `StorePresupuestoRequest` / `UpdatePresupuestoRequest`. Resources y Blade (sección imágenes) normalizan vacío → **Anexos**.
 - `titulo_anexos_pdf`: `nullable|string|max:80`. Resources normalizan vacío → **Anexos PDF**. En el PDF generado: título principal del **estampado** de cada hoja mergeada (`PresupuestoPdfAnexoEstampado`). Si el anexo PDF tiene `titulo` propio distinto, se muestra como subtítulo.
 - Duplicar: body opcional (bool, default `true`): `mantener_cliente`, `mantener_anexos_imagen`, `mantener_anexos_pdf`, `mantener_tarjeta`. Si `false`, el borrador nuevo omite receptor, anexos imagen/PDF (copia de archivos propios) o tarjeta emisor según el flag. No copia columnas legacy droppeadas (`obs_traslados`, `obs_viaticos`, `term_cond_anticipo_porcentaje`). Copia `titulo_anexos` / `titulo_anexos_pdf`, términos vía `term_cond_*` / `term_cond_visibilidad`, y `pdf_theme` / `ppto_config`. Resetea `motivo_rechazo`, `item_visto`, folio y `fecha_emision`. Front: modal de confirmación en Mis presupuestos con switches.
-- Plantillas: CRUD en `…/plantillas`. `POST …/aplicar` crea un presupuesto borrador vía `PresupuestoPlantillaAplicarService` (lógica **separada** de `duplicar` / store del documento). Sin cliente; el usuario lo elige al editar.
+- Plantillas: CRUD en `…/plantillas`. Captura front = `presupuesto-page-modals` en `capturaMode: plantilla` (sin cliente). `POST …/aplicar` crea borrador vía `PresupuestoPlantillaAplicarService`. `POST …/desde-presupuesto/{presupuesto}` crea plantilla vía `PresupuestoPlantillaDesdePresupuestoService` (conceptos/términos siempre; body opcional bool default `true`: `mantener_anexos_imagen`, `mantener_anexos_pdf`, `mantener_tarjeta`, `mantener_tema`; **sin** receptor). Anexos en tablas hijas + endpoints anidados.
 - PDF tabla de conceptos: columna `#` centrada (`td:first-child`) en concepto y párrafo.
 - Anexos imagen: **sin** límite de cantidad en API (el tope de 4 es solo front).
 - No hay endpoints de cobro PayPal/Stripe ni de “finalizar por pago” en presupuestos (roadmap).

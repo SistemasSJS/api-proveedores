@@ -81,7 +81,7 @@ class PresupuestoPlantilla extends BaseModel
      */
     public static function eagerLodable(): array
     {
-        return ['conceptos', 'proveedor', 'user'];
+        return ['conceptos', 'anexos', 'anexosPdf', 'proveedor', 'user'];
     }
 
     public function proveedor(): BelongsTo
@@ -98,6 +98,20 @@ class PresupuestoPlantilla extends BaseModel
     {
         return $this->hasMany(PresupuestoPlantillaConcepto::class, 'presupuesto_plantilla_id')
             ->orderBy('numero');
+    }
+
+    public function anexos(): HasMany
+    {
+        return $this->hasMany(PresupuestoPlantillaAnexo::class, 'presupuesto_plantilla_id')
+            ->orderBy('orden')
+            ->orderBy('id');
+    }
+
+    public function anexosPdf(): HasMany
+    {
+        return $this->hasMany(PresupuestoPlantillaAnexoPdf::class, 'presupuesto_plantilla_id')
+            ->orderBy('orden')
+            ->orderBy('id');
     }
 
     public function configEmisorPresupuesto(): BelongsTo

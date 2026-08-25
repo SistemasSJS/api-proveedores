@@ -26,6 +26,8 @@ use App\Http\Controllers\ProveedorPresupuestoController;
 use App\Http\Controllers\ProveedorPresupuestoCarteraClientesController;
 use App\Http\Controllers\ProveedorPresupuestoCatalogoConceptosController;
 use App\Http\Controllers\ProveedorPresupuestoPlantillaController;
+use App\Http\Controllers\ProveedorPresupuestoPlantillaAnexoController;
+use App\Http\Controllers\ProveedorPresupuestoPlantillaAnexoPdfController;
 use App\Http\Controllers\ProveedorPresupuestoAnexoController;
 use App\Http\Controllers\ProveedorPresupuestoAnexoPdfController;
 use App\Http\Controllers\ProveedorPresupuestoConfigController;
@@ -280,6 +282,27 @@ Route::prefix('proveedores')
                 Route::prefix('plantillas')->group(function () {
                     Route::get('/', [ProveedorPresupuestoPlantillaController::class, 'index']);
                     Route::post('/', [ProveedorPresupuestoPlantillaController::class, 'store']);
+                    Route::post('/desde-presupuesto/{presupuesto}', [ProveedorPresupuestoPlantillaController::class, 'desdePresupuesto']);
+
+                    Route::prefix('{plantilla}/anexos')->group(function () {
+                        Route::get('/', [ProveedorPresupuestoPlantillaAnexoController::class, 'index']);
+                        Route::post('/bulk', [ProveedorPresupuestoPlantillaAnexoController::class, 'storeBulk']);
+                        Route::post('/', [ProveedorPresupuestoPlantillaAnexoController::class, 'store']);
+                        Route::get('/{anexo}', [ProveedorPresupuestoPlantillaAnexoController::class, 'show']);
+                        Route::post('/{anexo}', [ProveedorPresupuestoPlantillaAnexoController::class, 'update']);
+                        Route::patch('/{anexo}', [ProveedorPresupuestoPlantillaAnexoController::class, 'update']);
+                        Route::delete('/{anexo}', [ProveedorPresupuestoPlantillaAnexoController::class, 'destroy']);
+                    });
+
+                    Route::prefix('{plantilla}/anexos-pdf')->group(function () {
+                        Route::get('/', [ProveedorPresupuestoPlantillaAnexoPdfController::class, 'index']);
+                        Route::post('/', [ProveedorPresupuestoPlantillaAnexoPdfController::class, 'store']);
+                        Route::get('/{anexo}', [ProveedorPresupuestoPlantillaAnexoPdfController::class, 'show']);
+                        Route::post('/{anexo}', [ProveedorPresupuestoPlantillaAnexoPdfController::class, 'update']);
+                        Route::patch('/{anexo}', [ProveedorPresupuestoPlantillaAnexoPdfController::class, 'update']);
+                        Route::delete('/{anexo}', [ProveedorPresupuestoPlantillaAnexoPdfController::class, 'destroy']);
+                    });
+
                     Route::get('/{plantilla}', [ProveedorPresupuestoPlantillaController::class, 'show']);
                     Route::put('/{plantilla}', [ProveedorPresupuestoPlantillaController::class, 'update']);
                     Route::patch('/{plantilla}', [ProveedorPresupuestoPlantillaController::class, 'update']);

@@ -3,6 +3,8 @@
 namespace App\Services\Presupuesto;
 
 use App\Models\Presupuesto;
+use App\Models\PresupuestoAnexo;
+use App\Models\PresupuestoAnexoPdf;
 use App\Models\PresupuestoConcepto;
 use App\Models\PresupuestoPlantilla;
 use App\Models\PresupuestoPlantillaConcepto;
@@ -21,7 +23,7 @@ class PresupuestoPlantillaAplicarService
 {
     public function aplicar(PresupuestoPlantilla $plantilla, User $user): Presupuesto
     {
-        $plantilla->loadMissing('conceptos');
+        $plantilla->loadMissing(['conceptos', 'anexos', 'anexosPdf']);
 
         return DB::transaction(function () use ($plantilla, $user) {
             $payload = [
@@ -86,7 +88,9 @@ class PresupuestoPlantillaAplicarService
                     'tipo' => $tipo,
                     'descripcion' => $linea->descripcion,
                     'cantidad' => $tipo === PresupuestoConcepto::TIPO_PARRAFO ? 0 : (float) $linea->cantidad,
-                    'unidad' => $tipo === PresupuestoConcepto::TIPO_PARRAFO ? null : ($linea->unidad ?: 'pieza'),
+                    'unidad' => $tipo === PresupuestoConcepto::TIPO_PARRAFO
+                        ? ''
+                        : ($linea->unidad ?: 'pieza'),
                     'precio_unitario' => $tipo === PresupuestoConcepto::TIPO_PARRAFO ? 0 : (float) $linea->precio_unitario,
                 ]);
 
@@ -102,11 +106,81 @@ class PresupuestoPlantillaAplicarService
                 $concepto->save();
             }
 
+            $this->copiarAnexosImagen($plantilla, $presupuesto);
+            $this->copiarAnexosPdf($plantilla, $presupuesto);
+
             $presupuesto->recalcularDesdeConceptos();
             $presupuesto->save();
 
             return $presupuesto->fresh(Presupuesto::eagerLodable());
         });
+    }
+
+    private function copiarAnexosImagen(PresupuestoPlantilla $plantilla, Presupuesto $presupuesto): void
+    {
+        $disk = Storage::disk('public');
+        $proveedorId = (int) $presupuesto->proveedor_id;
+
+        foreach ($plantilla->anexos as $anexo) {
+            $origenPath = (string) ($anexo->archivo_path ?? '');
+            if ($origenPath === '' || ! $disk->exists($origenPath)) {
+                continue;
+            }
+
+            $extension = pathinfo($origenPath, PATHINFO_EXTENSION) ?: 'jpg';
+            $nuevoPath = sprintf(
+                'proveedores/%d/presupuestos/%d/anexos/%s.%s',
+                $proveedorId,
+                (int) $presupuesto->id,
+                Str::uuid()->toString(),
+                $extension
+            );
+            $disk->copy($origenPath, $nuevoPath);
+
+            PresupuestoAnexo::create([
+                'presupuesto_id' => $presupuesto->id,
+                'titulo' => $anexo->titulo,
+                'descripcion' => $anexo->descripcion,
+                'precio' => $anexo->precio,
+                'orden' => $anexo->orden,
+                'archivo_path' => $nuevoPath,
+                'archivo_width' => $anexo->archivo_width,
+                'archivo_height' => $anexo->archivo_height,
+                'archivo_aspect_ratio' => $anexo->archivo_aspect_ratio,
+            ]);
+        }
+    }
+
+    private function copiarAnexosPdf(PresupuestoPlantilla $plantilla, Presupuesto $presupuesto): void
+    {
+        $disk = Storage::disk('public');
+        $proveedorId = (int) $presupuesto->proveedor_id;
+
+        foreach ($plantilla->anexosPdf as $anexo) {
+            $origenPath = (string) ($anexo->archivo_path ?? '');
+            if ($origenPath === '' || ! $disk->exists($origenPath)) {
+                continue;
+            }
+
+            $nuevoPath = sprintf(
+                'proveedores/%d/presupuestos/%d/anexos-pdf/%s.pdf',
+                $proveedorId,
+                (int) $presupuesto->id,
+                Str::uuid()->toString()
+            );
+            $disk->copy($origenPath, $nuevoPath);
+
+            PresupuestoAnexoPdf::create([
+                'presupuesto_id' => $presupuesto->id,
+                'titulo' => $anexo->titulo,
+                'orden' => $anexo->orden,
+                'archivo_path' => $nuevoPath,
+                'paginas' => $anexo->paginas,
+                'mostrar_estampado' => $anexo->mostrar_estampado,
+                'mostrar_numero_pagina' => $anexo->mostrar_numero_pagina,
+                'mostrar_datos_presupuesto' => $anexo->mostrar_datos_presupuesto,
+            ]);
+        }
     }
 
     private function copiarImagenLinea(int $proveedorId, int $presupuestoId, string $origenPath): ?string
