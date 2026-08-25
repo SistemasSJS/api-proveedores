@@ -197,6 +197,51 @@ class DeviceTokenController extends Controller
     }
 
     /**
+     * Desactiva el token FCM del dispositivo actual (cierre de sesión).
+     */
+    public function deactivateCurrent(Request $request): JsonResponse
+    {
+        try {
+            $user = Auth::user();
+            if (! $user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No autorizado',
+                ], 401);
+            }
+
+            $token = $request->input('token');
+
+            if (! is_string($token) || trim($token) === '') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Token de dispositivo requerido',
+                ], 422);
+            }
+
+            $updated = UserDeviceToken::query()
+                ->where('user_id', $user->id)
+                ->where('token', $token)
+                ->where('is_active', true)
+                ->update(['is_active' => false]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Token de dispositivo desactivado',
+                'data' => [
+                    'deactivated' => $updated > 0,
+                ],
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error desactivando token',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Desactivar un token específico
      */
     public function deactivate(Request $request, int $tokenId): JsonResponse

@@ -31,7 +31,25 @@ Repo: `api-proveedores`. Prefijo gerente: `proveedores/{proveedor}/…` + `prove
 | POST | `public/presupuestos/{token}/aceptar` | Aceptar |
 | POST | `public/presupuestos/{token}/rechazar` | Rechazar (`motivo` → `rechazado_con_observacion` + `nota` en log) |
 
-Controller: `PresupuestoPublicController`.
+Controller: `PresupuestoPublicController`. Resource: `PresupuestoPublicResource`.
+
+### Payload `GET public/presupuestos/{token}` (paridad de documento)
+
+Además de cabecera / conceptos / totales / emisor-receptor, incluye:
+
+| Campo | Notas |
+|-------|--------|
+| `anexos` | `PresupuestoAnexoResource` (URLs públicas; sin forzar base64) |
+| `anexos_pdf` | `PresupuestoAnexoPdfResource` (metadatos + `archivo_url`) |
+| `pdf_theme` | Key de tema (default `corporativo`) |
+| `pdf_theme_css` | Mapa de CSS vars (`--color-primary`, …) para preview sin auth |
+| `ppto_config` | JSON mm de layout |
+| `titulo_anexos` / `titulo_anexos_pdf` | Defaults **Anexos** / **Anexos PDF** |
+| `term_cond_*`, `term_cond_visibilidad`, `validacion_alcances` | Misma forma que `PresupuestoResource` |
+| `term_cond_enunciados`, `validaciones_enunciados`, `observaciones_enunciados` | Desde `getEnunciadosClasificados()` |
+| `configuracion_condiciones` | Flags legacy; `condiciones` se mantiene por compat front antiguo |
+
+**No** expone: `estado_logs`, `user`, `token_publico`, `item_visto`, IDs internos de cartera/receptor.
 
 ## Enlace web / QR (pie del PDF y correos)
 

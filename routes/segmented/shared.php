@@ -87,6 +87,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('device-tokens')->group(function () {
         Route::post('/', [DeviceTokenController::class, 'store'])->middleware(['audit']);
         Route::get('/', [DeviceTokenController::class, 'index'])->middleware(['audit']);
+        Route::post('/deactivate-current', [DeviceTokenController::class, 'deactivateCurrent'])->middleware(['audit']);
         Route::delete('/{tokenId}', [DeviceTokenController::class, 'deactivate'])->middleware(['audit']);
         Route::post('/cleanup', [DeviceTokenController::class, 'cleanup'])->middleware(['audit']);
         Route::post('/test', [DeviceTokenController::class, 'testNotification'])->middleware(['audit']);

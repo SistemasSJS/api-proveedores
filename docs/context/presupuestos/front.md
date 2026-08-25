@@ -92,6 +92,18 @@ Listados de gestión: barra search + toggle **detallada / mosaico** (constantes 
 - Rutas en `public-routing.module.ts`
 - URL pública: `/public/presupuesto/{token_publico}` (param se llama `id` en la ruta, pero es el **token**, no la PK).
 
+### Paridad de documento (preview pública ≈ preview empresa)
+
+La vista HTML pública (y `enlace-publico`) alinea el documento con la preview de empresa:
+
+- Tema: `pdf_theme_css` del API (`[ngStyle]` en cards; sin selector de temas).
+- Totales con columnas de moneda + **importe con letra**.
+- Anexos imagen paginados (4/página) + `titulo_anexos`.
+- Motivo de rechazo en documento; receptor nombre → puesto → empresa (como PDF).
+- Bloque Atentamente; modal de rechazo con opciones (igual que preview/enlace).
+
+Anexos PDF solo en descarga PDF (merge), no en HTML. Acciones de emisor (editar, temas, historial) no aplican.
+
 ### Enlace público y QR del pie del PDF
 
 - El QR del PDF y los correos usan `{APP_FRONTEND_URL}/public/presupuesto/{token}`.
