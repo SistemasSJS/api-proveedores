@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Tienda;
 
+use App\Support\PublicStorageUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Str;
@@ -26,7 +27,7 @@ class TiendaProveedorResource extends JsonResource
         return [
             'id' => (string) $this->id,
             'nombre' => self::upper($this->nombre),
-            'logo' => asset('storage/'.$this->logo),
+            'logo' => PublicStorageUrl::make($this->logo),
             'principal' => (bool) $this->principal,
             'activo' => (bool) $this->activo,
             'calificacion' => (float) $this->calificacion,

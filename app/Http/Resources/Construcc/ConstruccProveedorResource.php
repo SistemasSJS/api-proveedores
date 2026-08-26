@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Construcc;
 
+use App\Support\PublicStorageUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Str;
@@ -50,9 +51,7 @@ class ConstruccProveedorResource extends JsonResource
             ],
 
             // Logo optimizado
-            'logo' => $this->logo
-                ? (preg_match('/^https?:\/\//', $this->logo) ? $this->logo : asset('storage/'.$this->logo))
-                : null,
+            'logo' => PublicStorageUrl::make($this->logo),
 
             // // Información empresarial
             // 'empresa' => [

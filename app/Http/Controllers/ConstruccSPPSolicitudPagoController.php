@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Proveedor;
 use App\Models\SolicitudPago;
 use App\Models\PagoSPP;
+use App\Support\PublicStorageUrl;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -371,7 +372,7 @@ class ConstruccSPPSolicitudPagoController extends Controller
 
             return $this->success([
                 'comprobante_pago' => $comprobantePath,
-                'comprobante_pago_url' => asset('storage/' . $comprobantePath),
+                'comprobante_pago_url' => PublicStorageUrl::make($comprobantePath),
             ], 'Comprobante de pago guardado exitosamente.');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             Log::error('Pago o SPP no encontrado al subir comprobante', [

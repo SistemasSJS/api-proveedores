@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Auth;
 
 use App\Http\Resources\RoleResource;
+use App\Support\PublicStorageUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -19,13 +20,7 @@ class UserAuthenticateResource extends JsonResource
             'email' => $this->email,
             'telefono_codigo_pais' => $this->telefono_codigo_pais,
             'telefono' => $this->telefono,
-            'foto_perfil_url' => $this->foto_perfil_url
-                ? (
-                    preg_match('/^https?:\/\//', $this->foto_perfil_url)
-                    ? $this->foto_perfil_url
-                    : asset('storage/' . ltrim($this->foto_perfil_url, '/'))
-                )
-                : null,
+            'foto_perfil_url' => PublicStorageUrl::make($this->foto_perfil_url),
             'role' => new RoleResource($this->whenLoaded('role')),
             'estado' => $this->status,
             'solicitar_correo' => $this->solicitarCorreo(),

@@ -28,6 +28,7 @@ use App\Notifications\SolicitudPago\SolicitudPagoAbonadaNotification;
 use App\Notifications\SolicitudPago\SolicitudPagoComprobanteActualizadoNotification;
 use App\Notifications\SolicitudPago\SolicitudPagoFacturaPendienteNotification;
 use App\Notifications\SolicitudPago\SolicitudPagoPagadaNotification;
+use App\Support\PublicStorageUrl;
 use App\Services\InterApiService;
 use Carbon\Carbon;
 
@@ -434,7 +435,7 @@ class ConstruccPagosSPPController extends Controller
 
             return $this->success([
                 'comprobante_pago' => $comprobantePath,
-                'comprobante_pago_url' => asset('storage/' . $comprobantePath),
+                'comprobante_pago_url' => PublicStorageUrl::make($comprobantePath),
             ], 'Comprobante de pago guardado exitosamente.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();

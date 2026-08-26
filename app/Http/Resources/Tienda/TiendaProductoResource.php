@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Tienda;
 
+use App\Support\PublicStorageUrl;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class TiendaProductoResource extends JsonResource
@@ -14,7 +15,7 @@ class TiendaProductoResource extends JsonResource
             'descripcion' => $this->descripcion,
             'precio' => (float) $this->precio,
             'precioAnterior' => $this->whenNotNull($this->precio_anterior),
-            'imagen_principal' => $this->imagen_principal ? asset('storage/'.$this->imagen_principal) : '',
+            'imagen_principal' => PublicStorageUrl::make($this->imagen_principal) ?? '',
             'imagenes' => $this->imagenes ?? [],
             'marca' => new TiendaMarcaResource($this->whenLoaded('marca')),
             'linea' => new TiendaLineaResource($this->whenLoaded('linea')),

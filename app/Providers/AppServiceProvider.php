@@ -20,6 +20,7 @@ use App\Support\EmailLogoHelper;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
@@ -75,6 +76,15 @@ class AppServiceProvider extends ServiceProvider
         // Configurar timezone si es necesario
         if (config('app.timezone')) {
             date_default_timezone_set(config('app.timezone'));
+        }
+
+        // Forzar raíz de URLs (asset/route) con APP_URL para proxies con path (p. ej. /gestion).
+        $appUrl = config('app.url');
+        if (is_string($appUrl) && $appUrl !== '') {
+            URL::forceRootUrl(rtrim($appUrl, '/'));
+            if (str_starts_with($appUrl, 'https://')) {
+                URL::forceScheme('https');
+            }
         }
 
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);

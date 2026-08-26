@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Construcc;
 
+use App\Support\PublicStorageUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -44,11 +45,7 @@ class ConstruccProductoResource extends JsonResource
             ],
 
             // Imagen principal optimizada
-            'imagen_principal' => $this->imagen_principal
-                ? (preg_match('/^https?:\/\//', $this->imagen_principal)
-                    ? $this->imagen_principal
-                    : asset('storage/'.$this->imagen_principal))
-                : null,
+            'imagen_principal' => PublicStorageUrl::make($this->imagen_principal),
 
             // Relación con proveedor (información básica)
             'proveedor' => $this->when($this->relationLoaded('proveedor'), function () {
@@ -56,11 +53,7 @@ class ConstruccProductoResource extends JsonResource
                     'id' => $this->proveedor->id,
                     'nombre_comercial' => $this->proveedor->nombre_comercial,
                     'razon_social' => $this->proveedor->razon_social,
-                    'logo' => $this->proveedor->logo
-                        ? (preg_match('/^https?:\/\//', $this->proveedor->logo)
-                            ? $this->proveedor->logo
-                            : asset('storage/'.$this->proveedor->logo))
-                        : null,
+                    'logo' => PublicStorageUrl::make($this->proveedor->logo),
                 ];
             }),
 
@@ -86,11 +79,7 @@ class ConstruccProductoResource extends JsonResource
                     'id' => $this->marca->id,
                     'nombre' => $this->marca->nombre,
                     'descripcion' => $this->marca->descripcion,
-                    'logo' => $this->marca->logo
-                        ? (preg_match('/^https?:\/\//', $this->marca->logo)
-                            ? $this->marca->logo
-                            : asset('storage/'.$this->marca->logo))
-                        : null,
+                    'logo' => PublicStorageUrl::make($this->marca->logo),
                 ] : null;
             }),
 
@@ -120,11 +109,7 @@ class ConstruccProductoResource extends JsonResource
                 return $this->imagenes->map(function ($imagen) {
                     return [
                         'id' => $imagen->id,
-                        'url' => $imagen->url
-                            ? (preg_match('/^https?:\/\//', $imagen->url)
-                                ? $imagen->url
-                                : asset('storage/'.$imagen->url))
-                            : null,
+                        'url' => PublicStorageUrl::make($imagen->url),
                         'descripcion' => $imagen->descripcion,
                         'orden' => $imagen->orden,
                         'principal' => (bool) $imagen->principal,

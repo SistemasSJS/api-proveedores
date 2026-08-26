@@ -2,9 +2,9 @@
 
 namespace App\Http\Resources;
 
+use App\Support\PublicStorageUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ProveedorResource extends JsonResource
@@ -44,13 +44,9 @@ class ProveedorResource extends JsonResource
             /* =========================
              * Archivos
              * ========================= */
-            'logo' => $this->logo
-                ? Storage::disk('public')->url($this->logo)
-                : null,
+            'logo' => PublicStorageUrl::make($this->logo),
 
-            'constancia_fiscal' => $this->constancia_fiscal
-                ? Storage::disk('public')->url($this->constancia_fiscal)
-                : null,
+            'constancia_fiscal' => PublicStorageUrl::make($this->constancia_fiscal),
 
             /* =========================
              * Datos fiscales
