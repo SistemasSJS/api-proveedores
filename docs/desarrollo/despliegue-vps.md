@@ -100,11 +100,16 @@ sudo -u deploy -H ssh -i /home/deploy/.ssh/github_actions_deploy \
 4. `composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction`
 5. `php artisan migrate --force --no-interaction`
 6. `optimize:clear`, `config:cache`, `route:cache`, `view:cache`
-7. `storage:link` (ignora si ya existe)
+7. Asegura `public/storage` como **symlink** (`storage:link`):
+   - Si existe como carpeta real (p. ej. por un `.gitkeep` viejo), la elimina
+   - Si el symlink ya está, no lo recrea
+   - Falla el deploy si al final no es un enlace simbólico
 8. `php artisan up`
 9. `GET https://api.rorisafe.com/gestion/api/status` desde el runner
 
 No ejecuta seeders, `migrate:fresh`, `key:generate` ni modifica `.env`.
+
+**Importante:** los archivos públicos viven en `storage/app/public/`. `public/storage` solo es el enlace; no debe versionarse ni crearse como directorio.
 
 ## Versión / verificación
 
@@ -127,6 +132,7 @@ Tras un deploy:
 | `Permission denied (publickey)` hacia GitHub | Llave de cuenta no en GitHub o no en home de `deploy` |
 | `insufficient permission … .git/objects` | `git` hecho como root → `chown -R deploy:www-data` del proyecto |
 | Job OK pero versión vieja | No se subió `VERSION` o caché de CDN/proxy; hard refresh / curl directo |
+| Logos /storage 404 tras deploy | `public/storage` era carpeta, no symlink; el workflow ya lo corrige; en VPS: `rm -rf public/storage && php artisan storage:link` |
 
 ## Límites
 
