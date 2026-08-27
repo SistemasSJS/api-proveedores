@@ -17,7 +17,11 @@ class PresupuestoSugerenciaLineaResource extends JsonResource
             'id' => $this['id'] ?? null,
             'nombre' => $this['nombre'] ?? null,
             'unidad' => $this['unidad'] ?? null,
-            'precio_unitario' => isset($this['precio_unitario']) ? (float) $this['precio_unitario'] : 0,
+            'precio_unitario' => array_key_exists('precio_unitario', $this->resource)
+                && $this['precio_unitario'] !== null
+                && $this['precio_unitario'] !== ''
+                    ? (float) $this['precio_unitario']
+                    : null,
             'empresa' => $this['empresa'] ?? null,
             'logo' => $this['logo'] ?? null,
             'categoria_ui' => $this['categoria_ui'] ?? null,

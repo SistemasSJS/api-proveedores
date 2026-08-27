@@ -120,7 +120,9 @@ class ProveedorPresupuestoCatalogoConceptosController extends Controller
             && ($categoria === '' || $categoria === 'todos' || $categoria === 'producto');
 
         if ($incluyeCatalogo) {
-            $catalogoQuery = CatalogoPublicoItem::query()->where('activo', true);
+            $catalogoQuery = CatalogoPublicoItem::query()
+                ->where('activo', true)
+                ->where('mostrar_en_listado', true);
             if ($search !== '') {
                 $catalogoQuery->filter(['search' => $search]);
             }
@@ -134,12 +136,15 @@ class ProveedorPresupuestoCatalogoConceptosController extends Controller
                 ->get();
 
             foreach ($catalogoRows as $item) {
+                $precio = $item->precio_base;
                 $catalogoItems[] = [
                     'origen' => 'catalogo',
                     'id' => $item->id,
                     'nombre' => $item->nombre,
                     'unidad' => $item->unidad,
-                    'precio_unitario' => (float) ($item->precio_base ?? 0),
+                    'precio_unitario' => $precio !== null && $precio !== ''
+                        ? (float) $precio
+                        : null,
                     'empresa' => $item->empresa,
                     'logo' => $item->logo,
                     'categoria_ui' => $item->categoria ?: 'producto',

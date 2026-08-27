@@ -93,6 +93,7 @@ class AdminCatalogoPublicoController extends Controller
             ->select('empresa')
             ->selectRaw('COUNT(*) as total_productos')
             ->selectRaw('MAX(logo) as logo')
+            ->selectRaw('MAX(mostrar_en_listado) as mostrar_en_listado')
             ->groupBy('empresa')
             ->orderBy('empresa')
             ->get()
@@ -100,6 +101,7 @@ class AdminCatalogoPublicoController extends Controller
                 'empresa' => (string) $row->empresa,
                 'logo' => $row->logo ? (string) $row->logo : null,
                 'total_productos' => (int) $row->total_productos,
+                'mostrar_en_listado' => (bool) $row->mostrar_en_listado,
             ])
             ->values()
             ->all();
@@ -154,13 +156,14 @@ class AdminCatalogoPublicoController extends Controller
             ? trim((string) $request->input('empresa'))
             : $actual;
         $hasLogo = $request->exists('logo');
+        $hasMostrar = $request->exists('mostrar_en_listado');
 
         if ($nueva === '') {
             return $this->error('El nombre de la empresa es obligatorio.', null, 422);
         }
 
         try {
-            $actualizados = (int) DB::transaction(function () use ($actual, $nueva, $hasLogo, $request) {
+            $actualizados = (int) DB::transaction(function () use ($actual, $nueva, $hasLogo, $hasMostrar, $request) {
                 $query = CatalogoPublicoItem::query()->where('empresa', $actual);
                 $total = (clone $query)->count();
                 if ($total === 0) {
@@ -185,6 +188,9 @@ class AdminCatalogoPublicoController extends Controller
                     $logo = $request->input('logo');
                     $payload['logo'] = is_string($logo) && trim($logo) !== '' ? trim($logo) : null;
                 }
+                if ($hasMostrar) {
+                    $payload['mostrar_en_listado'] = $request->boolean('mostrar_en_listado');
+                }
 
                 $query->update($payload);
 
@@ -194,13 +200,41 @@ class AdminCatalogoPublicoController extends Controller
             return $this->error($e->getMessage(), null, 422);
         }
 
+        $fresh = CatalogoPublicoItem::query()->where('empresa', $nueva)->first();
+
         return $this->success(
             [
                 'empresa' => $nueva,
-                'logo' => CatalogoPublicoItem::query()->where('empresa', $nueva)->value('logo'),
+                'logo' => $fresh?->logo,
+                'mostrar_en_listado' => (bool) ($fresh?->mostrar_en_listado ?? true),
                 'actualizados' => $actualizados,
             ],
             'Empresa actualizada.'
+        );
+    }
+
+    public function destroy(CatalogoPublicoItem $catalogoPublicoItem): JsonResponse
+    {
+        $catalogoPublicoItem->delete();
+
+        return $this->success(null, 'Producto eliminado del catálogo público.');
+    }
+
+    public function destroyEmpresa(Request $request): JsonResponse
+    {
+        $empresa = trim((string) $request->input('empresa', ''));
+        if ($empresa === '') {
+            return $this->error('Debe indicar la empresa a eliminar.', null, 422);
+        }
+
+        $eliminados = CatalogoPublicoItem::query()->where('empresa', $empresa)->delete();
+        if ($eliminados === 0) {
+            return $this->error('No se encontró la empresa indicada.', null, 404);
+        }
+
+        return $this->success(
+            ['empresa' => $empresa, 'eliminados' => $eliminados],
+            'Empresa y sus productos eliminados del catálogo público.'
         );
     }
 }

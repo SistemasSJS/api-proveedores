@@ -30,6 +30,7 @@ class CatalogoPublicoItemResource extends JsonResource
             'precio_menudeo' => $this->precio_menudeo !== null ? (float) $this->precio_menudeo : null,
             'propiedades' => $this->propiedades,
             'activo' => (bool) $this->activo,
+            'mostrar_en_listado' => (bool) ($this->mostrar_en_listado ?? true),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];

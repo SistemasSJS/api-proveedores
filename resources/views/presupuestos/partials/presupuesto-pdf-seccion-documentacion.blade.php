@@ -3,6 +3,7 @@
     $variant = (string) ($variant ?? 'tailwind');
 @endphp
 @if (count($documentacionLista) > 0)
+    <div class="{{ $variant === 'tailwind' ? 'tw-page-break' : 'page-break' }}"></div>
     <div class="pdf-seccion pdf-seccion--documentacion">
         @foreach ($documentacionLista as $docIndex => $documento)
             @if ($docIndex > 0)

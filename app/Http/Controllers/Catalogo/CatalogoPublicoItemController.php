@@ -17,7 +17,9 @@ class CatalogoPublicoItemController extends Controller
     {
         $search = trim((string) $request->input('search', ''));
 
-        $query = CatalogoPublicoItem::query()->where('activo', true);
+        $query = CatalogoPublicoItem::query()
+            ->where('activo', true)
+            ->where('mostrar_en_listado', true);
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
@@ -39,6 +41,7 @@ class CatalogoPublicoItemController extends Controller
                 'empresa' => (string) $row->empresa,
                 'logo' => $row->logo ? (string) $row->logo : null,
                 'total_productos' => (int) $row->total_productos,
+                'mostrar_en_listado' => true,
             ])
             ->values()
             ->all();
@@ -51,6 +54,13 @@ class CatalogoPublicoItemController extends Controller
         $filters = $request->only(CatalogoPublicoItem::getFilters());
         if (! array_key_exists('activo', $filters) || $filters['activo'] === '' || $filters['activo'] === null) {
             $filters['activo'] = true;
+        }
+        if (
+            ! array_key_exists('mostrar_en_listado', $filters)
+            || $filters['mostrar_en_listado'] === ''
+            || $filters['mostrar_en_listado'] === null
+        ) {
+            $filters['mostrar_en_listado'] = true;
         }
 
         $sortBy = $request->input('sort_by', 'nombre');

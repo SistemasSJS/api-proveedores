@@ -20,6 +20,7 @@ class AdminCatalogoPublicoUpdateEmpresaRequest extends FormRequest
             'empresa_actual' => ['required', 'string', 'max:100'],
             'empresa' => ['sometimes', 'string', 'max:100'],
             'logo' => ['sometimes', 'nullable', 'string', 'max:500'],
+            'mostrar_en_listado' => ['sometimes', 'boolean'],
         ];
     }
 

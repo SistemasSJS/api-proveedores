@@ -92,6 +92,7 @@
                     page-break-after: avoid;
                     margin: 0;
                     padding: 0;
+                    min-height: 0;
                 }
 
                 .pdf-seccion-presupuesto__atentamente {
@@ -103,7 +104,7 @@
 
                 .pdf-seccion--anexos,
                 .pdf-seccion--documentacion {
-                    page-break-before: always;
+                    page-break-before: auto;
                     width: 100%;
                 }
 
@@ -1233,6 +1234,12 @@
 
                     @if ($mostrarAtentamente && ($cierreAtentamente['salto_pagina_antes'] ?? false))
                         <div class="page-break"></div>
+                    @endif
+                    @if ($mostrarAtentamente && (float) ($cierreAtentamente['reserva_pie_html_mm'] ?? 0) > 0)
+                        <div
+                            class="presupuesto-reserva-atentamente-pie"
+                            style="height: {{ number_format((float) $cierreAtentamente['reserva_pie_html_mm'], 2, '.', '') }}mm;"
+                            aria-hidden="true"></div>
                     @endif
                         </div>
                     @endif

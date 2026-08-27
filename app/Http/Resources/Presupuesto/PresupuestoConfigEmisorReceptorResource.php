@@ -2,9 +2,9 @@
 
 namespace App\Http\Resources\Presupuesto;
 
+use App\Support\PublicStorageUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 class PresupuestoConfigEmisorReceptorResource extends JsonResource
 {
@@ -19,13 +19,13 @@ class PresupuestoConfigEmisorReceptorResource extends JsonResource
             'tipo' => $this->tipo == 1 ? 'emisor' : 'receptor',
             'estado' => $this->estado == 1 ? 'activo' : ($this->estado == 2 ? 'inactivo' : 'default'),
             'informacion_general' => [
-                'foto_perfil' => $this->foto_perfil ? Storage::disk('public')->url($this->foto_perfil) : null,
+                'foto_perfil' => PublicStorageUrl::make($this->foto_perfil),
                 'subfijo' => $this->subfijo,
                 'nombre' => $this->nombre,
                 'ape1' => $this->ape1,
                 'ape2' => $this->ape2,
                 'puesto' => $this->puesto,
-                'file_firma' => $this->file_firma ? Storage::disk('public')->url($this->file_firma) : null,
+                'file_firma' => PublicStorageUrl::make($this->file_firma),
             ],
             'info_contacto' => [
                 'telefono' => $this->telefono,

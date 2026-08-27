@@ -20,7 +20,7 @@
     $mmToPt = static fn (float $mm): int => (int) round($mm * 2.834645669);
 
     $atentamentePageScript = '';
-    if ($pdf->atentamenteEnPiePageScript() && $paginaAtentamente > 0 && count($atentamentePieLineas) > 0) {
+    if ($pdf->atentamenteEnPiePageScript() && count($atentamentePieLineas) > 0) {
         $blockHeightPt = 6;
         $espacioTrasTituloPt = $mmToPt($espacioTrasTituloAtentamenteMm);
         $tieneLineasTrasTitulo = count($atentamentePieLineas) > 1;
@@ -38,9 +38,17 @@
             json_encode($atentamentePieLineas, JSON_UNESCAPED_UNICODE),
             "\\'"
         );
-        $paginaAtentamentePhp = $paginaAtentamente;
+        // Ancla al final de la sección presupuesto (antes de anexos/documentación),
+        // no a la estimación PHP: evita pintar Atte sobre la hoja de anexos.
+        $paginasTrasPhp = $paginasTrasSeccionPresupuesto;
+        $paginaAtentamenteFallback = max(1, $paginaAtentamente);
         $atentamentePageScript = <<<SCRIPT
-if (\$PAGE_NUM != {$paginaAtentamentePhp}) {
+\$paginasTras = {$paginasTrasPhp};
+\$paginaAtte = \$PAGE_COUNT - \$paginasTras;
+if (\$paginaAtte < 1) {
+    \$paginaAtte = {$paginaAtentamenteFallback};
+}
+if (\$PAGE_NUM != \$paginaAtte) {
     return;
 }
 \$lineas = json_decode('{$jsonEsc}', true);

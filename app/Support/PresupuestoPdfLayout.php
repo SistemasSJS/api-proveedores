@@ -11,13 +11,18 @@ final class PresupuestoPdfLayout
 
     /**
      * @param  array<string, mixed>  $payload
-     * @return array{salto_pagina_antes: bool, pagina_atentamente: int}
+     * @return array{
+     *     salto_pagina_antes: bool,
+     *     pagina_atentamente: int,
+     *     reserva_pie_html_mm: float
+     * }
      */
     public static function calcularCierreAtentamente(array $payload, PresupuestoPdfDocumentConfig $pdf): array
     {
         $vacio = [
             'salto_pagina_antes' => false,
             'pagina_atentamente' => 0,
+            'reserva_pie_html_mm' => 0.0,
         ];
 
         if (! PresupuestoPdf::debeMostrarBloqueAtentamenteDesdePayload($payload)) {
@@ -34,21 +39,17 @@ final class PresupuestoPdfLayout
         $variant = $pdf->layoutVariantKey();
         $flujo = self::simularFlujoHastaFinTerminos($payload, $pdf, $variant, $alturaUtil);
         $pageFin = max(1, (int) $flujo['page']);
-
-        if ($pdf->atentamenteEnPiePageScript()) {
-            return [
-                'salto_pagina_antes' => false,
-                'pagina_atentamente' => $pageFin,
-            ];
-        }
-
-        $yFin = $flujo['y'];
+        $yFin = (float) $flujo['y'];
         $capFin = self::capacidadPaginaMm($pageFin, $alturaUtil, $pdf);
         $salto = ($yFin + $reservaPieMm + $pdf->margenSeguridadAtentamenteMm()) > $capFin;
+        $paginaAtentamente = $salto ? $pageFin + 1 : $pageFin;
 
+        // Con page_script el Atte se pinta en el pie; si no cabe, saltar hoja.
+        // La página final real se recalcula en el script con PAGE_COUNT - anexos.
         return [
             'salto_pagina_antes' => $salto,
-            'pagina_atentamente' => $salto ? $pageFin + 1 : $pageFin,
+            'pagina_atentamente' => $paginaAtentamente,
+            'reserva_pie_html_mm' => $salto ? 0.0 : round($reservaPieMm, 2),
         ];
     }
 

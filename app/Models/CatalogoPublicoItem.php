@@ -23,6 +23,7 @@ class CatalogoPublicoItem extends BaseModel
         'precio_menudeo',
         'propiedades',
         'activo',
+        'mostrar_en_listado',
     ];
 
     protected static $filters = [
@@ -31,6 +32,7 @@ class CatalogoPublicoItem extends BaseModel
         'categoria' => 'Categoria',
         'marca' => 'Marca',
         'activo' => 'Activo',
+        'mostrar_en_listado' => 'MostrarEnListado',
         'codigo' => 'Codigo',
     ];
 
@@ -40,6 +42,7 @@ class CatalogoPublicoItem extends BaseModel
         'precio_menudeo' => 'float',
         'propiedades' => 'array',
         'activo' => 'boolean',
+        'mostrar_en_listado' => 'boolean',
     ];
 
     public static function eagerLodable(): array
@@ -87,6 +90,17 @@ class CatalogoPublicoItem extends BaseModel
         }
 
         return $query->where('activo', $bool);
+    }
+
+    public function filterByMostrarEnListado($query, $value)
+    {
+        $bool = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+        if ($bool === null) {
+            return $query;
+        }
+
+        return $query->where('mostrar_en_listado', $bool);
     }
 
     public function filterByCodigo($query, $value)

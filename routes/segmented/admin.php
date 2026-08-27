@@ -135,10 +135,12 @@ Route::middleware(['auth:sanctum', 'role:' . UserRoleEnumerate::ADMINISTRADOR->v
         Route::get('/', [AdminCatalogoPublicoController::class, 'index']);
         Route::get('empresas', [AdminCatalogoPublicoController::class, 'empresas']);
         Route::patch('empresas', [AdminCatalogoPublicoController::class, 'updateEmpresa']);
+        Route::delete('empresas', [AdminCatalogoPublicoController::class, 'destroyEmpresa']);
         Route::get('facets', [AdminCatalogoPublicoController::class, 'facets']);
         Route::get('{catalogoPublicoItem}', [AdminCatalogoPublicoController::class, 'show']);
         Route::patch('{catalogoPublicoItem}', [AdminCatalogoPublicoController::class, 'update']);
         Route::put('{catalogoPublicoItem}', [AdminCatalogoPublicoController::class, 'update']);
+        Route::delete('{catalogoPublicoItem}', [AdminCatalogoPublicoController::class, 'destroy']);
     });
 
     /**

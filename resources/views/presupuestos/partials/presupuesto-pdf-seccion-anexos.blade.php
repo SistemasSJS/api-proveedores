@@ -7,6 +7,8 @@
     }
 @endphp
 @if (count($anexosLista) > 0)
+    {{-- Salto explícito: evita que anexos compartan hoja con Atentamente (page_script). --}}
+    <div class="{{ $variant === 'tailwind' ? 'tw-page-break' : 'page-break' }}"></div>
     <div class="pdf-seccion pdf-seccion--anexos">
         @foreach (collect($anexosLista)->chunk(4) as $pageIndex => $anexosPagina)
             @if ($pageIndex > 0)

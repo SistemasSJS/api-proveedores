@@ -31,6 +31,7 @@ class AdminCatalogoPublicoUpdateRequest extends FormRequest
             'precio_mayoreo' => ['sometimes', 'nullable', 'numeric', 'min:0'],
             'precio_menudeo' => ['sometimes', 'nullable', 'numeric', 'min:0'],
             'activo' => ['sometimes', 'boolean'],
+            'mostrar_en_listado' => ['sometimes', 'boolean'],
         ];
     }
 
