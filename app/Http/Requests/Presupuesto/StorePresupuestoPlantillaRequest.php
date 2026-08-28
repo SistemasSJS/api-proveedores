@@ -47,7 +47,7 @@ class StorePresupuestoPlantillaRequest extends FormRequest
             'term_cond_inicio_trabajo_porcentaje' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'term_cond_inicio_trabajo_cantidad' => ['nullable', 'numeric', 'min:0'],
             'term_cond_textos_libres' => ['nullable', 'array', 'max:4'],
-            'term_cond_textos_libres.*' => ['nullable', 'string', 'max:500'],
+            'term_cond_textos_libres.*' => ['nullable', 'string', 'max:1000'],
             'term_cond_visibilidad' => ['nullable', 'array'],
             'validacion_alcances' => ['nullable', 'array'],
             'configuracion_condiciones' => ['nullable', 'array'],

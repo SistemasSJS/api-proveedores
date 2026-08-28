@@ -194,6 +194,66 @@ Cuando una capacidad sea **Plus** (plan superior / no incluida en el esquema gra
 
 **Regla para agentes:** si el requisito dice que algo es Plus → añadir `appPlanPlusBadge` o `<app-plan-plus-badge>` en la UI afectada.
 
+## Ayuda en pantalla — tours interactivos (v1)
+
+Tours contextuales con **Driver.js** (CDN en `src/index.html`, dependencia `driver.js` en `package.json`). Disparo desde el botón ℹ️ del `app-sub-header` cuando la página define `guideKey`.
+
+### Alcance v1 (solo estos cuatro tours)
+
+| `guideKey` | Pantalla | Qué recorre | Qué **no** incluye |
+|------------|----------|-------------|-------------------|
+| `plantillas-listado` | `presupuesto-plantillas-list` | buscar, vista, card, acciones, botón + | — |
+| `plantillas-formulario` | captura plantilla (`presupuesto-page-modals`, `capturaMode: plantilla`) | datos, descripción, conceptos, totales, guardar | modales (ajustes, concepto, etc.) |
+| `presupuestos-listado` | `presupuesto-proveedor-list` | card (header, body, acciones) | tabs enviados/recibidos, filtros, FAB |
+| `presupuestos-formulario` | captura PPTO (`presupuesto-page-modals`) | receptor, descripción, conceptos, totales, anexos, footer | modales |
+
+Clientes, conceptos, tarjetas y preview **no** llevan `guideKey` en v1.
+
+### Archivos
+
+| Pieza | Ruta |
+|-------|------|
+| Claves y pasos | `src/app/@theme/constants/presupuestos-tutorials.config.ts` |
+| Reexport tipos | `src/app/@theme/constants/presupuestos-ui-guides.ts` (`PresupuestoUiGuideKey` = alias de tour key) |
+| Servicio | `src/app/@core/services/presupuesto-tutorial.service.ts` (`start`, `stop`; `disableActiveInteraction: true`) |
+| Sub-header | `src/app/@theme/components/sub-header/` — `hasGuide` + `openGuide()` |
+| Marcadores DOM | atributo `data-tour="…"` o `[attr.data-tour]` dinámico en plantilla vs PPTO |
+| Estilos popover | `src/global.scss` — clases `driverjs-theme` / `presupuesto-tour-popover` |
+
+### Marcadores `data-tour` (referencia)
+
+- Plantillas listado: `plantillas-search`, `plantillas-view-mode`, `plantillas-card`, `plantillas-card-actions`, `plantillas-add` (`presupuesto-plantilla-card`, list page).
+- Plantillas formulario: `plantilla-datos`, `plantilla-descripcion`, `plantilla-conceptos`, `plantilla-totales`, `plantilla-footer` (`presupuesto-page-modals`).
+- Presupuestos listado: `ppto-card-header`, `ppto-card-body`, `ppto-card-actions` (`presupuesto-card`; primer card del listado).
+- Presupuestos formulario: `ppto-receptor`, `ppto-descripcion`, `ppto-conceptos`, `ppto-totales`, `ppto-anexos`, `ppto-footer` (`presupuesto-page-modals`).
+
+### Comportamiento
+
+- `filterTourStepsPresent()` omite pasos cuyo selector no existe (p. ej. listado vacío sin cards → solo pasos intro sin `element`).
+- Delay ~120 ms antes de `drive()` para dejar estabilizar el DOM tras navegación.
+- **Scroll:** el formulario de captura usa `ion-content` sin scroll; el desplazamiento real es `.scrollable-area`. `PresupuestoTutorialService` llama `scrollTourElementIntoView()` en cada paso (`onHighlightStarted`) y `driver.refresh()` para recentrar el spotlight (misma util que listados: `scroll-container.util.ts`).
+- No abre modales ni simula clics; texto de pasos lo indica cuando aplica.
+
+### Añadir un tour nuevo
+
+1. Extender `PresupuestoTourKey` y `buildPresupuestoTourSteps()` en `presupuestos-tutorials.config.ts`.
+2. Añadir `data-tour` en el HTML de la pantalla.
+3. Pasar `guideKey` al `app-sub-header` de la página.
+4. Documentar aquí el alcance (qué incluye / excluye).
+
+> **Legacy:** `UiGuideModalComponent` + PNG en `src/assets/guias/presupuestos/` quedaron sustituidos por tours; el manual completo sigue siendo el PDF (ver abajo).
+
+## Manual PDF (menú usuario)
+
+Manual estático de Presupuestos, **independiente** de los tours:
+
+- PDF: `src/assets/manuales/presupuestos/manual-presupuestos.pdf`
+- Fuente HTML: `src/assets/manuales/presupuestos/manual-presupuestos.html`
+- Build: `npm run manual:presupuestos` → `tools/manuales/build-manual-presupuestos.js`
+- Acceso UI: pie del menú usuario (`user-menu.component.ts`) → `DocumentViewerService.openPdf('assets/manuales/presupuestos/manual-presupuestos.pdf')`
+
+Regenerar el PDF tras cambios de contenido en el HTML o imágenes bajo `src/assets/manuales/presupuestos/img/`.
+
 ## Catálogo de conceptos (Plus)
 
 - API: `{proveedor}/presupuestos/presupuesto-catalogo-conceptos` (CRUD).
