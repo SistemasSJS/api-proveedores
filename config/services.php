@@ -39,7 +39,7 @@ return [
         'site' => env('RECAPTCHA_SITE_KEY'),
     ],
     'frontend' => [
-        'url' => env('APP_FRONTEND_URL', 'http://localhost:8100'), // Valor por defecto
+        'url' => env('APP_FRONTEND_URL', 'http://localhost:4300'), // Valor por defecto
     ],
 
     /*
@@ -56,7 +56,7 @@ return [
         ))),
         'frontend_callback' => env(
             'OAUTH_FRONTEND_CALLBACK',
-            rtrim((string) env('APP_FRONTEND_URL', 'http://localhost:4200'), '/') . '/auth/callback'
+            rtrim((string) env('APP_FRONTEND_URL', 'http://localhost:4300'), '/') . '/auth/callback'
         ),
     ],
 

@@ -49,7 +49,8 @@ Presupuestos
 Principios:
 
 - Bajo Presupuestos: **Generar** / **Plantillas** / **Mis presupuestos** + grupo **Recursos** (Clientes, Conceptos, Tarjetas).
-- **Plantillas** = receta reutilizable (CRUD en `pages/plantillas/`); **no** es el documento PPTO. Cards propias (`app-presupuesto-plantilla-card`, teñidas con `pdf_theme`). Captura crear/editar = `app-presupuesto-page-modals` con `capturaMode: 'plantilla'` (rutas en módulo padre; list/detalle lazy). Atrás/cerrar en captura y detalle usa `navigateRoot` al listado de plantillas (evita historial hacia Mis presupuestos). Acción **Usar** → `aplicar` → borrador sin cliente → `editar/:id`. Desde Mis presupuestos / preview emisor: **Guardar como plantilla** → modal con toggles (`mantener_anexos_*`, `mantener_tarjeta`, `mantener_tema`) → `desde-presupuesto`.
+- **Generar presupuesto** entra **directo** al formulario de captura (`…/presupuestos/crear`). Ya no hay modal de “¿plantilla o desde cero?” al crear.
+- **Plantillas** = receta reutilizable (CRUD en `pages/plantillas/`); **no** es el documento PPTO. Incluye: **nombre**, **conceptos**, **anexos img/PDF**, **tema**, **tarjeta**. **Sin** descripción general del presupuesto. Cards propias (`app-presupuesto-plantilla-card`, teñidas con `pdf_theme`). Captura crear/editar = `app-presupuesto-page-modals` con `capturaMode: 'plantilla'` (rutas en módulo padre; list/detalle lazy). Acción **Usar** (listado/detalle) → `aplicar` → borrador nuevo (`concepto_general` = Borrador) → `editar/:id`. Botón **Plantillas** en captura de PPTO → aplica la plantilla **al formulario/PPTO actual** (`aplicar-sobre` si hay id; merge en form si aún no) sin crear otro ni navegar; conserva cliente, fecha, nombre y descripción. **Guardar como plantilla** → modal con toggles → `desde-presupuesto` (sin copiar descripción general).
 - Cada recurso de Gestión tiene **CRUD en pages propias** (patrón SPP: list / form / detail + components), **sin** embeber modales de captura.
 - Captura (`crear` / `editar`) sigue eligiendo de esos recursos vía modales/selectores (snapshot).
 - Dos entradas a Tarjetas: menú Presupuestos → Recursos + Perfil (misma ruta de listado).
@@ -121,16 +122,24 @@ Campo `term_cond_moneda`: solo **MXN** \| **USD** \| **EUR** (default MXN). Pref
 
 ## Ajustes del documento (fecha / layout / títulos de anexos)
 
+### Captura de presupuesto (formulario principal)
+
+- Card superior: **Información general del presupuesto** (icono assignment + engranaje).
+  - **Información general**: abre `presupuesto-informacion-general-modal` (mismo sheet que el resto de modales; fondo `#f4f9f9` + cards). Header: título + **fecha compacta a la derecha** (popover calendario anclado al chip, con flecha; permite fechas futuras) + botón cerrar (círculo azul como descuento/anexo). Tres cards: **Dirigido a** (sin cliente → Catálogo / Agregar cliente; con cliente → solo la card con editar/quitar, sin botones Nuevo/Cambiar; `nombre_presupuesto` + `concepto_general` con contadores independientes estilo `descripcion-row`; descripción colapsada a 1 línea y se expande al enfocar), **Quién envía el presupuesto** (solo selector de tarjeta; sin input `empresa_emisora_nombre` en el modal) y **Estilo del documento** (tema PDF).
+  - **Plantillas**: sheet `modal-plantillas-ppto` (mismo patrón visual que información general / ajustes: fondo `#f4f9f9`, header + cerrar circular, cards blancas, footer Cancelar). Listado de plantillas activas; al elegir, se aplican al **presupuesto actual** (conceptos, anexos, tema, tarjeta, títulos, IVA/descuento/términos) sin crear uno nuevo ni salir del formulario. Se conservan receptor, fecha, nombre y descripción general. El botón del form permanece como **Plantillas**; en el listado, la plantilla aplicada aparece **primera y resaltada**.
+- Icono **settings**: abre `presupuesto-ajustes-modal` **solo** con mm de `ppto_config` (márgenes, gaps). La fecha **no** está en ajustes.
+- Conceptos, totales, términos y anexos siguen en el formulario. Estilo y tarjeta de contacto **no** se muestran en el form de PPTO (sí en captura de plantilla).
+
 ### Fecha de emisión y `ppto_config`
 
-- En captura (`presupuesto-page-modals`), icono **settings** en la card «Presupuesto dirigido a» abre `presupuesto-ajustes-modal`.
-- Campos: `fecha_emision` (≤ hoy) + todos los mm de `ppto_config` (márgenes, gaps logo/regla/footer/Atentamente). Defaults alineados a API; botón «Restaurar defaults».
+- `fecha_emision` se edita en el modal **Información general** (popover anclado al chip; admite fechas futuras).
+- `ppto_config`: defaults alineados a API; botón «Restaurar defaults» en ajustes.
 - Listado: icono historial en cards (estado ≠ borrador) → sheet `estado_logs`. Preview: botón al final del documento (no en footer de acciones).
 - **Duplicar**: modal sheet con header «Duplicar presupuesto»; switches (como cliente) para **cliente**, **anexos imagen**, **anexos PDF** y **tarjeta**; resumen (conceptos/total). Mientras corre la API el sheet permanece abierto con overlay de loading (sin toast de éxito). Cierra con cancelar, clic fuera o **arrastrar hacia abajo solo desde el handle** (bloqueados durante loading) → al terminar navega a `editar/:id`.
 - **Solicitar aprobación / Enviar**: solo emisor (`esEmisorSesion` / `puedeEnviar`); el receptor ve Aceptar/Rechazar.
 - Unidades e imagen en concepto (captura y catálogo CRUD): buscador + **Otro**; card imagen Reajustar / Cambiar / Quitar.
 - Nombres propios Dirigido a / Atentamente: sentence case (`presupuesto-texto-documento.helper.ts`).
-- Estilos overlay: `ion-modal.modal-ajustes-presupuesto`, `ion-modal.modal-historial-presupuesto`, `ion-modal.modal-duplicar-presupuesto` y `ion-modal.fecha-picker-modal` en `src/global.scss`.
+- Estilos overlay: `ion-modal.modal-ajustes-presupuesto`, `ion-modal.modal-informacion-general-ppto`, `ion-modal.modal-plantillas-ppto`, `ion-modal.modal-historial-presupuesto`, `ion-modal.modal-duplicar-presupuesto` y `ion-popover.fecha-picker-popover` en `src/global.scss`.
 
 ### Títulos de sección de anexos
 
@@ -203,7 +212,7 @@ Tours contextuales con **Driver.js** (CDN en `src/index.html`, dependencia `driv
 | `guideKey` | Pantalla | Qué recorre | Qué **no** incluye |
 |------------|----------|-------------|-------------------|
 | `plantillas-listado` | `presupuesto-plantillas-list` | buscar, vista, card, acciones, botón + | — |
-| `plantillas-formulario` | captura plantilla (`presupuesto-page-modals`, `capturaMode: plantilla`) | datos, descripción, conceptos, totales, guardar | modales (ajustes, concepto, etc.) |
+| `plantillas-formulario` | captura plantilla (`presupuesto-page-modals`, `capturaMode: plantilla`) | datos, conceptos, estilo, anexos, tarjeta, guardar | modales (ajustes, concepto, etc.) |
 | `presupuestos-listado` | `presupuesto-proveedor-list` | card (header, body, acciones) | tabs enviados/recibidos, filtros, FAB |
 | `presupuestos-formulario` | captura PPTO (`presupuesto-page-modals`) | receptor, descripción, conceptos, totales, anexos, footer | modales |
 
@@ -223,7 +232,7 @@ Clientes, conceptos, tarjetas y preview **no** llevan `guideKey` en v1.
 ### Marcadores `data-tour` (referencia)
 
 - Plantillas listado: `plantillas-search`, `plantillas-view-mode`, `plantillas-card`, `plantillas-card-actions`, `plantillas-add` (`presupuesto-plantilla-card`, list page).
-- Plantillas formulario: `plantilla-datos`, `plantilla-descripcion`, `plantilla-conceptos`, `plantilla-totales`, `plantilla-footer` (`presupuesto-page-modals`).
+- Plantillas formulario: `plantilla-datos`, `plantilla-conceptos`, `plantilla-estilo`, anexos, `plantilla-tarjeta-contacto`, `plantilla-footer` (`presupuesto-page-modals`).
 - Presupuestos listado: `ppto-card-header`, `ppto-card-body`, `ppto-card-actions` (`presupuesto-card`; primer card del listado).
 - Presupuestos formulario: `ppto-receptor`, `ppto-descripcion`, `ppto-conceptos`, `ppto-totales`, `ppto-anexos`, `ppto-footer` (`presupuesto-page-modals`).
 

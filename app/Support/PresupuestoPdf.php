@@ -82,6 +82,7 @@ final class PresupuestoPdf
             'fecha_emision' => $presupuesto->fecha_emision,
             'lugar' => $lugar,
             'concepto_general' => $presupuesto->concepto_general,
+            'nombre_presupuesto' => $presupuesto->nombre_presupuesto,
             'titulo_anexos' => trim((string) ($presupuesto->titulo_anexos ?? '')) !== ''
                 ? trim((string) $presupuesto->titulo_anexos)
                 : 'Anexos',

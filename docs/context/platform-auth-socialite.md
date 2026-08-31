@@ -53,15 +53,15 @@ sequenceDiagram
 2. Pantalla de consentimiento OAuth (scopes email, profile, openid)
 3. Cliente **Aplicación web**
 4. **Orígenes JS** (PWA, sin path):
-   - `http://localhost:4200`
+   - `http://localhost:4300`
    - `https://app.gestionplus.com.mx`
    - `https://gestion.heventec.com`
 5. **URIs de redirección** (API + `/api` + callback):
-   - Local: `http://localhost/api/auth/google/callback`
+   - Local: `http://localhost:8088/api/auth/google/callback`
    - Prod API: la URL pública real de Laravel, p. ej. `https://gestion.heventec.com/api/auth/google/callback` **o** `https://apicons.ddns.net:8092/api/auth/google/callback` según dónde responda la API
 6. Copiar Client ID / Secret al `.env` (**nunca** al repo ni al JSON de Downloads en Git)
 
-> Importante: las URIs deben coincidir **exactamente** con `GOOGLE_REDIRECT_URI`. Si configuraste `http://localhost:8000/auth/google/callback` sin `/api`, hay que corregirlo en Google Cloud.
+> Importante: las URIs deben coincidir **exactamente** con `GOOGLE_REDIRECT_URI`. Si configuraste `http://localhost:8088/auth/google/callback` sin `/api`, hay que corregirlo en Google Cloud.
 
 ## Variables `.env` (API)
 
@@ -71,7 +71,7 @@ OAUTH_FRONTEND_CALLBACK="${APP_FRONTEND_URL}/auth/callback"
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 GOOGLE_REDIRECT_URI="${APP_URL}/api/auth/google/callback"
-APP_FRONTEND_URL=http://localhost:4200
+APP_FRONTEND_URL=http://localhost:4300
 ```
 
 `config/services.php`: bloques `oauth` y `google`.

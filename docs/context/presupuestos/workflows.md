@@ -21,7 +21,7 @@ borrador → enviado → aceptar | rechazar(/con observación) → [reenviar si 
 
 1. **Borrador** — receptor (cartera \| proveedor registrado \| manual) + tarjeta emisor + conceptos + anexos + términos/descuento/moneda.
 2. **Ajustes de documento (borrador)**
-   - `fecha_emision` — modal settings (≤ hoy).
+   - `fecha_emision` — modal Información general (permite futuras).
    - `ppto_config` — 8 medidas mm (márgenes, gaps logo/regla/footer/Atentamente); defaults en `PresupuestoPdfDocumentConfig`; UI modal Ajustes con «Restaurar defaults».
    - `titulo_anexos` / `titulo_anexos_pdf` — inline en cards anexos.
    - Anexos imagen: máximo 4 en captura (solo front).

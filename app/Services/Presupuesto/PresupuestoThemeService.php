@@ -301,15 +301,36 @@ final class PresupuestoThemeService
                 'section-line-height' => '1.05',
             ],
         ],
+        'caterpillar' => [
+            'name' => 'Caterpillar',
+            'key' => 'caterpillar',
+            'description' => 'Maquinaria, construcción pesada e industria: amarillo CAT (#FFCD11) y negro.',
+            'variables' => [
+                'color-white' => '#ffffff',
+                'color-slate-50' => '#fafaf9',
+                'color-slate-100' => '#f5f5f4',
+                'color-slate-200' => '#e7e5e4',
+                'color-slate-400' => '#a8a29e',
+                'color-slate-500' => '#78716c',
+                'color-slate-600' => '#57534e',
+                'color-slate-700' => '#44403c',
+                'color-slate-800' => '#1c1917',
+                'color-slate-900' => '#0a0a0a',
+                'color-primary' => '#ffcd11',
+                'color-primary-dark' => '#c9a000',
+                'color-primary-soft' => '#fff9e6',
+                'color-primary-border' => '#ffe566',
+                'color-heading' => '#111111',
+                'color-receptor-line' => '#333333',
+                'color-row-even' => '#fff9e6',
+                'color-paragraph-bg' => '#fafaf9',
+                // Acento fuerte solo en «Importe con letra».
+                'color-importe-label-bg' => '#ffcd11',
+                'color-importe-value-bg' => '#ffffff',
+                'section-line-height' => '1.05',
+            ],
+        ],
     ];
-
-    /**
-     * @return list<array{name: string, key: string, description: string, variables: array<string, string|float>}>
-     */
-    public function getThemes(): array
-    {
-        return array_values(self::THEMES);
-    }
 
     /**
      * @return array{name: string, key: string, description: string, variables: array<string, string|float>}
@@ -317,8 +338,24 @@ final class PresupuestoThemeService
     public function getTheme(string $theme): array
     {
         $key = $this->resolveThemeKey($theme);
+        $themeData = self::THEMES[$key];
+        $themeData['variables'] = $this->withDerivedVariables($themeData['variables']);
 
-        return self::THEMES[$key];
+        return $themeData;
+    }
+
+    /**
+     * @return list<array{name: string, key: string, description: string, variables: array<string, string|float>}>
+     */
+    public function getThemes(): array
+    {
+        return array_map(
+            fn (array $theme): array => [
+                ...$theme,
+                'variables' => $this->withDerivedVariables($theme['variables']),
+            ],
+            array_values(self::THEMES)
+        );
     }
 
     /**
@@ -326,7 +363,7 @@ final class PresupuestoThemeService
      */
     public function getDefaultTheme(): array
     {
-        return self::THEMES[self::DEFAULT_THEME_KEY];
+        return $this->getTheme(self::DEFAULT_THEME_KEY);
     }
 
     public function getDefaultThemeKey(): string
@@ -373,10 +410,10 @@ final class PresupuestoThemeService
      */
     public function generateTableHeaderCss(string $theme): string
     {
-        $v = $this->getTheme($theme)['variables'];
-        $bg = $v['color-primary'];
-        $text = $v['color-white'];
-        $border = $v['color-primary-dark'];
+        $colors = $this->tableHeaderColors($theme);
+        $bg = $colors['bg'];
+        $text = $colors['text'];
+        $border = $colors['border'];
 
         return implode("\n", [
             '.tw-table thead tr{background-color:'.$bg.'!important;}',
@@ -396,10 +433,15 @@ final class PresupuestoThemeService
     public function tableHeaderColors(string $theme): array
     {
         $v = $this->getTheme($theme)['variables'];
+        $bg = (string) $v['color-primary'];
 
         return [
-            'bg' => (string) $v['color-primary'],
-            'text' => (string) $v['color-white'],
+            'bg' => $bg,
+            'text' => $this->contrastTextOn(
+                $bg,
+                (string) $v['color-white'],
+                (string) $v['color-slate-900']
+            ),
             'border' => (string) $v['color-primary-dark'],
         ];
     }
@@ -419,6 +461,22 @@ final class PresupuestoThemeService
         return $map;
     }
 
+    /**
+     * @param  array<string, string|float>  $variables
+     * @return array<string, string|float>
+     */
+    private function withDerivedVariables(array $variables): array
+    {
+        $primary = (string) ($variables['color-primary'] ?? '#2563eb');
+        $variables['color-on-primary'] = $this->contrastTextOn(
+            $primary,
+            (string) ($variables['color-white'] ?? '#ffffff'),
+            (string) ($variables['color-slate-900'] ?? '#0f172a')
+        );
+
+        return $variables;
+    }
+
     private function normalizeKey(string $theme): string
     {
         return strtolower(trim($theme));
@@ -431,5 +489,41 @@ final class PresupuestoThemeService
         }
 
         return $value;
+    }
+
+    /**
+     * Elige texto claro u oscuro según luminancia relativa del fondo (WCAG-ish).
+     */
+    private function contrastTextOn(string $backgroundHex, string $lightText, string $darkText): string
+    {
+        $rgb = $this->hexToRgb($backgroundHex);
+        if ($rgb === null) {
+            return $lightText;
+        }
+
+        [$r, $g, $b] = $rgb;
+        $luminance = (0.2126 * $r + 0.7152 * $g + 0.0722 * $b) / 255;
+
+        return $luminance > 0.55 ? $darkText : $lightText;
+    }
+
+    /**
+     * @return array{0: int, 1: int, 2: int}|null
+     */
+    private function hexToRgb(string $hex): ?array
+    {
+        $hex = ltrim(trim($hex), '#');
+        if (strlen($hex) === 3) {
+            $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+        }
+        if (! preg_match('/^[0-9a-fA-F]{6}$/', $hex)) {
+            return null;
+        }
+
+        return [
+            hexdec(substr($hex, 0, 2)),
+            hexdec(substr($hex, 2, 2)),
+            hexdec(substr($hex, 4, 2)),
+        ];
     }
 }

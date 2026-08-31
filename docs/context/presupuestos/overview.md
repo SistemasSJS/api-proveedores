@@ -73,7 +73,7 @@ Ciclo **borrador → enviar → aceptar/rechazar** maduro (API + front activos).
 
 Ajustes de documento en captura (cerrados):
 
-- `fecha_emision` — modal settings (≤ hoy en front)
+- `fecha_emision` — modal Información general (permite futuras en front)
 - `ppto_config` — 8 keys mm (márgenes / gaps); modal Ajustes + PDF
 - `titulo_anexos` — inline en card anexos imagen (default **Anexos**; PDF sección imágenes + preview)
 - `titulo_anexos_pdf` — inline en card anexos PDF (default **Anexos PDF**; estampado al mergear PDFs)

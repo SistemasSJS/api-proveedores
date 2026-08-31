@@ -1107,11 +1107,17 @@
                             @endforeach
                         </div>
 
-                        <!-- 3) DESCRIPCIÓN GENERAL -->
-                        @if ($presupuesto['concepto_general'] ?? null)
+                        <!-- 3) NOMBRE / DESCRIPCIÓN GENERAL -->
+                        @if (($presupuesto['nombre_presupuesto'] ?? null) || ($presupuesto['concepto_general'] ?? null))
                             <div class="descripcion-section">
-                                <div class="descripcion-title">Descripción general</div>
-                                <div class="descripcion-text">{{ $presupuesto['concepto_general'] }}</div>
+                                @if ($presupuesto['nombre_presupuesto'] ?? null)
+                                    <div class="descripcion-title">{{ $presupuesto['nombre_presupuesto'] }}</div>
+                                @else
+                                    <div class="descripcion-title">Descripción general</div>
+                                @endif
+                                @if ($presupuesto['concepto_general'] ?? null)
+                                    <div class="descripcion-text">{{ $presupuesto['concepto_general'] }}</div>
+                                @endif
                             </div>
                         @endif
 

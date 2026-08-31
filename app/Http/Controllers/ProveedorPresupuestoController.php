@@ -719,6 +719,7 @@ class ProveedorPresupuestoController extends Controller
                     'proveedor_id',
                     'configuracion_condiciones',
                     'concepto_general',
+                    'nombre_presupuesto',
                     'titulo_anexos',
                     'titulo_anexos_pdf',
                     'con_iva',
@@ -2152,6 +2153,7 @@ class ProveedorPresupuestoController extends Controller
             'fecha_emision' => $presupuesto->fecha_emision,
             'lugar' => $lugar,
             'concepto_general' => $presupuesto->concepto_general,
+            'nombre_presupuesto' => $presupuesto->nombre_presupuesto,
             'titulo_anexos' => trim((string) ($presupuesto->titulo_anexos ?? '')) !== ''
                 ? trim((string) $presupuesto->titulo_anexos)
                 : 'Anexos',

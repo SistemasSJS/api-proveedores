@@ -58,13 +58,15 @@ Traslados / viáticos: **no** hay columnas `obs_traslados` / `obs_viaticos` (dro
 
 ## Plantillas (`presupuesto_plantillas`)
 
-Recurso **aislado** del documento `presupuestos` (no `es_plantilla`). Guarda estructura/contenido/estilo default: nombre, concepto general, términos/IVA/moneda, `pdf_theme`/`ppto_config`, emisor opcional, líneas en `presupuesto_plantilla_conceptos`, anexos en `presupuesto_plantilla_anexos` / `presupuesto_plantilla_anexo_pdf`. **Sin** receptor, folio, estado, token ni logs. Al **aplicar** se crea un PPTO borrador por snapshot (`PresupuestoPlantillaAplicarService`); **desde presupuesto** crea plantilla desde un PPTO (`PresupuestoPlantillaDesdePresupuestoService`). Editar la plantilla no modifica PPTOs ya creados.
+Recurso **aislado** del documento `presupuestos` (no `es_plantilla`). Guarda lo reutilizable al crear un PPTO: **nombre** (identificador), **conceptos**, **anexos imagen/PDF**, **tema** (`pdf_theme` / `ppto_config`) y **tarjeta de presentación** (emisor). **No** incluye descripción general del presupuesto (`concepto_general`), receptor, folio, estado, token ni logs. Al **aplicar** se crea un PPTO borrador por snapshot (`PresupuestoPlantillaAplicarService`) con `concepto_general` = `Borrador` (el usuario lo completa en el documento). **Desde presupuesto** crea plantilla sin copiar `concepto_general`. Editar la plantilla no modifica PPTOs ya creados.
 
 ## Campos de documento (captura / PDF)
 
 | Campo | Tabla | Notas |
 |-------|-------|-------|
 | `fecha_emision` | `presupuestos` | Fecha del documento; editable en UI (front: no futura) |
+| `concepto_general` | `presupuestos` | Descripción general del documento (texto) |
+| `nombre_presupuesto` | `presupuestos` | `varchar(120)` nullable; título corto del documento. Mig. `2026_08_29_101858_…`. No se rellena al aplicar plantilla (el nombre de plantilla es solo identificador de la receta) |
 | `titulo_anexos` | `presupuestos` | `varchar(80)` nullable; mig. `2026_07_23_095249_…`. Vacío → **Anexos** (Resource, Blade sección imágenes, preview) |
 | `titulo_anexos_pdf` | `presupuestos` | `varchar(80)` nullable; mig. `2026_07_23_103654_…`. Vacío → **Anexos PDF** (Resource + estampado FPDI de hojas mergeadas) |
 | `config_mostrar_totales` | `presupuestos` | Si false, oculta subtotal/IVA/total/importe letra en preview y PDF |

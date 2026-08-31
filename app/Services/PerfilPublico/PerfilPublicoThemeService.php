@@ -94,6 +94,22 @@ final class PerfilPublicoThemeService
                 'color-border' => '#e2e8f0',
             ],
         ],
+        'caterpillar' => [
+            'name' => 'Caterpillar',
+            'key' => 'caterpillar',
+            'description' => 'Amarillo CAT y negro para imagen industrial.',
+            'variables' => [
+                'color-bg' => '#fafaf9',
+                'color-card' => '#ffffff',
+                'color-primary' => '#ffcd11',
+                'color-primary-dark' => '#c9a000',
+                'color-primary-soft' => '#fff9e6',
+                'color-heading' => '#111111',
+                'color-text' => '#2f3640',
+                'color-muted' => '#78716c',
+                'color-border' => '#e7e5e4',
+            ],
+        ],
     ];
 
     /**

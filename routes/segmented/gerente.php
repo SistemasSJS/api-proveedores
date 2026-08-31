@@ -308,6 +308,7 @@ Route::prefix('proveedores')
                     Route::patch('/{plantilla}', [ProveedorPresupuestoPlantillaController::class, 'update']);
                     Route::delete('/{plantilla}', [ProveedorPresupuestoPlantillaController::class, 'destroy']);
                     Route::post('/{plantilla}/aplicar', [ProveedorPresupuestoPlantillaController::class, 'aplicar']);
+                    Route::post('/{plantilla}/aplicar-sobre/{presupuesto}', [ProveedorPresupuestoPlantillaController::class, 'aplicarSobre']);
                 });
 
                 Route::get('/next-folio', [ProveedorPresupuestoController::class, 'nextFolioByProveedor']);

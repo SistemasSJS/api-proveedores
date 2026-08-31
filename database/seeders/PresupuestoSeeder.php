@@ -50,6 +50,7 @@ class PresupuestoSeeder extends Seeder
                 'fecha_vencimiento' => $fechaVencimiento,
 
                 'concepto_general' => fake()->sentence(),
+                'nombre_presupuesto' => fake()->words(3, true),
 
                 'con_iva' => fake()->boolean(80),
                 'iva_porcentaje' => 16,

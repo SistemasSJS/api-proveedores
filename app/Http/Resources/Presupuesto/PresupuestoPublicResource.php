@@ -76,6 +76,7 @@ class PresupuestoPublicResource extends JsonResource
             'fecha_emision' => $this->fecha_emision?->format('Y-m-d'),
             'fecha_vencimiento' => $this->fecha_vencimiento?->format('Y-m-d'),
             'concepto_general' => $this->concepto_general,
+            'nombre_presupuesto' => $this->nombre_presupuesto,
             'titulo_anexos' => trim((string) ($this->titulo_anexos ?? '')) !== ''
                 ? trim((string) $this->titulo_anexos)
                 : 'Anexos',

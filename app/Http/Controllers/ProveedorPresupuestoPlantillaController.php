@@ -224,6 +224,59 @@ class ProveedorPresupuestoPlantillaController extends Controller
     }
 
     /**
+     * Aplica la plantilla sobre un PPTO existente (sin crear otro ni tocar receptor/fecha/descripción).
+     */
+    public function aplicarSobre(
+        Request $request,
+        Proveedor $proveedor,
+        PresupuestoPlantilla $plantilla,
+        Presupuesto $presupuesto
+    ): JsonResponse {
+        try {
+            $user = $request->user();
+            if (! $user || ! $user->tieneAccesoAProveedor((int) $proveedor->id)) {
+                return $this->error('El usuario autenticado no tiene acceso a la empresa en GestionPlus.', null, 403);
+            }
+            if ((int) $plantilla->proveedor_id !== (int) $proveedor->id) {
+                return $this->error('La plantilla no pertenece a esta empresa.', null, 403);
+            }
+            if ((int) $presupuesto->proveedor_id !== (int) $proveedor->id) {
+                return $this->error('El presupuesto no pertenece a esta empresa.', null, 403);
+            }
+            if (! $plantilla->activo) {
+                return $this->error('La plantilla está inactiva y no se puede usar.', null, 422);
+            }
+            if (! $this->puedeEditarPresupuestoParaAplicarPlantilla($presupuesto)) {
+                return $this->error(
+                    'No se puede modificar este presupuesto en GestionPlus. Solo se editan borradores o presupuestos con observaciones del cliente.',
+                    ['estado_actual' => $presupuesto->estado],
+                    422
+                );
+            }
+
+            $actualizado = $this->aplicarService->aplicarSobre($plantilla, $presupuesto);
+
+            $this->log('Plantilla aplicada sobre presupuesto existente', [
+                'plantilla_id' => $plantilla->id,
+                'presupuesto_id' => $presupuesto->id,
+            ]);
+
+            return $this->success(
+                new PresupuestoResource($actualizado),
+                'Plantilla aplicada al presupuesto.'
+            );
+        } catch (Throwable $e) {
+            $this->log('Error al aplicar plantilla sobre presupuesto', [
+                'plantilla_id' => $plantilla->id,
+                'presupuesto_id' => $presupuesto->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->error('No fue posible aplicar la plantilla al presupuesto.', [$e->getMessage()], 500);
+        }
+    }
+
+    /**
      * Crea una plantilla a partir de un presupuesto existente (sin receptor).
      */
     public function desdePresupuesto(Request $request, Proveedor $proveedor, Presupuesto $presupuesto): JsonResponse
@@ -347,6 +400,22 @@ class ProveedorPresupuestoPlantillaController extends Controller
         );
 
         return $value === null ? $default : $value;
+    }
+
+    /**
+     * Borrador o rechazo con motivo (misma regla que update de PPTO).
+     */
+    private function puedeEditarPresupuestoParaAplicarPlantilla(Presupuesto $presupuesto): bool
+    {
+        if ($presupuesto->estado === Presupuesto::ESTADO_BORRADOR) {
+            return true;
+        }
+
+        if (in_array($presupuesto->estado, [Presupuesto::ESTADO_RECHAZADO, Presupuesto::ESTADO_RECHAZADO_CON_OBSERVACION], true)) {
+            return $presupuesto->motivo_rechazo && trim((string) $presupuesto->motivo_rechazo) !== '';
+        }
+
+        return false;
     }
 
     private function log(string $message, array $context = []): void

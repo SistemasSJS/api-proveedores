@@ -46,7 +46,10 @@ final class PresupuestoNotificationContent
             $emisorEmpresa = 'Empresa';
         }
 
-        $descripcion = trim((string) ($presupuesto->concepto_general ?? ''));
+        $descripcion = trim((string) ($presupuesto->nombre_presupuesto ?? ''));
+        if ($descripcion === '') {
+            $descripcion = trim((string) ($presupuesto->concepto_general ?? ''));
+        }
 
         $destinatario = trim((string) (
             $presupuesto->empresa_receptora_empresa

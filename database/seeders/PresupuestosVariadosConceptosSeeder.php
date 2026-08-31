@@ -56,6 +56,7 @@ class PresupuestosVariadosConceptosSeeder extends Seeder
                         'numero_presupuesto' => $folio,
                         'fecha_emision' => now()->toDateString(),
                         'concepto_general' => "Presupuesto de prueba con {$numConceptos} concepto(s) para validar duplicación y listas.",
+                        'nombre_presupuesto' => "Prueba {$numConceptos} conceptos",
                         'con_iva' => true,
                         'iva_porcentaje' => 16,
                         'proveedor_id' => $proveedor->id,

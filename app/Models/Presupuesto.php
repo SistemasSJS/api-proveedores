@@ -60,6 +60,7 @@ class Presupuesto extends BaseModel
         'fecha_emision',
         'fecha_vencimiento',
         'concepto_general',
+        'nombre_presupuesto',
         'titulo_anexos',
         'titulo_anexos_pdf',
         'subtotal',
@@ -1143,13 +1144,14 @@ class Presupuesto extends BaseModel
 
     /**
      * Filtro por búsqueda general.
-     * Busca en: numero_presupuesto, concepto_general, empresa_receptora_nombre, empresaReceptora.nombre
+     * Busca en: numero_presupuesto, nombre_presupuesto, concepto_general, empresa_receptora_nombre, empresaReceptora.nombre
      */
     public function filterBySearch($query, string $value)
     {
         return $query->where(function ($query) use ($value) {
             $query
                 ->where('numero_presupuesto', 'like', "%{$value}%")
+                ->orWhere('nombre_presupuesto', 'like', "%{$value}%")
                 ->orWhere('concepto_general', 'like', "%{$value}%")
                 ->orWhere('empresa_receptora_nombre', 'like', "%{$value}%")
                 ->orWhere('empresa_receptora_empresa', 'like', "%{$value}%")

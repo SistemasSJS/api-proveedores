@@ -78,7 +78,7 @@ class PresupuestoPlantillaDesdePresupuestoService
                 'nombre' => $nombre,
                 'descripcion' => $descripcion,
                 'activo' => true,
-                'concepto_general' => $presupuesto->concepto_general,
+                'concepto_general' => null,
                 'titulo_anexos' => $presupuesto->titulo_anexos,
                 'titulo_anexos_pdf' => $presupuesto->titulo_anexos_pdf,
                 'con_iva' => (bool) $presupuesto->con_iva,

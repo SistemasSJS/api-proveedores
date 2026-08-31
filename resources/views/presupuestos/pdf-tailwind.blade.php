@@ -45,7 +45,7 @@
 
         --table-header-bg: var(--primary);
         --table-header-border: var(--primary-dark);
-        --table-header-text: var(--color-white);
+        --table-header-text: var(--color-on-primary, var(--color-white));
 
         --table-row-even-bg: var(--color-row-even);
         --table-row-odd-bg: var(--color-white);
@@ -264,10 +264,7 @@
         border-radius: 1mm;
         text-align: center;
         line-height: normal;
-        color: var(--color-white);
-        font-size: 14pt;
-        font-weight: bold;
-        display: table;
+        color: var(--color-on-primary, var(--color-white));
     }
 
     .tw-logo-fallback span {
@@ -670,10 +667,10 @@
         background: var(--importe-label-bg);
         text-align: center;
         font-size: 6pt;
-        font-weight: 400;
+        font-weight: 700;
         letter-spacing: 0.02em;
         text-transform: none;
-        color: var(--text-soft);
+        color: var(--color-heading, #111827);
         padding: 1mm 2mm;
         border-bottom: 1px solid var(--border-soft);
     }
@@ -1059,10 +1056,16 @@
                 @endforeach
             </div>
 
-            @if ($presupuesto['concepto_general'] ?? null)
+            @if (($presupuesto['nombre_presupuesto'] ?? null) || ($presupuesto['concepto_general'] ?? null))
                 <div class="tw-desc-box">
-                    <div class="tw-card-title tw-desc-general-title">Descripción general</div>
-                    <div class="tw-desc-text">{{ $presupuesto['concepto_general'] }}</div>
+                    @if ($presupuesto['nombre_presupuesto'] ?? null)
+                        <div class="tw-card-title tw-desc-general-title">{{ $presupuesto['nombre_presupuesto'] }}</div>
+                    @else
+                        <div class="tw-card-title tw-desc-general-title">Descripción general</div>
+                    @endif
+                    @if ($presupuesto['concepto_general'] ?? null)
+                        <div class="tw-desc-text">{{ $presupuesto['concepto_general'] }}</div>
+                    @endif
                 </div>
             @endif
 

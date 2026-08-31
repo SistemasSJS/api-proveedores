@@ -109,6 +109,7 @@ class StorePresupuestoRequest extends FormRequest
             'es_proveedor_receptor' => 'nullable|boolean', // es para indicar si el receptor es un proveedor
             'fecha_emision' => 'required|date',
             'concepto_general' => 'required|string',
+            'nombre_presupuesto' => 'nullable|string|max:120',
             'titulo_anexos' => 'nullable|string|max:80',
             'titulo_anexos_pdf' => 'nullable|string|max:80',
 
@@ -317,6 +318,8 @@ class StorePresupuestoRequest extends FormRequest
             'fecha_emision.date' => 'La fecha de emisión debe tener un formato válido.',
             'concepto_general.required' => 'El concepto general es obligatorio.',
             'concepto_general.string' => 'El concepto general debe ser texto.',
+            'nombre_presupuesto.string' => 'El nombre del presupuesto debe ser texto.',
+            'nombre_presupuesto.max' => 'El nombre del presupuesto no debe exceder 120 caracteres.',
             'titulo_anexos.string' => 'El título de anexos debe ser texto.',
             'titulo_anexos.max' => 'El título de anexos no debe exceder 80 caracteres.',
             'titulo_anexos_pdf.string' => 'El título de anexos PDF debe ser texto.',
