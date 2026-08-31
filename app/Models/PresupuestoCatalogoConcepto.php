@@ -30,7 +30,7 @@ class PresupuestoCatalogoConcepto extends BaseModel
     ];
 
     protected $casts = [
-        'precio_unitario' => 'decimal:2',
+        'precio_unitario' => 'decimal:4',
     ];
 
     /**
