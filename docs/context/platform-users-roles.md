@@ -138,6 +138,24 @@ Un registro/actividad cuenta solo si **no** cae en ninguna de las tres.
 
 Listas de archivos PHP, SQL o nombres de scopes: eso es implementación (`config/metricas_plataforma.php` + modelos). Este doc fija **quién cuenta** como producto.
 
+## Identificador de acceso (correo o teléfono)
+
+Login y registro aceptan **correo** o **teléfono** (campo `email` del login busca también `users.telefono`).
+
+| Origen | Persistencia típica |
+|--------|---------------------|
+| Registro completo (`registro-proveedor`) | `email` + `telefono` + `telefono_codigo_pais` |
+| Registro básico SP (enlace) | `users.email` = teléfono 10 dígitos (legacy); login por ese número |
+| Panel admin — usuario (`admin/usuarios`) | Correo **y/o** teléfono con código país (`+52`, etc.) |
+
+**Normalización API:** `App\Support\UserContactData` + requests `UserStoreRequest` / `UserUpdateRequest` (trait `NormalizesUserContactInput`).
+
+- Al menos uno: correo válido **o** teléfono 6–15 dígitos.
+- Solo teléfono → `email` = dígitos (compat. login legacy) + `telefono` + `telefono_codigo_pais`.
+- Correo + teléfono → ambos campos.
+
+**Front admin:** `panel-administrativo/.../usuario-form` — `app-input-email` + `app-input-phone-country` (mismo patrón que registro). Helper: `usuario-contact.helper.ts`.
+
 ## Relación con dominios
 
 Ver [cross-domain.md](./cross-domain.md): auth, roles y gestión de usuarios son **plataforma → cualquiera**; no crean puente presupuesto↔SP.

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\EstadoCuentaBancaria;
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Http\Requests\Proveedor\ProveedorStoreRequest;
 use App\Http\Requests\Proveedor\ProveedorUpdateConstanciaFiscalRequest;
@@ -16,6 +15,7 @@ use App\Models\Proveedor;
 use App\Models\User;
 // use App\Services\ConstanciaFiscalService;
 use App\Services\Proveedor\ConstanciaFiscalHybridService;
+use App\Services\Proveedor\ProveedorPerfilCompletadoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -23,6 +23,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ProveedorController extends Controller
 {
+    public function __construct(
+        private readonly ProveedorPerfilCompletadoService $perfilCompletadoService,
+    ) {
+    }
+
     /**
      * @OA\Post(
      *     path="/api/proveedor/logo",
@@ -219,6 +224,7 @@ class ProveedorController extends Controller
         unset($validated['es_cuenta_de_pruebas']);
         $proveedor->update($validated);
         $proveedor = $proveedor->fresh(Proveedor::eagerLodable());
+        $this->perfilCompletadoService->sincronizarBandera($proveedor);
 
         return $this->success(new ProveedorResource($proveedor), 'Empresa actualizada con éxito.', 200);
     }
@@ -374,7 +380,9 @@ class ProveedorController extends Controller
         }
 
         return $this->success([
-            'proveedor' => new ProveedorResource($proveedor->fresh()),
+            'proveedor' => new ProveedorResource(
+                tap($proveedor->fresh(), fn (Proveedor $fresh) => $this->perfilCompletadoService->sincronizarBandera($fresh))
+            ),
             'extraccion_datos' => $datosExtraccion['datos'],
             'extraccion_meta' => [
                 'exito' => $datosExtraccion['exito'],
@@ -423,204 +431,10 @@ class ProveedorController extends Controller
      */
     public function puedeGenerarSP(Request $request, Proveedor $proveedor)
     {
-        // Verificar primero si es proveedor de SP
-        if (! $proveedor->is_proveedor_sp) {
-            $responseData = [
-                'puede_generar_sp' => false,
-                'detalle' => [
-                    'perfil_empresa_completo' => false,
-                    'tiene_cuenta_bancaria' => false,
-                    'tiene_constancia_fiscal' => false,
-                    'tiene_logo' => false,
-                    'tiene_informacion_general_y_datos_fiscales' => false,
-                    'datos_faltantes' => ['La empresa no está habilitada para generar Solicitudes de Pago'],
-                ],
-            ];
-
-            return $this->success(new ProveedorValidacionPerfilCompletoResource($responseData));
-        }
-
-        // Si ya tiene el perfil marcado como completo, validar rápidamente
-        if ($proveedor->perfil_empresa_completo) {
-            // Cargar solo las relaciones necesarias para verificar cuenta bancaria
-            // $proveedor->load(['cuentasBancarias']);
-            // $proveedor->cuentasBancarias;
-            $tieneCuentaBancaria = $proveedor->cuentasBancarias->where('estatus', EstadoCuentaBancaria::ACTIVA)->count() > 0;
-
-            // Validaciones mínimas para confirmar que sigue siendo válido
-            /** NOTE: Para generar la spp no debe ser necesario logo. */
-            // $tieneLogo = ! empty($proveedor->logo);
-            $tieneConstanciaFiscal = ! empty($proveedor->constancia_fiscal);
-
-            // Si las validaciones básicas pasan, no necesitamos hacer validaciones detalladas
-            // Cuenta bancaria es opcional para generar SP / perfil completo.
-            if ($tieneConstanciaFiscal) {
-                $responseData = [
-                    'puede_generar_sp' => true,
-                    'detalle' => [
-                        'perfil_empresa_completo' => true,
-                        'tiene_cuenta_bancaria' => $tieneCuentaBancaria,
-                        'tiene_constancia_fiscal' => true,
-                        'tiene_logo' => true,
-                        'tiene_informacion_general_y_datos_fiscales' => true,
-                        'datos_faltantes' => [],
-                    ],
-                ];
-
-                return $this->success(new ProveedorValidacionPerfilCompletoResource($responseData));
-            }
-        }
-
-        // Si llegamos aquí, necesitamos hacer validaciones completas
-        // Cargar relaciones necesarias
-        $proveedor->load(['cuentasBancarias']);
-
-        // Validar información general y datos fiscales
-        $tieneInformacionGeneral = $this->validarInformacionGeneral($proveedor);
-        $tieneDatosFiscales = $this->validarDatosFiscales($proveedor);
-        $tieneInformacionGeneralYDatosFiscales = $tieneInformacionGeneral && $tieneDatosFiscales;
-
-        // Validar datos de contacto
-        // $tieneDatosContacto = $this->validarDatosContacto($proveedor);
-
-        // Validar logo
-        /** NOTE: Para generar la spp no debe ser necesario logo. */
-        // $tieneLogo = ! empty($proveedor->logo);
-
-        // Validar cuenta bancaria
-        $tieneCuentaBancaria = $proveedor->cuentasBancarias->where('estatus', EstadoCuentaBancaria::ACTIVA)->count() > 0;
-
-        // Validar constancia fiscal
-        $tieneConstanciaFiscal = ! empty($proveedor->constancia_fiscal);
-
-        // Calcular si el perfil está completo (cuenta bancaria opcional)
-        $perfilEmpresaCompleto = $tieneInformacionGeneralYDatosFiscales &&
-            // $tieneDatosContacto &&
-            // $tieneLogo &&
-            $tieneConstanciaFiscal;
-
-        // Calcular datos faltantes
-        $datosFaltantes = [];
-        if (! $tieneInformacionGeneralYDatosFiscales) {
-            if (! $tieneInformacionGeneral) {
-                $datosFaltantes[] = 'Información general de la empresa';
-            }
-            if (! $tieneDatosFiscales) {
-                $datosFaltantes[] = 'Datos fiscales';
-            }
-        }
-        // if (!$tieneDatosContacto) {
-        //     $datosFaltantes[] = 'Datos de contacto';
-        // }
-
-        /** NOTE: Para generar la spp no debe ser necesario logo. */
-        // if (! $tieneLogo) {
-        //     $datosFaltantes[] = 'Logo de la empresa en GestionPlus';
-        // }
-
-        if (! $tieneConstanciaFiscal) {
-            $datosFaltantes[] = 'Constancia de situación fiscal en GestionPlus';
-        }
-
-        // Actualizar el campo perfil_empresa_completo en el modelo si ha cambiado
-        if ($proveedor->perfil_empresa_completo !== $perfilEmpresaCompleto) {
-            $proveedor->update(['perfil_empresa_completo' => $perfilEmpresaCompleto]);
-        }
-
-        // Puede generar SP si es proveedor de SP y el perfil está completo
-        $puedeGenerarSP = $perfilEmpresaCompleto;
-
-        $responseData = [
-            'puede_generar_sp' => $puedeGenerarSP,
-            'detalle' => [
-                'perfil_empresa_completo' => $perfilEmpresaCompleto,
-                'tiene_cuenta_bancaria' => $tieneCuentaBancaria,
-                'tiene_constancia_fiscal' => $tieneConstanciaFiscal,
-                /* NOTE: Para generar la spp no debe ser necesario logo. */
-                'tiene_logo' => true,
-                'tiene_informacion_general_y_datos_fiscales' => $tieneInformacionGeneralYDatosFiscales,
-                'datos_faltantes' => $datosFaltantes,
-            ],
-        ];
+        $this->perfilCompletadoService->sincronizarBandera($proveedor);
+        $responseData = $this->perfilCompletadoService->evaluarPuedeGenerarSP($proveedor->fresh());
 
         return $this->success(new ProveedorValidacionPerfilCompletoResource($responseData));
-    }
-
-    /**
-     * Valida la información general del proveedor.
-     */
-    private function validarInformacionGeneral(Proveedor $proveedor): bool
-    {
-        $camposRequeridos = [
-            // 'nombre_propietario',
-            'nombre_comercial',
-            // 'descripcion_giro_empresa',
-            // 'pagina_web',
-            'email',
-            // 'telefono',
-            // 'nombre_de_quien_registra',
-            // 'tipos_empresa_id',
-            // 'direccion_empresa',
-            // 'estado',
-            // 'municipio',
-            // 'codigo_postal'
-        ];
-
-        foreach ($camposRequeridos as $campo) {
-            if (empty($proveedor->$campo)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Valida los datos fiscales del proveedor.
-     */
-    private function validarDatosFiscales(Proveedor $proveedor): bool
-    {
-        $camposFiscales = [
-            'razon_social',
-            'rfc',
-            // 'regimen_fiscal_clave',
-            // 'regimen_fiscal_nombre',
-            // 'calle',
-            // 'numero_exterior',
-            // 'colonia',
-            // 'ciudad',
-            // 'codigo_postal',
-            // 'pais',
-        ];
-
-        foreach ($camposFiscales as $campo) {
-            if (empty($proveedor->$campo)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Valida los datos de contacto del proveedor.
-     */
-    private function validarDatosContacto(Proveedor $proveedor): bool
-    {
-        $camposContacto = [
-            'contacto_nombre',
-            'contacto_cargo',
-            'contacto_telefono',
-            'contacto_correo',
-        ];
-
-        foreach ($camposContacto as $campo) {
-            if (empty($proveedor->$campo)) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**
@@ -630,35 +444,14 @@ class ProveedorController extends Controller
      */
     public function validarPerfilCompletado(Request $request, Proveedor $proveedor)
     {
-        // Cargar relaciones necesarias
-        $proveedor->load(['cuentasBancarias']);
-
-        // Validar información general
-        $generales = $this->validarInformacionGeneral($proveedor);
-        // el logo no se considerra para perfiul completado
-        // && !empty($proveedor->logo);
-
-        // Validar datos fiscales (incluyendo constancia fiscal)
-        $fiscales = $this->validarDatosFiscales($proveedor);
-        // la constancia no se considerra para perfiul completado
-        //&& !empty($proveedor->constancia_fiscal);
-
-        // Datos bancarios: informativos (opcionales para perfil completo)
-        $bancarios = $proveedor->cuentasBancarias->where('estatus', EstadoCuentaBancaria::ACTIVA)->count() > 0;
-
-        // El perfil está completado con generales + fiscales (cuenta bancaria opcional)
-        $perfilEmpresaCompletado = $generales && $fiscales;
-
-        // Actualizar el campo perfil_empresa_completo en el modelo si ha cambiado
-        if ($proveedor->perfil_empresa_completo !== $perfilEmpresaCompletado) {
-            $proveedor->update(['perfil_empresa_completo' => $perfilEmpresaCompletado]);
-        }
+        $evaluacion = $this->perfilCompletadoService->evaluar($proveedor);
+        $this->perfilCompletadoService->sincronizarBandera($proveedor);
 
         return $this->success([
-            'fiscales' => $fiscales,
-            'bancarios' => $bancarios,
-            'generales' => $generales,
-            'perfil_empresa_completado' => $perfilEmpresaCompletado,
+            'fiscales' => $evaluacion['fiscales'],
+            'bancarios' => $evaluacion['bancarios'],
+            'generales' => $evaluacion['generales'],
+            'perfil_empresa_completado' => $evaluacion['perfil_empresa_completado'],
         ]);
     }
 

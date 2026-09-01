@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use App\Exceptions\Api\Crud\ResourceNotFoundException;
 use App\Enums\EstadoUsuario;
 use App\Http\Requests\User\UserStoreRequest;
+use App\Http\Requests\User\UserUpdateRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Support\MetricasPlataforma;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
 {
@@ -180,33 +180,23 @@ class UserController extends Controller
      *     @OA\Response(response=404, description="Usuario no encontrado")
      * )
      */
-    public function update(Request $request, $id)
+    public function update(UserUpdateRequest $request, $id)
     {
         $user = User::findOrFail($id);
 
-        $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|max:255|unique:users,email,'.$id,
-            'password' => ['nullable', 'string', Password::min(8), 'confirmed'],
-            'role_id' => ['sometimes', 'integer', 'exists:roles,id'],
-            'role' => ['sometimes', 'integer', 'exists:roles,id'],
-            'status' => ['sometimes', 'string', 'in:'.implode(',', EstadoUsuario::values())],
-            'estado' => ['sometimes'],
-            'es_cuenta_de_pruebas' => ['sometimes', 'boolean'],
-        ]);
+        $validated = $request->validated();
 
-        $data = $request->only(['name', 'email', 'role_id', 'status', 'es_cuenta_de_pruebas']);
-
-        if ($request->filled('role') && ! $request->filled('role_id')) {
-            $data['role_id'] = $request->input('role');
-        }
-
-        if ($request->filled('estado') && ! $request->filled('status')) {
-            $data['status'] = $request->input('estado');
-        }
+        $data = collect($validated)->only([
+            'name',
+            'email',
+            'telefono',
+            'telefono_codigo_pais',
+            'role_id',
+            'status',
+            'es_cuenta_de_pruebas',
+        ])->filter(fn ($value) => $value !== null)->all();
 
         if ($request->filled('password')) {
-            // El cast `hashed` del modelo se encarga del hash
             $data['password'] = $request->password;
         }
 

@@ -15,6 +15,7 @@ Infraestructura que usan los tres dominios. **No expandir** como “módulo núc
 | Auth / sesión | `routes/segmented/auth.php`, front `@auth/` | Login, token, `/auth/me` |
 | **Login social (OAuth)** | [platform-auth-socialite.md](./platform-auth-socialite.md) | Google vía Socialite + Sanctum; multi-provider listo |
 | Proveedor | Model `Proveedor`, prefijo `proveedores/{proveedor}/…` | Contenedor multi-proveedor |
+| **Perfil empresa completado** | `ProveedorPerfilCompletadoService`, `GET …/perfil-completado` | Bandera `perfil_empresa_completo`, banner Mi Empresa, OAuth `pending_registro` |
 | Acceso | `tieneAccesoAProveedor`, middleware `proveedor.access` / `api.access` | Autorización por proveedor |
 | Roles | `UserRoleEnumerate` (ADMINISTRADOR, GERENTE, SUPERVISOR, VENTAS, AUXILIAR, …) | Rutas segmentadas + menú |
 | Usuarios / matriz MVP | [platform-users-roles.md](./platform-users-roles.md) | Gestión empresa: principal GERENTE, roles asignables SUP/VEN/AUX |
@@ -70,6 +71,32 @@ KPIs de producto (totales de usuarios/empresas, usuarios activos, series diarias
 El flag es de negocio/operación (marcar QA, demos, sandboxes), no un permiso. El listado admin de usuarios registrados usa otro criterio (whitelist de roles de producto); ver [platform-users-roles.md](./platform-users-roles.md#métricas-y-cuentas-de-pruebas).
 
 La lista de roles excluidos / visibles y el cableado de queries viven en código (`config/metricas_plataforma.php`); este contexto solo fija **quién cuenta / quién se lista**.
+
+## Perfil de empresa completado (Mi Empresa)
+
+Servicio canónico: `App\Services\Proveedor\ProveedorPerfilCompletadoService`.
+
+| Concepto | Regla |
+|----------|--------|
+| **Bandera BD** `proveedores.perfil_empresa_completo` | `nombre_comercial` + `email` + `razon_social` + `rfc` |
+| **Cuenta bancaria** | Opcional para la bandera (ícono informativo `bancarios` en front) |
+| **Constancia fiscal** | **No** cuenta para la bandera; **sí** para `puedeGenerarSP` |
+| **Logo** | Opcional |
+
+**Revalidación:** tras guardar/eliminar datos en Mi Empresa, la API recalcula la bandera en:
+
+- `ProveedorController::update`
+- `ProveedorController::updateConstanciaFiscal`
+- CRUD `ProveedorCuentaBancariaController` (store / update / destroy)
+
+Endpoints de consulta (siempre evalúan en vivo, sin atajos por bandera cacheada):
+
+- `GET proveedores/{proveedor}/perfil-completado` — banner sidebar + segmentos Mi Empresa
+- `GET proveedores/{proveedor}/puede-generar-sp` — crear Solicitud de Pago
+
+Front: `PerfilValidacionStateService.refresh(proveedorId, { force: true })` tras guardar/eliminar en formularios de perfil (generales, fiscales, constancia, bancarios).
+
+OAuth / registro: `pending_registro=1` si falta `perfil_empresa_completo` o `registro_completado_at` — ver [platform-auth-socialite.md](./platform-auth-socialite.md).
 
 ## Perfil público (compartir información de la empresa)
 
