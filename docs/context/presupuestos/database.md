@@ -52,7 +52,7 @@ Campo típico `term_cond_moneda`: valores admitidos **MXN** | **USD** | **EUR** 
 
 Tipos: `concepto` | `parrafo`. Campos libres: descripción, cantidad, unidad, precios, imagen. **Sin `producto_id`.**
 
-Catálogo de conceptos reutilizable: tabla `presupuesto_catalogo_conceptos` (`descripcion`, `categoria` producto|servicio, `unidad`, `precio_unitario`, `imagen_path` opcional). Al usarlo en un presupuesto se hace **snapshot** a la línea (sin FK).
+Catálogo de conceptos reutilizable: tabla `presupuesto_catalogo_conceptos` (`descripcion`, `categoria` producto|servicio, `unidad`, `precio_unitario` decimal(15,4) para Opus, `imagen_path` opcional). Al usarlo en un presupuesto se hace **snapshot** a la línea (sin FK). UI de precios: `environment.presupuestoPrecioDecimals` (storage 4 / display 2 por defecto).
 
 Traslados / viáticos: **no** hay columnas `obs_traslados` / `obs_viaticos` (drop fase 3). Fuente de verdad: `term_cond_visibilidad.incluye_traslados` / `incluye_viaticos`. La API puede exponer `obs_traslados` / `obs_viaticos` en Resources como **alias derivados** de esa visibilidad (compat front).
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Presupuesto;
 
+use App\Services\Presupuesto\PresupuestoThemeService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -54,6 +55,9 @@ class PresupuestoPlantillaResource extends JsonResource
             'obs_garantia_dias' => $this->obs_garantia_dias !== null ? (int) $this->obs_garantia_dias : null,
             'config_mostrar_totales' => (bool) ($this->config_mostrar_totales ?? true),
             'pdf_theme' => $this->pdf_theme,
+            'pdf_theme_css' => (new PresupuestoThemeService())->variablesAsCssMap(
+                (string) ($this->pdf_theme ?? PresupuestoThemeService::DEFAULT_THEME_KEY)
+            ),
             'ppto_config' => is_array($this->ppto_config) ? $this->ppto_config : new \stdClass(),
             'config_emisor_presupuesto_id' => $this->config_emisor_presupuesto_id !== null
                 ? (int) $this->config_emisor_presupuesto_id

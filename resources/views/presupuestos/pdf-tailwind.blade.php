@@ -31,10 +31,10 @@
 
         --bg-body: var(--color-white);
 
-        --text-primary: #111827;
-        --text-secondary: #4b5563;
-        --text-muted: #4b5563;
-        --text-soft: #4b5563;
+        --text-primary: var(--color-slate-800);
+        --text-secondary: var(--color-slate-600);
+        --text-muted: var(--color-slate-500);
+        --text-soft: var(--color-slate-500);
 
         --text-heading: var(--color-heading);
 

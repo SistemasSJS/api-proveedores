@@ -141,6 +141,9 @@ class PresupuestoResource extends JsonResource
             'item_visto' => (bool) ($this->item_visto ?? false),
             'token_publico' => $this->token_publico,
             'pdf_theme' => $this->pdf_theme ?? PresupuestoThemeService::DEFAULT_THEME_KEY,
+            'pdf_theme_css' => (new PresupuestoThemeService())->variablesAsCssMap(
+                (string) ($this->pdf_theme ?? PresupuestoThemeService::DEFAULT_THEME_KEY)
+            ),
             'ppto_config' => is_array($this->ppto_config) ? $this->ppto_config : new \stdClass(),
             'fecha_envio' => $this->resource->fechaDeEstado(Presupuesto::ESTADO_ENVIADO)?->format('Y-m-d H:i:s'),
             'fecha_aceptacion' => $this->resource->fechaDeEstado(Presupuesto::ESTADO_ACEPTADO)?->format('Y-m-d H:i:s'),
