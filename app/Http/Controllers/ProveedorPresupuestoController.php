@@ -803,6 +803,8 @@ class ProveedorPresupuestoController extends Controller
                         'cantidad' => (float) $c->cantidad,
                         'unidad' => $c->unidad,
                         'precio_unitario' => (float) $c->precio_unitario,
+                        'proveedor_nombre' => $c->proveedor_nombre,
+                        'proveedor_logo_url' => $c->proveedor_logo_url,
                     ];
 
                     // Se re-almacena como copia propia del nuevo presupuesto (evita compartir archivo).
@@ -1637,6 +1639,15 @@ class ProveedorPresupuestoController extends Controller
                 $pathsConservados[] = $imagenPath;
             }
 
+            $proveedorNombre = trim((string) ($conceptoData['proveedor_nombre'] ?? ''));
+            $proveedorLogo = trim((string) ($conceptoData['proveedor_logo_url'] ?? ''));
+            if (mb_strlen($proveedorNombre) > 150) {
+                $proveedorNombre = mb_substr($proveedorNombre, 0, 150);
+            }
+            if (mb_strlen($proveedorLogo) > 500) {
+                $proveedorLogo = mb_substr($proveedorLogo, 0, 500);
+            }
+
             $concepto = new PresupuestoConcepto([
                 'numero' => $index + 1,
                 'tipo' => $conceptoData['tipo'] ?? PresupuestoConcepto::TIPO_CONCEPTO,
@@ -1645,6 +1656,8 @@ class ProveedorPresupuestoController extends Controller
                 'unidad' => $conceptoData['unidad'],
                 'precio_unitario' => $conceptoData['precio_unitario'],
                 'imagen_path' => $imagenPath,
+                'proveedor_nombre' => $proveedorNombre !== '' ? $proveedorNombre : null,
+                'proveedor_logo_url' => $proveedorLogo !== '' ? $proveedorLogo : null,
             ]);
             $concepto->calcularImporte();
             $presupuesto->conceptos()->save($concepto);
@@ -2185,6 +2198,8 @@ class ProveedorPresupuestoController extends Controller
                     'unidad' => $concepto->unidad,
                     'precio_unitario' => $concepto->precio_unitario,
                     'precio_total' => $concepto->precio_total,
+                    'proveedor_nombre' => $concepto->proveedor_nombre,
+                    'proveedor_logo_url' => $concepto->proveedor_logo_url,
                 ];
             })->values()->all(),
             'anexos' => PresupuestoPdf::anexosParaPlantillaPdf($presupuesto),

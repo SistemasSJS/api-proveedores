@@ -75,6 +75,8 @@ class ProveedorPresupuestoCatalogoConceptosController extends Controller
         $search = trim((string) $request->input('search', ''));
         $categoria = trim((string) $request->input('categoria', ''));
         $empresa = trim((string) $request->input('empresa', ''));
+        $marca = trim((string) $request->input('marca', ''));
+        $familia = trim((string) $request->input('familia', ''));
         $perPage = (int) $request->input('per_page', 50);
         $limit = max(1, min($perPage, 100));
 
@@ -108,6 +110,11 @@ class ProveedorPresupuestoCatalogoConceptosController extends Controller
                     'empresa' => null,
                     'logo' => null,
                     'categoria_ui' => $concepto->categoria,
+                    'marca' => null,
+                    'familia' => null,
+                    'subcategoria' => null,
+                    'descripcion' => $concepto->descripcion,
+                    'codigo' => null,
                     'imagen_url' => PresupuestoAnexoArchivoResponse::archivoUrl($concepto->imagen_path),
                     'imagen_path' => PresupuestoAnexoArchivoResponse::archivoPathPublico($concepto->imagen_path),
                     'imagen_base64' => PresupuestoAnexoArchivoResponse::solicitaArchivoBase64($request)
@@ -130,6 +137,12 @@ class ProveedorPresupuestoCatalogoConceptosController extends Controller
             if ($empresa !== '') {
                 $catalogoQuery->where('empresa', $empresa);
             }
+            if ($marca !== '') {
+                $catalogoQuery->where('marca', $marca);
+            }
+            if ($familia !== '') {
+                $catalogoQuery->where('categoria', $familia);
+            }
 
             $catalogoRows = $catalogoQuery
                 ->orderBy('nombre')
@@ -149,6 +162,11 @@ class ProveedorPresupuestoCatalogoConceptosController extends Controller
                     'empresa' => $item->empresa,
                     'logo' => $item->logo,
                     'categoria_ui' => $item->categoria ?: 'producto',
+                    'marca' => $item->marca,
+                    'familia' => $item->categoria,
+                    'subcategoria' => $item->subcategoria,
+                    'descripcion' => $item->descripcion,
+                    'codigo' => $item->codigo,
                     'imagen_url' => $item->imagen ?: null,
                     'imagen_path' => null,
                     'imagen_base64' => null,

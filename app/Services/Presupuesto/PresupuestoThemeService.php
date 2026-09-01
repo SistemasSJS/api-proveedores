@@ -304,7 +304,7 @@ final class PresupuestoThemeService
         'caterpillar' => [
             'name' => 'Caterpillar',
             'key' => 'caterpillar',
-            'description' => 'Amarillo CAT (#FFCD11) y negro CAT (#1D1D1B) para maquinaria, construcción e industria.',
+            'description' => 'Negro CAT (#1D1D1B) para textos legibles; amarillo CAT (#FFCD11) en acentos y fondos.',
             'variables' => [
                 'color-white' => '#ffffff',
                 'color-slate-50' => '#fafaf9',
@@ -316,8 +316,9 @@ final class PresupuestoThemeService
                 'color-slate-700' => '#353533',
                 'color-slate-800' => '#1d1d1b',
                 'color-slate-900' => '#1d1d1b',
-                'color-primary' => '#ffcd11',
-                'color-primary-dark' => '#e0b800',
+                // Primario = negro CAT: se usa en textos/títulos (legible). Amarillo solo en acentos.
+                'color-primary' => '#1d1d1b',
+                'color-primary-dark' => '#0a0a0a',
                 'color-primary-soft' => '#fff8d6',
                 'color-primary-border' => '#ffcd11',
                 'color-heading' => '#1d1d1b',
@@ -431,8 +432,14 @@ final class PresupuestoThemeService
      */
     public function tableHeaderColors(string $theme): array
     {
+        $key = $this->resolveThemeKey($theme);
         $v = $this->getTheme($theme)['variables'];
         $bg = (string) $v['color-primary'];
+
+        // Caterpillar: cabecera negra con borde amarillo CAT (acento de marca).
+        $border = $key === 'caterpillar'
+            ? (string) $v['color-primary-border']
+            : (string) $v['color-primary-dark'];
 
         return [
             'bg' => $bg,
@@ -441,7 +448,7 @@ final class PresupuestoThemeService
                 (string) $v['color-white'],
                 (string) $v['color-slate-900']
             ),
-            'border' => (string) $v['color-primary-dark'],
+            'border' => $border,
         ];
     }
 

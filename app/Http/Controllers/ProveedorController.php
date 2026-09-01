@@ -453,13 +453,13 @@ class ProveedorController extends Controller
             $tieneConstanciaFiscal = ! empty($proveedor->constancia_fiscal);
 
             // Si las validaciones básicas pasan, no necesitamos hacer validaciones detalladas
-            // if ($tieneCuentaBancaria && $tieneLogo && $tieneConstanciaFiscal) {
-            if ($tieneCuentaBancaria && $tieneConstanciaFiscal) {
+            // Cuenta bancaria es opcional para generar SP / perfil completo.
+            if ($tieneConstanciaFiscal) {
                 $responseData = [
                     'puede_generar_sp' => true,
                     'detalle' => [
                         'perfil_empresa_completo' => true,
-                        'tiene_cuenta_bancaria' => true,
+                        'tiene_cuenta_bancaria' => $tieneCuentaBancaria,
                         'tiene_constancia_fiscal' => true,
                         'tiene_logo' => true,
                         'tiene_informacion_general_y_datos_fiscales' => true,
@@ -493,11 +493,10 @@ class ProveedorController extends Controller
         // Validar constancia fiscal
         $tieneConstanciaFiscal = ! empty($proveedor->constancia_fiscal);
 
-        // Calcular si el perfil está completo
+        // Calcular si el perfil está completo (cuenta bancaria opcional)
         $perfilEmpresaCompleto = $tieneInformacionGeneralYDatosFiscales &&
             // $tieneDatosContacto &&
             // $tieneLogo &&
-            $tieneCuentaBancaria &&
             $tieneConstanciaFiscal;
 
         // Calcular datos faltantes
@@ -519,9 +518,6 @@ class ProveedorController extends Controller
         //     $datosFaltantes[] = 'Logo de la empresa en GestionPlus';
         // }
 
-        if (! $tieneCuentaBancaria) {
-            $datosFaltantes[] = 'Al menos una cuenta bancaria activa';
-        }
         if (! $tieneConstanciaFiscal) {
             $datosFaltantes[] = 'Constancia de situación fiscal en GestionPlus';
         }
@@ -647,11 +643,11 @@ class ProveedorController extends Controller
         // la constancia no se considerra para perfiul completado
         //&& !empty($proveedor->constancia_fiscal);
 
-        // Validar datos bancarios (al menos una cuenta bancaria activa)
+        // Datos bancarios: informativos (opcionales para perfil completo)
         $bancarios = $proveedor->cuentasBancarias->where('estatus', EstadoCuentaBancaria::ACTIVA)->count() > 0;
 
-        // El perfil está completado solo cuando todas las secciones están completas
-        $perfilEmpresaCompletado = $generales && $fiscales && $bancarios;
+        // El perfil está completado con generales + fiscales (cuenta bancaria opcional)
+        $perfilEmpresaCompletado = $generales && $fiscales;
 
         // Actualizar el campo perfil_empresa_completo en el modelo si ha cambiado
         if ($proveedor->perfil_empresa_completo !== $perfilEmpresaCompletado) {

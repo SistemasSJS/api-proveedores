@@ -608,6 +608,27 @@
                     border-radius: 1mm;
                 }
 
+                .concepto-proveedor-origen {
+                    display: flex;
+                    align-items: center;
+                    gap: 1.5mm;
+                    margin-top: 1mm;
+                }
+
+                .concepto-proveedor-logo {
+                    width: 5mm;
+                    height: 5mm;
+                    object-fit: contain;
+                    border-radius: 0.5mm;
+                    background: #fff;
+                }
+
+                .concepto-proveedor-nombre {
+                    font-size: 7pt;
+                    font-weight: 600;
+                    color: #475569;
+                }
+
                 /* ========== 5) TOTALES (alineado con tabla) ========== */
                 .terms-block {
                     margin-bottom: 4mm;

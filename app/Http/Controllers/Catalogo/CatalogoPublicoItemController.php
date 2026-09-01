@@ -49,6 +49,58 @@ class CatalogoPublicoItemController extends Controller
         return $this->success($empresas, 'Empresas del catálogo público.');
     }
 
+    /**
+     * Facets (marca / categoría) para filtros del picker de PPTO.
+     * Opcional: ?empresa=Nombre
+     */
+    public function facets(Request $request): JsonResponse
+    {
+        $empresa = trim((string) $request->input('empresa', ''));
+
+        $base = CatalogoPublicoItem::query()
+            ->where('activo', true)
+            ->where('mostrar_en_listado', true);
+
+        if ($empresa !== '') {
+            $base->where('empresa', $empresa);
+        }
+
+        $valores = static function ($query, string $columna): array {
+            $vistos = [];
+            $resultado = [];
+            $rows = $query->clone()
+                ->whereNotNull($columna)
+                ->where($columna, '!=', '')
+                ->orderBy($columna)
+                ->pluck($columna);
+
+            foreach ($rows as $raw) {
+                $valor = trim((string) $raw);
+                if ($valor === '') {
+                    continue;
+                }
+                $clave = mb_strtolower($valor, 'UTF-8');
+                if (isset($vistos[$clave])) {
+                    continue;
+                }
+                $vistos[$clave] = true;
+                $resultado[] = $valor;
+            }
+
+            sort($resultado, SORT_NATURAL | SORT_FLAG_CASE);
+
+            return $resultado;
+        };
+
+        return $this->success(
+            [
+                'marcas' => $valores($base, 'marca'),
+                'categorias' => $valores($base, 'categoria'),
+            ],
+            'Filtros del catálogo público.'
+        );
+    }
+
     public function index(Request $request): JsonResponse
     {
         $filters = $request->only(CatalogoPublicoItem::getFilters());

@@ -72,6 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('catalogo-publico')->group(function () {
         Route::get('/', [CatalogoPublicoItemController::class, 'index'])->middleware(['audit']);
         Route::get('empresas', [CatalogoPublicoItemController::class, 'empresas'])->middleware(['audit']);
+        Route::get('facets', [CatalogoPublicoItemController::class, 'facets'])->middleware(['audit']);
         Route::get('{catalogoPublicoItem}', [CatalogoPublicoItemController::class, 'show'])->middleware(['audit']);
     });
 

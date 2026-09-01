@@ -33,6 +33,8 @@ class PresupuestoConceptoResource extends JsonResource
             'imagen_base64' => PresupuestoAnexoArchivoResponse::solicitaArchivoBase64($request)
                 ? PresupuestoAnexoArchivoResponse::archivoBase64($this->imagen_path)
                 : null,
+            'proveedor_nombre' => $this->proveedor_nombre,
+            'proveedor_logo_url' => $this->proveedor_logo_url,
         ];
     }
 }

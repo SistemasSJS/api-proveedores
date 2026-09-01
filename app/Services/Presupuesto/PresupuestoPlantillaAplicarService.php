@@ -170,8 +170,8 @@ class PresupuestoPlantillaAplicarService
                 'descripcion' => $linea->descripcion,
                 'cantidad' => $tipo === PresupuestoConcepto::TIPO_PARRAFO ? 0 : (float) $linea->cantidad,
                 'unidad' => $tipo === PresupuestoConcepto::TIPO_PARRAFO
-                    ? ''
-                    : ($linea->unidad ?: 'pieza'),
+                    ? 'párrafo'
+                    : (trim((string) ($linea->unidad ?? '')) !== '' ? (string) $linea->unidad : 'pieza'),
                 'precio_unitario' => $tipo === PresupuestoConcepto::TIPO_PARRAFO ? 0 : (float) $linea->precio_unitario,
             ]);
 

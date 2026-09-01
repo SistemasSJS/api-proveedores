@@ -31,6 +31,8 @@ class PresupuestoConcepto extends BaseModel
         'precio_unitario',
         'precio_total',
         'imagen_path',
+        'proveedor_nombre',
+        'proveedor_logo_url',
     ];
 
     protected $casts = [

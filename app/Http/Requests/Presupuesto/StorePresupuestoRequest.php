@@ -189,6 +189,8 @@ class StorePresupuestoRequest extends FormRequest
             'conceptos.*.precio_unitario' => 'required|numeric|min:0',
             'conceptos.*.imagen_path' => 'nullable|string|max:255',
             'conceptos.*.imagen_url' => 'nullable|string|max:500|url',
+            'conceptos.*.proveedor_nombre' => 'nullable|string|max:150',
+            'conceptos.*.proveedor_logo_url' => 'nullable|string|max:500',
             'conceptos.*.imagen_base64' => [
                 'nullable',
                 'string',
