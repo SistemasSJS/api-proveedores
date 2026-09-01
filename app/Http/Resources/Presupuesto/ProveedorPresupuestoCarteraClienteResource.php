@@ -26,6 +26,7 @@ class ProveedorPresupuestoCarteraClienteResource extends JsonResource
             'correo' => $this->correo,
             'logo_path' => PresupuestoAnexoArchivoResponse::archivoPathPublico($this->logo_path),
             'logo_url' => PresupuestoAnexoArchivoResponse::archivoUrl($this->logo_path),
+            'activo' => (bool) ($this->activo ?? true),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

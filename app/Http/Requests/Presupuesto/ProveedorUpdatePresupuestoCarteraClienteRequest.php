@@ -22,14 +22,15 @@ class ProveedorUpdatePresupuestoCarteraClienteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre' => ['required', 'string', 'max:255'],
+            'nombre' => ['sometimes', 'required', 'string', 'max:255'],
             'puesto' => ['nullable', 'string', 'max:255'],
-            'empresa' => ['required', 'string', 'max:255'],
+            'empresa' => ['sometimes', 'required', 'string', 'max:255'],
             'alias_empresa' => ['nullable', 'string', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:30'],
             'correo' => ['nullable', 'email', 'max:255'],
             'logo_base64' => ['nullable', 'string'],
             'eliminar_logo' => ['nullable', 'boolean'],
+            'activo' => ['sometimes', 'boolean'],
         ];
     }
 

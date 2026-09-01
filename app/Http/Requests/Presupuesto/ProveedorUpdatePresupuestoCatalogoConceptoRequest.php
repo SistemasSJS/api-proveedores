@@ -20,17 +20,19 @@ class ProveedorUpdatePresupuestoCatalogoConceptoRequest extends FormRequest
     {
         return [
             'descripcion' => [
+                'sometimes',
                 'required',
                 'string',
                 'max:'.PresupuestoCatalogoConcepto::DESCRIPCION_MAX,
             ],
             'categoria' => [
+                'sometimes',
                 'required',
                 'string',
                 Rule::in(PresupuestoCatalogoConcepto::categoriasValidas()),
             ],
-            'unidad' => ['required', 'string', 'max:50'],
-            'precio_unitario' => ['required', 'numeric', 'min:0'],
+            'unidad' => ['sometimes', 'required', 'string', 'max:50'],
+            'precio_unitario' => ['sometimes', 'required', 'numeric', 'min:0'],
             'imagen_path' => ['nullable', 'string', 'max:255'],
             'imagen_base64' => [
                 'nullable',
@@ -40,6 +42,7 @@ class ProveedorUpdatePresupuestoCatalogoConceptoRequest extends FormRequest
                 },
             ],
             'eliminar_imagen' => ['nullable', 'boolean'],
+            'activo' => ['sometimes', 'boolean'],
         ];
     }
 

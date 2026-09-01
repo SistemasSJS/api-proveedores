@@ -32,11 +32,23 @@ class ProveedorPresupuestoConfigController extends Controller
         $order = $request->input('order', 'desc');
         $perPage = $request->input('per_page', 1000);
 
+        $incluirInactivos = filter_var(
+            $request->input('incluir_inactivos', false),
+            FILTER_VALIDATE_BOOLEAN
+        );
+
         $query = ConfigEmisorReceptorPresupuesto::query()
             ->with(ConfigEmisorReceptorPresupuesto::eagerLodable())
-            ->filter($filters)
-            ->whereIn('estado', [ConfigEmisorReceptorPresupuesto::ESTADO_ACTIVO, ConfigEmisorReceptorPresupuesto::ESTADO_DEFAULT])
-            ->orderBy($sortBy, $order);
+            ->filter($filters);
+
+        if (! $incluirInactivos) {
+            $query->whereIn('estado', [
+                ConfigEmisorReceptorPresupuesto::ESTADO_ACTIVO,
+                ConfigEmisorReceptorPresupuesto::ESTADO_DEFAULT,
+            ]);
+        }
+
+        $query->orderBy($sortBy, $order);
 
         $originalPaginator = $query->paginate($perPage);
         $data = PresupuestoConfigEmisorReceptorResource::collection($originalPaginator)->resolve();
@@ -184,6 +196,9 @@ class ProveedorPresupuestoConfigController extends Controller
             $this->defaultService->promoteDefaultIfMissing((int) $proveedor->id, $tipo);
         }
 
-        return $this->success(null, 'Configuración de emisor/receptor de presupuestos desactivada correctamente.');
+        return $this->success(
+            new PresupuestoConfigEmisorReceptorResource($config->fresh(ConfigEmisorReceptorPresupuesto::eagerLodable())),
+            'Tarjeta dada de baja correctamente.'
+        );
     }
 }

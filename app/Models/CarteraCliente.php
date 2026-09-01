@@ -15,6 +15,7 @@ class CarteraCliente extends BaseModel
         'empresa' => 'Empresa',
         'puesto' => 'Puesto',
         'search' => 'Search',
+        'activo' => 'Activo',
     ];
 
     protected $fillable = [
@@ -26,6 +27,11 @@ class CarteraCliente extends BaseModel
         'telefono',
         'correo',
         'logo_path',
+        'activo',
+    ];
+
+    protected $casts = [
+        'activo' => 'boolean',
     ];
 
     /**
@@ -106,5 +112,18 @@ class CarteraCliente extends BaseModel
                 $q->orWhere('id', $numericId);
             }
         });
+    }
+
+    /**
+     * Filtro por activo (true|false|1|0).
+     */
+    public function filterByActivo($query, $value)
+    {
+        $bool = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+        if ($bool === null) {
+            return $query;
+        }
+
+        return $query->where('activo', $bool);
     }
 }

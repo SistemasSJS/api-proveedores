@@ -18,6 +18,7 @@ class PresupuestoCatalogoConcepto extends BaseModel
         'proveedor_id' => 'ProveedorId',
         'categoria' => 'Categoria',
         'search' => 'Search',
+        'activo' => 'Activo',
     ];
 
     protected $fillable = [
@@ -27,10 +28,12 @@ class PresupuestoCatalogoConcepto extends BaseModel
         'unidad',
         'precio_unitario',
         'imagen_path',
+        'activo',
     ];
 
     protected $casts = [
         'precio_unitario' => 'decimal:4',
+        'activo' => 'boolean',
     ];
 
     /**
@@ -79,6 +82,19 @@ class PresupuestoCatalogoConcepto extends BaseModel
                 $q->orWhere('id', $numericId);
             }
         });
+    }
+
+    /**
+     * Filtro por activo (true|false|1|0|si|no).
+     */
+    public function filterByActivo($query, $value)
+    {
+        $bool = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+        if ($bool === null) {
+            return $query;
+        }
+
+        return $query->where('activo', $bool);
     }
 
     /**

@@ -25,6 +25,7 @@ class ProveedorPresupuestoCatalogoConceptoResource extends JsonResource
             'imagen_base64' => PresupuestoAnexoArchivoResponse::solicitaArchivoBase64($request)
                 ? PresupuestoAnexoArchivoResponse::archivoBase64($this->imagen_path)
                 : null,
+            'activo' => (bool) ($this->activo ?? true),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

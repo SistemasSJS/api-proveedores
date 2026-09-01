@@ -83,7 +83,8 @@ class ProveedorPresupuestoCatalogoConceptosController extends Controller
 
         if (in_array($origen, ['todos', 'concepto'], true) && $empresa === '') {
             $conceptosQuery = PresupuestoCatalogoConcepto::query()
-                ->where('proveedor_id', $proveedor->id);
+                ->where('proveedor_id', $proveedor->id)
+                ->where('activo', true);
 
             if ($search !== '') {
                 $conceptosQuery->filter(['search' => $search]);
@@ -255,6 +256,27 @@ class ProveedorPresupuestoCatalogoConceptosController extends Controller
             }
 
             $validated = $request->validated();
+
+            if (array_key_exists('activo', $validated) && ! array_key_exists('descripcion', $validated)) {
+                $presupuestoCatalogoConcepto->update([
+                    'activo' => (bool) $validated['activo'],
+                ]);
+
+                $mensaje = $presupuestoCatalogoConcepto->activo
+                    ? 'Concepto reactivado correctamente.'
+                    : 'Concepto dado de baja correctamente.';
+
+                $this->log($mensaje, [
+                    'catalogo_concepto_id' => $presupuestoCatalogoConcepto->id,
+                    'activo' => $presupuestoCatalogoConcepto->activo,
+                ]);
+
+                return $this->success(
+                    new ProveedorPresupuestoCatalogoConceptoResource($presupuestoCatalogoConcepto->fresh()),
+                    $mensaje
+                );
+            }
+
             $imagenPath = $presupuestoCatalogoConcepto->imagen_path;
 
             $base64 = $validated['imagen_base64'] ?? null;
@@ -272,13 +294,18 @@ class ProveedorPresupuestoCatalogoConceptosController extends Controller
                 $imagenPath = null;
             }
 
-            $presupuestoCatalogoConcepto->update([
+            $payload = [
                 'descripcion' => $validated['descripcion'],
                 'categoria' => $validated['categoria'],
                 'unidad' => $validated['unidad'],
                 'precio_unitario' => $validated['precio_unitario'],
                 'imagen_path' => $imagenPath,
-            ]);
+            ];
+            if (array_key_exists('activo', $validated)) {
+                $payload['activo'] = (bool) $validated['activo'];
+            }
+
+            $presupuestoCatalogoConcepto->update($payload);
 
             $this->log('Concepto de catálogo actualizado', [
                 'catalogo_concepto_id' => $presupuestoCatalogoConcepto->id,
@@ -299,7 +326,7 @@ class ProveedorPresupuestoCatalogoConceptosController extends Controller
     }
 
     /**
-     * Eliminar concepto del catálogo.
+     * Dar de baja concepto del catálogo (soft: activo = false).
      */
     public function destroy(
         Request $request,
@@ -317,21 +344,23 @@ class ProveedorPresupuestoCatalogoConceptosController extends Controller
                 return $this->error('El concepto no pertenece a este proveedor.', null, 403);
             }
 
-            $this->eliminarImagenSiExiste($presupuestoCatalogoConcepto->imagen_path);
-            $presupuestoCatalogoConcepto->delete();
+            $presupuestoCatalogoConcepto->update(['activo' => false]);
 
-            $this->log('Concepto eliminado del catálogo', [
+            $this->log('Concepto dado de baja del catálogo', [
                 'catalogo_concepto_id' => $presupuestoCatalogoConcepto->id,
             ]);
 
-            return $this->success(null, 'Concepto eliminado del catálogo.');
+            return $this->success(
+                new ProveedorPresupuestoCatalogoConceptoResource($presupuestoCatalogoConcepto->fresh()),
+                'Concepto dado de baja correctamente.'
+            );
         } catch (Throwable $e) {
-            $this->log('Error al eliminar concepto de catálogo', [
+            $this->log('Error al dar de baja concepto de catálogo', [
                 'catalogo_concepto_id' => $presupuestoCatalogoConcepto->id,
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->error('No fue posible eliminar el concepto del catálogo.', [$e->getMessage()], 500);
+            return $this->error('No fue posible dar de baja el concepto del catálogo.', [$e->getMessage()], 500);
         }
     }
 

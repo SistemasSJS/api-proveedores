@@ -147,6 +147,27 @@ class ProveedorPresupuestoCarteraClientesController extends Controller
             }
 
             $validated = $request->validated();
+
+            if (array_key_exists('activo', $validated) && ! array_key_exists('nombre', $validated)) {
+                $carteraCliente->update([
+                    'activo' => (bool) $validated['activo'],
+                ]);
+
+                $mensaje = $carteraCliente->activo
+                    ? 'Cliente reactivado correctamente.'
+                    : 'Cliente dado de baja correctamente.';
+
+                $this->log($mensaje, [
+                    'cliente_id' => $carteraCliente->id,
+                    'activo' => $carteraCliente->activo,
+                ]);
+
+                return $this->success(
+                    new ProveedorPresupuestoCarteraClienteResource($carteraCliente->fresh()),
+                    $mensaje
+                );
+            }
+
             $logoPath = $carteraCliente->logo_path;
 
             $base64 = $validated['logo_base64'] ?? null;
@@ -161,7 +182,7 @@ class ProveedorPresupuestoCarteraClientesController extends Controller
                 $logoPath = null;
             }
 
-            $carteraCliente->update([
+            $payload = [
                 'nombre' => $validated['nombre'],
                 'puesto' => $validated['puesto'] ?? null,
                 'empresa' => $validated['empresa'],
@@ -169,7 +190,12 @@ class ProveedorPresupuestoCarteraClientesController extends Controller
                 'telefono' => $validated['telefono'] ?? null,
                 'correo' => $validated['correo'] ?? null,
                 'logo_path' => $logoPath,
-            ]);
+            ];
+            if (array_key_exists('activo', $validated)) {
+                $payload['activo'] = (bool) $validated['activo'];
+            }
+
+            $carteraCliente->update($payload);
 
             $this->log('Cliente de cartera actualizado', [
                 'cliente_id' => $carteraCliente->id,
@@ -191,7 +217,7 @@ class ProveedorPresupuestoCarteraClientesController extends Controller
     }
 
     /**
-     * Eliminar cliente de cartera.
+     * Dar de baja cliente de cartera (soft: activo = false).
      */
     public function destroy(
         Request $request,
@@ -211,22 +237,24 @@ class ProveedorPresupuestoCarteraClientesController extends Controller
                 return $this->error('El cliente no pertenece a este proveedor.', null, 403);
             }
 
-            $this->eliminarLogoSiExiste($carteraCliente->logo_path);
-            $carteraCliente->delete();
+            $carteraCliente->update(['activo' => false]);
 
-            $this->log('Cliente eliminado de cartera', [
+            $this->log('Cliente dado de baja de cartera', [
                 'cliente_id' => $carteraCliente->id,
             ]);
 
-            return $this->success(null, 'Cliente eliminado de cartera.');
+            return $this->success(
+                new ProveedorPresupuestoCarteraClienteResource($carteraCliente->fresh()),
+                'Cliente dado de baja correctamente.'
+            );
         } catch (Throwable $e) {
 
-            $this->log('Error al eliminar cliente de cartera', [
+            $this->log('Error al dar de baja cliente de cartera', [
                 'cliente_id' => $carteraCliente->id,
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->error('No fue posible eliminar el cliente.', [$e->getMessage()], 500);
+            return $this->error('No fue posible dar de baja el cliente.', [$e->getMessage()], 500);
         }
     }
 
