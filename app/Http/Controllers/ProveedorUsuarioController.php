@@ -16,6 +16,7 @@ use App\Http\Resources\UserResource;
 use App\Models\Proveedor;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Support\AdminListOrdering;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -33,9 +34,11 @@ class ProveedorUsuarioController extends Controller
         $order = $request->input('order', 'asc');
         $perPage = $request->input('per_page', 10);
 
-        $usersPaginate = $proveedor->users()
+        $query = $proveedor->users()
             ->with(User::eagerLodable())
-            ->filter($filters)
+            ->filter($filters);
+        AdminListOrdering::applyProveedorUsuarioPriority($query);
+        $usersPaginate = $query
             ->orderBy($sortBy, $order)
             ->paginate($perPage);
 

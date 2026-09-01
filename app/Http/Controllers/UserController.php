@@ -9,6 +9,7 @@ use App\Http\Requests\User\UserUpdateRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Support\MetricasPlataforma;
+use App\Support\AdminListOrdering;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -81,6 +82,7 @@ class UserController extends Controller
             ->paraListadoAdminUsuarios()
             ->with(User::eagerLodable())
             ->filter($filters);
+        AdminListOrdering::applyUserStatusPriority($query);
         $originalPaginator = $query
             ->orderBy($sortBy, $order)
             ->paginate($perPage);

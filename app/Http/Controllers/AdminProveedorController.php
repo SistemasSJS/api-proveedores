@@ -38,7 +38,7 @@ use Illuminate\Http\JsonResponse;
 
 use Illuminate\Http\Request;
 
-use Illuminate\Validation\Rule;
+use App\Support\AdminListOrdering;
 
 
 
@@ -74,7 +74,7 @@ class AdminProveedorController extends Controller
 
 
 
-        $originalPaginator = Proveedor::queryParaAdmin()
+        $query = Proveedor::queryParaAdmin()
 
             ->with(array_merge(Proveedor::eagerLodable(), [
                 'users' => function ($q) {
@@ -84,7 +84,11 @@ class AdminProveedorController extends Controller
                 },
             ]))
 
-            ->filter($filters)
+            ->filter($filters);
+
+        AdminListOrdering::applyProveedorEstatusPriority($query);
+
+        $originalPaginator = $query
 
             ->orderBy($sortBy, $order)
 
