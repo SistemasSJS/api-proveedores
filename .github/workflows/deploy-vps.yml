@@ -8,6 +8,7 @@ name: Desplegar a VPS
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: deploy-produccion-api-proveedores
@@ -30,6 +31,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
+          timeout: 90s
           envs: APP_DIR
           command_timeout: 15m
           script: |

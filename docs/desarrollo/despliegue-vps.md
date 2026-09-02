@@ -127,6 +127,7 @@ Tras un deploy:
 
 | Síntoma | Causa / solución |
 |---|---|
+| `dial tcp …: i/o timeout` | GitHub Actions **no alcanza** el VPS por SSH (antes de ejecutar el script). Revisar: VPS encendido, `VPS_HOST`/`VPS_PORT` correctos, firewall/UFW/security group con puerto SSH abierto a Internet (los runners de GitHub usan IPs dinámicas), Fail2ban no bloqueó la IP del runner, proveedor sin caída. Probar desde tu PC: `ssh -p PORT deploy@HOST`. Reintentar con Actions → **Run workflow** tras corregir red. |
 | `could not read Username for 'https://github.com'` | Remoto HTTPS → `git remote set-url` a SSH |
 | `Host key verification failed` | `deploy` sin `github.com` en `known_hosts` |
 | `Permission denied (publickey)` hacia GitHub | Llave de cuenta no en GitHub o no en home de `deploy` |
