@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * Orden de listados admin: registros bloqueados / de baja al final.
@@ -34,8 +35,11 @@ class AdminListOrdering
     );
   }
 
-  /** Usuarios vinculados a empresa: vínculo inactivo o cuenta restringida al final. */
-  public static function applyProveedorUsuarioPriority(Builder $query): Builder
+  /**
+   * Usuarios vinculados a empresa: vínculo inactivo o cuenta restringida al final.
+   * Recibe la relación BelongsToMany ($proveedor->users()) por usar columnas del pivot.
+   */
+  public static function applyProveedorUsuarioPriority(BelongsToMany $query): BelongsToMany
   {
     return $query
       ->orderByRaw('CASE WHEN user_proveedor.activo = 0 THEN 1 ELSE 0 END ASC')

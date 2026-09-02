@@ -111,6 +111,8 @@ En el panel administrativo, el listado de usuarios **solo incluye** roles de pro
 
 No aparecen ahí `ADMINISTRADOR`, `CONSTRUCC_APP`, `ventas_purificadora_colibri` ni otros roles de plataforma/integración. Los conteos del listado (todos / activos / …) usan el mismo universo.
 
+**Orden en listados admin:** helper `App\Support\AdminListOrdering`. Usuarios con cuenta bloqueada/suspendida/inactiva van al final. En el listado de usuarios **vinculados a una empresa** (`ProveedorUsuarioController@index`) el orden usa la relación `$proveedor->users()` (pivot `user_proveedor.activo` + `users.status`); vínculos inactivos y cuentas restringidas al final.
+
 ### Listado admin de empresas
 
 Por defecto el listado admin de empresas muestra **solo productivas** (`es_cuenta_de_pruebas = false`). Desde filtros avanzados se puede ver «solo pruebas» o «todas».
