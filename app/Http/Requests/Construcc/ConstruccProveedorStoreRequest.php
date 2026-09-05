@@ -46,7 +46,7 @@ class ConstruccProveedorStoreRequest extends FormRequest
             'empresa_construcc_id' => 'required|exists:empresa_construcc,id',
             'usuario_id' => 'required|integer',
             'usuario_nombre' => 'required|string|max:255',
-            'nivel_id' => 'nullable|integer|in:0,1,2,3,4,5,6', // 0=Admin, 1=DG, 2=DT, 3=DA, 4=SI, 5=PC, 6=RO
+            'nivel_id' => 'nullable|integer|in:0,1,2,3,4,5,6,7', // 0=Admin, 1=DG, 2=DT, 3=DA, 4=SI, 5=PC, 6=RO, 7
 
             // Cuenta bancaria (OPCIONAL)
             'cuenta' => 'nullable|array|min:1',

@@ -45,7 +45,7 @@ class ConstruccProveedorUpdateRequest extends FormRequest
 
             // Datos de autorización (requeridos para validar permisos)
             'usuario_id' => 'required|integer',
-            'nivel_id' => 'required|integer|min:0|max:6', // 0: Admin, 1: DG, 2: DT, 3: DA, 4: SI, 5: PC, 6: RO
+            'nivel_id' => 'required|integer|min:0|max:7', // 0: Admin, 1: DG, 2: DT, 3: DA, 4: SI, 5: PC, 6: RO, 7
 
             // Cuentas bancarias (opcional, array de cuentas)
             // 'cuentas_bancarias' => 'sometimes|array',
@@ -147,7 +147,7 @@ class ConstruccProveedorUpdateRequest extends FormRequest
             'nivel_id.required' => 'El nivel del usuario es obligatorio para validar permisos',
             'nivel_id.integer' => 'El nivel del usuario debe ser un número entero',
             'nivel_id.min' => 'El nivel del usuario debe ser mayor o igual a 0',
-            'nivel_id.max' => 'El nivel del usuario no debe exceder 6',
+            'nivel_id.max' => 'El nivel del usuario no debe exceder 7',
 
             // Mensajes para cuentas bancarias
             'cuentas_bancarias.array' => 'Las cuentas bancarias deben ser un arreglo',

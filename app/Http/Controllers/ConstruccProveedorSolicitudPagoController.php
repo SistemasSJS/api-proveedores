@@ -154,6 +154,7 @@ class ConstruccProveedorSolicitudPagoController extends Controller
 
             // Niveles que aprueban: DG, DT, PC
             $nivelesAprobadores = [0, 1, 2, 3, 5]; // Admin, DG, DT, DA, PC
+            // 4=SI, 6=RO, 7 → PENDIENTE (requieren aprobación)
 
             // // Director Administrativo: va directo a pago
             // $esDA = $nivelId === 3;

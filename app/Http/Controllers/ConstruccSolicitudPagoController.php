@@ -2098,7 +2098,7 @@ class ConstruccSolicitudPagoController extends Controller
 
             // Determinar estado inicial según el nivel del usuario
             // 0: Admin, 1: DG, 2: DT, 3: DA, 5: PC - Auto-aprueban
-            // 4: SI, 6: RO - Requieren aprobación
+            // 4: SI, 6: RO, 7 - Requieren aprobación
             $nivelId = $validated['nivel_id'] ?? null;
             $nivelesDirectores = [0, 1, 2, 3, 5]; // Admin, DG, DT, DA, PC
 

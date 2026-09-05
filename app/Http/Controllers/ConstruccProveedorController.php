@@ -493,7 +493,7 @@ class ConstruccProveedorController extends Controller
             // Validar datos de autorizaciรณn
             $request->validate([
                 'usuario_id' => 'required|integer',
-                'nivel_id' => 'required|integer|min:0|max:6',
+                'nivel_id' => 'required|integer|min:0|max:7',
                 'motivo_baja' => 'nullable|string|max:500',
             ]);
 

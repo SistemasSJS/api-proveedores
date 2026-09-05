@@ -69,7 +69,7 @@ class GenerarSolicitudPagoConstruccRequest extends FormRequest
             'empresa' => 'nullable|string|max:255',
             'usuario_id' => 'nullable|integer',
             'usuario_nombre' => 'nullable|string|max:255',
-            'nivel_id' => 'nullable|integer|min:0|max:6', // 0: Admin, 1: DG, 2: DT, 3: DA, 4: SI, 5: PC, 6: RO
+            'nivel_id' => 'nullable|integer|min:0|max:7', // 0: Admin, 1: DG, 2: DT, 3: DA, 4: SI, 5: PC, 6: RO, 7
 
             // Campos adicionales de la solicitud de pago
             'obra_id' => 'nullable|integer',
@@ -143,7 +143,7 @@ class GenerarSolicitudPagoConstruccRequest extends FormRequest
             'usuario_nombre.max' => 'El nombre del usuario no debe exceder 255 caracteres',
             'nivel_id.integer' => 'El nivel del usuario debe ser un número entero',
             'nivel_id.min' => 'El nivel del usuario debe ser mayor o igual a 0',
-            'nivel_id.max' => 'El nivel del usuario no debe exceder 6',
+            'nivel_id.max' => 'El nivel del usuario no debe exceder 7',
 
             // Mensajes para campos adicionales de la solicitud de pago
             'obra_id.integer' => 'El ID de la obra debe ser un número entero',
